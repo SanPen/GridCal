@@ -380,6 +380,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return shifter_names, shifter_idx
 
+    def get_load_rule_list(self):
+        ntc = self.get_exchange_power() - self.trm
+
+
     def get_contingency_branch_report(self, max_report_elements=0):
         labels = list()
         y = list()
@@ -390,9 +394,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
             if contingency_flow != 0.0:
+                ntc_flow = contingency_flow - ntc * self.alpha_n1[m]
+                ntc_flow_rule = 1 - ntc_flow / self.contingency_rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
+                          ntc_flow_rule * 100,
                           self.branch_names[m],
                           self.branch_names[c],
                           contingency_flow,
@@ -408,15 +415,16 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
+                   'NTC flow rule (%)',
                    'Monitored',
                    'Contingency',
-                   'ContingencyFlow (MW)',
+                   'Contingency flow (MW)',
                    'Base flow (MW)',
                    'Contingency rates (MW)',
                    'Base rates (MW)',
-                   'ContingencyFlow (%)',
+                   'Contingency flow (%)',
                    'Base flow (%)',
-                   'Contingency Type',
+                   'Contingency type',
                    'Monitored idx',
                    'Contingency idx',
                    ]

@@ -474,7 +474,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
             with_n1=with_n1)
-        self.logger.add_info('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
+
+        # self.logger.add_info('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
 
         return alpha, alpha_n1
 
@@ -487,7 +488,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         tm0 = time.time()
         nc = compile_opf_time_circuit(self.grid)
-        self.logger.add_info('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
+        # self.logger.add_info('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
 
         time_indices = self.get_time_indices()
 
@@ -501,7 +502,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         tm0 = time.time()
         linear.run()
-        self.logger.add_info('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
+        # self.logger.add_info('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
 
         if self.use_clustering:
 
@@ -657,6 +658,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 battery_names=nc.battery_data.battery_names,
                 hvdc_names=nc.hvdc_data.names,
                 trm=self.trm,
+                ntc_load_rule=self.ntc_load_rule,
                 branch_control_modes=nc.branch_data.control_mode,
                 hvdc_control_modes=nc.hvdc_data.control_mode,
                 Sbus=problem.get_power_injections(),

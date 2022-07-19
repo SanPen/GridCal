@@ -23,13 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="alpha_n1 selector with abs value">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -692,27 +690,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00310" summary="fix timestamp in ntc report">
-      <created>1645124098155</created>
-      <option name="number" value="00310" />
-      <option name="presentableId" value="LOCAL-00310" />
-      <option name="project" value="LOCAL" />
-      <updated>1645124098155</updated>
-    </task>
-    <task id="LOCAL-00311" summary="Removed unnecessary prints">
-      <created>1645189550553</created>
-      <option name="number" value="00311" />
-      <option name="presentableId" value="LOCAL-00311" />
-      <option name="project" value="LOCAL" />
-      <updated>1645189550553</updated>
-    </task>
-    <task id="LOCAL-00312" summary="Nothing">
-      <created>1645433344235</created>
-      <option name="number" value="00312" />
-      <option name="presentableId" value="LOCAL-00312" />
-      <option name="project" value="LOCAL" />
-      <updated>1645433344235</updated>
-    </task>
     <task id="LOCAL-00313" summary="Version 4.4.7a5">
       <created>1645433395959</created>
       <option name="number" value="00313" />
@@ -1035,7 +1012,28 @@
       <option name="project" value="LOCAL" />
       <updated>1657791321371</updated>
     </task>
-    <option name="localTasksCounter" value="359" />
+    <task id="LOCAL-00359" summary="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI">
+      <created>1658233534997</created>
+      <option name="number" value="00359" />
+      <option name="presentableId" value="LOCAL-00359" />
+      <option name="project" value="LOCAL" />
+      <updated>1658233534997</updated>
+    </task>
+    <task id="LOCAL-00360" summary="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI">
+      <created>1658233560677</created>
+      <option name="number" value="00360" />
+      <option name="presentableId" value="LOCAL-00360" />
+      <option name="project" value="LOCAL" />
+      <updated>1658233560678</updated>
+    </task>
+    <task id="LOCAL-00361" summary="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI">
+      <created>1658233575270</created>
+      <option name="number" value="00361" />
+      <option name="presentableId" value="LOCAL-00361" />
+      <option name="project" value="LOCAL" />
+      <updated>1658233575270</updated>
+    </task>
+    <option name="localTasksCounter" value="362" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1070,7 +1068,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed power shifter influence in bus voltage angles" />
     <MESSAGE value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
     <MESSAGE value="save .lp file only if no solution" />
     <MESSAGE value="avoid overload Qpoint bug drawing buses" />
@@ -1095,7 +1092,8 @@
     <MESSAGE value="Added Tau to flow computation" />
     <MESSAGE value="Added Tau to flow computation (subtracting)" />
     <MESSAGE value="alpha_n1 selector with abs value" />
-    <option name="LAST_COMMIT_MESSAGE" value="alpha_n1 selector with abs value" />
+    <MESSAGE value="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
