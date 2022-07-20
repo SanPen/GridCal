@@ -699,7 +699,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 break
 
         self.logger.add_info('Ejecutado en {0:.2f} scs. para {1} casos'.format(
-            self.results.elapsed, len(self.results.time_array)))
+            time.time()-tm0, len(self.results.time_array)))
 
     def run(self):
         """

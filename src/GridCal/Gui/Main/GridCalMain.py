@@ -4221,9 +4221,8 @@ class MainGUI(QMainWindow):
                 pf_options = self.get_selected_power_flow_options()
 
                 trm = self.ui.trmSpinBox.value()
-                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
                 ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
-                n1Consideration = self.ui.n1ConsiderationCheckBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 # set power flow object instance
 
@@ -4232,7 +4231,6 @@ class MainGUI(QMainWindow):
                     options=options,
                     pf_options=pf_options,
                     trm=trm,
-                    nTopContingencies=nTopContingencies,
                     ntc_load_rule=ntcLoadRule,
                     n1_consideration=n1Consideration)
 
@@ -4384,7 +4382,7 @@ class MainGUI(QMainWindow):
                 trm = self.ui.trmSpinBox.value()
                 nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
                 ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
-                n1Consideration = self.ui.n1ConsiderationCheckBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(

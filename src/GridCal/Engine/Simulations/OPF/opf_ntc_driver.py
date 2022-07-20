@@ -324,7 +324,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y = np.concatenate((y1, y2, y3), axis=0)
 
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 10].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -394,12 +394,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
             if contingency_flow != 0.0:
-                ntc_flow = contingency_flow - ntc * self.alpha_n1[m]
-                ntc_flow_rule = 1 - ntc_flow / self.contingency_rates[m]
+                unbalance_flow = contingency_flow - ntc * self.alpha_n1[m]
+                ntc_load_rule = 1 - unbalance_flow / self.contingency_rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
-                          ntc_flow_rule * 100,
+                          ntc_load_rule * 100,
                           self.branch_names[m],
                           self.branch_names[c],
                           contingency_flow,
@@ -408,6 +408,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
+                          self.alpha[m],
+                          self.alpha_n1[m],
                           'Branch',
                           m, c))
                 labels.append(len(y))
@@ -424,6 +426,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'Contingency flow (%)',
                    'Base flow (%)',
+                   'Alpha N',
+                   'Alpha N-1 max',
                    'Contingency type',
                    'Monitored idx',
                    'Contingency idx',
@@ -437,7 +441,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y, columns = self.add_shifter_data(y=y, columns=columns)
 
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 10].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -461,9 +465,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         for (m, c), contingency_flow in zip(self.contingency_generation_indices_list,
                                             self.contingency_generation_flows_list):
             if contingency_flow != 0.0:
+                unbalance_flow = contingency_flow - ntc * self.alpha_n1[m]
+                ntc_load_rule = 1 - unbalance_flow / self.contingency_rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
+                          ntc_load_rule * 100,
                           self.branch_names[m],
                           self.generator_names[c],
                           contingency_flow,
@@ -472,6 +479,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
+                          self.alpha[m],
+                          self.alpha_n1[m],
                           'Generation',
                           m, c))
                 labels.append(len(y))
@@ -479,6 +488,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
+                   'NTC flow rule (%)',
                    'Monitored',
                    'Contingency',
                    'ContingencyFlow (MW)',
@@ -487,6 +497,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'ContingencyFlow (%)',
                    'Base flow (%)',
+                   'Alpha N',
+                   'Alpha N-1 max',
                    'Contingency Type',
                    'Monitored idx',
                    'Contingency idx']
@@ -499,7 +511,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y, columns = self.add_shifter_data(y=y, columns=columns)
 
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 10].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -522,9 +534,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
             if contingency_flow != 0.0:
+                unbalance_flow = contingency_flow - ntc * self.alpha_n1[m]
+                ntc_load_rule = 1 - unbalance_flow / self.contingency_rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
+                          ntc_load_rule * 100,
                           self.branch_names[m],
                           self.hvdc_names[c],
                           contingency_flow,
@@ -533,6 +548,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
+                          self.alpha[m],
+                          self.alpha_n1[m],
                           'Hvdc',
                           m, c))
                 labels.append(len(y))
@@ -540,6 +557,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
+                   'NTC flow rule (%)',
                    'Monitored',
                    'Contingency',
                    'ContingencyFlow (MW)',
@@ -548,6 +566,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'ContingencyFlow (%)',
                    'Base flow (%)',
+                   'Alpha N',
+                   'Alpha N-1 max',
                    'Contingency Type',
                    'Monitored idx',
                    'Contingency idx']
@@ -560,7 +580,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y, columns = self.add_shifter_data(y=y, columns=columns)
 
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 10].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:

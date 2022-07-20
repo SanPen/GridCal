@@ -2198,9 +2198,9 @@ class Ui_mainWindow(object):
 
         self.ntcReportLimitingElementsSpinBox = QSpinBox(self.frame_66)
         self.ntcReportLimitingElementsSpinBox.setObjectName(u"ntcReportLimitingElementsSpinBox")
-        self.ntcReportLimitingElementsSpinBox.setMinimum(-1)
+        self.ntcReportLimitingElementsSpinBox.setMinimum(0)
         self.ntcReportLimitingElementsSpinBox.setMaximum(999999999)
-        self.ntcReportLimitingElementsSpinBox.setValue(10)
+        self.ntcReportLimitingElementsSpinBox.setValue(5)
 
         self.gridLayout_16.addWidget(self.ntcReportLimitingElementsSpinBox, 3, 1, 1, 1)
 
@@ -2229,6 +2229,7 @@ class Ui_mainWindow(object):
 
         self.n1ConsiderationCheckBox = QCheckBox(self.frame_66)
         self.n1ConsiderationCheckBox.setObjectName(u"n1ConsiderationCheckBox")
+        self.n1ConsiderationCheckBox.setChecked(True)
 
         self.gridLayout_16.addWidget(self.n1ConsiderationCheckBox, 4, 0, 1, 1)
 
