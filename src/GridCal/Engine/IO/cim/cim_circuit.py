@@ -176,6 +176,7 @@ class CIMCircuit:
                       'EquivalentNetwork': cimdev.EquivalentNetwork,
                       'Breaker': cimdev.Breaker,
                       'Switch': cimdev.Switch,
+                      "LoadBreakSwitch": cimdev.LoadBreakSwitch,
                       'Line': cimdev.Line,
                       'ACLineSegment': cimdev.ACLineSegment,
                       'PowerTransformerEnd': cimdev.PowerTransformerEnd,

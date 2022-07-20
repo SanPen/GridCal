@@ -621,6 +621,60 @@ class Switch(DiPole):
             return None, None
 
 
+class LoadBreakSwitch(DiPole):
+
+    def __init__(self, rfid, tpe):
+        DiPole.__init__(self, rfid, tpe)
+
+        self.normalOpen = True
+        self.retained = True
+        self.EquipmentContainer = None
+        self.open = False
+        self.description = ''
+        self.aggregate = False
+        self.name = ''
+
+        self.aor = ''
+
+        self.serviceState = ''
+        self.PSRType = ''
+        self.underground = True
+        self.Circuit = ''
+        self.costPerUnit = 0
+        self.manufacturer = ''
+        self.model = ''
+        self.private = False
+        self.failureRate = 0
+        self.importance = ""
+        self.ratedVoltage = 11000
+        self.access = ""
+        self.extendedStatus = ""
+        self.isolating = True
+        self.mechanism = ""
+        self.normalOpen = True
+        self.ratedCurrent = 0
+        self.breakingCapacity = 0
+        self.shortTermCurrent = 0
+
+    def get_nodes(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
+
+            if len(terminals) == 2:
+                n1 = terminals[0].TopologicalNode
+                n2 = terminals[1].TopologicalNode
+                return n1, n2
+            else:
+                return None, None
+
+        except KeyError:
+            return None, None
+
+
 class Line(GeneralContainer):
 
     def __init__(self, rfid, tpe):
