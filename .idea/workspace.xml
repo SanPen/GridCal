@@ -23,11 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="4.5.3">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Reverted the results saving to numpy binaries&#10;Improved the pandas time to unix time conversion in the circuit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -239,9 +237,9 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.branch_power" />
       <item itemvalue="Python.pulp" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.branch_power" />
       <item itemvalue="Python tests.Doctests in pulp" />
     </list>
     <recent_temporary>
@@ -697,6 +695,8 @@
       <workItem from="1658243904690" duration="1389000" />
       <workItem from="1658246521538" duration="2648000" />
       <workItem from="1658258798978" duration="3437000" />
+      <workItem from="1658265529571" duration="14000" />
+      <workItem from="1658322397508" duration="2137000" />
     </task>
     <task id="LOCAL-00226" summary="Improved analysis dialogue adding a new column and transformer virtual taps support&#10;Added transformer virtual taps into the array viewer&#10;Added &quot;correct_shit&quot; function to GridCalMain.py">
       <created>1635877776203</created>

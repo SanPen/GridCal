@@ -736,8 +736,8 @@ class PSSeTwoTerminalDCLine:
             # doesn't say, so zero
             specified_power = 0.0
 
-        z_base = self.VSCHD * self.VSCHD / Sbase
-        r_pu = self.RDC / z_base
+        # z_base = self.VSCHD * self.VSCHD / Sbase
+        # r_pu = self.RDC / z_base
 
         Vset_f = 1.0
         Vset_t = 1.0
@@ -757,7 +757,7 @@ class PSSeTwoTerminalDCLine:
                        Vset_f=Vset_f,
                        Vset_t=Vset_t,
                        rate=specified_power,
-                       r=r_pu,
+                       r=self.RDC,
                        min_firing_angle_f=np.deg2rad(self.ANMNR),
                        max_firing_angle_f=np.deg2rad(self.ANMXR),
                        min_firing_angle_t=np.deg2rad(self.ANMNI),
