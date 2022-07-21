@@ -23,11 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added NTC load rule (ACER rule for Clean Energy Package)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fix some issues, new version available">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,7 +132,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -250,9 +248,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
       </list>
@@ -690,13 +688,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00314" summary="New formulation including pumps for porportional generation">
-      <created>1645531911220</created>
-      <option name="number" value="00314" />
-      <option name="presentableId" value="LOCAL-00314" />
-      <option name="project" value="LOCAL" />
-      <updated>1645531911220</updated>
-    </task>
     <task id="LOCAL-00315" summary="New version 4.4.7a6">
       <created>1645532319154</created>
       <option name="number" value="00315" />
@@ -1033,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1658248755950</updated>
     </task>
-    <option name="localTasksCounter" value="363" />
+    <task id="LOCAL-00363" summary="Fix some issues, new version available">
+      <created>1658304033436</created>
+      <option name="number" value="00363" />
+      <option name="presentableId" value="LOCAL-00363" />
+      <option name="project" value="LOCAL" />
+      <updated>1658304033436</updated>
+    </task>
+    <option name="localTasksCounter" value="364" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1068,7 +1066,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="save .lp file only if no solution" />
     <MESSAGE value="avoid overload Qpoint bug drawing buses" />
     <MESSAGE value="new version 4.4.7a17 (fixed bug overload QPoint)" />
     <MESSAGE value="New version 4.4.7a18" />
@@ -1093,7 +1090,8 @@
     <MESSAGE value="alpha_n1 selector with abs value" />
     <MESSAGE value="Added new ntc_load_rule spinbox available in results&#10;&#10;max_report_elements and alpha n-1 management from GUI" />
     <MESSAGE value="Added NTC load rule (ACER rule for Clean Energy Package)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added NTC load rule (ACER rule for Clean Energy Package)" />
+    <MESSAGE value="Fix some issues, new version available" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix some issues, new version available" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
