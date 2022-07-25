@@ -532,6 +532,8 @@ class TimeSeries(DriverTemplate):
                                        pv=calculation_input.pv_prof[t],
                                        vd=calculation_input.vd_prof[t],
                                        pqpv=calculation_input.pqpv_prof[t],
+                                       Qmin=calculation_input.Qmin_bus[:, t],
+                                       Qmax=calculation_input.Qmax_bus[:, t],
                                        branch_rates=branch_rates,
                                        options=self.options,
                                        logger=self.logger)

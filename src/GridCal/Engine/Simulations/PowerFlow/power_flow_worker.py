@@ -29,8 +29,7 @@ from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
 def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
-          ma, theta, Beq,
-          pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
+          ma, theta, Beq, pq, pv, ref, pqpv, Qmin, Qmax, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
     :param circuit: SnapshotData circuit, this ensures on-demand admittances computation
@@ -165,8 +164,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                                        Y0=Y0,
                                                        pv_=pv,
                                                        pq_=pq,
-                                                       Qmin=circuit.Qmin_bus[0, :],
-                                                       Qmax=circuit.Qmax_bus[0, :],
+                                                       Qmin=Qmin,
+                                                       Qmax=Qmax,
                                                        tol=options.tolerance,
                                                        max_it=options.max_iter,
                                                        control_q=options.control_Q,
@@ -212,8 +211,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
-                                      Qmin=circuit.Qmin_bus[0, :],
-                                      Qmax=circuit.Qmax_bus[0, :],
+                                      Qmin=Qmin,
+                                      Qmax=Qmax,
                                       tol=options.tolerance,
                                       max_it=options.max_iter,
                                       mu_0=options.mu,
@@ -245,8 +244,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
-                                      Qmin=circuit.Qmin_bus[0, :],
-                                      Qmax=circuit.Qmax_bus[0, :],
+                                      Qmin=Qmin,
+                                      Qmax=Qmax,
                                       tol=options.tolerance,
                                       max_it=options.max_iter,
                                       control_q=options.control_Q,
@@ -303,7 +302,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                           voltage_solution, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
-                          pq, pv, vd, pqpv, logger=bs.Logger()) -> "PowerFlowResults":
+                          pq, pv, vd, pqpv, Qmin, Qmax, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -363,6 +362,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                          pv=pv,
                          ref=vd,
                          pqpv=pqpv,
+                         Qmin=Qmin,
+                         Qmax=Qmax,
                          logger=logger)
 
         if options.distributed_slack:
@@ -388,6 +389,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  pv=pv,
                                  ref=vd,
                                  pqpv=pqpv,
+                                 Qmin=Qmin,
+                                 Qmax=Qmax,
                                  logger=logger)
 
     # Compute the branches power and the slack buses power
@@ -503,7 +506,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
 
 
 def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
-                     pq, pv, vd, pqpv,
+                     pq, pv, vd, pqpv, Qmin, Qmax,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be used instead.
@@ -534,6 +537,8 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, Yloadbus, ma, thet
                                     pv=pv,
                                     vd=vd,
                                     pqpv=pqpv,
+                                    Qmin=Qmin,
+                                    Qmax=Qmax,
                                     logger=logger)
 
     # did it worked?
@@ -681,6 +686,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     pv=calculation_input.pv,
                     vd=calculation_input.vd,
                     pqpv=calculation_input.pqpv,
+                    Qmin=calculation_input.Qmin_bus[:, 0],
+                    Qmax=calculation_input.Qmax_bus[:, 0],
                     options=options,
                     logger=logger
                 )
