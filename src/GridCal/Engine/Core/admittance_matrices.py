@@ -35,7 +35,8 @@ def compute_connectivity(branch_active, Cf_, Ct_):
     return Cf.tocsc(), Ct.tocsc()
 
 
-def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t, tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
+def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
+                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
     :param R: array of branch resistance (p.u.)

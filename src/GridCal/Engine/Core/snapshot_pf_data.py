@@ -479,7 +479,7 @@ class SnapshotData:
         -------------------------------------------------
 
         Indices where each control goes:
-        mismatch  →  |  ∆Pf	Qf	Q@f Q@t	∆Qt
+        mismatch  →  |  ∆Pf	Qf	Qf  Qt	∆Qt
         variable  →  |  Ɵsh	Beq	m	m	Beq
         Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
         ------------------------------------
