@@ -5812,6 +5812,10 @@ class MainGUI(QMainWindow):
                 import GridCal.Engine.Core.Compilers.circuit_to_bentayga as ben
                 self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
 
+            elif engine == bs.EngineType.NewtonPA:
+                import GridCal.Engine.Core.Compilers.circuit_to_newton_pa as ne
+                self.calculation_inputs_to_display = ne.get_snapshots_from_newtonpa(self.circuit)
+
             else:
                 # fallback to gridcal
                 numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)

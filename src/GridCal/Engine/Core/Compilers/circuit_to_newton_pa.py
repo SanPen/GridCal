@@ -536,13 +536,13 @@ class FakeAdmittances:
         self.Yt = None
 
 
-def get_snapshots_from_bentayga(circuit: MultiCircuit):
+def get_snapshots_from_newtonpa(circuit: MultiCircuit):
 
     from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 
     npaCircuit = to_newton_pa(circuit, time_series=False)
 
-    npa_data_lst = npa.compileAt(npaCircuit, t=0)
+    npa_data_lst = npa.compileAt(npaCircuit, t=0).splitIntoIslands()
 
     data_lst = list()
 
@@ -563,43 +563,52 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
                             sbase=0,
                             ntime=1)
 
+        conn = npa_data.getConnectivity()
+        inj = npa_data.getInjections()
+        tpes = npa_data.getTypes(inj.S0)
+        adm = npa_data.getAdmittances(conn)
+        lin = npa_data.getLinearMatrices(conn)
+        series_adm = npa_data.getSeriesAdmittances(conn)
+        fd_adm = npa_data.getFastDecoupledAdmittances(conn, tpes)
+        qlim = npa_data.getQLimits()
+
         data.Vbus_ = npa_data.Vbus.reshape(-1, 1)
-        data.Sbus_ = npa_data.Sbus.reshape(-1, 1)
-        data.Ibus_ = npa_data.Ibus
+        data.Sbus_ = inj.S0.reshape(-1, 1)
+        data.Ibus_ = inj.I0.reshape(-1, 1)
         data.branch_data.branch_names = np.array(npa_data.branch_data.names)
-        data.branch_data.tap_f = npa_data.branch_data.virtual_tap_f
-        data.branch_data.tap_t = npa_data.branch_data.virtual_tap_t
+        data.branch_data.tap_f = npa_data.branch_data.vtap_f
+        data.branch_data.tap_t = npa_data.branch_data.vtap_t
 
         data.bus_data.bus_names = np.array(npa_data.bus_data.names)
 
         data.Admittances = FakeAdmittances()
-        data.Admittances.Ybus = npa_data.admittances.Ybus
-        data.Admittances.Yf = npa_data.admittances.Yf
-        data.Admittances.Yt = npa_data.admittances.Yt
+        data.Admittances.Ybus = adm.Ybus
+        data.Admittances.Yf = adm.Yf
+        data.Admittances.Yt = adm.Yt
 
-        data.Bbus_ = npa_data.linear_admittances.Bbus
-        data.Bf_ = npa_data.linear_admittances.Bf
+        data.Bbus_ = lin.Bbus
+        data.Bf_ = lin.Bf
 
-        data.Yseries_ = npa_data.split_admittances.Yseries
-        data.Yshunt_ = npa_data.split_admittances.Yshunt
+        data.Yseries_ = series_adm.Yseries
+        data.Yshunt_ = series_adm.Yshunt
 
-        data.B1_ = npa_data.fast_decoupled_admittances.B1
-        data.B2_ = npa_data.fast_decoupled_admittances.B2
+        data.B1_ = fd_adm.B1
+        data.B2_ = fd_adm.B2
 
-        data.Cf_ = npa_data.Cf
-        data.Ct_ = npa_data.Ct
+        data.Cf_ = conn.Cf
+        data.Ct_ = conn.Ct
 
-        data.bus_data.bus_types = [x.value for x in npa_data.bus_data.bus_types]
-        data.pq_ = npa_data.bus_types_data.pq
-        data.pv_ = npa_data.bus_types_data.pv
-        data.vd_ = npa_data.bus_types_data.vd
-        data.pqpv_ = npa_data.bus_types_data.pqpv
+        data.bus_data.bus_types = tpes.types
+        data.pq_ = tpes.pq
+        data.pv_ = tpes.pv
+        data.vd_ = tpes.vd
+        data.pqpv_ = tpes.no_slack
 
         data.original_bus_idx = npa_data.bus_data.original_indices
         data.original_branch_idx = npa_data.branch_data.original_indices
 
-        data.Qmax_bus_ = npa_data.Qmax_bus
-        data.Qmin_bus_ = npa_data.Qmin_bus
+        data.Qmax_bus_ = qlim.qmax_bus
+        data.Qmin_bus_ = qlim.qmin_bus
 
         data.iPfsh = npa_data.control_indices.iPfsh
         data.iQfma = npa_data.control_indices.iQfma
@@ -609,8 +618,8 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.iQtma = npa_data.control_indices.iQtma
         data.iPfdp = npa_data.control_indices.iPfdp
         data.iVscL = npa_data.control_indices.iVscL
-        data.VfBeqbus = npa_data.control_indices.iVfBeqBus
-        data.Vtmabus = npa_data.control_indices.iVtmaBus
+        # data.VfBeqbus = npa_data.control_indices.iVfBeqBus
+        # data.Vtmabus = npa_data.control_indices.iVtmaBus
 
         data_lst.append(data)
 
