@@ -190,15 +190,43 @@ def dP_dVm_simp(Cf, Yf, V, tap_mod, R, X, F, T):
     for i in range(m):
         k = F[i]
         m = T[i]
-        mat[i, k] = vm2[k] * t2[k] * g[i] + Pbr[i]
-        mat[i, m] = - vm2[k] / vm[m] * t2[k] * g[i] + Pbr[i]
+        mat[i, k] = vm2[k] * tap_mod[k] * g[i] + Pbr[i]
+        mat[i, m] = - vm2[k] / vm[m] * tap_mod[k] * g[i] + Pbr[i]
+
+    return mat
+
+
+def dPf_dVm_monticelli(m, n, V, F, T, ys, ysh, tap_mod, tap_angle):
+    """
+    According to monticelli's book (page 269)
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
+    vm = np.abs(V)
+    va = np.angle(V)
+    t2 = np.power(tap_mod, 2)
+    gs = ys.real
+    bs = ys.imag
+    gsh = ysh.real / 2
+    mat = np.zeros((m, n))
+
+    for k in range(m):
+        i = F[k]
+        j = T[k]
+        va_ij = va[i] - va[j] + tap_angle[k]
+        mat[k, i] = - vm[j] * tap_mod[k] * (gs[k] * cos(va_ij) + bs[k] * sin(va_ij)) + 2 * gs[k] * vm[i] * t2[k]
+        mat[k, j] = - vm[i] * tap_mod[k] * (gs[k] * cos(va_ij) + bs[k] * sin(va_ij))
 
     return mat
 
 
 def dPf_dVa(Cf, Y, V, F, T):
     """
-    Acording to antonio exposito's book
+    According to antonio exposito's book
     :param Cf:
     :param Y:
     :param V:
@@ -224,7 +252,7 @@ def dPf_dVa(Cf, Y, V, F, T):
     return mat
 
 
-def dPf_dVm(Cf, Y, V, F, T):
+def dPf_dVm(Cf, Y, V, F, T, gs, gsh, tap_mod, tap_angle):
     """
     Acording to antonio exposito's book
     :param Cf:
@@ -239,15 +267,16 @@ def dPf_dVm(Cf, Y, V, F, T):
     B = Y.imag
     vm = np.abs(V)
     va = np.angle(V)
+    t2 = np.power(tap_mod, 2)
 
     mat = np.zeros((m, n))
 
     for k in range(m):
         i = F[k]
         j = T[k]
-        va_ij = va[i] - va[j]
-        mat[k, i] = vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij)) - 2 * G[i, j] * vm[i]
-        mat[k, j] = vm[i] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
+        va_ij = va[i] - va[j] + tap_angle[k]
+        mat[k, i] = vm[j] * tap_mod[k] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij)) - 2 * G[i, j] * vm[i] * t2[k]
+        mat[k, j] = vm[i] * tap_mod[k] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
 
     return mat
 
@@ -280,7 +309,7 @@ def dQf_dVa(Cf, Y, V, F, T):
     return mat
 
 
-def dQf_dVm(Cf, Y, V, F, T, b):
+def dQf_dVm(Cf, Y, V, F, T, bs, bsh):
     """
     Acording to antonio exposito's book
     :param Cf:
@@ -302,7 +331,7 @@ def dQf_dVm(Cf, Y, V, F, T, b):
         i = F[k]
         j = T[k]
         va_ij = va[i] - va[j]
-        mat[k, i] = vm[j] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij)) + 2 * vm[i] * (B[i, j] - b[k])
+        mat[k, i] = vm[j] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij)) + 2 * vm[i] * (bsh[k] - bs[k])
         mat[k, j] = vm[i] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij))
 
     return mat
@@ -310,59 +339,46 @@ def dQf_dVm(Cf, Y, V, F, T, b):
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    import GridCal.Engine as gc
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
 
-    Y = np.array([[10.958904-25.997397j, -3.424658+7.534247j, -3.424658+7.534247j, 0.000000+0.000000j, -4.109589+10.958904j],
-                  [-3.424658+7.534247j, 11.672080-26.060948j, -4.123711+9.278351j, 0.000000+0.000000j, -4.123711+9.278351j],
-                  [-3.424658+7.534247j, -4.123711+9.278351j, 10.475198-23.119061j, -2.926829+6.341463j, 0.000000+0.000000j],
-                  [0.000000+0.000000j, 0.000000+0.000000j, -2.926829+6.341463j, 7.050541-15.594814j, -4.123711+9.278351j],
-                  [-4.109589+10.958904j, -4.123711+9.278351j, 0.000000+0.000000j, -4.123711+9.278351j, 12.357012-29.485605j]])
-    Y = csc_matrix(Y)
-
-    Yf = np.array([[-3.424658+7.534247j, 0.000000+0.000000j, 3.424658-7.524247j, 0.000000+0.000000j, 0.000000+0.000000j],
-                   [0.000000+0.000000j, 0.000000+0.000000j, -2.926829+6.341463j, 2.926829-6.326463j, 0.000000+0.000000j],
-                   [0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, -4.123711+9.278351j, 4.123711-9.268351j],
-                   [0.000000+0.000000j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j, 4.123711-9.268351j],
-                   [-4.109589+10.958904j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, 4.109589-10.948904j],
-                   [-3.424658+7.534247j, 3.424658-7.524247j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j],
-                   [0.000000+0.000000j, 4.123711-9.268351j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j]])
-    Yf = csc_matrix(Yf)
-
-    Cf = np.array([[0.000000, 0.000000, 1.000000, 0.000000, 0.000000],
-                   [0.000000, 0.000000, 0.000000, 1.000000, 0.000000],
-                   [0.000000, 0.000000, 0.000000, 0.000000, 1.000000],
-                   [0.000000, 0.000000, 0.000000, 0.000000, 1.000000],
-                   [0.000000, 0.000000, 0.000000, 0.000000, 1.000000],
-                   [0.000000, 1.000000, 0.000000, 0.000000, 0.000000],
-                   [0.000000, 1.000000, 0.000000, 0.000000, 0.000000]])
-    Cf = csc_matrix(Cf)
-
-    V = np.array([1. + 0.j, 0.95446473-0.04008461j, 0.9540054 -0.03938094j, 0.93144092-0.0594139j, 0.95234448-0.0447275j])
-    Vc = np.conj(V)
-    E = V / np.abs(V)
-
-    F = np.array([2, 3, 4, 4, 4, 1, 1])
-    T = np.array([0, 2, 3, 1, 0, 0, 2])
-
-    R = np.array([0.05, 0.06, 0.04, 0.04, 0.03, 0.05, 0.04])
-    X = np.array([0.11, 0.13, 0.09, 0.09, 0.08, 0.11, 0.09])
-    bsh = np.array([0.02, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02])
-    tap_mod = np.array([1., 1., 1., 1., 1., 1., 1.])
+    grid = gc.FileOpen(fname).open()
+    nc = gc.compile_snapshot_opf_circuit(grid)
+    ys = 1. / (nc.branch_data.R + 1j * nc.branch_data.X)
+    ysh = nc.branch_data.G + 1j * nc.branch_data.B
+    F = nc.branch_data.F
+    T = nc.branch_data.T
+    tap_mod = nc.branch_data.m[:, 0]
+    tap_angle = nc.branch_data.theta[:, 0]
 
     # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
-    dSf_dVa, dSf_dVm = dSf_dV(Yf, V, F, Cf, Vc, E)
-    dPf_dVa_ = dPf_dVa(Cf, Y, V, F, T)
-    dPf_dVm_ = dPf_dVm(Cf, Y, V, F, T)
-    dQf_dVa_ = dQf_dVa(Cf, Y, V, F, T)
-    dQf_dVm_ = dQf_dVm(Cf, Y, V, F, T, bsh/2)
+    dSf_dVa, dSf_dVm = dSf_dV(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
 
-    print('dP/dVa matpower\n', dSf_dVa.real.toarray())
-    print('dP/dVa\n', dPf_dVa_)
+    dPf_dVa_ = dPf_dVa(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=nc.branch_data.F, T=nc.branch_data.T)
+    # dPf_dVm_ = dPf_dVm(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=nc.branch_data.F, T=nc.branch_data.T, gs=ys.real, gsh=ysh.real, tap_mod=nc.branch_data.m[:, 0], tap_angle=nc.branch_data.theta[:, 0])
+    # dPf_dVm_ = dP_dVm_simp(Cf=nc.Cf, Yf=nc.Yf, V=nc.Vbus, tap_mod=nc.branch_data.m[:, 0], R=nc.branch_data.R, X=nc.branch_data.X, F=nc.branch_data.F, T=nc.branch_data.T)
+    dPf_dVm_ = dPf_dVm_monticelli(m=nc.nbr, n=nc.nbus, V=nc.Vbus, F=F, T=T, ys=ys, ysh=ysh, tap_mod=tap_mod, tap_angle=tap_angle)
+    dQf_dVa_ = dQf_dVa(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=nc.branch_data.F, T=nc.branch_data.T)
+    dQf_dVm_ = dQf_dVm(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=nc.branch_data.F, T=nc.branch_data.T, bs=ys.imag, bsh=ysh.imag)
+
+    # print('dPf/dVa matpower\n', dSf_dVa.real.toarray())
+    # print('dPf/dVa\n', dPf_dVa_)
+    print('diff\n', dSf_dVa.real.toarray() - dPf_dVa_)
+    print('err\n', np.max(np.abs(dSf_dVa.real.toarray() - dPf_dVa_)))
     print('_' * 100)
-    print('dP/dVm matpower\n', dSf_dVm.real.toarray())
-    print('dP/dVm\n', dPf_dVm_)
+
+    print('dPf/dVm matpower\n', dSf_dVm.real.toarray())
+    print('dPf/dVm\n', dPf_dVm_)  # not the same
+    print('diff\n', dSf_dVm.real.toarray() - dPf_dVm_)
+    print('err\n', np.max(np.abs(dSf_dVm.real.toarray() - dPf_dVm_)))
     print('_' * 100)
-    print('dQ/dVa matpower\n', dSf_dVa.imag.toarray())
-    print('dQ/dVa\n', dQf_dVa_)
-    print('_' * 100)
-    print('dQ/dVm matpower\n', dSf_dVm.imag.toarray())
-    print('dQ/dVm\n', dQf_dVm_)
+
+    # print('dQf/dVa matpower\n', dSf_dVa.imag.toarray())
+    # print('dQf/dVa\n', dQf_dVa_)
+    # print('err\n', np.max(np.abs(dSf_dVa.imag.toarray() - dQf_dVa_)))
+    # print('_' * 100)
+    #
+    # print('dQf/dVm matpower\n', dSf_dVm.imag.toarray())
+    # print('dQf/dVm\n', dQf_dVm_)  # not the same
+    # print('err\n', np.max(np.abs(dSf_dVm.imag.toarray() - dQf_dVm_)))
