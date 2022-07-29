@@ -613,9 +613,9 @@ class TimeSeries(DriverTemplate):
 
         return results
 
-    def run_newton_pa(self):
+    def run_newton_pa(self, time_indices=None):
 
-        res = newton_pa_pf(self.grid, self.options, time_series=True)
+        res = newton_pa_pf(self.grid, self.options, time_series=True, tidx=time_indices)
 
         results = TimeSeriesResults(n=self.grid.get_bus_number(),
                                     m=self.grid.get_branch_number_wo_hvdc(),
@@ -626,7 +626,7 @@ class TimeSeries(DriverTemplate):
                                     transformer_names=[],
                                     hvdc_names=res.hvdc_names,
                                     bus_types=res.bus_types,
-                                    time_array=self.grid.time_profile)
+                                    time_array=self.grid.time_profile[time_indices])
 
         results.voltage = res.voltage
         results.S = res.Scalc
@@ -665,7 +665,7 @@ class TimeSeries(DriverTemplate):
         time_indices = np.arange(self.start_, self.end_)
 
         if self.engine == bs.EngineType.GridCal:
-            self.results = self.run_single_thread(time_indices)
+            self.results = self.run_single_thread(time_indices=time_indices)
 
         elif self.engine == bs.EngineType.Newton:
             pass
@@ -676,6 +676,6 @@ class TimeSeries(DriverTemplate):
 
         elif self.engine == bs.EngineType.NewtonPA:
 
-            self.results = self.run_newton_pa()
+            self.results = self.run_newton_pa(time_indices=time_indices)
 
         self.elapsed = time.time() - a

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
-
+from typing import List, Dict
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -58,7 +58,7 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
-def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1):
+def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None):
     """
     Convert the buses to Newton buses
     :param circuit: GridCal circuit
@@ -81,7 +81,7 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
                                   nominal_voltage=bus.Vnom)
 
         if time_series and ntime > 1:
-            elm.active = bus.active_prof.astype(BINT)
+            elm.active = bus.active_prof.astype(BINT) if tidx is None else bus.active_prof.astype(BINT)[tidx]
         else:
             elm.active = np.ones(ntime, dtype=BINT) * int(bus.active)
 
@@ -91,7 +91,7 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
     return bus_dict
 
 
-def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -113,9 +113,9 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
                         Q=elm.Q)
 
         if time_series:
-            load.active = elm.active_prof.astype(BINT)
-            load.P = elm.P_prof
-            load.Q = elm.Q_prof
+            load.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            load.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
+            load.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
@@ -123,7 +123,7 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
 
 
 def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
-                              time_series: bool, ntime=1):
+                              time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -144,16 +144,16 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
                                                Q=elm.Q)
 
         if time_series:
-            pe_inj.active = elm.active_prof.astype(BINT)
-            pe_inj.P = elm.P_prof
-            pe_inj.Q = elm.Q_prof
+            pe_inj.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            pe_inj.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
+            pe_inj.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
         else:
             pe_inj.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
         npa_circuit.addPowerElectronicsInjection(pe_inj)
 
 
-def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -174,16 +174,16 @@ def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_
                            B=elm.B)
 
         if time_series:
-            sh.active = elm.active_prof.astype(BINT)
-            sh.G = elm.G_prof
-            sh.B = elm.B_prof
+            sh.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            sh.G = elm.G_prof if tidx is None else elm.G_prof[tidx]
+            sh.B = elm.B_prof if tidx is None else elm.B_prof[tidx]
         else:
             sh.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
         npa_circuit.addCapacitor(sh)
 
 
-def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -210,9 +210,9 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
         gen.cost_b = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof.astype(BINT)
-            gen.P = elm.P_prof
-            gen.Vset = elm.Vset_prof
+            gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
+            gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
@@ -221,7 +221,7 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
         npa_circuit.addGenerator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -254,9 +254,9 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
         gen.cost_b = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof.astype(BINT)
-            gen.P = elm.P_prof
-            gen.Vset = elm.Vset_prof
+            gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
+            gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
@@ -265,7 +265,7 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
         npa_circuit.addBattery(gen)
 
 
-def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -293,14 +293,16 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                          monitor_contingency_default=elm.contingency_enabled)
 
         if time_series:
-            lne.active = elm.active_prof.astype(BINT)
-            lne.rates = elm.rate_prof
-            lne.contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            lne.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
+
+            contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
 
         npa_circuit.addAcLine(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -329,16 +331,18 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
                                     tap=elm.tap_module,
                                     phase=elm.angle)
         if time_series:
-            tr2.active = elm.active_prof.astype(BINT)
-            tr2.rates = elm.rate_prof
-            tr2.contingency_rates = elm.rate_prof * elm.contingency_factor
-            tr2.tap = elm.tap_module_prof
-            tr2.phase = elm.angle_prof
+            contingency_rates = elm.rate_prof * elm.contingency_factor
+
+            tr2.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            tr2.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
+            tr2.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
+            tr2.tap = elm.tap_module_prof if tidx is None else elm.tap_module_prof[tidx]
+            tr2.phase = elm.angle_prof if tidx is None else elm.angle_prof[tidx]
 
         npa_circuit.addTransformers2wFul(tr2)
 
 
-def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -379,14 +383,15 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                                 monitor_contingency_default=elm.contingency_enabled)
 
         if time_series:
-            vsc.active = elm.active_prof.astype(BINT)
-            vsc.rates = elm.rate_prof
-            vsc.contingency_rates = elm.rate_prof * elm.contingency_factor
+            vsc.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            vsc.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
+            contingency_rates = elm.rate_prof * elm.contingency_factor
+            vsc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
 
         npa_circuit.addAcDcConverter(vsc)
 
 
-def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -411,14 +416,16 @@ def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
                          )
 
         if time_series:
-            lne.active = elm.active_prof.astype(BINT)
-            lne.rates = elm.rate_prof
-            lne.contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            lne.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
+
+            contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
 
         npa_circuit.addDcLine(lne)
 
 
-def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1):
+def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -487,12 +494,15 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         # hvdc.contingency_enabled = elm.contingency_enabled
 
         if time_series:
-            hvdc.active = elm.active_prof.astype(BINT)
-            hvdc.rates = elm.rate_prof
-            hvdc.Vf = elm.Vset_f_prof
-            hvdc.Vt = elm.Vset_t_prof
-            hvdc.contingency_rates = elm.rate_prof * elm.contingency_factor
-            hvdc.angle_droop = elm.angle_droop_prof
+            hvdc.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            hvdc.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
+            hvdc.Vf = elm.Vset_f_prof if tidx is None else elm.Vset_f_prof[tidx]
+            hvdc.Vt = elm.Vset_t_prof if tidx is None else elm.Vset_t_prof[tidx]
+
+            contingency_rates = elm.rate_prof * elm.contingency_factor
+            hvdc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
+
+            hvdc.angle_droop = elm.angle_droop_prof if tidx is None else elm.angle_droop_prof[tidx]
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
@@ -500,30 +510,35 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         npa_circuit.addHvdcLine(hvdc)
 
 
-def to_newton_pa(circuit: MultiCircuit, time_series: bool):
+def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = None):
     """
     Convert GridCal circuit to Newton
     :param circuit: MultiCircuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param tidx: list of time indices
     :return: npa.HybridCircuit instance
     """
-    ntime = circuit.get_time_number() if time_series else 1
-    if ntime == 0:
-        ntime = 1
+
+    if tidx is None:
+        ntime = circuit.get_time_number() if time_series else 1
+        if ntime == 0:
+            ntime = 1
+    else:
+        ntime = len(tidx)
 
     npaCircuit = npa.HybridCircuit(uuid=circuit.idtag, name=circuit.name, time_steps=ntime)
 
-    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime)
-    add_npa_loads(circuit, npaCircuit, bus_dict, time_series, ntime)
-    add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime)
-    add_npa_shunts(circuit, npaCircuit, bus_dict, time_series, ntime)
-    add_npa_generators(circuit, npaCircuit, bus_dict, time_series, ntime)
-    get_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime)
-    add_npa_line(circuit, npaCircuit, bus_dict, time_series, ntime)
-    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime)
-    get_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime)
-    get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime)
-    get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime)
+    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx)
+    add_npa_loads(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_npa_shunts(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_npa_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_npa_line(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
 
     return npaCircuit
 
@@ -671,19 +686,21 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
                                 control_q_mode=q_control_dict[opt.control_Q])
 
 
-def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False):
+def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None):
     """
     Newton power flow
     :param circuit: MultiCircuit instance
     :param opt: Power Flow Options
     :param time_series: Compile with GridCal time series?
+    :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit, time_series=time_series)
+    npaCircuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
 
     pf_options = get_newton_pa_pf_options(opt)
 
     if time_series:
+        # it is already sliced to the relevant time indices
         time_indices = [i for i in range(circuit.get_time_number())]
         n_threads = 0  # max threads
     else:

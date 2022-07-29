@@ -30,6 +30,9 @@ from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, Branch
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling
+import GridCal.Engine.basic_structures as bs
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
 
 
 class TimeSeriesClustering(TimeSeries):
@@ -80,6 +83,13 @@ class TimeSeriesClustering(TimeSeries):
         X = X[:, time_indices].real.T
         self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
 
-        self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
+        if self.engine == bs.EngineType.GridCal:
+            self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
+
+        elif self.engine == bs.EngineType.NewtonPA:
+            self.results = self.run_newton_pa(time_indices=self.sampled_time_idx)
+
+        else:
+            self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
 
         self.elapsed = time.time() - a
