@@ -93,7 +93,7 @@ def dSf_dV_fast(Yf, V, Vc, E, F, Cf):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def dSf_dV(Yf, V, F, Cf, Vc, E):
+def dSf_dV_matpower(Yf, V, F, Cf, Vc, E):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
@@ -438,7 +438,7 @@ def dPf_dVa_exposito(Cf, Y, V, F, T):
     return mat
 
 
-def dPf_dVm_exposito(Cf, Y, V, F, T):
+def dPf_dVm_exposito(Cf, Y, V, F, T, gs, gsh):
     """
     Acording to antonio exposito's book
     :param Cf:
@@ -460,7 +460,7 @@ def dPf_dVm_exposito(Cf, Y, V, F, T):
         i = F[k]
         j = T[k]
         va_ij = va[i] - va[j]
-        mat[k, i] = vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij)) - 2 * G[i, j] * vm[i]
+        mat[k, i] = vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij)) - 2 * (G[i, j]) * vm[i]
         mat[k, j] = vm[i] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
 
     return mat
@@ -494,7 +494,7 @@ def dQf_dVa_exposito(Cf, Y, V, F, T):
     return mat
 
 
-def dQf_dVm_exposito(Cf, Y, V, F, T, bsh):
+def dQf_dVm_exposito(Cf, Y, V, F, T, bs, bsh):
     """
     Acording to antonio exposito's book
     :param Cf:
@@ -533,13 +533,13 @@ def matpower_to_gomez_exposito_comparison(fname):
     tap_angle = nc.branch_data.theta[:, 0]
 
     # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
-    dSf_dVa, dSf_dVm = dSf_dV(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
+    dSf_dVa, dSf_dVm = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
 
     # Gomez exposito derivatives
     dPf_dVa_exp = dPf_dVa_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
-    dPf_dVm_exp = dPf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
+    dPf_dVm_exp = dPf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, gs=ys.real, gsh=nc.branch_data.G / 2)
     dQf_dVa_exp = dQf_dVa_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
-    dQf_dVm_exp = dQf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, bsh=nc.branch_data.B / 2)
+    dQf_dVm_exp = dQf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, bs=ys.imag, bsh=nc.branch_data.B / 2)
 
     print('dPf/dVa matpower\n', dSf_dVa.real.toarray())
     print('dPf/dVa\n', dPf_dVa_exp)
@@ -579,9 +579,9 @@ def numerical_to_gomez_exposito_comparison(fname):
 
     # Gomez exposito derivatives
     dPf_dVa_2 = dPf_dVa_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
-    dPf_dVm_2 = dPf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
+    dPf_dVm_2 = dPf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, gs=ys.real, gsh=nc.branch_data.G / 2)
     dQf_dVa_2 = dQf_dVa_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T)
-    dQf_dVm_2 = dQf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, bsh=nc.branch_data.B / 2)
+    dQf_dVm_2 = dQf_dVm_exposito(Cf=nc.Cf, Y=nc.Ybus, V=nc.Vbus, F=F, T=T, bs=ys.imag, bsh=nc.branch_data.B / 2)
 
     # print('dPf/dVa exposito\n', dPf_dVa_2)
     # print('dPf/dVa\n', dPf_dVa_)
@@ -662,7 +662,7 @@ def matpower_to_monticelli_comparison(fname):
     tap_angle = nc.branch_data.theta[:, 0]
 
     # Matpower derivatives
-    dSf_dVa, dSf_dVm = dSf_dV(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
+    dSf_dVa, dSf_dVm = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
     dPf_dVm_mat, dQf_dVm_mat = dSf_dVm.real.toarray(), dSf_dVm.imag.toarray()
     dPf_dVa_mat, dQf_dVa_mat = dSf_dVa.real.toarray(), dSf_dVa.imag.toarray()
 
@@ -707,7 +707,7 @@ def matpower_to_numerical_comparison(fname):
     tap_angle = nc.branch_data.theta[:, 0]
 
     # Matpower derivatives
-    dSf_dVa, dSf_dVm = dSf_dV(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
+    dSf_dVa, dSf_dVm = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
     dPf_dVm_mat, dQf_dVm_mat = dSf_dVm.real.toarray(), dSf_dVm.imag.toarray()
     dPf_dVa_mat, dQf_dVa_mat = dSf_dVa.real.toarray(), dSf_dVa.imag.toarray()
 
@@ -743,13 +743,15 @@ def matpower_to_numerical_comparison(fname):
 
 if __name__ == '__main__':
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal'
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 bus.raw'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 bus.raw'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 bus.raw'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus v2.raw'
 
-    # matpower_to_gomez_exposito_comparison(fname)
+    matpower_to_gomez_exposito_comparison(fname)
     # numerical_to_gomez_exposito_comparison(fname)
     # numerical_to_monticelli_comparison(fname)
     # matpower_to_monticelli_comparison(fname)
-    matpower_to_numerical_comparison(fname)
+    # matpower_to_numerical_comparison(fname)
 
 
