@@ -1,0 +1,200 @@
+// *********************************************************************************************************************
+// Flow expressions and derivatives in real numbers
+// *********************************************************************************************************************
+
+syms Vm_f Vm_t Va_f Va_t Yf_kf Yf_kt Gf_kt Gf_kf Bf_kf Bf_kt Gt_kf Bt_kf Gt_kt Bt_kt
+
+// K: branch index
+// f: from bus index
+// t: to bus index
+
+Yf_kf = Gf_kf + 1j * Bf_kf
+Yf_kt = Gf_kt + 1j * Bf_kt
+V_f = Vm_f * (cos(Va_f) + 1j * sin(Va_f))
+V_t = Vm_t * (cos(Va_t) + 1j * sin(Va_t))
+
+// Power flow from in complex values
+Sf = V_f * conj(Yf_kf * V_f + Yf_kt * V_t)
+
+// expanding the complex magnitudes
+Sf =
+Vm_f * (cos(Va_f) + 1j * sin(Va_f)) * ( + Gf_kf * Vm_f * cos(Va_f)
+                                        - 1j * Gf_kf * Vm_f * sin(Va_f)
+                                        - 1j * Bf_kf * Vm_f * cos(Va_f)
+                                        - 1j * Bf_kf * Vm_f * sin(Va_f)
+                                        + Gf_kt * Vm_t * cos(Va_t)
+                                        - 1j * Gf_kt * Vm_t * sin(Va_t)
+                                        - 1j * Bf_kt * Vm_t * cos(Va_t)
+                                        - 1j * Bf_kt * Vm_t * sin(Va_t))
+
+// after expanding all the terms
+Sf =
++ Gf_kf * Vm_f^2 * cos(Va_f)^2
+- Bf_kf * Vm_f^2 * cos(Va_f)^2 * 1j
++ Bf_kf * Vm_f^2 * sin(Va_f)^2
++ Gf_kf * Vm_f^2 * sin(Va_f)^2
++ Bf_kf * Vm_f^2 * cos(Va_f) * sin(Va_f)  *
+- Bf_kf * Vm_f^2 * cos(Va_f) * sin(Va_f)  *  1j
+- Bf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t)  *  1j
++ Gf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t)
+- Bf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t)  *  1j
++ Bf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f)
+- Gf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t)  *  1j
++ Gf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f)  *  1j
++ Bf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t)
++ Gf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t)
+
+dSf/dVm_f =
++ 2 * Gf_kf * Vm_f * cos(Va_f)^2
+- Bf_kf * Vm_f * cos(Va_f)^2 * 2i
++ 2 * Bf_kf * Vm_f * sin(Va_f)^2
++ 2 * Gf_kf * Vm_f * sin(Va_f)^2
+- Bf_kt * Vm_t * cos(Va_f) * cos(Va_t) * 1i
++ Gf_kt * Vm_t * cos(Va_f) * cos(Va_t)
++ 2 * Bf_kf * Vm_f * cos(Va_f) * sin(Va_f)
++ 2 * Bf_kf * Vm_f * cos(Va_f) * sin(Va_f) * 1i
+- Bf_kt * Vm_t * cos(Va_f) * sin(Va_t) * 1i
++ Bf_kt * Vm_t * cos(Va_t) * sin(Va_f)
+- Gf_kt * Vm_t * cos(Va_f) * sin(Va_t) * 1i
++ Gf_kt * Vm_t * cos(Va_t) * sin(Va_f) * 1i
++ Bf_kt * Vm_t * sin(Va_f) * sin(Va_t)
++ Gf_kt * Vm_t * sin(Va_f) * sin(Va_t)
+
+dPf/dVm_f = 
++ 2 * Bf_kf * Vm_f 
++ 2 * Gf_kf * Vm_f 
+- 2 * Bf_kf * Vm_f * cos(Va_f)^2 
++ Gf_kt * Vm_t * cos(Va_f) * cos(Va_t) 
++ 2 * Bf_kf * Vm_f * cos(Va_f) * sin(Va_f) 
++ Bf_kt * Vm_t * cos(Va_t) * sin(Va_f) 
++ Bf_kt * Vm_t * sin(Va_f) * sin(Va_t) 
++ Gf_kt * Vm_t * sin(Va_f) * sin(Va_t)
+
+dQf/dVm_f =
++ 2 * Bf_kf * Vm_f * cos(Va_f) * sin(Va_f)
+- Bf_kt * Vm_t * cos(Va_f) * cos(Va_t)
+- 2 * Bf_kf * Vm_f * cos(Va_f)^2
+- Bf_kt * Vm_t * cos(Va_f) * sin(Va_t)
+- Gf_kt * Vm_t * cos(Va_f) * sin(Va_t)
++ Gf_kt * Vm_t * cos(Va_t) * sin(Va_f)
+
+
+dSf/dVm_t =
++ Gf_kt * Vm_f * cos(Va_f) * cos(Va_t)
+- Bf_kt * Vm_f * cos(Va_f) * cos(Va_t) * 1i
+- Bf_kt * Vm_f * cos(Va_f) * sin(Va_t) * 1i
++ Bf_kt * Vm_f * cos(Va_t) * sin(Va_f)
+- Gf_kt * Vm_f * cos(Va_f) * sin(Va_t) * 1i
++ Gf_kt * Vm_f * cos(Va_t) * sin(Va_f) * 1i
++ Bf_kt * Vm_f * sin(Va_f) * sin(Va_t)
++ Gf_kt * Vm_f * sin(Va_f) * sin(Va_t)
+
+dSf/dVa_f =
++ Bf_kf * Vm_f^2 * cos(Va_f)^2
+- Bf_kf * Vm_f^2 * cos(Va_f)^2 * 1i
+- Bf_kf * Vm_f^2 * sin(Va_f)^2
++ Bf_kf * Vm_f^2 * sin(Va_f)^2 * 1i
++ 2 * Bf_kf * Vm_f^2 * cos(Va_f) * sin(Va_f)
++ 2 * Bf_kf * Vm_f^2 * cos(Va_f) * sin(Va_f) * 1i
++ Bf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t)
++ Gf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i
++ Bf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t)
++ Bf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) * 1i
++ Gf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t)
+- Gf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f)
++ Bf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i
++ Gf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i
+
+dSf/dVa_t =
++ Bf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) 
+- Gf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
++ Bf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) * 1i 
+- Bf_kt * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
+- Gf_kt * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) 
++ Gf_kt * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) 
+- Bf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) 
+- Gf_kt * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i
+
+------------------------------------------------------------------------------------------------------------------------
+
+// Power flow from in complex numbers
+St = V_t * conj(Yt_kf * V_f + Yt_kt * V_t)
+
+// St expression in real numbers
+St =
+Vm_t * (cos(Va_t) + 1j * sin(Va_t)) * (+ Gt_kf * Vm_f * cos(Va_f)
+                                       - 1j * Gt_kf * Vm_f * sin(Va_f)
+                                       - 1j * Bt_kf * Vm_f * cos(Va_f)
+                                       - 1j * Bt_kf * Vm_f * sin(Va_f)
+                                       + Gt_kt * Vm_t * cos(Va_t)
+                                       - 1j * Gt_kt * Vm_t * sin(Va_t)
+                                       - 1j * Bt_kt * Vm_t * cos(Va_t)
+                                       - 1j * Bt_kt * Vm_t * sin(Va_t))
+
+// expanded St expression
+St = 
++ Gt_kt * Vm_t^2 * cos(Va_t)^2 
+- Bt_kt * Vm_t^2 * cos(Va_t)^2 * 1i 
++ Bt_kt * Vm_t^2 * sin(Va_t)^2 
++ Gt_kt * Vm_t^2 * sin(Va_t)^2 
++ Bt_kt * Vm_t^2 * cos(Va_t) * sin(Va_t) 
+- Bt_kt * Vm_t^2 * cos(Va_t) * sin(Va_t)  *  1i
+- Bt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
++ Gt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) 
++ Bt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) 
+- Bt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) * 1i 
++ Gt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) * 1i 
+- Gt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) * 1i 
++ Bt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) 
++ Gt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t)
+
+dSt/dVm_f =
++ Gt_kf * Vm_t * cos(Va_f) * cos(Va_t) 
+- Bt_kf * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
++ Bt_kf * Vm_t * cos(Va_f) * sin(Va_t) 
+- Bt_kf * Vm_t * cos(Va_t) * sin(Va_f) * 1i 
++ Gt_kf * Vm_t * cos(Va_f) * sin(Va_t) * 1i 
+- Gt_kf * Vm_t * cos(Va_t) * sin(Va_f) * 1i 
++ Bt_kf * Vm_t * sin(Va_f) * sin(Va_t) 
++ Gt_kf * Vm_t * sin(Va_f) * sin(Va_t)
+
+dSt/dVm_t =
++ 2 * Gt_kt * Vm_t * cos(Va_t)^2 
+- Bt_kt * Vm_t * cos(Va_t)^2 * 2i 
++ 2 * Bt_kt * Vm_t * sin(Va_t)^2 
++ 2 * Gt_kt * Vm_t * sin(Va_t)^2 
+- Bt_kf * Vm_f * cos(Va_f) * cos(Va_t) * 1i 
++ Gt_kf * Vm_f * cos(Va_f) * cos(Va_t) 
++ Bt_kf * Vm_f * cos(Va_f) * sin(Va_t) 
+- Bt_kf * Vm_f * cos(Va_t) * sin(Va_f) * 1i 
++ 2 * Bt_kt * Vm_t * cos(Va_t) * sin(Va_t)
+- 2 * Bt_kt * Vm_t * cos(Va_t) * sin(Va_t) * 1i  
++ Gt_kf * Vm_f * cos(Va_f) * sin(Va_t) * 1i 
+- Gt_kf * Vm_f * cos(Va_t) * sin(Va_f) * 1i 
++ Bt_kf * Vm_f * sin(Va_f) * sin(Va_t) 
++ Gt_kf * Vm_f * sin(Va_f) * sin(Va_t)
+
+dSt/dVa_f =
++ Bt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) 
+- Gt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
+- Bt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
++ Bt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) * 1i 
++ Gt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) 
+- Gt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) 
+- Bt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) 
+- Gt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i
+
+dSt/dVa_t =
++ Bt_kt * Vm_t^2 * cos(Va_t)^2 * (1 - 1i) 
+- Bt_kt * Vm_t^2 * sin(Va_t)^2 * (1 - 1i) 
++ 2 * Bt_kt * Vm_t^2 * cos(Va_t) * sin(Va_t)
++ 2 * Bt_kt * Vm_t^2 * cos(Va_t) * sin(Va_t) * 1i  
++ Bt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) 
++ Gt_kf * Vm_f * Vm_t * cos(Va_f) * cos(Va_t) * 1i 
++ Bt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) * 1i 
++ Bt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) 
+- Gt_kf * Vm_f * Vm_t * cos(Va_f) * sin(Va_t) 
++ Gt_kf * Vm_f * Vm_t * cos(Va_t) * sin(Va_f) 
++ Bt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i 
++ Gt_kf * Vm_f * Vm_t * sin(Va_f) * sin(Va_t) * 1i
+
