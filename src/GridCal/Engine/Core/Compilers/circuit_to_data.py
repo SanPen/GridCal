@@ -636,6 +636,14 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[i] = elm.X
         data.B[i] = elm.B
 
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+        data.B0[i] = elm.B0
+
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
+        data.B2[i] = elm.B2
+
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
 
@@ -720,6 +728,16 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.G[ii] = elm.G
         data.B[ii] = elm.B
 
+        data.R0[ii] = elm.R0
+        data.X0[ii] = elm.X0
+        data.G0[ii] = elm.G0
+        data.B0[ii] = elm.B0
+
+        data.R2[ii] = elm.R2
+        data.X2[ii] = elm.X2
+        data.G2[ii] = elm.G2
+        data.B2[ii] = elm.B2
+
         if time_series:
             if opf_results is not None:
                 data.m[ii] = elm.tap_module
@@ -788,6 +806,13 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.R[ii] = elm.R1
         data.X[ii] = elm.X1
+
+        data.R0[ii] = elm.R0
+        data.X0[ii] = elm.X0
+
+        data.R2[ii] = elm.R2
+        data.X2[ii] = elm.X2
+
         data.G0[ii] = elm.G0
         data.Beq[ii] = elm.Beq
         data.m[ii] = elm.m
@@ -882,9 +907,17 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.F[ii] = f
         data.T[ii] = t
 
-        data.R[ii] = elm.Rl
-        data.X[ii] = elm.Xl
-        data.Beq[ii] = elm.Bl
+        data.R[ii] = elm.Rs
+        data.X[ii] = elm.Xs
+
+        data.R0[ii] = elm.Rs0
+        data.X0[ii] = elm.Xs0
+
+        data.R2[ii] = elm.Rs2
+        data.X2[ii] = elm.Xs2
+
+        ysh1 = elm.get_ysh1()
+        data.Beq[ii] = ysh1.imag
 
         data.Pfset[ii] = elm.Pfset
 

@@ -429,7 +429,9 @@ class Transformer2W(EditableDevice):
                  rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
                  tap_module_prof=None, angle_prof=None,
                  contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
+                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -460,10 +462,22 @@ class Transformer2W(EditableDevice):
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
-                                                  'G': GCProp('p.u.', float, 'Total shunt conductance.'),
-                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
+
+                                                  'R': GCProp('p.u.', float, 'Total positive sequence resistance.'),
+                                                  'X': GCProp('p.u.', float, 'Total positive sequence reactance.'),
+                                                  'G': GCProp('p.u.', float, 'Total positive sequence shunt conductance.'),
+                                                  'B': GCProp('p.u.', float, 'Total positive sequence shunt susceptance.'),
+
+                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
+                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
+                                                  'G0': GCProp('p.u.', float, 'Total zero sequence shunt conductance.'),
+                                                  'B0': GCProp('p.u.', float, 'Total zero sequence shunt susceptance.'),
+
+                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
+                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
+                                                  'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
+                                                  'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
@@ -528,6 +542,16 @@ class Transformer2W(EditableDevice):
         self.X = x
         self.G = g
         self.B = b
+
+        self.R0 = r0
+        self.X0 = x0
+        self.G0 = g0
+        self.B0 = b0
+
+        self.R2 = r2
+        self.X2 = x2
+        self.G2 = g2
+        self.B2 = b2
 
         self.mttf = mttf
 

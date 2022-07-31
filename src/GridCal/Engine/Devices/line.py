@@ -230,7 +230,8 @@ class Line(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
+                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -257,9 +258,18 @@ class Line(EditableDevice):
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
-                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
+                                                  'R': GCProp('p.u.', float, 'Total positive sequence resistance.'),
+                                                  'X': GCProp('p.u.', float, 'Total positive sequence reactance.'),
+                                                  'B': GCProp('p.u.', float, 'Total positive sequence shunt susceptance.'),
+
+                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
+                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
+                                                  'B0': GCProp('p.u.', float, 'Total zero sequence shunt susceptance.'),
+
+                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
+                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
+                                                  'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
@@ -293,6 +303,7 @@ class Line(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'temp_oper': 'temp_oper_prof',
                                                          'Cost': 'Cost_prof'})
 
@@ -323,6 +334,14 @@ class Line(EditableDevice):
         self.X = x
         self.B = b
 
+        self.R0 = r0
+        self.X0 = x0
+        self.B0 = b0
+
+        self.R2 = r2
+        self.X2 = x2
+        self.B2 = b2
+
         self.mttf = mttf
 
         self.mttr = mttr
@@ -344,8 +363,11 @@ class Line(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-        self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
+
+        self.contingency_factor = contingency_factor
+        self.contingency_factor_prof = contingency_factor_prof
+
 
         # line type: Line, Transformer, etc...
         self.branch_type = BranchType.Line
@@ -431,12 +453,23 @@ class Line(EditableDevice):
                 Zbase = (Vn * Vn) / Sbase
                 Ybase = 1 / Zbase
 
-                z = obj.z_series() * self.length / Zbase
-                y = obj.y_shunt() * self.length / Ybase
+                z1 = obj.z_series() * self.length / Zbase
+                y1 = obj.y_shunt() * self.length / Ybase
+                self.R = np.round(z1.real, 6)
+                self.X = np.round(z1.imag, 6)
+                self.B = np.round(y1.imag, 6)
 
-                self.R = np.round(z.real, 6)
-                self.X = np.round(z.imag, 6)
-                self.B = np.round(y.imag, 6)
+                z0 = obj.z0_series() * self.length / Zbase
+                y0 = obj.y0_shunt() * self.length / Ybase
+                self.R = np.round(z0.real, 6)
+                self.X = np.round(z0.imag, 6)
+                self.B = np.round(y0.imag, 6)
+
+                z2 = obj.z2_series() * self.length / Zbase
+                y2 = obj.y2_shunt() * self.length / Ybase
+                self.R = np.round(z2.real, 6)
+                self.X = np.round(z2.imag, 6)
+                self.B = np.round(y2.imag, 6)
 
                 # get the rating in MVA = kA * kV
                 self.rate = obj.rating * Vn * np.sqrt(3)

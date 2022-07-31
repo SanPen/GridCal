@@ -28,9 +28,11 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 class UPFC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
-                 rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
+                 rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 rs0=0.0, xs0=0.00001, rp0=0.0, xp0=0.0,
+                 rs2=0.0, xs2=0.00001, rp2=0.0, xp2=0.0):
         """
         Unified Power Flow Converter (UPFC)
         :param bus_from:
@@ -40,9 +42,6 @@ class UPFC(EditableDevice):
         :param active:
         :param rs: series resistance (p.u.)
         :param xs: series reactance (p.u.)
-        :param rl: line resistance (p.u.)
-        :param xl: line reactance (p.u.)
-        :param bl: line shunt susceptance (p.u.)
         :param rp: shunt resistance (p.u.)
         :param xp: shunt reactance (p.u.)
         :param vp: shunt voltage set point (p.u.)
@@ -82,13 +81,22 @@ class UPFC(EditableDevice):
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
-                                                  'Rl': GCProp('p.u.', float, 'Line resistance.'),
-                                                  'Xl': GCProp('p.u.', float, 'Line reactance.'),
-                                                  'Bl': GCProp('p.u.', float, 'Line susceptance.'),
-                                                  'Rs': GCProp('p.u.', float, 'Series resistance.'),
-                                                  'Xs': GCProp('p.u.', float, 'Series reactance.'),
-                                                  'Rsh': GCProp('p.u.', float, 'Shunt resistance.'),
-                                                  'Xsh': GCProp('p.u.', float, 'Shunt resistance.'),
+
+                                                  'Rs': GCProp('p.u.', float, 'Series positive sequence resistance.'),
+                                                  'Xs': GCProp('p.u.', float, 'Series positive sequence reactance.'),
+                                                  'Rsh': GCProp('p.u.', float, 'Shunt positive sequence resistance.'),
+                                                  'Xsh': GCProp('p.u.', float, 'Shunt positive sequence resistance.'),
+
+                                                  'Rs0': GCProp('p.u.', float, 'Series zero sequence resistance.'),
+                                                  'Xs0': GCProp('p.u.', float, 'Series zero sequence reactance.'),
+                                                  'Rsh0': GCProp('p.u.', float, 'Shunt zero sequence resistance.'),
+                                                  'Xsh0': GCProp('p.u.', float, 'Shunt zero sequence resistance.'),
+
+                                                  'Rs2': GCProp('p.u.', float, 'Series negative sequence resistance.'),
+                                                  'Xs2': GCProp('p.u.', float, 'Series negative sequence reactance.'),
+                                                  'Rsh2': GCProp('p.u.', float, 'Shunt negative sequence resistance.'),
+                                                  'Xsh2': GCProp('p.u.', float, 'Shunt negative sequence resistance.'),
+
                                                   'Vsh': GCProp('p.u.', float, 'Shunt voltage set point.'),
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Active power set point.'),
@@ -107,13 +115,21 @@ class UPFC(EditableDevice):
         self.measurements = list()
 
         # total impedance and admittance in p.u.
-        self.Rl = rl
-        self.Xl = xl
-        self.Bl = bl
         self.Rs = rs
         self.Xs = xs
         self.Rsh = rp
         self.Xsh = xp
+
+        self.Rs0 = rs0
+        self.Xs0 = xs0
+        self.Rsh0 = rp0
+        self.Xsh0 = xp0
+
+        self.Rs2 = rs2
+        self.Xs2 = xs2
+        self.Rsh2 = rp2
+        self.Xsh2 = xp2
+
         self.Vsh = vp
         self.Pfset = Pset
         self.Qfset = Qset
@@ -138,12 +154,18 @@ class UPFC(EditableDevice):
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
 
+    def get_ysh1(self):
+        return 1.0 / complex(self.Rsh, self.Xsh)
+
+    def get_ysh0(self):
+        return 1.0 / complex(self.Rsh0, self.Xsh0)
+
+    def get_ysh2(self):
+        return 1.0 / complex(self.Rsh2, self.Xsh2)
+
     def change_base(self, Sbase_old, Sbase_new):
         b = Sbase_new / Sbase_old
 
-        self.Rl *= b
-        self.Xl *= b
-        self.Bl *= b
         self.Rs *= b
         self.Xs *= b
         self.Rsh *= b
@@ -164,9 +186,9 @@ class UPFC(EditableDevice):
                     'bus_to': self.bus_to.idtag,
                     'active': self.active,
                     'rate': self.rate,
-                    'rl': self.Rl,
-                    'xl': self.Xl,
-                    'bl': self.Bl,
+                    'rl': 0.0,
+                    'xl': 0.0,
+                    'bl': 0.0,
                     'rs': self.Rs,
                     'xs': self.Xs,
                     'rsh': self.Rsh,
@@ -188,9 +210,9 @@ class UPFC(EditableDevice):
                     'contingency_factor1': self.contingency_factor,
                     'contingency_factor2': self.contingency_factor,
                     'contingency_factor3': self.contingency_factor,
-                    'rl': self.Rl,
-                    'xl': self.Xl,
-                    'bl': self.Bl,
+                    'rl': 0.0,
+                    'xl': 0.0,
+                    'bl': 0.0,
                     'rs': self.Rs,
                     'xs': self.Xs,
                     'rsh': self.Rsh,

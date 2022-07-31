@@ -62,6 +62,17 @@ class BranchData:
         self.X = np.zeros(self.nbr, dtype=float)
         self.G = np.zeros(self.nbr, dtype=float)
         self.B = np.zeros(self.nbr, dtype=float)
+
+        self.R0 = np.zeros(self.nbr, dtype=float)
+        self.X0 = np.zeros(self.nbr, dtype=float)
+        self.G0 = np.zeros(self.nbr, dtype=float)
+        self.B0 = np.zeros(self.nbr, dtype=float)
+
+        self.R2 = np.zeros(self.nbr, dtype=float)
+        self.X2 = np.zeros(self.nbr, dtype=float)
+        self.G2 = np.zeros(self.nbr, dtype=float)
+        self.B2 = np.zeros(self.nbr, dtype=float)
+
         self.k = np.ones(nbr, dtype=float)
 
         self.m = np.ones((nbr, ntime), dtype=float)
@@ -112,12 +123,22 @@ class BranchData:
         data = BranchData(nbr=len(elm_idx), nbus=len(bus_idx))
 
         data.branch_names = self.branch_names[elm_idx]
-        # data.F = self.F[elm_idx]
-        # data.T = self.T[elm_idx]
+
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
         data.G = self.G[elm_idx]
         data.B = self.B[elm_idx]
+
+        data.R0 = self.R[elm_idx]
+        data.X0 = self.X[elm_idx]
+        data.G0 = self.G[elm_idx]
+        data.B0 = self.B[elm_idx]
+
+        data.R2 = self.R[elm_idx]
+        data.X2 = self.X[elm_idx]
+        data.G2 = self.G[elm_idx]
+        data.B2 = self.B[elm_idx]
+
         data.k = self.k[elm_idx]
         data.tap_t = self.tap_f[elm_idx]
         data.tap_f = self.tap_t[elm_idx]

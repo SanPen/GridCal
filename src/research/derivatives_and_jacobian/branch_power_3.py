@@ -42,32 +42,16 @@ def getPowerElement2F(F, T, V, Yf):
     for k in range(len(F)):
         f = F[k]
         t = T[k]
-        # Sf[k] = Vm[f] * (cos(Va[f]) + 1j * sin(Va[f])) * (
-        #         + Gf[k, f] * Vm[f] * cos(Va[f])
-        #         - 1j * Gf[k, f] * Vm[f] * sin(Va[f])
-        #         - 1j * Bf[k, f] * Vm[f] * cos(Va[f])
-        #         - 1j * Bf[k, f] * Vm[f] * sin(Va[f])
-        #         + Gf[k, t] * Vm[t] * cos(Va[t])
-        #         - 1j * Gf[k, t] * Vm[t] * sin(Va[t])
-        #         - 1j * Bf[k, t] * Vm[t] * cos(Va[t])
-        #         - 1j * Bf[k, t] * Vm[t] * sin(Va[t])
-        #         )
-        
-        Sf[k] = + Gf[k, f] * Vm[f]**2 * cos(Va[f])**2 \
-                - Bf[k, f] * Vm[f]**2 * cos(Va[f])**2 * 1j \
-                + Bf[k, f] * Vm[f]**2 * sin(Va[f])**2 \
-                + Gf[k, f] * Vm[f]**2 * sin(Va[f])**2 \
-                + Bf[k, f] * Vm[f]**2 * cos(Va[f]) * sin(Va[f]) \
-                - Bf[k, f] * Vm[f]**2 * cos(Va[f]) * sin(Va[f]) * 1j \
-                - Bf[k, t] * Vm[f] * Vm[t] * cos(Va[f]) * cos(Va[t]) * 1j \
-                + Gf[k, t] * Vm[f] * Vm[t] * cos(Va[f]) * cos(Va[t])  \
-                - Bf[k, t] * Vm[f] * Vm[t] * cos(Va[f]) * sin(Va[t]) * 1j \
-                + Bf[k, t] * Vm[f] * Vm[t] * cos(Va[t]) * sin(Va[f]) \
-                - Gf[k, t] * Vm[f] * Vm[t] * cos(Va[f]) * sin(Va[t]) * 1j \
-                + Gf[k, t] * Vm[f] * Vm[t] * cos(Va[t]) * sin(Va[f]) * 1j \
-                + Bf[k, t] * Vm[f] * Vm[t] * sin(Va[f]) * sin(Va[t]) \
-                + Gf[k, t] * Vm[f] * Vm[t] * sin(Va[f]) * sin(Va[t])
-
+        Sf[k] = Vm[f] * (cos(Va[f]) + 1j * sin(Va[f])) * (
+                + Gf[k, f] * Vm[f] * cos(Va[f])
+                - 1j * Gf[k, f] * Vm[f] * sin(Va[f])
+                - 1j * Bf[k, f] * Vm[f] * cos(Va[f])
+                - 1j * Bf[k, f] * Vm[f] * sin(Va[f])
+                + Gf[k, t] * Vm[t] * cos(Va[t])
+                - 1j * Gf[k, t] * Vm[t] * sin(Va[t])
+                - 1j * Bf[k, t] * Vm[t] * cos(Va[t])
+                - 1j * Bf[k, t] * Vm[t] * sin(Va[t])
+                )
 
     return Sf
 
@@ -408,5 +392,5 @@ if __name__ == '__main__':
 
     #
     compare_power(fname)
-    matpower_to_gomez_comparison(fname)
+    # matpower_to_gomez_comparison(fname)
 

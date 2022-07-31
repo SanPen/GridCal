@@ -37,7 +37,8 @@ class VSC(EditableDevice):
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 r0=0.0001, x0=0.05, r2=0.0001, x2=0.05):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -97,13 +98,22 @@ class VSC(EditableDevice):
                                                   'contingency_enabled': GCProp('', bool,
                                                                                 'Consider this VSC for contingencies.'),
                                                   'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
+                                                                            'Monitor this device loading for '
+                                                                            'optimization, NTC or contingency studies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
-                                                  'R1': GCProp('p.u.', float, 'Resistive losses.'),
-                                                  'X1': GCProp('p.u.', float, 'Magnetic losses.'),
+
+                                                  'R1': GCProp('p.u.', float, 'Resistive positive sequence losses.'),
+                                                  'X1': GCProp('p.u.', float, 'Magnetic positive sequence losses.'),
+
+                                                  'R0': GCProp('p.u.', float, 'Resistive zero sequence losses.'),
+                                                  'X0': GCProp('p.u.', float, 'Magnetic zero sequence losses.'),
+
+                                                  'R2': GCProp('p.u.', float, 'Resistive negative sequence losses.'),
+                                                  'X2': GCProp('p.u.', float, 'Magnetic negative sequence losses.'),
+
                                                   'G0': GCProp('p.u.', float, 'Inverter losses.'),
 
                                                   'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
@@ -171,6 +181,13 @@ class VSC(EditableDevice):
         # total impedance and admittance in p.u.
         self.R1 = r1
         self.X1 = x1
+
+        self.R0 = r0
+        self.X0 = x0
+
+        self.R2 = r2
+        self.X2 = x2
+
         self.G0 = G0
         self.Beq = Beq
         self.m = m

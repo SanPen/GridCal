@@ -141,11 +141,35 @@ class Tower(EditableDevice):
         """
         return self.R1 + 1j * self.X1
 
+    def z0_series(self):
+        """
+        zero sequence series impedance in Ohm per unit of length
+        """
+        return self.R0 + 1j * self.X0
+
+    def z2_series(self):
+        """
+        negative sequence series impedance in Ohm per unit of length
+        """
+        return self.R0 + 1j * self.X0
+
     def y_shunt(self):
         """
         positive sequence shunt admittance in S per unit of length
         """
         return self.Gsh1 + 1j * self.Bsh1
+
+    def y0_shunt(self):
+        """
+        zero sequence shunt admittance in S per unit of length
+        """
+        return self.Gsh0 + 1j * self.Bsh0
+
+    def y2_shunt(self):
+        """
+        negative sequence shunt admittance in S per unit of length
+        """
+        return self.Gsh0 + 1j * self.Bsh0
 
     def plot(self, ax=None):
         """
