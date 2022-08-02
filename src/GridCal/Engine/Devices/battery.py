@@ -93,7 +93,8 @@ class Battery(Generator):
                  is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
                  op_cost=1.0, power_prof=None, power_factor_prof=None, vset_prof=None, active=True, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
-                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
+                 max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
+                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20):
 
         Generator.__init__(self, name=name,
                            idtag=idtag,
@@ -111,7 +112,10 @@ class Battery(Generator):
                            Sbase=Sbase,
                            enabled_dispatch=enabled_dispatch,
                            mttf=mttf,
-                           mttr=mttr)
+                           mttr=mttr,
+                           r1=r1, x1=x1,
+                           r0=r0, x0=x0,
+                           r2=r2, x2=x2)
 
         # type of this device
         self.device_type = DeviceType.BatteryDevice
@@ -138,6 +142,16 @@ class Battery(Generator):
                                  'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
                                  'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
                                  'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
+
+                                 'R1': GCProp('p.u.', float, 'Total positive sequence resistance.'),
+                                 'X1': GCProp('p.u.', float, 'Total positive sequence reactance.'),
+
+                                 'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
+                                 'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
+
+                                 'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
+                                 'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
+
                                  'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
                                  'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
                                  'mttf': GCProp('h', float, 'Mean time to failure'),

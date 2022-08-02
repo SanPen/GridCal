@@ -146,7 +146,8 @@ class Generator(EditableDevice):
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
                  Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
                  mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle,
-                 q_points=None, use_reactive_power_curve=False):
+                 q_points=None, use_reactive_power_curve=False,
+                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -174,6 +175,16 @@ class Generator(EditableDevice):
                                                   'use_reactive_power_curve': GCProp('', bool, 'Use the reactive power capability curve?'),
                                                   'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
                                                   'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
+
+                                                  'R1': GCProp('p.u.', float, 'Total positive sequence resistance.'),
+                                                  'X1': GCProp('p.u.', float, 'Total positive sequence reactance.'),
+
+                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
+                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
+
+                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
+                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
+
                                                   'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
                                                   'enabled_dispatch': GCProp('', bool,
                                                                              'Enabled for dispatch? Used in OPF.'),
@@ -197,8 +208,26 @@ class Generator(EditableDevice):
 
         self.technology = technology
 
-        # is the device active active power dispatch?
+        # is the device active for active power dispatch?
         self.enabled_dispatch = enabled_dispatch
+
+        # positive sequence resistance
+        self.R1 = r1
+
+        # positive sequence reactance
+        self.X1 = x1
+
+        # zero sequence resistance
+        self.R0 = r0
+
+        # zero sequence reactance
+        self.X0 = x0
+
+        # negative sequence resistance
+        self.R2 = r2
+
+        # negative sequence reactance
+        self.X2 = x2
 
         # Power (MVA)
         self.P = active_power
