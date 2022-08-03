@@ -138,7 +138,7 @@ def getPowerElement3T(F, T, V, Yt):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def dSf_dV_matpower(Yf, V, F, Cf, Vc, E):
+def dSf_dV_matpower(Yf, V, F, Cf):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
@@ -149,22 +149,26 @@ def dSf_dV_matpower(Yf, V, F, Cf, Vc, E):
     :param E: array of unit voltage vectors
     :return: dSf_dVa, dSf_dVm
     """
-    diagVc = diags(Vc)
-    diagE = diags(E)
-    diagV = diags(V)
 
     Yfc = np.conj(Yf)
-    Ifc = Yfc * Vc  # conjugate  of "from"  current
+    Vc = np.conj(V)
+    Ifc = Yfc * Vc
 
+    Vnorm = V / np.abs(V)
+    diagV = diags(V)
+    diagVc = diags(Vc)
+    diagVnorm = diags(Vnorm)
+    diagVf = diags(V[F])
     diagIfc = diags(Ifc)
-    Vf = V[F]
-    diagVf = diags(Vf)
 
     CVf = Cf * diagV
-    CVnf = Cf * diagE
+    CVnf = Cf * diagVnorm
 
-    dSf_dVa = 1j * (diagIfc * CVf - diagVf * Yfc * diagVc)
-    dSf_dVm = diagVf * np.conj(Yf * diagE) + diagIfc * CVnf
+    dSf_dVa = 1j * (diagIfc * CVf - diagVf * Yfc * diagVc) #  dSf_dVa
+    dSf_dVm = diagVf * np.conj(Yf * diagVnorm) + diagIfc * CVnf #  dSf_dVm
+
+    # dSt_dVa = 1j * (diagItc * CVt - diagVt * Ytc * diagVc) #  dSt_dVa
+    # dSt_dVm = diagVt * conj(Yt * diagVnorm) + diagItc * CVnt #  dSt_dVm
 
     return dSf_dVa.tocsc(), dSf_dVm.tocsc()
 
@@ -324,7 +328,7 @@ def matpower_to_gomez_comparison(fname):
     tap_angle = nc.branch_data.theta[:, 0]
 
     # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
-    dSf_dVa, dSf_dVm = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
+    dSf_dVa, dSf_dVm = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf)
 
     # Gomez exposito derivatives
     dPf_dVa_exp = dPf_dVa(Cf=nc.Cf, Yf=nc.Yf, V=nc.Vbus, F=F, T=T)

@@ -40,7 +40,7 @@ def getPowerElementT(F, T, V, Yt):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def dSf_dV_matpower(Yf, V, F, Cf, Vc, E):
+def dSf_dV_matpower(Yf, V, F, Cf):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
@@ -51,22 +51,26 @@ def dSf_dV_matpower(Yf, V, F, Cf, Vc, E):
     :param E: array of unit voltage vectors
     :return: dSf_dVa, dSf_dVm
     """
-    diagVc = diags(Vc)
-    diagE = diags(E)
-    diagV = diags(V)
 
     Yfc = np.conj(Yf)
-    Ifc = Yfc * Vc  # conjugate  of "from"  current
+    Vc = np.conj(V)
+    Ifc = Yfc * Vc
 
+    Vnorm = V / np.abs(V)
+    diagV = diags(V)
+    diagVc = diags(Vc)
+    diagVnorm = diags(Vnorm)
+    diagVf = diags(V[F])
     diagIfc = diags(Ifc)
-    Vf = V[F]
-    diagVf = diags(Vf)
 
     CVf = Cf * diagV
-    CVnf = Cf * diagE
+    CVnf = Cf * diagVnorm
 
-    dSf_dVa = 1j * (diagIfc * CVf - diagVf * Yfc * diagVc)
-    dSf_dVm = diagVf * np.conj(Yf * diagE) + diagIfc * CVnf
+    dSf_dVa = 1j * (diagIfc * CVf - diagVf * Yfc * diagVc) #  dSf_dVa
+    dSf_dVm = diagVf * np.conj(Yf * diagVnorm) + diagIfc * CVnf #  dSf_dVm
+
+    # dSt_dVa = 1j * (diagItc * CVt - diagVt * Ytc * diagVc) #  dSt_dVa
+    # dSt_dVm = diagVt * conj(Yt * diagVnorm) + diagItc * CVnt #  dSt_dVm
 
     return dSf_dVa.tocsc(), dSf_dVm.tocsc()
 
@@ -95,10 +99,10 @@ def dSf_dVm(Cf, Yf, V, F, T):
         th_t = np.angle(V[t])
         
         # dSf_dVmf
-        mat[k, f] = 2 * Vm_f * np.conj(Yf[k, f]) + Vm_t * np.conj(Yf[k, t]) * np.exp(th_f * 1j) * np.exp(-th_t * 1j)
+        mat[k, f] = 2 * Vm_f * np.conj(Yf[k, f]) + Vm_t * np.conj(Yf[k, t]) * np.exp((th_f - th_t) * 1j)
         
         # dSf_dVmt
-        mat[k, t] = Vm_f * np.conj(Yf[k, t]) * np.exp(th_f * 1j) * np.exp(-th_t * 1j)
+        mat[k, t] = Vm_f * np.conj(Yf[k, t]) * np.exp((th_f - th_t) * 1j)
 
     return mat
 
@@ -126,10 +130,10 @@ def dSf_dVa(Cf, Yf, V, F, T):
         th_t = np.angle(V[t])
 
         # dSf_dVaf
-        mat[k, f] = Vm_f * Vm_t * np.conj(Yf[k, t]) * np.exp(th_f * 1j) * np.exp(-th_t * 1j) * 1j
+        mat[k, f] = Vm_f * Vm_t * np.conj(Yf[k, t]) * np.exp((th_f - th_t) * 1j) * 1j
 
         # dSf_dVat
-        mat[k, t] = -Vm_f * Vm_t * np.conj(Yf[k, t]) * np.exp(th_f * 1j) * np.exp(-th_t * 1j) * 1j
+        mat[k, t] = -Vm_f * Vm_t * np.conj(Yf[k, t]) * np.exp((th_f - th_t) * 1j) * 1j
 
     return mat
 
@@ -144,8 +148,11 @@ def matpower_to_spv_comparison(fname):
     tap_mod = nc.branch_data.m[:, 0]
     tap_angle = nc.branch_data.theta[:, 0]
 
+    print('V0r:', nc.Vbus.real)
+    print('V0i:', nc.Vbus.imag)
+
     # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
-    dSf_dVa_mat, dSf_dVm_mat = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf, Vc=np.conj(nc.Vbus), E=np.abs(nc.Vbus))
+    dSf_dVa_mat, dSf_dVm_mat = dSf_dV_matpower(Yf=nc.Yf, V=nc.Vbus, F=nc.branch_data.F, Cf=nc.Cf)
 
     # SPV derivatives
     dSf_dVa_spv = dSf_dVa(Cf=nc.Cf, Yf=nc.Yf, V=nc.Vbus, F=F, T=T)
@@ -209,11 +216,11 @@ def compare_power(fname):
 
 if __name__ == '__main__':
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal'
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus v2.raw'
-
+    fname = '/home/santi/matpower7.0/data/case14.m'
     #
     compare_power(fname)
     matpower_to_spv_comparison(fname)
