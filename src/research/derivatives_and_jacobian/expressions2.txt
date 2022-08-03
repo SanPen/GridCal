@@ -1,0 +1,42 @@
+syms V_f V_t th_f th_t Yf_kf Yf_kt Yt_kf Yt_kt
+
+// producing the derivable expression of Sf:
+// Vf anf Vt are the complex values of the voltage
+// V_f anf V_t are the voltage modules
+// th_f and th_t are the voltage angles
+
+    Sf_k = Vf * conj(Yf_kf * Vf + Yf_kt * Vt)
+    Sf_k = V_f<th_f * conj(Yf_kf * V_f<th_f + Yf_kt * V_t<th_t)
+    Sf_k = V_f<th_f * V_f<-th_f * conj(Yf_kf) + V_f<th_f * V_t<-th_t * conj(Yf_kt)
+    Sf_k = V_f^2 * conj(Yf_kf) + V_f<th_f * V_t<-th_t * conj(Yf_kt)
+
+
+------------------------------------------------------------------------------------------------------------------------
+>> Sf_k = V_f^2 * conj(Yf_kf) + V_f * exp(1i * th_f) * V_t * exp(-1i * th_t) * conj(Yf_kt)
+ 
+>> diff(Sf_k, V_f)
+2 * V_f * conj(Yf_kf) + V_t * exp(th_f * 1i) * exp(-th_t * 1i) * conj(Yf_kt)
+ 
+>> diff(Sf_k, V_t)
+V_f * exp(th_f * 1i) * exp(-th_t * 1i) * conj(Yf_kt)
+ 
+>> diff(Sf_k, th_f)
+V_f * V_t * exp(th_f * 1i) * exp(-th_t * 1i) * conj(Yf_kt) * 1i
+ 
+>> diff(Sf_k, th_t)
+-V_f * V_t * exp(th_f * 1i) * exp(-th_t * 1i) * conj(Yf_kt) * 1i
+
+------------------------------------------------------------------------------------------------------------------------
+>> St_k = V_t^2 * conj(Yt_kt) + V_t * exp(1i * th_t) * V_f * exp(-1i * th_f) * conj(Yt_kf)
+
+>> diff(St_k, V_f)
+V_t * exp(-th_f * 1i) * exp(th_t * 1i) * conj(Yt_kf)
+
+>> diff(St_k, V_t)
+2 * V_t * conj(Yt_kt) + V_f * exp(-th_f * 1i) * exp(th_t * 1i) * conj(Yt_kf)
+
+>> diff(St_k, th_f)
+-V_f * V_t * exp(-th_f * 1i) * exp(th_t * 1i) * conj(Yt_kf) * 1i
+
+>> diff(St_k, th_t)
+V_f * V_t * exp(-th_f * 1i) * exp(th_t * 1i) * conj(Yt_kf) * 1i

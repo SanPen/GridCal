@@ -748,10 +748,10 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus v2.raw'
 
-    matpower_to_gomez_exposito_comparison(fname)
+    # matpower_to_gomez_exposito_comparison(fname)
     # numerical_to_gomez_exposito_comparison(fname)
     # numerical_to_monticelli_comparison(fname)
     # matpower_to_monticelli_comparison(fname)
-    # matpower_to_numerical_comparison(fname)
+    matpower_to_numerical_comparison(fname)
 
 
