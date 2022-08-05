@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1194, 763)
+        mainWindow.resize(1194, 773)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -2055,11 +2055,39 @@ class Ui_mainWindow(object):
         self.frame_67.setFrameShadow(QFrame.Raised)
         self.gridLayout_24 = QGridLayout(self.frame_67)
         self.gridLayout_24.setObjectName(u"gridLayout_24")
+        self.ntcFeasibilityCheckCheckBox = QCheckBox(self.frame_67)
+        self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
+        self.ntcFeasibilityCheckCheckBox.setChecked(False)
+
+        self.gridLayout_24.addWidget(self.ntcFeasibilityCheckCheckBox, 5, 0, 1, 1)
+
+        self.ntcLoadRuleSpinBox = QSpinBox(self.frame_67)
+        self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
+        self.ntcLoadRuleSpinBox.setMaximum(100)
+        self.ntcLoadRuleSpinBox.setValue(70)
+
+        self.gridLayout_24.addWidget(self.ntcLoadRuleSpinBox, 8, 1, 1, 1)
+
         self.monitorOnlySensitiveBranchesCheckBox = QCheckBox(self.frame_67)
         self.monitorOnlySensitiveBranchesCheckBox.setObjectName(u"monitorOnlySensitiveBranchesCheckBox")
         self.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
 
         self.gridLayout_24.addWidget(self.monitorOnlySensitiveBranchesCheckBox, 2, 0, 1, 2)
+
+        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
+        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
+
+        self.gridLayout_24.addWidget(self.ntcDispatchAllAreasCheckBox, 4, 0, 1, 1)
+
+        self.label_64 = QLabel(self.frame_67)
+        self.label_64.setObjectName(u"label_64")
+
+        self.gridLayout_24.addWidget(self.label_64, 8, 0, 1, 1)
+
+        self.label_23 = QLabel(self.frame_67)
+        self.label_23.setObjectName(u"label_23")
+
+        self.gridLayout_24.addWidget(self.label_23, 7, 0, 1, 1)
 
         self.label_101 = QLabel(self.frame_67)
         self.label_101.setObjectName(u"label_101")
@@ -2072,16 +2100,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_24.addWidget(self.optimalRedispatchRadioButton, 1, 0, 1, 1)
 
-        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
-        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
-
-        self.gridLayout_24.addWidget(self.ntcDispatchAllAreasCheckBox, 4, 0, 1, 1)
-
-        self.label_23 = QLabel(self.frame_67)
-        self.label_23.setObjectName(u"label_23")
-
-        self.gridLayout_24.addWidget(self.label_23, 7, 0, 1, 1)
-
         self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
         self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
         self.ntcOpfTolSpinBox.setMinimum(-99)
@@ -2089,17 +2107,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_24.addWidget(self.ntcOpfTolSpinBox, 6, 1, 1, 1)
 
-        self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
-        self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
-        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
-
-        self.gridLayout_24.addWidget(self.skipNtcGenerationLimitsCheckBox, 3, 0, 1, 2)
-
         self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
         self.proportionalRedispatchRadioButton.setChecked(True)
 
         self.gridLayout_24.addWidget(self.proportionalRedispatchRadioButton, 0, 0, 1, 2)
+
+        self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
+        self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
+        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
+
+        self.gridLayout_24.addWidget(self.skipNtcGenerationLimitsCheckBox, 3, 0, 1, 2)
 
         self.trmSpinBox = QSpinBox(self.frame_67)
         self.trmSpinBox.setObjectName(u"trmSpinBox")
@@ -2110,23 +2128,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_24.addWidget(self.trmSpinBox, 7, 1, 1, 1)
 
-        self.ntcFeasibilityCheckCheckBox = QCheckBox(self.frame_67)
-        self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
-        self.ntcFeasibilityCheckCheckBox.setChecked(False)
+        self.monitorOnlyNtcLoadRuleBranchesCheckBox = QCheckBox(self.frame_67)
+        self.monitorOnlyNtcLoadRuleBranchesCheckBox.setObjectName(u"monitorOnlyNtcLoadRuleBranchesCheckBox")
 
-        self.gridLayout_24.addWidget(self.ntcFeasibilityCheckCheckBox, 5, 0, 1, 1)
-
-        self.label_64 = QLabel(self.frame_67)
-        self.label_64.setObjectName(u"label_64")
-
-        self.gridLayout_24.addWidget(self.label_64, 8, 0, 1, 1)
-
-        self.ntcLoadRuleSpinBox = QSpinBox(self.frame_67)
-        self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
-        self.ntcLoadRuleSpinBox.setMaximum(100)
-        self.ntcLoadRuleSpinBox.setValue(70)
-
-        self.gridLayout_24.addWidget(self.ntcLoadRuleSpinBox, 8, 1, 1, 1)
+        self.gridLayout_24.addWidget(self.monitorOnlyNtcLoadRuleBranchesCheckBox, 9, 0, 1, 1)
 
 
         self.gridLayout_15.addWidget(self.frame_67, 2, 0, 2, 3)
@@ -4268,34 +4273,35 @@ class Ui_mainWindow(object):
         self.considerContingenciesNtcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider branch contingencies", None))
         self.considerContingenciesHvdcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider hvdc contingencies", None))
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
+        self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
+        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
 #if QT_CONFIG(tooltip)
         self.monitorOnlySensitiveBranchesCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.monitorOnlySensitiveBranchesCheckBox.setText(QCoreApplication.translate("mainWindow", u"Only monitor sensitive branches to the exchange", None))
+        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
+        self.label_64.setText(QCoreApplication.translate("mainWindow", u"NTC load Rule (CEP)", None))
+        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
         self.label_101.setText(QCoreApplication.translate("mainWindow", u"Tolerance", None))
 #if QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified so that the transference is maximal.", None))
 #endif // QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
-        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
-        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
 #if QT_CONFIG(tooltip)
         self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
 #endif // QT_CONFIG(tooltip)
         self.ntcOpfTolSpinBox.setSuffix("")
         self.ntcOpfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
 #if QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
-#endif // QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
-#if QT_CONFIG(tooltip)
         self.proportionalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified as a linear combination of it's current dispatch", None))
 #endif // QT_CONFIG(tooltip)
         self.proportionalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Proportional redispatch", None))
+#if QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
+#endif // QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
         self.trmSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
-        self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
-        self.label_64.setText(QCoreApplication.translate("mainWindow", u"NTC load Rule (CEP)", None))
-        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+        self.monitorOnlyNtcLoadRuleBranchesCheckBox.setText(QCoreApplication.translate("mainWindow", u"Only monitor branches over NTC load rule", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))

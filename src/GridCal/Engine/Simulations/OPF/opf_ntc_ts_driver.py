@@ -415,8 +415,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, start_=0, end_=None,
-                 use_clustering=False, cluster_number=100, trm=0, max_report_elements=10, ntc_load_rule=0,
-                 n1_consideration=True):
+                 use_clustering=False, cluster_number=100):
         """
 
         :param grid: MultiCircuit Object
@@ -438,11 +437,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.use_clustering = use_clustering
         self.cluster_number = cluster_number
 
-        self.trm = trm
-        self.max_report_elements = max_report_elements
-        self.ntc_load_rule = ntc_load_rule
-        self.n1_consideration = n1_consideration
-
         self.logger = Logger()
 
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
@@ -452,9 +446,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             contingency_rates=[],
             time_array=[],
             time_indices=[],
-            trm=self.trm,
-            max_report_elements=self.max_report_elements,
-            ntc_load_rule=self.ntc_load_rule)
+            trm=self.options.trm,
+            max_report_elements=self.options.max_report_elements,
+            ntc_load_rule=self.options.ntc_load_rule)
 
     name = tpe.value
 
@@ -539,9 +533,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
                 time_indices=time_indices,
-                trm=self.trm,
-                max_report_elements=self.max_report_elements,
-                ntc_load_rule=self.ntc_load_rule)
+                trm=self.options.trm,
+                max_report_elements=self.options.max_report_elements,
+                ntc_load_rule=self.options.ntc_load_rule)
 
         # hourly alphas
         alpha = np.zeros((len(time_indices), nc.nbr))
@@ -565,7 +559,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                     linear=linear,
                     numerical_circuit=nc,
                     t=t,
-                    with_n1=self.n1_consideration)
+                    with_n1=self.options.n1_consideration)
             else:
                 alpha[t_idx, :] = np.ones(nc.nbr)
                 alpha_n1[t_idx, :] = np.ones(nc.nbr)
@@ -584,6 +578,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+                monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
                 dispatch_all_areas=self.options.dispatch_all_areas,
@@ -595,6 +590,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 consider_gen_contingencies=self.options.consider_gen_contingencies,
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
                 match_gen_load=self.options.match_gen_load,
+                ntc_load_rule=self.options.ntc_load_rule,
                 logger=self.logger)
 
             # Solve

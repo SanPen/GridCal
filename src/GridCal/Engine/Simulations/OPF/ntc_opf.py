@@ -184,6 +184,21 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
             lst.append((k, -1.0))
     return lst
 
+def get_thermal_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
+    '''
+
+    :param inter_area_branches:
+    :param inter_area_hvdc:
+    :param branch_rates:
+    :param hvdc_ratings:
+    :return:
+    '''
+    idx_branch, b = list(zip(*inter_area_branches))
+    idx_branch = list(idx_branch)
+
+    idx_hvdc, b = list(zip(*inter_area_hvdc))
+    idx_hvdc = list(idx_hvdc)
+    return sum(branch_ratings[idx_branch]) + sum(hvdc_ratings[idx_hvdc])
 
 def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
     """
@@ -852,7 +867,8 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                             branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
                             branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs, alpha_n1_abs, logger):
+                            alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, ntc_load_rule,
+                            thermal_ntc, logger):
     """
 
     :param solver: Solver instance to which add the equations
@@ -874,6 +890,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param tau: Array branch phase shift angles (mix of values and LP variables)
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
     :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
+    :param thermal_ntc: Maximun NTC available by thermal interconexion rates.
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -884,6 +901,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
     flow_f = np.zeros(nbr, dtype=object)
     monitor = np.zeros(nbr, dtype=bool)
+    branch_ntc_load_rule = np.zeros(nbr, dtype=float)
     Pinj_tau = np.zeros(nbus, dtype=object)
     rates = Rates / Sbase
 
@@ -892,15 +910,23 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
         if branch_active[m]:
 
+            max_alpha = max(alpha_abs[m], alpha_n1_abs[m])
+            # NTC min for considering as limiting element by ACER
+            branch_ntc_load_rule[m] = rates[m]/max_alpha * ntc_load_rule / Sbase
+
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
             # determine the monitoring logic
-            if monitor_only_sensitive_branches:
-                monitor[m] = monitor_loading[m] and max(alpha_abs[m], alpha_n1_abs[m]) > branch_sensitivity_threshold
-            else:
-                monitor[m] = monitor_loading[m]
+            monitor[m] = monitor_loading[m]
 
+            if monitor_only_sensitive_branches:
+                monitor[m] = monitor[m] and max_alpha > branch_sensitivity_threshold
+
+            if monitor_only_ntc_load_rule_branches:
+                monitor[m] = monitor[m] and branch_ntc_load_rule[m] <= thermal_ntc
+
+            # determine branch rate according monitor logic
             if monitor[m]:
                 # declare the flow variable with rate limits
                 flow_f[m] = solver.NumVar(
@@ -931,7 +957,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
             Pinj_tau[_f] = -Ptau
             Pinj_tau[_t] = Ptau
 
-    return flow_f, monitor, Pinj_tau
+    return flow_f, monitor, Pinj_tau, branch_ntc_load_rule
 
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
@@ -1448,6 +1474,7 @@ def formulate_objective(solver: pywraplp.Solver,
 
 
 
+
 class OpfNTC(Opf):
 
     def __init__(self, numerical_circuit: SnapshotOpfData,
@@ -1460,7 +1487,9 @@ class OpfNTC(Opf):
                  solver_type: MIPSolvers = MIPSolvers.CBC,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
                  monitor_only_sensitive_branches=False,
-                 branch_sensitivity_threshold=0.01,
+                 monitor_only_ntc_load_rule_branches=False,
+                 branch_sensitivity_threshold=0.05,
+                 ntc_load_rule=0,
                  skip_generation_limits=True,
                  maximize_exchange_flows=True,
                  dispatch_all_areas=False,
@@ -1484,8 +1513,10 @@ class OpfNTC(Opf):
         :param LODF: LODF matrix
         :param solver_type: type of linear solver
         :param generation_formulation: type of generation formulation
-        :param monitor_only_sensitive_branches: Monitor the loading of only the sensitive branches?
+        :param monitor_only_sensitive_branches: Monitor the loading of the sensitive branches
+        :param monitor_only_sensitive_branches: Monitor the loading of branches over ntc load rule
         :param branch_sensitivity_threshold: branch sensitivity used to filter out the branches whose sensitivity is under the threshold
+        :param ntc load rule
         :param skip_generation_limits: Skip the generation limits?
         :param consider_contingencies: Consider contingencies?
         :param maximize_exchange_flows: Maximize the exchange flow?
@@ -1494,7 +1525,6 @@ class OpfNTC(Opf):
         :param weight_generation_cost: Generation cost minimization weight
         :param match_gen_load: Boolean to match generation and load power
         :param logger: logger instance
-        :param with_check: check when problem has no solution
         """
 
         self.area_from_bus_idx = area_from_bus_idx
@@ -1504,6 +1534,8 @@ class OpfNTC(Opf):
         self.generation_formulation = generation_formulation
 
         self.monitor_only_sensitive_branches = monitor_only_sensitive_branches
+
+        self.monitor_only_ntc_load_rule_branches = monitor_only_ntc_load_rule_branches
 
         self.branch_sensitivity_threshold = branch_sensitivity_threshold
 
@@ -1517,6 +1549,7 @@ class OpfNTC(Opf):
 
         self.alpha = alpha
         self.alpha_n1 = alpha_n1
+        self.ntc_load_rule = ntc_load_rule
 
         self.LODF = LODF
 
@@ -1634,6 +1667,8 @@ class OpfNTC(Opf):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
+        hvdc_ratings = self.numerical_circuit.hvdc_data.rate / Sbase
+
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
@@ -1657,6 +1692,8 @@ class OpfNTC(Opf):
             T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
+
+        thermal_ntc = get_thermal_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1737,7 +1774,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -1758,6 +1795,9 @@ class OpfNTC(Opf):
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             alpha_abs=alpha_abs,
             alpha_n1_abs=alpha_n1_abs,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            ntc_load_rule=self.ntc_load_rule,
+            thermal_ntc=thermal_ntc,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -1956,6 +1996,7 @@ class OpfNTC(Opf):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
+        hvdc_ratings = self.numerical_circuit.hvdc_data.rate[:, t] / Sbase
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
@@ -1979,6 +2020,12 @@ class OpfNTC(Opf):
             T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
+
+        thermal_ntc = get_thermal_ntc(
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdc=inter_area_hvdc,
+            branch_ratings=branch_ratings,
+            hvdc_ratings=hvdc_ratings)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -2059,7 +2106,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -2080,6 +2127,9 @@ class OpfNTC(Opf):
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             alpha_abs=alpha_abs,
             alpha_n1_abs=alpha_n1_abs,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            ntc_load_rule=self.ntc_load_rule,
+            thermal_ntc=thermal_ntc,
             logger=self.logger)
 
 

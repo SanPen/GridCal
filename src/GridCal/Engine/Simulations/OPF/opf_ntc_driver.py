@@ -56,6 +56,7 @@ class OptimalNetTransferCapacityOptions:
                  mip_solver=MIPSolvers.CBC,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
                  monitor_only_sensitive_branches=True,
+                 monitor_only_ntc_rule_branches=False,
                  branch_sensitivity_threshold=0.05,
                  skip_generation_limits=True,
                  perform_previous_checks=False,
@@ -72,7 +73,10 @@ class OptimalNetTransferCapacityOptions:
                  consider_hvdc_contingencies=False,
                  consider_gen_contingencies=False,
                  generation_contingency_threshold=0,
-                 match_gen_load=True):
+                 match_gen_load=True,
+                 trm=0,
+                 ntc_load_rule=0,
+                 n1_consideration=True):
         """
 
         :param area_from_bus_idx:
@@ -94,6 +98,9 @@ class OptimalNetTransferCapacityOptions:
         :param time_limit_ms:
         :param max_report_elements:
         :param generation_contingency_threshold:
+        :param trm:
+        :param ntc_load_rule:
+        :param n1_consideration:
         """
         self.verbose = verbose
 
@@ -108,6 +115,7 @@ class OptimalNetTransferCapacityOptions:
         self.generation_formulation = generation_formulation
 
         self.monitor_only_sensitive_branches = monitor_only_sensitive_branches
+        self.monitor_only_ntc_load_rule_branches = monitor_only_ntc_rule_branches
 
         self.branch_sensitivity_threshold = branch_sensitivity_threshold
 
@@ -136,6 +144,10 @@ class OptimalNetTransferCapacityOptions:
         self.max_report_elements = max_report_elements
 
         self.match_gen_load = match_gen_load
+
+        self.trm = trm
+        self.ntc_load_rule = ntc_load_rule
+        self.n1_consideration = n1_consideration
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -325,7 +337,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         if len(y.shape) == 2:
             # sort by column value
-            sort_idx = columns.index('ContingencyFlow (%)')
+            sort_idx = columns.index('Contingency flow (%)')
             idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
             y = y[idx, :]
             y = np.array(y, dtype=object)
@@ -350,25 +362,21 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         monitor_idx = np.where(self.monitor)[0]
         for i in monitor_idx:
-            flow_zero = np.abs(self.Sf[i].real) - np.abs(ntc * self.alpha[i])
-            ntc_load_rule = 1 - np.abs(flow_zero / self.rates[i])
-            maczt = ntc * self.alpha[i] / self.Sf[i].real
+            maczt = ntc * np.abs(self.alpha[i]) / self.rates[i]
             y.append([ttc,
                       trm,
                       ntc,
-                      ntc_load_rule * 100,
                       maczt * 100,
                       self.branch_names[i],
                       self.Sf[i].real,
                       self.Sf[i] / self.rates[i] * 100,
-                      self.rates[i]],
-                      self.alpha[i])
+                      self.rates[i],
+                      self.alpha[i]])
 
         y = np.array(y, dtype=object)
         columns = ['TTC',
                    'TRM',
                    'NTC',
-                   'NTC flow rule (%)',
                    'MACZT (%)',
                    'Branch',
                    'Flow (MW)',
@@ -410,13 +418,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
             if contingency_flow != 0.0:
-                flow_zero = np.abs(contingency_flow) - np.abs(ntc * self.alpha_n1[m])
-                ntc_load_rule = 1 - np.abs(flow_zero / self.contingency_rates[m])
-                maczt = ntc * self.alpha[m] / contingency_flow
+                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
-                          ntc_load_rule * 100,
                           maczt * 100,
                           self.branch_names[m],
                           self.branch_names[c],
@@ -435,7 +440,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
-                   'NTC flow rule (%)',
                    'MACZT (%)',
                    'Monitored',
                    'Contingency',
@@ -461,7 +465,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         if len(y.shape) == 2:
             # sort by column value
-            sort_idx = columns.index('ContingencyFlow (%)')
+            sort_idx = columns.index('Contingency flow (%)')
             idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
             y = y[idx, :]
             y = np.array(y, dtype=object)
@@ -486,13 +490,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         for (m, c), contingency_flow in zip(self.contingency_generation_indices_list,
                                             self.contingency_generation_flows_list):
             if contingency_flow != 0.0:
-                flow_zero = np.abs(contingency_flow) - np.abs(ntc * self.alpha_n1[m])
-                ntc_load_rule = 1 - np.abs(flow_zero / self.contingency_rates[m])
-                maczt = ntc * self.alpha[m] / contingency_flow
+                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
-                          ntc_load_rule * 100,
                           maczt * 100,
                           self.branch_names[m],
                           self.generator_names[c],
@@ -511,15 +512,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
-                   'NTC flow rule (%)',
                    'MACZT (%)',
                    'Monitored',
                    'Contingency',
-                   'ContingencyFlow (MW)',
+                   'Contingency flow (MW)',
                    'Base flow (MW)',
                    'Contingency rates (MW)',
                    'Base rates (MW)',
-                   'ContingencyFlow (%)',
+                   'Contingency flow (%)',
                    'Base flow (%)',
                    'Alpha N',
                    'Alpha N-1 max',
@@ -536,7 +536,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         if len(y.shape) == 2:
             # sort by column value
-            sort_idx = columns.index('ContingencyFlow (%)')
+            sort_idx = columns.index('Contingency flow (%)')
             idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
             y = y[idx, :]
             y = np.array(y, dtype=object)
@@ -560,13 +560,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
             if contingency_flow != 0.0:
-                flow_zero = np.abs(contingency_flow) - np.abs(ntc * self.alpha_n1[m])
-                ntc_load_rule = 1 - np.abs(flow_zero / self.contingency_rates[m])
-                maczt = ntc * self.alpha[m] / contingency_flow
+                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((ttc,
                           trm,
                           ntc,
-                          ntc_load_rule * 100,
                           maczt * 100,
                           self.branch_names[m],
                           self.hvdc_names[c],
@@ -585,15 +582,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         columns = ['TTC',
                    'TRM',
                    'NTC',
-                   'NTC flow rule (%)',
                    'MACZT (%)',
                    'Monitored',
                    'Contingency',
-                   'ContingencyFlow (MW)',
+                   'Contingency flow (MW)',
                    'Base flow (MW)',
                    'Contingency rates (MW)',
                    'Base rates (MW)',
-                   'ContingencyFlow (%)',
+                   'Contingency flow (%)',
                    'Base flow (%)',
                    'Alpha N',
                    'Alpha N-1 max',
@@ -610,7 +606,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         if len(y.shape) == 2:
             # sort by column value
-            sort_idx = columns.index('ContingencyFlow (%)')
+            sort_idx = columns.index('Contingency flow (%)')
             idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
             y = y[idx, :]
             y = np.array(y, dtype=object)
@@ -861,8 +857,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions,
-                 trm=0, ntc_load_rule=0, n1_consideration=True):
+    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -873,9 +868,6 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         # Options to use
         self.options = options
         self.pf_options = pf_options
-        self.trm = trm
-        self.ntc_load_rule = ntc_load_rule
-        self.n1_consideration = n1_consideration
 
         self.all_solved = True
 
@@ -940,7 +932,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=numerical_circuit,
-                with_n1=self.n1_consideration)
+                with_n1=self.options.n1_consideration)
         else:
             alpha = np.ones(numerical_circuit.nbr)
             alpha_n1 = np.ones(numerical_circuit.nbr)
@@ -966,9 +958,10 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             # run contingency analysis ---------------------------------------------------------------------------------
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
-                options = ContingencyAnalysisOptions(distributed_slack=False,
-                                                     use_provided_flows=True,
-                                                     Pf=pf_drv.results.Sf.real)
+                options = ContingencyAnalysisOptions(
+                    distributed_slack=False,
+                    use_provided_flows=True,
+                    Pf=pf_drv.results.Sf.real)
                 cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
                 cnt_drv.run()
                 indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
@@ -1061,6 +1054,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+                monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
                 dispatch_all_areas=self.options.dispatch_all_areas,
@@ -1072,6 +1066,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 consider_gen_contingencies=self.options.consider_gen_contingencies,
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
                 match_gen_load=self.options.match_gen_load,
+                ntc_load_rule=self.options.ntc_load_rule,
                 logger=self.logger)
 
             # Solve
@@ -1130,8 +1125,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 generator_names=numerical_circuit.generator_data.generator_names,
                 battery_names=numerical_circuit.battery_data.battery_names,
                 hvdc_names=numerical_circuit.hvdc_data.names,
-                trm=self.trm,
-                ntc_load_rule=self.ntc_load_rule,
+                trm=self.options.trm,
+                ntc_load_rule=self.options.ntc_load_rule,
                 branch_control_modes=numerical_circuit.branch_data.control_mode,
                 hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
                 Sbus=problem.get_power_injections(),

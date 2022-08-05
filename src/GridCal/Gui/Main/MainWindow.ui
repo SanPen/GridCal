@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1194</width>
-    <height>763</height>
+    <height>773</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -3594,6 +3594,29 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_24">
+                  <item row="5" column="0">
+                   <widget class="QCheckBox" name="ntcFeasibilityCheckCheckBox">
+                    <property name="text">
+                     <string>Check feasibility</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="1">
+                   <widget class="QSpinBox" name="ntcLoadRuleSpinBox">
+                    <property name="suffix">
+                     <string>%</string>
+                    </property>
+                    <property name="maximum">
+                     <number>100</number>
+                    </property>
+                    <property name="value">
+                     <number>70</number>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="2" column="0" colspan="2">
                    <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
                     <property name="toolTip">
@@ -3604,6 +3627,27 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="checked">
                      <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QCheckBox" name="ntcDispatchAllAreasCheckBox">
+                    <property name="text">
+                     <string>Dispatch all areas</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="0">
+                   <widget class="QLabel" name="label_64">
+                    <property name="text">
+                     <string>NTC load Rule (CEP)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0">
+                   <widget class="QLabel" name="label_23">
+                    <property name="text">
+                     <string>Transmission reliability margin (TRM)</string>
                     </property>
                    </widget>
                   </item>
@@ -3627,20 +3671,6 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="0">
-                   <widget class="QCheckBox" name="ntcDispatchAllAreasCheckBox">
-                    <property name="text">
-                     <string>Dispatch all areas</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0">
-                   <widget class="QLabel" name="label_23">
-                    <property name="text">
-                     <string>Transmission reliability margin (TRM)</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="6" column="1">
                    <widget class="QSpinBox" name="ntcOpfTolSpinBox">
                     <property name="toolTip">
@@ -3660,19 +3690,6 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
-                    <property name="toolTip">
-                     <string>If activated, the generation limits are not considered</string>
-                    </property>
-                    <property name="text">
-                     <string>Skip generation limits</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="0" colspan="2">
                    <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
                     <property name="toolTip">
@@ -3680,6 +3697,19 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="text">
                      <string>Proportional redispatch</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the generation limits are not considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Skip generation limits</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -3705,33 +3735,10 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QCheckBox" name="ntcFeasibilityCheckCheckBox">
+                  <item row="9" column="0">
+                   <widget class="QCheckBox" name="monitorOnlyNtcLoadRuleBranchesCheckBox">
                     <property name="text">
-                     <string>Check feasibility</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
-                   <widget class="QLabel" name="label_64">
-                    <property name="text">
-                     <string>NTC load Rule (CEP)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="1">
-                   <widget class="QSpinBox" name="ntcLoadRuleSpinBox">
-                    <property name="suffix">
-                     <string>%</string>
-                    </property>
-                    <property name="maximum">
-                     <number>100</number>
-                    </property>
-                    <property name="value">
-                     <number>70</number>
+                     <string>Only monitor branches over NTC load rule</string>
                     </property>
                    </widget>
                   </item>

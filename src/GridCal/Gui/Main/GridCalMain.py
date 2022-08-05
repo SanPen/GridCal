@@ -4110,6 +4110,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.setChecked(False)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4124,6 +4125,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.setChecked(False)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4177,6 +4179,7 @@ class MainGUI(QMainWindow):
                     # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4195,12 +4198,17 @@ class MainGUI(QMainWindow):
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
+                trm = self.ui.trmSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
+
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
                     area_to_bus_idx=idx_to,
                     mip_solver=mip_solver,
                     generation_formulation=generation_formulation,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,
@@ -4214,25 +4222,20 @@ class MainGUI(QMainWindow):
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold)
+                    generation_contingency_threshold=generation_contingency_threshold,
+                    trm=trm,
+                    ntc_load_rule=ntcLoadRule,
+                    n1_consideration=n1Consideration)
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
 
-                trm = self.ui.trmSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
-                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
-
                 # set power flow object instance
-
                 drv = sim.OptimalNetTransferCapacityDriver(
                     grid=self.circuit,
                     options=options,
-                    pf_options=pf_options,
-                    trm=trm,
-                    ntc_load_rule=ntcLoadRule,
-                    n1_consideration=n1Consideration)
+                    pf_options=pf_options)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -4333,6 +4336,7 @@ class MainGUI(QMainWindow):
                     # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4350,6 +4354,11 @@ class MainGUI(QMainWindow):
                 consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
+
+                trm = self.ui.trmSpinBox.value()
+                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
@@ -4370,7 +4379,11 @@ class MainGUI(QMainWindow):
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold)
+                    generation_contingency_threshold=generation_contingency_threshold,
+                    trm=trm,
+                    max_report_elements=nTopContingencies,
+                    ntc_load_rule=ntcLoadRule,
+                    n1_consideration=n1Consideration)
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
                 QtGui.QGuiApplication.processEvents()
@@ -4379,11 +4392,6 @@ class MainGUI(QMainWindow):
                 end_ = self.ui.profile_end_slider.value()
                 cluster_number = self.ui.cluster_number_spinBox.value()
 
-                trm = self.ui.trmSpinBox.value()
-                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
-                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
-
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
                     grid=self.circuit,
@@ -4391,11 +4399,7 @@ class MainGUI(QMainWindow):
                     start_=start_,
                     end_=end_,
                     use_clustering=with_clustering,
-                    cluster_number=cluster_number,
-                    trm=trm,
-                    max_report_elements=nTopContingencies,
-                    ntc_load_rule=ntcLoadRule,
-                    n1_consideration=n1Consideration)
+                    cluster_number=cluster_number)
 
                 self.LOCK()
                 self.session.run(drv,
