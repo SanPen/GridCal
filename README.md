@@ -57,6 +57,8 @@ from the project's documentation.
 
 - [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
 
+- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
+
 # Batteries included
 
 In an effort to ease the simulation and construction of grids, 
