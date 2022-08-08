@@ -181,7 +181,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  alpha=None, alpha_n1=None, rates=None, monitor=None, contingency_branch_flows_list=None,
                  contingency_branch_indices_list=None, contingency_generation_flows_list=None,
                  contingency_generation_indices_list=None, contingency_hvdc_flows_list=None,
-                 contingency_hvdc_indices_list=None, contingency_rates=None,
+                 contingency_hvdc_indices_list=None, contingency_rates=None, branch_ntc_load_rule=None,
                  area_from_bus_idx=None, area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
@@ -286,6 +286,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.rates = rates
         self.contingency_rates = contingency_rates
 
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+
         self.plot_bars_limit = 100
 
     def apply_new_rates(self, nc: "SnapshotData"):
@@ -361,23 +363,25 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         ntc = ttc - trm
 
         monitor_idx = np.where(self.monitor)[0]
-        for i in monitor_idx:
-            maczt = ntc * np.abs(self.alpha[i]) / self.rates[i]
+        for m in monitor_idx:
+            maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
             y.append([ttc,
                       trm,
                       ntc,
                       maczt * 100,
-                      self.branch_names[i],
-                      self.Sf[i].real,
-                      self.Sf[i] / self.rates[i] * 100,
-                      self.rates[i],
-                      self.alpha[i]])
+                      self.branch_ntc_load_rule[m],
+                      self.branch_names[m],
+                      self.Sf[m].real,
+                      self.Sf[m] / self.rates[m] * 100,
+                      self.rates[m],
+                      self.alpha[m]])
 
         y = np.array(y, dtype=object)
         columns = ['TTC',
                    'TRM',
                    'NTC',
                    'MACZT (%)',
+                   'NTC Load Rule',
                    'Branch',
                    'Flow (MW)',
                    'Load (%)',
@@ -423,6 +427,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           trm,
                           ntc,
                           maczt * 100,
+                          self.ntc_load_rule[m],
                           self.branch_names[m],
                           self.branch_names[c],
                           contingency_flow,
@@ -441,6 +446,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'TRM',
                    'NTC',
                    'MACZT (%)',
+                   'NTC Load Rule',
                    'Monitored',
                    'Contingency',
                    'Contingency flow (MW)',
@@ -495,6 +501,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           trm,
                           ntc,
                           maczt * 100,
+                          self.ntc_load_rule[m],
                           self.branch_names[m],
                           self.generator_names[c],
                           contingency_flow,
@@ -513,6 +520,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'TRM',
                    'NTC',
                    'MACZT (%)',
+                   'NTC Load Rule',
                    'Monitored',
                    'Contingency',
                    'Contingency flow (MW)',
@@ -565,6 +573,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           trm,
                           ntc,
                           maczt * 100,
+                          self.branch_ntc_load_rule[m],
                           self.branch_names[m],
                           self.hvdc_names[c],
                           contingency_flow,
@@ -583,6 +592,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'TRM',
                    'NTC',
                    'MACZT (%)',
+                   'NTC Load Rule',
                    'Monitored',
                    'Contingency',
                    'Contingency flow (MW)',

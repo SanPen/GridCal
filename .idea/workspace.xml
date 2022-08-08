@@ -23,15 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="changing to alpha_n1 as matrix">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="working to include ntc load rule to monitor criteria">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +54,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel" />
+        <entry key="$PROJECT_DIR$" value="devel_REE" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -724,13 +719,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00230" summary="Added node balance check in the NTC opf">
-      <created>1636104721959</created>
-      <option name="number" value="00230" />
-      <option name="presentableId" value="LOCAL-00230" />
-      <option name="project" value="LOCAL" />
-      <updated>1636104721959</updated>
-    </task>
     <task id="LOCAL-00231" summary="Added more explicative values">
       <created>1636106809618</created>
       <option name="number" value="00231" />
@@ -1067,7 +1055,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646940921578</updated>
     </task>
-    <option name="localTasksCounter" value="279" />
+    <task id="LOCAL-00279" summary="working to include ntc load rule to monitor criteria">
+      <created>1659707399423</created>
+      <option name="number" value="00279" />
+      <option name="presentableId" value="LOCAL-00279" />
+      <option name="project" value="LOCAL" />
+      <updated>1659707399423</updated>
+    </task>
+    <option name="localTasksCounter" value="280" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1101,7 +1096,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed the FUBM indices calculation when islands are present" />
     <MESSAGE value="Merged some changes" />
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
@@ -1126,7 +1120,8 @@
     <MESSAGE value="Improved html visualization&#10;Improved &quot;new&quot; function on the GUI" />
     <MESSAGE value="Improved raw file reading integration with the GUI&#10;Added dialogue to the correct inconsistencies function" />
     <MESSAGE value="Fixed LODF bug when dividing by very small numbers" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed LODF bug when dividing by very small numbers" />
+    <MESSAGE value="working to include ntc load rule to monitor criteria" />
+    <option name="LAST_COMMIT_MESSAGE" value="working to include ntc load rule to monitor criteria" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1386,16 +1381,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
           <line>865</line>
           <option name="timeStamp" value="759" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>913</line>
-          <option name="timeStamp" value="764" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>200</line>
-          <option name="timeStamp" value="768" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

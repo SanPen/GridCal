@@ -912,7 +912,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             max_alpha = max(alpha_abs[m], alpha_n1_abs[m])
             # NTC min for considering as limiting element by ACER
-            branch_ntc_load_rule[m] = rates[m]/max_alpha * ntc_load_rule / Sbase
+            branch_ntc_load_rule[m] = rates[m] / max_alpha * ntc_load_rule / 100 / Sbase
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
@@ -1943,6 +1943,8 @@ class OpfNTC(Opf):
         self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
         self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
 
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+
         # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
@@ -2278,6 +2280,7 @@ class OpfNTC(Opf):
         self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
         self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
 
+        self.branch_ntc_load_rule = branch_ntc_load_rule
         # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
@@ -2813,6 +2816,12 @@ class OpfNTC(Opf):
         """
         return self.extract(self.hvdc_angle_slack_neg + self.hvdc_angle_slack_pos, make_abs=False)
 
+    def get_branch_ntc_load_rule(self):
+        """
+        return the branch min ntc load by ntc rule
+        :return:
+        """
+        return self.extract(self.branch_ntc_load_rule, make_abs=False) * self.numerical_circuit.Sbase
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen
