@@ -912,7 +912,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             max_alpha = max(alpha_abs[m], alpha_n1_abs[m])
             # NTC min for considering as limiting element by ACER
-            branch_ntc_load_rule[m] = rates[m] / max_alpha * ntc_load_rule / 100 / Sbase
+            branch_ntc_load_rule[m] = rates[m] / max_alpha * ntc_load_rule / Sbase
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
