@@ -2822,6 +2822,7 @@ class OpfNTC(Opf):
         :return:
         """
         return self.extract(self.branch_ntc_load_rule, make_abs=False) * self.numerical_circuit.Sbase
+
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen

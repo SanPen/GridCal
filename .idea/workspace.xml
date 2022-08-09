@@ -23,10 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="working to include ntc load rule to monitor criteria">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Several fixes. &#10;Included NTC Load Rule in reports">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -719,13 +719,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00231" summary="Added more explicative values">
-      <created>1636106809618</created>
-      <option name="number" value="00231" />
-      <option name="presentableId" value="LOCAL-00231" />
-      <option name="project" value="LOCAL" />
-      <updated>1636106809618</updated>
-    </task>
     <task id="LOCAL-00232" summary="Added N-1 exploration">
       <created>1636368509985</created>
       <option name="number" value="00232" />
@@ -1062,7 +1055,14 @@
       <option name="project" value="LOCAL" />
       <updated>1659707399423</updated>
     </task>
-    <option name="localTasksCounter" value="280" />
+    <task id="LOCAL-00280" summary="Several fixes. &#10;Included NTC Load Rule in reports">
+      <created>1659961263212</created>
+      <option name="number" value="00280" />
+      <option name="presentableId" value="LOCAL-00280" />
+      <option name="project" value="LOCAL" />
+      <updated>1659961263212</updated>
+    </task>
+    <option name="localTasksCounter" value="281" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1096,7 +1096,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Merged some changes" />
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
     <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
@@ -1121,7 +1120,8 @@
     <MESSAGE value="Improved raw file reading integration with the GUI&#10;Added dialogue to the correct inconsistencies function" />
     <MESSAGE value="Fixed LODF bug when dividing by very small numbers" />
     <MESSAGE value="working to include ntc load rule to monitor criteria" />
-    <option name="LAST_COMMIT_MESSAGE" value="working to include ntc load rule to monitor criteria" />
+    <MESSAGE value="Several fixes. &#10;Included NTC Load Rule in reports" />
+    <option name="LAST_COMMIT_MESSAGE" value="Several fixes. &#10;Included NTC Load Rule in reports" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1376,11 +1376,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py</url>
           <line>269</line>
           <option name="timeStamp" value="758" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>865</line>
-          <option name="timeStamp" value="759" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
