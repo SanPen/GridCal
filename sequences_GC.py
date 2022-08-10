@@ -18,3 +18,4 @@ sc.run()
 print(abs(sc.results.voltage))
 
 print('Finished!')
+print('Finished!')
