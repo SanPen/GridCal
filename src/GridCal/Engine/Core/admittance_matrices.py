@@ -212,17 +212,10 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
 
 def add_shunt_fault_impedances(Ybus, C_bus_gen, gen_r1, gen_x1, C_bus_batt, batt_r1, batt_x1):
 
-    Y_gen = C_bus_gen * (gen_r1 + 1j * gen_x1)
-    Y_batt = C_bus_batt * (batt_r1 + 1j * batt_x1)
+    Y_gen = sp.diags(C_bus_gen @ (gen_r1 + 1j * gen_x1) ** (-1))
+    Y_batt = sp.diags(C_bus_batt @ (batt_r1 + 1j * batt_x1) ** (-1))
 
-    print(Y_gen)
-    print(Y_batt)
-
-    # for idx, bus in enumerate(gen_bus):
-    #     Ybus[bus, bus] += 1 / (gen_r1[idx] + 1j * gen_x1[idx])
-
-    # for idx, bus in enumerate(bat_bus):
-    #     Ybus[bus, bus] += 1 / (bat_r1[idx] + 1j * bat_x1[idx])
+    Ybus += Y_gen + Y_batt
 
     return Ybus
 
