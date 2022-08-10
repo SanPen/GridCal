@@ -11,29 +11,21 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
         Zf: Fault impedance array
 
     Returns: Voltages after the short circuit (p.u.), Short circuit power in MVA
+    Computed as V = Vpre + V increment, where Vpre is the power flow solution and
+    V increment is the fault contribution
+    The short-circuit power is V_i^2 / Z[i,i], it will tend to infinity if the
+    generator is ideal (r1 and x1 approach 0)
 
     """
     n = len(Vbus)
-    Z = Zbus[bus_idx, :][:, bus_idx]  # Z_B in documentation
 
-    # Voltage Source Contribution
-    I_kI = np.zeros(n, dtype=complex)
-    Z.flat[::len(bus_idx) + 1] += Zf[bus_idx]  # add Zf to diagonals of Z_B
-    I_kI[bus_idx] = -1 * np.linalg.solve(Z, Vbus[bus_idx])
+    Ifvec = np.zeros(n, dtype=complex)
+    Ifvec[bus_idx] = Vbus[bus_idx] / (Zbus[bus_idx, bus_idx] + Zf[bus_idx])
+    
+    Av = - Zbus @ Ifvec
+    V = Vbus + Av
 
-    # Current source contribution
-    # I_kII = -1 * Zbus.dot(I_kC / Z[elm_idx])
-
-    # Total current contribution
-    # I_k = I_kI + I_kII
-    I_k = I_kI
-
-    # voltage increment due to these currents
-    incV = Zbus.dot(I_k)
-
-    V = Vbus + incV
-
-    # Short circuit power in MVA
-    SCC = -I_k * Vbus * baseMVA
+    idx_buses = range(n)
+    SCC = baseMVA * abs(Vbus[idx_buses]) ** 2 / abs(Zbus[idx_buses, idx_buses])
 
     return V, SCC

@@ -211,6 +211,17 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
 
 
 def add_shunt_fault_impedances(Ybus, C_bus_gen, gen_r1, gen_x1, C_bus_batt, batt_r1, batt_x1):
+    """Rebuild the admittance matrix adding generators and batteries (shunt elements) impedances
+
+    :param Ybus: original admittance matrix
+    :param C_bus_gen: connection matrix of generators 
+    :param gen_r1: R1 vector of generators
+    :param gen_x1: X1 vector of generators
+    :param C_bus_batt: connection matrix of batteries 
+    :param batt_r1: R1 vector of batteries
+    :param batt_x1: X1 vector of batteries
+    :return: admittance matrix with generators and batteries impedances
+    """
 
     Y_gen = sp.diags(C_bus_gen @ (gen_r1 + 1j * gen_x1) ** (-1))
     Y_batt = sp.diags(C_bus_batt @ (batt_r1 + 1j * batt_x1) ** (-1))
