@@ -45,6 +45,16 @@ class GeneratorData:
 
         self.C_bus_gen = sp.lil_matrix((nbus, ngen), dtype=int)
 
+        # r0, r1, r2, x0, x1, x2
+        self.generator_r0 = np.zeros(ngen)
+        self.generator_r1 = np.zeros(ngen)
+        self.generator_r2 = np.zeros(ngen)
+
+        self.generator_x0 = np.zeros(ngen)
+        self.generator_x1 = np.zeros(ngen)
+        self.generator_x2 = np.zeros(ngen)
+
+
     def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 

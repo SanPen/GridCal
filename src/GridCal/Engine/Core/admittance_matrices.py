@@ -210,6 +210,23 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1.tocsc(), B2.tocsc()
 
 
+def add_shunt_fault_impedances(Ybus, C_bus_gen, gen_r1, gen_x1, C_bus_batt, batt_r1, batt_x1):
+
+    Y_gen = C_bus_gen * (gen_r1 + 1j * gen_x1)
+    Y_batt = C_bus_batt * (batt_r1 + 1j * batt_x1)
+
+    print(Y_gen)
+    print(Y_batt)
+
+    # for idx, bus in enumerate(gen_bus):
+    #     Ybus[bus, bus] += 1 / (gen_r1[idx] + 1j * gen_x1[idx])
+
+    # for idx, bus in enumerate(bat_bus):
+    #     Ybus[bus, bus] += 1 / (bat_r1[idx] + 1j * bat_x1[idx])
+
+    return Ybus
+
+
 def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF

@@ -201,6 +201,14 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.generator_controllable[k] = elm.is_controlled
         data.generator_installed_p[k] = elm.Snom
 
+        # r0, r1, r2, x0, x1, x2
+        data.generator_r0 = elm.R0
+        data.generator_r1 = elm.R1
+        data.generator_r2 = elm.R2
+        data.generator_x0 = elm.X0
+        data.generator_x1 = elm.X1
+        data.generator_x2 = elm.X2
+
         if time_series:
             data.generator_p[k] = elm.P_prof
             data.generator_active[k] = elm.active_prof

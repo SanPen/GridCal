@@ -31,6 +31,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Core.admittance_matrices import add_shunt_fault_impedances
 
 ########################################################################################################################
 # Short circuit classes
@@ -39,12 +40,12 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 class ShortCircuitOptions:
 
-    def __init__(self, bus_index=None, branch_index=None, branch_fault_locations=None, branch_fault_impedance=None,
-                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
-                 verbose=False):
+    def __init__(self, bus_index=None, fault_type='3x', branch_index=None, branch_fault_locations=None, 
+                 branch_fault_impedance=None, branch_impedance_tolerance_mode=BranchImpedanceMode.Specified, verbose=False):
         """
 
         :param bus_index:
+        :param fault_type: fault type among 3x, LG, LL and LLG possibilities
         :param branch_index:
         :param branch_fault_locations:
         :param branch_fault_impedance:
@@ -60,6 +61,11 @@ class ShortCircuitOptions:
             self.bus_index = list()
         else:
             self.bus_index = bus_index
+
+        if fault_type is None:
+            self.fault_type = list()
+        else:
+            self.fault_type = fault_type
 
         if branch_index is None:
             self.branch_index = list()
@@ -277,70 +283,80 @@ class ShortCircuitDriver(DriverTemplate):
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
 
-            Zbus = inv(calculation_inputs.Ybus.tocsc()).toarray()
+            if self.options.fault_type == '3x':
+                Ybus_gen_batt = add_shunt_fault_impedances(calculation_inputs.Ybus,
+                                                  calculation_inputs.generator_data.C_bus_gen,
+                                                  calculation_inputs.generator_data.generator_r1,
+                                                  calculation_inputs.generator_data.generator_x1,
+                                                  calculation_inputs.battery_data.C_bus_batt,
+                                                  calculation_inputs.battery_data.battery_r1,
+                                                  calculation_inputs.battery_data.battery_x1)
 
-            # Compute the short circuit
-            V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
-                                          Zbus=Zbus,
-                                          Vbus=Vpf,
-                                          Zf=Zf,
-                                          baseMVA=calculation_inputs.Sbase)
+                Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
+                # Zbus = inv(calculation_inputs.Ybus.tocsc()).toarray()
 
-            # Compute the branches power
-            # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
-            Sfb, Stb, If, It, Vbranch, \
-            loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
-                                                            Sbus=calculation_inputs.Sbus,
-                                                            V=V,
-                                                            branch_rates=calculation_inputs.branch_rates,
-                                                            Yf=calculation_inputs.Yf,
-                                                            Yt=calculation_inputs.Yt)
+                # Compute the short circuit
+                V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
+                                            Zbus=Zbus,
+                                            Vbus=Vpf,
+                                            Zf=Zf,
+                                            baseMVA=calculation_inputs.Sbase)
 
-            # voltage, Sf, loading, losses, error, converged, Qpv
-            results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                          m=calculation_inputs.nbr,
-                                          n_tr=calculation_inputs.ntr,
-                                          bus_names=calculation_inputs.bus_names,
-                                          branch_names=calculation_inputs.branch_names,
-                                          transformer_names=calculation_inputs.tr_names,
-                                          bus_types=calculation_inputs.bus_types)
+                # Compute the branches power
+                # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+                Sfb, Stb, If, It, Vbranch, \
+                loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
+                                                                Sbus=calculation_inputs.Sbus,
+                                                                V=V,
+                                                                branch_rates=calculation_inputs.branch_rates,
+                                                                Yf=calculation_inputs.Yf,
+                                                                Yt=calculation_inputs.Yt)
 
-            results.SCpower = SCpower
-            results.Sbus = calculation_inputs.Sbus * calculation_inputs.Sbase  # MVA
-            results.voltage = V
-            results.Sf = Sfb  # in MVA already
-            results.St = Stb  # in MVA already
-            results.If = If  # in p.u.
-            results.It = It  # in p.u.
-            # results.ma = calculation_inputs.ma
-            # results.theta = calculation_inputs.theta
-            # results.Beq = calculation_inputs.Beq
-            results.Vbranch = Vbranch
-            results.loading = loading
-            results.losses = losses
-            # results.transformer_tap_module = solution.ma[circuit.transformer_idx]
-            # results.convergence_reports.append(report)
-            # results.Qpv = Sbus.imag[circuit.pv]
+                # voltage, Sf, loading, losses, error, converged, Qpv
+                results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                            m=calculation_inputs.nbr,
+                                            n_tr=calculation_inputs.ntr,
+                                            bus_names=calculation_inputs.bus_names,
+                                            branch_names=calculation_inputs.branch_names,
+                                            transformer_names=calculation_inputs.tr_names,
+                                            bus_types=calculation_inputs.bus_types)
 
-        else:
-            nbus = calculation_inputs.Ybus.shape[0]
-            nbr = calculation_inputs.nbr
+                results.SCpower = SCpower
+                results.Sbus = calculation_inputs.Sbus * calculation_inputs.Sbase  # MVA
+                results.voltage = V
+                results.Sf = Sfb  # in MVA already
+                results.St = Stb  # in MVA already
+                results.If = If  # in p.u.
+                results.It = It  # in p.u.
+                # results.ma = calculation_inputs.ma
+                # results.theta = calculation_inputs.theta
+                # results.Beq = calculation_inputs.Beq
+                results.Vbranch = Vbranch
+                results.loading = loading
+                results.losses = losses
+                # results.transformer_tap_module = solution.ma[circuit.transformer_idx]
+                # results.convergence_reports.append(report)
+                # results.Qpv = Sbus.imag[circuit.pv]
 
-            # voltage, Sf, loading, losses, error, converged, Qpv
-            results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                          m=calculation_inputs.nbr,
-                                          n_tr=calculation_inputs.ntr,
-                                          bus_names=calculation_inputs.bus_names,
-                                          branch_names=calculation_inputs.branch_names,
-                                          transformer_names=calculation_inputs.tr_names,
-                                          bus_types=calculation_inputs.bus_types)
+            else:
+                nbus = calculation_inputs.Ybus.shape[0]
+                nbr = calculation_inputs.nbr
 
-            results.Sbus = calculation_inputs.Sbus
-            results.voltage = np.zeros(nbus, dtype=complex)
-            results.Sf = np.zeros(nbr, dtype=complex)
-            results.If = np.zeros(nbr, dtype=complex)
-            results.losses = np.zeros(nbr, dtype=complex)
-            results.SCpower = np.zeros(nbus, dtype=complex)
+                # voltage, Sf, loading, losses, error, converged, Qpv
+                results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                            m=calculation_inputs.nbr,
+                                            n_tr=calculation_inputs.ntr,
+                                            bus_names=calculation_inputs.bus_names,
+                                            branch_names=calculation_inputs.branch_names,
+                                            transformer_names=calculation_inputs.tr_names,
+                                            bus_types=calculation_inputs.bus_types)
+
+                results.Sbus = calculation_inputs.Sbus
+                results.voltage = np.zeros(nbus, dtype=complex)
+                results.Sf = np.zeros(nbr, dtype=complex)
+                results.If = np.zeros(nbr, dtype=complex)
+                results.losses = np.zeros(nbr, dtype=complex)
+                results.SCpower = np.zeros(nbus, dtype=complex)
 
         return results
 

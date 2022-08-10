@@ -316,6 +316,15 @@ class Generator(EditableDevice):
         # is the generator active?
         gen.active = self.active
 
+        # r0, r1, r2, x0, x1, x2
+        gen.R0 = self.R0
+        gen.R1 = self.R1
+        gen.R2 = self.R2
+
+        gen.X0 = self.X0
+        gen.X1 = self.X1
+        gen.X2 = self.X2
+
         # active profile
         gen.active_prof = self.active_prof
 

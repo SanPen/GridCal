@@ -45,6 +45,16 @@ class BatteryData:
 
         self.C_bus_batt = sp.lil_matrix((nbus, nbatt), dtype=int)
 
+        # r0, r1, r2, x0, x1, x2
+        self.battery_r0 = np.zeros(nbatt)
+        self.battery_r1 = np.zeros(nbatt)
+        self.battery_r2 = np.zeros(nbatt)
+
+        self.battery_x0 = np.zeros(nbatt)
+        self.battery_x1 = np.zeros(nbatt)
+        self.battery_x2 = np.zeros(nbatt)
+
+
     def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
