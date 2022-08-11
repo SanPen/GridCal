@@ -445,6 +445,7 @@ class ShortCircuitDriver(DriverTemplate):
                                                      fault_type=self.options.fault_type)
 
 
+                print('done')
                 # store results, not really sure how to proceed here
                 pass
 

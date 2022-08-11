@@ -51,35 +51,34 @@ def short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type):
     Zth0 = Z0[bus_idx, bus_idx]
     Zth1 = Z1[bus_idx, bus_idx]
     Zth2 = Z2[bus_idx, bus_idx]
+    Zflt = Zf[bus_idx]
 
     if fault_type == 'LG':
-        I0 = Vpr / (Zth0 + Zth1 + Zth2 + 3 * Zf)
+        I0 = Vpr / (Zth0 + Zth1 + Zth2 + 3 * Zflt)
         I1 = I0
         I2 = I0
     elif fault_type == 'LL':  # between phases b and c
         I0 = 0
-        I1 = Vpr / (Zth1 + Zth2 + Zf)
+        I1 = Vpr / (Zth1 + Zth2 + Zflt)
         I2 = - I1
     elif fault_type == 'LLG':  # between phases b and c
-        I1 = Vpr / (Zth1 + Zth2 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf))
-        I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zf)
-        I2 = -I1 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf)
+        I1 = Vpr / (Zth1 + Zth2 * (Zth0 + 3 * Zflt) / (Zth2 + Zth0 + 3 * Zflt))
+        I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zflt)
+        I2 = -I1 * (Zth0 + 3 * Zflt) / (Zth2 + Zth0 + 3 * Zflt)
     else:
         print('Unknown fault type')
     
     # obtain the post fault voltages
-    Vpre_ok = np.zeros((n, 1), dtype=complex)
-    I0_vec = np.zeros((n, 1), dtype=complex)
-    I1_vec = np.zeros((n, 1), dtype=complex)
-    I2_vec = np.zeros((n, 1), dtype=complex)
+    I0_vec = np.zeros(n, dtype=complex)
+    I1_vec = np.zeros(n, dtype=complex)
+    I2_vec = np.zeros(n, dtype=complex)
 
-    Vpre_ok[:, 0] = Vbus
-    I0_vec[bus_idx, 0] = I0
-    I1_vec[bus_idx, 0] = I1
-    I2_vec[bus_idx, 0] = I2
+    I0_vec[bus_idx] = I0
+    I1_vec[bus_idx] = I1
+    I2_vec[bus_idx] = I2
 
     V0_fin = - Z0 @ I0_vec
-    V1_fin = Vpre_ok - Z1 @ I1_vec
+    V1_fin = Vbus - Z1 @ I1_vec
     V2_fin = - Z2 @ I2_vec
     
     return V0_fin, V1_fin, V2_fin
