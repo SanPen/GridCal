@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.Devices.enumerations import WindingsConnection
 
 
 def get_bus_indices(C_branch_bus):
@@ -74,7 +75,7 @@ class BranchData:
         self.B2 = np.zeros(self.nbr, dtype=float)
 
         # self.conn = np.empty(self.nbr, dtype=str)  # winding connection, ground-ground by default
-        self.conn = np.array(['GG'] * self.nbr)
+        self.conn = np.array([WindingsConnection.GG] * self.nbr)
 
         self.k = np.ones(nbr, dtype=float)
 

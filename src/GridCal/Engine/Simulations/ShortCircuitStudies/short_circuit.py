@@ -1,4 +1,5 @@
 import numpy as np
+from GridCal.Engine.Devices.enumerations import FaultType
 
 
 def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
@@ -41,6 +42,7 @@ def short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type):
     :param Z2: impedance matrix for the negative sequence
     :param Vbus: prefault voltage (positive sequence)
     :param Zf: fault impedance
+    :param fault_type: type of unbalanced fault fault
     :return: V0, V1, V2 for all buses
     """
 
@@ -53,20 +55,20 @@ def short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type):
     Zth2 = Z2[bus_idx, bus_idx]
     Zflt = Zf[bus_idx]
 
-    if fault_type == 'LG':
+    if fault_type == FaultType.LG:
         I0 = Vpr / (Zth0 + Zth1 + Zth2 + 3 * Zflt)
         I1 = I0
         I2 = I0
-    elif fault_type == 'LL':  # between phases b and c
+    elif fault_type == FaultType.LL:  # between phases b and c
         I0 = 0
         I1 = Vpr / (Zth1 + Zth2 + Zflt)
         I2 = - I1
-    elif fault_type == 'LLG':  # between phases b and c
+    elif fault_type == FaultType.LLG:  # between phases b and c
         I1 = Vpr / (Zth1 + Zth2 * (Zth0 + 3 * Zflt) / (Zth2 + Zth0 + 3 * Zflt))
         I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zflt)
         I2 = -I1 * (Zth0 + 3 * Zflt) / (Zth2 + Zth0 + 3 * Zflt)
     else:
-        print('Unknown fault type')
+        print('Unknown unbalanced fault type')
     
     # obtain the post fault voltages
     I0_vec = np.zeros(n, dtype=complex)

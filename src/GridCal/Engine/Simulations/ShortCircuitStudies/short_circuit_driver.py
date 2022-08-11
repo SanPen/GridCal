@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from xmlrpc.client import Fault
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
@@ -33,6 +34,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.admittance_matrices import compute_admittances, add_shunt_fault_impedances, get_Y012
+from GridCal.Engine.Devices.enumerations import FaultType
 
 ########################################################################################################################
 # Short circuit classes
@@ -41,7 +43,7 @@ from GridCal.Engine.Core.admittance_matrices import compute_admittances, add_shu
 
 class ShortCircuitOptions:
 
-    def __init__(self, bus_index=None, fault_type='3x', branch_index=None, branch_fault_locations=None, 
+    def __init__(self, bus_index=None, fault_type=FaultType.ph3, branch_index=None, branch_fault_locations=None, 
                  branch_fault_impedance=None, branch_impedance_tolerance_mode=BranchImpedanceMode.Specified, verbose=False):
         """
 
@@ -281,7 +283,7 @@ class ShortCircuitDriver(DriverTemplate):
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
 
-            if self.options.fault_type == '3x':
+            if self.options.fault_type == FaultType.ph3:
 
                 Y_gen = add_shunt_fault_impedances(C_bus_elm=calculation_inputs.generator_data.C_bus_gen,
                                                    r=calculation_inputs.generator_data.generator_r1,
@@ -337,7 +339,7 @@ class ShortCircuitDriver(DriverTemplate):
                 # results.convergence_reports.append(report)
                 # results.Qpv = Sbus.imag[circuit.pv]
 
-            elif self.options.fault_type in ['LG', 'LL', 'LLG']:
+            elif self.options.fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
 
                 # build Y0, Y1, Y2
                 nbr = calculation_inputs.nbr
@@ -430,7 +432,7 @@ class ShortCircuitDriver(DriverTemplate):
                 Z2 = inv(Y2.Ybus.tocsc()).toarray()
 
                 # solve the fault
-                Vpf = np.array([1., 1., 1., 1., 1 * np.exp(-1j * np.pi / 6)])
+                Vpf = np.array([1., 1., 1., 1., 1 * np.exp(-1j * np.pi / 6)])  # hardcoded, remove!
                 V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
                                                      Z0=Z0,
                                                      Z1=Z1,

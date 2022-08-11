@@ -20,6 +20,8 @@ import numpy as np
 import scipy.sparse as sp
 from sympy import factor
 
+from GridCal.Engine.Devices.enumerations import WindingsConnection
+
 
 def compute_connectivity(branch_active, Cf_, Ct_):
     """
@@ -80,11 +82,11 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
         ysft = np.zeros(len(ys), dtype=complex)
 
         for i, con in enumerate(conn):
-            if con == 'GG':
+            if con == WindingsConnection.GG:
                 ysf[i] = ys[i]
                 yst[i] = ys[i]
                 ysft[i] = ys[i]
-            elif con == 'GD':
+            elif con == WindingsConnection.GD:
                 ysf[i] = ys[i]
             
         Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
@@ -94,7 +96,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
 
     elif seq == 2:  # negative sequence
         # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([np.exp(-1j * np.pi / 6) if con=='GD' or con=='SD' else 1 for con in conn])
+        factor_psh = np.array([np.exp(-1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
 
         Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
         Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
@@ -103,7 +105,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
 
     elif seq == 1:  # positive sequence
         # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([np.exp(1j * np.pi / 6) if con=='GD' or con=='SD' else 1 for con in conn])
+        factor_psh = np.array([np.exp(1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
 
         Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
         Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh

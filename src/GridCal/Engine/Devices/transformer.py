@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType
+from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType, WindingsConnection
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
@@ -432,7 +432,7 @@ class Transformer2W(EditableDevice):
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
                  r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
-                 conn='GG'):
+                 conn: WindingsConnection = WindingsConnection.GG):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -479,7 +479,7 @@ class Transformer2W(EditableDevice):
                                                   'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
                                                   'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
 
-                                                  'conn': GCProp('', str, 'Winding connection.'),
+                                                  'conn': GCProp('', WindingsConnection, 'Winding connection.'),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
@@ -556,7 +556,7 @@ class Transformer2W(EditableDevice):
         self.G2 = g2
         self.B2 = b2
 
-        self.conn = conn
+        self.conn = conn 
 
         self.mttf = mttf
 

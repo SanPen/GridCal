@@ -1,5 +1,6 @@
 from GridCal.Engine import *
 from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.Engine.Devices.enumerations import FaultType
 
 # grid = FileOpen('IEEE30.xlsx').open()
 grid = FileOpen('5bus_Saadat.xlsx').open()
@@ -12,7 +13,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
 pf = PowerFlowDriver(grid, pf_options)
 pf.run()
 
-sc_options = ShortCircuitOptions(bus_index=[2], fault_type='LG')
+sc_options = ShortCircuitOptions(bus_index=[2], fault_type=FaultType.LG)
 sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
 sc.run()
 
