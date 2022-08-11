@@ -377,7 +377,9 @@ class ShortCircuitDriver(DriverTemplate):
                                 gen_x=calculation_inputs.generator_data.generator_x0,
                                 C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
                                 batt_r=calculation_inputs.battery_data.battery_r0,
-                                batt_x=calculation_inputs.battery_data.battery_x0)
+                                batt_x=calculation_inputs.battery_data.battery_x0,
+                                conn=calculation_inputs.branch_data.conn,
+                                seq=0)
 
                 Y1 = get_Y012(R=calculation_inputs.branch_data.R,
                                 X=calculation_inputs.branch_data.X,
@@ -402,7 +404,9 @@ class ShortCircuitDriver(DriverTemplate):
                                 gen_x=calculation_inputs.generator_data.generator_x1,
                                 C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
                                 batt_r=calculation_inputs.battery_data.battery_r1,
-                                batt_x=calculation_inputs.battery_data.battery_x1)
+                                batt_x=calculation_inputs.battery_data.battery_x1,
+                                conn=calculation_inputs.branch_data.conn,
+                                seq=1)
 
                 Y2 = get_Y012(R=calculation_inputs.branch_data.R2,
                                 X=calculation_inputs.branch_data.X2,
@@ -412,7 +416,7 @@ class ShortCircuitDriver(DriverTemplate):
                                 tap_module=calculation_inputs.branch_data.m[:, 0],
                                 vtap_f=calculation_inputs.branch_data.tap_f,
                                 vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle= - calculation_inputs.branch_data.theta[:, 0],  # invert it
+                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
                                 Beq=np.zeros(nbr),
                                 Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                 Ct=calculation_inputs.branch_data.C_branch_bus_t,
@@ -427,7 +431,9 @@ class ShortCircuitDriver(DriverTemplate):
                                 gen_x=calculation_inputs.generator_data.generator_x2,
                                 C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
                                 batt_r=calculation_inputs.battery_data.battery_r2,
-                                batt_x=calculation_inputs.battery_data.battery_x2)
+                                batt_x=calculation_inputs.battery_data.battery_x2,
+                                conn=calculation_inputs.branch_data.conn,
+                                seq=2)
 
 
                 # get impedances matrices
