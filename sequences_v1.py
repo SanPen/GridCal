@@ -154,7 +154,7 @@ def solve_faults(Y, n_bus, Vpre, bus_f, type_f, Zf):
         I0 = 0
         I1 = Vpr / (Zth1 + Zth2 + Zf)
         I2 = - I1
-    elif type == 'LLG':  # between phases b and c
+    elif type_f == 'LLG':  # between phases b and c
         I1 = Vpr / (Zth1 + Zth2 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf))
         I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zf)
         I2 = -I1 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf)
@@ -170,9 +170,9 @@ def solve_faults(Y, n_bus, Vpre, bus_f, type_f, Zf):
     I1_vec[bus_f, 0] = I1
     I2_vec[bus_f, 0] = I2
 
-    V0_fin = - np.matmul(Y.Z0, I0_vec)
-    V1_fin = Vpre_ok - np.matmul(Y.Z1 , I1_vec)
-    V2_fin = - np.matmul(Y.Z2 , I2_vec)
+    V0_fin = - Y.Z0 @ I0_vec
+    V1_fin = Vpre_ok - Y.Z1 @ I1_vec
+    V2_fin = - Y.Z2 @ I2_vec
 
     return [V0_fin, V1_fin, V2_fin], [I0, I1, I2]
 
