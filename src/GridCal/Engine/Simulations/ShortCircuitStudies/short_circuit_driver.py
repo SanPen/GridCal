@@ -347,6 +347,10 @@ class ShortCircuitDriver(DriverTemplate):
                 nbr = calculation_inputs.nbr
                 nbus = calculation_inputs.nbus
 
+
+                # Y_shunt_bus = C_bus_elm @ np.power((r + 1j * x), -1)
+                Y_shunt_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
+
                 Y0 = get_Y012(R=calculation_inputs.branch_data.R0,
                                 X=calculation_inputs.branch_data.X0,
                                 G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten

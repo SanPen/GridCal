@@ -111,6 +111,20 @@ class GeneratorData:
         Q = pf_sign * self.generator_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.generator_p + 1.0j * Q
 
+    def get_gen_Yshunt(self, seq=1):
+        """
+        Obtain the vector of shunt admittances of a given sequence
+        :param seq: sequence (0, 1 or 2)
+        """
+        if seq==0:
+            Y_vec = self.C_bus_gen @ np.power((self.generator_r0 + 1j * self.generator_x0), -1)
+        elif seq==1:
+            Y_vec = self.C_bus_gen @ np.power((self.generator_r1 + 1j * self.generator_x1), -1)
+        elif seq==2:
+            Y_vec = self.C_bus_gen @ np.power((self.generator_r2 + 1j * self.generator_x2), -1)
+
+        return Y_vec
+
     def get_effective_generation(self):
         return self.generator_p * self.generator_active
 
