@@ -338,17 +338,6 @@ class ShortCircuitDriver(DriverTemplate):
                 # results.Qpv = Sbus.imag[circuit.pv]
 
             elif self.options.fault_type in ['LG', 'LL', 'LLG']:
-                # Y0 = get_Y012(R=calculation_inputs.R0, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        # tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
-                        # C_bus_gen, gen_r, gen_x, C_bus_batt, batt_r, batt_x):
-                # Y0, Y1, Y2 = get_Y012()
-                # Z0 = inv(Y0.tocsc()).toarray()
-                # Z1 = inv(Y1.tocsc()).toarray()
-                # Z2 = inv(Y2.tocsc()).toarray()
-                # V0, V1, V2 = short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type)
-
-                # we have to differentiate between G0 for Gsw and G0 for zero seq. admittance!!
-                # how to do that?
 
                 # build Y0, Y1, Y2
                 nbr = calculation_inputs.nbr
@@ -435,7 +424,6 @@ class ShortCircuitDriver(DriverTemplate):
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=2)
 
-
                 # get impedances matrices
                 Z0 = inv(Y0.Ybus.tocsc()).toarray()
                 Z1 = inv(Y1.Ybus.tocsc()).toarray()
@@ -450,10 +438,69 @@ class ShortCircuitDriver(DriverTemplate):
                                                      Zf=Zf,
                                                      fault_type=self.options.fault_type)
 
+                # process results in the sequences
+                Sfb0, Stb0, If0, It0, Vbranch0, \
+                loading0, losses0, Sbus0 = power_flow_post_process(calculation_inputs=calculation_inputs,
+                                                                Sbus=np.zeros(nbus, dtype=complex),
+                                                                V=V0,
+                                                                branch_rates=calculation_inputs.branch_rates,
+                                                                Ybus=Y0.Ybus,
+                                                                Yf=Y0.Yf,
+                                                                Yt=Y0.Yt)
 
-                print('calculation done')
-                # store results, not really sure how to proceed here
-                pass
+                Sfb1, Stb1, If1, It1, Vbranch1, \
+                loading1, losses1, Sbus1 = power_flow_post_process(calculation_inputs=calculation_inputs,
+                                                                Sbus=calculation_inputs.Sbus,
+                                                                V=V1,
+                                                                branch_rates=calculation_inputs.branch_rates,
+                                                                Ybus=Y1.Ybus,
+                                                                Yf=Y1.Yf,
+                                                                Yt=Y1.Yt)
+
+                Sfb2, Stb2, If2, It2, Vbranch2, \
+                loading2, losses2, Sbus2 = power_flow_post_process(calculation_inputs=calculation_inputs,
+                                                                Sbus=np.zeros(nbus, dtype=complex),
+                                                                V=V2,
+                                                                branch_rates=calculation_inputs.branch_rates,
+                                                                Ybus=Y2.Ybus,
+                                                                Yf=Y2.Yf,
+                                                                Yt=Y2.Yt)
+
+                # voltage, Sf, loading, losses, error, converged, Qpv
+                results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                            m=calculation_inputs.nbr,
+                                            n_tr=calculation_inputs.ntr,
+                                            bus_names=calculation_inputs.bus_names,
+                                            branch_names=calculation_inputs.branch_names,
+                                            transformer_names=calculation_inputs.tr_names,
+                                            bus_types=calculation_inputs.bus_types)
+
+                results.voltage0 = V0
+                results.Sf0 = Sfb0  # in MVA already
+                results.St0 = Stb0  # in MVA already
+                results.If0 = If0  # in p.u.
+                results.It0 = It0  # in p.u.
+                results.Vbranch0 = Vbranch0
+                results.loading0 = loading0
+                results.losses0 = losses0
+
+                results.voltage1 = V1
+                results.Sf1 = Sfb1  # in MVA already
+                results.St1 = Stb1  # in MVA already
+                results.If1 = If1  # in p.u.
+                results.It1 = It1  # in p.u.
+                results.Vbranch1 = Vbranch1
+                results.loading1 = loading1
+                results.losses1 = losses1
+
+                results.voltage2 = V2
+                results.Sf2 = Sfb2  # in MVA already
+                results.St2 = Stb2  # in MVA already
+                results.If2 = If2  # in p.u.
+                results.It2 = It2  # in p.u.
+                results.Vbranch2 = Vbranch2
+                results.loading2 = loading2
+                results.losses2 = losses2
 
             else:
                 nbus = calculation_inputs.Ybus.shape[0]

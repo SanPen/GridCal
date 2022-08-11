@@ -434,7 +434,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None,
+def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Ybus=None, Yf=None, Yt=None,
                             method: bs.SolverType = None):
     """
     Compute the power Sf trough the branches.
@@ -459,18 +459,21 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     Vt = calculation_inputs.Ct * V
 
     if method not in [bs.SolverType.DC]:
-        # power at the slack nodes
-        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
 
-        # Reactive power at the pv nodes
-        P = Sbus[pv].real
-        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
-        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
-
+        if Ybus is None:
+            Ybus = calculation_inputs.Ybus
         if Yf is None:
             Yf = calculation_inputs.Yf
         if Yt is None:
             Yt = calculation_inputs.Yt
+
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * np.conj(Ybus[vd, :].dot(V))
+
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * np.conj(Ybus[pv, :].dot(V))).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
         # Branches current, loading, etc
         If = Yf * V
