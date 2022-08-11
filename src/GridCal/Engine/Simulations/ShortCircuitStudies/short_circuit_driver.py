@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+import scipy.sparse as sp
 from scipy.sparse.linalg import inv
 
 from GridCal.Engine.basic_structures import Logger
@@ -281,16 +282,17 @@ class ShortCircuitDriver(DriverTemplate):
         if calculation_inputs.Ybus.shape[0] > 1:
 
             if self.options.fault_type == '3x':
-                Ybus_gen_batt = add_shunt_fault_impedances(Ybus=calculation_inputs.Ybus,
-                                                           C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
-                                                           gen_r=calculation_inputs.generator_data.generator_r1,
-                                                           gen_x=calculation_inputs.generator_data.generator_x1,
-                                                           C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
-                                                           batt_r=calculation_inputs.battery_data.battery_r1,
-                                                           batt_x=calculation_inputs.battery_data.battery_x1)
 
+                Y_gen = add_shunt_fault_impedances(C_bus_elm=calculation_inputs.generator_data.C_bus_gen,
+                                                   r=calculation_inputs.generator_data.generator_r1,
+                                                   x=calculation_inputs.generator_data.generator_x1)
+
+                Y_batt = add_shunt_fault_impedances(C_bus_elm=calculation_inputs.battery_data.C_bus_batt,
+                                                   r=calculation_inputs.battery_data.battery_r1,
+                                                   x=calculation_inputs.battery_data.battery_x1)
+
+                Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
                 Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
-                # Zbus = inv(calculation_inputs.Ybus.tocsc()).toarray()
 
                 # Compute the short circuit
                 V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
@@ -336,8 +338,13 @@ class ShortCircuitDriver(DriverTemplate):
                 # results.Qpv = Sbus.imag[circuit.pv]
 
             elif self.options.fault_type in ['LG', 'LL', 'LLG']:
-                # get Z0, Z1, Z2
+                # Y0, Y1, Y2 = get_Y012()
+                # Z0 = inv(Y0.tocsc()).toarray()
+                # Z1 = inv(Y1.tocsc()).toarray()
+                # Z2 = inv(Y2.tocsc()).toarray()
                 # V0, V1, V2 = short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type)
+
+                # store results, not really sure how to proceed here
                 pass
 
             else:

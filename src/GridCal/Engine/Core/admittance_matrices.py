@@ -210,29 +210,22 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1.tocsc(), B2.tocsc()
 
 
-def add_shunt_fault_impedances(Ybus, C_bus_gen, gen_r, gen_x, C_bus_batt, batt_r, batt_x):
-    """Rebuild the admittance matrix adding generators and batteries (shunt elements) impedances
+def add_shunt_fault_impedances(C_bus_elm, r, x):
+    """Rebuild the admittance matrix adding shunt elements impedances such as gens and batts
 
-    :param Ybus: original admittance matrix
-    :param C_bus_gen: connection matrix of generators 
-    :param gen_r: R vector of generators
-    :param gen_x: X vector of generators
-    :param C_bus_batt: connection matrix of batteries 
-    :param batt_r: R vector of batteries
-    :param batt_x: X vector of batteries
-    :return: admittance matrix with generators and batteries impedances
+    :param C_bus_elm: connection matrix of the shunt devices
+    :param r: R vector of the devices
+    :param x: X vector of the devices
+    :return: vector of shunt admittances to include
     """
 
-    Y_gen = sp.diags(C_bus_gen @ (gen_r + 1j * gen_x) ** (-1))
-    Y_batt = sp.diags(C_bus_batt @ (batt_r + 1j * batt_x) ** (-1))
+    Y_vec = C_bus_elm @ np.power((r + 1j * x), -1)
 
-    Ybus += Y_gen + Y_batt
-
-    return Ybus
+    return Y_vec
 
 
 def get_Y012(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        tap_angle, Beq, If, Cf, Ct, G0, Yshunt_bus):
+                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
 
     return
 
