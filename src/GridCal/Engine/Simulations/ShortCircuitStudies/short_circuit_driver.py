@@ -62,10 +62,7 @@ class ShortCircuitOptions:
         else:
             self.bus_index = bus_index
 
-        if fault_type is None:
-            self.fault_type = list()
-        else:
-            self.fault_type = fault_type
+        self.fault_type = fault_type
 
         if branch_index is None:
             self.branch_index = list()

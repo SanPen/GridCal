@@ -26,6 +26,6 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
     V = Vbus + Av
 
     idx_buses = range(n)
-    SCC = baseMVA * abs(Vbus[idx_buses]) ** 2 / abs(Zbus[idx_buses, idx_buses])
+    SCC = baseMVA * np.power(np.abs(Vbus[idx_buses]), 2) / np.abs(Zbus[idx_buses, idx_buses])
 
     return V, SCC
