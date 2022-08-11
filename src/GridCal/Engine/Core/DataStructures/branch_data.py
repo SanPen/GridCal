@@ -65,7 +65,7 @@ class BranchData:
 
         self.R0 = np.zeros(self.nbr, dtype=float)
         self.X0 = np.zeros(self.nbr, dtype=float)
-        self.G0 = np.zeros(self.nbr, dtype=float)
+        self.G0_ = np.zeros(self.nbr, dtype=float)
         self.B0 = np.zeros(self.nbr, dtype=float)
 
         self.R2 = np.zeros(self.nbr, dtype=float)
@@ -133,7 +133,7 @@ class BranchData:
 
         data.R0 = self.R[elm_idx]
         data.X0 = self.X[elm_idx]
-        data.G0 = self.G[elm_idx]
+        data.G0_ = self.G[elm_idx]
         data.B0 = self.B[elm_idx]
 
         data.R2 = self.R[elm_idx]

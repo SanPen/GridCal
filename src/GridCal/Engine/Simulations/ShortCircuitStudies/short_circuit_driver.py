@@ -356,7 +356,7 @@ class ShortCircuitDriver(DriverTemplate):
 
                 Y0 = get_Y012(R=calculation_inputs.branch_data.R0,
                                 X=calculation_inputs.branch_data.X0,
-                                G=calculation_inputs.branch_data.G2,  # can't use G0, different size!
+                                G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
                                 B=calculation_inputs.branch_data.B0,
                                 k=calculation_inputs.branch_data.k,
                                 tap_module=calculation_inputs.branch_data.m[:, 0],
@@ -451,7 +451,7 @@ class ShortCircuitDriver(DriverTemplate):
                                                      fault_type=self.options.fault_type)
 
 
-                print('done')
+                print('calculation done')
                 # store results, not really sure how to proceed here
                 pass
 
