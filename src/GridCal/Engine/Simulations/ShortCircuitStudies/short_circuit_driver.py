@@ -34,7 +34,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.admittance_matrices import compute_admittances, add_shunt_fault_impedances, get_Y012
+from GridCal.Engine.Core.admittance_matrices import get_Y012
 from GridCal.Engine.Devices.enumerations import FaultType
 
 ########################################################################################################################
@@ -286,14 +286,8 @@ class ShortCircuitDriver(DriverTemplate):
 
             if self.options.fault_type == FaultType.ph3:
 
-                Y_gen = add_shunt_fault_impedances(C_bus_elm=calculation_inputs.generator_data.C_bus_gen,
-                                                   r=calculation_inputs.generator_data.generator_r1,
-                                                   x=calculation_inputs.generator_data.generator_x1)
-
-                Y_batt = add_shunt_fault_impedances(C_bus_elm=calculation_inputs.battery_data.C_bus_batt,
-                                                   r=calculation_inputs.battery_data.battery_r1,
-                                                   x=calculation_inputs.battery_data.battery_x1)
-
+                Y_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
+                Y_batt = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
                 Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
                 Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
 
@@ -349,7 +343,7 @@ class ShortCircuitDriver(DriverTemplate):
 
 
                 # Y_shunt_bus = C_bus_elm @ np.power((r + 1j * x), -1)
-                Y_shunt_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
+                # Y_shunt_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
 
                 Y0 = get_Y012(R=calculation_inputs.branch_data.R0,
                                 X=calculation_inputs.branch_data.X0,
@@ -369,12 +363,8 @@ class ShortCircuitDriver(DriverTemplate):
                                 b=np.zeros(nbr),
                                 c=np.zeros(nbr),
                                 Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
-                                gen_r=calculation_inputs.generator_data.generator_r0,
-                                gen_x=calculation_inputs.generator_data.generator_x0,
-                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
-                                batt_r=calculation_inputs.battery_data.battery_r0,
-                                batt_x=calculation_inputs.battery_data.battery_x0,
+                                gen_data=calculation_inputs.generator_data,
+                                batt_data=calculation_inputs.battery_data,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=0)
 
@@ -396,12 +386,8 @@ class ShortCircuitDriver(DriverTemplate):
                                 b=calculation_inputs.branch_data.b,
                                 c=calculation_inputs.branch_data.c,
                                 Yshunt_bus=calculation_inputs.Yshunt_from_devices[:, 0],
-                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
-                                gen_r=calculation_inputs.generator_data.generator_r1,
-                                gen_x=calculation_inputs.generator_data.generator_x1,
-                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
-                                batt_r=calculation_inputs.battery_data.battery_r1,
-                                batt_x=calculation_inputs.battery_data.battery_x1,
+                                gen_data=calculation_inputs.generator_data,
+                                batt_data=calculation_inputs.battery_data,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=1)
 
@@ -423,12 +409,8 @@ class ShortCircuitDriver(DriverTemplate):
                                 b=np.zeros(nbr),
                                 c=np.zeros(nbr),
                                 Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
-                                gen_r=calculation_inputs.generator_data.generator_r2,
-                                gen_x=calculation_inputs.generator_data.generator_x2,
-                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
-                                batt_r=calculation_inputs.battery_data.battery_r2,
-                                batt_x=calculation_inputs.battery_data.battery_x2,
+                                gen_data=calculation_inputs.generator_data,
+                                batt_data=calculation_inputs.battery_data,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=2)
 

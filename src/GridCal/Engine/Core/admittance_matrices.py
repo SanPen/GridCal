@@ -254,37 +254,18 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1.tocsc(), B2.tocsc()
 
 
-def add_shunt_fault_impedances(C_bus_elm, r, x):
-    """Rebuild the admittance matrix adding shunt elements impedances such as gens and batts
-
-    :param C_bus_elm: connection matrix of the shunt devices
-    :param r: R vector of the devices
-    :param x: X vector of the devices
-    :return: vector of shunt admittances to include
-    """
-
-    Y_vec = C_bus_elm @ np.power((r + 1j * x), -1)
-
-    return Y_vec
-
-
 def get_Y012(R, X, G, B, k, tap_module, vtap_f, vtap_t,
                         tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
-                        C_bus_gen, gen_r, gen_x, C_bus_batt, batt_r, batt_x,
-                        conn, seq):
+                        gen_data, batt_data, conn, seq):
     
     """
     :param conn: connection of the windings for all branches, GG by default
     :param seq: 0, 1 or 2 for zero, positive or negative seq.
     """
 
-    Y_gen = add_shunt_fault_impedances(C_bus_elm=C_bus_gen,
-                                                r=gen_r,
-                                                x=gen_x)
+    Y_gen = gen_data.get_gen_Yshunt(seq=seq)
 
-    Y_batt = add_shunt_fault_impedances(C_bus_elm=C_bus_batt,
-                                                r=batt_r,
-                                                x=batt_x)
+    Y_batt = batt_data.get_batt_Yshunt(seq=seq)
 
     Yshunt_bus += Y_gen + Y_batt
 
