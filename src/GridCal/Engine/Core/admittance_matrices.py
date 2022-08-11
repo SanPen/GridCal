@@ -97,8 +97,8 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
         factor_psh = np.array([np.exp(-1j * np.pi / 6) if con=='GD' or con=='SD' else 1 for con in conn])
 
         Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) @ factor_psh
-        Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) @ np.conj(factor_psh)
+        Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+        Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
         Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     elif seq == 1:  # positive sequence
@@ -106,8 +106,8 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
         factor_psh = np.array([np.exp(1j * np.pi / 6) if con=='GD' or con=='SD' else 1 for con in conn])
 
         Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) @ factor_psh
-        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) @ np.conj(factor_psh)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
         Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     else:  # original
@@ -286,7 +286,8 @@ def get_Y012(R, X, G, B, k, tap_module, vtap_f, vtap_t,
     Yshunt_bus += Y_gen + Y_batt
 
     Yseq = compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                               tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus)
+                               tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
+                               conn=conn, seq=seq)
 
     return Yseq
 
