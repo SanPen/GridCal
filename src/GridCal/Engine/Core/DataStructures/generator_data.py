@@ -84,6 +84,14 @@ class GeneratorData:
 
         data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, elm_idx)]
 
+        data.generator_r0 = self.generator_r0[elm_idx]
+        data.generator_r1 = self.generator_r1[elm_idx]
+        data.generator_r2 = self.generator_r2[elm_idx]
+
+        data.generator_x0 = self.generator_x0[elm_idx]
+        data.generator_x1 = self.generator_x1[elm_idx]
+        data.generator_x2 = self.generator_x2[elm_idx]
+
         return data
 
     def get_island(self, bus_idx, t_idx=0):

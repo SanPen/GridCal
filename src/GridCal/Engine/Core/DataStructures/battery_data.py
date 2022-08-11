@@ -84,6 +84,14 @@ class BatteryData:
 
         data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, elm_idx)]
 
+        data.battery_r0 = self.battery_r0[elm_idx]
+        data.battery_r1 = self.battery_r1[elm_idx]
+        data.battery_r2 = self.battery_r2[elm_idx]
+
+        data.battery_x0 = self.battery_x0[elm_idx]
+        data.battery_x1 = self.battery_x1[elm_idx]
+        data.battery_x2 = self.battery_x2[elm_idx]
+
         return data
 
     def get_island(self, bus_idx, t_idx=0):
