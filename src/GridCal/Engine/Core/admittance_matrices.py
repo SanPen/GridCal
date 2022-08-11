@@ -225,9 +225,23 @@ def add_shunt_fault_impedances(C_bus_elm, r, x):
 
 
 def get_Y012(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
+                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
+                        C_bus_gen, gen_r, gen_x, C_bus_batt, batt_r, batt_x):
 
-    return
+    Y_gen = add_shunt_fault_impedances(C_bus_elm=C_bus_gen,
+                                                r=gen_r,
+                                                x=gen_x)
+
+    Y_batt = add_shunt_fault_impedances(C_bus_elm=C_bus_batt,
+                                                r=batt_r,
+                                                x=batt_x)
+
+    Yshunt_bus += Y_gen + Y_batt
+
+    Yseq = compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
+                               tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus)
+
+    return Yseq
 
 
 def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):

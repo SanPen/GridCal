@@ -11,7 +11,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
 pf = PowerFlowDriver(grid, pf_options)
 pf.run()
 
-sc_options = ShortCircuitOptions(bus_index=[29], fault_type='3x')
+sc_options = ShortCircuitOptions(bus_index=[29], fault_type='LG')
 sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
 sc.run()
 

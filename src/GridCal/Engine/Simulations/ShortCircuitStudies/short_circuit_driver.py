@@ -32,7 +32,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.admittance_matrices import add_shunt_fault_impedances, get_Y012
+from GridCal.Engine.Core.admittance_matrices import compute_admittances, add_shunt_fault_impedances, get_Y012
 
 ########################################################################################################################
 # Short circuit classes
@@ -338,11 +338,112 @@ class ShortCircuitDriver(DriverTemplate):
                 # results.Qpv = Sbus.imag[circuit.pv]
 
             elif self.options.fault_type in ['LG', 'LL', 'LLG']:
+                # Y0 = get_Y012(R=calculation_inputs.R0, X, G, B, k, tap_module, vtap_f, vtap_t,
+                        # tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
+                        # C_bus_gen, gen_r, gen_x, C_bus_batt, batt_r, batt_x):
                 # Y0, Y1, Y2 = get_Y012()
                 # Z0 = inv(Y0.tocsc()).toarray()
                 # Z1 = inv(Y1.tocsc()).toarray()
                 # Z2 = inv(Y2.tocsc()).toarray()
                 # V0, V1, V2 = short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type)
+
+                # we have to differentiate between G0 for Gsw and G0 for zero seq. admittance!!
+                # how to do that?
+
+                # build Y0, Y1, Y2
+                nbr = calculation_inputs.nbr
+                nbus = calculation_inputs.nbus
+
+                Y0 = get_Y012(R=calculation_inputs.branch_data.R0,
+                                X=calculation_inputs.branch_data.X0,
+                                G=calculation_inputs.branch_data.G2,  # can't use G0, different size!
+                                B=calculation_inputs.branch_data.B0,
+                                k=calculation_inputs.branch_data.k,
+                                tap_module=calculation_inputs.branch_data.m[:, 0],
+                                vtap_f=calculation_inputs.branch_data.tap_f,
+                                vtap_t=calculation_inputs.branch_data.tap_t,
+                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                Beq=np.zeros(nbr),
+                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                G0=np.zeros(nbr),
+                                If=np.zeros(nbr),
+                                a=np.zeros(nbr),
+                                b=np.zeros(nbr),
+                                c=np.zeros(nbr),
+                                Yshunt_bus=np.zeros(nbus, dtype=complex),
+                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
+                                gen_r=calculation_inputs.generator_data.generator_r0,
+                                gen_x=calculation_inputs.generator_data.generator_x0,
+                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
+                                batt_r=calculation_inputs.battery_data.battery_r0,
+                                batt_x=calculation_inputs.battery_data.battery_x0)
+
+                Y1 = get_Y012(R=calculation_inputs.branch_data.R,
+                                X=calculation_inputs.branch_data.X,
+                                G=calculation_inputs.branch_data.G,
+                                B=calculation_inputs.branch_data.B,
+                                k=calculation_inputs.branch_data.k,
+                                tap_module=calculation_inputs.branch_data.m[:, 0],
+                                vtap_f=calculation_inputs.branch_data.tap_f,
+                                vtap_t=calculation_inputs.branch_data.tap_t,
+                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                Beq=calculation_inputs.branch_data.Beq[:, 0],
+                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                G0=calculation_inputs.branch_data.G0[:, 0],
+                                If=np.zeros(nbr),
+                                a=calculation_inputs.branch_data.a,
+                                b=calculation_inputs.branch_data.b,
+                                c=calculation_inputs.branch_data.c,
+                                Yshunt_bus=calculation_inputs.Yshunt_from_devices[:, 0],
+                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
+                                gen_r=calculation_inputs.generator_data.generator_r1,
+                                gen_x=calculation_inputs.generator_data.generator_x1,
+                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
+                                batt_r=calculation_inputs.battery_data.battery_r1,
+                                batt_x=calculation_inputs.battery_data.battery_x1)
+
+                Y2 = get_Y012(R=calculation_inputs.branch_data.R2,
+                                X=calculation_inputs.branch_data.X2,
+                                G=calculation_inputs.branch_data.G2,
+                                B=calculation_inputs.branch_data.B2,
+                                k=calculation_inputs.branch_data.k,
+                                tap_module=calculation_inputs.branch_data.m[:, 0],
+                                vtap_f=calculation_inputs.branch_data.tap_f,
+                                vtap_t=calculation_inputs.branch_data.tap_t,
+                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                Beq=np.zeros(nbr),
+                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                G0=np.zeros(nbr),
+                                If=np.zeros(nbr),
+                                a=np.zeros(nbr),
+                                b=np.zeros(nbr),
+                                c=np.zeros(nbr),
+                                Yshunt_bus=np.zeros(nbus, dtype=complex),
+                                C_bus_gen=calculation_inputs.generator_data.C_bus_gen,
+                                gen_r=calculation_inputs.generator_data.generator_r2,
+                                gen_x=calculation_inputs.generator_data.generator_x2,
+                                C_bus_batt=calculation_inputs.battery_data.C_bus_batt,
+                                batt_r=calculation_inputs.battery_data.battery_r2,
+                                batt_x=calculation_inputs.battery_data.battery_x2)
+
+
+                # get impedances matrices
+                Z0 = inv(Y0.Ybus.tocsc()).toarray()
+                Z1 = inv(Y1.Ybus.tocsc()).toarray()
+                Z2 = inv(Y2.Ybus.tocsc()).toarray()
+
+                # solve the fault
+                V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
+                                                     Z0=Z0,
+                                                     Z1=Z1,
+                                                     Z2=Z2,
+                                                     Vbus=Vpf,
+                                                     Zf=Zf,
+                                                     fault_type=self.options.fault_type)
+
 
                 # store results, not really sure how to proceed here
                 pass
