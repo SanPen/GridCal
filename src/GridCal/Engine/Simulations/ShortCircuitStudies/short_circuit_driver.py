@@ -26,6 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_post_process
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
@@ -305,13 +306,20 @@ class ShortCircuitDriver(DriverTemplate):
 
                 # Compute the branches power
                 # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+                # Sfb, Stb, If, It, Vbranch, \
+                # loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
+                #                                                 Sbus=calculation_inputs.Sbus,
+                #                                                 V=V,
+                #                                                 branch_rates=calculation_inputs.branch_rates,
+                #                                                 Yf=calculation_inputs.Yf,
+                #                                                 Yt=calculation_inputs.Yt)
+
                 Sfb, Stb, If, It, Vbranch, \
-                loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
-                                                                Sbus=calculation_inputs.Sbus,
-                                                                V=V,
-                                                                branch_rates=calculation_inputs.branch_rates,
-                                                                Yf=calculation_inputs.Yf,
-                                                                Yt=calculation_inputs.Yt)
+                loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                             V=V,
+                                                             branch_rates=calculation_inputs.branch_rates,
+                                                             Yf=calculation_inputs.Yf,
+                                                             Yt=calculation_inputs.Yt)
 
                 # voltage, Sf, loading, losses, error, converged, Qpv
                 results = ShortCircuitResults(n=calculation_inputs.nbus,
@@ -329,15 +337,9 @@ class ShortCircuitDriver(DriverTemplate):
                 results.St = Stb  # in MVA already
                 results.If = If  # in p.u.
                 results.It = It  # in p.u.
-                # results.ma = calculation_inputs.ma
-                # results.theta = calculation_inputs.theta
-                # results.Beq = calculation_inputs.Beq
                 results.Vbranch = Vbranch
                 results.loading = loading
                 results.losses = losses
-                # results.transformer_tap_module = solution.ma[circuit.transformer_idx]
-                # results.convergence_reports.append(report)
-                # results.Qpv = Sbus.imag[circuit.pv]
 
             elif self.options.fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
 
@@ -443,29 +445,23 @@ class ShortCircuitDriver(DriverTemplate):
 
                 # process results in the sequences
                 Sfb0, Stb0, If0, It0, Vbranch0, \
-                loading0, losses0, Sbus0 = power_flow_post_process(calculation_inputs=calculation_inputs,
-                                                                Sbus=np.zeros(nbus, dtype=complex),
+                loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                                 V=V0,
                                                                 branch_rates=calculation_inputs.branch_rates,
-                                                                Ybus=Y0.Ybus,
                                                                 Yf=Y0.Yf,
                                                                 Yt=Y0.Yt)
 
                 Sfb1, Stb1, If1, It1, Vbranch1, \
-                loading1, losses1, Sbus1 = power_flow_post_process(calculation_inputs=calculation_inputs,
-                                                                Sbus=calculation_inputs.Sbus,
+                loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                                 V=V1,
                                                                 branch_rates=calculation_inputs.branch_rates,
-                                                                Ybus=Y1.Ybus,
                                                                 Yf=Y1.Yf,
                                                                 Yt=Y1.Yt)
 
                 Sfb2, Stb2, If2, It2, Vbranch2, \
-                loading2, losses2, Sbus2 = power_flow_post_process(calculation_inputs=calculation_inputs,
-                                                                Sbus=np.zeros(nbus, dtype=complex),
+                loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                                 V=V2,
                                                                 branch_rates=calculation_inputs.branch_rates,
-                                                                Ybus=Y2.Ybus,
                                                                 Yf=Y2.Yf,
                                                                 Yt=Y2.Yt)
 
