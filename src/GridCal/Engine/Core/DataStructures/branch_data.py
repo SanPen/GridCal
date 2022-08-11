@@ -73,6 +73,9 @@ class BranchData:
         self.G2 = np.zeros(self.nbr, dtype=float)
         self.B2 = np.zeros(self.nbr, dtype=float)
 
+        # self.conn = np.empty(self.nbr, dtype=str)  # winding connection, ground-ground by default
+        self.conn = np.array(['GG'] * self.nbr)
+
         self.k = np.ones(nbr, dtype=float)
 
         self.m = np.ones((nbr, ntime), dtype=float)
@@ -99,8 +102,6 @@ class BranchData:
         self.alpha2 = np.zeros(self.nbr)  # converter losses parameter (alpha2)
         self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
         self.control_mode = np.zeros(self.nbr, dtype=object)
-
-        self.conn = np.array(['GG'] * self.nbr)  # winding connection, ground-ground by default
 
         self.contingency_enabled = np.ones(self.nbr, dtype=int)
         self.monitor_loading = np.ones(self.nbr, dtype=int)
