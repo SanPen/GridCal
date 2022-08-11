@@ -420,7 +420,6 @@ class ShortCircuitDriver(DriverTemplate):
                 Z2 = inv(Y2.Ybus.tocsc()).toarray()
 
                 # solve the fault
-                Vpf = np.array([1., 1., 1., 1., 1 * np.exp(-1j * np.pi / 6)])  # hardcoded, remove!
                 V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
                                                      Z0=Z0,
                                                      Z1=Z1,
