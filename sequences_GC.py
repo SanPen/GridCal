@@ -16,8 +16,11 @@ sc_options = ShortCircuitOptions(bus_index=[2], fault_type='LG')
 sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
 sc.run()
 
+print('V0: ')
 print(abs(sc.results.voltage0))
+print('V1: ')
 print(abs(sc.results.voltage1))
+print('V2: ')
 print(abs(sc.results.voltage2))
 
 print('Finished!')

@@ -142,13 +142,6 @@ def solve_faults(Y, n_bus, Vpre, bus_f, type_f, Zf):
     Zth1 = Y.Z1[bus_f, bus_f]
     Zth2 = Y.Z2[bus_f, bus_f]
 
-    print('Y0')
-    print(Y.Y0)
-    print('Y1')
-    print(Y.Y1)
-    print('Y2')
-    print(Y.Y2)
-
     if type_f == '3x':
         I0 = 0
         I1 = Vpr / (Zth1 + Zf)
