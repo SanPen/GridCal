@@ -431,7 +431,8 @@ class Transformer2W(EditableDevice):
                  contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
-                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20):
+                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
+                 conn='GG'):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -477,6 +478,8 @@ class Transformer2W(EditableDevice):
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
                                                   'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
                                                   'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+
+                                                  'conn': GCProp('', str, 'Winding connection.'),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
@@ -552,6 +555,8 @@ class Transformer2W(EditableDevice):
         self.X2 = x2
         self.G2 = g2
         self.B2 = b2
+
+        self.conn = conn
 
         self.mttf = mttf
 

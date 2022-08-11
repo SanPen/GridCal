@@ -754,6 +754,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.G2[ii] = elm.G2
         data.B2[ii] = elm.B2
 
+        data.conn[i] = elm.conn
+
         if time_series:
             if opf_results is not None:
                 data.m[ii] = elm.tap_module

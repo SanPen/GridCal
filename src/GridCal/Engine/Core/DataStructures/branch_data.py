@@ -100,6 +100,8 @@ class BranchData:
         self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
+        self.conn = np.array(['GG'] * self.nbr)  # winding connection, ground-ground by default
+
         self.contingency_enabled = np.ones(self.nbr, dtype=int)
         self.monitor_loading = np.ones(self.nbr, dtype=int)
 
@@ -148,6 +150,8 @@ class BranchData:
         data.alpha1 = self.alpha1[elm_idx]
         data.alpha2 = self.alpha2[elm_idx]
         data.alpha3 = self.alpha3[elm_idx]
+
+        data.conn = self.conn[elm_idx]  # winding connection
 
         data.control_mode = self.control_mode[elm_idx]
         data.contingency_enabled = self.contingency_enabled[elm_idx]

@@ -412,7 +412,7 @@ class ShortCircuitDriver(DriverTemplate):
                                 tap_module=calculation_inputs.branch_data.m[:, 0],
                                 vtap_f=calculation_inputs.branch_data.tap_f,
                                 vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                tap_angle= - calculation_inputs.branch_data.theta[:, 0],  # invert it
                                 Beq=np.zeros(nbr),
                                 Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                 Ct=calculation_inputs.branch_data.C_branch_bus_t,
