@@ -548,7 +548,7 @@ class Transformer2W(EditableDevice):
 
         self.R0 = r0
         self.X0 = x0
-        self.G0 = g0
+        self.G0_ = g0
         self.B0 = b0
 
         self.R2 = r2
