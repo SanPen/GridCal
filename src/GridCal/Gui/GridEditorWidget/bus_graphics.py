@@ -30,7 +30,7 @@ from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGenerat
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.messages import *
-from GridCal.Engine.Devices.enumerations import DeviceType
+from GridCal.Engine.Devices.enumerations import DeviceType, FaultType
 
 
 class BusGraphicItem(QGraphicsRectItem):
@@ -72,7 +72,8 @@ class BusGraphicItem(QGraphicsRectItem):
         self.shunt_children = list()
 
         # Enabled for short circuit
-        self.sc_enabled = False
+        self.sc_enabled = [False, False, False, False]
+        self.sc_type = FaultType.ph3
         self.pen_width = 4
 
         # index
@@ -297,13 +298,59 @@ class BusGraphicItem(QGraphicsRectItem):
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
-        sc = menu.addAction('Short circuit')
+        sc = menu.addMenu('Short circuit')
         sc_icon = QIcon()
         sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
         sc.setIcon(sc_icon)
-        sc.setCheckable(True)
-        sc.setChecked(self.sc_enabled)
-        sc.triggered.connect(self.enable_disable_sc)
+        # sc.setCheckable(True)
+        # sc.setChecked(self.sc_enabled)
+        # sc.triggered.connect(self.enable_disable_sc)
+
+        sc_3p = sc.addAction('3-phase')
+        sc_3p_icon = QIcon()
+        sc_3p_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc_3p.setIcon(sc_3p_icon)
+        sc_3p.setCheckable(True)
+        sc_3p.setChecked(self.sc_enabled[0])
+        sc_3p.triggered.connect(self.enable_disable_sc_3p)
+
+        sc_lg = sc.addAction('Line-Ground')
+        sc_lg_icon = QIcon()
+        sc_lg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc_lg.setIcon(sc_lg_icon)
+        sc_lg.setCheckable(True)
+        sc_lg.setChecked(self.sc_enabled[1])
+        sc_lg.triggered.connect(self.enable_disable_sc_lg)
+
+        sc_ll = sc.addAction('Line-Line')
+        sc_ll_icon = QIcon()
+        sc_ll_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc_ll.setIcon(sc_ll_icon)
+        sc_ll.setCheckable(True)
+        sc_ll.setChecked(self.sc_enabled[2])
+        sc_ll.triggered.connect(self.enable_disable_sc_ll)
+
+        sc_llg = sc.addAction('Line-Line-Ground')
+        sc_llg_icon = QIcon()
+        sc_llg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc_llg.setIcon(sc_llg_icon)
+        sc_llg.setCheckable(True)
+        sc_llg.setChecked(self.sc_enabled[3])
+        sc_llg.triggered.connect(self.enable_disable_sc_llg)
+
+        sc_no = sc.addAction('Disable')
+        # sc_no_icon = QIcon()
+        # sc_no_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        # sc_no.setIcon(sc_no_icon)
+        # sc_no.setCheckable(True)
+        # sc_no.setChecked(self.api_object.is_dc)
+        sc_no.triggered.connect(self.disable_sc)
+
+        # types
+        # ph3 = '3x'
+        # LG = 'LG'
+        # LL = 'LL'
+        # LLG = 'LLG'
 
         dc = menu.addAction('Is a DC bus')
         dc_icon = QIcon()
@@ -461,19 +508,49 @@ class BusGraphicItem(QGraphicsRectItem):
                         if host.api_object is not None:
                             self.diagramScene.set_active_status_to_profile(host.api_object, override_question=True)
 
-    def enable_disable_sc(self):
+    def any_short_circuit(self):
+        for t in self.sc_enabled:
+            if t:
+                return True
+        return False
+
+    def enable_sc(self):
         """
 
         Returns:
 
         """
-        if self.sc_enabled is True:
-            # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
-            self.tile.setPen(QPen(Qt.transparent, self.pen_width))
-            self.sc_enabled = False
-        else:
-            self.sc_enabled = True
-            self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
+        self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
+
+    def disable_sc(self):
+        """
+
+        Returns:
+
+        """
+        # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
+        self.tile.setPen(QPen(Qt.transparent, self.pen_width))
+        self.sc_enabled = [False, False, False, False]
+
+    def enable_disable_sc_3p(self):
+        self.sc_enabled = [True, False, False, False]
+        self.sc_type = FaultType.ph3
+        self.enable_sc()
+
+    def enable_disable_sc_lg(self):
+        self.sc_enabled = [False, True, False, False]
+        self.sc_type = FaultType.LG
+        self.enable_sc()
+
+    def enable_disable_sc_ll(self):
+        self.sc_enabled = [False, False, True, False]
+        self.sc_type = FaultType.LL
+        self.enable_sc()
+
+    def enable_disable_sc_llg(self):
+        self.sc_enabled = [False, False, False, True]
+        self.sc_type = FaultType.LLG
+        self.enable_sc()
 
     def enable_disable_dc(self):
         """

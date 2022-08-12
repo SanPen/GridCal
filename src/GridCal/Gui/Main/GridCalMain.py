@@ -2659,10 +2659,16 @@ class MainGUI(QMainWindow):
 
                     # get the short circuit selected buses
                     sel_buses = list()
+                    self_short_circuit_types = list()
                     for i, bus in enumerate(self.circuit.buses):
                         if bus.graphic_obj is not None:
-                            if bus.graphic_obj.sc_enabled is True:
+                            if bus.graphic_obj.any_short_circuit():
                                 sel_buses.append(i)
+                                self_short_circuit_types.append(bus.graphic_obj.sc_type)
+
+                    if len(sel_buses) > 1:
+                        error_msg("GridCal only supports one short circuit bus at the time", "Short circuit")
+                        return
 
                     if len(sel_buses) == 0:
                         warning_msg('You need to enable some buses for short circuit.'
@@ -2678,7 +2684,8 @@ class MainGUI(QMainWindow):
                             branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Specified
 
                         # get the power flow options from the GUI
-                        sc_options = sim.ShortCircuitOptions(bus_index=sel_buses,
+                        sc_options = sim.ShortCircuitOptions(bus_index=sel_buses[0],
+                                                             fault_type=self_short_circuit_types[0],
                                                              branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
 
                         pf_options = self.get_selected_power_flow_options()

@@ -479,7 +479,10 @@ class Transformer2W(EditableDevice):
                                                   'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
                                                   'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
 
-                                                  'conn': GCProp('', WindingsConnection, 'Winding connection.'),
+                                                  'conn': GCProp('', WindingsConnection, "Windings connection (from, to):\n"
+                                                                                         "G: grounded star\n"
+                                                                                         "S: ungrounded star\n"
+                                                                                         "D: delta"),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
@@ -548,7 +551,7 @@ class Transformer2W(EditableDevice):
 
         self.R0 = r0
         self.X0 = x0
-        self.G0_ = g0
+        self.G0 = g0
         self.B0 = b0
 
         self.R2 = r2

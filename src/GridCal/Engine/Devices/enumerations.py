@@ -158,6 +158,24 @@ class FaultType(Enum):
     LL = 'LL'
     LLG = 'LLG'
 
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return FaultType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class WindingsConnection(Enum):
     # G: grounded star
     # S: ungrounded star
@@ -168,6 +186,24 @@ class WindingsConnection(Enum):
     SS = 'SS'
     SD = 'SD'
     DD = 'DD'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return WindingsConnection[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class DeviceType(Enum):
     NoDevice = "NoDevice"
