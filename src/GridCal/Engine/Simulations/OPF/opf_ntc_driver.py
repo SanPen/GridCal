@@ -464,7 +464,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Contingency idx',
                    ]
 
-        y = np.array(y)
+        y = np.array(y, dtype=object)
 
         # Add inter area branches, shifter and hvdc data into report
         y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
@@ -538,7 +538,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Monitored idx',
                    'Contingency idx']
 
-        y = np.array(y)
+        y = np.array(y, dtype=object)
 
         # Add inter area branches, shifter and hvdc data into report
         y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
@@ -612,7 +612,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Monitored idx',
                    'Contingency idx']
 
-        y = np.array(y)
+        y = np.array(y, dtype=object)
 
         # Add shifter and hvdc data into report
         y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
