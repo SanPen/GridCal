@@ -34,7 +34,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.admittance_matrices import get_Y012
+from GridCal.Engine.Core.admittance_matrices import compute_admittances
 from GridCal.Engine.Devices.enumerations import FaultType
 
 ########################################################################################################################
@@ -341,11 +341,11 @@ class ShortCircuitDriver(DriverTemplate):
                 nbr = calculation_inputs.nbr
                 nbus = calculation_inputs.nbus
 
+                Y_gen0 = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
+                Y_batt0 = calculation_inputs.battery_data.get_batt_Yshunt(seq=0)
+                Yshunt_bus0 = Y_gen0 + Y_batt0
 
-                # Y_shunt_bus = C_bus_elm @ np.power((r + 1j * x), -1)
-                # Y_shunt_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
-
-                Y0 = get_Y012(R=calculation_inputs.branch_data.R0,
+                Y0 = compute_admittances(R=calculation_inputs.branch_data.R0,
                                 X=calculation_inputs.branch_data.X0,
                                 G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
                                 B=calculation_inputs.branch_data.B0,
@@ -362,13 +362,15 @@ class ShortCircuitDriver(DriverTemplate):
                                 a=np.zeros(nbr),
                                 b=np.zeros(nbr),
                                 c=np.zeros(nbr),
-                                Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                gen_data=calculation_inputs.generator_data,
-                                batt_data=calculation_inputs.battery_data,
+                                Yshunt_bus=Yshunt_bus0,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=0)
 
-                Y1 = get_Y012(R=calculation_inputs.branch_data.R,
+                Y_gen1 = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
+                Y_batt1 = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
+                Yshunt_bus1 = calculation_inputs.Yshunt_from_devices[:, 0] + Y_gen1 + Y_batt1
+
+                Y1 = compute_admittances(R=calculation_inputs.branch_data.R,
                                 X=calculation_inputs.branch_data.X,
                                 G=calculation_inputs.branch_data.G,
                                 B=calculation_inputs.branch_data.B,
@@ -385,13 +387,15 @@ class ShortCircuitDriver(DriverTemplate):
                                 a=calculation_inputs.branch_data.a,
                                 b=calculation_inputs.branch_data.b,
                                 c=calculation_inputs.branch_data.c,
-                                Yshunt_bus=calculation_inputs.Yshunt_from_devices[:, 0],
-                                gen_data=calculation_inputs.generator_data,
-                                batt_data=calculation_inputs.battery_data,
+                                Yshunt_bus=Yshunt_bus1,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=1)
 
-                Y2 = get_Y012(R=calculation_inputs.branch_data.R2,
+                Y_gen2 = calculation_inputs.generator_data.get_gen_Yshunt(seq=2)
+                Y_batt2 = calculation_inputs.battery_data.get_batt_Yshunt(seq=2)
+                Yshunt_bus2 = Y_gen2 + Y_batt2
+
+                Y2 = compute_admittances(R=calculation_inputs.branch_data.R2,
                                 X=calculation_inputs.branch_data.X2,
                                 G=calculation_inputs.branch_data.G2,
                                 B=calculation_inputs.branch_data.B2,
@@ -408,9 +412,7 @@ class ShortCircuitDriver(DriverTemplate):
                                 a=np.zeros(nbr),
                                 b=np.zeros(nbr),
                                 c=np.zeros(nbr),
-                                Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                gen_data=calculation_inputs.generator_data,
-                                batt_data=calculation_inputs.battery_data,
+                                Yshunt_bus=Yshunt_bus2,
                                 conn=calculation_inputs.branch_data.conn,
                                 seq=2)
 
@@ -418,6 +420,12 @@ class ShortCircuitDriver(DriverTemplate):
                 Z0 = inv(Y0.Ybus.tocsc()).toarray()
                 Z1 = inv(Y1.Ybus.tocsc()).toarray()
                 Z2 = inv(Y2.Ybus.tocsc()).toarray()
+
+                # Vpf try find solution
+                # Ybb = Y1.Ybus.tocsc().toarray()
+                # Vpre = np.array([1., 1., 1., 1., 1.0 * np.exp(1j * np.pi / 6)])
+                # Ipre = Ybb @ Vpre
+                # print(Ipre)
 
                 # solve the fault
                 V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
@@ -487,6 +495,7 @@ class ShortCircuitDriver(DriverTemplate):
                 results.losses2 = losses2
 
             else:
+                raise Exception('Unknown fault type!')
                 nbus = calculation_inputs.Ybus.shape[0]
                 nbr = calculation_inputs.nbr
 

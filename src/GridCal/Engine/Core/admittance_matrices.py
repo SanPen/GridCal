@@ -254,28 +254,6 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1.tocsc(), B2.tocsc()
 
 
-def get_Y012(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
-                        gen_data, batt_data, conn, seq):
-    
-    """
-    :param conn: connection of the windings for all branches, GG by default
-    :param seq: 0, 1 or 2 for zero, positive or negative seq.
-    """
-
-    Y_gen = gen_data.get_gen_Yshunt(seq=seq)
-
-    Y_batt = batt_data.get_batt_Yshunt(seq=seq)
-
-    Yshunt_bus += Y_gen + Y_batt
-
-    Yseq = compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                               tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
-                               conn=conn, seq=seq)
-
-    return Yseq
-
-
 def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF

@@ -68,7 +68,7 @@ def short_circuit_unbalance(bus_idx, Z0, Z1, Z2, Vbus, Zf, fault_type):
         I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zflt)
         I2 = -I1 * (Zth0 + 3 * Zflt) / (Zth2 + Zth0 + 3 * Zflt)
     else:
-        print('Unknown unbalanced fault type')
+        raise Exception('Unknown unbalanced fault type')
     
     # obtain the post fault voltages
     I0_vec = np.zeros(n, dtype=complex)
