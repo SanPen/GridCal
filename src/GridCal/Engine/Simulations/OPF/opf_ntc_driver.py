@@ -429,7 +429,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(maczt * 100, 2),
                           np.round(self.branch_ntc_load_rule[m], 2),
                           self.branch_names[m],
-                          self.hvdc_names[c],
+                          self.branch_names[c],
                           np.round(contingency_flow, 2),
                           np.round(self.Sf[m], 2),
                           self.contingency_rates[m],
@@ -437,7 +437,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m],
+                          self.alpha_n1[m, c],
                           'Branch',
                           m, c))
                 labels.append(len(y))
@@ -503,7 +503,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(maczt * 100, 2),
                           np.round(self.branch_ntc_load_rule[m], 2),
                           self.branch_names[m],
-                          self.hvdc_names[c],
+                          self.generator_names[c],
                           np.round(contingency_flow, 2),
                           np.round(self.Sf[m], 2),
                           self.contingency_rates[m],
@@ -511,7 +511,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m],
+                          self.alpha_n1[m, c],
                           'Generation',
                           m, c))
                 labels.append(len(y))
@@ -583,7 +583,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m],
+                          self.alpha_n1[m, c],
                           'Hvdc',
                           m, c))
                 labels.append(len(y))

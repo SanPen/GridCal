@@ -148,7 +148,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
 
     # compute the sensitivity
     alpha = dflow / dT
-    alpha_n1 = np.zeros(len(alpha))
+    alpha_n1 = np.zeros((len(alpha), len(alpha)))
 
     if with_n1:
         for m in range(len(alpha)):
@@ -156,11 +156,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
                 if m != c:
                     dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
                     alpha_c = dflow_n1 / dT
-                    if abs(alpha_c) > abs(alpha_n1[m]):
-                        alpha_n1[m] = alpha_c
-
-    else:
-        alpha_n1 = alpha
+                    alpha_n1[m, c] = alpha_c
 
     return alpha, alpha_n1
 

@@ -538,8 +538,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 ntc_load_rule=self.options.ntc_load_rule)
 
         # hourly alphas
-        alpha = np.zeros((len(time_indices), nc.nbr))
-        alpha_n1 = np.zeros((len(time_indices), nc.nbr))
+        # alpha = np.zeros((len(time_indices), nc.nbr))
+        # alpha_n1 = np.zeros((len(time_indices), nc.nbr, nc.nbr))
 
         for t_idx, t in enumerate(time_indices):
 
@@ -555,14 +555,14 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha[t_idx, :], alpha_n1[t_idx, :] = self.compute_exchange_sensitivity(
+                alpha, alpha_n1 = self.compute_exchange_sensitivity(
                     linear=linear,
                     numerical_circuit=nc,
                     t=t,
                     with_n1=self.options.n1_consideration)
             else:
-                alpha[t_idx, :] = np.ones(nc.nbr)
-                alpha_n1[t_idx, :] = np.ones(nc.nbr)
+                alpha = np.ones(nc.nbr)
+                alpha_n1 = np.ones(nc.nbr, nc.nbr)
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
@@ -571,8 +571,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 numerical_circuit=nc,
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
-                alpha=alpha[t_idx],
-                alpha_n1=alpha_n1[t_idx],
+                alpha=alpha,
+                alpha_n1=alpha_n1,
                 LODF=linear.LODF,
                 PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
@@ -672,8 +672,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
-                alpha=alpha[t_idx],
-                alpha_n1=alpha_n1[t_idx],
+                alpha=alpha,
+                alpha_n1=problem.get_alpha_n1_list(),
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,

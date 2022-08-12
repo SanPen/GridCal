@@ -910,9 +910,10 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
         if branch_active[m]:
 
-            max_alpha = max(alpha_abs[m], alpha_n1_abs[m])
+            max_alpha = max(alpha_abs[m], max(alpha_n1_abs[m]))
+            ntc_load = (max_alpha * ntc_load_rule) + 1e-20 / Sbase
             # NTC min for considering as limiting element by ACER
-            branch_ntc_load_rule[m] = rates[m] / max_alpha * ntc_load_rule / Sbase
+            branch_ntc_load_rule[m] = rates[m] / ntc_load
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
@@ -2682,6 +2683,15 @@ class OpfNTC(Opf):
             val = np.abs(val)
 
         return val
+
+    def get_alpha_n1_list(self):
+
+        x = np.zeros(len(self.contingency_indices_list))
+        for i in range(len(self.contingency_indices_list)):
+            m, c = self.contingency_indices_list[i]
+            x[i] = self.alpha_n1[m, c]
+        return x
+
 
     def get_contingency_flows_list(self):
         """
