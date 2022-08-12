@@ -19,6 +19,7 @@ from xmlrpc.client import Fault
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
+from cmath import rect
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p, short_circuit_unbalance
@@ -421,11 +422,40 @@ class ShortCircuitDriver(DriverTemplate):
                 Z1 = inv(Y1.Ybus.tocsc()).toarray()
                 Z2 = inv(Y2.Ybus.tocsc()).toarray()
 
-                # Vpf try find solution
-                # Ybb = Y1.Ybus.tocsc().toarray()
-                # Vpre = np.array([1., 1., 1., 1., 1.0 * np.exp(1j * np.pi / 6)])
-                # Ipre = Ybb @ Vpre
-                # print(Ipre)
+                """
+                Initialize Vpf introducing phase shifts
+                No search algo is needed. Instead, we need to solve YV=0,
+                get the angle of the voltages from here and add them to the
+                original Vpf. In more detail:
+                -----------------   -----   -----
+                |   |           |   |Vvd|   |   |
+                -----------------   -----   -----
+                |   |           |   |   |   |   |
+                |   |           | x |   | = |   |
+                | Yu|     Yx    |   | V |   | 0 |
+                |   |           |   |   |   |   |
+                |   |           |   |   |   |   |
+                -----------------   -----   -----
+
+                where Yu = Y1.Ybus[pqpv, vd], Yx = Y1.Ybus[pqpv, pqpv], so:
+                V = - inv(Yx) Yu Vvd
+                ph_add = np.angle(V)
+                Vpf[pqpv] *= np.exp(1j * ph_add)
+                """
+
+                vd = calculation_inputs.vd
+                pqpv = calculation_inputs.pqpv
+
+                Y1_arr = np.array(Y1.Ybus.todense())
+                Yu = Y1_arr[np.ix_(pqpv, vd)]
+                Yx = Y1_arr[np.ix_(pqpv, pqpv)]
+
+                I_vd = Yu * np.array(Vpf[vd])
+                Vpqpv_ph = - np.linalg.inv(Yx) @ I_vd
+
+                ph_add = np.angle(Vpqpv_ph)
+                nprect = np.vectorize(rect)
+                Vpf[pqpv] = nprect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
 
                 # solve the fault
                 V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
@@ -495,7 +525,6 @@ class ShortCircuitDriver(DriverTemplate):
                 results.losses2 = losses2
 
             else:
-                raise Exception('Unknown fault type!')
                 nbus = calculation_inputs.Ybus.shape[0]
                 nbr = calculation_inputs.nbr
 
@@ -514,6 +543,8 @@ class ShortCircuitDriver(DriverTemplate):
                 results.If = np.zeros(nbr, dtype=complex)
                 results.losses = np.zeros(nbr, dtype=complex)
                 results.SCpower = np.zeros(nbus, dtype=complex)
+
+                raise Exception('Unknown fault type!')
 
         return results
 
