@@ -426,7 +426,8 @@ class ShortCircuitDriver(DriverTemplate):
                 Initialize Vpf introducing phase shifts
                 No search algo is needed. Instead, we need to solve YV=0,
                 get the angle of the voltages from here and add them to the
-                original Vpf. In more detail:
+                original Vpf. Y should be Yseries (avoid shunts).
+                In more detail:
                 -----------------   -----   -----
                 |   |           |   |Vvd|   |   |
                 -----------------   -----   -----
@@ -443,10 +444,31 @@ class ShortCircuitDriver(DriverTemplate):
                 Vpf[pqpv] *= np.exp(1j * ph_add)
                 """
 
+                Y1_series = compute_admittances(R=calculation_inputs.branch_data.R,
+                                X=calculation_inputs.branch_data.X,
+                                G=np.zeros(nbr),
+                                B=np.zeros(nbr),
+                                k=calculation_inputs.branch_data.k,
+                                tap_module=calculation_inputs.branch_data.m[:, 0],
+                                vtap_f=calculation_inputs.branch_data.tap_f,
+                                vtap_t=calculation_inputs.branch_data.tap_t,
+                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                Beq=np.zeros(nbr),
+                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                G0=np.zeros(nbr),
+                                If=np.zeros(nbr),
+                                a=calculation_inputs.branch_data.a,
+                                b=calculation_inputs.branch_data.b,
+                                c=calculation_inputs.branch_data.c,
+                                Yshunt_bus=np.zeros(nbus, dtype=complex),
+                                conn=calculation_inputs.branch_data.conn,
+                                seq=1)
+
                 vd = calculation_inputs.vd
                 pqpv = calculation_inputs.pqpv
 
-                Y1_arr = np.array(Y1.Ybus.todense())
+                Y1_arr = np.array(Y1_series.Ybus.todense())
                 Yu = Y1_arr[np.ix_(pqpv, vd)]
                 Yx = Y1_arr[np.ix_(pqpv, pqpv)]
 
