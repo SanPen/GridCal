@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.Devices.enumerations import WindingsConnection
 
 
 def get_bus_indices(C_branch_bus):
@@ -65,13 +66,16 @@ class BranchData:
 
         self.R0 = np.zeros(self.nbr, dtype=float)
         self.X0 = np.zeros(self.nbr, dtype=float)
-        self.G0 = np.zeros(self.nbr, dtype=float)
+        self.G0_ = np.zeros(self.nbr, dtype=float)
         self.B0 = np.zeros(self.nbr, dtype=float)
 
         self.R2 = np.zeros(self.nbr, dtype=float)
         self.X2 = np.zeros(self.nbr, dtype=float)
         self.G2 = np.zeros(self.nbr, dtype=float)
         self.B2 = np.zeros(self.nbr, dtype=float)
+
+        # self.conn = np.empty(self.nbr, dtype=str)  # winding connection, ground-ground by default
+        self.conn = np.array([WindingsConnection.GG] * self.nbr)
 
         self.k = np.ones(nbr, dtype=float)
 
@@ -131,7 +135,7 @@ class BranchData:
 
         data.R0 = self.R[elm_idx]
         data.X0 = self.X[elm_idx]
-        data.G0 = self.G[elm_idx]
+        data.G0_ = self.G[elm_idx]
         data.B0 = self.B[elm_idx]
 
         data.R2 = self.R[elm_idx]
@@ -148,6 +152,8 @@ class BranchData:
         data.alpha1 = self.alpha1[elm_idx]
         data.alpha2 = self.alpha2[elm_idx]
         data.alpha3 = self.alpha3[elm_idx]
+
+        data.conn = self.conn[elm_idx]  # winding connection
 
         data.control_mode = self.control_mode[elm_idx]
         data.contingency_enabled = self.contingency_enabled[elm_idx]

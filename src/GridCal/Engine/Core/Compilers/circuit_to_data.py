@@ -201,6 +201,14 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.generator_controllable[k] = elm.is_controlled
         data.generator_installed_p[k] = elm.Snom
 
+        # r0, r1, r2, x0, x1, x2
+        data.generator_r0[k] = elm.R0
+        data.generator_r1[k] = elm.R1
+        data.generator_r2[k] = elm.R2
+        data.generator_x0[k] = elm.X0
+        data.generator_x1[k] = elm.X1
+        data.generator_x2[k] = elm.X2
+
         if time_series:
             data.generator_p[k] = elm.P_prof
             data.generator_active[k] = elm.active_prof
@@ -275,6 +283,14 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
         data.battery_controllable[k] = elm.is_controlled
         data.battery_installed_p[k] = elm.Snom
+
+        # r0, r1, r2, x0, x1, x2
+        data.battery_r0[k] = elm.R0
+        data.battery_r1[k] = elm.R1
+        data.battery_r2[k] = elm.R2
+        data.battery_x0[k] = elm.X0
+        data.battery_x1[k] = elm.X1
+        data.battery_x2[k] = elm.X2
 
         if time_series:
             data.battery_p[k, :] = elm.P_prof
@@ -644,6 +660,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X2[i] = elm.X2
         data.B2[i] = elm.B2
 
+        data.conn[i] = elm.conn
+
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
 
@@ -730,13 +748,15 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
-        data.G0[ii] = elm.G0
+        data.G0_[ii] = elm.G0_
         data.B0[ii] = elm.B0
 
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
         data.G2[ii] = elm.G2
         data.B2[ii] = elm.B2
+
+        data.conn[ii] = elm.conn
 
         if time_series:
             if opf_results is not None:

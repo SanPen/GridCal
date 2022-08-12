@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType
+from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType, WindingsConnection
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
@@ -431,7 +431,8 @@ class Transformer2W(EditableDevice):
                  contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
-                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20):
+                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
+                 conn: WindingsConnection = WindingsConnection.GG):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -477,6 +478,8 @@ class Transformer2W(EditableDevice):
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
                                                   'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
                                                   'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+
+                                                  'conn': GCProp('', WindingsConnection, 'Winding connection.'),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
@@ -545,13 +548,15 @@ class Transformer2W(EditableDevice):
 
         self.R0 = r0
         self.X0 = x0
-        self.G0 = g0
+        self.G0_ = g0
         self.B0 = b0
 
         self.R2 = r2
         self.X2 = x2
         self.G2 = g2
         self.B2 = b2
+
+        self.conn = conn 
 
         self.mttf = mttf
 

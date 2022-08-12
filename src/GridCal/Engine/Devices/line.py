@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType, WindingsConnection
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.tower import Tower
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -31,7 +31,7 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 class SequenceLineType(EditableDevice):
 
     def __init__(self, name='SequenceLine', idtag=None, rating=1,
-                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
+                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, conn: WindingsConnection = WindingsConnection.GG, tpe=BranchType.Line):
         """
         Constructor
         :param name: name of the model
@@ -69,7 +69,11 @@ class SequenceLineType(EditableDevice):
                                                   'G0': GCProp('S/km', float, "Zero-sequence "
                                                                "shunt conductance per km"),
                                                   'B0': GCProp('S/km', float, "Zero-sequence "
-                                                               "shunt susceptance per km")},
+                                                               "shunt susceptance per km"),
+
+                                                  'conn': GCProp('', WindingsConnection, 'Winding connection.'),
+
+                                                               },
                                 non_editable_attributes=list(),
                                 properties_with_profile={})
 
@@ -87,6 +91,8 @@ class SequenceLineType(EditableDevice):
         self.X0 = X0
         self.G0 = G0
         self.B0 = B0
+
+        self.conn = conn
 
 
 class LineTemplate:
@@ -231,7 +237,7 @@ class Line(EditableDevice):
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
                  contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20):
+                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20, conn: WindingsConnection = WindingsConnection.GG):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -269,6 +275,8 @@ class Line(EditableDevice):
                                                   'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
                                                   'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+
+                                                  'conn': GCProp('', WindingsConnection, 'Winding connection.'),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
@@ -341,6 +349,8 @@ class Line(EditableDevice):
         self.R2 = r2
         self.X2 = x2
         self.B2 = b2
+
+        self.conn = conn
 
         self.mttf = mttf
 

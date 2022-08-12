@@ -18,6 +18,10 @@
 
 import numpy as np
 import scipy.sparse as sp
+from sympy import factor
+
+from GridCal.Engine.Devices.enumerations import WindingsConnection
+from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 
 
 def compute_connectivity(branch_active, Cf_, Ct_):
@@ -36,7 +40,8 @@ def compute_connectivity(branch_active, Cf_, Ct_):
 
 
 def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
+                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
+                        conn=None, seq=None):
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
     :param R: array of branch resistance (p.u.)
@@ -70,10 +75,49 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
     mp = k * tap_module
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-    Ytt = (ys + bc2) / (vtap_t * vtap_t)
+    if seq == 0:  # zero sequence
+        # add always the shunt term, the series depends on the connection
+        # one ys vector for the from side, another for the to side, and the shared one
+        ysf = np.zeros(len(ys), dtype=complex)
+        yst = np.zeros(len(ys), dtype=complex)
+        ysft = np.zeros(len(ys), dtype=complex)
+
+        for i, con in enumerate(conn):
+            if con == WindingsConnection.GG:
+                ysf[i] = ys[i]
+                yst[i] = ys[i]
+                ysft[i] = ys[i]
+            elif con == WindingsConnection.GD:
+                ysf[i] = ys[i]
+            
+        Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (yst + bc2) / (vtap_t * vtap_t)
+
+    elif seq == 2:  # negative sequence
+        # only need to include the phase shift of +-30 degrees
+        factor_psh = np.array([np.exp(-1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
+
+        Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+        Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    elif seq == 1:  # positive sequence
+        # only need to include the phase shift of +-30 degrees
+        factor_psh = np.array([np.exp(1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
+
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    else:  # original
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct

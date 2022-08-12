@@ -438,17 +438,11 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
                             method: bs.SolverType = None):
     """
     Compute the power Sf trough the branches.
-
     Arguments:
-
         **calculation_inputs**: instance of Circuit
-
         **V**: Voltage solution array for the circuit buses
-
         **only_power**: compute only the power injection
-
     Returns:
-
         Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
     # Compute the slack and pv buses power

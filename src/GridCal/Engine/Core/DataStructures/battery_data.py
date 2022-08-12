@@ -45,6 +45,16 @@ class BatteryData:
 
         self.C_bus_batt = sp.lil_matrix((nbus, nbatt), dtype=int)
 
+        # r0, r1, r2, x0, x1, x2
+        self.battery_r0 = np.zeros(nbatt)
+        self.battery_r1 = np.zeros(nbatt)
+        self.battery_r2 = np.zeros(nbatt)
+
+        self.battery_x0 = np.zeros(nbatt)
+        self.battery_x1 = np.zeros(nbatt)
+        self.battery_x2 = np.zeros(nbatt)
+
+
     def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
@@ -74,6 +84,14 @@ class BatteryData:
 
         data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, elm_idx)]
 
+        data.battery_r0 = self.battery_r0[elm_idx]
+        data.battery_r1 = self.battery_r1[elm_idx]
+        data.battery_r2 = self.battery_r2[elm_idx]
+
+        data.battery_x0 = self.battery_x0[elm_idx]
+        data.battery_x1 = self.battery_x1[elm_idx]
+        data.battery_x2 = self.battery_x2[elm_idx]
+
         return data
 
     def get_island(self, bus_idx, t_idx=0):
@@ -91,6 +109,20 @@ class BatteryData:
         pf_sign = (self.battery_pf + 1e-20) / np.abs(self.battery_pf + 1e-20)
         Q = pf_sign * self.battery_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.battery_p + 1.0j * Q
+
+    def get_batt_Yshunt(self, seq=1):
+        """
+        Obtain the vector of shunt admittances of a given sequence
+        :param seq: sequence (0, 1 or 2)
+        """
+        if seq==0:
+            Y_vec = self.C_bus_batt @ np.power((self.battery_r0 + 1j * self.battery_x0), -1)
+        elif seq==1:
+            Y_vec = self.C_bus_batt @ np.power((self.battery_r1 + 1j * self.battery_x1), -1)
+        elif seq==2:
+            Y_vec = self.C_bus_batt @ np.power((self.battery_r2 + 1j * self.battery_x2), -1)
+
+        return Y_vec
 
     def get_injections_per_bus(self):
         return self.C_bus_batt * (self.get_injections() * self.battery_active)

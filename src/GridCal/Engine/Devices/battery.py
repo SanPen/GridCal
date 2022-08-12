@@ -225,6 +225,15 @@ class Battery(Generator):
         # Nominal energy MWh
         batt.Enom = self.Enom
 
+        # r0, r1, r2, x0, x1, x2
+        batt.R0 = self.R0
+        batt.R1 = self.R1
+        batt.R2 = self.R2
+
+        batt.X0 = self.X0
+        batt.X1 = self.X1
+        batt.X2 = self.X2
+
         # Enable for active power dispatch?
         batt.enabled_dispatch = self.enabled_dispatch
 

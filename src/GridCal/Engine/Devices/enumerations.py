@@ -152,6 +152,23 @@ class TimeFrame(Enum):
     Continuous = 'Continuous'
 
 
+class FaultType(Enum):
+    ph3 = '3x'
+    LG = 'LG'
+    LL = 'LL'
+    LLG = 'LLG'
+
+class WindingsConnection(Enum):
+    # G: grounded star
+    # S: ungrounded star
+    # D: delta
+    GG = 'GG'
+    GS = 'GS'
+    GD = 'GD'
+    SS = 'SS'
+    SD = 'SD'
+    DD = 'DD'
+
 class DeviceType(Enum):
     NoDevice = "NoDevice"
     CircuitDevice = 'Circuit'
