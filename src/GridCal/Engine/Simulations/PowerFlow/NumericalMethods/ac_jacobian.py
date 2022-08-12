@@ -317,15 +317,12 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
     Jp = np.empty(n_cols + 1, dtype=nb.int32)  # pointers
     Jp[p] = 0
 
-    # generate lookup for the non immediate axis (for CSC it is the rows) -> index lookup
+    # generate lookup for the non-immediate axis (for CSC it is the rows) -> index lookup
     lookup_pvpq = np.zeros(nbus, dtype=nb.int32)
     lookup_pvpq[pvpq] = np.arange(len(pvpq), dtype=nb.int32)
 
     lookup_pq = np.zeros(nbus, dtype=nb.int32)
     lookup_pq[pq] = np.arange(len(pq), dtype=nb.int32)
-
-    # lookup_pvpq = np.zeros(np.max(Gi) + 1, dtype=nb.int32)
-    # lookup_pvpq[pvpq] = np.arange(npvpq)
 
     for j in pvpq:  # sliced columns
 

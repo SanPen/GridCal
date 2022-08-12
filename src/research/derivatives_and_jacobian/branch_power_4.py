@@ -141,12 +141,8 @@ def dSf_dVa(Cf, Yf, V, F, T):
 def matpower_to_spv_comparison(fname):
     grid = gc.FileOpen(fname).open()
     nc = gc.compile_snapshot_opf_circuit(grid)
-    ys = 1. / (nc.branch_data.R + 1j * nc.branch_data.X)
-    ysh = nc.branch_data.G + 1j * nc.branch_data.B
     F = nc.branch_data.F
     T = nc.branch_data.T
-    tap_mod = nc.branch_data.m[:, 0]
-    tap_angle = nc.branch_data.theta[:, 0]
 
     print('V0r:', nc.Vbus.real)
     print('V0i:', nc.Vbus.imag)

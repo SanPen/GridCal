@@ -797,7 +797,7 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
 
         # Partials of S w.r.t.Beq
         val_f = V[f] * np.conj(dyff_dBeq * V[f] + dyft_dBeq * V[t])
-        val_t = V[t] * np.conj(dytf_dBeq * V[f] + dytt_dBeq * V[t])
+        val_t = V[t] * np.conj(dytf_dBeq * V[f] + dytt_dBeq * V[t])  # 0
 
         dSbus_dBeqx[f, k] = val_f
         dSbus_dBeqx[t, k] = val_t

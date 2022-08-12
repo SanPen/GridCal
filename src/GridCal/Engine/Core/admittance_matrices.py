@@ -18,7 +18,6 @@
 
 import numpy as np
 import scipy.sparse as sp
-from sympy import factor
 
 from GridCal.Engine.Devices.enumerations import WindingsConnection
 from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
