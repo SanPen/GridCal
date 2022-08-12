@@ -273,6 +273,270 @@ class ShortCircuitDriver(DriverTemplate):
 
         return br1, br2, middle_bus
 
+    def short_circuit_ph3(self, calculation_inputs, Vpf, Zf):
+        Y_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
+        Y_batt = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
+        Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
+        Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
+
+        # Compute the short circuit
+        V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
+                                      Zbus=Zbus,
+                                      Vbus=Vpf,
+                                      Zf=Zf,
+                                      baseMVA=calculation_inputs.Sbase)
+
+        # Compute the branches power
+        # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+        # Sfb, Stb, If, It, Vbranch, \
+        # loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
+        #                                                 Sbus=calculation_inputs.Sbus,
+        #                                                 V=V,
+        #                                                 branch_rates=calculation_inputs.branch_rates,
+        #                                                 Yf=calculation_inputs.Yf,
+        #                                                 Yt=calculation_inputs.Yt)
+
+        Sfb, Stb, If, It, Vbranch, \
+        loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                     V=V,
+                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     Yf=calculation_inputs.Yf,
+                                                     Yt=calculation_inputs.Yt)
+
+        # voltage, Sf, loading, losses, error, converged, Qpv
+        results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                      m=calculation_inputs.nbr,
+                                      n_tr=calculation_inputs.ntr,
+                                      bus_names=calculation_inputs.bus_names,
+                                      branch_names=calculation_inputs.branch_names,
+                                      transformer_names=calculation_inputs.tr_names,
+                                      bus_types=calculation_inputs.bus_types)
+
+        results.SCpower = SCpower
+        results.Sbus = calculation_inputs.Sbus * calculation_inputs.Sbase  # MVA
+        results.voltage = V
+        results.Sf = Sfb  # in MVA already
+        results.St = Stb  # in MVA already
+        results.If = If  # in p.u.
+        results.It = It  # in p.u.
+        results.Vbranch = Vbranch
+        results.loading = loading
+        results.losses = losses
+
+        return results
+
+    def short_circuit_unbalanced(self, calculation_inputs, Vpf, Zf):
+
+        # build Y0, Y1, Y2
+        nbr = calculation_inputs.nbr
+        nbus = calculation_inputs.nbus
+
+        Y_gen0 = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
+        Y_batt0 = calculation_inputs.battery_data.get_batt_Yshunt(seq=0)
+        Yshunt_bus0 = Y_gen0 + Y_batt0
+
+        Y0 = compute_admittances(R=calculation_inputs.branch_data.R0,
+                                 X=calculation_inputs.branch_data.X0,
+                                 G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
+                                 B=calculation_inputs.branch_data.B0,
+                                 k=calculation_inputs.branch_data.k,
+                                 tap_module=calculation_inputs.branch_data.m[:, 0],
+                                 vtap_f=calculation_inputs.branch_data.tap_f,
+                                 vtap_t=calculation_inputs.branch_data.tap_t,
+                                 tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                 Beq=np.zeros(nbr),
+                                 Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                 Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                 G0=np.zeros(nbr),
+                                 If=np.zeros(nbr),
+                                 a=np.zeros(nbr),
+                                 b=np.zeros(nbr),
+                                 c=np.zeros(nbr),
+                                 Yshunt_bus=Yshunt_bus0,
+                                 conn=calculation_inputs.branch_data.conn,
+                                 seq=0)
+
+        Y_gen1 = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
+        Y_batt1 = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
+        Yshunt_bus1 = calculation_inputs.Yshunt_from_devices[:, 0] + Y_gen1 + Y_batt1
+
+        Y1 = compute_admittances(R=calculation_inputs.branch_data.R,
+                                 X=calculation_inputs.branch_data.X,
+                                 G=calculation_inputs.branch_data.G,
+                                 B=calculation_inputs.branch_data.B,
+                                 k=calculation_inputs.branch_data.k,
+                                 tap_module=calculation_inputs.branch_data.m[:, 0],
+                                 vtap_f=calculation_inputs.branch_data.tap_f,
+                                 vtap_t=calculation_inputs.branch_data.tap_t,
+                                 tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                 Beq=calculation_inputs.branch_data.Beq[:, 0],
+                                 Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                 Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                 G0=calculation_inputs.branch_data.G0[:, 0],
+                                 If=np.zeros(nbr),
+                                 a=calculation_inputs.branch_data.a,
+                                 b=calculation_inputs.branch_data.b,
+                                 c=calculation_inputs.branch_data.c,
+                                 Yshunt_bus=Yshunt_bus1,
+                                 conn=calculation_inputs.branch_data.conn,
+                                 seq=1)
+
+        Y_gen2 = calculation_inputs.generator_data.get_gen_Yshunt(seq=2)
+        Y_batt2 = calculation_inputs.battery_data.get_batt_Yshunt(seq=2)
+        Yshunt_bus2 = Y_gen2 + Y_batt2
+
+        Y2 = compute_admittances(R=calculation_inputs.branch_data.R2,
+                                 X=calculation_inputs.branch_data.X2,
+                                 G=calculation_inputs.branch_data.G2,
+                                 B=calculation_inputs.branch_data.B2,
+                                 k=calculation_inputs.branch_data.k,
+                                 tap_module=calculation_inputs.branch_data.m[:, 0],
+                                 vtap_f=calculation_inputs.branch_data.tap_f,
+                                 vtap_t=calculation_inputs.branch_data.tap_t,
+                                 tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                 Beq=np.zeros(nbr),
+                                 Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                 Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                 G0=np.zeros(nbr),
+                                 If=np.zeros(nbr),
+                                 a=np.zeros(nbr),
+                                 b=np.zeros(nbr),
+                                 c=np.zeros(nbr),
+                                 Yshunt_bus=Yshunt_bus2,
+                                 conn=calculation_inputs.branch_data.conn,
+                                 seq=2)
+
+        # get impedances matrices
+        Z0 = inv(Y0.Ybus.tocsc()).toarray()
+        Z1 = inv(Y1.Ybus.tocsc()).toarray()
+        Z2 = inv(Y2.Ybus.tocsc()).toarray()
+
+        """
+        Initialize Vpf introducing phase shifts
+        No search algo is needed. Instead, we need to solve YV=0,
+        get the angle of the voltages from here and add them to the
+        original Vpf. Y should be Yseries (avoid shunts).
+        In more detail:
+        -----------------   -----   -----
+        |   |           |   |Vvd|   |   |
+        -----------------   -----   -----
+        |   |           |   |   |   |   |
+        |   |           | x |   | = |   |
+        | Yu|     Yx    |   | V |   | 0 |
+        |   |           |   |   |   |   |
+        |   |           |   |   |   |   |
+        -----------------   -----   -----
+
+        where Yu = Y1.Ybus[pqpv, vd], Yx = Y1.Ybus[pqpv, pqpv], so:
+        V = - inv(Yx) Yu Vvd
+        ph_add = np.angle(V)
+        Vpf[pqpv] *= np.exp(1j * ph_add)
+        """
+
+        Y1_series = compute_admittances(R=calculation_inputs.branch_data.R,
+                                        X=calculation_inputs.branch_data.X,
+                                        G=np.zeros(nbr),
+                                        B=np.zeros(nbr),
+                                        k=calculation_inputs.branch_data.k,
+                                        tap_module=calculation_inputs.branch_data.m[:, 0],
+                                        vtap_f=calculation_inputs.branch_data.tap_f,
+                                        vtap_t=calculation_inputs.branch_data.tap_t,
+                                        tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                        Beq=np.zeros(nbr),
+                                        Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                        Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                        G0=np.zeros(nbr),
+                                        If=np.zeros(nbr),
+                                        a=calculation_inputs.branch_data.a,
+                                        b=calculation_inputs.branch_data.b,
+                                        c=calculation_inputs.branch_data.c,
+                                        Yshunt_bus=np.zeros(nbus, dtype=complex),
+                                        conn=calculation_inputs.branch_data.conn,
+                                        seq=1)
+
+        vd = calculation_inputs.vd
+        pqpv = calculation_inputs.pqpv
+
+        Y1_arr = np.array(Y1_series.Ybus.todense())
+        Yu = Y1_arr[np.ix_(pqpv, vd)]
+        Yx = Y1_arr[np.ix_(pqpv, pqpv)]
+
+        I_vd = Yu * np.array(Vpf[vd])
+        Vpqpv_ph = - np.linalg.inv(Yx) @ I_vd
+
+        ph_add = np.angle(Vpqpv_ph)
+        nprect = np.vectorize(rect)
+        Vpf[pqpv] = nprect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
+
+        # solve the fault
+        V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
+                                             Z0=Z0,
+                                             Z1=Z1,
+                                             Z2=Z2,
+                                             Vbus=Vpf,
+                                             Zf=Zf,
+                                             fault_type=self.options.fault_type)
+
+        # process results in the sequences
+        Sfb0, Stb0, If0, It0, Vbranch0, \
+        loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V0,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=Y0.Yf,
+                                                       Yt=Y0.Yt)
+
+        Sfb1, Stb1, If1, It1, Vbranch1, \
+        loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V1,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=Y1.Yf,
+                                                       Yt=Y1.Yt)
+
+        Sfb2, Stb2, If2, It2, Vbranch2, \
+        loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V2,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=Y2.Yf,
+                                                       Yt=Y2.Yt)
+
+        # voltage, Sf, loading, losses, error, converged, Qpv
+        results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                      m=calculation_inputs.nbr,
+                                      n_tr=calculation_inputs.ntr,
+                                      bus_names=calculation_inputs.bus_names,
+                                      branch_names=calculation_inputs.branch_names,
+                                      transformer_names=calculation_inputs.tr_names,
+                                      bus_types=calculation_inputs.bus_types)
+
+        results.voltage0 = V0
+        results.Sf0 = Sfb0  # in MVA already
+        results.St0 = Stb0  # in MVA already
+        results.If0 = If0  # in p.u.
+        results.It0 = It0  # in p.u.
+        results.Vbranch0 = Vbranch0
+        results.loading0 = loading0
+        results.losses0 = losses0
+
+        results.voltage1 = V1
+        results.Sf1 = Sfb1  # in MVA already
+        results.St1 = Stb1  # in MVA already
+        results.If1 = If1  # in p.u.
+        results.It1 = It1  # in p.u.
+        results.Vbranch1 = Vbranch1
+        results.loading1 = loading1
+        results.losses1 = losses1
+
+        results.voltage2 = V2
+        results.Sf2 = Sfb2  # in MVA already
+        results.St2 = Stb2  # in MVA already
+        results.If2 = If2  # in p.u.
+        results.It2 = It2  # in p.u.
+        results.Vbranch2 = Vbranch2
+        results.loading2 = loading2
+        results.losses2 = losses2
+
+        return results
+
     def single_short_circuit(self, calculation_inputs: SnapshotData, Vpf, Zf):
         """
         Run a short circuit simulation for a single island
@@ -287,286 +551,34 @@ class ShortCircuitDriver(DriverTemplate):
 
             if self.options.fault_type == FaultType.ph3:
 
-                Y_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
-                Y_batt = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
-                Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
-                Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
-
-                # Compute the short circuit
-                V, SCpower = short_circuit_3p(bus_idx=self.options.bus_index,
-                                            Zbus=Zbus,
-                                            Vbus=Vpf,
-                                            Zf=Zf,
-                                            baseMVA=calculation_inputs.Sbase)
-
-                # Compute the branches power
-                # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
-                # Sfb, Stb, If, It, Vbranch, \
-                # loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
-                #                                                 Sbus=calculation_inputs.Sbus,
-                #                                                 V=V,
-                #                                                 branch_rates=calculation_inputs.branch_rates,
-                #                                                 Yf=calculation_inputs.Yf,
-                #                                                 Yt=calculation_inputs.Yt)
-
-                Sfb, Stb, If, It, Vbranch, \
-                loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                             V=V,
-                                                             branch_rates=calculation_inputs.branch_rates,
-                                                             Yf=calculation_inputs.Yf,
-                                                             Yt=calculation_inputs.Yt)
-
-                # voltage, Sf, loading, losses, error, converged, Qpv
-                results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                            m=calculation_inputs.nbr,
-                                            n_tr=calculation_inputs.ntr,
-                                            bus_names=calculation_inputs.bus_names,
-                                            branch_names=calculation_inputs.branch_names,
-                                            transformer_names=calculation_inputs.tr_names,
-                                            bus_types=calculation_inputs.bus_types)
-
-                results.SCpower = SCpower
-                results.Sbus = calculation_inputs.Sbus * calculation_inputs.Sbase  # MVA
-                results.voltage = V
-                results.Sf = Sfb  # in MVA already
-                results.St = Stb  # in MVA already
-                results.If = If  # in p.u.
-                results.It = It  # in p.u.
-                results.Vbranch = Vbranch
-                results.loading = loading
-                results.losses = losses
+                return self.short_circuit_ph3(calculation_inputs, Vpf, Zf)
 
             elif self.options.fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
 
-                # build Y0, Y1, Y2
-                nbr = calculation_inputs.nbr
-                nbus = calculation_inputs.nbus
-
-                Y_gen0 = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
-                Y_batt0 = calculation_inputs.battery_data.get_batt_Yshunt(seq=0)
-                Yshunt_bus0 = Y_gen0 + Y_batt0
-
-                Y0 = compute_admittances(R=calculation_inputs.branch_data.R0,
-                                X=calculation_inputs.branch_data.X0,
-                                G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
-                                B=calculation_inputs.branch_data.B0,
-                                k=calculation_inputs.branch_data.k,
-                                tap_module=calculation_inputs.branch_data.m[:, 0],
-                                vtap_f=calculation_inputs.branch_data.tap_f,
-                                vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                                Beq=np.zeros(nbr),
-                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                G0=np.zeros(nbr),
-                                If=np.zeros(nbr),
-                                a=np.zeros(nbr),
-                                b=np.zeros(nbr),
-                                c=np.zeros(nbr),
-                                Yshunt_bus=Yshunt_bus0,
-                                conn=calculation_inputs.branch_data.conn,
-                                seq=0)
-
-                Y_gen1 = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
-                Y_batt1 = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
-                Yshunt_bus1 = calculation_inputs.Yshunt_from_devices[:, 0] + Y_gen1 + Y_batt1
-
-                Y1 = compute_admittances(R=calculation_inputs.branch_data.R,
-                                X=calculation_inputs.branch_data.X,
-                                G=calculation_inputs.branch_data.G,
-                                B=calculation_inputs.branch_data.B,
-                                k=calculation_inputs.branch_data.k,
-                                tap_module=calculation_inputs.branch_data.m[:, 0],
-                                vtap_f=calculation_inputs.branch_data.tap_f,
-                                vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                                Beq=calculation_inputs.branch_data.Beq[:, 0],
-                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                G0=calculation_inputs.branch_data.G0[:, 0],
-                                If=np.zeros(nbr),
-                                a=calculation_inputs.branch_data.a,
-                                b=calculation_inputs.branch_data.b,
-                                c=calculation_inputs.branch_data.c,
-                                Yshunt_bus=Yshunt_bus1,
-                                conn=calculation_inputs.branch_data.conn,
-                                seq=1)
-
-                Y_gen2 = calculation_inputs.generator_data.get_gen_Yshunt(seq=2)
-                Y_batt2 = calculation_inputs.battery_data.get_batt_Yshunt(seq=2)
-                Yshunt_bus2 = Y_gen2 + Y_batt2
-
-                Y2 = compute_admittances(R=calculation_inputs.branch_data.R2,
-                                X=calculation_inputs.branch_data.X2,
-                                G=calculation_inputs.branch_data.G2,
-                                B=calculation_inputs.branch_data.B2,
-                                k=calculation_inputs.branch_data.k,
-                                tap_module=calculation_inputs.branch_data.m[:, 0],
-                                vtap_f=calculation_inputs.branch_data.tap_f,
-                                vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                                Beq=np.zeros(nbr),
-                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                G0=np.zeros(nbr),
-                                If=np.zeros(nbr),
-                                a=np.zeros(nbr),
-                                b=np.zeros(nbr),
-                                c=np.zeros(nbr),
-                                Yshunt_bus=Yshunt_bus2,
-                                conn=calculation_inputs.branch_data.conn,
-                                seq=2)
-
-                # get impedances matrices
-                Z0 = inv(Y0.Ybus.tocsc()).toarray()
-                Z1 = inv(Y1.Ybus.tocsc()).toarray()
-                Z2 = inv(Y2.Ybus.tocsc()).toarray()
-
-                """
-                Initialize Vpf introducing phase shifts
-                No search algo is needed. Instead, we need to solve YV=0,
-                get the angle of the voltages from here and add them to the
-                original Vpf. Y should be Yseries (avoid shunts).
-                In more detail:
-                -----------------   -----   -----
-                |   |           |   |Vvd|   |   |
-                -----------------   -----   -----
-                |   |           |   |   |   |   |
-                |   |           | x |   | = |   |
-                | Yu|     Yx    |   | V |   | 0 |
-                |   |           |   |   |   |   |
-                |   |           |   |   |   |   |
-                -----------------   -----   -----
-
-                where Yu = Y1.Ybus[pqpv, vd], Yx = Y1.Ybus[pqpv, pqpv], so:
-                V = - inv(Yx) Yu Vvd
-                ph_add = np.angle(V)
-                Vpf[pqpv] *= np.exp(1j * ph_add)
-                """
-
-                Y1_series = compute_admittances(R=calculation_inputs.branch_data.R,
-                                X=calculation_inputs.branch_data.X,
-                                G=np.zeros(nbr),
-                                B=np.zeros(nbr),
-                                k=calculation_inputs.branch_data.k,
-                                tap_module=calculation_inputs.branch_data.m[:, 0],
-                                vtap_f=calculation_inputs.branch_data.tap_f,
-                                vtap_t=calculation_inputs.branch_data.tap_t,
-                                tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                                Beq=np.zeros(nbr),
-                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                G0=np.zeros(nbr),
-                                If=np.zeros(nbr),
-                                a=calculation_inputs.branch_data.a,
-                                b=calculation_inputs.branch_data.b,
-                                c=calculation_inputs.branch_data.c,
-                                Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                conn=calculation_inputs.branch_data.conn,
-                                seq=1)
-
-                vd = calculation_inputs.vd
-                pqpv = calculation_inputs.pqpv
-
-                Y1_arr = np.array(Y1_series.Ybus.todense())
-                Yu = Y1_arr[np.ix_(pqpv, vd)]
-                Yx = Y1_arr[np.ix_(pqpv, pqpv)]
-
-                I_vd = Yu * np.array(Vpf[vd])
-                Vpqpv_ph = - np.linalg.inv(Yx) @ I_vd
-
-                ph_add = np.angle(Vpqpv_ph)
-                nprect = np.vectorize(rect)
-                Vpf[pqpv] = nprect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
-
-                # solve the fault
-                V0, V1, V2 = short_circuit_unbalance(bus_idx=self.options.bus_index,
-                                                     Z0=Z0,
-                                                     Z1=Z1,
-                                                     Z2=Z2,
-                                                     Vbus=Vpf,
-                                                     Zf=Zf,
-                                                     fault_type=self.options.fault_type)
-
-                # process results in the sequences
-                Sfb0, Stb0, If0, It0, Vbranch0, \
-                loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                                V=V0,
-                                                                branch_rates=calculation_inputs.branch_rates,
-                                                                Yf=Y0.Yf,
-                                                                Yt=Y0.Yt)
-
-                Sfb1, Stb1, If1, It1, Vbranch1, \
-                loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                                V=V1,
-                                                                branch_rates=calculation_inputs.branch_rates,
-                                                                Yf=Y1.Yf,
-                                                                Yt=Y1.Yt)
-
-                Sfb2, Stb2, If2, It2, Vbranch2, \
-                loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                                V=V2,
-                                                                branch_rates=calculation_inputs.branch_rates,
-                                                                Yf=Y2.Yf,
-                                                                Yt=Y2.Yt)
-
-                # voltage, Sf, loading, losses, error, converged, Qpv
-                results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                            m=calculation_inputs.nbr,
-                                            n_tr=calculation_inputs.ntr,
-                                            bus_names=calculation_inputs.bus_names,
-                                            branch_names=calculation_inputs.branch_names,
-                                            transformer_names=calculation_inputs.tr_names,
-                                            bus_types=calculation_inputs.bus_types)
-
-                results.voltage0 = V0
-                results.Sf0 = Sfb0  # in MVA already
-                results.St0 = Stb0  # in MVA already
-                results.If0 = If0  # in p.u.
-                results.It0 = It0  # in p.u.
-                results.Vbranch0 = Vbranch0
-                results.loading0 = loading0
-                results.losses0 = losses0
-
-                results.voltage1 = V1
-                results.Sf1 = Sfb1  # in MVA already
-                results.St1 = Stb1  # in MVA already
-                results.If1 = If1  # in p.u.
-                results.It1 = It1  # in p.u.
-                results.Vbranch1 = Vbranch1
-                results.loading1 = loading1
-                results.losses1 = losses1
-
-                results.voltage2 = V2
-                results.Sf2 = Sfb2  # in MVA already
-                results.St2 = Stb2  # in MVA already
-                results.If2 = If2  # in p.u.
-                results.It2 = It2  # in p.u.
-                results.Vbranch2 = Vbranch2
-                results.loading2 = loading2
-                results.losses2 = losses2
+                return self.short_circuit_unbalanced(calculation_inputs, Vpf, Zf)
 
             else:
-                nbus = calculation_inputs.Ybus.shape[0]
-                nbr = calculation_inputs.nbr
-
-                # voltage, Sf, loading, losses, error, converged, Qpv
-                results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                            m=calculation_inputs.nbr,
-                                            n_tr=calculation_inputs.ntr,
-                                            bus_names=calculation_inputs.bus_names,
-                                            branch_names=calculation_inputs.branch_names,
-                                            transformer_names=calculation_inputs.tr_names,
-                                            bus_types=calculation_inputs.bus_types)
-
-                results.Sbus = calculation_inputs.Sbus
-                results.voltage = np.zeros(nbus, dtype=complex)
-                results.Sf = np.zeros(nbr, dtype=complex)
-                results.If = np.zeros(nbr, dtype=complex)
-                results.losses = np.zeros(nbr, dtype=complex)
-                results.SCpower = np.zeros(nbus, dtype=complex)
-
                 raise Exception('Unknown fault type!')
+
+        # if we get here, no short circuit was done, so declare empty results and exit
+        nbus = calculation_inputs.Ybus.shape[0]
+        nbr = calculation_inputs.nbr
+
+        # voltage, Sf, loading, losses, error, converged, Qpv
+        results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                      m=calculation_inputs.nbr,
+                                      n_tr=calculation_inputs.ntr,
+                                      bus_names=calculation_inputs.bus_names,
+                                      branch_names=calculation_inputs.branch_names,
+                                      transformer_names=calculation_inputs.tr_names,
+                                      bus_types=calculation_inputs.bus_types)
+
+        results.Sbus = calculation_inputs.Sbus
+        results.voltage = np.zeros(nbus, dtype=complex)
+        results.Sf = np.zeros(nbr, dtype=complex)
+        results.If = np.zeros(nbr, dtype=complex)
+        results.losses = np.zeros(nbr, dtype=complex)
+        results.SCpower = np.zeros(nbus, dtype=complex)
 
         return results
 

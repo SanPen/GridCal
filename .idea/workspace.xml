@@ -23,13 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Merged the unbalanced short circuit and removed the sympy import">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/enumerations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Integrated the new short circuit logic in the GUI">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1031,14 +1026,7 @@
       <workItem from="1659955281066" duration="8000" />
       <workItem from="1660050974157" duration="3947000" />
       <workItem from="1660223822294" duration="717000" />
-      <workItem from="1660324282064" duration="2626000" />
-    </task>
-    <task id="LOCAL-00280" summary="Merged the changes from the main devel branch refactoring the power flow methods">
-      <created>1649438016637</created>
-      <option name="number" value="00280" />
-      <option name="presentableId" value="LOCAL-00280" />
-      <option name="project" value="LOCAL" />
-      <updated>1649438016637</updated>
+      <workItem from="1660324282064" duration="3264000" />
     </task>
     <task id="LOCAL-00281" summary="added loss factors research files">
       <created>1649445968719</created>
@@ -1376,7 +1364,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660324468178</updated>
     </task>
-    <option name="localTasksCounter" value="329" />
+    <task id="LOCAL-00329" summary="Integrated the new short circuit logic in the GUI">
+      <created>1660327016158</created>
+      <option name="number" value="00329" />
+      <option name="presentableId" value="LOCAL-00329" />
+      <option name="project" value="LOCAL" />
+      <updated>1660327016158</updated>
+    </task>
+    <option name="localTasksCounter" value="330" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1410,7 +1405,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added the phase shift injections in the OPF model" />
     <MESSAGE value="Qt6 migration working" />
     <MESSAGE value="Added coordinates offset correction&#10;improved fill_xy_from_lat_lon&#10;Fixed newton HVDC call" />
     <MESSAGE value="derivatives research" />
@@ -1435,7 +1429,8 @@
     <MESSAGE value="Added sequence components to the generator and battery&#10;Modelled the south island of new zealand as per arrillaga's book" />
     <MESSAGE value="Fixed the matpower expression making the new derivatives exact as matpowers'" />
     <MESSAGE value="Merged the unbalanced short circuit and removed the sympy import" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merged the unbalanced short circuit and removed the sympy import" />
+    <MESSAGE value="Integrated the new short circuit logic in the GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Integrated the new short circuit logic in the GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1994,18 +1989,13 @@
           <option name="timeStamp" value="1145" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py</url>
-          <line>595</line>
-          <option name="timeStamp" value="1147" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
           <line>2686</line>
           <option name="timeStamp" value="1148" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
-          <line>568</line>
+          <line>582</line>
           <option name="timeStamp" value="1149" />
         </line-breakpoint>
       </breakpoints>
