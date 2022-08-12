@@ -274,6 +274,13 @@ class ShortCircuitDriver(DriverTemplate):
         return br1, br2, middle_bus
 
     def short_circuit_ph3(self, calculation_inputs, Vpf, Zf):
+        """
+        Run a 3-phase short circuit simulation for a single island
+        @param calculation_inputs:
+        @param Vpf: Power flow voltage vector applicable to the island
+        @param Zf: Short circuit impedance vector applicable to the island
+        @return: short circuit results
+        """
         Y_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
         Y_batt = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
         Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
@@ -285,16 +292,6 @@ class ShortCircuitDriver(DriverTemplate):
                                       Vbus=Vpf,
                                       Zf=Zf,
                                       baseMVA=calculation_inputs.Sbase)
-
-        # Compute the branches power
-        # Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
-        # Sfb, Stb, If, It, Vbranch, \
-        # loading, losses, Sbus = power_flow_post_process(calculation_inputs=calculation_inputs,
-        #                                                 Sbus=calculation_inputs.Sbus,
-        #                                                 V=V,
-        #                                                 branch_rates=calculation_inputs.branch_rates,
-        #                                                 Yf=calculation_inputs.Yf,
-        #                                                 Yt=calculation_inputs.Yt)
 
         Sfb, Stb, If, It, Vbranch, \
         loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
@@ -326,6 +323,13 @@ class ShortCircuitDriver(DriverTemplate):
         return results
 
     def short_circuit_unbalanced(self, calculation_inputs, Vpf, Zf):
+        """
+        Run an unbalanced short circuit simulation for a single island
+        @param calculation_inputs:
+        @param Vpf: Power flow voltage vector applicable to the island
+        @param Zf: Short circuit impedance vector applicable to the island
+        @return: short circuit results
+        """
 
         # build Y0, Y1, Y2
         nbr = calculation_inputs.nbr
@@ -548,13 +552,10 @@ class ShortCircuitDriver(DriverTemplate):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
-
             if self.options.fault_type == FaultType.ph3:
-
                 return self.short_circuit_ph3(calculation_inputs, Vpf, Zf)
 
             elif self.options.fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-
                 return self.short_circuit_unbalanced(calculation_inputs, Vpf, Zf)
 
             else:

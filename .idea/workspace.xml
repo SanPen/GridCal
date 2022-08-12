@@ -23,7 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Integrated the new short circuit logic in the GUI">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Refactored the short circuit functions">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -165,7 +165,7 @@
       <recent name="$PROJECT_DIR$/src/research/jacobian" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.Nosetests in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -445,8 +445,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.1d_metropolis_algorithm_example" />
         <item itemvalue="Python.sequences_v1" />
         <item itemvalue="Python.branch_power_4" />
@@ -1026,14 +1026,7 @@
       <workItem from="1659955281066" duration="8000" />
       <workItem from="1660050974157" duration="3947000" />
       <workItem from="1660223822294" duration="717000" />
-      <workItem from="1660324282064" duration="3264000" />
-    </task>
-    <task id="LOCAL-00281" summary="added loss factors research files">
-      <created>1649445968719</created>
-      <option name="number" value="00281" />
-      <option name="presentableId" value="LOCAL-00281" />
-      <option name="project" value="LOCAL" />
-      <updated>1649445968719</updated>
+      <workItem from="1660324282064" duration="3772000" />
     </task>
     <task id="LOCAL-00282" summary="Improved the HELM speed by stopping if the tolerance is achieved&#10;Fixed the short circuit routine by adding the missing loading results">
       <created>1649509806991</created>
@@ -1371,7 +1364,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660327016158</updated>
     </task>
-    <option name="localTasksCounter" value="330" />
+    <task id="LOCAL-00330" summary="Refactored the short circuit functions">
+      <created>1660327579581</created>
+      <option name="number" value="00330" />
+      <option name="presentableId" value="LOCAL-00330" />
+      <option name="project" value="LOCAL" />
+      <updated>1660327579582</updated>
+    </task>
+    <option name="localTasksCounter" value="331" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1405,7 +1405,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Qt6 migration working" />
     <MESSAGE value="Added coordinates offset correction&#10;improved fill_xy_from_lat_lon&#10;Fixed newton HVDC call" />
     <MESSAGE value="derivatives research" />
     <MESSAGE value="Added zoom to the lightmap research" />
@@ -1430,7 +1429,8 @@
     <MESSAGE value="Fixed the matpower expression making the new derivatives exact as matpowers'" />
     <MESSAGE value="Merged the unbalanced short circuit and removed the sympy import" />
     <MESSAGE value="Integrated the new short circuit logic in the GUI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Integrated the new short circuit logic in the GUI" />
+    <MESSAGE value="Refactored the short circuit functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored the short circuit functions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1993,11 +1993,6 @@
           <line>2686</line>
           <option name="timeStamp" value="1148" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
-          <line>582</line>
-          <option name="timeStamp" value="1149" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -2063,7 +2058,7 @@
     <SUITE FILE_PATH="coverage/GridCal$pulp.coverage" NAME="pulp Coverage Results" MODIFIED="1642610724509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp" />
     <SUITE FILE_PATH="coverage/GridCal$switch_reduction_sparse.coverage" NAME="switch_reduction_sparse Coverage Results" MODIFIED="1615742705813" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction" />
     <SUITE FILE_PATH="coverage/GridCal$circuit_to_alliander_pgm.coverage" NAME="circuit_to_alliander_pgm Coverage Results" MODIFIED="1650964250766" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1660324408151" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1660328029840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ortools_opf_v4.coverage" NAME="ortools_opf_v4 Coverage Results" MODIFIED="1630076374457" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1649781336728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
     <SUITE FILE_PATH="coverage/GridCal$ac_opf.coverage" NAME="ac_opf Coverage Results" MODIFIED="1602504341020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
