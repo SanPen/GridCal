@@ -420,7 +420,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         trm = self.trm
         ntc = ttc - trm
 
-        for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
+        for (m, c), contingency_flow, alpha_n1 in zip(self.contingency_branch_indices_list,
+                                                      self.contingency_branch_flows_list,
+                                                      self.alpha_n1):
             if contingency_flow != 0.0:
                 maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((np.round(ttc, 0),
@@ -437,7 +439,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m, c],
+                          self.alpha_n1,
                           'Branch',
                           m, c))
                 labels.append(len(y))
@@ -493,8 +495,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         trm = self.trm
         ntc = ttc - trm
 
-        for (m, c), contingency_flow in zip(self.contingency_generation_indices_list,
-                                            self.contingency_generation_flows_list):
+        for (m, c), contingency_flow, alpha_n1 in zip(self.contingency_generation_indices_list,
+                                                      self.contingency_generation_flows_list,
+                                                      self.alpha_n1):
             if contingency_flow != 0.0:
                 maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((np.round(ttc, 0),
@@ -511,7 +514,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m, c],
+                          self.alpha_n1,
                           'Generation',
                           m, c))
                 labels.append(len(y))
@@ -566,7 +569,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         trm = self.trm
         ntc = ttc - trm
 
-        for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
+        for (m, c), contingency_flow, alpha_n1 in zip(self.contingency_hvdc_indices_list,
+                                                      self.contingency_hvdc_flows_list,
+                                                      self.alpha_n1):
             if contingency_flow != 0.0:
                 maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
                 y.append((np.round(ttc, 0),
@@ -583,7 +588,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(contingency_flow / self.contingency_rates[m] * 100, 2),
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
-                          self.alpha_n1[m, c],
+                          self.alpha_n1,
                           'Hvdc',
                           m, c))
                 labels.append(len(y))
@@ -945,7 +950,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 with_n1=self.options.n1_consideration)
         else:
             alpha = np.ones(numerical_circuit.nbr)
-            alpha_n1 = np.ones(numerical_circuit.nbr)
+            alpha_n1 = np.ones((numerical_circuit.nbr, numerical_circuit.nbr))
 
         base_problems = False
         if self.options.perform_previous_checks:
@@ -1155,7 +1160,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
-                alpha_n1=alpha_n1,
+                alpha_n1=problem.get_alpha_n1_list(),
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,

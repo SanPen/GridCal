@@ -537,10 +537,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 max_report_elements=self.options.max_report_elements,
                 ntc_load_rule=self.options.ntc_load_rule)
 
-        # hourly alphas
-        # alpha = np.zeros((len(time_indices), nc.nbr))
-        # alpha_n1 = np.zeros((len(time_indices), nc.nbr, nc.nbr))
-
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -562,7 +558,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                     with_n1=self.options.n1_consideration)
             else:
                 alpha = np.ones(nc.nbr)
-                alpha_n1 = np.ones(nc.nbr, nc.nbr)
+                alpha_n1 = np.ones((nc.nbr, nc.nbr))
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
