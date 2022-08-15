@@ -18,6 +18,7 @@
 import numpy as np
 import numba as nb
 import pandas as pd
+from typing import Dict
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
@@ -1325,32 +1326,52 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()):
     return np.array(idx)
 
 
-def fill_model_from_dict(parent, d, editable=False):
+
+
+def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None):
     """
     Fill TreeViewModel from dictionary
     :param parent: Parent QStandardItem
     :param d: item
+    :param editable
+    :param icons
     :return: Nothing
     """
     if isinstance(d, dict):
         for k, v in d.items():
-            child = QtGui.QStandardItem(str(k))
+            name = str(k)
+            child = QtGui.QStandardItem(name)
             child.setEditable(editable)
+
+            if icons is not None:
+                if name in icons.keys():
+                    icon_path = icons[name]
+                    _icon = QIcon()
+                    _icon.addPixmap(QPixmap(icon_path))
+                    child.setIcon(_icon)
+
             parent.appendRow(child)
-            fill_model_from_dict(child, v)
+            fill_model_from_dict(parent=child, d=v, icons=icons)
     elif isinstance(d, list):
         for v in d:
-            fill_model_from_dict(parent, v)
+            fill_model_from_dict(parent=parent, d=v, icons=icons)
     else:
-        item = QtGui.QStandardItem(str(d))
+        name = str(d)
+        item = QtGui.QStandardItem(name)
+        if icons is not None:
+            if name in icons.keys():
+                icon_path = icons[name]
+                _icon = QIcon()
+                _icon.addPixmap(QPixmap(icon_path))
+                item.setIcon(_icon)
         item.setEditable(editable)
         parent.appendRow(item)
 
 
-def get_tree_model(d, top='Results'):
+def get_tree_model(d, top='Results', icons: Dict[str, str] = None):
     model = QtGui.QStandardItemModel()
     model.setHorizontalHeaderLabels([top])
-    fill_model_from_dict(model.invisibleRootItem(), d)
+    fill_model_from_dict(model.invisibleRootItem(), d=d, editable=False, icons=icons)
     return model
 
 

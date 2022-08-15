@@ -53,9 +53,9 @@ def test_short_circuit():
     sc = ShortCircuitDriver(grid=main_circuit, options=sc_options, pf_options=pf_options, pf_results=power_flow.results)
     sc.run()
     print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
-    print('\t|Sf|:', abs(main_circuit.short_circuit_results.Sf))
-    print('\t|loading|:', abs(main_circuit.short_circuit_results.loading) * 100)
+    print('\t|V|:', abs(main_circuit.short_circuit_results.voltage1))
+    print('\t|Sf|:', abs(main_circuit.short_circuit_results.Sf1))
+    print('\t|loading|:', abs(main_circuit.short_circuit_results.loading1) * 100)
 
 
 if __name__ == '__main__':

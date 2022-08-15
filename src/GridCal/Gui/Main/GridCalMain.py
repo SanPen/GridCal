@@ -4894,15 +4894,36 @@ class MainGUI(QMainWindow):
         d = dict()
         lst = list()
         for driver in available_results:
-            lst.append(driver.name)
-            d[driver.name] = [x.value[0] for x in driver.results.available_results]
+            name = driver.tpe.value
+            # name = driver.name
+            lst.append(name)
+            d[name] = [x.value[0] for x in driver.results.available_results]
             self.available_results_dict[driver.name] = {x.value[0]: x for x in driver.results.available_results}
             steps = driver.get_steps()
-            self.available_results_steps_dict[driver.name] = steps
+            self.available_results_steps_dict[name] = steps
             if len(steps) > max_steps:
                 max_steps = len(steps)
 
-        self.ui.results_treeView.setModel(get_tree_model(d, 'Results'))
+        icons = {SimulationTypes.PowerFlow_run.value: ':/Icons/icons/pf',
+                 SimulationTypes.TimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
+                 SimulationTypes.ClusteringTimeSeries_run.value: ':/Icons/icons/pf_ts_cluster.svg',
+                 SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
+                 SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
+                 SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
+                 SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
+                 SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
+                 SimulationTypes.SigmaAnalysis_run.value: ':/Icons/icons/sigma.svg',
+                 SimulationTypes.StochasticPowerFlow.value: ':/Icons/icons/stochastic_power_flow.svg',
+                 SimulationTypes.ContingencyAnalysis_run.value: ':/Icons/icons/otdf.svg',
+                 SimulationTypes.ContingencyAnalysisTS_run.value: ':/Icons/icons/otdf_ts.svg',
+                 SimulationTypes.NetTransferCapacity_run.value: ':/Icons/icons/atc.svg',
+                 SimulationTypes.NetTransferCapacityTS_run.value: ':/Icons/icons/atc_ts.svg',
+                 SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
+                 SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
+                 SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
+                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',}
+
+        self.ui.results_treeView.setModel(get_tree_model(d, 'Results', icons=icons))
         self.ui.available_results_to_color_comboBox.setModel(get_list_model(lst))
         self.ui.resultsTableView.setModel(None)
 

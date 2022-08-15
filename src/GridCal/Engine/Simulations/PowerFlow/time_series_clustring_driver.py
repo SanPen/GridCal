@@ -78,10 +78,15 @@ class TimeSeriesClustering(TimeSeries):
                                             branch_tolerance_mode=BranchImpedanceMode.Specified,
                                             opf_results=self.opf_time_series_results)
 
-        self.progress_text.emit('Clustering...')
-        X = time_circuit.Sbus
-        X = X[:, time_indices].real.T
-        self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
+        if len(time_indices) >= self.cluster_number:
+            self.progress_text.emit('Clustering...')
+            X = time_circuit.Sbus
+            X = X[:, time_indices].real.T
+            self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
+        else:
+            # less time indices than clusters, so no clustering at all
+            self.sampled_time_idx = np.array(range(len(time_indices)))
+            self.sampled_probabilities = np.ones_like(self.sampled_time_idx, dtype=float)
 
         if self.engine == bs.EngineType.GridCal:
             self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
