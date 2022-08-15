@@ -660,7 +660,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X2[i] = elm.X2
         data.B2[i] = elm.B2
 
-        data.conn[i] = elm.conn
+        # data.conn[i] = elm.conn
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)

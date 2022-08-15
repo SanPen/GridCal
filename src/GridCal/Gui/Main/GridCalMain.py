@@ -2722,11 +2722,11 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
             if self.ui.draw_schematic_checkBox.isChecked():
                 viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus,
-                                         Sf=results.Sf,
-                                         voltages=results.voltage,
+                                         Sbus=results.Sbus1,
+                                         Sf=results.Sf1,
+                                         voltages=results.voltage1,
                                          types=results.bus_types,
-                                         loadings=results.loading,
+                                         loadings=results.loading1,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                          max_branch_width=self.ui.max_branch_size_spinBox.value(),

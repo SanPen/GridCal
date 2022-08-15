@@ -2,7 +2,7 @@
 import datetime
 _current_year_ = datetime.datetime.now().year
 
-__GridCal_VERSION__ = "4.5.6"
+__GridCal_VERSION__ = "4.6.0"
 
 url = 'https://github.com/SanPen/GridCal'
 
@@ -31,10 +31,10 @@ copyright_msg = 'Copyright (C) 2015-' + str(_current_year_) + ' Santiago Peñate
 
 contributors_msg = 'Michel Lavoie (Transformer automation)\n'
 contributors_msg += 'Bengt Lüers (Better testing)\n'
-contributors_msg += 'Josep Fanals Batllori (HELM)\n'
+contributors_msg += 'Josep Fanals Batllori (HELM, Sequence Short circuit)\n'
 contributors_msg += 'Manuel Navarro Catalán (Better documentation)\n'
 contributors_msg += 'Paul Schultz (Grid Generator)\n'
 contributors_msg += 'Andrés Ramiro (Optimal net transfer capacity)\n'
-contributors_msg += 'Ameer Carlo Lubang (Improved short-circuit)\n'
+contributors_msg += 'Ameer Carlo Lubang (Sequence short-circuit)\n'
 
 about_msg += copyright_msg + '\n' + contributors_msg

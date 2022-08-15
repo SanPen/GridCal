@@ -136,6 +136,37 @@ class ResultTypes(Enum):
     CountryAnalysis = 'Country analysis', DeviceType.NoDevice
     AreaAnalysis = 'Area analysis', DeviceType.NoDevice
 
+    # Short circuit
+    BusVoltageModule0 = 'Voltage module (0)', DeviceType.BusDevice
+    BusVoltageAngle0 = 'Voltage angle (0)', DeviceType.BusDevice
+    BranchActivePowerFrom0 = 'Branch active power "from" (0)', DeviceType.BranchDevice
+    BranchReactivePowerFrom0 = 'Branch reactive power "from" (0)', DeviceType.BranchDevice
+    BranchActiveCurrentFrom0 = 'Branch active current "from" (0)', DeviceType.BranchDevice
+    BranchReactiveCurrentFrom0 = 'Branch reactive current "from" (0)', DeviceType.BranchDevice
+    BranchLoading0 = 'Branch loading (0)', DeviceType.BranchDevice
+    BranchActiveLosses0 = 'Branch active losses (0)', DeviceType.BranchDevice
+    BranchReactiveLosses0 = 'Branch reactive losses (0)', DeviceType.BranchDevice
+
+    BusVoltageModule1 = 'Voltage module (1)', DeviceType.BusDevice
+    BusVoltageAngle1 = 'Voltage angle (1)', DeviceType.BusDevice
+    BranchActivePowerFrom1 = 'Branch active power "from" (1)', DeviceType.BranchDevice
+    BranchReactivePowerFrom1 = 'Branch reactive power "from" (1)', DeviceType.BranchDevice
+    BranchActiveCurrentFrom1 = 'Branch active current "from" (1)', DeviceType.BranchDevice
+    BranchReactiveCurrentFrom1 = 'Branch reactive current "from" (1)', DeviceType.BranchDevice
+    BranchLoading1 = 'Branch loading (1)', DeviceType.BranchDevice
+    BranchActiveLosses1 = 'Branch active losses (1)', DeviceType.BranchDevice
+    BranchReactiveLosses1 = 'Branch reactive losses (1)', DeviceType.BranchDevice
+
+    BusVoltageModule2 = 'Voltage module (2)', DeviceType.BusDevice
+    BusVoltageAngle2 = 'Voltage angle (2)', DeviceType.BusDevice
+    BranchActivePowerFrom2 = 'Branch active power "from" (2)', DeviceType.BranchDevice
+    BranchReactivePowerFrom2 = 'Branch reactive power "from" (2)', DeviceType.BranchDevice
+    BranchActiveCurrentFrom2 = 'Branch active current "from" (2)', DeviceType.BranchDevice
+    BranchReactiveCurrentFrom2 = 'Branch reactive current "from" (2)', DeviceType.BranchDevice
+    BranchLoading2 = 'Branch loading (2)', DeviceType.BranchDevice
+    BranchActiveLosses2 = 'Branch active losses (2)', DeviceType.BranchDevice
+    BranchReactiveLosses2 = 'Branch reactive losses (2)', DeviceType.BranchDevice
+
     def __str__(self):
         return self.value
 
