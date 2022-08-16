@@ -59,7 +59,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     m = nc.branch_data.m[:, t].copy()
     theta = nc.branch_data.theta[:, t].copy()
     Beq = nc.branch_data.Beq[:, t].copy()
-    Gsw = nc.branch_data.G0[:, t]
+    Gsw = nc.branch_data.G0sw[:, t]
     Pfset = nc.branch_data.Pfset[:, t] / nc.Sbase
     Qfset = nc.branch_data.Qfset[:, t] / nc.Sbase
     Qtset = nc.branch_data.Qfset[:, t] / nc.Sbase

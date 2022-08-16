@@ -215,6 +215,9 @@ class SimulationSession:
         :param study_name: driver name
         """
         for driver_type, drv in self.drivers.items():
+            if study_name == drv.tpe.value:
+                del self.drivers[driver_type]
+                return
             if study_name == drv.name:
                 del self.drivers[driver_type]
                 return
@@ -227,6 +230,8 @@ class SimulationSession:
         for driver_type, drv in self.drivers.items():
             if study_name == drv.name:
                 return self.drivers[driver_type]
+            if study_name == drv.tpe.value:
+                return self.drivers[driver_type]
         return None
 
     def get_results_model_by_name(self, study_name, study_type):
@@ -237,7 +242,7 @@ class SimulationSession:
         :return: ResultsModel instance or None if not found
         """
         for driver_type, drv in self.drivers.items():
-            if study_name == drv.name:
+            if study_name == drv.tpe.value or study_name == drv.name:
                 if drv.results is not None:
                     return ResultsModel(drv.results.mdl(result_type=study_type))
                 else:

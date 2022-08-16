@@ -471,7 +471,7 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         data.names[i] = elm.name
         data.R1[i] = elm.R1
         data.X1[i] = elm.X1
-        data.G0[i] = elm.G0
+        data.G0[i] = elm.G0sw
         data.Beq[i] = elm.Beq
         data.m[i] = elm.m
         data.theta[i] = elm.theta
@@ -833,7 +833,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
 
-        data.G0[ii] = elm.G0
+        data.G0sw[ii] = elm.G0sw
         data.Beq[ii] = elm.Beq
         data.m[ii] = elm.m
         data.m_max[ii] = elm.m_max

@@ -4898,7 +4898,7 @@ class MainGUI(QMainWindow):
             # name = driver.name
             lst.append(name)
             d[name] = [x.value[0] for x in driver.results.available_results]
-            self.available_results_dict[driver.name] = {x.value[0]: x for x in driver.results.available_results}
+            self.available_results_dict[name] = {x.value[0]: x for x in driver.results.available_results}
             steps = driver.get_steps()
             self.available_results_steps_dict[name] = steps
             if len(steps) > max_steps:

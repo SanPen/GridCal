@@ -52,7 +52,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     m = nc.branch_data.m[:, 0].copy()
     theta = nc.branch_data.theta[:, 0].copy()
     Beq = nc.branch_data.Beq[:, 0].copy()
-    Gsw = nc.branch_data.G0[:, 0]
+    Gsw = nc.branch_data.G0sw[:, 0]
     Pfset = nc.branch_data.Pfset[:, 0] / nc.Sbase
     Qfset = nc.branch_data.Qfset[:, 0] / nc.Sbase
     Qtset = nc.branch_data.Qfset[:, 0] / nc.Sbase

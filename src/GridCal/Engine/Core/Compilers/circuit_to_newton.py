@@ -243,14 +243,14 @@ def to_newton_native(circuit: MultiCircuit) -> "nn.NativeNumericCircuit":
 
         set_branch_values(nc=nc, idx=ii, name=elm.name,
                           active=elm.active, f=f, t=t, rate=elm.rate,
-                          r=elm.R1, x=elm.X1, g=elm.G0, b=elm.Beq,
+                          r=elm.R1, x=elm.X1, g=elm.G0sw, b=elm.Beq,
                           m=elm.m, theta=elm.theta,
                           vtap_f=1.0, vtap_t=1.0)
 
         # vsc values
         nc.set_vsc_R1(i, elm.R1)
         nc.set_vsc_X1(i, elm.X1)
-        nc.set_vsc_Gsw(i, elm.G0)
+        nc.set_vsc_Gsw(i, elm.G0sw)
         nc.set_vsc_Beq(i, elm.Beq)
         nc.set_vsc_m(i, elm.m)
         nc.set_vsc_theta(i, elm.theta)

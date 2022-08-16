@@ -361,7 +361,7 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                                 active_default=elm.active,
                                 r1=elm.R1,
                                 x1=elm.X1,
-                                g0=elm.G0,
+                                g0=elm.G0sw,
                                 beq=elm.Beq,
                                 beq_max=elm.Beq_max,
                                 beq_min=elm.Beq_min,

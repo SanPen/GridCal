@@ -86,7 +86,7 @@ class BranchData:
         self.theta_min = - 6.28 * np.ones(nbr, dtype=float)
         self.theta_max = 6.28 * np.ones(nbr, dtype=float)
         self.Beq = np.zeros((nbr, ntime), dtype=float)
-        self.G0 = np.zeros((nbr, ntime), dtype=float)
+        self.G0sw = np.zeros((nbr, ntime), dtype=float)
 
         self.tap_t = np.ones(self.nbr, dtype=float)
         self.tap_f = np.ones(self.nbr, dtype=float)
@@ -170,7 +170,7 @@ class BranchData:
         data.theta_min = self.theta_min[elm_idx]
         data.theta_max = self.theta_max[elm_idx]
         data.Beq = self.Beq[tidx]
-        data.G0 = self.G0[tidx]
+        data.G0sw = self.G0sw[tidx]
         data.Pfset = self.Pfset[tidx]
         data.Qfset = self.Qfset[tidx]
         data.Qtset = self.Qtset[tidx]

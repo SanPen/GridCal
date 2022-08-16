@@ -358,7 +358,7 @@ def get_vsc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, ti
                       active_default=elm.active,
                       r1=elm.R1,
                       x1=elm.X1,
-                      g0=elm.G0,
+                      g0=elm.G0sw,
                       beq=elm.Beq,
                       beq_max=elm.Beq_max,
                       beq_min=elm.Beq_min,

@@ -114,7 +114,7 @@ class VSC(EditableDevice):
                                                   'R2': GCProp('p.u.', float, 'Resistive negative sequence losses.'),
                                                   'X2': GCProp('p.u.', float, 'Magnetic negative sequence losses.'),
 
-                                                  'G0': GCProp('p.u.', float, 'Inverter losses.'),
+                                                  'G0sw': GCProp('p.u.', float, 'Inverter losses.'),
 
                                                   'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
                                                   'Beq_max': GCProp('p.u.', float, 'Max total shunt susceptance.'),
@@ -156,7 +156,7 @@ class VSC(EditableDevice):
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it
         # from -> DC
-        # to   -> AC
+        # to   -> ACG0G0G0G0G0G0
         # assert(bus_from.is_dc != bus_to.is_dc)
         if bus_to is not None and bus_from is not None:
             # connectivity:
@@ -188,7 +188,7 @@ class VSC(EditableDevice):
         self.R2 = r2
         self.X2 = x2
 
-        self.G0 = G0
+        self.G0sw = G0
         self.Beq = Beq
         self.m = m
         self.theta = theta
@@ -247,7 +247,7 @@ class VSC(EditableDevice):
 
         self.R1 *= b
         self.X1 *= b
-        self.G0 *= b
+        self.G0sw *= b
         self.Beq *= b
 
     def get_coordinates(self):
@@ -316,7 +316,7 @@ class VSC(EditableDevice):
                  'rate': self.rate,
                  'r': self.R1,
                  'x': self.X1,
-                 'g': self.G0,
+                 'g': self.G0sw,
 
                  'm': self.m,
                  'm_min': self.m_min,
@@ -360,7 +360,7 @@ class VSC(EditableDevice):
 
                  'r': self.R1,
                  'x': self.X1,
-                 'g': self.G0,
+                 'g': self.G0sw,
 
                  'm': self.m,
                  'm_min': self.m_min,
