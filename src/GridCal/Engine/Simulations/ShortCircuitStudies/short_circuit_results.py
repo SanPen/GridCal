@@ -310,7 +310,7 @@ class ShortCircuitResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoading0:
             labels = self.branch_names
-            y = self.loading0.real
+            y = self.loading0.real * 100.0
             y_label = '(%)'
 
         elif result_type == ResultTypes.BranchActiveLosses0:
@@ -355,7 +355,7 @@ class ShortCircuitResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoading1:
             labels = self.branch_names
-            y = self.loading1.real
+            y = self.loading1.real * 100.0
             y_label = '(%)'
 
         elif result_type == ResultTypes.BranchActiveLosses1:
@@ -400,7 +400,7 @@ class ShortCircuitResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoading2:
             labels = self.branch_names
-            y = self.loading2.real
+            y = self.loading2.real * 100.0
             y_label = '(%)'
 
         elif result_type == ResultTypes.BranchActiveLosses2:
