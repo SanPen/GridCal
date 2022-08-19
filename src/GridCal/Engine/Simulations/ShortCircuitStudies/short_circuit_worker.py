@@ -137,76 +137,76 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     Y_batt0 = calculation_inputs.battery_data.get_Yshunt(seq=0)
     Yshunt_bus0 = Y_gen0 + Y_batt0
 
-    Y0 = compute_admittances(R=calculation_inputs.branch_data.R0,
-                             X=calculation_inputs.branch_data.X0,
-                             G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
-                             B=calculation_inputs.branch_data.B0,
-                             k=calculation_inputs.branch_data.k,
-                             tap_module=calculation_inputs.branch_data.m[:, 0],
-                             vtap_f=calculation_inputs.branch_data.tap_f,
-                             vtap_t=calculation_inputs.branch_data.tap_t,
-                             tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                             Beq=np.zeros(nbr),
-                             Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                             Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                             G0=np.zeros(nbr),
-                             If=np.zeros(nbr),
-                             a=np.zeros(nbr),
-                             b=np.zeros(nbr),
-                             c=np.zeros(nbr),
-                             Yshunt_bus=Yshunt_bus0,
-                             conn=calculation_inputs.branch_data.conn,
-                             seq=0)
+    adm0 = compute_admittances(R=calculation_inputs.branch_data.R0,
+                               X=calculation_inputs.branch_data.X0,
+                               G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
+                               B=calculation_inputs.branch_data.B0,
+                               k=calculation_inputs.branch_data.k,
+                               tap_module=calculation_inputs.branch_data.m[:, 0],
+                               vtap_f=calculation_inputs.branch_data.tap_f,
+                               vtap_t=calculation_inputs.branch_data.tap_t,
+                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               Beq=np.zeros(nbr),
+                               Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                               Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                               G0=np.zeros(nbr),
+                               If=np.zeros(nbr),
+                               a=np.zeros(nbr),
+                               b=np.zeros(nbr),
+                               c=np.zeros(nbr),
+                               Yshunt_bus=Yshunt_bus0,
+                               conn=calculation_inputs.branch_data.conn,
+                               seq=0)
 
     Y_gen1 = calculation_inputs.generator_data.get_Yshunt(seq=1)
     Y_batt1 = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Yshunt_bus1 = calculation_inputs.Yshunt_from_devices[:, 0] + Y_gen1 + Y_batt1
 
-    Y1 = compute_admittances(R=calculation_inputs.branch_data.R,
-                             X=calculation_inputs.branch_data.X,
-                             G=calculation_inputs.branch_data.G,
-                             B=calculation_inputs.branch_data.B,
-                             k=calculation_inputs.branch_data.k,
-                             tap_module=calculation_inputs.branch_data.m[:, 0],
-                             vtap_f=calculation_inputs.branch_data.tap_f,
-                             vtap_t=calculation_inputs.branch_data.tap_t,
-                             tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                             Beq=calculation_inputs.branch_data.Beq[:, 0],
-                             Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                             Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                             G0=calculation_inputs.branch_data.G0sw[:, 0],
-                             If=np.zeros(nbr),
-                             a=calculation_inputs.branch_data.a,
-                             b=calculation_inputs.branch_data.b,
-                             c=calculation_inputs.branch_data.c,
-                             Yshunt_bus=Yshunt_bus1,
-                             conn=calculation_inputs.branch_data.conn,
-                             seq=1)
+    adm1 = compute_admittances(R=calculation_inputs.branch_data.R,
+                               X=calculation_inputs.branch_data.X,
+                               G=calculation_inputs.branch_data.G,
+                               B=calculation_inputs.branch_data.B,
+                               k=calculation_inputs.branch_data.k,
+                               tap_module=calculation_inputs.branch_data.m[:, 0],
+                               vtap_f=calculation_inputs.branch_data.tap_f,
+                               vtap_t=calculation_inputs.branch_data.tap_t,
+                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               Beq=calculation_inputs.branch_data.Beq[:, 0],
+                               Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                               Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                               G0=calculation_inputs.branch_data.G0sw[:, 0],
+                               If=np.zeros(nbr),
+                               a=calculation_inputs.branch_data.a,
+                               b=calculation_inputs.branch_data.b,
+                               c=calculation_inputs.branch_data.c,
+                               Yshunt_bus=Yshunt_bus1,
+                               conn=calculation_inputs.branch_data.conn,
+                               seq=1)
 
     Y_gen2 = calculation_inputs.generator_data.get_Yshunt(seq=2)
     Y_batt2 = calculation_inputs.battery_data.get_Yshunt(seq=2)
     Yshunt_bus2 = Y_gen2 + Y_batt2
 
-    Y2 = compute_admittances(R=calculation_inputs.branch_data.R2,
-                             X=calculation_inputs.branch_data.X2,
-                             G=calculation_inputs.branch_data.G2,
-                             B=calculation_inputs.branch_data.B2,
-                             k=calculation_inputs.branch_data.k,
-                             tap_module=calculation_inputs.branch_data.m[:, 0],
-                             vtap_f=calculation_inputs.branch_data.tap_f,
-                             vtap_t=calculation_inputs.branch_data.tap_t,
-                             tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                             Beq=np.zeros(nbr),
-                             Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                             Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                             G0=np.zeros(nbr),
-                             If=np.zeros(nbr),
-                             a=np.zeros(nbr),
-                             b=np.zeros(nbr),
-                             c=np.zeros(nbr),
-                             Yshunt_bus=Yshunt_bus2,
-                             conn=calculation_inputs.branch_data.conn,
-                             seq=2)
+    adm2 = compute_admittances(R=calculation_inputs.branch_data.R2,
+                               X=calculation_inputs.branch_data.X2,
+                               G=calculation_inputs.branch_data.G2,
+                               B=calculation_inputs.branch_data.B2,
+                               k=calculation_inputs.branch_data.k,
+                               tap_module=calculation_inputs.branch_data.m[:, 0],
+                               vtap_f=calculation_inputs.branch_data.tap_f,
+                               vtap_t=calculation_inputs.branch_data.tap_t,
+                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               Beq=np.zeros(nbr),
+                               Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                               Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                               G0=np.zeros(nbr),
+                               If=np.zeros(nbr),
+                               a=np.zeros(nbr),
+                               b=np.zeros(nbr),
+                               c=np.zeros(nbr),
+                               Yshunt_bus=Yshunt_bus2,
+                               conn=calculation_inputs.branch_data.conn,
+                               seq=2)
 
     """
     Initialize Vpf introducing phase shifts
@@ -230,31 +230,31 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     Vpf[pqpv] *= np.exp(1j * ph_add)
     """
 
-    Y1_series = compute_admittances(R=calculation_inputs.branch_data.R,
-                                    X=calculation_inputs.branch_data.X,
-                                    G=np.zeros(nbr),
-                                    B=np.zeros(nbr),
-                                    k=calculation_inputs.branch_data.k,
-                                    tap_module=calculation_inputs.branch_data.m[:, 0],
-                                    vtap_f=calculation_inputs.branch_data.tap_f,
-                                    vtap_t=calculation_inputs.branch_data.tap_t,
-                                    tap_angle=calculation_inputs.branch_data.theta[:, 0],
-                                    Beq=np.zeros(nbr),
-                                    Cf=calculation_inputs.branch_data.C_branch_bus_f,
-                                    Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                    G0=np.zeros(nbr),
-                                    If=np.zeros(nbr),
-                                    a=calculation_inputs.branch_data.a,
-                                    b=calculation_inputs.branch_data.b,
-                                    c=calculation_inputs.branch_data.c,
-                                    Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                    conn=calculation_inputs.branch_data.conn,
-                                    seq=1)
+    adm_series = compute_admittances(R=calculation_inputs.branch_data.R,
+                                     X=calculation_inputs.branch_data.X,
+                                     G=np.zeros(nbr),
+                                     B=np.zeros(nbr),
+                                     k=calculation_inputs.branch_data.k,
+                                     tap_module=calculation_inputs.branch_data.m[:, 0],
+                                     vtap_f=calculation_inputs.branch_data.tap_f,
+                                     vtap_t=calculation_inputs.branch_data.tap_t,
+                                     tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                     Beq=np.zeros(nbr),
+                                     Cf=calculation_inputs.branch_data.C_branch_bus_f,
+                                     Ct=calculation_inputs.branch_data.C_branch_bus_t,
+                                     G0=np.zeros(nbr),
+                                     If=np.zeros(nbr),
+                                     a=calculation_inputs.branch_data.a,
+                                     b=calculation_inputs.branch_data.b,
+                                     c=calculation_inputs.branch_data.c,
+                                     Yshunt_bus=np.zeros(nbus, dtype=complex),
+                                     conn=calculation_inputs.branch_data.conn,
+                                     seq=1)
 
     vd = calculation_inputs.vd
     pqpv = calculation_inputs.pqpv
 
-    Y1_arr = np.array(Y1_series.Ybus.todense())
+    Y1_arr = np.array(adm_series.Ybus.todense())
     Yu = Y1_arr[np.ix_(pqpv, vd)]
     Yx = Y1_arr[np.ix_(pqpv, pqpv)]
 
@@ -266,9 +266,9 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
 
     # solve the fault
     V0, V1, V2 = short_circuit_unbalance(bus_idx=bus_index,
-                                         Y0=Y0.Ybus,
-                                         Y1=Y1.Ybus,
-                                         Y2=Y2.Ybus,
+                                         Y0=adm0.Ybus,
+                                         Y1=adm1.Ybus,
+                                         Y2=adm2.Ybus,
                                          Vbus=Vpf,
                                          Zf=Zf,
                                          fault_type=fault_type)
@@ -278,22 +278,22 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                    V=V0,
                                                    branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=Y0.Yf,
-                                                   Yt=Y0.Yt)
+                                                   Yf=adm0.Yf,
+                                                   Yt=adm0.Yt)
 
     Sfb1, Stb1, If1, It1, Vbranch1, \
     loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                    V=V1,
                                                    branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=Y1.Yf,
-                                                   Yt=Y1.Yt)
+                                                   Yf=adm1.Yf,
+                                                   Yt=adm1.Yt)
 
     Sfb2, Stb2, If2, It2, Vbranch2, \
     loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                    V=V2,
                                                    branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=Y2.Yf,
-                                                   Yt=Y2.Yt)
+                                                   Yf=adm2.Yf,
+                                                   Yt=adm2.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
