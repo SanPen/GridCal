@@ -75,8 +75,8 @@ def short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index):
     @param Zf: Short circuit impedance vector applicable to the island
     @return: short circuit results
     """
-    Y_gen = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
-    Y_batt = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
+    Y_gen = calculation_inputs.generator_data.get_Yshunt(seq=1)
+    Y_batt = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
     Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
 
@@ -133,8 +133,8 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     nbr = calculation_inputs.nbr
     nbus = calculation_inputs.nbus
 
-    Y_gen0 = calculation_inputs.generator_data.get_gen_Yshunt(seq=0)
-    Y_batt0 = calculation_inputs.battery_data.get_batt_Yshunt(seq=0)
+    Y_gen0 = calculation_inputs.generator_data.get_Yshunt(seq=0)
+    Y_batt0 = calculation_inputs.battery_data.get_Yshunt(seq=0)
     Yshunt_bus0 = Y_gen0 + Y_batt0
 
     Y0 = compute_admittances(R=calculation_inputs.branch_data.R0,
@@ -158,8 +158,8 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                              conn=calculation_inputs.branch_data.conn,
                              seq=0)
 
-    Y_gen1 = calculation_inputs.generator_data.get_gen_Yshunt(seq=1)
-    Y_batt1 = calculation_inputs.battery_data.get_batt_Yshunt(seq=1)
+    Y_gen1 = calculation_inputs.generator_data.get_Yshunt(seq=1)
+    Y_batt1 = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Yshunt_bus1 = calculation_inputs.Yshunt_from_devices[:, 0] + Y_gen1 + Y_batt1
 
     Y1 = compute_admittances(R=calculation_inputs.branch_data.R,
@@ -183,8 +183,8 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                              conn=calculation_inputs.branch_data.conn,
                              seq=1)
 
-    Y_gen2 = calculation_inputs.generator_data.get_gen_Yshunt(seq=2)
-    Y_batt2 = calculation_inputs.battery_data.get_batt_Yshunt(seq=2)
+    Y_gen2 = calculation_inputs.generator_data.get_Yshunt(seq=2)
+    Y_batt2 = calculation_inputs.battery_data.get_Yshunt(seq=2)
     Yshunt_bus2 = Y_gen2 + Y_batt2
 
     Y2 = compute_admittances(R=calculation_inputs.branch_data.R2,

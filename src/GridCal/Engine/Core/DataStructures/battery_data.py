@@ -110,19 +110,19 @@ class BatteryData:
         Q = pf_sign * self.battery_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.battery_p + 1.0j * Q
 
-    def get_batt_Yshunt(self, seq=1):
+    def get_Yshunt(self, seq=1):
         """
         Obtain the vector of shunt admittances of a given sequence
         :param seq: sequence (0, 1 or 2)
         """
-        if seq==0:
-            Y_vec = self.C_bus_batt @ np.power((self.battery_r0 + 1j * self.battery_x0), -1)
-        elif seq==1:
-            Y_vec = self.C_bus_batt @ np.power((self.battery_r1 + 1j * self.battery_x1), -1)
-        elif seq==2:
-            Y_vec = self.C_bus_batt @ np.power((self.battery_r2 + 1j * self.battery_x2), -1)
-
-        return Y_vec
+        if seq == 0:
+            return self.C_bus_batt @ (1.0 / (self.battery_r0 + 1j * self.battery_x0))
+        elif seq == 1:
+            return self.C_bus_batt @ (1.0 / (self.battery_r1 + 1j * self.battery_x1))
+        elif seq == 2:
+            return self.C_bus_batt @ (1.0 / (self.battery_r2 + 1j * self.battery_x2))
+        else:
+            raise Exception('Sequence must be 0, 1, 2')
 
     def get_injections_per_bus(self):
         return self.C_bus_batt * (self.get_injections() * self.battery_active)
