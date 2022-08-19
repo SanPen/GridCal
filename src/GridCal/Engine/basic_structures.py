@@ -111,6 +111,7 @@ class SolverType(Enum):
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'
     NELDER_MEAD_OPF = 'Nelder Mead OPF'
+    NoSolver = 'No Solver'
 
     def __str__(self):
         return self.value

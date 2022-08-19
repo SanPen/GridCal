@@ -338,12 +338,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                        elapsed=0)
 
     # this the "outer-loop"
-    if len(circuit.vd) == 0:
-        voltage_solution = np.zeros(len(Sbus), dtype=complex)
-        normF = 0
-        Scalc = Sbus.copy()
-        any_q_control_issue = False
-        converged = True
+    if len(vd) == 0:
+        solution.V = np.zeros(len(Sbus), dtype=complex)
+        report.add(bs.SolverType.NoSolver, True, 0, 0.0, 0.0)
         logger.add_error('Not solving power flow because there is no slack bus')
     else:
 
