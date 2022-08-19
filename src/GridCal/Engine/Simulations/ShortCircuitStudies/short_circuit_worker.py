@@ -78,11 +78,11 @@ def short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index):
     Y_gen = calculation_inputs.generator_data.get_Yshunt(seq=1)
     Y_batt = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
-    Zbus = inv(Ybus_gen_batt.tocsc()).toarray()
+
 
     # Compute the short circuit
     V, SCpower = short_circuit_3p(bus_idx=bus_index,
-                                  Zbus=Zbus,
+                                  Ybus=Ybus_gen_batt,
                                   Vbus=Vpf,
                                   Zf=Zf,
                                   baseMVA=calculation_inputs.Sbase)
@@ -208,11 +208,6 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                              conn=calculation_inputs.branch_data.conn,
                              seq=2)
 
-    # get impedances matrices
-    Z0 = inv(Y0.Ybus.tocsc()).toarray()
-    Z1 = inv(Y1.Ybus.tocsc()).toarray()
-    Z2 = inv(Y2.Ybus.tocsc()).toarray()
-
     """
     Initialize Vpf introducing phase shifts
     No search algo is needed. Instead, we need to solve YV=0,
@@ -271,9 +266,9 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
 
     # solve the fault
     V0, V1, V2 = short_circuit_unbalance(bus_idx=bus_index,
-                                         Z0=Z0,
-                                         Z1=Z1,
-                                         Z2=Z2,
+                                         Y0=Y0.Ybus,
+                                         Y1=Y1.Ybus,
+                                         Y2=Y2.Ybus,
                                          Vbus=Vpf,
                                          Zf=Zf,
                                          fault_type=fault_type)
