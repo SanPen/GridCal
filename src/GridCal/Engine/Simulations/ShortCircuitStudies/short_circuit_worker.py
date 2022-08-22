@@ -149,7 +149,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                Beq=np.zeros(nbr),
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                               G0=np.zeros(nbr),
+                               G0sw=np.zeros(nbr),
                                If=np.zeros(nbr),
                                a=np.zeros(nbr),
                                b=np.zeros(nbr),
@@ -174,7 +174,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                Beq=calculation_inputs.branch_data.Beq[:, 0],
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                               G0=calculation_inputs.branch_data.G0sw[:, 0],
+                               G0sw=calculation_inputs.branch_data.G0sw[:, 0],
                                If=np.zeros(nbr),
                                a=calculation_inputs.branch_data.a,
                                b=calculation_inputs.branch_data.b,
@@ -199,7 +199,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                Beq=np.zeros(nbr),
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                               G0=np.zeros(nbr),
+                               G0sw=np.zeros(nbr),
                                If=np.zeros(nbr),
                                a=np.zeros(nbr),
                                b=np.zeros(nbr),
@@ -242,7 +242,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                      Beq=np.zeros(nbr),
                                      Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                      Ct=calculation_inputs.branch_data.C_branch_bus_t,
-                                     G0=np.zeros(nbr),
+                                     G0sw=np.zeros(nbr),
                                      If=np.zeros(nbr),
                                      a=calculation_inputs.branch_data.a,
                                      b=calculation_inputs.branch_data.b,
@@ -254,13 +254,16 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     vd = calculation_inputs.vd
     pqpv = calculation_inputs.pqpv
 
-    Y1_arr = np.array(adm_series.Ybus.todense())
-    Yu = Y1_arr[np.ix_(pqpv, vd)]
-    Yx = Y1_arr[np.ix_(pqpv, pqpv)]
+    # Y1_arr = np.array(adm_series.Ybus.todense())
+    # Yu = Y1_arr[np.ix_(pqpv, vd)]
+    # Yx = Y1_arr[np.ix_(pqpv, pqpv)]
+    #
+    # I_vd = Yu * np.array(Vpf[vd])
+    # Vpqpv_ph = - np.linalg.inv(Yx) @ I_vd
 
-    I_vd = Yu * np.array(Vpf[vd])
-    Vpqpv_ph = - np.linalg.inv(Yx) @ I_vd
-
+    # add the voltage phase due to the slack, to the rest of the nodes
+    I_vd = adm_series.Ybus[np.ix_(pqpv, vd)] * Vpf[vd]
+    Vpqpv_ph = - sp.linalg.spsolve(adm_series.Ybus[np.ix_(pqpv, pqpv)], I_vd)
     ph_add = np.angle(Vpqpv_ph)
     Vpf[pqpv] = polar_to_rect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
 

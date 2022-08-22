@@ -39,7 +39,7 @@ def compute_connectivity(branch_active, Cf_, Ct_):
 
 
 def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
-                        tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus,
+                        tap_angle, Beq, If, Cf, Ct, G0sw, a, b, c, Yshunt_bus,
                         conn=None, seq=None):
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
@@ -56,7 +56,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
     :param If: Array of currents "from" in all the branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param G0:
+    :param G0sw:
     :param a:
     :param b:
     :param c:
@@ -65,7 +65,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
     """
 
     # compute G-switch
-    Gsw = G0 + a * np.power(If, 2) + b * If + c
+    Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
@@ -96,7 +96,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
 
     elif seq == 2:  # negative sequence
         # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([np.exp(-1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
+        factor_psh = np.array([np.exp(-1j * np.pi / 6) if con == WindingsConnection.GD or con == WindingsConnection.SD else 1 for con in conn])
 
         Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
         Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
@@ -105,7 +105,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
 
     elif seq == 1:  # positive sequence
         # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([np.exp(1j * np.pi / 6) if con==WindingsConnection.GD or con==WindingsConnection.SD else 1 for con in conn])
+        factor_psh = np.array([np.exp(1j * np.pi / 6) if con == WindingsConnection.GD or con == WindingsConnection.SD else 1 for con in conn])
 
         Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
         Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh

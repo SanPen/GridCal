@@ -915,7 +915,7 @@ class SnapshotData:
                                                          Beq=self.branch_data.Beq[:, 0],
                                                          Cf=self.Cf,
                                                          Ct=self.Ct,
-                                                         G0=self.branch_data.G0sw[:, 0],
+                                                         G0sw=self.branch_data.G0sw[:, 0],
                                                          If=np.zeros(len(self.branch_data)),
                                                          a=self.branch_data.a,
                                                          b=self.branch_data.b,
