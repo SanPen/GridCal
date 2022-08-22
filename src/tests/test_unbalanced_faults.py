@@ -30,10 +30,10 @@ def test_unbalanced_short_circuit():
     grid = FileOpen(fname).open()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
-                            verbose=False,  # Verbose option where available
-                            tolerance=1e-6,  # power error in p.u.
-                            max_iter=25,  # maximum iteration number
-                            )
+                                  verbose=False,  # Verbose option where available
+                                  tolerance=1e-6,  # power error in p.u.
+                                  max_iter=25,  # maximum iteration number
+                                  )
     pf = PowerFlowDriver(grid, pf_options)
     pf.run()
 
