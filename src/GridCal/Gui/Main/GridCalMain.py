@@ -4199,7 +4199,7 @@ class MainGUI(QMainWindow):
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
                 trm = self.ui.trmSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
                 n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
@@ -4357,7 +4357,7 @@ class MainGUI(QMainWindow):
 
                 trm = self.ui.trmSpinBox.value()
                 nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
                 n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
@@ -4366,6 +4366,7 @@ class MainGUI(QMainWindow):
                     mip_solver=mip_solver,
                     generation_formulation=generation_formulation,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,

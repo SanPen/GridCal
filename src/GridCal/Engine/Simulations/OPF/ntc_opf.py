@@ -911,9 +911,8 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
         if branch_active[m]:
 
             max_alpha = max(alpha_abs[m], max(alpha_n1_abs[m]))
-            ntc_load = (max_alpha * ntc_load_rule) + 1e-20 / Sbase
             # NTC min for considering as limiting element by ACER
-            branch_ntc_load_rule[m] = rates[m] / ntc_load
+            branch_ntc_load_rule[m] = rates[m] * ntc_load_rule / (max_alpha + 1e-20)
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
@@ -1056,7 +1055,7 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
 
 def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names,
                           contingency_enabled_indices, LODF, F, T,  branch_sensitivity_threshold,
-                          flow_f, monitor, logger: Logger, lodf_replacement_value=0):
+                          flow_f, monitor, alpha_n1, logger: Logger,  lodf_replacement_value=0):
     """
     Formulate the contingency flows
     :param solver: Solver instance to which add the equations
@@ -1069,6 +1068,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     :param T: Array of branch "to" bus indices
     :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
     :param flow_f: Array of formulated branch flows (LP variables)
+    :param alpha_n1: Power transfer sensibility matrix
     :param monitor: Array of final monitor status per branch after applying the logic
     :return:
         - flow_n1f: List of contingency flows LP variables
@@ -1084,6 +1084,8 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     # this is done in a separated loop because all te flow variables must exist beforehand
     flow_n1f = list()
     con_idx = list()
+    alpha_n1_list = list()
+
     for m in mon_br_idx:  # for every monitored branch
         _f = F[m]
         _t = T[m]
@@ -1115,8 +1117,9 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
+                alpha_n1_list.append(alpha_n1[m, c])
 
-    return flow_n1f, con_idx
+    return flow_n1f, alpha_n1_list, con_idx
 
 
 def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled_indices, LODF, F, T,
@@ -1370,6 +1373,7 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
 
     flow_hvdc_n1f = list()
     con_hvdc_idx = list()
+    alpha_n1_list = list()
 
     for i, hvdc_f in enumerate(hvdc_flow_f):
         _f_hvdc = F_hvdc[i]
@@ -1388,8 +1392,9 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 # store vars
                 con_hvdc_idx.append((m, i))
                 flow_hvdc_n1f.append(flow_n1)
+                alpha_n1_list.append(PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc])
 
-    return flow_hvdc_n1f, con_hvdc_idx
+    return flow_hvdc_n1f, alpha_n1_list, con_hvdc_idx
 
 
 def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, generator_names,
@@ -1420,6 +1425,7 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
 
     flow_gen_n1f = list()
     con_gen_idx = list()
+    alpha_n1_list = list()
 
     generation_contingency_threshold = generation_contingency_threshold / Sbase
 
@@ -1442,8 +1448,9 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
                     # store vars
                     con_gen_idx.append((m, j))
                     flow_gen_n1f.append(flow_n1)
+                    alpha_n1_list.append(- PTDF[m, i])
 
-    return flow_gen_n1f, con_gen_idx
+    return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
 def formulate_objective(solver: pywraplp.Solver,
                         power_shift, gen_cost, generation_delta,
@@ -1834,7 +1841,7 @@ class OpfNTC(Opf):
 
         if self.consider_contingencies:
             # formulate the contingencies
-            n1flow_f, con_br_idx = formulate_contingency(
+            n1flow_f, con_br_alpha, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
@@ -1852,10 +1859,11 @@ class OpfNTC(Opf):
         else:
             con_br_idx = list()
             n1flow_f = list()
+            con_br_alpha = list()
 
         if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
             # formulate the generator contingencies
-            n1flow_gen_f, con_gen_idx = formulate_generator_contingency(
+            n1flow_gen_f, con_gen_alpha, con_gen_idx = formulate_generator_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
@@ -1873,10 +1881,11 @@ class OpfNTC(Opf):
         else:
             n1flow_gen_f = list()
             con_gen_idx = list()
+            con_gen_alpha = list()
 
         if self.consider_hvdc_contingencies:
             # formulate the hvdc contingencies
-            n1flow_hvdc_f, con_hvdc_idx = formulate_hvdc_contingency(
+            n1flow_hvdc_f, con_hvdc_alpha, con_hvdc_idx = formulate_hvdc_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
@@ -1893,6 +1902,7 @@ class OpfNTC(Opf):
         else:
             n1flow_hvdc_f = list()
             con_hvdc_idx = list()
+            con_hvdc_alpha = list()
 
         # formulate the objective
         formulate_objective(
@@ -1953,6 +1963,10 @@ class OpfNTC(Opf):
         self.contingency_gen_indices_list = con_gen_idx  # [(m, c), ...]
         self.contingency_hvdc_flows_list = n1flow_hvdc_f
         self.contingency_hvdc_indices_list = con_hvdc_idx  # [(m, c), ...]
+
+        self.contingency_branch_alpha_list = con_br_alpha
+        self.contingency_hvdc_alpha_list = con_hvdc_alpha
+        self.contingency_generation_alpha_list = con_gen_alpha
 
         return self.solver
 
@@ -2171,7 +2185,7 @@ class OpfNTC(Opf):
 
         if self.consider_contingencies:
             # formulate the contingencies
-            n1flow_f, con_br_idx = formulate_contingency(
+            n1flow_f, con_brn_alpha, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
@@ -2184,15 +2198,17 @@ class OpfNTC(Opf):
                 flow_f=flow_f,
                 monitor=monitor,
                 lodf_replacement_value=0,
+                alpha_n1=self.alpha_n1,
                 logger=self.logger)
 
         else:
             con_br_idx = list()
             n1flow_f = list()
+            alpha_n1_list = list()
 
         if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
             # formulate the generator contingencies
-            n1flow_gen_f, con_gen_idx = formulate_generator_contingency(
+            n1flow_gen_f, con_gen_alpha, con_gen_idx = formulate_generator_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
@@ -2213,7 +2229,7 @@ class OpfNTC(Opf):
 
         if self.consider_hvdc_contingencies:
             # formulate the hvdc contingencies
-            n1flow_hvdc_f, con_hvdc_idx = formulate_hvdc_contingency(
+            n1flow_hvdc_f, con_hvdc_alpha, con_hvdc_idx = formulate_hvdc_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
@@ -2282,6 +2298,7 @@ class OpfNTC(Opf):
         self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
 
         self.branch_ntc_load_rule = branch_ntc_load_rule
+
         # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
@@ -2289,6 +2306,10 @@ class OpfNTC(Opf):
         self.contingency_gen_indices_list = con_gen_idx  # [(t, m, c), ...]
         self.contingency_hvdc_flows_list = n1flow_hvdc_f
         self.contingency_hvdc_indices_list = con_hvdc_idx  # [(t, m, c), ...]
+
+        self.contingency_branch_alpha_list = con_brn_alpha
+        self.contingency_generation_alpha_list = con_gen_alpha
+        self.contingency_hvdc_alpha_list = con_hvdc_alpha
 
         return self.solver
 

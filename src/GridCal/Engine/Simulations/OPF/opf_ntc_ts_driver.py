@@ -521,9 +521,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_array=nc.time_array[time_indices],
                 sampled_probabilities=sampled_probabilities,
                 time_indices=time_indices,
-                trm=self.trm,
-                max_report_elements=self.max_report_elements,
-                ntc_load_rule=self.ntc_load_rule)
+                trm=self.options.trm,
+                max_report_elements=self.options.max_report_elements,
+                ntc_load_rule=self.options.ntc_load_rule)
 
         else:
             self.results = OptimalNetTransferCapacityTimeSeriesResults(
@@ -669,7 +669,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
-                alpha_n1=problem.get_alpha_n1_list(),
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
@@ -677,6 +676,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 contingency_generation_indices_list=problem.contingency_gen_indices_list,
                 contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
                 contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
+                contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
+                contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
+                contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
                 branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
                 rates=nc.branch_data.branch_rates[:, t],
                 contingency_rates=nc.branch_data.branch_contingency_rates[:, t],

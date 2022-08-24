@@ -23,8 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="solved alpha n-1">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fix np warning">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,7 +147,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -258,10 +263,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update" />
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
       </list>
     </recent_temporary>
@@ -717,13 +722,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00237" summary="Refactored the order of the generation formulation in NTC-OPF">
-      <created>1636623381800</created>
-      <option name="number" value="00237" />
-      <option name="presentableId" value="LOCAL-00237" />
-      <option name="project" value="LOCAL" />
-      <updated>1636623381800</updated>
-    </task>
     <task id="LOCAL-00238" summary="4.3.1">
       <created>1641220709358</created>
       <option name="number" value="00238" />
@@ -1060,7 +1058,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660306057582</updated>
     </task>
-    <option name="localTasksCounter" value="286" />
+    <task id="LOCAL-00286" summary="fix np warning">
+      <created>1660307292016</created>
+      <option name="number" value="00286" />
+      <option name="presentableId" value="LOCAL-00286" />
+      <option name="project" value="LOCAL" />
+      <updated>1660307292016</updated>
+    </task>
+    <option name="localTasksCounter" value="287" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1094,7 +1099,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug when the nodal restrictions are None" />
     <MESSAGE value="Fixed some little bugs with the OPF" />
     <MESSAGE value="Added Highs for windows, not working yet" />
     <MESSAGE value="Highs WIP" />
@@ -1119,7 +1123,8 @@
     <MESSAGE value="Little fix divided by sbase twice" />
     <MESSAGE value="solving alpha n-1" />
     <MESSAGE value="solved alpha n-1" />
-    <option name="LAST_COMMIT_MESSAGE" value="solved alpha n-1" />
+    <MESSAGE value="fix np warning" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix np warning" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1376,9 +1381,9 @@
           <option name="timeStamp" value="758" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>875</line>
-          <option name="timeStamp" value="759" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>959</line>
+          <option name="timeStamp" value="793" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
