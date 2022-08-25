@@ -1092,7 +1092,8 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
 
         for c in con_br_idx:  # for every contingency
 
-            if m != c and LODF[m, c] > branch_sensitivity_threshold:
+            # if m != c and LODF[m, c] > branch_sensitivity_threshold:
+            if m != c and alpha_n1[m, c] > branch_sensitivity_threshold:
 
                 lodf = LODF[m, c]
 
@@ -1373,7 +1374,7 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
 
     flow_hvdc_n1f = list()
     con_hvdc_idx = list()
-    alpha_n1_list = list()
+    con_alpha = list()
 
     for i, hvdc_f in enumerate(hvdc_flow_f):
         _f_hvdc = F_hvdc[i]
@@ -1392,9 +1393,9 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 # store vars
                 con_hvdc_idx.append((m, i))
                 flow_hvdc_n1f.append(flow_n1)
-                alpha_n1_list.append(alpha[m] + PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc])
+                con_alpha.append(PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc] - alpha[m])
 
-    return flow_hvdc_n1f, alpha_n1_list, con_hvdc_idx
+    return flow_hvdc_n1f, con_alpha, con_hvdc_idx
 
 
 def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, generator_names,
@@ -1448,7 +1449,7 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
                     # store vars
                     con_gen_idx.append((m, j))
                     flow_gen_n1f.append(flow_n1)
-                    alpha_n1_list.append(alpha[m] - PTDF[m, i] * generation_contingency_threshold_pu)
+                    alpha_n1_list.append(PTDF[m, i] - alpha[m])
 
     return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
@@ -1853,6 +1854,7 @@ class OpfNTC(Opf):
                 branch_sensitivity_threshold=self.branch_sensitivity_threshold,
                 flow_f=flow_f,
                 monitor=monitor,
+                alpha_n1=self.alpha_n1,
                 lodf_replacement_value=0,
                 logger=self.logger)
 
