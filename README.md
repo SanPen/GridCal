@@ -9,7 +9,7 @@
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
-This software Aim's to be a complete platform for power systems research and simulation.
+This software aims to be a complete platform for power systems research and simulation.
 
 - [Watch the video](https://youtu.be/SY66WgLGo54)
 - Check out the [Documentation](https://gridcal.readthedocs.io/en/latest/about.html)
@@ -78,7 +78,7 @@ tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests)
 
 # Features overview
 
-It is a pure Python, it works for Windows, Linux and OSX.
+It is in pure Python and it works for Windows, Linux and OSX.
 
 Some features you'll find already are:
 
@@ -121,7 +121,7 @@ Some features you'll find already are:
 
 - **Blackout cascading** in simulation and step by step mode.
 
-- Three-phase **short circuit**.
+- Three-phase and unbalanced **short circuit**.
 
 - Includes the Z-I-P load model, this means that the power flows can handle both power and current.
 
