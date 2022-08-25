@@ -1084,7 +1084,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     # this is done in a separated loop because all te flow variables must exist beforehand
     flow_n1f = list()
     con_idx = list()
-    alpha_n1_list = list()
+    con_alpha = list()
 
     for m in mon_br_idx:  # for every monitored branch
         _f = F[m]
@@ -1117,9 +1117,9 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
-                alpha_n1_list.append(alpha_n1[m, c])
+                con_alpha.append(alpha_n1[m, c])
 
-    return flow_n1f, alpha_n1_list, con_idx
+    return flow_n1f, con_alpha, con_idx
 
 
 def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled_indices, LODF, F, T,
@@ -1348,7 +1348,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, co
 
 
 def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
-                               hvdc_flow_f, hvdc_active, PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor,
+                               hvdc_flow_f, hvdc_active, PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor, alpha,
                                logger: Logger):
     """
     Formulate the contingency flows
@@ -1392,13 +1392,13 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 # store vars
                 con_hvdc_idx.append((m, i))
                 flow_hvdc_n1f.append(flow_n1)
-                alpha_n1_list.append(PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc])
+                alpha_n1_list.append(alpha[m] + PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc])
 
     return flow_hvdc_n1f, alpha_n1_list, con_hvdc_idx
 
 
 def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, generator_names,
-                                    Cgen, Pgen, generation_contingency_threshold, PTDF, F, T, flow_f, monitor,
+                                    Cgen, Pgen, generation_contingency_threshold, PTDF, F, T, flow_f, monitor, alpha,
                                     logger: Logger):
     """
     Formulate the contingency flows
@@ -1427,13 +1427,13 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
     con_gen_idx = list()
     alpha_n1_list = list()
 
-    generation_contingency_threshold = generation_contingency_threshold / Sbase
+    generation_contingency_threshold_pu = generation_contingency_threshold / Sbase
 
     for j in range(Cgen.shape[1]):  # for each generator
         for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
             i = Cgen.indices[ii]  # bus index
 
-            if Pgen[j] >= generation_contingency_threshold:
+            if Pgen[j] >= generation_contingency_threshold_pu:
 
                 for m in mon_br_idx:  # for every monitored branch
                     _f = F[m]
@@ -1442,13 +1442,13 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
 
                     flow_n1 = solver.NumVar(-rates[m], rates[m], 'gen_n-1_flow_' + suffix)
 
-                    solver.Add(flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold,
+                    solver.Add(flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold_pu,
                                "gen_n-1_flow_assignment_" + suffix)
 
                     # store vars
                     con_gen_idx.append((m, j))
                     flow_gen_n1f.append(flow_n1)
-                    alpha_n1_list.append(- PTDF[m, i])
+                    alpha_n1_list.append(alpha[m] - PTDF[m, i] * generation_contingency_threshold_pu)
 
     return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
@@ -1877,6 +1877,7 @@ class OpfNTC(Opf):
                 T=self.numerical_circuit.T,
                 flow_f=flow_f,
                 monitor=monitor,
+                alpha=self.alpha,
                 logger=self.logger)
         else:
             n1flow_gen_f = list()
@@ -1898,6 +1899,7 @@ class OpfNTC(Opf):
                 T_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
                 flow_f=flow_f,
                 monitor=monitor,
+                alpha=self.alpha,
                 logger=self.logger)
         else:
             n1flow_hvdc_f = list()
