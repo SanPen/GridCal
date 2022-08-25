@@ -23,10 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Modified Alpha_n1 for generation and hvdc">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Changed contingency sensibility filter" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -718,13 +715,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00240" summary="Fixed HVDC &quot;free&quot; control for OPF">
-      <created>1642008809064</created>
-      <option name="number" value="00240" />
-      <option name="presentableId" value="LOCAL-00240" />
-      <option name="project" value="LOCAL" />
-      <updated>1642008809064</updated>
-    </task>
     <task id="LOCAL-00241" summary="Implemented bentayga inspection from  the compiled arrays view">
       <created>1642018867140</created>
       <option name="number" value="00241" />
@@ -1061,7 +1051,14 @@
       <option name="project" value="LOCAL" />
       <updated>1661427765329</updated>
     </task>
-    <option name="localTasksCounter" value="289" />
+    <task id="LOCAL-00289" summary="Changed contingency sensibility filter">
+      <created>1661430232731</created>
+      <option name="number" value="00289" />
+      <option name="presentableId" value="LOCAL-00289" />
+      <option name="project" value="LOCAL" />
+      <updated>1661430232731</updated>
+    </task>
+    <option name="localTasksCounter" value="290" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1095,7 +1092,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Highs WIP" />
     <MESSAGE value="Highs working with shadow prices, when HiGHS is in the PATH" />
     <MESSAGE value="seems to be fixed the array saving automatically" />
     <MESSAGE value="added the parallel option to the HiGHS call" />
@@ -1120,7 +1116,8 @@
     <MESSAGE value="fix np warning" />
     <MESSAGE value="Several fixes due Sbase issues in ntc load rule&#10;&#10;New version" />
     <MESSAGE value="Modified Alpha_n1 for generation and hvdc" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modified Alpha_n1 for generation and hvdc" />
+    <MESSAGE value="Changed contingency sensibility filter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed contingency sensibility filter" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

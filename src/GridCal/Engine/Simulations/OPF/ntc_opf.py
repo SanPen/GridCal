@@ -1092,8 +1092,11 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
 
         for c in con_br_idx:  # for every contingency
 
-            # if m != c and LODF[m, c] > branch_sensitivity_threshold:
-            if m != c and alpha_n1[m, c] > branch_sensitivity_threshold:
+            c1 = m != c
+            c2 = LODF[m, c] > branch_sensitivity_threshold
+            c3 = alpha_n1[m, c] > branch_sensitivity_threshold
+
+            if c1 and c2 and c3:
 
                 lodf = LODF[m, c]
 
