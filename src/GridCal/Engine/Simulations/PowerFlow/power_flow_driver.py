@@ -121,14 +121,6 @@ class PowerFlowDriver(DriverTemplate):
             self.results.loading = res.Loading
             self.results.losses = res.Losses
             self.results.Vbranch = res.VBranch
-            self.results.F = (nc.Cf * np.arange(nc.Cf.shape[1])).astype(int)
-            self.results.T = (nc.Ct * np.arange(nc.Ct.shape[1])).astype(int)
-            self.results.hvdc_F = (nc.hvdc_data.Cf * np.arange(nc.hvdc_data.Cf.shape[1])).astype(int)
-            self.results.hvdc_T = (nc.hvdc_data.Ct * np.arange(nc.hvdc_data.Ct.shape[1])).astype(int)
-            self.results.bus_area_indices = self.grid.get_bus_area_indices()
-            self.results.area_names = [a.name for a in self.grid.areas]
-            print('newton error:', res.error)
-
 
         elif self.engine == bs.EngineType.NewtonPA:
 
@@ -145,6 +137,7 @@ class PowerFlowDriver(DriverTemplate):
                                             bus_types=res.bus_types)
 
             self.results = translate_newton_pa_pf_results(self.grid, res)
+            self.results.area_names = [a.name for a in self.grid.areas]
             self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == bs.EngineType.Bentayga:
@@ -162,11 +155,16 @@ class PowerFlowDriver(DriverTemplate):
                                             bus_types=res.bus_types)
 
             self.results = translate_bentayga_pf_results(self.grid, res)
+            self.results.area_names = [a.name for a in self.grid.areas]
             self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == bs.EngineType.AllianderPGM:
 
             self.results = alliander_pgm_pf(self.grid, self.options, logger=self.logger)
+            self.results.area_names = [a.name for a in self.grid.areas]
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)
+
+        # fill F, T, Areas, etc...
+        self.results.fill_circuit_info(self.grid)

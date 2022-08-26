@@ -87,6 +87,9 @@ class ResultTypes(Enum):
     GenerationDelta = 'Generation deltas', DeviceType.GeneratorDevice
     GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
+    LossesPercentPerArea = 'Losses % per area', DeviceType.NoDevice
+    LossesPerArea = 'Losses per area', DeviceType.NoDevice
+    ActivePowerFlowPerArea = 'Active power flow per area', DeviceType.NoDevice
 
     OptimalNetTransferCapacityTimeSeriesReport = 'Optimal net transfer capacity series report', DeviceType.NoDevice
 

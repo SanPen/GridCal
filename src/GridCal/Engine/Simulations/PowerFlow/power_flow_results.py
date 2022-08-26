@@ -20,6 +20,7 @@ import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+# from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class NumericPowerFlowResults:
@@ -106,7 +107,11 @@ class PowerFlowResults(ResultsTemplate):
                                                     ResultTypes.HvdcLosses,
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcPowerTo,
-                                                    ResultTypes.InterAreaExchange],
+
+                                                    ResultTypes.InterAreaExchange,
+                                                    ResultTypes.ActivePowerFlowPerArea,
+                                                    ResultTypes.LossesPerArea,
+                                                    ResultTypes.LossesPercentPerArea],
                                  data_variables=['bus_types',
                                                  'bus_names',
                                                  'branch_names',
@@ -188,6 +193,28 @@ class PowerFlowResults(ResultsTemplate):
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
+
+    def fill_circuit_info(self, grid: "MultiCircuit"):
+
+        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
+        bus_dict = grid.get_bus_index_dict()
+
+        self.area_names = [a.name for a in grid.get_areas()]
+        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.buses])
+
+        branches = grid.get_branches_wo_hvdc()
+        self.F = np.zeros(len(branches), dtype=int)
+        self.T = np.zeros(len(branches), dtype=int)
+        for k, elm in enumerate(branches):
+            self.F[k] = bus_dict[elm.bus_from]
+            self.T[k] = bus_dict[elm.bus_to]
+
+        hvdc = grid.get_hvdc()
+        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
+        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
+        for k, elm in enumerate(hvdc):
+            self.hvdc_F[k] = bus_dict[elm.bus_from]
+            self.hvdc_T[k] = bus_dict[elm.bus_to]
 
     @property
     def converged(self):
@@ -316,6 +343,30 @@ class PowerFlowResults(ResultsTemplate):
             if a1 != a2:
                 x[a1, a2] += flow
                 x[a2, a1] -= flow
+
+        return x
+
+    def get_branch_values_per_area(self, branch_values: np.ndarray):
+
+        na = len(self.area_names)
+        x = np.zeros((na, na), dtype=branch_values.dtype)
+
+        for f, t, val in zip(self.F, self.T, branch_values):
+            a1 = self.bus_area_indices[f]
+            a2 = self.bus_area_indices[t]
+            x[a1, a2] += val
+
+        return x
+
+    def get_hvdc_values_per_area(self, hvdc_values: np.ndarray):
+
+        na = len(self.area_names)
+        x = np.zeros((na, na), dtype=hvdc_values.dtype)
+
+        for f, t, val in zip(self.hvdc_F, self.hvdc_T, hvdc_values):
+            a1 = self.bus_area_indices[f]
+            a2 = self.bus_area_indices[t]
+            x[a1, a2] += val
 
         return x
 
@@ -500,6 +551,32 @@ class PowerFlowResults(ResultsTemplate):
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
             y = self.get_inter_area_flows().real
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPercentPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+
+            y = Pl / (Pf + 1e-20) * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            y = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ActivePowerFlowPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            y = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
+
             y_label = '(MW)'
             title = result_type.value[0]
 
