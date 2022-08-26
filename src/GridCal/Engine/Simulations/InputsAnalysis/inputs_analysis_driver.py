@@ -16,12 +16,23 @@ class InputsAnalysisResults(ResultsTemplate):
         Construct the analysis
         :param grid:
         """
+        extra = [ResultTypes.AreaGenerationAnalysis,
+                 ResultTypes.ZoneGenerationAnalysis,
+                 ResultTypes.CountryGenerationAnalysis,
+                 ResultTypes.AreaLoadAnalysis,
+                 ResultTypes.ZoneLoadAnalysis,
+                 ResultTypes.CountryLoadAnalysis,
+                 ResultTypes.AreaBalanceAnalysis,
+                 ResultTypes.ZoneBalanceAnalysis,
+                 ResultTypes.CountryBalanceAnalysis
+                 ] if grid.get_time_number() > 0 else []
+
         ResultsTemplate.__init__(self,
                                  name='Inputs analysis',
                                  available_results=[ResultTypes.ZoneAnalysis,
                                                     ResultTypes.AreaAnalysis,
                                                     ResultTypes.CountryAnalysis
-                                                    ],
+                                                    ] + extra,
 
                                  data_variables=[])
 
@@ -36,6 +47,11 @@ class InputsAnalysisResults(ResultsTemplate):
         self.load_data = self.get_loads_df()
         self.static_gen_data = self.get_static_generators_df()
 
+        self.bus_dict = self.grid.get_bus_index_dict()
+        self.bus_area_indices = self.get_bus_area_indices()
+        self.bus_zone_indices = self.get_bus_zone_indices()
+        self.bus_country_indices = self.get_bus_country_indices()
+
     def get_generators_df(self):
         """
 
@@ -44,16 +60,16 @@ class InputsAnalysisResults(ResultsTemplate):
         dta = list()
         for elm in self.grid.get_generators():
             dta.append([elm.name,
-                            elm.P * elm.active,
-                            elm.Pf,
-                            elm.Snom,
-                            elm.Pmin, elm.Pmax,
-                            elm.Qmin, elm.Qmax,
-                            elm.Vset,
-                            elm.bus.zone.name,
-                            elm.bus.area.name,
-                            elm.bus.substation.name,
-                            elm.bus.country.name])
+                        elm.P * elm.active,
+                        elm.Pf,
+                        elm.Snom,
+                        elm.Pmin, elm.Pmax,
+                        elm.Qmin, elm.Qmax,
+                        elm.Vset,
+                        elm.bus.zone.name,
+                        elm.bus.area.name,
+                        elm.bus.substation.name,
+                        elm.bus.country.name])
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -68,16 +84,16 @@ class InputsAnalysisResults(ResultsTemplate):
         dta = list()
         for elm in self.grid.get_batteries():
             dta.append([elm.name,
-                            elm.P * elm.active,
-                            elm.Pf,
-                            elm.Snom,
-                            elm.Pmin, elm.Pmax,
-                            elm.Qmin, elm.Qmax,
-                            elm.Vset,
-                            elm.bus.zone.name,
-                            elm.bus.area.name,
-                            elm.bus.substation.name,
-                            elm.bus.country.name])
+                        elm.P * elm.active,
+                        elm.Pf,
+                        elm.Snom,
+                        elm.Pmin, elm.Pmax,
+                        elm.Qmin, elm.Qmax,
+                        elm.Vset,
+                        elm.bus.zone.name,
+                        elm.bus.area.name,
+                        elm.bus.substation.name,
+                        elm.bus.country.name])
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -165,6 +181,57 @@ class InputsAnalysisResults(ResultsTemplate):
 
         return df
 
+    def get_bus_zone_indices(self):
+        d = {elm: i for i, elm in enumerate(self.grid.zones)}
+        return np.array([d[bus.zone] for bus in self.grid.buses])
+
+    def get_bus_area_indices(self):
+        d = {elm: i for i, elm in enumerate(self.grid.areas)}
+        return np.array([d[bus.area] for bus in self.grid.buses])
+
+    def get_bus_country_indices(self):
+        d = {elm: i for i, elm in enumerate(self.grid.countries)}
+        return np.array([d[bus.country] for bus in self.grid.buses])
+
+    def get_bus_substation_indices(self):
+        d = {elm: i for i, elm in enumerate(self.grid.substations)}
+        return np.array([d[bus.substation] for bus in self.grid.buses])
+
+    def get_collection_attr_series(self, elms, attr, aggregation="Area"):
+
+        if aggregation == 'Zone':
+            d2 = self.get_bus_zone_indices()
+            headers = [e.name for e in self.grid.zones]
+            ne = len(self.grid.zones)
+
+        elif aggregation == 'Area':
+            d2 = self.get_bus_area_indices()
+            headers = [e.name for e in self.grid.areas]
+            ne = len(self.grid.areas)
+
+        elif aggregation == 'Substation':
+            d2 = self.get_bus_substation_indices()
+            headers = [e.name for e in self.grid.substations]
+            ne = len(self.grid.substations)
+
+        elif aggregation == 'Country':
+            d2 = self.get_bus_country_indices()
+            headers = [e.name for e in self.grid.countries]
+            ne = len(self.grid.countries)
+
+        else:
+            raise Exception('Unknown aggregation. Possible aggregations are Zone, Area, Substation, Country')
+
+        nt = self.grid.get_time_number()
+        x = np.zeros((nt, ne))
+
+        for elm in elms:
+            i = self.bus_dict[elm.bus]
+            i2 = d2[i]
+            x[:, i2] += getattr(elm, attr)
+
+        return x, headers
+
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
@@ -197,6 +264,81 @@ class InputsAnalysisResults(ResultsTemplate):
             labels = df.index.values
             y = df.values
             y_label = ''
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.AreaGenerationAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Area')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ZoneGenerationAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Zone')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.CountryGenerationAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Country')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.AreaLoadAnalysis:
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Area')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ZoneLoadAnalysis:
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Zone')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.CountryLoadAnalysis:
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Country')
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.AreaBalanceAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Area')
+
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Area')
+
+            y = yg - yl
+
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ZoneBalanceAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Zone')
+
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Zone')
+
+            y = yg - yl
+
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.CountryBalanceAnalysis:
+            generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
+            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Country')
+
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Country')
+
+            y = yg - yl
+
+            labels = pd.to_datetime(self.grid.time_profile)
+            y_label = 'MW'
             title = result_type.value[0]
 
         else:

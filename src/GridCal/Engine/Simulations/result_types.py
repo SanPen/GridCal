@@ -139,6 +139,18 @@ class ResultTypes(Enum):
     CountryAnalysis = 'Country analysis', DeviceType.NoDevice
     AreaAnalysis = 'Area analysis', DeviceType.NoDevice
 
+    AreaGenerationAnalysis = 'Area generation analysis', DeviceType.NoDevice
+    ZoneGenerationAnalysis = 'Zone generation analysis', DeviceType.NoDevice
+    CountryGenerationAnalysis = 'Country generation analysis', DeviceType.NoDevice
+
+    AreaLoadAnalysis = 'Area load analysis', DeviceType.NoDevice
+    ZoneLoadAnalysis = 'Zone load analysis', DeviceType.NoDevice
+    CountryLoadAnalysis = 'Country load analysis', DeviceType.NoDevice
+
+    AreaBalanceAnalysis = 'Area balance analysis', DeviceType.NoDevice
+    ZoneBalanceAnalysis = 'Zone balance analysis', DeviceType.NoDevice
+    CountryBalanceAnalysis = 'Country balance analysis', DeviceType.NoDevice
+
     # Short circuit
     BusVoltageModule0 = 'Voltage module (0)', DeviceType.BusDevice
     BusVoltageAngle0 = 'Voltage angle (0)', DeviceType.BusDevice
