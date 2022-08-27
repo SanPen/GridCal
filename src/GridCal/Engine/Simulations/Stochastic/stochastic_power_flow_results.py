@@ -37,19 +37,20 @@ class StochasticPowerFlowResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='Stochastic Power Flow',
-                                 available_results=[ResultTypes.BusVoltageAverage,
-                                                    ResultTypes.BusVoltageStd,
-                                                    ResultTypes.BusVoltageCDF,
-                                                    ResultTypes.BusPowerCDF,
-                                                    ResultTypes.BranchPowerAverage,
-                                                    ResultTypes.BranchPowerStd,
-                                                    ResultTypes.BranchPowerCDF,
-                                                    ResultTypes.BranchLoadingAverage,
-                                                    ResultTypes.BranchLoadingStd,
-                                                    ResultTypes.BranchLoadingCDF,
-                                                    ResultTypes.BranchLossesAverage,
-                                                    ResultTypes.BranchLossesStd,
-                                                    ResultTypes.BranchLossesCDF],
+                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageAverage,
+                                                                             ResultTypes.BusVoltageStd,
+                                                                             ResultTypes.BusVoltageCDF,
+                                                                             ResultTypes.BusPowerCDF],
+                                                    ResultTypes.BranchResults: [ResultTypes.BranchPowerAverage,
+                                                                                ResultTypes.BranchPowerStd,
+                                                                                ResultTypes.BranchPowerCDF,
+                                                                                ResultTypes.BranchLoadingAverage,
+                                                                                ResultTypes.BranchLoadingStd,
+                                                                                ResultTypes.BranchLoadingCDF,
+                                                                                ResultTypes.BranchLossesAverage,
+                                                                                ResultTypes.BranchLossesStd,
+                                                                                ResultTypes.BranchLossesCDF]
+                                                    },
                                  data_variables=[])
 
         self.n = n
@@ -94,20 +95,6 @@ class StochasticPowerFlowResults(ResultsTemplate):
         self.s_avg_conv = None
         self.l_avg_conv = None
         self.loss_avg_conv = None
-
-        self.available_results = [ResultTypes.BusVoltageAverage,
-                                  ResultTypes.BusVoltageStd,
-                                  ResultTypes.BusVoltageCDF,
-                                  ResultTypes.BusPowerCDF,
-                                  ResultTypes.BranchPowerAverage,
-                                  ResultTypes.BranchPowerStd,
-                                  ResultTypes.BranchPowerCDF,
-                                  ResultTypes.BranchLoadingAverage,
-                                  ResultTypes.BranchLoadingStd,
-                                  ResultTypes.BranchLoadingCDF,
-                                  ResultTypes.BranchLossesAverage,
-                                  ResultTypes.BranchLossesStd,
-                                  ResultTypes.BranchLossesCDF]
 
     def append_batch(self, mcres):
         """

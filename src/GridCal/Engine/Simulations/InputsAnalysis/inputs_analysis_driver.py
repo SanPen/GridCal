@@ -16,24 +16,32 @@ class InputsAnalysisResults(ResultsTemplate):
         Construct the analysis
         :param grid:
         """
-        extra = [ResultTypes.AreaGenerationAnalysis,
-                 ResultTypes.ZoneGenerationAnalysis,
-                 ResultTypes.CountryGenerationAnalysis,
-                 ResultTypes.AreaLoadAnalysis,
-                 ResultTypes.ZoneLoadAnalysis,
-                 ResultTypes.CountryLoadAnalysis,
-                 ResultTypes.AreaBalanceAnalysis,
-                 ResultTypes.ZoneBalanceAnalysis,
-                 ResultTypes.CountryBalanceAnalysis
-                 ] if grid.get_time_number() > 0 else []
+        if grid.get_time_number() > 0:
+            available_results = {ResultTypes.SnapshotResults: [ResultTypes.ZoneAnalysis,
+                                                               ResultTypes.AreaAnalysis,
+                                                               ResultTypes.CountryAnalysis
+                                                               ],
+                                 ResultTypes.SeriesResults: [ResultTypes.AreaGenerationAnalysis,
+                                                             ResultTypes.ZoneGenerationAnalysis,
+                                                             ResultTypes.CountryGenerationAnalysis,
+                                                             ResultTypes.AreaLoadAnalysis,
+                                                             ResultTypes.ZoneLoadAnalysis,
+                                                             ResultTypes.CountryLoadAnalysis,
+                                                             ResultTypes.AreaBalanceAnalysis,
+                                                             ResultTypes.ZoneBalanceAnalysis,
+                                                             ResultTypes.CountryBalanceAnalysis
+                                                             ]
+                                 }
+        else:
+            available_results = {ResultTypes.SnapshotResults: [ResultTypes.ZoneAnalysis,
+                                                               ResultTypes.AreaAnalysis,
+                                                               ResultTypes.CountryAnalysis
+                                                               ]
+                                 }
 
         ResultsTemplate.__init__(self,
                                  name='Inputs analysis',
-                                 available_results=[ResultTypes.ZoneAnalysis,
-                                                    ResultTypes.AreaAnalysis,
-                                                    ResultTypes.CountryAnalysis
-                                                    ] + extra,
-
+                                 available_results=available_results,
                                  data_variables=[])
 
         self.grid = grid

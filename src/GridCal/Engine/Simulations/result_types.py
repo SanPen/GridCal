@@ -184,11 +184,23 @@ class ResultTypes(Enum):
 
     ShortCircuitInfo = 'Short-circuit information', DeviceType.NoDevice
 
+    # classifiers
+    BusResults = 'Bus', DeviceType.NoDevice
+    BranchResults = 'Branch', DeviceType.NoDevice
+    HvdcResults = 'Hvdc', DeviceType.NoDevice
+    AreaResults = 'Area', DeviceType.NoDevice
+    InfoResults = 'Information', DeviceType.NoDevice
+    ReportsResults = 'Reports', DeviceType.NoDevice
+    SlacksResults = 'Slacks', DeviceType.NoDevice
+    DispatchResults = 'Dispatch', DeviceType.NoDevice
+    SeriesResults = 'Series', DeviceType.NoDevice
+    SnapshotResults = 'Snapshot', DeviceType.NoDevice
+
     def __str__(self):
-        return self.value
+        return self.value[0]
 
     def __repr__(self):
-        return str(self)
+        return str(self.value[0])
 
     @staticmethod
     def argparse(s):

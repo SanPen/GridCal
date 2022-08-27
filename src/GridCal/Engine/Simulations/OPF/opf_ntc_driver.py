@@ -134,7 +134,6 @@ class OptimalNetTransferCapacityOptions:
         self.max_report_elements = max_report_elements
 
 
-
 class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
     OPF results.
@@ -169,23 +168,28 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
-                                 available_results=[ResultTypes.BusVoltageModule,
-                                                    ResultTypes.BusVoltageAngle,
-                                                    ResultTypes.BranchPower,
-                                                    ResultTypes.BranchLoading,
-                                                    ResultTypes.BranchTapAngle,
+                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
+                                                                             ResultTypes.BusVoltageAngle],
 
-                                                    ResultTypes.ContingencyFlowsReport,
-                                                    ResultTypes.ContingencyFlowsBranchReport,
-                                                    ResultTypes.ContingencyFlowsGenerationReport,
-                                                    ResultTypes.ContingencyFlowsHvdcReport,
 
-                                                    ResultTypes.HvdcPowerFrom,
-                                                    ResultTypes.BatteryPower,
-                                                    ResultTypes.GeneratorPower,
-                                                    ResultTypes.GenerationDelta,
-                                                    ResultTypes.AvailableTransferCapacityAlpha,
-                                                    ResultTypes.InterAreaExchange],
+                                                    ResultTypes.BranchResults: [ResultTypes.BranchPower,
+                                                                                ResultTypes.BranchLoading,
+                                                                                ResultTypes.BranchTapAngle],
+
+                                                    ResultTypes.ReportsResults: [ResultTypes.ContingencyFlowsReport,
+                                                                                 ResultTypes.ContingencyFlowsBranchReport,
+                                                                                 ResultTypes.ContingencyFlowsGenerationReport,
+                                                                                 ResultTypes.ContingencyFlowsHvdcReport],
+
+                                                    ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom],
+
+                                                    ResultTypes.DispatchResults: [ResultTypes.BatteryPower,
+                                                                                  ResultTypes.GeneratorPower,
+                                                                                  ResultTypes.GenerationDelta],
+
+                                                    ResultTypes.AreaResults: [ResultTypes.AvailableTransferCapacityAlpha,
+                                                                              ResultTypes.InterAreaExchange]
+                                                    },
 
                                  data_variables=['bus_names',
                                                  'branch_names',

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 
@@ -26,7 +26,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 class ResultsTemplate:
 
     def __init__(self, name='',
-                 available_results: List[ResultTypes] = list(),
+                 available_results=dict(),
                  data_variables: List[str] = list()):
         """
         Results template class
@@ -35,7 +35,7 @@ class ResultsTemplate:
         :param data_variables: list of class variables to persist to disk
         """
         self.name = name
-        self.available_results: List[ResultTypes] = available_results
+        self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
         self.data_variables: List[str] = data_variables
 
     def consolidate_after_loading(self):
@@ -45,6 +45,31 @@ class ResultsTemplate:
         data = dict()
 
         return data
+
+    def get_name_to_results_type_dict(self):
+
+        d = dict()
+        if isinstance(self.available_results, dict):
+            for key, values in self.available_results.items():
+                for item in values:
+                    d[item.value[0]] = item
+
+        if isinstance(self.available_results, list):
+            for item in self.available_results:
+                d[item.value[0]] = item
+
+        return d
+
+    def get_name_tree(self):
+
+        d = dict()
+        if isinstance(self.available_results, dict):
+            for key, values in self.available_results.items():
+                d[key.value[0]] = [x.value[0] for x in values]
+        if isinstance(self.available_results, list):
+            d = [x.value[0] for x in self.available_results]
+
+        return d
 
     def get_arrays(self):
         """

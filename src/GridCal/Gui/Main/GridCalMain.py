@@ -4897,8 +4897,8 @@ class MainGUI(QMainWindow):
             name = driver.tpe.value
             # name = driver.name
             lst.append(name)
-            d[name] = [x.value[0] for x in driver.results.available_results]
-            self.available_results_dict[name] = {x.value[0]: x for x in driver.results.available_results}
+            d[name] = driver.results.get_name_tree()
+            self.available_results_dict[name] = driver.results.get_name_to_results_type_dict()
             steps = driver.get_steps()
             self.available_results_steps_dict[name] = steps
             if len(steps) > max_steps:
@@ -5284,26 +5284,43 @@ class MainGUI(QMainWindow):
 
         if len(path) > 1:
 
-            study_name = path[0]
-            result_name = path[1]
-            study_type = self.available_results_dict[study_name][result_name]
+            if len(path) == 2:
+                study_name = path[0]
+                result_name = path[1]
+            elif len(path) == 3:
+                study_name = path[0]
+                result_name = path[2]
+            else:
+                raise Exception('Path len ' + str(len(path)) + ' not supported')
 
-            self.results_mdl = None
+            if study_name in self.available_results_dict.keys():
+                if result_name in self.available_results_dict[study_name].keys():
 
-            self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
-                                                                      study_type=study_type)
+                    study_type = self.available_results_dict[study_name][result_name]
 
-            if self.results_mdl is not None:
+                    self.results_mdl = None
 
-                if self.ui.results_as_abs_checkBox.isChecked():
-                    self.results_mdl.convert_to_abs()
+                    self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
+                                                                              study_type=study_type)
 
-                if self.ui.results_as_cdf_checkBox.isChecked():
-                    self.results_mdl.convert_to_cdf()
+                    if self.results_mdl is not None:
 
-                # set the table model
-                self.ui.resultsTableView.setModel(self.results_mdl)
-                self.ui.units_label.setText(self.results_mdl.units)
+                        if self.ui.results_as_abs_checkBox.isChecked():
+                            self.results_mdl.convert_to_abs()
+
+                        if self.ui.results_as_cdf_checkBox.isChecked():
+                            self.results_mdl.convert_to_cdf()
+
+                        # set the table model
+                        self.ui.resultsTableView.setModel(self.results_mdl)
+                        self.ui.units_label.setText(self.results_mdl.units)
+                    else:
+                        self.ui.resultsTableView.setModel(None)
+                        self.ui.units_label.setText("")
+
+                else:
+                    self.ui.resultsTableView.setModel(None)
+                    self.ui.units_label.setText("")
             else:
                 self.ui.resultsTableView.setModel(None)
                 self.ui.units_label.setText("")

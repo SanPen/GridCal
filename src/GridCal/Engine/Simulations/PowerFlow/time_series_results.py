@@ -61,28 +61,31 @@ class TimeSeriesResults(PowerFlowResults):
         self.data_variables.append('time')  # this is missing from the base class
 
         # results available (different from the base class)
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
+        self.available_results = {ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
+                                                           ResultTypes.BusVoltageAngle,
+                                                           ResultTypes.BusActivePower,
+                                                           ResultTypes.BusReactivePower],
 
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-                                  ResultTypes.SimulationError,
+                                  ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
+                                                              ResultTypes.BranchReactivePowerFrom,
+                                                              ResultTypes.BranchLoading,
+                                                              ResultTypes.BranchActiveLosses,
+                                                              ResultTypes.BranchReactiveLosses,
+                                                              ResultTypes.BranchVoltage,
+                                                              ResultTypes.BranchAngles],
 
-                                  ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcPowerFrom,
-                                  ResultTypes.HvdcPowerTo,
 
-                                  ResultTypes.InterAreaExchange,
-                                  ResultTypes.ActivePowerFlowPerArea,
-                                  ResultTypes.LossesPerArea,
-                                  ResultTypes.LossesPercentPerArea]
+                                  ResultTypes.HvdcResults: [ResultTypes.HvdcLosses,
+                                                            ResultTypes.HvdcPowerFrom,
+                                                            ResultTypes.HvdcPowerTo],
+
+                                  ResultTypes.AreaResults: [ResultTypes.InterAreaExchange,
+                                                            ResultTypes.ActivePowerFlowPerArea,
+                                                            ResultTypes.LossesPerArea,
+                                                            ResultTypes.LossesPercentPerArea],
+
+                                  ResultTypes.InfoResults: [ResultTypes.SimulationError]
+                                  }
 
         self.name = 'Time series'
         self.nt = len(time_array)
