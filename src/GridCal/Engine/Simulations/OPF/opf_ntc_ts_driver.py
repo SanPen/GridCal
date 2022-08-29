@@ -669,6 +669,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=np.max(np.abs(alpha_n1)),
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,

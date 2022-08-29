@@ -2229,6 +2229,7 @@ class OpfNTC(Opf):
                 T=self.numerical_circuit.T,
                 flow_f=flow_f,
                 monitor=monitor,
+                alpha=self.alpha,
                 logger=self.logger)
         else:
             n1flow_gen_f = list()
@@ -2249,6 +2250,7 @@ class OpfNTC(Opf):
                 T_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
                 flow_f=flow_f,
                 monitor=monitor,
+                alpha=self.alpha,
                 logger=self.logger)
         else:
             n1flow_hvdc_f = list()
