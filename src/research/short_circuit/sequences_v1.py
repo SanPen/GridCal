@@ -14,10 +14,13 @@ class Adm:
     Ybus = [[Y0, 0, 0], [0, Y1, 0], [0, 0, Y2]]
     where Y0, Y1 and Y2 have all sizes n_bus * n_bus
     """
-
+    
     def __init__(self, n_bus):
-        self.Ybus = np.zeros((3 * n_bus, 3 * n_bus), dtype=complex)
+        self.Y0 = np.zeros((n_bus, n_bus), dtype=complex)
+        self.Y1 = np.zeros((n_bus, n_bus), dtype=complex)
+        self.Y2 = np.zeros((n_bus, n_bus), dtype=complex)
         self.n_bus = n_bus
+
 
     def add_genload(self, bus_idx, Z0, Z1, Z2):
         """Add the impedances of a generator/load in the admittance matrix
@@ -28,9 +31,10 @@ class Adm:
         :param Z2: negative seq. impedance of the element (usually Z1 = Z2 for a gen)
         """
 
-        self.Ybus[bus_idx, bus_idx] += 1 / Z0
-        self.Ybus[self.n_bus + bus_idx, self.n_bus + bus_idx] += 1 / Z1
-        self.Ybus[2 * self.n_bus + bus_idx, 2 * self.n_bus + bus_idx] += 1 / Z2
+        self.Y0[bus_idx, bus_idx] += 1 / Z0
+        self.Y1[bus_idx, bus_idx] += 1 / Z1
+        self.Y2[bus_idx, bus_idx] += 1 / Z2
+
 
     def add_line(self, bus_f, bus_t, Z0, Z1):
         """Add the impedances of a transmission line,
@@ -40,30 +44,31 @@ class Adm:
         :param bus_f: from bus index
         :param bus_t: to bus index
         :param Z0: zero seq. impedance of the line (about 2.5 Z1)
-        :param Z1: positive and negative seq. impedance of the line
+        :param Z1: positive and negative seq. impedance of the line 
         """
 
         # can write it more compact?
         # zero seq.
-        self.Ybus[bus_f, bus_f] += 1 / Z0
-        self.Ybus[bus_t, bus_t] += 1 / Z0
-        self.Ybus[bus_f, bus_t] -= 1 / Z0
-        self.Ybus[bus_t, bus_f] -= 1 / Z0
+        self.Y0[bus_f, bus_f] += 1 / Z0
+        self.Y0[bus_t, bus_t] += 1 / Z0
+        self.Y0[bus_f, bus_t] -= 1 / Z0
+        self.Y0[bus_t, bus_f] -= 1 / Z0
 
         # positive seq.
-        self.Ybus[self.n_bus + bus_f, self.n_bus + bus_f] += 1 / Z1
-        self.Ybus[self.n_bus + bus_t, self.n_bus + bus_t] += 1 / Z1
-        self.Ybus[self.n_bus + bus_f, self.n_bus + bus_t] -= 1 / Z1
-        self.Ybus[self.n_bus + bus_t, self.n_bus + bus_f] -= 1 / Z1
+        self.Y1[bus_f, bus_f] += 1 / Z1
+        self.Y1[bus_t, bus_t] += 1 / Z1
+        self.Y1[bus_f, bus_t] -= 1 / Z1
+        self.Y1[bus_t, bus_f] -= 1 / Z1
 
         # negative seq.
-        self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_f] += 1 / Z1
-        self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_t] += 1 / Z1
-        self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_t] -= 1 / Z1
-        self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_f] -= 1 / Z1
+        self.Y2[bus_f, bus_f] += 1 / Z1
+        self.Y2[bus_t, bus_t] += 1 / Z1
+        self.Y2[bus_f, bus_t] -= 1 / Z1
+        self.Y2[bus_t, bus_f] -= 1 / Z1
+
 
     def add_trafo(self, bus_f, bus_t, con_f, con_t, Zs):
-        """Add a transformer to the admittance matrix,
+        """Add a transformer to the admittance matrix, 
         considering the 6 different possible connections, which we call them:
         - S: star
         - G: grounded star
@@ -75,50 +80,45 @@ class Adm:
         :param con_t: connection on the to bus (S, GS or D)
         :param Zs: leakage impedance, we assume yp = ym = ys (check abdel-akher, 2005)
         """
-
+        
         # positive and negative seq.
         if (con_f == 'G' and con_t == 'D') or (con_f == 'S' and con_t == 'D'):
-            self.Ybus[self.n_bus + bus_f, self.n_bus + bus_f] += 1 / Zs
-            self.Ybus[self.n_bus + bus_t, self.n_bus + bus_t] += 1 / Zs
-            self.Ybus[self.n_bus + bus_f, self.n_bus + bus_t] -= 1 / Zs * np.exp(1j * np.pi / 6)
-            self.Ybus[self.n_bus + bus_t, self.n_bus + bus_f] -= 1 / Zs * np.exp(-1j * np.pi / 6)
+            self.Y1[bus_f, bus_f] += 1 / Zs
+            self.Y1[bus_t, bus_t] += 1 / Zs
+            self.Y1[bus_f, bus_t] -= 1 / Zs * np.exp(1j * np.pi / 6)
+            self.Y1[bus_t, bus_f] -= 1 / Zs * np.exp(-1j * np.pi / 6)
 
-            self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_f] += 1 / Zs
-            self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_t] += 1 / Zs
-            self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_t] -= 1 / Zs * np.exp(-1j * np.pi / 6)
-            self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_f] -= 1 / Zs * np.exp(1j * np.pi / 6)
+            self.Y2[bus_f, bus_f] += 1 / Zs
+            self.Y2[bus_t, bus_t] += 1 / Zs
+            self.Y2[bus_f, bus_t] -= 1 / Zs * np.exp(-1j * np.pi / 6)
+            self.Y2[bus_t, bus_f] -= 1 / Zs * np.exp(1j * np.pi / 6)
 
         else:
-            self.Ybus[self.n_bus + bus_f, self.n_bus + bus_f] += 1 / Zs
-            self.Ybus[self.n_bus + bus_t, self.n_bus + bus_t] += 1 / Zs
-            self.Ybus[self.n_bus + bus_f, self.n_bus + bus_t] -= 1 / Zs
-            self.Ybus[self.n_bus + bus_t, self.n_bus + bus_f] -= 1 / Zs
+            self.Y1[bus_f, bus_f] += 1 / Zs
+            self.Y1[bus_t, bus_t] += 1 / Zs
+            self.Y1[bus_f, bus_t] -= 1 / Zs
+            self.Y1[bus_t, bus_f] -= 1 / Zs
 
-            self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_f] += 1 / Zs
-            self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_t] += 1 / Zs
-            self.Ybus[2 * self.n_bus + bus_f, 2 * self.n_bus + bus_t] -= 1 / Zs
-            self.Ybus[2 * self.n_bus + bus_t, 2 * self.n_bus + bus_f] -= 1 / Zs
+            self.Y2[bus_f, bus_f] += 1 / Zs
+            self.Y2[bus_t, bus_t] += 1 / Zs
+            self.Y2[bus_f, bus_t] -= 1 / Zs
+            self.Y2[bus_t, bus_f] -= 1 / Zs
 
         # zero seq.
         if con_f == 'G' and con_t == 'G':
-            self.Ybus[bus_f, bus_f] += 1 / Zs
-            self.Ybus[bus_t, bus_t] += 1 / Zs
-            self.Ybus[bus_f, bus_t] -= 1 / Zs
-            self.Ybus[bus_t, bus_f] -= 1 / Zs
+            self.Y0[bus_f, bus_f] += 1 / Zs
+            self.Y0[bus_t, bus_t] += 1 / Zs
+            self.Y0[bus_f, bus_t] -= 1 / Zs
+            self.Y0[bus_t, bus_f] -= 1 / Zs
         elif con_f == 'G' and con_t == 'D':
-            self.Ybus[bus_f, bus_f] += 1 / Zs
+            self.Y0[bus_f, bus_f] += 1 / Zs
         else:
             pass  # no admittance connected to no bus
 
-    def get_decoupled_Y012(self):
-        """Obtain the Y0, Y1, Y2 decoupled (in principle) submatrices,
-        and also compute the Z0, Z1 and Z2 matrices
-        """
-        self.Y0 = self.Ybus[0:self.n_bus, 0:self.n_bus]
-        self.Y1 = self.Ybus[self.n_bus:2*self.n_bus, self.n_bus:2*self.n_bus]
-        self.Y2 = self.Ybus[2*self.n_bus:, 2*self.n_bus:]
 
-        # function to check if there are non-zero terms outside the diag?
+    def get_decoupled_Y012(self):
+        """Obtain the Z0, Z1, Z2 decoupled (in principle) submatrices
+        """
 
         self.Z0 = np.linalg.inv(self.Y0)
         self.Z1 = np.linalg.inv(self.Y1)
@@ -154,14 +154,10 @@ def solve_faults(Y, n_bus, Vpre, bus_f, type_f, Zf):
         I0 = 0
         I1 = Vpr / (Zth1 + Zth2 + Zf)
         I2 = - I1
-    elif type == 'LLG':  # between phases b and c
+    elif type_f == 'LLG':  # between phases b and c
         I1 = Vpr / (Zth1 + Zth2 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf))
         I0 = -I1 * Zth2 / (Zth2 + Zth0 + 3 * Zf)
         I2 = -I1 * (Zth0 + 3 * Zf) / (Zth2 + Zth0 + 3 * Zf)
-    else:
-        I0 = 0
-        I1 = Vpr / (Zth1 + Zf)
-        I2 = 0
 
     # obtain the post fault voltages
     Vpre_ok = np.zeros((n_bus, 1), dtype=complex)
@@ -174,9 +170,9 @@ def solve_faults(Y, n_bus, Vpre, bus_f, type_f, Zf):
     I1_vec[bus_f, 0] = I1
     I2_vec[bus_f, 0] = I2
 
-    V0_fin = - np.matmul(Y.Z0, I0_vec)
-    V1_fin = Vpre_ok - np.matmul(Y.Z1, I1_vec)
-    V2_fin = - np.matmul(Y.Z2, I2_vec)
+    V0_fin = - Y.Z0 @ I0_vec
+    V1_fin = Vpre_ok - Y.Z1 @ I1_vec
+    V2_fin = - Y.Z2 @ I2_vec
 
     return [V0_fin, V1_fin, V2_fin], [I0, I1, I2]
 
