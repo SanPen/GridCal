@@ -150,9 +150,11 @@ class ShortCircuitDriver(DriverTemplate):
         # deactivate the current branch
         branch.active = False
 
-        # each of the branches will have the proportional impedance
-        # Bus_from------------Middle_bus------------Bus_To
-        #    |---------x---------|   (x: distance measured in per unit (0~1)
+        # Each of the branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
 
         middle_bus = Bus()
 
@@ -175,7 +177,7 @@ class ShortCircuitDriver(DriverTemplate):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: SnapshotData, Vpf, Zf):
+    def single_short_circuit(self, calculation_inputs: SnapshotData, Vpf, Zf, island_bus_index, fault_type):
         """
         Run a short circuit simulation for a single island
         @param calculation_inputs:
@@ -186,13 +188,13 @@ class ShortCircuitDriver(DriverTemplate):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
-            if self.options.fault_type == FaultType.ph3:
-                return short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index=self.options.bus_index)
+            if fault_type == FaultType.ph3:
+                return short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index=island_bus_index)
 
-            elif self.options.fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
+            elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
                 return short_circuit_unbalanced(calculation_inputs, Vpf, Zf,
-                                                bus_index=self.options.bus_index,
-                                                fault_type=self.options.fault_type)
+                                                bus_index=island_bus_index,
+                                                fault_type=fault_type)
 
             else:
                 raise Exception('Unknown fault type!')
@@ -280,18 +282,30 @@ class ShortCircuitDriver(DriverTemplate):
                 bus_original_idx = calculation_input.original_bus_idx
                 branch_original_idx = calculation_input.original_branch_idx
 
-                res = self.single_short_circuit(calculation_inputs=calculation_input,
-                                                Vpf=self.pf_results.voltage[bus_original_idx],
-                                                Zf=Zf[bus_original_idx])
+                # the options give the bus index counting all the grid, however
+                # for the calculation we need the bus index in the island scheme.
+                # Hence, we need to convert it, and if the global bus index is not
+                # in the island, do not perform any calculation
+                reverse_bus_index = {b: i for i, b in enumerate(bus_original_idx)}
 
-                # merge results
-                results.apply_from_island(res, bus_original_idx, branch_original_idx)
+                if self.options.bus_index in reverse_bus_index.keys():
+
+                    res = self.single_short_circuit(calculation_inputs=calculation_input,
+                                                    Vpf=self.pf_results.voltage[bus_original_idx],
+                                                    Zf=Zf[bus_original_idx],
+                                                    island_bus_index=reverse_bus_index[self.options.bus_index],
+                                                    fault_type=self.options.fault_type)
+
+                    # merge results
+                    results.apply_from_island(res, bus_original_idx, branch_original_idx)
 
         else:  # single island
 
             results = self.single_short_circuit(calculation_inputs=calculation_inputs[0],
                                                 Vpf=self.pf_results.voltage,
-                                                Zf=Zf)
+                                                Zf=Zf,
+                                                island_bus_index=self.options.bus_index,
+                                                fault_type=self.options.fault_type)
 
         results.sc_type = self.options.fault_type
         results.sc_bus_index = self.options.bus_index
