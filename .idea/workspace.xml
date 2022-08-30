@@ -23,10 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Changed contingency sensibility filter">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed alpha_n1 report">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -719,13 +719,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00242" summary="Improved bentayga arrays viewer implementation">
-      <created>1642022491062</created>
-      <option name="number" value="00242" />
-      <option name="presentableId" value="LOCAL-00242" />
-      <option name="project" value="LOCAL" />
-      <updated>1642022491062</updated>
-    </task>
     <task id="LOCAL-00243" summary="Fixed HVDC logic when devices are not active">
       <created>1642064296994</created>
       <option name="number" value="00243" />
@@ -1062,7 +1055,14 @@
       <option name="project" value="LOCAL" />
       <updated>1661431082196</updated>
     </task>
-    <option name="localTasksCounter" value="291" />
+    <task id="LOCAL-00291" summary="Fixed alpha_n1 report">
+      <created>1661771625809</created>
+      <option name="number" value="00291" />
+      <option name="presentableId" value="LOCAL-00291" />
+      <option name="project" value="LOCAL" />
+      <updated>1661771625809</updated>
+    </task>
+    <option name="localTasksCounter" value="292" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1096,7 +1096,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Highs working with shadow prices, when HiGHS is in the PATH" />
     <MESSAGE value="seems to be fixed the array saving automatically" />
     <MESSAGE value="added the parallel option to the HiGHS call" />
     <MESSAGE value="Corrected the sense of the HVDC" />
@@ -1121,7 +1120,8 @@
     <MESSAGE value="Several fixes due Sbase issues in ntc load rule&#10;&#10;New version" />
     <MESSAGE value="Modified Alpha_n1 for generation and hvdc" />
     <MESSAGE value="Changed contingency sensibility filter" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed contingency sensibility filter" />
+    <MESSAGE value="Fixed alpha_n1 report" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed alpha_n1 report" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1391,11 +1391,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
           <line>804</line>
           <option name="timeStamp" value="796" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
-          <line>230</line>
-          <option name="timeStamp" value="798" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
