@@ -1855,7 +1855,6 @@ class MultiCircuit:
                 bus.y = y_m.copy()
                 bus.graphic_obj.set_position(x=bus.x, y=bus.y)
 
-        print('Done!')
 
     def get_center_location(self):
         """

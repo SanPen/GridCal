@@ -32,22 +32,22 @@ class ResultTypes(Enum):
     BranchReactivePowerTo = 'Qt: Reactive power "to"', DeviceType.BranchDevice
 
     BranchCurrent = 'I: Current', DeviceType.BranchDevice
-    BranchActiveCurrentFrom = 'Irf: active current "from"', DeviceType.BranchDevice
-    BranchReactiveCurrentFrom = 'Iif: reactive current "from"', DeviceType.BranchDevice
-    BranchActiveCurrentTo = 'Irt: active current "to"', DeviceType.BranchDevice
-    BranchReactiveCurrentTo = 'Iit: reactive current "to"', DeviceType.BranchDevice
+    BranchActiveCurrentFrom = 'Irf: Active current "from"', DeviceType.BranchDevice
+    BranchReactiveCurrentFrom = 'Iif: Reactive current "from"', DeviceType.BranchDevice
+    BranchActiveCurrentTo = 'Irt: Active current "to"', DeviceType.BranchDevice
+    BranchReactiveCurrentTo = 'Iit: Reactive current "to"', DeviceType.BranchDevice
 
-    BranchTapModule = 'm: tap module', DeviceType.BranchDevice
-    BranchTapAngle = '𝜏: tap angle', DeviceType.BranchDevice
+    BranchTapModule = 'm: Tap module', DeviceType.BranchDevice
+    BranchTapAngle = '𝜏: Tap angle', DeviceType.BranchDevice
     BranchBeq = 'Beq: Equivalent susceptance', DeviceType.BranchDevice
 
-    BranchLoading = 'loading', DeviceType.BranchDevice
+    BranchLoading = 'Loading', DeviceType.BranchDevice
     Transformer2WTapModule = 'Transformer tap module', DeviceType.Transformer2WDevice
-    BranchVoltage = 'ΔV: voltage modules drop', DeviceType.BranchDevice
-    BranchAngles = 'Δθ: voltage angles drop', DeviceType.BranchDevice
+    BranchVoltage = 'ΔV: Voltage modules drop', DeviceType.BranchDevice
+    BranchAngles = 'Δθ: Voltage angles drop', DeviceType.BranchDevice
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
-    BranchActiveLosses = 'Pl: active losses', DeviceType.BranchDevice
-    BranchReactiveLosses = 'Ql: reactive losses', DeviceType.BranchDevice
+    BranchActiveLosses = 'Pl: Active losses', DeviceType.BranchDevice
+    BranchReactiveLosses = 'Ql: Reactive losses', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice
 
@@ -65,15 +65,15 @@ class ResultTypes(Enum):
     BranchPowerStd = 'Branch power std', DeviceType.BranchDevice
     BranchPowerCDF = 'Branch power CDF', DeviceType.BranchDevice
     BranchLoadingAverage = 'loading avg', DeviceType.BranchDevice
-    BranchLoadingStd = 'loading std', DeviceType.BranchDevice
-    BranchLoadingCDF = 'loading CDF', DeviceType.BranchDevice
-    BranchLossesAverage = 'losses avg', DeviceType.BranchDevice
-    BranchLossesStd = 'losses std', DeviceType.BranchDevice
-    BranchLossesCDF = 'losses CDF', DeviceType.BranchDevice
+    BranchLoadingStd = 'Loading std', DeviceType.BranchDevice
+    BranchLoadingCDF = 'Loading CDF', DeviceType.BranchDevice
+    BranchLossesAverage = 'Losses avg', DeviceType.BranchDevice
+    BranchLossesStd = 'Losses std', DeviceType.BranchDevice
+    BranchLossesCDF = 'Losses CDF', DeviceType.BranchDevice
 
     # OPF
-    BusVoltageModule = 'V: voltage module', DeviceType.BusDevice
-    BusVoltageAngle = 'θ: voltage angle', DeviceType.BusDevice
+    BusVoltageModule = 'V: Voltage module', DeviceType.BusDevice
+    BusVoltageAngle = 'θ: Voltage angle', DeviceType.BusDevice
     BusPower = 'Bus power', DeviceType.BusDevice
     BusShadowPrices = 'Nodal shadow prices', DeviceType.BusDevice
     BranchOverloads = 'Overloads', DeviceType.BranchDevice

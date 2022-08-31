@@ -319,11 +319,11 @@ class TimeSeries(DriverTemplate):
             pass
 
         elif self.engine == bs.EngineType.Bentayga:
-
+            self.progress_text.emit('Running Bentayga... ')
             self.results = self.run_bentayga()
 
         elif self.engine == bs.EngineType.NewtonPA:
-
+            self.progress_text.emit('Running Newton power analytics... ')
             self.results = self.run_newton_pa(time_indices=time_indices)
 
         else:

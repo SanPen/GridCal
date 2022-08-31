@@ -569,7 +569,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
-        print('Done!')
 
     def save_diagnostic(self):
 
