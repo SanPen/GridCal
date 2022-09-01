@@ -4109,8 +4109,6 @@ class MainGUI(QMainWindow):
         Set the default options for the NTC optimization in the optimal setting
         :return:
         """
-        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
-        self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.setChecked(False)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4124,8 +4122,6 @@ class MainGUI(QMainWindow):
         Set the default options for the NTC optimization in the proportional setting
         :return:
         """
-        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
-        self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.setChecked(False)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4178,10 +4174,10 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
-                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
@@ -4199,8 +4195,8 @@ class MainGUI(QMainWindow):
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
                 trm = self.ui.trmSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
-                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
+                ntc_load_rule = self.ui.ntcLoadRuleSpinBox.value() / 100.0
+                n1_consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
@@ -4224,8 +4220,8 @@ class MainGUI(QMainWindow):
                     consider_gen_contingencies=consider_gen_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
                     trm=trm,
-                    ntc_load_rule=ntcLoadRule,
-                    n1_consideration=n1Consideration)
+                    ntc_load_rule=ntc_load_rule,
+                    n1_consideration=n1_consideration)
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
@@ -4335,8 +4331,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.monitorOnlyNtcLoadRuleBranchesCheckBox.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
