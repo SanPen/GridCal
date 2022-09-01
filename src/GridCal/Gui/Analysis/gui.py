@@ -1,99 +1,112 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui',
-# licensing of 'gui.ui' applies.
-#
-# Created: Mon May 11 09:25:09 2020
-#      by: pyside2-uic  running on PySide2 5.13.0
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'gui.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
-
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(912, 540)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName("tabWidget")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.tab_2)
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.splitter_3 = QtWidgets.QSplitter(self.tab_2)
-        self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter_3.setObjectName("splitter_3")
-        self.frame_8 = QtWidgets.QFrame(self.splitter_3)
-        self.frame_8.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_8.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_8.setObjectName("frame_8")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.frame_8)
-        self.verticalLayout_7.setContentsMargins(1, 1, 1, 1)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.objectsListView = QtWidgets.QListView(self.frame_8)
-        self.objectsListView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.objectsListView.setObjectName("objectsListView")
-        self.verticalLayout_7.addWidget(self.objectsListView)
-        self.PlotFrame = QtWidgets.QFrame(self.splitter_3)
-        self.PlotFrame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.PlotFrame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.PlotFrame.setObjectName("PlotFrame")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.PlotFrame)
-        self.horizontalLayout.setContentsMargins(1, 1, 1, 1)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.plotwidget = MatplotlibWidget(self.PlotFrame)
-        self.plotwidget.setObjectName("plotwidget")
-        self.horizontalLayout.addWidget(self.plotwidget)
-        self.horizontalLayout_4.addWidget(self.splitter_3)
-        self.tabWidget.addTab(self.tab_2, "")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.tab)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.logsTreeView = QtWidgets.QTreeView(self.tab)
-        self.logsTreeView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.logsTreeView.setObjectName("logsTreeView")
-        self.verticalLayout_2.addWidget(self.logsTreeView)
-        self.tabWidget.addTab(self.tab, "")
-        self.verticalLayout.addWidget(self.tabWidget)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 912, 21))
-        self.menubar.setObjectName("menubar")
-        self.menuFile = QtWidgets.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.actionSave_diagnostic = QtWidgets.QAction(MainWindow)
-        self.actionSave_diagnostic.setObjectName("actionSave_diagnostic")
-        self.menuFile.addAction(self.actionSave_diagnostic)
-        self.menubar.addAction(self.menuFile.menuAction())
-
-        self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Grid Analysis Dialog", None, -1))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtWidgets.QApplication.translate("MainWindow", "Analysis", None, -1))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("MainWindow", "Diagnostic", None, -1))
-        self.menuFile.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
-        self.actionSave_diagnostic.setText(QtWidgets.QApplication.translate("MainWindow", "Save diagnostic", None, -1))
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 from .matplotlibwidget import MatplotlibWidget
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        if not MainWindow.objectName():
+            MainWindow.setObjectName(u"MainWindow")
+        MainWindow.resize(912, 540)
+        self.actionSave_diagnostic = QAction(MainWindow)
+        self.actionSave_diagnostic.setObjectName(u"actionSave_diagnostic")
+        self.centralwidget = QWidget(MainWindow)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.tabWidget = QTabWidget(self.centralwidget)
+        self.tabWidget.setObjectName(u"tabWidget")
+        self.tab_2 = QWidget()
+        self.tab_2.setObjectName(u"tab_2")
+        self.horizontalLayout_4 = QHBoxLayout(self.tab_2)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.splitter_3 = QSplitter(self.tab_2)
+        self.splitter_3.setObjectName(u"splitter_3")
+        self.splitter_3.setOrientation(Qt.Horizontal)
+        self.frame_8 = QFrame(self.splitter_3)
+        self.frame_8.setObjectName(u"frame_8")
+        self.frame_8.setFrameShape(QFrame.NoFrame)
+        self.frame_8.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_7 = QVBoxLayout(self.frame_8)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.verticalLayout_7.setContentsMargins(1, 1, 1, 1)
+        self.objectsListView = QListView(self.frame_8)
+        self.objectsListView.setObjectName(u"objectsListView")
+        self.objectsListView.setFrameShape(QFrame.NoFrame)
+
+        self.verticalLayout_7.addWidget(self.objectsListView)
+
+        self.splitter_3.addWidget(self.frame_8)
+        self.PlotFrame = QFrame(self.splitter_3)
+        self.PlotFrame.setObjectName(u"PlotFrame")
+        self.PlotFrame.setFrameShape(QFrame.NoFrame)
+        self.PlotFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout = QHBoxLayout(self.PlotFrame)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(1, 1, 1, 1)
+        self.plotwidget = MatplotlibWidget(self.PlotFrame)
+        self.plotwidget.setObjectName(u"plotwidget")
+
+        self.horizontalLayout.addWidget(self.plotwidget)
+
+        self.splitter_3.addWidget(self.PlotFrame)
+
+        self.horizontalLayout_4.addWidget(self.splitter_3)
+
+        self.tabWidget.addTab(self.tab_2, "")
+        self.tab = QWidget()
+        self.tab.setObjectName(u"tab")
+        self.verticalLayout_2 = QVBoxLayout(self.tab)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.logsTreeView = QTreeView(self.tab)
+        self.logsTreeView.setObjectName(u"logsTreeView")
+        self.logsTreeView.setFrameShape(QFrame.NoFrame)
+
+        self.verticalLayout_2.addWidget(self.logsTreeView)
+
+        self.tabWidget.addTab(self.tab, "")
+
+        self.verticalLayout.addWidget(self.tabWidget)
+
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QMenuBar(MainWindow)
+        self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QRect(0, 0, 912, 21))
+        self.menuFile = QMenu(self.menubar)
+        self.menuFile.setObjectName(u"menuFile")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QStatusBar(MainWindow)
+        self.statusbar.setObjectName(u"statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menuFile.addAction(self.actionSave_diagnostic)
+
+        self.retranslateUi(MainWindow)
+
+        self.tabWidget.setCurrentIndex(0)
+
+
+        QMetaObject.connectSlotsByName(MainWindow)
+    # setupUi
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Grid Analysis Dialog", None))
+        self.actionSave_diagnostic.setText(QCoreApplication.translate("MainWindow", u"Save diagnostic", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Analysis", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Diagnostic", None))
+        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+    # retranslateUi
 

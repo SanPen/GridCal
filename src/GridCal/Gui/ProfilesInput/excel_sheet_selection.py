@@ -1,47 +1,49 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'excel_sheet_selection.ui'
-#
-# Created by: PySide2 UI code generator 5.9
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'excel_sheet_selection.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
 
 class Ui_ExcelSelectionDialog(object):
     def setupUi(self, ExcelSelectionDialog):
-        ExcelSelectionDialog.setObjectName("ExcelSelectionDialog")
+        if not ExcelSelectionDialog.objectName():
+            ExcelSelectionDialog.setObjectName(u"ExcelSelectionDialog")
         ExcelSelectionDialog.resize(272, 229)
-        ExcelSelectionDialog.setMaximumSize(QtCore.QSize(272, 229))
+        ExcelSelectionDialog.setMaximumSize(QSize(272, 229))
         ExcelSelectionDialog.setModal(True)
-        self.verticalLayout = QtWidgets.QVBoxLayout(ExcelSelectionDialog)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.sheets_list = QtWidgets.QListWidget(ExcelSelectionDialog)
-        self.sheets_list.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.sheets_list.setObjectName("sheets_list")
+        self.verticalLayout = QVBoxLayout(ExcelSelectionDialog)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.sheets_list = QListWidget(ExcelSelectionDialog)
+        self.sheets_list.setObjectName(u"sheets_list")
+        self.sheets_list.setFrameShape(QFrame.StyledPanel)
+
         self.verticalLayout.addWidget(self.sheets_list)
-        self.buttonBox = QtWidgets.QDialogButtonBox(ExcelSelectionDialog)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
+
+        self.buttonBox = QDialogButtonBox(ExcelSelectionDialog)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
         self.verticalLayout.addWidget(self.buttonBox)
+
 
         self.retranslateUi(ExcelSelectionDialog)
         self.buttonBox.accepted.connect(ExcelSelectionDialog.accept)
         self.buttonBox.rejected.connect(ExcelSelectionDialog.reject)
-        QtCore.QMetaObject.connectSlotsByName(ExcelSelectionDialog)
+
+        QMetaObject.connectSlotsByName(ExcelSelectionDialog)
+    # setupUi
 
     def retranslateUi(self, ExcelSelectionDialog):
-        _translate = QtCore.QCoreApplication.translate
-        ExcelSelectionDialog.setWindowTitle(_translate("ExcelSelectionDialog", "Excel sheet selection"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    ExcelSelectionDialog = QtWidgets.QDialog()
-    ui = Ui_ExcelSelectionDialog()
-    ui.setupUi(ExcelSelectionDialog)
-    ExcelSelectionDialog.show()
-    sys.exit(app.exec_())
+        ExcelSelectionDialog.setWindowTitle(QCoreApplication.translate("ExcelSelectionDialog", u"Excel sheet selection", None))
+    # retranslateUi
 

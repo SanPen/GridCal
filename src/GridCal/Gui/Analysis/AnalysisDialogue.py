@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 import math
 
 from PySide2.QtWidgets import *
+from PySide2 import QtWidgets, QtGui
 
 from GridCal.Gui.Analysis.gui import *
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model

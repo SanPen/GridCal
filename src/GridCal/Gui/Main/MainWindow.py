@@ -8,9 +8,9 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 from .icons_rc import *
 
@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1194, 770)
+        mainWindow.resize(1194, 773)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -335,6 +335,9 @@ class Ui_mainWindow(object):
         self.actionFix_generators_active_based_on_the_power = QAction(mainWindow)
         self.actionFix_generators_active_based_on_the_power.setObjectName(u"actionFix_generators_active_based_on_the_power")
         self.actionFix_generators_active_based_on_the_power.setIcon(icon49)
+        self.actionFix_loads_active_based_on_the_power = QAction(mainWindow)
+        self.actionFix_loads_active_based_on_the_power.setObjectName(u"actionFix_loads_active_based_on_the_power")
+        self.actionFix_loads_active_based_on_the_power.setIcon(icon49)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -1912,6 +1915,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_10.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
 
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_10.addItem(self.horizontalSpacer_10, 0, 4, 1, 1)
+
         self.frame_30 = QFrame(self.tab_4)
         self.frame_30.setObjectName(u"frame_30")
         self.frame_30.setFrameShape(QFrame.NoFrame)
@@ -2063,7 +2070,117 @@ class Ui_mainWindow(object):
         self.frame_65.setFrameShadow(QFrame.Raised)
         self.gridLayout_15 = QGridLayout(self.frame_65)
         self.gridLayout_15.setObjectName(u"gridLayout_15")
-        self.gridLayout_15.setContentsMargins(-1, 0, -1, -1)
+        self.verticalSpacer_17 = QSpacerItem(20, 365, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_15.addItem(self.verticalSpacer_17, 8, 1, 1, 1)
+
+        self.frame_67 = QFrame(self.frame_65)
+        self.frame_67.setObjectName(u"frame_67")
+        self.frame_67.setFrameShape(QFrame.NoFrame)
+        self.frame_67.setFrameShadow(QFrame.Raised)
+        self.gridLayout_24 = QGridLayout(self.frame_67)
+        self.gridLayout_24.setObjectName(u"gridLayout_24")
+        self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
+        self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
+        self.ntcOpfTolSpinBox.setMinimum(-99)
+        self.ntcOpfTolSpinBox.setValue(-3)
+
+        self.gridLayout_24.addWidget(self.ntcOpfTolSpinBox, 5, 1, 1, 1)
+
+        self.trmSpinBox = QSpinBox(self.frame_67)
+        self.trmSpinBox.setObjectName(u"trmSpinBox")
+        self.trmSpinBox.setMaximum(1500)
+        self.trmSpinBox.setSingleStep(10)
+        self.trmSpinBox.setValue(400)
+        self.trmSpinBox.setDisplayIntegerBase(10)
+
+        self.gridLayout_24.addWidget(self.trmSpinBox, 6, 1, 1, 1)
+
+        self.label_231 = QLabel(self.frame_67)
+        self.label_231.setObjectName(u"label_231")
+
+        self.gridLayout_24.addWidget(self.label_231, 6, 0, 1, 1)
+
+        self.ntcFeasibilityCheckCheckBox = QCheckBox(self.frame_67)
+        self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
+        self.ntcFeasibilityCheckCheckBox.setChecked(False)
+
+        self.gridLayout_24.addWidget(self.ntcFeasibilityCheckCheckBox, 4, 0, 1, 1)
+
+        self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
+        self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
+        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
+
+        self.gridLayout_24.addWidget(self.skipNtcGenerationLimitsCheckBox, 2, 0, 1, 2)
+
+        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
+        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
+
+        self.gridLayout_24.addWidget(self.ntcDispatchAllAreasCheckBox, 3, 0, 1, 1)
+
+        self.label_101 = QLabel(self.frame_67)
+        self.label_101.setObjectName(u"label_101")
+
+        self.gridLayout_24.addWidget(self.label_101, 5, 0, 1, 1)
+
+        self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
+        self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
+        self.proportionalRedispatchRadioButton.setChecked(True)
+
+        self.gridLayout_24.addWidget(self.proportionalRedispatchRadioButton, 0, 0, 1, 2)
+
+        self.optimalRedispatchRadioButton = QRadioButton(self.frame_67)
+        self.optimalRedispatchRadioButton.setObjectName(u"optimalRedispatchRadioButton")
+        self.optimalRedispatchRadioButton.setChecked(False)
+
+        self.gridLayout_24.addWidget(self.optimalRedispatchRadioButton, 1, 0, 1, 2)
+
+
+        self.gridLayout_15.addWidget(self.frame_67, 2, 0, 2, 3)
+
+        self.frame_51 = QFrame(self.frame_65)
+        self.frame_51.setObjectName(u"frame_51")
+        self.frame_51.setFrameShape(QFrame.NoFrame)
+        self.frame_51.setFrameShadow(QFrame.Raised)
+        self.gridLayout_25 = QGridLayout(self.frame_51)
+        self.gridLayout_25.setObjectName(u"gridLayout_25")
+        self.label_641 = QLabel(self.frame_51)
+        self.label_641.setObjectName(u"label_641")
+        font3 = QFont()
+        font3.setBold(True)
+        font3.setWeight(75)
+        self.label_641.setFont(font3)
+
+        self.gridLayout_25.addWidget(self.label_641, 0, 0, 1, 1)
+
+        self.ntcSelectBasedOnExchangeSensitivityRadioButton = QRadioButton(self.frame_51)
+        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setObjectName(u"ntcSelectBasedOnExchangeSensitivityRadioButton")
+        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setChecked(True)
+
+        self.gridLayout_25.addWidget(self.ntcSelectBasedOnExchangeSensitivityRadioButton, 1, 0, 1, 1)
+
+        self.ntcAlphaSpinBox = QSpinBox(self.frame_51)
+        self.ntcAlphaSpinBox.setObjectName(u"ntcAlphaSpinBox")
+        self.ntcAlphaSpinBox.setMaximum(100)
+        self.ntcAlphaSpinBox.setValue(5)
+
+        self.gridLayout_25.addWidget(self.ntcAlphaSpinBox, 1, 1, 1, 1)
+
+        self.ntcSelectBasedOnAcerCriteriaRadioButton = QRadioButton(self.frame_51)
+        self.ntcSelectBasedOnAcerCriteriaRadioButton.setObjectName(u"ntcSelectBasedOnAcerCriteriaRadioButton")
+
+        self.gridLayout_25.addWidget(self.ntcSelectBasedOnAcerCriteriaRadioButton, 2, 0, 1, 1)
+
+        self.ntcLoadRuleSpinBox = QSpinBox(self.frame_51)
+        self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
+        self.ntcLoadRuleSpinBox.setMaximum(100)
+        self.ntcLoadRuleSpinBox.setValue(70)
+
+        self.gridLayout_25.addWidget(self.ntcLoadRuleSpinBox, 2, 1, 1, 1)
+
+
+        self.gridLayout_15.addWidget(self.frame_51, 4, 0, 1, 3)
+
         self.label_97 = QLabel(self.frame_65)
         self.label_97.setObjectName(u"label_97")
         self.label_97.setMinimumSize(QSize(24, 24))
@@ -2073,26 +2190,13 @@ class Ui_mainWindow(object):
 
         self.gridLayout_15.addWidget(self.label_97, 0, 0, 1, 1)
 
-        self.line_27 = QFrame(self.frame_65)
-        self.line_27.setObjectName(u"line_27")
-        palette7 = QPalette()
-        palette7.setBrush(QPalette.Active, QPalette.WindowText, brush6)
-        palette7.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
-        palette7.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.line_27.setPalette(palette7)
-        self.line_27.setFrameShadow(QFrame.Plain)
-        self.line_27.setLineWidth(4)
-        self.line_27.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_15.addWidget(self.line_27, 1, 0, 1, 3)
-
         self.label_96 = QLabel(self.frame_65)
         self.label_96.setObjectName(u"label_96")
-        palette8 = QPalette()
-        palette8.setBrush(QPalette.Active, QPalette.WindowText, brush8)
-        palette8.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
-        palette8.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.label_96.setPalette(palette8)
+        palette7 = QPalette()
+        palette7.setBrush(QPalette.Active, QPalette.WindowText, brush8)
+        palette7.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
+        palette7.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.label_96.setPalette(palette7)
         self.label_96.setFont(font1)
 
         self.gridLayout_15.addWidget(self.label_96, 0, 1, 1, 2)
@@ -2104,26 +2208,6 @@ class Ui_mainWindow(object):
         self.frame_4.setLineWidth(1)
         self.gridLayout_5 = QGridLayout(self.frame_4)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.label_105 = QLabel(self.frame_4)
-        self.label_105.setObjectName(u"label_105")
-        font3 = QFont()
-        font3.setBold(True)
-        font3.setWeight(75)
-        self.label_105.setFont(font3)
-
-        self.gridLayout_5.addWidget(self.label_105, 0, 0, 1, 1)
-
-        self.considerContingenciesHvdcOpfCheckBox = QCheckBox(self.frame_4)
-        self.considerContingenciesHvdcOpfCheckBox.setObjectName(u"considerContingenciesHvdcOpfCheckBox")
-        self.considerContingenciesHvdcOpfCheckBox.setChecked(True)
-
-        self.gridLayout_5.addWidget(self.considerContingenciesHvdcOpfCheckBox, 2, 0, 1, 1)
-
-        self.contingencyPowerTripLabel = QLabel(self.frame_4)
-        self.contingencyPowerTripLabel.setObjectName(u"contingencyPowerTripLabel")
-
-        self.gridLayout_5.addWidget(self.contingencyPowerTripLabel, 4, 0, 1, 1)
-
         self.contingencyGenerationThresholdDoubleSpinBox = QDoubleSpinBox(self.frame_4)
         self.contingencyGenerationThresholdDoubleSpinBox.setObjectName(u"contingencyGenerationThresholdDoubleSpinBox")
         self.contingencyGenerationThresholdDoubleSpinBox.setDecimals(0)
@@ -2133,80 +2217,37 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.contingencyGenerationThresholdDoubleSpinBox, 4, 1, 1, 1)
 
-        self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_4)
-        self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
-        self.considerContingenciesNtcOpfCheckBox.setChecked(True)
-
-        self.gridLayout_5.addWidget(self.considerContingenciesNtcOpfCheckBox, 1, 0, 1, 1)
-
         self.considerContingenciesGeneratorOpfCheckBox = QCheckBox(self.frame_4)
         self.considerContingenciesGeneratorOpfCheckBox.setObjectName(u"considerContingenciesGeneratorOpfCheckBox")
         self.considerContingenciesGeneratorOpfCheckBox.setChecked(True)
 
         self.gridLayout_5.addWidget(self.considerContingenciesGeneratorOpfCheckBox, 3, 0, 1, 1)
 
+        self.contingencyPowerTripLabel = QLabel(self.frame_4)
+        self.contingencyPowerTripLabel.setObjectName(u"contingencyPowerTripLabel")
 
-        self.gridLayout_15.addWidget(self.frame_4, 4, 0, 2, 3)
+        self.gridLayout_5.addWidget(self.contingencyPowerTripLabel, 4, 0, 1, 1)
 
-        self.frame_67 = QFrame(self.frame_65)
-        self.frame_67.setObjectName(u"frame_67")
-        self.frame_67.setFrameShape(QFrame.NoFrame)
-        self.frame_67.setFrameShadow(QFrame.Raised)
-        self.gridLayout_24 = QGridLayout(self.frame_67)
-        self.gridLayout_24.setObjectName(u"gridLayout_24")
-        self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
-        self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
-        self.proportionalRedispatchRadioButton.setChecked(True)
+        self.label_105 = QLabel(self.frame_4)
+        self.label_105.setObjectName(u"label_105")
+        self.label_105.setFont(font3)
 
-        self.gridLayout_24.addWidget(self.proportionalRedispatchRadioButton, 0, 0, 1, 2)
+        self.gridLayout_5.addWidget(self.label_105, 0, 0, 1, 1)
 
-        self.optimalRedispatchRadioButton = QRadioButton(self.frame_67)
-        self.optimalRedispatchRadioButton.setObjectName(u"optimalRedispatchRadioButton")
-        self.optimalRedispatchRadioButton.setChecked(False)
+        self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_4)
+        self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
+        self.considerContingenciesNtcOpfCheckBox.setChecked(True)
 
-        self.gridLayout_24.addWidget(self.optimalRedispatchRadioButton, 1, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.considerContingenciesNtcOpfCheckBox, 1, 0, 1, 1)
 
-        self.monitorOnlySensitiveBranchesCheckBox = QCheckBox(self.frame_67)
-        self.monitorOnlySensitiveBranchesCheckBox.setObjectName(u"monitorOnlySensitiveBranchesCheckBox")
-        self.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.considerContingenciesHvdcOpfCheckBox = QCheckBox(self.frame_4)
+        self.considerContingenciesHvdcOpfCheckBox.setObjectName(u"considerContingenciesHvdcOpfCheckBox")
+        self.considerContingenciesHvdcOpfCheckBox.setChecked(True)
 
-        self.gridLayout_24.addWidget(self.monitorOnlySensitiveBranchesCheckBox, 2, 0, 1, 2)
-
-        self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
-        self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
-        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
-
-        self.gridLayout_24.addWidget(self.skipNtcGenerationLimitsCheckBox, 3, 0, 1, 2)
-
-        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
-        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
-
-        self.gridLayout_24.addWidget(self.ntcDispatchAllAreasCheckBox, 4, 0, 1, 1)
-
-        self.ntcFeasibilityCheckCheckBox = QCheckBox(self.frame_67)
-        self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
-        self.ntcFeasibilityCheckCheckBox.setChecked(False)
-
-        self.gridLayout_24.addWidget(self.ntcFeasibilityCheckCheckBox, 5, 0, 1, 1)
-
-        self.label_101 = QLabel(self.frame_67)
-        self.label_101.setObjectName(u"label_101")
-
-        self.gridLayout_24.addWidget(self.label_101, 6, 0, 1, 1)
-
-        self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
-        self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
-        self.ntcOpfTolSpinBox.setMinimum(-99)
-        self.ntcOpfTolSpinBox.setValue(-3)
-
-        self.gridLayout_24.addWidget(self.ntcOpfTolSpinBox, 6, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.considerContingenciesHvdcOpfCheckBox, 2, 0, 1, 1)
 
 
-        self.gridLayout_15.addWidget(self.frame_67, 2, 0, 1, 3)
-
-        self.verticalSpacer_17 = QSpacerItem(20, 365, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_15.addItem(self.verticalSpacer_17, 7, 1, 1, 1)
+        self.gridLayout_15.addWidget(self.frame_4, 5, 0, 2, 3)
 
         self.frame_68 = QFrame(self.frame_65)
         self.frame_68.setObjectName(u"frame_68")
@@ -2257,14 +2298,23 @@ class Ui_mainWindow(object):
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.weightsOverloadsSpinBox)
 
 
-        self.gridLayout_15.addWidget(self.frame_68, 6, 0, 1, 3)
+        self.gridLayout_15.addWidget(self.frame_68, 2, 3, 1, 1)
+
+        self.line_27 = QFrame(self.frame_65)
+        self.line_27.setObjectName(u"line_27")
+        palette8 = QPalette()
+        palette8.setBrush(QPalette.Active, QPalette.WindowText, brush6)
+        palette8.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
+        palette8.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.line_27.setPalette(palette8)
+        self.line_27.setFrameShadow(QFrame.Plain)
+        self.line_27.setLineWidth(4)
+        self.line_27.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_15.addWidget(self.line_27, 1, 0, 1, 4)
 
 
-        self.gridLayout_10.addWidget(self.frame_65, 0, 1, 1, 1)
-
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_10.addItem(self.horizontalSpacer_10, 0, 2, 1, 1)
+        self.gridLayout_10.addWidget(self.frame_65, 0, 1, 2, 1)
 
         self.settings_tabWidget.addTab(self.tab_4, icon15, "")
         self.tab_9 = QWidget()
@@ -2277,32 +2327,44 @@ class Ui_mainWindow(object):
         self.frame_64.setFrameShadow(QFrame.Raised)
         self.gridLayout_13 = QGridLayout(self.frame_64)
         self.gridLayout_13.setObjectName(u"gridLayout_13")
-        self.gridLayout_13.setContentsMargins(-1, 0, -1, -1)
+        self.line_23 = QFrame(self.frame_64)
+        self.line_23.setObjectName(u"line_23")
+        palette9 = QPalette()
+        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush6)
+        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
+        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.line_23.setPalette(palette9)
+        self.line_23.setFrameShadow(QFrame.Plain)
+        self.line_23.setLineWidth(4)
+        self.line_23.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_13.addWidget(self.line_23, 6, 0, 1, 2)
+
+        self.label_61 = QLabel(self.frame_64)
+        self.label_61.setObjectName(u"label_61")
+        palette10 = QPalette()
+        palette10.setBrush(QPalette.Active, QPalette.WindowText, brush8)
+        palette10.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
+        palette10.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.label_61.setPalette(palette10)
+        self.label_61.setFont(font1)
+
+        self.gridLayout_13.addWidget(self.label_61, 5, 1, 1, 1)
+
+        self.verticalSpacer_9 = QSpacerItem(20, 150, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_13.addItem(self.verticalSpacer_9, 10, 0, 1, 2)
+
         self.frame_66 = QFrame(self.frame_64)
         self.frame_66.setObjectName(u"frame_66")
         self.frame_66.setFrameShape(QFrame.NoFrame)
         self.frame_66.setFrameShadow(QFrame.Raised)
         self.gridLayout_16 = QGridLayout(self.frame_66)
         self.gridLayout_16.setObjectName(u"gridLayout_16")
-        self.label_91 = QLabel(self.frame_66)
-        self.label_91.setObjectName(u"label_91")
+        self.label_30 = QLabel(self.frame_66)
+        self.label_30.setObjectName(u"label_30")
 
-        self.gridLayout_16.addWidget(self.label_91, 0, 0, 1, 1)
-
-        self.transferMethodComboBox = QComboBox(self.frame_66)
-        self.transferMethodComboBox.setObjectName(u"transferMethodComboBox")
-
-        self.gridLayout_16.addWidget(self.transferMethodComboBox, 2, 1, 1, 1)
-
-        self.label_62 = QLabel(self.frame_66)
-        self.label_62.setObjectName(u"label_62")
-
-        self.gridLayout_16.addWidget(self.label_62, 1, 0, 1, 1)
-
-        self.label_77 = QLabel(self.frame_66)
-        self.label_77.setObjectName(u"label_77")
-
-        self.gridLayout_16.addWidget(self.label_77, 2, 0, 1, 1)
+        self.gridLayout_16.addWidget(self.label_30, 3, 0, 1, 1)
 
         self.atcPerturbanceSpinBox = QDoubleSpinBox(self.frame_66)
         self.atcPerturbanceSpinBox.setObjectName(u"atcPerturbanceSpinBox")
@@ -2310,6 +2372,24 @@ class Ui_mainWindow(object):
         self.atcPerturbanceSpinBox.setValue(100.000000000000000)
 
         self.gridLayout_16.addWidget(self.atcPerturbanceSpinBox, 0, 1, 1, 1)
+
+        self.label_62 = QLabel(self.frame_66)
+        self.label_62.setObjectName(u"label_62")
+
+        self.gridLayout_16.addWidget(self.label_62, 1, 0, 1, 1)
+
+        self.ntcReportLimitingElementsSpinBox = QSpinBox(self.frame_66)
+        self.ntcReportLimitingElementsSpinBox.setObjectName(u"ntcReportLimitingElementsSpinBox")
+        self.ntcReportLimitingElementsSpinBox.setMinimum(0)
+        self.ntcReportLimitingElementsSpinBox.setMaximum(999999999)
+        self.ntcReportLimitingElementsSpinBox.setValue(5)
+
+        self.gridLayout_16.addWidget(self.ntcReportLimitingElementsSpinBox, 3, 1, 1, 1)
+
+        self.label_91 = QLabel(self.frame_66)
+        self.label_91.setObjectName(u"label_91")
+
+        self.gridLayout_16.addWidget(self.label_91, 0, 0, 1, 1)
 
         self.atcThresholdSpinBox = QDoubleSpinBox(self.frame_66)
         self.atcThresholdSpinBox.setObjectName(u"atcThresholdSpinBox")
@@ -2319,36 +2399,24 @@ class Ui_mainWindow(object):
 
         self.gridLayout_16.addWidget(self.atcThresholdSpinBox, 1, 1, 1, 1)
 
-        self.label_30 = QLabel(self.frame_66)
-        self.label_30.setObjectName(u"label_30")
+        self.label_77 = QLabel(self.frame_66)
+        self.label_77.setObjectName(u"label_77")
 
-        self.gridLayout_16.addWidget(self.label_30, 3, 0, 1, 1)
+        self.gridLayout_16.addWidget(self.label_77, 2, 0, 1, 1)
 
-        self.ntcReportLimitingElementsSpinBox = QSpinBox(self.frame_66)
-        self.ntcReportLimitingElementsSpinBox.setObjectName(u"ntcReportLimitingElementsSpinBox")
-        self.ntcReportLimitingElementsSpinBox.setMinimum(-1)
-        self.ntcReportLimitingElementsSpinBox.setMaximum(999999999)
-        self.ntcReportLimitingElementsSpinBox.setValue(10)
+        self.transferMethodComboBox = QComboBox(self.frame_66)
+        self.transferMethodComboBox.setObjectName(u"transferMethodComboBox")
 
-        self.gridLayout_16.addWidget(self.ntcReportLimitingElementsSpinBox, 3, 1, 1, 1)
+        self.gridLayout_16.addWidget(self.transferMethodComboBox, 2, 1, 1, 1)
+
+        self.n1ConsiderationCheckBox = QCheckBox(self.frame_66)
+        self.n1ConsiderationCheckBox.setObjectName(u"n1ConsiderationCheckBox")
+        self.n1ConsiderationCheckBox.setChecked(True)
+
+        self.gridLayout_16.addWidget(self.n1ConsiderationCheckBox, 4, 0, 1, 1)
 
 
         self.gridLayout_13.addWidget(self.frame_66, 7, 0, 1, 2)
-
-        self.verticalSpacer_9 = QSpacerItem(20, 150, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_13.addItem(self.verticalSpacer_9, 8, 0, 1, 2)
-
-        self.label_61 = QLabel(self.frame_64)
-        self.label_61.setObjectName(u"label_61")
-        palette9 = QPalette()
-        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush8)
-        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
-        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.label_61.setPalette(palette9)
-        self.label_61.setFont(font1)
-
-        self.gridLayout_13.addWidget(self.label_61, 5, 1, 1, 1)
 
         self.label_90 = QLabel(self.frame_64)
         self.label_90.setObjectName(u"label_90")
@@ -2358,19 +2426,6 @@ class Ui_mainWindow(object):
         self.label_90.setScaledContents(True)
 
         self.gridLayout_13.addWidget(self.label_90, 5, 0, 1, 1)
-
-        self.line_23 = QFrame(self.frame_64)
-        self.line_23.setObjectName(u"line_23")
-        palette10 = QPalette()
-        palette10.setBrush(QPalette.Active, QPalette.WindowText, brush6)
-        palette10.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
-        palette10.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.line_23.setPalette(palette10)
-        self.line_23.setFrameShadow(QFrame.Plain)
-        self.line_23.setLineWidth(4)
-        self.line_23.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_13.addWidget(self.line_23, 6, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_64)
@@ -2394,23 +2449,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_14.addWidget(self.ptdf_correct_nonsense_values_checkBox, 3, 0, 1, 2)
 
-        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_14.addItem(self.verticalSpacer_12, 7, 0, 1, 1)
-
-        self.line_22 = QFrame(self.frame_32)
-        self.line_22.setObjectName(u"line_22")
-        palette11 = QPalette()
-        palette11.setBrush(QPalette.Active, QPalette.WindowText, brush6)
-        palette11.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
-        palette11.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.line_22.setPalette(palette11)
-        self.line_22.setFrameShadow(QFrame.Plain)
-        self.line_22.setLineWidth(4)
-        self.line_22.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
-
         self.frame_42 = QFrame(self.frame_32)
         self.frame_42.setObjectName(u"frame_42")
         self.frame_42.setFrameShape(QFrame.NoFrame)
@@ -2429,11 +2467,11 @@ class Ui_mainWindow(object):
 
         self.label_71 = QLabel(self.frame_42)
         self.label_71.setObjectName(u"label_71")
-        palette12 = QPalette()
-        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush8)
-        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
-        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
-        self.label_71.setPalette(palette12)
+        palette11 = QPalette()
+        palette11.setBrush(QPalette.Active, QPalette.WindowText, brush8)
+        palette11.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
+        palette11.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.label_71.setPalette(palette11)
         self.label_71.setFont(font1)
         self.label_71.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -2442,11 +2480,34 @@ class Ui_mainWindow(object):
 
         self.gridLayout_14.addWidget(self.frame_42, 0, 0, 1, 2)
 
+        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_14.addItem(self.verticalSpacer_12, 7, 0, 1, 1)
+
         self.usePfValuesForAtcCheckBox = QCheckBox(self.frame_32)
         self.usePfValuesForAtcCheckBox.setObjectName(u"usePfValuesForAtcCheckBox")
         self.usePfValuesForAtcCheckBox.setChecked(True)
 
         self.gridLayout_14.addWidget(self.usePfValuesForAtcCheckBox, 4, 0, 1, 1)
+
+        self.line_22 = QFrame(self.frame_32)
+        self.line_22.setObjectName(u"line_22")
+        palette12 = QPalette()
+        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush6)
+        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush6)
+        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush7)
+        self.line_22.setPalette(palette12)
+        self.line_22.setFrameShadow(QFrame.Plain)
+        self.line_22.setLineWidth(4)
+        self.line_22.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
+
+        self.ptdf_distributed_slack_checkBox1 = QCheckBox(self.frame_32)
+        self.ptdf_distributed_slack_checkBox1.setObjectName(u"ptdf_distributed_slack_checkBox1")
+        self.ptdf_distributed_slack_checkBox1.setChecked(False)
+
+        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox1, 2, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_32)
@@ -2811,7 +2872,7 @@ class Ui_mainWindow(object):
         self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
         self.cluster_number_spinBox.setMinimum(1)
         self.cluster_number_spinBox.setMaximum(999999)
-        self.cluster_number_spinBox.setValue(100)
+        self.cluster_number_spinBox.setValue(200)
 
         self.gridLayout_21.addWidget(self.cluster_number_spinBox, 11, 0, 1, 3)
 
@@ -3731,6 +3792,7 @@ class Ui_mainWindow(object):
         self.menuModel.addAction(self.actionFuse_devices)
         self.menuModel.addAction(self.actionre_index_time)
         self.menuModel.addAction(self.actionFix_generators_active_based_on_the_power)
+        self.menuModel.addAction(self.actionFix_loads_active_based_on_the_power)
         self.menuModel.addSeparator()
         self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
         self.menuModel.addSeparator()
@@ -4015,6 +4077,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.actionre_index_time.setText(QCoreApplication.translate("mainWindow", u"re-index time", None))
         self.actionFix_generators_active_based_on_the_power.setText(QCoreApplication.translate("mainWindow", u"Fix generators active based on the power", None))
+        self.actionFix_loads_active_based_on_the_power.setText(QCoreApplication.translate("mainWindow", u"Fix loads active based on the power", None))
+#if QT_CONFIG(tooltip)
+        self.actionFix_loads_active_based_on_the_power.setToolTip(QCoreApplication.translate("mainWindow", u"Fix loads active based on the power", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.run_cascade_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run complete cascading process", None))
 #endif // QT_CONFIG(tooltip)
@@ -4387,20 +4453,26 @@ class Ui_mainWindow(object):
         self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
         self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
         self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
-        self.label_97.setText("")
-        self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
-        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
-        self.considerContingenciesHvdcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider hvdc contingencies", None))
-        self.contingencyPowerTripLabel.setText(QCoreApplication.translate("mainWindow", u"Generation power contingency", None))
 #if QT_CONFIG(tooltip)
-        self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
+        self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
 #endif // QT_CONFIG(tooltip)
-        self.contingencyGenerationThresholdDoubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.ntcOpfTolSpinBox.setSuffix("")
+        self.ntcOpfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
+        self.trmSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
 #if QT_CONFIG(tooltip)
-        self.considerContingenciesNtcOpfCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the N-1 contingencies are considered", None))
+        self.label_231.setToolTip(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
 #endif // QT_CONFIG(tooltip)
-        self.considerContingenciesNtcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider branch contingencies", None))
-        self.considerContingenciesGeneratorOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider generator contingencies", None))
+        self.label_231.setText(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
+        self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
+#if QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
+#endif // QT_CONFIG(tooltip)
+        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
+#if QT_CONFIG(tooltip)
+        self.label_101.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This tolerance determines the maximum value of a slack variable that produces an error</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_101.setText(QCoreApplication.translate("mainWindow", u"Slack variables' tolerance", None))
 #if QT_CONFIG(tooltip)
         self.proportionalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified as a linear combination of it's current dispatch", None))
 #endif // QT_CONFIG(tooltip)
@@ -4410,21 +4482,36 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
 #if QT_CONFIG(tooltip)
-        self.monitorOnlySensitiveBranchesCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.</p></body></html>", None))
+        self.label_641.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
 #endif // QT_CONFIG(tooltip)
-        self.monitorOnlySensitiveBranchesCheckBox.setText(QCoreApplication.translate("mainWindow", u"Only monitor sensitive branches to the exchange", None))
+        self.label_641.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
 #if QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the generation limits are not considered", None))
+        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
-        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
-        self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
-        self.label_101.setText(QCoreApplication.translate("mainWindow", u"Tolerance", None))
+        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch exchange sensitivity (\u03b1)", None))
 #if QT_CONFIG(tooltip)
-        self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
+        self.ntcAlphaSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Minimum exchange contribution (Alpha)", None))
 #endif // QT_CONFIG(tooltip)
-        self.ntcOpfTolSpinBox.setSuffix("")
-        self.ntcOpfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
+        self.ntcAlphaSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+#if QT_CONFIG(tooltip)
+        self.ntcSelectBasedOnAcerCriteriaRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).</p><p>It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) </p><p><br/></p><p>A branch is monitored only if:</p><p>(branch_rate * 70%) / branch_alpha &lt;= total exchange rating</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.ntcSelectBasedOnAcerCriteriaRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
+        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+        self.label_97.setText("")
+        self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
+#if QT_CONFIG(tooltip)
+        self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
+#endif // QT_CONFIG(tooltip)
+        self.contingencyGenerationThresholdDoubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.considerContingenciesGeneratorOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider generator contingencies", None))
+        self.contingencyPowerTripLabel.setText(QCoreApplication.translate("mainWindow", u"Generation power contingency", None))
+        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
+#if QT_CONFIG(tooltip)
+        self.considerContingenciesNtcOpfCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the N-1 contingencies are considered", None))
+#endif // QT_CONFIG(tooltip)
+        self.considerContingenciesNtcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider branch contingencies", None))
+        self.considerContingenciesHvdcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider hvdc contingencies", None))
         self.label_102.setText(QCoreApplication.translate("mainWindow", u"Objective function weights", None))
         self.label_26.setText(QCoreApplication.translate("mainWindow", u"Power shift", None))
         self.weightPowerShiftSpinBox.setSuffix("")
@@ -4439,21 +4526,22 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
-        self.label_62.setText(QCoreApplication.translate("mainWindow", u"Transfer sensitivity threshold", None))
-        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
+        self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear NTC", None))
+        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Number of elements to report", None))
 #if QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Amount of power used to compute the branches sensitivity to the transfer", None))
 #endif // QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
-#if QT_CONFIG(tooltip)
-        self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Number of elements to report", None))
+        self.label_62.setText(QCoreApplication.translate("mainWindow", u"Transfer sensitivity threshold", None))
 #if QT_CONFIG(tooltip)
         self.ntcReportLimitingElementsSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Top NTC limiting elements. Set to -1 to display all.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear NTC", None))
+        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
+#if QT_CONFIG(tooltip)
+        self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
+        self.n1ConsiderationCheckBox.setText(QCoreApplication.translate("mainWindow", u"n-1 sensibility consideration", None))
         self.label_90.setText("")
         self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.ptdf_correct_nonsense_values_checkBox.setText(QCoreApplication.translate("mainWindow", u"Correct nonsense values", None))
@@ -4463,6 +4551,7 @@ class Ui_mainWindow(object):
         self.usePfValuesForAtcCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Use existing power flow values for the contingency initialization in the net transfer capacity and contingency simulations", None))
 #endif // QT_CONFIG(tooltip)
         self.usePfValuesForAtcCheckBox.setText(QCoreApplication.translate("mainWindow", u"Use power flow values for initialization", None))
+        self.ptdf_distributed_slack_checkBox1.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear calculations related settings", None))

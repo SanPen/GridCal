@@ -17,10 +17,10 @@ def correct_file_imports(filename):
 
     # Replace the target string
     file_data = file_data.replace('import icons_rc', 'from .icons_rc import *')
-    file_data = file_data.replace('PySide2', 'qtpy')
-    file_data = file_data.replace('PySide6', 'qtpy')
-    file_data = file_data.replace('PyQt5', 'qtpy')
-    file_data = file_data.replace('PyQt6', 'qtpy')
+    # file_data = file_data.replace('PySide2', 'qtpy')
+    # file_data = file_data.replace('PySide6', 'qtpy')
+    # file_data = file_data.replace('PyQt5', 'qtpy')
+    # file_data = file_data.replace('PyQt6', 'qtpy')
 
     # Write the file out again
     with open(filename, 'w') as file:
