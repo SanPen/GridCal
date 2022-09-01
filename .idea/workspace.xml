@@ -23,29 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved NTC settings layout">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GIS/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GIS/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_all.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_common.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="updated version">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,7 +164,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.Nosetests in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -453,11 +432,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_all" />
         <item itemvalue="Python tests.Nosetests in test_unbalanced_faults.py" />
         <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
-        <item itemvalue="Python tests.Nosetests in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -1048,20 +1027,6 @@
       <workItem from="1661840557395" duration="7874000" />
       <workItem from="1661936450869" duration="4325000" />
     </task>
-    <task id="LOCAL-00294" summary="Added more logging info to LM">
-      <created>1650623709591</created>
-      <option name="number" value="00294" />
-      <option name="presentableId" value="LOCAL-00294" />
-      <option name="project" value="LOCAL" />
-      <updated>1650623709592</updated>
-    </task>
-    <task id="LOCAL-00295" summary="Improved alliander's PGM converter">
-      <created>1650968516428</created>
-      <option name="number" value="00295" />
-      <option name="presentableId" value="LOCAL-00295" />
-      <option name="project" value="LOCAL" />
-      <updated>1650968516430</updated>
-    </task>
     <task id="LOCAL-00296" summary="working on adding 3W transformer (WIP)">
       <created>1651474280674</created>
       <option name="number" value="00296" />
@@ -1391,7 +1356,21 @@
       <option name="project" value="LOCAL" />
       <updated>1661863735027</updated>
     </task>
-    <option name="localTasksCounter" value="343" />
+    <task id="LOCAL-00343" summary="Merged devel with devel_REE (successfully)">
+      <created>1662028943800</created>
+      <option name="number" value="00343" />
+      <option name="presentableId" value="LOCAL-00343" />
+      <option name="project" value="LOCAL" />
+      <updated>1662028943800</updated>
+    </task>
+    <task id="LOCAL-00344" summary="updated version">
+      <created>1662028986050</created>
+      <option name="number" value="00344" />
+      <option name="presentableId" value="LOCAL-00344" />
+      <option name="project" value="LOCAL" />
+      <updated>1662028986050</updated>
+    </task>
+    <option name="localTasksCounter" value="345" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1425,8 +1404,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added the newtonpa time series error reading" />
-    <MESSAGE value="Added if condition to prevent bug with time series" />
     <MESSAGE value="4.5.5" />
     <MESSAGE value="Improved newtonpa integration" />
     <MESSAGE value="Derivatives investigation" />
@@ -1450,7 +1427,9 @@
     <MESSAGE value="slight refactor" />
     <MESSAGE value="Modified the text of some results' naming" />
     <MESSAGE value="Fixed short circuit indexing bug in islands" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed short circuit indexing bug in islands" />
+    <MESSAGE value="Merged devel with devel_REE (successfully)" />
+    <MESSAGE value="updated version" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated version" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2008,14 +1987,14 @@
     <SUITE FILE_PATH="coverage/GridCal$ortools_opf_v2.coverage" NAME="ortools_opf_v2 Coverage Results" MODIFIED="1630065515013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$rpgm_algo.coverage" NAME="rpgm_algo Coverage Results" MODIFIED="1603645665438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
     <SUITE FILE_PATH="coverage/GridCal$line_example.coverage" NAME="line_example Coverage Results" MODIFIED="1619379775789" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1662026259292" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1662028952949" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_voltage_controlled_generator_py.coverage" NAME="Nosetests in test_voltage_controlled_generator.py Coverage Results" MODIFIED="1616959365012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_monte_carlo_py.coverage" NAME="Nosetests in test_monte_carlo.py Coverage Results" MODIFIED="1617046279834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_bus_types_py.coverage" NAME="Nosetests in test_bus_types.py Coverage Results" MODIFIED="1645114540203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_lynn_cartesian.coverage" NAME="jacobian_lynn_cartesian Coverage Results" MODIFIED="1652555190957" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$all2.coverage" NAME="all2 Coverage Results" MODIFIED="1614510639480" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PGD" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1662028770188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1662028830157" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
     <SUITE FILE_PATH="coverage/GridCal$MainWindow.coverage" NAME="MainWindow Coverage Results" MODIFIED="1649780110971" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$json_parser.coverage" NAME="json_parser Coverage Results" MODIFIED="1656843550117" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2065,8 +2044,8 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_opf_time_series_test_opf_ts.coverage" NAME="Nosetests for tests.test_opf_time_series.test_opf_ts Coverage Results" MODIFIED="1648735923728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1660923707879" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_time_series_test_time_series.coverage" NAME="Nosetests for tests.test_time_series.test_time_series Coverage Results" MODIFIED="1617043238858" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1662029064687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$cim_parser.coverage" NAME="cim_parser Coverage Results" MODIFIED="1615738108202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO/cim" />
     <SUITE FILE_PATH="coverage/GridCal$bus_viewer_dialogue.coverage" NAME="bus_viewer_dialogue Coverage Results" MODIFIED="1607344567552" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
