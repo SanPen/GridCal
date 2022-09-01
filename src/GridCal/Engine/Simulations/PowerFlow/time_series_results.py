@@ -71,6 +71,7 @@ class TimeSeriesResults(PowerFlowResults):
                                                               ResultTypes.BranchLoading,
                                                               ResultTypes.BranchActiveLosses,
                                                               ResultTypes.BranchReactiveLosses,
+                                                              ResultTypes.BranchActiveLossesPercentage,
                                                               ResultTypes.BranchVoltage,
                                                               ResultTypes.BranchAngles],
 
@@ -388,6 +389,12 @@ class TimeSeriesResults(PowerFlowResults):
             data = self.losses.imag
             y_label = '(MVAr)'
             title = 'Branch losses'
+
+        elif result_type == ResultTypes.BranchActiveLossesPercentage:
+            labels = self.branch_names
+            data = np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0
+            y_label = '(%)'
+            title = 'Branch losses percentage'
 
         elif result_type == ResultTypes.BranchVoltage:
             labels = self.branch_names

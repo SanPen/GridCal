@@ -101,6 +101,7 @@ class PowerFlowResults(ResultsTemplate):
                                                                                 ResultTypes.Transformer2WTapModule,
                                                                                 ResultTypes.BranchActiveLosses,
                                                                                 ResultTypes.BranchReactiveLosses,
+                                                                                ResultTypes.BranchActiveLossesPercentage,
                                                                                 ResultTypes.BranchVoltage,
                                                                                 ResultTypes.BranchAngles],
 
@@ -497,6 +498,12 @@ class PowerFlowResults(ResultsTemplate):
             labels = self.branch_names
             y = self.losses.imag
             y_label = '(MVAr)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.BranchActiveLossesPercentage:
+            labels = self.branch_names
+            y = np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0
+            y_label = '(%)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchVoltage:

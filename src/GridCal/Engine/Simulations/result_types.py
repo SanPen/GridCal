@@ -48,6 +48,7 @@ class ResultTypes(Enum):
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
     BranchActiveLosses = 'Pl: Active losses', DeviceType.BranchDevice
     BranchReactiveLosses = 'Ql: Reactive losses', DeviceType.BranchDevice
+    BranchActiveLossesPercentage = 'Pl: Active losses (%)', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice
 
