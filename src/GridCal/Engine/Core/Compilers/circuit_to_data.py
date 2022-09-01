@@ -619,7 +619,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         if time_series:
             data.branch_active[i, :] = elm.active_prof
             data.branch_rates[i, :] = elm.rate_prof
-            data.branch_contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor
+            data.branch_contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[i, :] = elm.Cost_prof
@@ -680,7 +680,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
             if time_series:
                 data.branch_active[ii, :] = elm.active_prof
                 data.branch_rates[ii, :] = elm.rate_prof
-                data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
+                data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
                 if opf:
                     data.branch_cost[ii, :] = elm.Cost_prof
@@ -724,7 +724,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         if time_series:
             data.branch_active[ii, :] = elm.active_prof
             data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
+            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
@@ -807,7 +807,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         if time_series:
             data.branch_active[ii, :] = elm.active_prof
             data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
+            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
@@ -910,7 +910,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         if time_series:
             data.branch_active[ii, :] = elm.active_prof
             data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
+            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
@@ -975,6 +975,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         if time_series:
             data.active[i, :] = elm.active_prof
             data.rate[i, :] = elm.rate_prof
+            data.contingency_rate[i, :] = elm.rate_prof * elm.contingency_factor_prof
             data.angle_droop[i, :] = elm.angle_droop_prof
 
             if opf_results is not None:
@@ -987,6 +988,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         else:
             data.active[i] = elm.active
             data.rate[i] = elm.rate
+            data.contingency_rate[i] = elm.rate * elm.contingency_factor
             data.angle_droop[i] = elm.angle_droop
             data.r[i] = elm.r
 

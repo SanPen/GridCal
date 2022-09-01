@@ -27,46 +27,6 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_fast
 
 
-def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
-    """
-    Build the PTDF matrix
-    :param Bbus: DC-linear susceptance matrix
-    :param Bf: Bus-branch "from" susceptance matrix
-    :param pqpv: array of sorted pq and pv node indices
-    :param distribute_slack: distribute the slack?
-    :return: PTDF matrix. It is a full matrix of dimensions branches x buses
-    """
-
-    n = Bbus.shape[0]
-    nb = n
-    nbi = n
-    noref = np.arange(1, nb)
-    noslack = pqpv
-
-    if distribute_slack:
-        dP = np.ones((n, n)) * (-1 / (n - 1))
-        for i in range(n):
-            dP[i, i] = 1.0
-    else:
-        dP = np.eye(n, n)
-
-    # solve for change in voltage angles
-    dTheta = np.zeros((nb, nbi))
-    Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = spsolve(Bref,  dP[noslack, :])
-
-    if sp.issparse(dtheta_ref):
-        dTheta[noref, :] = dtheta_ref.toarray()
-    else:
-        dTheta[noref, :] = dtheta_ref
-
-    # compute corresponding change in branch Sf
-    # Bf is a sparse matrix
-    H = Bf * dTheta
-
-    return H
-
-
 def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
     """
     Compute the AC-PTDF
@@ -113,6 +73,45 @@ def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
     PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
 
     return PTDF
+
+def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
+    """
+    Build the PTDF matrix
+    :param Bbus: DC-linear susceptance matrix
+    :param Bf: Bus-branch "from" susceptance matrix
+    :param pqpv: array of sorted pq and pv node indices
+    :param distribute_slack: distribute the slack?
+    :return: PTDF matrix. It is a full matrix of dimensions branches x buses
+    """
+
+    n = Bbus.shape[0]
+    nb = n
+    nbi = n
+    noref = np.arange(1, nb)
+    noslack = pqpv
+
+    if distribute_slack:
+        dP = np.ones((n, n)) * (-1 / (n - 1))
+        for i in range(n):
+            dP[i, i] = 1.0
+    else:
+        dP = np.eye(n, n)
+
+    # solve for change in voltage angles
+    dTheta = np.zeros((nb, nbi))
+    Bref = Bbus[noslack, :][:, noref].tocsc()
+    dtheta_ref = spsolve(Bref,  dP[noslack, :])
+
+    if sp.issparse(dtheta_ref):
+        dTheta[noref, :] = dtheta_ref.toarray()
+    else:
+        dTheta[noref, :] = dtheta_ref
+
+    # compute corresponding change in branch Sf
+    # Bf is a sparse matrix
+    H = Bf * dTheta
+
+    return H
 
 
 def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
