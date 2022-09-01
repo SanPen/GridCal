@@ -216,8 +216,9 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 bus.raw'
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus v2.raw'
-    fname = '/home/santi/matpower7.0/data/case14.m'
+    # fname = '/home/santi/matpower7.0/data/case14.m'
     #
+    fname = r'C:\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 14 bus.raw'
     compare_power(fname)
     matpower_to_spv_comparison(fname)
 
