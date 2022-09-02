@@ -154,7 +154,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         print('Total con error:', len(self.abnormal_idx))
         print('Total sin analizar:', len(self.not_solved))
 
-
         labels, columns, data = self.get_contingency_report()
 
         df = pd.DataFrame(data=data, columns=columns, index=labels)
@@ -166,7 +165,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # Save file
         if path_out:
             df.to_csv(path_out, index=False)
-
 
     def get_contingency_report(self):
 
@@ -691,7 +689,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.__cancel__:
                 break
 
-
     def run(self):
         """
 
@@ -763,7 +760,6 @@ if __name__ == '__main__':
     if len(idx_br) == 0:
         print('There are no inter-area branches!')
 
-
     options = OptimalNetTransferCapacityOptions(
         area_from_bus_idx=idx_from,
         area_to_bus_idx=idx_to,
@@ -792,7 +788,7 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = 1  #circuit.get_time_number()-1
+    end = 1  #  circuit.get_time_number()-1
 
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,

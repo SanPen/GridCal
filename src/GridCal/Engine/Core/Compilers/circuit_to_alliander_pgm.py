@@ -68,7 +68,6 @@ base ──┬──────────────────────
 '''
 
 
-
 def get_pgm_buses(circuit: MultiCircuit, idx0):
     """
     Convert the buses to Alliander's PGM buses
