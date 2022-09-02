@@ -684,7 +684,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 rates=nc.branch_data.branch_rates[:, t],
                 contingency_rates=nc.branch_data.branch_contingency_rates[:, t],
                 area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx)
+                area_to_bus_idx=self.options.area_to_bus_idx,
+                structural_ntc=problem.structural_ntc,
+                sbase=nc.Sbase
+            )
 
             self.results.results_dict[t] = result
 

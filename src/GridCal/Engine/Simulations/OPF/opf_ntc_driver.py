@@ -183,7 +183,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  contingency_generation_indices_list=None, contingency_hvdc_flows_list=None,
                  contingency_hvdc_indices_list=None, contingency_rates=None, branch_ntc_load_rule=None,
                  area_from_bus_idx=None, area_to_bus_idx=None, contingency_branch_alpha_list=None,
-                 contingency_generation_alpha_list=None, contingency_hvdc_alpha_list=None, ):
+                 contingency_generation_alpha_list=None, contingency_hvdc_alpha_list=None, structural_ntc=None,
+                 sbase=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -192,7 +193,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchTapAngle,
-                                                    ResultTypes.BranchTapAngleRad,
 
                                                     ResultTypes.ContingencyFlowsReport,
                                                     ResultTypes.ContingencyFlowsBranchReport,
@@ -200,7 +200,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.ContingencyFlowsHvdcReport,
 
                                                     ResultTypes.HvdcPowerFrom,
-                                                    ResultTypes.HvdcPmode3Slack,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
@@ -292,6 +291,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.branch_ntc_load_rule = branch_ntc_load_rule
 
+        self.structural_ntc = structural_ntc
+
+        self.sbase = sbase
 
         self.plot_bars_limit = 100
 
@@ -429,7 +431,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                       self.contingency_branch_flows_list,
                                                       self.contingency_branch_alpha_list):
             if contingency_flow != 0.0:
-                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
+                maczt = ntc * np.abs(alpha_n1) / self.rates[m]
                 y.append((np.round(ttc, 0),
                           trm,
                           np.round(ntc, 0),
@@ -445,6 +447,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
                           alpha_n1,
+                          self.structural_ntc,
                           'Branch',
                           m, c))
                 labels.append(len(y))
@@ -463,7 +466,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Contingency flow (%)',
                    'Base flow (%)',
                    'Alpha N',
-                   'Alpha N-1 max',
+                   'Alpha N-1',
+                   'Structural NTC',
                    'Contingency type',
                    'Monitored idx',
                    'Contingency idx',
@@ -504,7 +508,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                       self.contingency_generation_flows_list,
                                                       self.contingency_generation_alpha_list):
             if contingency_flow != 0.0:
-                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
+                maczt = ntc * np.abs(alpha_n1) / self.rates[m]
                 y.append((np.round(ttc, 0),
                           trm,
                           np.round(ntc, 0),
@@ -520,6 +524,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
                           alpha_n1,
+                          self.structural_ntc,
                           'Generation',
                           m, c))
                 labels.append(len(y))
@@ -538,7 +543,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Contingency flow (%)',
                    'Base flow (%)',
                    'Alpha N',
-                   'Alpha N-1 max',
+                   'Alpha N-1',
+                   'Structural NTC',
                    'Contingency Type',
                    'Monitored idx',
                    'Contingency idx']
@@ -578,7 +584,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                       self.contingency_hvdc_flows_list,
                                                       self.contingency_hvdc_alpha_list):
             if contingency_flow != 0.0:
-                maczt = ntc * np.abs(self.alpha[m]) / self.rates[m]
+                maczt = ntc * np.abs(alpha_n1) / self.rates[m]
                 y.append((np.round(ttc, 0),
                           trm,
                           np.round(ntc, 0),
@@ -594,6 +600,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           np.round(self.Sf[m] / self.rates[m] * 100, 2),
                           self.alpha[m],
                           alpha_n1,
+                          self.structural_ntc,
                           'Hvdc',
                           m, c))
                 labels.append(len(y))
@@ -612,7 +619,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Contingency flow (%)',
                    'Base flow (%)',
                    'Alpha N',
-                   'Alpha N-1 max',
+                   'Alpha N-1',
+                   'Structural NTC',
                    'Contingency Type',
                    'Monitored idx',
                    'Contingency idx']
@@ -1065,7 +1073,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                 area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx)
+                area_to_bus_idx=self.options.area_to_bus_idx
+            )
         else:
             self.progress_text.emit('Formulating NTC OPF...')
 
@@ -1187,7 +1196,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
-                )
+                structural_ntc=problem.structural_ntc,
+                sbase=numerical_circuit.Sbase
+            )
 
         self.progress_text.emit('Done!')
 

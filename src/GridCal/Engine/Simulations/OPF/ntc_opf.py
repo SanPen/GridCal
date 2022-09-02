@@ -184,7 +184,7 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
             lst.append((k, -1.0))
     return lst
 
-def get_thermal_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
+def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
     '''
 
     :param inter_area_branches:
@@ -868,7 +868,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                             branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
                             branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
                             alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, ntc_load_rule,
-                            thermal_ntc, logger):
+                            structural_ntc, logger):
     """
 
     :param solver: Solver instance to which add the equations
@@ -890,7 +890,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param tau: Array branch phase shift angles (mix of values and LP variables)
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
     :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
-    :param thermal_ntc: Maximun NTC available by thermal interconexion rates.
+    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -924,7 +924,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                 monitor[m] = monitor[m] and max_alpha > branch_sensitivity_threshold
 
             if monitor_only_ntc_load_rule_branches:
-                monitor[m] = monitor[m] and branch_ntc_load_rule[m] <= thermal_ntc
+                monitor[m] = monitor[m] and branch_ntc_load_rule[m] <= structural_ntc
 
             # determine branch rate according monitor logic
             if monitor[m]:
@@ -1598,6 +1598,8 @@ class OpfNTC(Opf):
         self.contingency_hvdc_flows_list = list()
         self.contingency_hvdc_indices_list = list()  # [(m, c), ...]
 
+        self.structural_ntc = 0
+
         self.logger = logger
 
         # this builds the formulation right away
@@ -1705,7 +1707,7 @@ class OpfNTC(Opf):
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        thermal_ntc = get_thermal_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings)
+        structural_ntc = get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1809,7 +1811,7 @@ class OpfNTC(Opf):
             alpha_n1_abs=alpha_n1_abs,
             monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
             ntc_load_rule=self.ntc_load_rule,
-            thermal_ntc=thermal_ntc,
+            structural_ntc=structural_ntc,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -1975,6 +1977,8 @@ class OpfNTC(Opf):
         self.contingency_hvdc_alpha_list = con_hvdc_alpha
         self.contingency_generation_alpha_list = con_gen_alpha
 
+        self.structural_ntc = structural_ntc
+
         return self.solver
 
     def formulate_ts(self, t=0):
@@ -2045,7 +2049,7 @@ class OpfNTC(Opf):
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        thermal_ntc = get_thermal_ntc(
+        structural_ntc = get_structural_ntc(
             inter_area_branches=inter_area_branches,
             inter_area_hvdc=inter_area_hvdc,
             branch_ratings=branch_ratings,
@@ -2153,7 +2157,7 @@ class OpfNTC(Opf):
             alpha_n1_abs=alpha_n1_abs,
             monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
             ntc_load_rule=self.ntc_load_rule,
-            thermal_ntc=thermal_ntc,
+            structural_ntc=structural_ntc,
             logger=self.logger)
 
 
