@@ -94,6 +94,9 @@ def convert_ui_file(source, uic_cmd='pyside2-uic'):
             return True
 
         except:
-            print('Failed with', uic_cmd)
+            pass
+
+    print('Could not find the right command to convert', source)
+    return False
 
 
