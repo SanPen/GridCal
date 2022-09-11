@@ -237,6 +237,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         self.original_data_frame = None
 
+        self.ui.autolink_slider.setValue(100) # Set slider to max value
+
         self.profile_names = list()
 
         # click

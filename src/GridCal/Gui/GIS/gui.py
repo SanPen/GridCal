@@ -1,65 +1,70 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui',
-# licensing of 'gui.ui' applies.
-#
-# Created: Mon Dec  9 12:39:51 2019
-#      by: pyside2-uic  running on PySide2 5.13.0
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'gui.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
-
-class Ui_GisWindow(object):
-    def setupUi(self, GisWindow):
-        GisWindow.setObjectName("GisWindow")
-        GisWindow.resize(938, 577)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/map.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        GisWindow.setWindowIcon(icon)
-        self.centralwidget = QtWidgets.QWidget(GisWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.webFrame = QtWidgets.QFrame(self.centralwidget)
-        self.webFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.webFrame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.webFrame.setObjectName("webFrame")
-        self.verticalLayout.addWidget(self.webFrame)
-        GisWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(GisWindow)
-        self.statusbar.setObjectName("statusbar")
-        GisWindow.setStatusBar(self.statusbar)
-        self.toolBar = QtWidgets.QToolBar(GisWindow)
-        self.toolBar.setMovable(False)
-        self.toolBar.setFloatable(False)
-        self.toolBar.setObjectName("toolBar")
-        GisWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        self.actionSave_map = QtWidgets.QAction(GisWindow)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/savec.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionSave_map.setIcon(icon1)
-        self.actionSave_map.setObjectName("actionSave_map")
-        self.toolBar.addAction(self.actionSave_map)
-
-        self.retranslateUi(GisWindow)
-        QtCore.QMetaObject.connectSlotsByName(GisWindow)
-
-    def retranslateUi(self, GisWindow):
-        GisWindow.setWindowTitle(QtWidgets.QApplication.translate("GisWindow", "GridCal - GIS", None, -1))
-        self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("GisWindow", "toolBar", None, -1))
-        self.actionSave_map.setText(QtWidgets.QApplication.translate("GisWindow", "Save map", None, -1))
-        self.actionSave_map.setToolTip(QtWidgets.QApplication.translate("GisWindow", "Save this map", None, -1))
-        self.actionSave_map.setShortcut(QtWidgets.QApplication.translate("GisWindow", "Ctrl+S", None, -1))
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 from .icons_rc import *
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    GisWindow = QtWidgets.QMainWindow()
-    ui = Ui_GisWindow()
-    ui.setupUi(GisWindow)
-    GisWindow.show()
-    sys.exit(app.exec_())
+class Ui_GisWindow(object):
+    def setupUi(self, GisWindow):
+        if not GisWindow.objectName():
+            GisWindow.setObjectName(u"GisWindow")
+        GisWindow.resize(938, 577)
+        icon = QIcon()
+        icon.addFile(u":/icons/icons/map.svg", QSize(), QIcon.Normal, QIcon.Off)
+        GisWindow.setWindowIcon(icon)
+        self.actionSave_map = QAction(GisWindow)
+        self.actionSave_map.setObjectName(u"actionSave_map")
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons/savec.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionSave_map.setIcon(icon1)
+        self.centralwidget = QWidget(GisWindow)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.webFrame = QFrame(self.centralwidget)
+        self.webFrame.setObjectName(u"webFrame")
+        self.webFrame.setFrameShape(QFrame.StyledPanel)
+        self.webFrame.setFrameShadow(QFrame.Raised)
+
+        self.verticalLayout.addWidget(self.webFrame)
+
+        GisWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QStatusBar(GisWindow)
+        self.statusbar.setObjectName(u"statusbar")
+        GisWindow.setStatusBar(self.statusbar)
+        self.toolBar = QToolBar(GisWindow)
+        self.toolBar.setObjectName(u"toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        GisWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+
+        self.toolBar.addAction(self.actionSave_map)
+
+        self.retranslateUi(GisWindow)
+
+        QMetaObject.connectSlotsByName(GisWindow)
+    # setupUi
+
+    def retranslateUi(self, GisWindow):
+        GisWindow.setWindowTitle(QCoreApplication.translate("GisWindow", u"GridCal - GIS", None))
+        self.actionSave_map.setText(QCoreApplication.translate("GisWindow", u"Save map", None))
+#if QT_CONFIG(tooltip)
+        self.actionSave_map.setToolTip(QCoreApplication.translate("GisWindow", u"Save this map", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(shortcut)
+        self.actionSave_map.setShortcut(QCoreApplication.translate("GisWindow", u"Ctrl+S", None))
+#endif // QT_CONFIG(shortcut)
+        self.toolBar.setWindowTitle(QCoreApplication.translate("GisWindow", u"toolBar", None))
+    # retranslateUi
 

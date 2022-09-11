@@ -2460,6 +2460,41 @@ class MultiCircuit:
         for g in self.get_batteries():
             g.active_prof = g.P_prof.astype(bool)
 
+    def set_loads_active_profile_from_their_active_power(self):
+        """
+        Modify the loads active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for ld in self.get_loads():
+            ld.active_prof = ld.P_prof.astype(bool)
+
+    # def normalize_bus_positions(self):
+    #     # figure limits
+    #     min_x = sys.maxsize
+    #     min_y = sys.maxsize
+    #     max_x = -sys.maxsize
+    #     max_y = -sys.maxsize
+    #
+    #     # Align lines
+    #     for bus in self.buses:
+    #         # get the item position
+    #         x = bus.x
+    #         y = bus.y
+    #
+    #         # compute the boundaries of the grid
+    #         max_x = max(max_x, x)
+    #         min_x = min(min_x, x)
+    #         max_y = max(max_y, y)
+    #         min_y = min(min_y, y)
+    #
+    #     # Fix boundaries
+    #     for bus in self.buses:
+    #         # get the item position
+    #         x = bus.x
+    #         y = bus.y
+    #         bus.x = x - min_x
+    #         bus.y = y - max_y
+
     def correct_inconsistencies(self, logger: Logger, maximum_difference=0.1, min_vset=0.98, max_vset=1.02):
         """
         Correct devices' inconsistencies

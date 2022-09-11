@@ -510,6 +510,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
+        self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -2172,6 +2174,23 @@ class MainGUI(QMainWindow):
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.display_profiles()
+
+                # ask to update active profile when magnitude is P for generators and loads
+                if len(objects) > 0:
+                    if magnitude == 'P':
+                        if objects[0].device_type == DeviceType.GeneratorDevice:
+                            ok = yes_no_question(
+                                "Do you want to correct the generators active profile based on the active power profile?",
+                                "Match")
+                            if ok:
+                                self.fix_generators_active_based_on_the_power(ask_before=False)
+                        elif objects[0].device_type == DeviceType.LoadDevice:
+                            ok = yes_no_question(
+                                "Do you want to correct the loads active profile based on the active power profile?",
+                                "Match")
+                            if ok:
+                                self.fix_loads_active_based_on_the_power(ask_before=False)
+
             else:
                 pass  # the dialogue was closed
 
@@ -4176,7 +4195,6 @@ class MainGUI(QMainWindow):
         Set the default options for the NTC optimization in the optimal setting
         :return:
         """
-        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4190,7 +4208,6 @@ class MainGUI(QMainWindow):
         Set the default options for the NTC optimization in the proportional setting
         :return:
         """
-        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
@@ -4243,9 +4260,10 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
-                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
@@ -4262,12 +4280,17 @@ class MainGUI(QMainWindow):
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
+                trm = self.ui.trmSpinBox.value()
+                ntc_load_rule = self.ui.ntcLoadRuleSpinBox.value() / 100.0
+                n1_consideration = self.ui.n1ConsiderationCheckBox.isChecked()
+
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
                     area_to_bus_idx=idx_to,
                     mip_solver=mip_solver,
                     generation_formulation=generation_formulation,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,
@@ -4275,18 +4298,26 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
+                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold)
+                    generation_contingency_threshold=generation_contingency_threshold,
+                    trm=trm,
+                    ntc_load_rule=ntc_load_rule,
+                    n1_consideration=n1_consideration)
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
+
                 # set power flow object instance
-                drv = sim.OptimalNetTransferCapacity(self.circuit, options, pf_options)
+                drv = sim.OptimalNetTransferCapacityDriver(
+                    grid=self.circuit,
+                    options=options,
+                    pf_options=pf_options)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -4386,7 +4417,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4405,12 +4437,18 @@ class MainGUI(QMainWindow):
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
+                trm = self.ui.trmSpinBox.value()
+                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
+                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
+
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
                     area_to_bus_idx=idx_to,
                     mip_solver=mip_solver,
                     generation_formulation=generation_formulation,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,
@@ -4418,13 +4456,17 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
-                    with_check=False,
+                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold)
+                    generation_contingency_threshold=generation_contingency_threshold,
+                    trm=trm,
+                    max_report_elements=nTopContingencies,
+                    ntc_load_rule=ntcLoadRule,
+                    n1_consideration=n1Consideration)
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
                 QtGui.QGuiApplication.processEvents()
@@ -6260,7 +6302,7 @@ class MainGUI(QMainWindow):
                     buses_to_delete_idx.append(r)
 
         for r, bus in enumerate(self.circuit.buses):
-            if not bus.active:
+            if not bus.active and not np.any(bus.active_prof):
                 if r not in buses_to_delete_idx:
                     buses_to_delete.append(bus)
                     buses_to_delete_idx.append(r)
@@ -6286,7 +6328,7 @@ class MainGUI(QMainWindow):
                         self.circuit.get_static_generators(),
                         ]:
             for elm in dev_lst:
-                if not elm.active:
+                if not elm.active and not np.any(elm.active_prof):
                     if elm.graphic_obj is not None:
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
@@ -6987,8 +7029,9 @@ class MainGUI(QMainWindow):
         Call delete shit
         :return:
         """
-        ok = yes_no_question("This action removes all disconnected devices and remove all small islands",
-                             "Delete inconsistencies")
+        ok = yes_no_question(
+            "This action removes all disconnected devices with no active profile and remove all small islands",
+            "Delete inconsistencies")
 
         if ok:
             logger = self.delete_shit()
@@ -7025,6 +7068,22 @@ class MainGUI(QMainWindow):
         if ok:
             self.circuit.set_generators_active_profile_from_their_active_power()
             self.circuit.set_batteries_active_profile_from_their_active_power()
+
+    def fix_loads_active_based_on_the_power(self, ask_before=True):
+        """
+        set the loads active based on the active power values
+        :return:
+        """
+
+        if ask_before:
+            ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+        else:
+            ok = True
+
+        if ok:
+            self.circuit.set_loads_active_profile_from_their_active_power()
 
     def get_all_objects_in_memory(self):
         objects = []

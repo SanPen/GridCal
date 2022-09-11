@@ -9,6 +9,10 @@ if __name__ == '__main__':
     rcc_cmd = 'pyside2-rcc'
     uic_cmd = 'pyside2-uic'
 
+    if os.name == 'nt':
+        rcc_cmd += '.exe'
+        uic_cmd += '.exe'
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     for subFolderRoot, foldersWithinSubFolder, files in os.walk(dir_path):

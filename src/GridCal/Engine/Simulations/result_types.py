@@ -48,6 +48,7 @@ class ResultTypes(Enum):
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
     BranchActiveLosses = 'Pl: Active losses', DeviceType.BranchDevice
     BranchReactiveLosses = 'Ql: Reactive losses', DeviceType.BranchDevice
+    BranchActiveLossesPercentage = 'Pl: Active losses (%)', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice
 
@@ -91,7 +92,8 @@ class ResultTypes(Enum):
     LossesPerArea = 'Losses per area', DeviceType.NoDevice
     ActivePowerFlowPerArea = 'Active power flow per area', DeviceType.NoDevice
 
-    OptimalNetTransferCapacityTimeSeriesReport = 'Optimal net transfer capacity series report', DeviceType.NoDevice
+    OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice
+    OpfNtcTsBaseReport = 'Base flow report', DeviceType.NoDevice
 
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
@@ -125,7 +127,7 @@ class ResultTypes(Enum):
     AvailableTransferCapacity = 'Available transfer capacity (final)', DeviceType.BranchDevice
     AvailableTransferCapacityN = 'Available transfer capacity (N)', DeviceType.BranchDevice
     AvailableTransferCapacityAlpha = 'Sensitivity to the exchange', DeviceType.BranchDevice
-    AvailableTransferCapacityBeta = 'Sensitivity to the exchange (N-1)', DeviceType.BranchDevice
+    AvailableTransferCapacityAlphaN1 = 'Sensitivity to the exchange (N-1)', DeviceType.BranchDevice
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 

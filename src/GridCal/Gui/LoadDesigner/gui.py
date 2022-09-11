@@ -1,209 +1,269 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui',
-# licensing of 'gui.ui' applies.
-#
-# Created: Tue Jun 25 21:00:49 2019
-#      by: pyside2-uic  running on PySide2 5.12.3
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'gui.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
+from .matplotlibwidget import MatplotlibWidget
+
+from .icons_rc import *
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
+        if not Dialog.objectName():
+            Dialog.setObjectName(u"Dialog")
         Dialog.resize(941, 590)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout = QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(1, 1, 1, 1)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.splitter_3 = QtWidgets.QSplitter(Dialog)
-        self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter_3.setObjectName("splitter_3")
-        self.frame_8 = QtWidgets.QFrame(self.splitter_3)
-        self.frame_8.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_8.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_8.setObjectName("frame_8")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.frame_8)
+        self.splitter_3 = QSplitter(Dialog)
+        self.splitter_3.setObjectName(u"splitter_3")
+        self.splitter_3.setOrientation(Qt.Horizontal)
+        self.frame_8 = QFrame(self.splitter_3)
+        self.frame_8.setObjectName(u"frame_8")
+        self.frame_8.setFrameShape(QFrame.NoFrame)
+        self.frame_8.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_7 = QVBoxLayout(self.frame_8)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.verticalLayout_7.setContentsMargins(-1, 9, -1, -1)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.toolBox = QtWidgets.QToolBox(self.frame_8)
-        self.toolBox.setObjectName("toolBox")
-        self.page_3 = QtWidgets.QWidget()
-        self.page_3.setObjectName("page_3")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.page_3)
+        self.toolBox = QToolBox(self.frame_8)
+        self.toolBox.setObjectName(u"toolBox")
+        self.page_3 = QWidget()
+        self.page_3.setObjectName(u"page_3")
+        self.verticalLayout_3 = QVBoxLayout(self.page_3)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, -1, 0, -1)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.frame_2 = QtWidgets.QFrame(self.page_3)
-        self.frame_2.setMinimumSize(QtCore.QSize(300, 0))
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_2.setObjectName("frame_2")
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.frame_2)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.frame_3 = QtWidgets.QFrame(self.frame_2)
-        self.frame_3.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_3.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.frame_3.setObjectName("frame_3")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_3)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.label = QtWidgets.QLabel(self.frame_3)
-        self.label.setMaximumSize(QtCore.QSize(160, 16777215))
-        self.label.setObjectName("label")
+        self.frame_2 = QFrame(self.page_3)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setMinimumSize(QSize(300, 0))
+        self.frame_2.setFrameShape(QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_4 = QVBoxLayout(self.frame_2)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.frame_3 = QFrame(self.frame_2)
+        self.frame_3.setObjectName(u"frame_3")
+        self.frame_3.setFrameShape(QFrame.NoFrame)
+        self.frame_3.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_3 = QHBoxLayout(self.frame_3)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.label = QLabel(self.frame_3)
+        self.label.setObjectName(u"label")
+        self.label.setMaximumSize(QSize(160, 16777215))
+
         self.horizontalLayout_3.addWidget(self.label)
-        self.night_valley_timeEdit = QtWidgets.QTimeEdit(self.frame_3)
-        self.night_valley_timeEdit.setTime(QtCore.QTime(3, 0, 0))
-        self.night_valley_timeEdit.setObjectName("night_valley_timeEdit")
+
+        self.night_valley_timeEdit = QTimeEdit(self.frame_3)
+        self.night_valley_timeEdit.setObjectName(u"night_valley_timeEdit")
+        self.night_valley_timeEdit.setTime(QTime(3, 0, 0))
+
         self.horizontalLayout_3.addWidget(self.night_valley_timeEdit)
-        self.night_valley_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_3)
-        self.night_valley_doubleSpinBox.setProperty("value", 4.0)
-        self.night_valley_doubleSpinBox.setObjectName("night_valley_doubleSpinBox")
+
+        self.night_valley_doubleSpinBox = QDoubleSpinBox(self.frame_3)
+        self.night_valley_doubleSpinBox.setObjectName(u"night_valley_doubleSpinBox")
+        self.night_valley_doubleSpinBox.setValue(4.000000000000000)
+
         self.horizontalLayout_3.addWidget(self.night_valley_doubleSpinBox)
+
+
         self.verticalLayout_4.addWidget(self.frame_3)
-        self.frame_4 = QtWidgets.QFrame(self.frame_2)
-        self.frame_4.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_4.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.frame_4.setObjectName("frame_4")
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.frame_4)
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.label_2 = QtWidgets.QLabel(self.frame_4)
-        self.label_2.setMaximumSize(QtCore.QSize(160, 16777215))
-        self.label_2.setObjectName("label_2")
+
+        self.frame_4 = QFrame(self.frame_2)
+        self.frame_4.setObjectName(u"frame_4")
+        self.frame_4.setFrameShape(QFrame.NoFrame)
+        self.frame_4.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_4 = QHBoxLayout(self.frame_4)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.label_2 = QLabel(self.frame_4)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setMaximumSize(QSize(160, 16777215))
+
         self.horizontalLayout_4.addWidget(self.label_2)
-        self.morning_peak_timeEdit = QtWidgets.QTimeEdit(self.frame_4)
-        self.morning_peak_timeEdit.setTime(QtCore.QTime(10, 0, 0))
-        self.morning_peak_timeEdit.setObjectName("morning_peak_timeEdit")
+
+        self.morning_peak_timeEdit = QTimeEdit(self.frame_4)
+        self.morning_peak_timeEdit.setObjectName(u"morning_peak_timeEdit")
+        self.morning_peak_timeEdit.setTime(QTime(10, 0, 0))
+
         self.horizontalLayout_4.addWidget(self.morning_peak_timeEdit)
-        self.morning_peak_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_4)
-        self.morning_peak_doubleSpinBox.setProperty("value", 12.0)
-        self.morning_peak_doubleSpinBox.setObjectName("morning_peak_doubleSpinBox")
+
+        self.morning_peak_doubleSpinBox = QDoubleSpinBox(self.frame_4)
+        self.morning_peak_doubleSpinBox.setObjectName(u"morning_peak_doubleSpinBox")
+        self.morning_peak_doubleSpinBox.setValue(12.000000000000000)
+
         self.horizontalLayout_4.addWidget(self.morning_peak_doubleSpinBox)
+
+
         self.verticalLayout_4.addWidget(self.frame_4)
-        self.frame_5 = QtWidgets.QFrame(self.frame_2)
-        self.frame_5.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_5.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.frame_5.setObjectName("frame_5")
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.frame_5)
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.label_4 = QtWidgets.QLabel(self.frame_5)
-        self.label_4.setMaximumSize(QtCore.QSize(160, 16777215))
-        self.label_4.setObjectName("label_4")
+
+        self.frame_5 = QFrame(self.frame_2)
+        self.frame_5.setObjectName(u"frame_5")
+        self.frame_5.setFrameShape(QFrame.NoFrame)
+        self.frame_5.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_6 = QHBoxLayout(self.frame_5)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.label_4 = QLabel(self.frame_5)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setMaximumSize(QSize(160, 16777215))
+
         self.horizontalLayout_6.addWidget(self.label_4)
-        self.afternoon_valley_timeEdit = QtWidgets.QTimeEdit(self.frame_5)
-        self.afternoon_valley_timeEdit.setTime(QtCore.QTime(15, 0, 0))
-        self.afternoon_valley_timeEdit.setObjectName("afternoon_valley_timeEdit")
+
+        self.afternoon_valley_timeEdit = QTimeEdit(self.frame_5)
+        self.afternoon_valley_timeEdit.setObjectName(u"afternoon_valley_timeEdit")
+        self.afternoon_valley_timeEdit.setTime(QTime(15, 0, 0))
+
         self.horizontalLayout_6.addWidget(self.afternoon_valley_timeEdit)
-        self.afternoon_valley_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_5)
-        self.afternoon_valley_doubleSpinBox.setProperty("value", 8.0)
-        self.afternoon_valley_doubleSpinBox.setObjectName("afternoon_valley_doubleSpinBox")
+
+        self.afternoon_valley_doubleSpinBox = QDoubleSpinBox(self.frame_5)
+        self.afternoon_valley_doubleSpinBox.setObjectName(u"afternoon_valley_doubleSpinBox")
+        self.afternoon_valley_doubleSpinBox.setValue(8.000000000000000)
+
         self.horizontalLayout_6.addWidget(self.afternoon_valley_doubleSpinBox)
+
+
         self.verticalLayout_4.addWidget(self.frame_5)
-        self.frame_6 = QtWidgets.QFrame(self.frame_2)
-        self.frame_6.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_6.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.frame_6.setObjectName("frame_6")
-        self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.frame_6)
-        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.label_5 = QtWidgets.QLabel(self.frame_6)
-        self.label_5.setMaximumSize(QtCore.QSize(160, 16777215))
-        self.label_5.setObjectName("label_5")
+
+        self.frame_6 = QFrame(self.frame_2)
+        self.frame_6.setObjectName(u"frame_6")
+        self.frame_6.setFrameShape(QFrame.NoFrame)
+        self.frame_6.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_7 = QHBoxLayout(self.frame_6)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.label_5 = QLabel(self.frame_6)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setMaximumSize(QSize(160, 16777215))
+
         self.horizontalLayout_7.addWidget(self.label_5)
-        self.evening_peak_timeEdit = QtWidgets.QTimeEdit(self.frame_6)
-        self.evening_peak_timeEdit.setTime(QtCore.QTime(20, 0, 0))
-        self.evening_peak_timeEdit.setObjectName("evening_peak_timeEdit")
+
+        self.evening_peak_timeEdit = QTimeEdit(self.frame_6)
+        self.evening_peak_timeEdit.setObjectName(u"evening_peak_timeEdit")
+        self.evening_peak_timeEdit.setTime(QTime(20, 0, 0))
+
         self.horizontalLayout_7.addWidget(self.evening_peak_timeEdit)
-        self.evening_peak_doubleSpinBox = QtWidgets.QDoubleSpinBox(self.frame_6)
-        self.evening_peak_doubleSpinBox.setProperty("value", 16.0)
-        self.evening_peak_doubleSpinBox.setObjectName("evening_peak_doubleSpinBox")
+
+        self.evening_peak_doubleSpinBox = QDoubleSpinBox(self.frame_6)
+        self.evening_peak_doubleSpinBox.setObjectName(u"evening_peak_doubleSpinBox")
+        self.evening_peak_doubleSpinBox.setValue(16.000000000000000)
+
         self.horizontalLayout_7.addWidget(self.evening_peak_doubleSpinBox)
+
+
         self.verticalLayout_4.addWidget(self.frame_6)
-        self.frame_7 = QtWidgets.QFrame(self.frame_2)
-        self.frame_7.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame_7.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.frame_7.setObjectName("frame_7")
-        self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.frame_7)
-        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_8.addItem(spacerItem)
-        self.draw_by_peak_pushButton = QtWidgets.QPushButton(self.frame_7)
-        self.draw_by_peak_pushButton.setText("")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/Icons/icons/gear.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.frame_7 = QFrame(self.frame_2)
+        self.frame_7.setObjectName(u"frame_7")
+        self.frame_7.setFrameShape(QFrame.NoFrame)
+        self.frame_7.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_8 = QHBoxLayout(self.frame_7)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_2)
+
+        self.draw_by_peak_pushButton = QPushButton(self.frame_7)
+        self.draw_by_peak_pushButton.setObjectName(u"draw_by_peak_pushButton")
+        icon = QIcon()
+        icon.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.draw_by_peak_pushButton.setIcon(icon)
-        self.draw_by_peak_pushButton.setObjectName("draw_by_peak_pushButton")
+
         self.horizontalLayout_8.addWidget(self.draw_by_peak_pushButton)
+
+
         self.verticalLayout_4.addWidget(self.frame_7)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer)
+
+
         self.verticalLayout_3.addWidget(self.frame_2)
-        self.toolBox.addItem(self.page_3, "")
-        self.page = QtWidgets.QWidget()
-        self.page.setGeometry(QtCore.QRect(0, 0, 830, 352))
-        self.page.setObjectName("page")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.page)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.tableView = QtWidgets.QTableView(self.page)
-        self.tableView.setObjectName("tableView")
+
+        self.toolBox.addItem(self.page_3, u"Definition by peak points")
+        self.page = QWidget()
+        self.page.setObjectName(u"page")
+        self.page.setGeometry(QRect(0, 0, 830, 352))
+        self.verticalLayout_2 = QVBoxLayout(self.page)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.tableView = QTableView(self.page)
+        self.tableView.setObjectName(u"tableView")
+
         self.verticalLayout_2.addWidget(self.tableView)
-        self.frame = QtWidgets.QFrame(self.page)
-        self.frame.setMaximumSize(QtCore.QSize(16777215, 40))
-        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
+
+        self.frame = QFrame(self.page)
+        self.frame.setObjectName(u"frame")
+        self.frame.setMaximumSize(QSize(16777215, 40))
+        self.frame.setFrameShape(QFrame.NoFrame)
+        self.frame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_2 = QHBoxLayout(self.frame)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem2)
-        self.draw_by_points_pushButton = QtWidgets.QPushButton(self.frame)
-        self.draw_by_points_pushButton.setText("")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer)
+
+        self.draw_by_points_pushButton = QPushButton(self.frame)
+        self.draw_by_points_pushButton.setObjectName(u"draw_by_points_pushButton")
         self.draw_by_points_pushButton.setIcon(icon)
-        self.draw_by_points_pushButton.setObjectName("draw_by_points_pushButton")
+
         self.horizontalLayout_2.addWidget(self.draw_by_points_pushButton)
+
+
         self.verticalLayout_2.addWidget(self.frame)
-        self.toolBox.addItem(self.page, "")
+
+        self.toolBox.addItem(self.page, u"Definition by data points")
+
         self.verticalLayout_7.addWidget(self.toolBox)
-        self.frame_9 = QtWidgets.QFrame(self.frame_8)
-        self.frame_9.setMinimumSize(QtCore.QSize(0, 150))
-        self.frame_9.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_9.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_9.setObjectName("frame_9")
-        self.horizontalLayout_9 = QtWidgets.QHBoxLayout(self.frame_9)
-        self.horizontalLayout_9.setObjectName("horizontalLayout_9")
+
+        self.frame_9 = QFrame(self.frame_8)
+        self.frame_9.setObjectName(u"frame_9")
+        self.frame_9.setMinimumSize(QSize(0, 150))
+        self.frame_9.setFrameShape(QFrame.StyledPanel)
+        self.frame_9.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_9 = QHBoxLayout(self.frame_9)
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+
         self.verticalLayout_7.addWidget(self.frame_9)
-        self.PlotFrame = QtWidgets.QFrame(self.splitter_3)
-        self.PlotFrame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.PlotFrame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.PlotFrame.setObjectName("PlotFrame")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.PlotFrame)
-        self.horizontalLayout.setObjectName("horizontalLayout")
+
+        self.splitter_3.addWidget(self.frame_8)
+        self.PlotFrame = QFrame(self.splitter_3)
+        self.PlotFrame.setObjectName(u"PlotFrame")
+        self.PlotFrame.setFrameShape(QFrame.NoFrame)
+        self.PlotFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout = QHBoxLayout(self.PlotFrame)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.plotwidget = MatplotlibWidget(self.PlotFrame)
-        self.plotwidget.setObjectName("plotwidget")
+        self.plotwidget.setObjectName(u"plotwidget")
+
         self.horizontalLayout.addWidget(self.plotwidget)
+
+        self.splitter_3.addWidget(self.PlotFrame)
+
         self.verticalLayout.addWidget(self.splitter_3)
 
+
         self.retranslateUi(Dialog)
+
         self.toolBox.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+
+        QMetaObject.connectSlotsByName(Dialog)
+    # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Dialog", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("Dialog", "Night valley (MW)", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "Morning Peak (MW)", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("Dialog", "Afternoon valley (MW)", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "Evening Peak (MW)", None, -1))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QtWidgets.QApplication.translate("Dialog", "Definition by peak points", None, -1))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QtWidgets.QApplication.translate("Dialog", "Definition by data points", None, -1))
-
-from .matplotlibwidget import MatplotlibWidget
-from .icons_rc import *
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
+        self.label.setText(QCoreApplication.translate("Dialog", u"Night valley (MW)", None))
+        self.label_2.setText(QCoreApplication.translate("Dialog", u"Morning Peak (MW)", None))
+        self.label_4.setText(QCoreApplication.translate("Dialog", u"Afternoon valley (MW)", None))
+        self.label_5.setText(QCoreApplication.translate("Dialog", u"Evening Peak (MW)", None))
+        self.draw_by_peak_pushButton.setText("")
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QCoreApplication.translate("Dialog", u"Definition by peak points", None))
+        self.draw_by_points_pushButton.setText("")
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("Dialog", u"Definition by data points", None))
+    # retranslateUi
 

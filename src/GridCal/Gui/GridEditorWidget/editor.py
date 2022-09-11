@@ -183,6 +183,7 @@ class EditorGraphicsView(QGraphicsView):
         elm = BusGraphicItem(diagramScene=self.scene(), name=bus.name, editor=self.editor, bus=bus)
         x = int(bus.x * explode_factor)
         y = int(bus.y * explode_factor)
+
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
         return elm
@@ -1035,7 +1036,7 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
         branch.graphic_obj = graphic_obj
 
-    def add_api_bus(self, bus: Bus, explode_factor=1.0):
+    def add_api_bus(self, bus: Bus, explode_factor=1):
         """
         Add API bus to the diagram
         :param bus: Bus instance
@@ -1244,6 +1245,7 @@ class GridEditor(QSplitter):
         :param prog_func: progress report function
         :param text_func: Text report function
         """
+
         # first create the buses
         if text_func is not None:
             text_func('Creating schematic buses')
@@ -1328,6 +1330,7 @@ class GridEditor(QSplitter):
 
             branch.graphic_obj = self.add_api_upfc(branch)
 
+
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a complete circuit to the schematic scene
@@ -1350,6 +1353,7 @@ class GridEditor(QSplitter):
                                        explode_factor=explode_factor,
                                        prog_func=prog_func,
                                        text_func=text_func)
+
 
     def align_schematic(self, buses: List[Bus] = []):
         """
@@ -1379,8 +1383,16 @@ class GridEditor(QSplitter):
             max_y = max(max_y, y)
             min_y = min(min_y, y)
 
+        # Fix boundaries
+        for bus in lst:
+            bus.graphic_obj.arrange_children()
+            # get the item position
+            x = bus.graphic_obj.pos().x()
+            y = bus.graphic_obj.pos().y()
+            bus.graphic_obj.set_position(x - min_x, y - max_y)
+
         # set the figure limits
-        self.set_limits(min_x, max_x, min_y, max_y)
+        self.set_limits(0, max_x - min_x, min_y - max_y, 0)
 
         #  center the view
         self.center_nodes()
