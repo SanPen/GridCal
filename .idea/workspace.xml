@@ -435,8 +435,8 @@
     <list>
       <item itemvalue="Python.setup" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in test_unbalanced_faults.py" />
       <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
+      <item itemvalue="Python tests.Nosetests in test_unbalanced_faults.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
