@@ -30,14 +30,22 @@ For more options and details follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
 
 
-### Execution
+## Execution
 
 If you have just installed GridCal on your python distribution, 
 you can call the GUI with the following command:
 
 `python3 -c "from GridCal.ExecuteGridCal import run; run()"`
 
-### Testing GridCal
+### Troubleshooting Ubuntu (maybe other Linux distributions too)
+
+Under Ubuntu you may need to install xcb by `sudo apt-get install libxcb-xinerama0` this will solve the following error:
+
+```
+Warning: Ignoring XDG_SESSION_TYPE=wayland on Gnome. Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.
+```
+
+## Running tests
 
     python3 -m venv venv
     venv/bin/python -m pip install --upgrade -r requirements_venv.txt
@@ -47,17 +55,7 @@ you can call the GUI with the following command:
 [instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
 from the project's documentation.
 
-# Tutorials
 
-- [Written tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
-
-- [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
-
-- [Standalone GridCal setup (video)](https://youtu.be/SY66WgLGo54)
-
-- [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
-
-- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
 
 # Batteries included
 
@@ -69,10 +67,21 @@ We have included extra materials to work with. These are included in the standal
 - Standard IEEE grids as well as grids from open projects
 - [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
 
-### Examples
 
-Examples are included in [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html) section. In addition, the
-tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as valuable examples.
+## Tutorials and examples
+
+- [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
+
+- [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
+
+- [Standalone GridCal setup (video)](https://youtu.be/SY66WgLGo54)
+
+- [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
+
+- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
+
+- [tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as a valuable source of examples.
+
 
 
 
@@ -145,9 +154,11 @@ Some features you'll find already are:
 
 - Michel Lavoie (Transformer automation)
 - Bengt Lüers (Better testing)
-- Josep Fanals Batllori (HELM)
+- Josep Fanals Batllori (HELM, Sequence Short circuit)
 - Manuel Navarro Catalán (Better documentation)
 - Paul Schultz (Grid Generator)
+- Andrés Ramiro (Optimal net transfer capacity)
+- Ameer Carlo Lubang (Sequence short-circuit)
 
 # Contact
 
