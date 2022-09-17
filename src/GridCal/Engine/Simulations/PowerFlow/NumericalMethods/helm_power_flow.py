@@ -420,11 +420,9 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     return U, X, Q, V, iter_
 
 
-def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False,
-                            logger: Logger = None):
+def helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, logger: Logger = None):
     """
-    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
-    This function just returns the coefficients for further usage in other routines
+    This function returns the constant objects to run many HELM simulations
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -447,23 +445,9 @@ def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tole
     n = Yseries.shape[0]
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
-    U = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # voltages
-    X = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # compute X=1/conj(U)
-    Q = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # unknown reactive powers
-
-    if n < 2:
-        return U, X, Q, 0
-
-    if verbose:
-        logger.add_debug('Yseries', Yseries.toarray())
-
-        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, np.abs(V0)],
-                          columns=['Ysh', 'P0', 'Q0', 'V0'])
-        logger.add_debug(df.to_string())
 
     # build the reduced system
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
-    AYred = AY[np.ix_(pqpv, pqpv)]  # difference admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
     G = Yred.real.copy()  # real parts of Yij
     B = Yred.imag.copy()  # imaginary parts of Yij
@@ -487,13 +471,67 @@ def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tole
     pqpv_ = np.sort(np.r_[pq_, pv_])
 
     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
-
     if nsl > 1:
-        U[0, :] = spsolve(Yred, Yslack.sum(axis=1))
+        Uini = spsolve(Yred, Yslack.sum(axis=1))
     else:
-        U[0, :] = spsolve(Yred, Yslack)
+        Uini = spsolve(Yred, Yslack)
 
-    X[0, :] = 1 / np.conj(U[0, :])
+    Xini = 1 / Uini
+
+    # .......................CALCULATION OF THE MATRIX -----------------------------------------------------------------
+    Upv = Uini[pv_]
+    Xpv = Xini[pv_]
+    VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    EMPTY = csc_matrix((npv, npv))
+
+    MAT = vs((hs((G,  -B,   XIM)),
+              hs((B,   G,   XRE)),
+              hs((VRE, VIM, EMPTY))), format='csc')
+
+    if verbose:
+        logger.add_debug("MAT", MAT.toarray())
+
+    # solve
+    mat_factorized = factorized(MAT)
+
+    return mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n
+
+
+def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                         vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+                         tolerance=1e-6, max_coeff=10, verbose=False, logger: Logger = None):
+    """
+    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    This function just returns the coefficients for further usage in other routines
+    :param Yseries: Admittance matrix of the series elements
+    :param V0: vector of specified voltages
+    :param S0: vector of specified power
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param AY: admittance matrix considering the disconnection of a branch
+    :param pq: list of pq nodes
+    :param pv: list of pv nodes
+    :param sl: list of slack nodes
+    :param pqpv: sorted list of pq and pv nodes
+    :param tolerance: target error (or tolerance)
+    :param max_coeff: maximum number of coefficients
+    :param verbose: print intermediate information
+    :param logger: Logger object to store the debug info
+    :return: U, X, Q, V, iterations
+    """
+
+    AYred = AY[np.ix_(pqpv, pqpv)]  # difference admittance matrix without slack buses
+
+    # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
+    U = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # voltages
+    X = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # compute X=1/conj(U)
+    Q = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # unknown reactive powers
+
+    # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
+    U[0, :] = Uini
+    X[0, :] = Xini
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
@@ -511,29 +549,7 @@ def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tole
                 vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
                 ]
 
-    # Form the system matrix (MAT)
-    Upv = U[0, pv_]
-    Xpv = X[0, pv_]
-    VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
-    VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
-    XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
-    XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
-    EMPTY = csc_matrix((npv, npv))
-
-    MAT = vs((hs((G,  -B,   XIM)),
-              hs((B,   G,   XRE)),
-              hs((VRE, VIM, EMPTY))), format='csc')
-
-    if verbose:
-        logger.add_debug("MAT", MAT.toarray())
-
-    # factorize (only once)
-    # MAT_LU = factorized(MAT.tocsc())
-
-    # solve
-    mat_factorized = factorized(MAT)
     LHS = mat_factorized(RHS)
-    # LHS = spsolve(MAT, RHS)
 
     # update coefficients
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
@@ -561,13 +577,9 @@ def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tole
         # LHS = spsolve(MAT, RHS)
         LHS = mat_factorized(RHS)
 
-        # update voltage coefficients
+        # update 
         U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
-
-        # update reactive power
         Q[c - 1, pv_] = LHS[2 * npqpv:]
-
-        # update voltage inverse coefficients
         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
         # compute power mismatch
@@ -584,7 +596,7 @@ def helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tole
         iter_ += 1
         c += 1
 
-    return U, X, Q, V, iter_
+    return U, V, iter_
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coefficients=30, use_pade=True,

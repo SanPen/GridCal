@@ -21,16 +21,17 @@ import scipy as sp
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_AY
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_AY, helm_preparation_AY
 
 
-def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
+def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
     """
     Calculate the voltage due to outages in a non-linear manner with HELM.
     The main novelty is the introduction of s.AY, thus delaying it
     Use directly V from HELM, do not go for Pade, may need more time for not much benefit
 
     :param branch_data: branch data for all branches to disconnect
+    :param If: from currents of the initial power flow
     :param Ybus: original admittance matrix
     :param Yseries: admittance matrix with only series branches
     :param V0: initial voltage array
@@ -48,42 +49,59 @@ def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
     V_cont = np.zeros((nbus, nbr))
 
     for i in range(nbr):
+        
+        AY = build_AY_outage(bus_f=branch_data.C_branch_bus_f.indptr[i],
+                             bus_t=branch_data.C_branch_bus_t.indptr[i],
+                             G0sw=branch_data.G0sw[i][0],
+                             Beq=branch_data.Beq[i][0],
+                             k=branch_data.k[i],
+                             If=If[branch_data.C_branch_bus_f.indptr[i]],
+                             a=branch_data.a[i],
+                             b=branch_data.b[i],
+                             c=branch_data.c[i],
+                             rs=branch_data.R[i],
+                             xs=branch_data.X[i],
+                             gsh=branch_data.G[i],
+                             bsh=branch_data.B[i],
+                             tap_module=branch_data.m[i][0],
+                             vtap_f=branch_data.tap_f[i],
+                             vtap_t=branch_data.tap_t[i],
+                             tap_angle=branch_data.theta[i][0],
+                             n_bus=nbus)
 
-        AY = build_AY_outage(branch_data[i].bus_f,
-                             branch_data[i].bus_t,
-                             branch_data[i].Gsw,
-                             branch_data[i].Beq,
-                             branch_data[i].rs,
-                             branch_data[i].xs,
-                             branch_data[i].bc2,
-                             branch_data[i].mp,
-                             branch_data[i].vtap_f,
-                             branch_data[i].vtap_t,
-                             branch_data[i].tap_angle,
-                             branch_data[i].factor_psh)
 
-        U, X, Q, V, iter_ =  helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=10)
+        mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
+
+        U, V, iter_ = helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                                           vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+                                           tolerance=1e-6, max_coeff=10, verbose=False)
 
         V_cont[:, i] = V
 
     return V_cont
 
 
-def build_AY_outage(bus_f, bus_t, Gsw, Beq, rs, xs, bc2, mp, vtap_f, vtap_t, tap_angle, factor_psh):
+def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus):
 
-    ys = rs + 1j * xs
+    # compute G-switch
+    Gsw = G0sw + a * np.power(If, 2) + b * If + c
+
+    # form the admittance matrices
+    ys = 1.0 / (rs + 1.0j * xs + 1e-20)  # series admittance
+    bc2 = (gsh + 1j * bsh) / 2.0  # shunt admittance
+    mp = k * tap_module
 
     Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
     Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-    AYmat = sp.sparse.coo_matrix([Yff, Yft, Ytf, Ytt],
-                                 [bus_f, bus_f, bus_t, bus_t],
-                                 [bus_f, bus_t, bus_f, bus_t])
+    data = [Yff, Yft, Ytf, Ytt]
+    row = [bus_f, bus_f, bus_t, bus_t]
+    col = [bus_f, bus_t, bus_f, bus_t]
+    AYmat = sp.sparse.coo_matrix((data, (row, col)), shape=(n_bus, n_bus)).toarray()
 
-    return - AYmat  # negative because it is the difference
-
+    return -1 * AYmat  # negative because it is the difference
 
 
 def calc_ptdf_from_V(V_cont, Y, Pini):
@@ -329,6 +347,7 @@ class NonLinearAnalysis:
                         if len(island.pqpv) > 0:
 
                             V_cont = calc_V_outage(island.branch_data, 
+                                                self.pf_results.If,
                                                 island.Ybus,
                                                 island.Yseries,
                                                 island.Vbus,
