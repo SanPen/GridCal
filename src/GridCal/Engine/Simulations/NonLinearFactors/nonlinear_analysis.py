@@ -46,16 +46,19 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
 
     nbus = Ybus.shape[0]
     nbr = len(branch_data)
-    V_cont = np.zeros((nbus, nbr))
+    V_cont = np.zeros((nbus, nbr), dtype=complex)
 
     for i in range(nbr):
+
+        row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
+        row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
         
-        AY = build_AY_outage(bus_f=branch_data.C_branch_bus_f.indptr[i],
-                             bus_t=branch_data.C_branch_bus_t.indptr[i],
+        AY = build_AY_outage(bus_f=col_buses_f[i],
+                             bus_t=col_buses_t[i],
                              G0sw=branch_data.G0sw[i][0],
                              Beq=branch_data.Beq[i][0],
                              k=branch_data.k[i],
-                             If=If[branch_data.C_branch_bus_f.indptr[i]],
+                             If=If[col_buses_f[i]],
                              a=branch_data.a[i],
                              b=branch_data.b[i],
                              c=branch_data.c[i],
@@ -77,6 +80,7 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                                            tolerance=1e-6, max_coeff=10, verbose=False)
 
         V_cont[:, i] = V
+        print('Line idx: ', i)
 
     return V_cont
 
@@ -99,6 +103,7 @@ def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, t
     data = [Yff, Yft, Ytf, Ytt]
     row = [bus_f, bus_f, bus_t, bus_t]
     col = [bus_f, bus_t, bus_f, bus_t]
+
     AYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))
 
     return -1 * AYmat  # negative because it is the difference
