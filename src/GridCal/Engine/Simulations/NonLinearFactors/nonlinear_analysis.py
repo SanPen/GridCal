@@ -80,7 +80,6 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                                            tolerance=1e-6, max_coeff=10, verbose=False)
 
         V_cont[:, i] = V
-        print('Line idx: ', i)
 
     return V_cont
 
@@ -119,17 +118,13 @@ def calc_ptdf_from_V(V_cont, Y, Pini):
     :return: matrix of ptdf
     """
 
-    nbus = V_cont.shape[0]
-
+    nbr = V_cont.shape[1]
     Pbus = np.real(V_cont * np.conj(Y * V_cont))
-
-    Pinim = np.zeros_like(Pbus)
-    ir = range(nbus)
-    Pinim[ir, :] = Pini
+    Pinim = np.vstack([Pini] * nbr).T
 
     ptdf = (Pbus - Pinim) / Pinim
 
-    return ptdf
+    return ptdf.T
 
 
 def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
@@ -144,13 +139,9 @@ def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
     """
 
     nbr = V_cont.shape[1]
-
     Vf = Cf * V_cont
     Pf = np.real(Vf * np.conj(Yf * V_cont))
-
-    Pinim = np.zeros_like(Pf)
-    ir = range(nbr)
-    Pinim[ir, :] = Pini
+    Pinim = np.vstack([Pini] * nbr).T
 
     lodf = (Pf - Pinim) / Pinim
 
@@ -335,7 +326,7 @@ class NonLinearAnalysis:
         n_bus = self.numerical_circuit.nbus
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
-        self.V_cont = np.zeros((n_bus, n_br))
+        self.V_cont = np.zeros((n_bus, n_br), dtype=complex)
 
         # check if power_flow results are passed
         if self.pf_results is None:
