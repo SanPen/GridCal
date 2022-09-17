@@ -56,7 +56,7 @@ def enumerate_states_n_k(m, k=1):
 class ContingencyAnalysisOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
-                 use_provided_flows=False, Pf=None):
+                 use_provided_flows=False, Pf=None, pf_results=None):
 
         self.distributed_slack = distributed_slack
 
@@ -65,6 +65,8 @@ class ContingencyAnalysisOptions:
         self.use_provided_flows = use_provided_flows
 
         self.Pf = Pf
+
+        self.pf_results = pf_results
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -163,7 +165,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
         self.progress_text.emit('Analyzing outage distribution factors in a non-linear fashion...')
         nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
                                                distributed_slack=self.options.distributed_slack,
-                                               correct_values=self.options.correct_values)
+                                               correct_values=self.options.correct_values,
+                                               pf_results=self.options.pf_results)
         nonlinear_analysis.run()
 
         # set the numerical circuit

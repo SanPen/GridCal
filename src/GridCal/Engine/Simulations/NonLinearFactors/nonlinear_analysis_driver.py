@@ -145,17 +145,18 @@ class NonLinearAnalysisResults(ResultsTemplate):
 
 class NonLinearAnalysisOptions:
 
-    def __init__(self, distribute_slack=True, correct_values=True):
+    def __init__(self, distribute_slack=True, correct_values=True, pf_results=None):
         """
         Power Transfer Distribution Factors' options
         :param distribute_slack:
         """
         self.distribute_slack = distribute_slack
         self.correct_values = correct_values
+        self.pf_results = pf_results
 
 
 class NonLinearAnalysisDriver(DriverTemplate):
-    name = 'Linear analysis'
+    name = 'NonLinear analysis'
     tpe = SimulationTypes.LinearAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: NonLinearAnalysisOptions,
@@ -211,7 +212,8 @@ class NonLinearAnalysisDriver(DriverTemplate):
         if self.engine == bs.EngineType.GridCal:
             analysis = NonLinearAnalysis(grid=self.grid,
                                       distributed_slack=self.options.distribute_slack,
-                                      correct_values=self.options.correct_values)
+                                      correct_values=self.options.correct_values,
+                                      pf_results=self.options.pf_results)
 
             analysis.run()
             self.logger += analysis.logger

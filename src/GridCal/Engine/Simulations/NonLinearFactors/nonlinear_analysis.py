@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
+import scipy as sp
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -26,6 +27,7 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficie
 def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
     """
     Calculate the voltage due to outages in a non-linear manner with HELM.
+    The main novelty is the introduction of s.AY, thus delaying it
     Use directly V from HELM, do not go for Pade, may need more time for not much benefit
 
     :param branch_data: branch data for all branches to disconnect
@@ -47,7 +49,18 @@ def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
 
     for i in range(nbr):
 
-        AY = build_AY_outage()
+        AY = build_AY_outage(branch_data[i].bus_f,
+                             branch_data[i].bus_t,
+                             branch_data[i].Gsw,
+                             branch_data[i].Beq,
+                             branch_data[i].rs,
+                             branch_data[i].xs,
+                             branch_data[i].bc2,
+                             branch_data[i].mp,
+                             branch_data[i].vtap_f,
+                             branch_data[i].vtap_t,
+                             branch_data[i].tap_angle,
+                             branch_data[i].factor_psh)
 
         U, X, Q, V, iter_ =  helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=10)
 
@@ -56,7 +69,32 @@ def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
     return V_cont
 
 
+def build_AY_outage(bus_f, bus_t, Gsw, Beq, rs, xs, bc2, mp, vtap_f, vtap_t, tap_angle, factor_psh):
+
+    ys = rs + 1j * xs
+
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+    Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    AYmat = sp.sparse.coo_matrix([Yff, Yft, Ytf, Ytt],
+                                 [bus_f, bus_f, bus_t, bus_t],
+                                 [bus_f, bus_t, bus_f, bus_t])
+
+    return - AYmat  # negative because it is the difference
+
+
+
 def calc_ptdf_from_V(V_cont, Y, Pini):
+    """
+    Compute the power transfer distribution factor from the voltages
+
+    :param V_cont: matrix of voltages for all outages, size nbus * nbranch
+    :param Y: bus admittance matrix
+    :param Pini: initial active power per bus
+    :return: matrix of ptdf
+    """
 
     nbus = V_cont.shape[0]
 
@@ -72,6 +110,15 @@ def calc_ptdf_from_V(V_cont, Y, Pini):
 
 
 def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
+    """
+    Compute the line outage distribution factor from the voltages
+
+    :param V_cont: matrix of voltages for all outages, size nbus * nbranch
+    :param Yf: from bus admittance matrix
+    :param Cf: from connectivity matrix
+    :param Pini: initial active power per line (from side)
+    :return: matrix of lodf
+    """
 
     nbr = V_cont.shape[1]
 
@@ -228,7 +275,7 @@ def make_worst_contingency_transfer_limits(tmc):
 
 class NonLinearAnalysis:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True):
+    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, pf_results=None):
         """
 
         :param grid:
@@ -251,6 +298,8 @@ class NonLinearAnalysis:
 
         self.V_cont = None
 
+        self.pf_results = pf_results
+
         self.logger = Logger()
 
     def run(self):
@@ -265,46 +314,55 @@ class NonLinearAnalysis:
         self.LODF = np.zeros((n_br, n_br))
         self.V_cont = np.zeros((n_bus, n_br))
 
-        # compute the PTDF and LODF per islands
-        if len(islands) > 0:
-            for n_island, island in enumerate(islands):
+        # check if power_flow results are passed
+        if self.pf_results is None:
+            self.logger.add_error('No initial power flow found, it is needed')
 
-                # no slacks will make it impossible to compute the PTDF analytically
-                if len(island.vd) == 1:
-                    if len(island.pqpv) > 0:
-
-def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
-                        V_cont = calc_V_outage(island.branch_data, 
-                                               island.Ybus,
-                                               island.Yseries,
-                                               island.Vbus,
-                                               island.Sbus,
-                                               island.Yshunt,
-                                               island.pq,
-                                               island.pv,
-                                               island.vd,
-                                               island.pqpv)  # call HELM with AY
-
-                        ptdf_island = calc_ptdf_from_V(V_cont, )
-                        lodf_island = calc_lodf_from_V(V_cont, )
-
-                        # assign objects to the full matrix
-                        self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
-                        self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
-                        self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
-
-                    else:
-                        self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
-                elif len(island.vd) == 0:
-                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
-                else:
-                    self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
-            # there is only 1 island, use island[0]
-            self.V_cont = calc_V_outage(island[0].something, )  # call HELM with AY
-            self.PTDF = calc_ptdf_from_V(V_cont, )
-            self.LODF = calc_lodf_from_V(V_cont, )
+            # compute the PTDF and LODF per islands
+            if len(islands) > 0:
+                for n_island, island in enumerate(islands):
+
+                    # no slacks will make it impossible to compute the PTDF analytically
+                    if len(island.vd) == 1:
+                        if len(island.pqpv) > 0:
+
+                            V_cont = calc_V_outage(island.branch_data, 
+                                                island.Ybus,
+                                                island.Yseries,
+                                                island.Vbus,
+                                                island.Sbus,
+                                                island.Yshunt,
+                                                island.pq,
+                                                island.pv,
+                                                island.vd,
+                                                island.pqpv)
+
+
+                            Pini_bus = np.real(self.pf_results.Sbus)
+                            Pini_f = np.real(self.pf_results.Sf)
+
+                            ptdf_island = calc_ptdf_from_V(V_cont, island.Ybus, Pini_bus)
+                            lodf_island = calc_lodf_from_V(V_cont, island.Yf, island.Cf, Pini_f)
+
+                            # assign objects to the full matrix
+                            self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
+                            self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                            self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+
+                        else:
+                            self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+                    elif len(island.vd) == 0:
+                        self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
+                    else:
+                        self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
+            else:
+
+                # there is only 1 island, use island[0]
+                self.V_cont = calc_V_outage(island[0].something, )  # call HELM with AY
+                self.PTDF = calc_ptdf_from_V(V_cont, )
+                self.LODF = calc_lodf_from_V(V_cont, )
 
     @property
     def OTDF(self):
