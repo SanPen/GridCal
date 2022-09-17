@@ -18,7 +18,7 @@ import time
 import multiprocessing
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
+from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -34,7 +34,7 @@ import GridCal.Engine.basic_structures as bs
 ########################################################################################################################
 
 
-class LinearAnalysisResults(ResultsTemplate):
+class NonLinearAnalysisResults(ResultsTemplate):
 
     def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
         """
@@ -143,7 +143,7 @@ class LinearAnalysisResults(ResultsTemplate):
         return mdl
 
 
-class LinearAnalysisOptions:
+class NonLinearAnalysisOptions:
 
     def __init__(self, distribute_slack=True, correct_values=True):
         """
@@ -154,11 +154,11 @@ class LinearAnalysisOptions:
         self.correct_values = correct_values
 
 
-class LinearAnalysisDriver(DriverTemplate):
+class NonLinearAnalysisDriver(DriverTemplate):
     name = 'Linear analysis'
     tpe = SimulationTypes.LinearAnalysis_run
 
-    def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions,
+    def __init__(self, grid: MultiCircuit, options: NonLinearAnalysisOptions,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         Power Transfer Distribution Factors class constructor
@@ -173,7 +173,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.engine = engine
 
         # OPF results
-        self.results: LinearAnalysisResults = None
+        self.results: NonLinearAnalysisResults = None
 
         self.all_solved = True
 
@@ -189,7 +189,7 @@ class LinearAnalysisDriver(DriverTemplate):
         br_names = self.grid.get_branches_wo_hvdc_names()
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
-            self.results = LinearAnalysisResults(n_br=len(br_names),
+            self.results = NonLinearAnalysisResults(n_br=len(br_names),
                                                  n_bus=len(bus_names),
                                                  br_names=br_names,
                                                  bus_names=bus_names,
@@ -209,7 +209,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.logger.add_warning('Failed back to GridCal')
 
         if self.engine == bs.EngineType.GridCal:
-            analysis = LinearAnalysis(grid=self.grid,
+            analysis = NonLinearAnalysis(grid=self.grid,
                                       distributed_slack=self.options.distribute_slack,
                                       correct_values=self.options.correct_values)
 
@@ -256,8 +256,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    options = LinearAnalysisOptions()
-    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    options = NonLinearAnalysisOptions()
+    simulation = NonLinearAnalysisDriver(grid=main_circuit, options=options)
     simulation.run()
     ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
 

@@ -14,157 +14,77 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
 import numpy as np
 import numba as nb
-import scipy.sparse as sp
-from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_fast
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_AY
 
 
-def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
+def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
     """
-    Compute the AC-PTDF
-    :param Ybus: admittance matrix
-    :param Yf: Admittance matrix of the buses "from"
-    :param Cf: Connectivity branch - bus "from"
-    :param F: array if branches "from" bus indices
-    :param V: voltages array
-    :param pq: array of pq node indices
-    :param pv: array of pv node indices
-    :param distribute_slack: distribute slack?
-    :return: AC-PTDF matrix (branches, buses)
-    """
-    n = len(V)
-    pvpq = np.r_[pv, pq]
-    npq = len(pq)
-    npv = len(pv)
+    Calculate the voltage due to outages in a non-linear manner with HELM.
+    Use directly V from HELM, do not go for Pade, may need more time for not much benefit
 
-    # compute the Jacobian
-    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
-
-    if distribute_slack:
-        dP = np.ones((n, n)) * (-1 / (n - 1))
-        for i in range(n):
-            dP[i, i] = 1.0
-    else:
-        dP = np.eye(n, n)
-
-    # compose the compatible array (the Q increments are considered zero
-    dQ = np.zeros((npq, n))
-    dS = np.r_[dP[pvpq, :], dQ]
-
-    # solve the voltage increments
-    dx = spsolve(J, dS)
-
-    # compute branch derivatives
-    Vc = np.conj(V)
-    E = V / np.abs(V)
-    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf.tocsc(), V, Vc, E, F, Cf)
-
-    # compose the final AC-PTDF
-    dPf_dVa = dSf_dVa.real[:, pvpq]
-    dPf_dVm = dSf_dVm.real[:, pq]
-    PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
-
-    return PTDF
-
-def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
-    """
-    Build the PTDF matrix
-    :param Bbus: DC-linear susceptance matrix
-    :param Bf: Bus-branch "from" susceptance matrix
-    :param pqpv: array of sorted pq and pv node indices
-    :param distribute_slack: distribute the slack?
-    :return: PTDF matrix. It is a full matrix of dimensions branches x buses
+    :param branch_data: branch data for all branches to disconnect
+    :param Ybus: original admittance matrix
+    :param Yseries: admittance matrix with only series branches
+    :param V0: initial voltage array
+    :param S0: vector of powers
+    :param Ysh0: array of shunt admittances
+    :param pq: set of PQ buses
+    :param pv: set of PV buses
+    :param sl: set of slack buses
+    :param pqpv: set of PQ + PV buses
+    :return: matrix of voltages after the outages
     """
 
-    n = Bbus.shape[0]
-    nb = n
-    nbi = n
-    noref = np.arange(1, nb)
-    noslack = pqpv
+    nbus = Ybus.shape[0]
+    nbr = len(branch_data)
+    V_cont = np.zeros((nbus, nbr))
 
-    if distribute_slack:
-        dP = np.ones((n, n)) * (-1 / (n - 1))
-        for i in range(n):
-            dP[i, i] = 1.0
-    else:
-        dP = np.eye(n, n)
+    for i in range(nbr):
 
-    # solve for change in voltage angles
-    dTheta = np.zeros((nb, nbi))
-    Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = spsolve(Bref,  dP[noslack, :])
+        AY = build_AY_outage()
 
-    if sp.issparse(dtheta_ref):
-        dTheta[noref, :] = dtheta_ref.toarray()
-    else:
-        dTheta[noref, :] = dtheta_ref
+        U, X, Q, V, iter_ =  helm_coefficients_AY(Ybus, Yseries, V0, S0, Ysh0, AY, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=10)
 
-    # compute corresponding change in branch Sf
-    # Bf is a sparse matrix
-    H = Bf * dTheta
+        V_cont[:, i] = V
 
-    return H
+    return V_cont
 
 
-def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
-    """
-    Compute the LODF matrix
-    :param Cf: Branch "from" -bus connectivity matrix
-    :param Ct: Branch "to" -bus connectivity matrix
-    :param PTDF: PTDF matrix in numpy array form (branches, buses)
-    :param correct_values: correct values out of the interval
-    :param numerical_zero: value considered zero in numerical terms (i.e. 1e-10)
-    :return: LODF matrix of dimensions (branches, branches)
-    """
-    nl = PTDF.shape[0]
+def calc_ptdf_from_V(V_cont, Y, Pini):
 
-    # compute the connectivity matrix
-    Cft = Cf - Ct
-    H = PTDF * Cft.T
+    nbus = V_cont.shape[0]
 
-    # this loop avoids the divisions by zero
-    # in those cases the LODF column should be zero
-    LODF = np.zeros((nl, nl))
-    div = 1 - H.diagonal()
-    for j in range(H.shape[1]):
-        if abs(div[j]) > numerical_zero:
-            LODF[:, j] = H[:, j] / div[j]
+    Pbus = np.real(V_cont * np.conj(Y * V_cont))
 
-    # replace the diagonal elements by -1
-    # old code
-    # LODF = LODF - sp.diags(LODF.diagonal()) - sp.eye(nl, nl), replaced by:
-    for i in range(nl):
-        LODF[i, i] = - 1.0
+    Pinim = np.zeros_like(Pbus)
+    ir = range(nbus)
+    Pinim[ir, :] = Pini
 
-    if correct_values:  # TODO check more efficient way
+    ptdf = (Pbus - Pinim) / Pinim
 
-        # correct stupid values
-        i1, j1 = np.where(LODF > 1.2)
-        for i, j in zip(i1, j1):
-            LODF[i, j] = 0
+    return ptdf
 
-        i2, j2 = np.where(LODF < -1.2)
-        for i, j in zip(i2, j2):
-            LODF[i, j] = 0
 
-        # ensure +-1 values
-        i1, j1 = np.where(LODF > 1)
-        for i, j in zip(i1, j1):
-            LODF[i, j] = 1
+def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
 
-        i2, j2 = np.where(LODF < -1)
-        for i, j in zip(i2, j2):
-            LODF[i, j] = -1
+    nbr = V_cont.shape[1]
 
-    return LODF
+    Vf = Cf * V_cont
+    Pf = np.real(Vf * np.conj(Yf * V_cont))
+
+    Pinim = np.zeros_like(Pf)
+    ir = range(nbr)
+    Pinim[ir, :] = Pini
+
+    lodf = (Pf - Pinim) / Pinim
+
+    return lodf
 
 
 @nb.njit(cache=True)
@@ -329,6 +249,8 @@ class NonLinearAnalysis:
 
         self.__OTDF = None
 
+        self.V_cont = None
+
         self.logger = Logger()
 
     def run(self):
@@ -341,8 +263,9 @@ class NonLinearAnalysis:
         n_bus = self.numerical_circuit.nbus
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
+        self.V_cont = np.zeros((n_bus, n_br))
 
-        # compute the PTDF per islands
+        # compute the PTDF and LODF per islands
         if len(islands) > 0:
             for n_island, island in enumerate(islands):
 
@@ -350,23 +273,26 @@ class NonLinearAnalysis:
                 if len(island.vd) == 1:
                     if len(island.pqpv) > 0:
 
-                        # compute the PTDF of the island
-                        ptdf_island = make_ptdf(Bbus=island.Bbus,
-                                                Bf=island.Bf,
-                                                pqpv=island.pqpv,
-                                                distribute_slack=self.distributed_slack)
+def calc_V_outage(branch_data, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
+                        V_cont = calc_V_outage(island.branch_data, 
+                                               island.Ybus,
+                                               island.Yseries,
+                                               island.Vbus,
+                                               island.Sbus,
+                                               island.Yshunt,
+                                               island.pq,
+                                               island.pv,
+                                               island.vd,
+                                               island.pqpv)  # call HELM with AY
 
-                        # assign the PTDF to the matrix
+                        ptdf_island = calc_ptdf_from_V(V_cont, )
+                        lodf_island = calc_lodf_from_V(V_cont, )
+
+                        # assign objects to the full matrix
+                        self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
                         self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
-
-                        # compute the island LODF
-                        lodf_island = make_lodf(Cf=island.Cf,
-                                                Ct=island.Ct,
-                                                PTDF=ptdf_island,
-                                                correct_values=self.correct_values)
-
-                        # assign the LODF to the matrix
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
                 elif len(island.vd) == 0:
@@ -375,17 +301,10 @@ class NonLinearAnalysis:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
-            # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bbus=islands[0].Bbus,
-                                  Bf=islands[0].Bf,
-                                  pqpv=islands[0].pqpv,
-                                  distribute_slack=self.distributed_slack)
-
-            # compute the LODF upon the PTDF
-            self.LODF = make_lodf(Cf=islands[0].Cf,
-                                  Ct=islands[0].Ct,
-                                  PTDF=self.PTDF,
-                                  correct_values=self.correct_values)
+            # there is only 1 island, use island[0]
+            self.V_cont = calc_V_outage(island[0].something, )  # call HELM with AY
+            self.PTDF = calc_ptdf_from_V(V_cont, )
+            self.LODF = calc_lodf_from_V(V_cont, )
 
     @property
     def OTDF(self):
