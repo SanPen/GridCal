@@ -538,7 +538,8 @@ def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
 
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
-    AIred = AYred * U[0, :]
+    # AIred = np.matmul(AYred, U[0, :])
+    AIred = AYred @ U[0, :]
 
     valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[0, pq_] * Ysh[pq_] - AIred[pq_]
     valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_] - AIred[pv_]

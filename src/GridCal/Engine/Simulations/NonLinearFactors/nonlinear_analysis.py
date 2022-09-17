@@ -99,7 +99,7 @@ def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, t
     data = [Yff, Yft, Ytf, Ytt]
     row = [bus_f, bus_f, bus_t, bus_t]
     col = [bus_f, bus_t, bus_f, bus_t]
-    AYmat = sp.sparse.coo_matrix((data, (row, col)), shape=(n_bus, n_bus)).toarray()
+    AYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))
 
     return -1 * AYmat  # negative because it is the difference
 
