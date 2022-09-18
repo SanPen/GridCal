@@ -108,7 +108,7 @@ def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, t
     return -1 * AYmat  # negative because it is the difference
 
 
-def calc_ptdf_from_V(V_cont, Y, Pini):
+def calc_ptdf_from_V(V_cont, Y, Pini, correct_values=True):
     """
     Compute the power transfer distribution factor from the voltages
 
@@ -124,10 +124,30 @@ def calc_ptdf_from_V(V_cont, Y, Pini):
 
     ptdf = (Pbus - Pinim) / Pinim
 
+    if correct_values:  # TODO check more efficient way
+
+        # correct stupid values
+        i1, j1 = np.where(ptdf > 1.2)
+        for i, j in zip(i1, j1):
+            ptdf[i, j] = 0
+
+        i2, j2 = np.where(ptdf < -1.2)
+        for i, j in zip(i2, j2):
+            ptdf[i, j] = 0
+
+        # ensure +-1 values
+        i1, j1 = np.where(ptdf > 1)
+        for i, j in zip(i1, j1):
+            ptdf[i, j] = 1
+
+        i2, j2 = np.where(ptdf < -1)
+        for i, j in zip(i2, j2):
+            ptdf[i, j] = -1
+
     return ptdf.T
 
 
-def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
+def calc_lodf_from_V(V_cont, Yf, Cf, Pini, correct_values=True):
     """
     Compute the line outage distribution factor from the voltages
 
@@ -144,6 +164,26 @@ def calc_lodf_from_V(V_cont, Yf, Cf, Pini):
     Pinim = np.vstack([Pini] * nbr).T
 
     lodf = (Pf - Pinim) / Pinim
+
+    if correct_values:  # TODO check more efficient way
+
+        # correct stupid values
+        i1, j1 = np.where(lodf > 1.2)
+        for i, j in zip(i1, j1):
+            lodf[i, j] = 0
+
+        i2, j2 = np.where(lodf < -1.2)
+        for i, j in zip(i2, j2):
+            lodf[i, j] = 0
+
+        # ensure +-1 values
+        i1, j1 = np.where(lodf > 1)
+        for i, j in zip(i1, j1):
+            lodf[i, j] = 1
+
+        i2, j2 = np.where(lodf < -1)
+        for i, j in zip(i2, j2):
+            lodf[i, j] = -1
 
     return lodf
 
@@ -331,6 +371,7 @@ class NonLinearAnalysis:
         # check if power_flow results are passed
         if self.pf_results is None:
             self.logger.add_error('No initial power flow found, it is needed')
+            raise Exception('No initial power flow found, it is needed')
 
         else:
 
@@ -358,8 +399,8 @@ class NonLinearAnalysis:
                             Pini_bus = np.real(self.pf_results.Sbus)
                             Pini_f = np.real(self.pf_results.Sf)
 
-                            ptdf_island = calc_ptdf_from_V(V_cont, island.Ybus, Pini_bus)
-                            lodf_island = calc_lodf_from_V(V_cont, island.Yf, island.Cf, Pini_f)
+                            ptdf_island = calc_ptdf_from_V(V_cont, island.Ybus, Pini_bus, correct_values=self.correct_values)
+                            lodf_island = calc_lodf_from_V(V_cont, island.Yf, island.Cf, Pini_f, correct_values=self.correct_values)
 
                             # assign objects to the full matrix
                             self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
@@ -393,6 +434,8 @@ class NonLinearAnalysis:
 
                 self.PTDF = calc_ptdf_from_V(self.V_cont, island[0].Ybus, Pini_bus)
                 self.LODF = calc_lodf_from_V(self.V_cont, island[0].Yf, island[0].Cf, Pini_f)
+
+            print('Done running')
 
 
     @property

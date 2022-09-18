@@ -11,7 +11,7 @@ def test_ptdf():
     pf = PowerFlowDriver(main_circuit, pf_options)
     pf.run()
 
-    nl_options = NonLinearAnalysisOptions(distribute_slack=False, correct_values=False, pf_results=pf.results)
+    nl_options = NonLinearAnalysisOptions(distribute_slack=False, correct_values=True, pf_results=pf.results)
     nl_simulation = NonLinearAnalysisDriver(grid=main_circuit, options=nl_options)
     nl_simulation.run()
 

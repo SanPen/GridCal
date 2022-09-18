@@ -74,6 +74,7 @@ class NonLinearAnalysisResults(ResultsTemplate):
 
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
+        self.V_cont = np.zeros((n_bus, n_br), dtype=complex)
 
         self.Sf = np.zeros(self.n_br)
 
@@ -222,6 +223,7 @@ class NonLinearAnalysisDriver(DriverTemplate):
             self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
+            self.results.V_cont = analysis.V_cont
             self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real
