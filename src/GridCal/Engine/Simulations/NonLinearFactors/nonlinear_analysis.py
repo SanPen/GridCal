@@ -375,9 +375,25 @@ class NonLinearAnalysis:
             else:
 
                 # there is only 1 island, use island[0]
-                self.V_cont = calc_V_outage(island[0].something, )  # call HELM with AY
-                self.PTDF = calc_ptdf_from_V(V_cont, )
-                self.LODF = calc_lodf_from_V(V_cont, )
+                self.V_cont = calc_V_outage(island[0].branch_data, 
+                                    self.pf_results.If,
+                                    island[0].Ybus,
+                                    island[0].Yseries,
+                                    island[0].Vbus,
+                                    island[0].Sbus,
+                                    island[0].Yshunt,
+                                    island[0].pq,
+                                    island[0].pv,
+                                    island[0].vd,
+                                    island[0].pqpv)
+
+
+                Pini_bus = np.real(self.pf_results.Sbus)
+                Pini_f = np.real(self.pf_results.Sf)
+
+                self.PTDF = calc_ptdf_from_V(self.V_cont, island[0].Ybus, Pini_bus)
+                self.LODF = calc_lodf_from_V(self.V_cont, island[0].Yf, island[0].Cf, Pini_f)
+
 
     @property
     def OTDF(self):
