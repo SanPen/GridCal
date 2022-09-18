@@ -597,7 +597,7 @@ def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
         iter_ += 1
         c += 1
 
-    return U, V, iter_
+    return U, V, iter_, norm_f
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coefficients=30, use_pade=True,

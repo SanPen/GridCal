@@ -41,12 +41,15 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
     :param pv: set of PV buses
     :param sl: set of slack buses
     :param pqpv: set of PQ + PV buses
-    :return: matrix of voltages after the outages
+    :return: matrix of voltages after the outages and power flow errors
     """
 
     nbus = Ybus.shape[0]
     nbr = len(branch_data)
     V_cont = np.zeros((nbus, nbr), dtype=complex)
+    err = np.zeros(nbr)
+
+    mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
 
     for i in range(nbr):
 
@@ -71,17 +74,15 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                              vtap_t=branch_data.tap_t[i],
                              tap_angle=branch_data.theta[i][0],
                              n_bus=nbus)
-
-
-        mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
-
-        U, V, iter_ = helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+        
+        U, V, iter_, norm_f = helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
                                            vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
                                            tolerance=1e-6, max_coeff=10, verbose=False)
 
         V_cont[:, i] = V
+        err[i] = norm_f
 
-    return V_cont
+    return V_cont, err
 
 
 def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus):
@@ -383,7 +384,7 @@ class NonLinearAnalysis:
                     if len(island.vd) == 1:
                         if len(island.pqpv) > 0:
 
-                            V_cont = calc_V_outage(island.branch_data, 
+                            V_cont, err = calc_V_outage(island.branch_data, 
                                                 self.pf_results.If,
                                                 island.Ybus,
                                                 island.Yseries,
@@ -395,7 +396,6 @@ class NonLinearAnalysis:
                                                 island.vd,
                                                 island.pqpv)
 
-
                             Pini_bus = np.real(self.pf_results.Sbus)
                             Pini_f = np.real(self.pf_results.Sf)
 
@@ -403,6 +403,7 @@ class NonLinearAnalysis:
                             lodf_island = calc_lodf_from_V(V_cont, island.Yf, island.Cf, Pini_f, correct_values=self.correct_values)
 
                             # assign objects to the full matrix
+                            self.err = err  # how to map it well?
                             self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
                             self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
                             self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
@@ -416,7 +417,7 @@ class NonLinearAnalysis:
             else:
 
                 # there is only 1 island, use island[0]
-                self.V_cont = calc_V_outage(island[0].branch_data, 
+                self.V_cont, self.err = calc_V_outage(island[0].branch_data, 
                                     self.pf_results.If,
                                     island[0].Ybus,
                                     island[0].Yseries,
