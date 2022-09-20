@@ -37,6 +37,8 @@ class SimulationTypes(Enum):
     TopologyReduction_run = 'Topology reduction'
     LinearAnalysis_run = 'Linear analysis'
     LinearAnalysis_TS_run = 'Linear analysis time series'
+    NonLinearAnalysis_run = 'Nonlinear analysis'
+    NonLinearAnalysis_TS_run = 'Nonlinear analysis time series'
     ContingencyAnalysis_run = 'Contingency analysis'
     ContingencyAnalysisTS_run = 'Contingency analysis time series'
     Delete_and_reduce_run = 'Delete and reduce'
