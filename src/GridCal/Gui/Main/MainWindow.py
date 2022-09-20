@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1194, 773)
+        mainWindow.resize(1205, 773)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -1078,6 +1078,231 @@ class Ui_mainWindow(object):
         icon80 = QIcon()
         icon80.addFile(u":/Icons/icons/clock.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.tabWidget_3.addTab(self.timeEventsTab, icon80, "")
+        self.contingencyPlannerTab = QWidget()
+        self.contingencyPlannerTab.setObjectName(u"contingencyPlannerTab")
+        self.verticalLayout_37 = QVBoxLayout(self.contingencyPlannerTab)
+        self.verticalLayout_37.setObjectName(u"verticalLayout_37")
+        self.frame_70 = QFrame(self.contingencyPlannerTab)
+        self.frame_70.setObjectName(u"frame_70")
+        self.frame_70.setFrameShape(QFrame.NoFrame)
+        self.frame_70.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_39 = QVBoxLayout(self.frame_70)
+        self.verticalLayout_39.setObjectName(u"verticalLayout_39")
+        self.splitter_3 = QSplitter(self.frame_70)
+        self.splitter_3.setObjectName(u"splitter_3")
+        self.splitter_3.setOrientation(Qt.Horizontal)
+        self.frame_73 = QFrame(self.splitter_3)
+        self.frame_73.setObjectName(u"frame_73")
+        self.frame_73.setFrameShape(QFrame.NoFrame)
+        self.frame_73.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_35 = QVBoxLayout(self.frame_73)
+        self.verticalLayout_35.setObjectName(u"verticalLayout_35")
+        self.verticalLayout_35.setContentsMargins(0, 0, 0, 0)
+        self.frame_69 = QFrame(self.frame_73)
+        self.frame_69.setObjectName(u"frame_69")
+        self.frame_69.setFrameShape(QFrame.NoFrame)
+        self.frame_69.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
+        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
+        self.horizontalLayout_35.setContentsMargins(1, 2, 1, 2)
+        self.newContingencyPlanButton = QPushButton(self.frame_69)
+        self.newContingencyPlanButton.setObjectName(u"newContingencyPlanButton")
+        self.newContingencyPlanButton.setIcon(icon22)
+
+        self.horizontalLayout_35.addWidget(self.newContingencyPlanButton)
+
+        self.addContingencyButton = QPushButton(self.frame_69)
+        self.addContingencyButton.setObjectName(u"addContingencyButton")
+        self.addContingencyButton.setIcon(icon66)
+
+        self.horizontalLayout_35.addWidget(self.addContingencyButton)
+
+        self.horizontalSpacer_25 = QSpacerItem(600, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_35.addItem(self.horizontalSpacer_25)
+
+        self.deleteContingencyButton = QPushButton(self.frame_69)
+        self.deleteContingencyButton.setObjectName(u"deleteContingencyButton")
+        self.deleteContingencyButton.setIcon(icon24)
+
+        self.horizontalLayout_35.addWidget(self.deleteContingencyButton)
+
+
+        self.verticalLayout_35.addWidget(self.frame_69)
+
+        self.contingencyPlannerTreeView = QTreeView(self.frame_73)
+        self.contingencyPlannerTreeView.setObjectName(u"contingencyPlannerTreeView")
+
+        self.verticalLayout_35.addWidget(self.contingencyPlannerTreeView)
+
+        self.splitter_3.addWidget(self.frame_73)
+        self.frame_74 = QFrame(self.splitter_3)
+        self.frame_74.setObjectName(u"frame_74")
+        self.frame_74.setFrameShape(QFrame.NoFrame)
+        self.frame_74.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_38 = QVBoxLayout(self.frame_74)
+        self.verticalLayout_38.setObjectName(u"verticalLayout_38")
+        self.verticalLayout_38.setContentsMargins(0, 0, 0, 0)
+        self.frame_75 = QFrame(self.frame_74)
+        self.frame_75.setObjectName(u"frame_75")
+        self.frame_75.setFrameShape(QFrame.NoFrame)
+        self.frame_75.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_37 = QHBoxLayout(self.frame_75)
+        self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
+        self.horizontalLayout_37.setContentsMargins(1, 2, 1, 2)
+        self.autoNminusXButton = QPushButton(self.frame_75)
+        self.autoNminusXButton.setObjectName(u"autoNminusXButton")
+
+        self.horizontalLayout_37.addWidget(self.autoNminusXButton)
+
+        self.contingencyNspinBox = QSpinBox(self.frame_75)
+        self.contingencyNspinBox.setObjectName(u"contingencyNspinBox")
+        self.contingencyNspinBox.setMinimum(1)
+        self.contingencyNspinBox.setMaximum(2)
+
+        self.horizontalLayout_37.addWidget(self.contingencyNspinBox)
+
+        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_37.addItem(self.horizontalSpacer_27)
+
+
+        self.verticalLayout_38.addWidget(self.frame_75)
+
+        self.toolBox = QToolBox(self.frame_74)
+        self.toolBox.setObjectName(u"toolBox")
+        self.contingencyBranchesPage = QWidget()
+        self.contingencyBranchesPage.setObjectName(u"contingencyBranchesPage")
+        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 454, 442))
+        self.verticalLayout_40 = QVBoxLayout(self.contingencyBranchesPage)
+        self.verticalLayout_40.setObjectName(u"verticalLayout_40")
+        self.verticalLayout_40.setContentsMargins(0, 0, 0, 0)
+        self.frame_71 = QFrame(self.contingencyBranchesPage)
+        self.frame_71.setObjectName(u"frame_71")
+        self.frame_71.setFrameShape(QFrame.NoFrame)
+        self.frame_71.setFrameShadow(QFrame.Raised)
+        self.gridLayout_26 = QGridLayout(self.frame_71)
+        self.gridLayout_26.setObjectName(u"gridLayout_26")
+        self.label_100 = QLabel(self.frame_71)
+        self.label_100.setObjectName(u"label_100")
+
+        self.gridLayout_26.addWidget(self.label_100, 5, 0, 1, 1)
+
+        self.label_99 = QLabel(self.frame_71)
+        self.label_99.setObjectName(u"label_99")
+
+        self.gridLayout_26.addWidget(self.label_99, 4, 0, 1, 1)
+
+        self.filterContingencyBranchesByVoltageCheckBox = QCheckBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageCheckBox.setObjectName(u"filterContingencyBranchesByVoltageCheckBox")
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageCheckBox, 2, 0, 1, 3)
+
+        self.contingencyBranchTypesListView = QListView(self.frame_71)
+        self.contingencyBranchTypesListView.setObjectName(u"contingencyBranchTypesListView")
+
+        self.gridLayout_26.addWidget(self.contingencyBranchTypesListView, 1, 0, 1, 3)
+
+        self.addBranchesToContingencyCheckBox = QCheckBox(self.frame_71)
+        self.addBranchesToContingencyCheckBox.setObjectName(u"addBranchesToContingencyCheckBox")
+        self.addBranchesToContingencyCheckBox.setChecked(True)
+
+        self.gridLayout_26.addWidget(self.addBranchesToContingencyCheckBox, 0, 0, 1, 3)
+
+        self.filterContingencyBranchesByVoltageMinSpinBox = QDoubleSpinBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageMinSpinBox.setObjectName(u"filterContingencyBranchesByVoltageMinSpinBox")
+        self.filterContingencyBranchesByVoltageMinSpinBox.setMaximum(99999999999.000000000000000)
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageMinSpinBox, 4, 1, 1, 2)
+
+        self.filterContingencyBranchesByVoltageMaxSpinBox = QDoubleSpinBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setObjectName(u"filterContingencyBranchesByVoltageMaxSpinBox")
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setMaximum(999999999999.000000000000000)
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setValue(600.000000000000000)
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageMaxSpinBox, 5, 1, 1, 2)
+
+
+        self.verticalLayout_40.addWidget(self.frame_71)
+
+        self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
+        self.contingencyInjectionsPage = QWidget()
+        self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 454, 442))
+        self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
+        self.verticalLayout_41.setObjectName(u"verticalLayout_41")
+        self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
+        self.frame_72 = QFrame(self.contingencyInjectionsPage)
+        self.frame_72.setObjectName(u"frame_72")
+        self.frame_72.setFrameShape(QFrame.NoFrame)
+        self.frame_72.setFrameShadow(QFrame.Raised)
+        self.gridLayout_27 = QGridLayout(self.frame_72)
+        self.gridLayout_27.setObjectName(u"gridLayout_27")
+        self.contingenctyInjectionsListView = QListView(self.frame_72)
+        self.contingenctyInjectionsListView.setObjectName(u"contingenctyInjectionsListView")
+
+        self.gridLayout_27.addWidget(self.contingenctyInjectionsListView, 1, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerMinSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setObjectName(u"contingencyFilterInjectionsByPowerMinSpinBox")
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setMaximum(999999999999999.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerMinSpinBox, 6, 1, 1, 1)
+
+        self.contingencyInjectionPowerReductionSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyInjectionPowerReductionSpinBox.setObjectName(u"contingencyInjectionPowerReductionSpinBox")
+        self.contingencyInjectionPowerReductionSpinBox.setMaximum(100.000000000000000)
+        self.contingencyInjectionPowerReductionSpinBox.setValue(100.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyInjectionPowerReductionSpinBox, 2, 1, 1, 1)
+
+        self.label_112 = QLabel(self.frame_72)
+        self.label_112.setObjectName(u"label_112")
+
+        self.gridLayout_27.addWidget(self.label_112, 2, 0, 1, 1)
+
+        self.addInjectionsToContingencyCheckBox = QCheckBox(self.frame_72)
+        self.addInjectionsToContingencyCheckBox.setObjectName(u"addInjectionsToContingencyCheckBox")
+
+        self.gridLayout_27.addWidget(self.addInjectionsToContingencyCheckBox, 0, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerCheckBox = QCheckBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerCheckBox.setObjectName(u"contingencyFilterInjectionsByPowerCheckBox")
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerCheckBox, 4, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerMaxSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setObjectName(u"contingencyFilterInjectionsByPowerMaxSpinBox")
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setMaximum(9999999999999.000000000000000)
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setValue(1000.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerMaxSpinBox, 7, 1, 1, 1)
+
+        self.label_110 = QLabel(self.frame_72)
+        self.label_110.setObjectName(u"label_110")
+
+        self.gridLayout_27.addWidget(self.label_110, 6, 0, 1, 1)
+
+        self.label_111 = QLabel(self.frame_72)
+        self.label_111.setObjectName(u"label_111")
+
+        self.gridLayout_27.addWidget(self.label_111, 7, 0, 1, 1)
+
+
+        self.verticalLayout_41.addWidget(self.frame_72)
+
+        self.toolBox.addItem(self.contingencyInjectionsPage, u"Injections")
+
+        self.verticalLayout_38.addWidget(self.toolBox)
+
+        self.splitter_3.addWidget(self.frame_74)
+
+        self.verticalLayout_39.addWidget(self.splitter_3)
+
+
+        self.verticalLayout_37.addWidget(self.frame_70)
+
+        self.tabWidget_3.addTab(self.contingencyPlannerTab, icon43, "")
         self.compiledArraysTab = QWidget()
         self.compiledArraysTab.setObjectName(u"compiledArraysTab")
         self.horizontalLayout_7 = QHBoxLayout(self.compiledArraysTab)
@@ -1639,10 +1864,10 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.reactive_power_control_mode_comboBox)
 
-        self.label_64 = QLabel(self.frame_36)
-        self.label_64.setObjectName(u"label_64")
+        self.label_641 = QLabel(self.frame_36)
+        self.label_641.setObjectName(u"label_641")
 
-        self.verticalLayout_4.addWidget(self.label_64)
+        self.verticalLayout_4.addWidget(self.label_641)
 
         self.label_50 = QLabel(self.frame_36)
         self.label_50.setObjectName(u"label_50")
@@ -2060,7 +2285,12 @@ class Ui_mainWindow(object):
 
         self.gridLayout_10.addWidget(self.frame_30, 0, 0, 1, 1)
 
-        self.frame_65 = QFrame(self.tab_4)
+        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
+        self.tab_12 = QWidget()
+        self.tab_12.setObjectName(u"tab_12")
+        self.horizontalLayout_36 = QHBoxLayout(self.tab_12)
+        self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
+        self.frame_65 = QFrame(self.tab_12)
         self.frame_65.setObjectName(u"frame_65")
         self.frame_65.setFrameShape(QFrame.NoFrame)
         self.frame_65.setFrameShadow(QFrame.Raised)
@@ -2141,14 +2371,14 @@ class Ui_mainWindow(object):
         self.frame_51.setFrameShadow(QFrame.Raised)
         self.gridLayout_25 = QGridLayout(self.frame_51)
         self.gridLayout_25.setObjectName(u"gridLayout_25")
-        self.label_641 = QLabel(self.frame_51)
-        self.label_641.setObjectName(u"label_641")
+        self.label_64 = QLabel(self.frame_51)
+        self.label_64.setObjectName(u"label_64")
         font3 = QFont()
         font3.setBold(True)
         font3.setWeight(75)
-        self.label_641.setFont(font3)
+        self.label_64.setFont(font3)
 
-        self.gridLayout_25.addWidget(self.label_641, 0, 0, 1, 1)
+        self.gridLayout_25.addWidget(self.label_64, 0, 0, 1, 1)
 
         self.ntcSelectBasedOnExchangeSensitivityRadioButton = QRadioButton(self.frame_51)
         self.ntcSelectBasedOnExchangeSensitivityRadioButton.setObjectName(u"ntcSelectBasedOnExchangeSensitivityRadioButton")
@@ -2311,9 +2541,13 @@ class Ui_mainWindow(object):
         self.gridLayout_15.addWidget(self.line_27, 1, 0, 1, 4)
 
 
-        self.gridLayout_10.addWidget(self.frame_65, 0, 1, 2, 1)
+        self.horizontalLayout_36.addWidget(self.frame_65)
 
-        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
+        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_36.addItem(self.horizontalSpacer_26)
+
+        self.settings_tabWidget.addTab(self.tab_12, icon45, "")
         self.tab_9 = QWidget()
         self.tab_9.setObjectName(u"tab_9")
         self.horizontalLayout_8 = QHBoxLayout(self.tab_9)
@@ -2434,12 +2668,6 @@ class Ui_mainWindow(object):
         self.gridLayout_14 = QGridLayout(self.frame_32)
         self.gridLayout_14.setObjectName(u"gridLayout_14")
         self.gridLayout_14.setContentsMargins(-1, 0, -1, -1)
-        self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
-        self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
-        self.ptdf_distributed_slack_checkBox.setChecked(False)
-
-        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 2)
-
         self.ptdf_correct_nonsense_values_checkBox = QCheckBox(self.frame_32)
         self.ptdf_correct_nonsense_values_checkBox.setObjectName(u"ptdf_correct_nonsense_values_checkBox")
         self.ptdf_correct_nonsense_values_checkBox.setChecked(False)
@@ -2500,11 +2728,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
 
-        self.ptdf_distributed_slack_checkBox1 = QCheckBox(self.frame_32)
-        self.ptdf_distributed_slack_checkBox1.setObjectName(u"ptdf_distributed_slack_checkBox1")
-        self.ptdf_distributed_slack_checkBox1.setChecked(False)
+        self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
+        self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
+        self.ptdf_distributed_slack_checkBox.setChecked(False)
 
-        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox1, 2, 0, 1, 2)
+        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_32)
@@ -3472,7 +3700,7 @@ class Ui_mainWindow(object):
 
         self.settings_tabWidget.addTab(self.tab_10, icon58, "")
 
-        self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 3, 1, 1)
+        self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
 
         self.frame_7 = QFrame(self.SettingsTab)
         self.frame_7.setObjectName(u"frame_7")
@@ -3691,7 +3919,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1194, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1205, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuAbout = QMenu(self.menuBar)
@@ -3837,6 +4065,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
 
@@ -4281,6 +4510,31 @@ class Ui_mainWindow(object):
         self.label_36.setText(QCoreApplication.translate("mainWindow", u"Start", None))
         self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
+        self.newContingencyPlanButton.setText("")
+        self.addContingencyButton.setText("")
+        self.deleteContingencyButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.autoNminusXButton.setToolTip(QCoreApplication.translate("mainWindow", u"Automatically generate the all the N-x contingencies following the settings (see settings > Con)", None))
+#endif // QT_CONFIG(tooltip)
+        self.autoNminusXButton.setText(QCoreApplication.translate("mainWindow", u"Auto", None))
+        self.contingencyNspinBox.setPrefix(QCoreApplication.translate("mainWindow", u"N-", None))
+        self.label_100.setText(QCoreApplication.translate("mainWindow", u"Max", None))
+        self.label_99.setText(QCoreApplication.translate("mainWindow", u"Min", None))
+        self.filterContingencyBranchesByVoltageCheckBox.setText(QCoreApplication.translate("mainWindow", u"Filter branches by voltage", None))
+        self.addBranchesToContingencyCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add branches", None))
+        self.filterContingencyBranchesByVoltageMinSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.contingencyBranchesPage), QCoreApplication.translate("mainWindow", u"Branches", None))
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.contingencyInjectionPowerReductionSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
+        self.label_112.setText(QCoreApplication.translate("mainWindow", u"Contingency power", None))
+        self.addInjectionsToContingencyCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add Injections", None))
+        self.contingencyFilterInjectionsByPowerCheckBox.setText(QCoreApplication.translate("mainWindow", u"Filter by power", None))
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.label_110.setText(QCoreApplication.translate("mainWindow", u"Min", None))
+        self.label_111.setText(QCoreApplication.translate("mainWindow", u"Max", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.contingencyInjectionsPage), QCoreApplication.translate("mainWindow", u"Injections", None))
+        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.contingencyPlannerTab), QCoreApplication.translate("mainWindow", u"Contingency planner", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
 #endif // QT_CONFIG(tooltip)
@@ -4354,6 +4608,9 @@ class Ui_mainWindow(object):
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.pythonConsoleTab), QCoreApplication.translate("mainWindow", u"Python console", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Console", None))
 #if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
@@ -4392,7 +4649,7 @@ class Ui_mainWindow(object):
         self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
         self.label_87.setText("")
         self.label_48.setText(QCoreApplication.translate("mainWindow", u"Reactive power control mode", None))
-        self.label_64.setText("")
+        self.label_641.setText("")
         self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
         self.label_65.setText("")
 #if QT_CONFIG(tooltip)
@@ -4450,6 +4707,10 @@ class Ui_mainWindow(object):
         self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
         self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
         self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
+#if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
 #endif // QT_CONFIG(tooltip)
@@ -4479,9 +4740,9 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
 #if QT_CONFIG(tooltip)
-        self.label_641.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
+        self.label_64.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_641.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
+        self.label_64.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
 #if QT_CONFIG(tooltip)
         self.ntcSelectBasedOnExchangeSensitivityRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
@@ -4496,6 +4757,9 @@ class Ui_mainWindow(object):
         self.ntcSelectBasedOnAcerCriteriaRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
         self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
         self.label_97.setText("")
+#if QT_CONFIG(tooltip)
+        self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
+#endif // QT_CONFIG(tooltip)
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
 #if QT_CONFIG(tooltip)
         self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
@@ -4519,10 +4783,7 @@ class Ui_mainWindow(object):
         self.label_98.setText(QCoreApplication.translate("mainWindow", u"Overloads", None))
         self.weightsOverloadsSpinBox.setSuffix("")
         self.weightsOverloadsSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
-#if QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
-#endif // QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"NTC", None))
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear NTC", None))
         self.label_30.setText(QCoreApplication.translate("mainWindow", u"Number of elements to report", None))
 #if QT_CONFIG(tooltip)
@@ -4540,7 +4801,6 @@ class Ui_mainWindow(object):
         self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
         self.n1ConsiderationCheckBox.setText(QCoreApplication.translate("mainWindow", u"n-1 sensibility consideration", None))
         self.label_90.setText("")
-        self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.ptdf_correct_nonsense_values_checkBox.setText(QCoreApplication.translate("mainWindow", u"Correct nonsense values", None))
         self.label_70.setText("")
         self.label_71.setText(QCoreApplication.translate("mainWindow", u"PTDF / LODF", None))
@@ -4548,7 +4808,7 @@ class Ui_mainWindow(object):
         self.usePfValuesForAtcCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Use existing power flow values for the contingency initialization in the net transfer capacity and contingency simulations", None))
 #endif // QT_CONFIG(tooltip)
         self.usePfValuesForAtcCheckBox.setText(QCoreApplication.translate("mainWindow", u"Use power flow values for initialization", None))
-        self.ptdf_distributed_slack_checkBox1.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
+        self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear calculations related settings", None))
@@ -4562,7 +4822,7 @@ class Ui_mainWindow(object):
         self.label_78.setText("")
         self.label_79.setText(QCoreApplication.translate("mainWindow", u"Cascading", None))
         self.label_28.setText(QCoreApplication.translate("mainWindow", u"Aditional islands until stop", None))
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Stochastic", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Sto", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Stochastic power flow settings", None))
 #endif // QT_CONFIG(tooltip)
@@ -4627,7 +4887,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.rxThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the threshold to use.</p><p>threshold = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>threshold = 1e-3</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Topology", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Tplgy", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Topology related settings", None))
 #endif // QT_CONFIG(tooltip)
@@ -4656,7 +4916,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.plt_style_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"MatPlotlib plot styles to choose from", None))
 #endif // QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Visualization", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Viz", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Visualization related settings", None))
 #endif // QT_CONFIG(tooltip)
