@@ -17,6 +17,7 @@
 import numpy as np
 import numba as nb
 import scipy as sp
+from GridCal.Engine.Devices.enumerations import BranchAddOrRemove
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -24,7 +25,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, Snaps
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
 
 
-def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
+def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, branches_sets=None):
     """
     Calculate the voltage due to outages in a non-linear manner with HELM.
     The main novelty is the introduction of s.AY, thus delaying it
@@ -46,51 +47,102 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
 
     nbus = Ybus.shape[0]
     nbr = len(branch_data)
-    V_cont = np.zeros((nbus, nbr), dtype=complex)
     err = np.zeros(nbr)
 
     mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
 
-    for i in range(nbr):
+    if branches_sets is None:
+        # No sets are specified, go over all branches one by one
 
-        row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
-        row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
+        V_cont = np.zeros((nbus, nbr), dtype=complex)
 
-        # build the admittance matrix that modifies the original admittance matrix
-        dY = build_dY_outage(bus_f=col_buses_f[i],
-                             bus_t=col_buses_t[i],
-                             G0sw=branch_data.G0sw[i][0],
-                             Beq=branch_data.Beq[i][0],
-                             k=branch_data.k[i],
-                             If=If[col_buses_f[i]],
-                             a=branch_data.a[i],
-                             b=branch_data.b[i],
-                             c=branch_data.c[i],
-                             rs=branch_data.R[i],
-                             xs=branch_data.X[i],
-                             gsh=branch_data.G[i],
-                             bsh=branch_data.B[i],
-                             tap_module=branch_data.m[i][0],
-                             vtap_f=branch_data.tap_f[i],
-                             vtap_t=branch_data.tap_t[i],
-                             tap_angle=branch_data.theta[i][0],
-                             n_bus=nbus)
+        for i in range(nbr):
 
-        # solve the modified HELM
-        U, V, iter_, norm_f = helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
-                                                   vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
-                                                   tolerance=1e-6, max_coeff=10)
+            row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
+            row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
 
-        V_cont[:, i] = V
-        err[i] = norm_f
+            # build the admittance matrix that modifies the original admittance matrix
+            dY = build_dY_outage(bus_f=col_buses_f[i],
+                                bus_t=col_buses_t[i],
+                                G0sw=branch_data.G0sw[i][0],
+                                Beq=branch_data.Beq[i][0],
+                                k=branch_data.k[i],
+                                If=If[col_buses_f[i]],
+                                a=branch_data.a[i],
+                                b=branch_data.b[i],
+                                c=branch_data.c[i],
+                                rs=branch_data.R[i],
+                                xs=branch_data.X[i],
+                                gsh=branch_data.G[i],
+                                bsh=branch_data.B[i],
+                                tap_module=branch_data.m[i][0],
+                                vtap_f=branch_data.tap_f[i],
+                                vtap_t=branch_data.tap_t[i],
+                                tap_angle=branch_data.theta[i][0],
+                                n_bus=nbus,
+                                add_or_remove=branch_data.add_or_remove[i],
+                                active=branch_data.branch_active[i][0],
+                                sets=False)  # if active and remove
+                                # if inactive and add do something, if not keep the same
+
+            # solve the modified HELM
+            U, V, iter_, norm_f = helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                                                        vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+                                                        tolerance=1e-6, max_coeff=10)
+
+            V_cont[:, i] = V
+            err[i] = norm_f
+
+    else:
+        # Some sets are specified
+
+        V_cont = np.zeros((nbus, len(branches_sets)), dtype=complex)
+
+        for idx_set, br_set in enumerate(branches_sets):
+
+            row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
+            row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
+
+            # build the admittance matrix that modifies the original admittance matrix
+            dY = build_dY_outage(bus_f=col_buses_f[br_set],
+                                bus_t=col_buses_t[br_set],
+                                G0sw=branch_data.G0sw[br_set][0],
+                                Beq=branch_data.Beq[br_set][0],
+                                k=branch_data.k[br_set],
+                                If=If[col_buses_f[br_set]],
+                                a=branch_data.a[br_set],
+                                b=branch_data.b[br_set],
+                                c=branch_data.c[br_set],
+                                rs=branch_data.R[br_set],
+                                xs=branch_data.X[br_set],
+                                gsh=branch_data.G[br_set],
+                                bsh=branch_data.B[br_set],
+                                tap_module=branch_data.m[br_set][0],
+                                vtap_f=branch_data.tap_f[br_set],
+                                vtap_t=branch_data.tap_t[br_set],
+                                tap_angle=branch_data.theta[br_set][0],
+                                n_bus=nbus,
+                                add_or_remove=branch_data.add_or_remove[br_set],
+                                active=branch_data.active[br_set],
+                                sets=True)
+
+            # solve the modified HELM
+            U, V, iter_, norm_f = helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                                                        vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+                                                        tolerance=1e-6, max_coeff=10)
+
+            V_cont[:, idx_set] = V
+            err[idx_set] = norm_f
 
     return V_cont, err
 
 
 def build_dY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs,
-                    gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus):
+                    gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus,
+                    add_or_remove: BranchAddOrRemove, active, sets):
     """
     Construct the ∆Y admittance matrix for all the contingencies
+    If we want to pass various branches at once, all params have to be arrays
     :param bus_f:
     :param bus_t:
     :param G0sw:
@@ -109,28 +161,84 @@ def build_dY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs,
     :param vtap_t:
     :param tap_angle:
     :param n_bus:
+    :param add_or_remove:
+    :param active:
+    :param sets:
     :return:
     """
-    # compute G-switch
-    Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
-    # form the admittance matrices
-    ys = 1.0 / (rs + 1.0j * xs + 1e-20)  # series admittance
-    bc2 = (gsh + 1j * bsh) / 2.0  # shunt admittance
-    mp = k * tap_module
+    data_Y = []
+    row_idx = []
+    col_idx = []
 
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-    Ytt = (ys + bc2) / (vtap_t * vtap_t)
+    if sets:  # set of branches
 
-    data = [Yff, Yft, Ytf, Ytt]
-    row = [bus_f, bus_f, bus_t, bus_t]
-    col = [bus_f, bus_t, bus_f, bus_t]
+        for i in range(len(bus_f)):
+            # compute G-switch
+            Gsw = G0sw[i] + a[i] * np.power(If[i], 2) + b[i] * If[i] + c[i]
 
-    dYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))  # TODO: Make absolutely certain of this, as it is coded it matches the COO format
+            # form the admittance matrices
+            ys = 1.0 / (rs[i] + 1.0j * xs[i] + 1e-20)  # series admittance
+            bc2 = (gsh[i] + 1j * bsh[i]) / 2.0  # shunt admittance
+            mp = k[i] * tap_module[i]
 
-    return -1 * dYmat  # negative because we are removing these admittances
+            Yff = Gsw + (ys + bc2 + 1.0j * Beq[i]) / (mp * mp * vtap_f[i] * vtap_f[i])
+            Yft = -ys / (mp * np.exp(-1.0j * tap_angle[i]) * vtap_f[i] * vtap_t[i])
+            Ytf = -ys / (mp * np.exp(1.0j * tap_angle[i]) * vtap_t[i] * vtap_f[i])
+            Ytt = (ys + bc2) / (vtap_t[i] * vtap_t[i])
+
+            if add_or_remove[i] == BranchAddOrRemove.remove and active[i]:
+                # disconnect line
+                data_Y += [-Yff, -Yft, -Ytf, -Ytt]
+                row_idx += [bus_f, bus_f, bus_t, bus_t]
+                col_idx += [bus_f, bus_t, bus_f, bus_t]
+
+            elif add_or_remove[i] == BranchAddOrRemove.add and not active[i]:
+                # connect line
+                data_Y += [Yff, Yft, Ytf, Ytt]
+                row_idx += [bus_f, bus_f, bus_t, bus_t]
+                col_idx += [bus_f, bus_t, bus_f, bus_t]
+
+            else:  # no need to modify Y as this branch introduces no change
+                pass
+
+    else:  # only 1 branch
+
+        # compute G-switch
+        Gsw = G0sw + a * np.power(If, 2) + b * If + c
+
+        # form the admittance matrices
+        ys = 1.0 / (rs + 1.0j * xs + 1e-20)  # series admittance
+        bc2 = (gsh + 1j * bsh) / 2.0  # shunt admittance
+        mp = k * tap_module
+
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+        if add_or_remove == BranchAddOrRemove.remove and active:
+            # disconnect line
+            data_Y += [-Yff, -Yft, -Ytf, -Ytt]
+            row_idx += [bus_f, bus_f, bus_t, bus_t]
+            col_idx += [bus_f, bus_t, bus_f, bus_t]
+
+        elif add_or_remove == BranchAddOrRemove.add and not active:
+            # connect line
+            data_Y += [Yff, Yft, Ytf, Ytt]
+            row_idx += [bus_f, bus_f, bus_t, bus_t]
+            col_idx += [bus_f, bus_t, bus_f, bus_t]
+
+        else:  # no need to modify Y as this branch introduces no change
+            pass
+
+    dYmat = sp.sparse.csr_matrix((data_Y, (row_idx, col_idx)), shape=(n_bus, n_bus))  # TODO: Make absolutely certain of this, as it is coded it matches the COO format
+    # Seems alright according to the documentation: https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_array.html#scipy.sparse.csr_array
+    # One way of entering the data is:
+    # csr_array((data, (row_ind, col_ind)), [shape=(M, N)])
+    # where data, row_ind and col_ind satisfy the relationship a[row_ind[k], col_ind[k]] = data[k].
+
+    return dYmat  # negative because we are removing these admittances
 
 
 def calc_ptdf_from_V(V_cont, Y, Pini, correct_values=True):
@@ -354,7 +462,7 @@ def make_worst_contingency_transfer_limits(tmc):
 
 class NonLinearAnalysis:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, pf_results=None):
+    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, pf_results=None, branches_sets=None):
         """
 
         :param grid:
@@ -380,6 +488,8 @@ class NonLinearAnalysis:
         self.err = 0.0
 
         self.pf_results = pf_results
+
+        self.branches_sets = None
 
         self.logger = Logger()
 
@@ -420,7 +530,9 @@ class NonLinearAnalysis:
                                                         island.pq,
                                                         island.pv,
                                                         island.vd,
-                                                        island.pqpv)
+                                                        island.pqpv,
+                                                        branches_sets=self.branches_sets
+                                                        )
 
                             ptdf_island = calc_ptdf_from_V(V_cont=V_cont,
                                                            Y=island.Ybus,
