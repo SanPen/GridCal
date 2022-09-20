@@ -406,7 +406,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
         # compute power mismatch
         V[pqpv] += U[c, :]
 
-        if V.max().real < 10:
+        if V.real.max() < 10:
             Scalc = compute_power(Ybus, V)
             norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
@@ -420,20 +420,21 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     return U, X, Q, V, iter_
 
 
-def helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, logger: Logger = None):
+def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, logger: Logger = None):
     """
     This function returns the constant objects to run many HELM simulations
+
+    Based on the paper: Novel AC Distribution Factor for Efficient Outage Analysis
+                        Rui Yao, Senior Member, IEEE, and Feng Qiu, Senior Member, IEEE
+
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
     :param Ysh0: vector of shunt admittances (including the shunts of the branches)
-    :param AY: admittance matrix considering the disconnection of a branch
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
     :param pqpv: sorted list of pq and pv nodes
-    :param tolerance: target error (or tolerance)
-    :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
     :param logger: Logger object to store the debug info
     :return: U, X, Q, V, iterations
@@ -500,29 +501,62 @@ def helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, 
     return mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n
 
 
-def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
                          vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
-                         tolerance=1e-6, max_coeff=10, verbose=False, logger: Logger = None):
+                         tolerance=1e-6, max_coeff=10):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     This function just returns the coefficients for further usage in other routines
-    :param Yseries: Admittance matrix of the series elements
-    :param V0: vector of specified voltages
+
+    Based on the paper: Novel AC Distribution Factor for Efficient Outage Analysis
+                        Rui Yao, Senior Member, IEEE, and Feng Qiu, Senior Member, IEEE
+
+    :param dY:
+    :param mat_factorized: factorized HELM system matrix
+    :param Uini:
+    :param Xini:
+    :param Yslack:
+    :param Ysh:
+    :param Ybus:
+    :param vec_P:
+    :param vec_Q:
     :param S0: vector of specified power
-    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
-    :param AY: admittance matrix considering the disconnection of a branch
-    :param pq: list of pq nodes
-    :param pv: list of pv nodes
-    :param sl: list of slack nodes
+    :param vec_W:
+    :param V0: vector of specified voltages
+    :param Vslack:
+    :param pq_: reduced scheme list of pq nodes
+    :param pv_: reduced scheme list of pv nodes
+    :param pqpv_: reduced scheme list of pq|pv nodes
+    :param npqpv: number of pq and pv nodes
+    :param n: number of nodes
     :param pqpv: sorted list of pq and pv nodes
+    :param pq:list of pq nodes
+    :param sl: list of slack nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
+    :return: U, V, iter_, norm_f
+    """
+
+
+    """
+    
+    :param Yseries: Admittance matrix of the series elements
+    :param V0:
+    :param S0: 
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param AY: admittance matrix considering the disconnection of a branch
+    :param pq: 
+    :param pv: 
+    :param sl:
+    :param pqpv:
+    :param tolerance:
+    :param max_coeff:
     :param verbose: print intermediate information
     :param logger: Logger object to store the debug info
     :return: U, X, Q, V, iterations
     """
 
-    AYred = AY[np.ix_(pqpv, pqpv)]  # difference admittance matrix without slack buses
+    AYred = dY[np.ix_(pqpv, pqpv)]  # difference admittance matrix without slack buses
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
     U = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # voltages
@@ -538,7 +572,6 @@ def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
 
     # get the current injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
-    # AIred = np.matmul(AYred, U[0, :])
     AIred = AYred @ U[0, :]
 
     valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[0, pq_] * Ysh[pq_] - AIred[pq_]
@@ -564,6 +597,8 @@ def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
     V = np.empty(n, dtype=complex)
     V[sl] = V0[sl]
     V[pqpv] = U[:c, :].sum(axis=0)
+    norm_f = 0.0
+
     while c <= max_coeff and not converged:  # c defines the current depth
 
         AIred = AYred * U[c - 1, :]
@@ -586,7 +621,7 @@ def helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
         # compute power mismatch
         V[pqpv] += U[c, :]
 
-        if V.max().real < 10:
+        if V.real.max() < 10:
             Scalc = compute_power(Ybus, V)
             norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients

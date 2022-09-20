@@ -73,8 +73,11 @@ class NonLinearAnalysisResults(ResultsTemplate):
         self.logger = Logger()
 
         self.PTDF = np.zeros((n_br, n_bus))
+
         self.LODF = np.zeros((n_br, n_br))
+
         self.V_cont = np.zeros((n_bus, n_br), dtype=complex)
+
         self.err = np.zeros(n_br)
 
         self.Sf = np.zeros(self.n_br)
@@ -193,50 +196,32 @@ class NonLinearAnalysisDriver(DriverTemplate):
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
             self.results = NonLinearAnalysisResults(n_br=len(br_names),
-                                                 n_bus=len(bus_names),
-                                                 br_names=br_names,
-                                                 bus_names=bus_names,
-                                                 bus_types=bus_types)
+                                                    n_bus=len(bus_names),
+                                                    br_names=br_names,
+                                                    bus_names=bus_names,
+                                                    bus_types=bus_types)
         except MemoryError as e:
             self.logger.add_error(str(e))
             return
 
         # Run Analysis
-        NEWTON_AVAILBALE = False
-        if self.engine == bs.EngineType.Newton and not NEWTON_AVAILBALE:
-            self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
+        analysis = NonLinearAnalysis(grid=self.grid,
+                                     distributed_slack=self.options.distribute_slack,
+                                     correct_values=self.options.correct_values,
+                                     pf_results=self.options.pf_results)
 
-        if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
-            self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
-
-        if self.engine == bs.EngineType.GridCal:
-            analysis = NonLinearAnalysis(grid=self.grid,
-                                      distributed_slack=self.options.distribute_slack,
-                                      correct_values=self.options.correct_values,
-                                      pf_results=self.options.pf_results)
-
-            analysis.run()
-            self.logger += analysis.logger
-            self.results.bus_names = analysis.numerical_circuit.bus_names
-            self.results.branch_names = analysis.numerical_circuit.branch_names
-            self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
-            self.results.PTDF = analysis.PTDF
-            self.results.LODF = analysis.LODF
-            self.results.V_cont = analysis.V_cont
-            self.results.err = analysis.err
-            self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
-            self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
-            self.results.Sbus = analysis.numerical_circuit.Sbus.real
-        elif self.engine == bs.EngineType.Bentayga:
-
-            lin_mat = bentayga_linear_matrices(self.grid, distributed_slack=self.options.distribute_slack)
-            self.results.PTDF = lin_mat.PTDF
-            self.results.LODF = lin_mat.LODF
-            self.results.Sf = lin_mat.get_flows(lin_mat.Pbus * self.grid.Sbase)
-            self.results.loading = self.results.Sf / (lin_mat.rates + 1e-20)
-            self.results.Sbus = lin_mat.Pbus * self.grid.Sbase
+        analysis.run()
+        self.logger += analysis.logger
+        self.results.bus_names = analysis.numerical_circuit.bus_names
+        self.results.branch_names = analysis.numerical_circuit.branch_names
+        self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
+        self.results.PTDF = analysis.PTDF
+        self.results.LODF = analysis.LODF
+        self.results.V_cont = analysis.V_cont
+        self.results.err = analysis.err
+        self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
+        self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
+        self.results.Sbus = analysis.numerical_circuit.Sbus.real
 
         end = time.time()
         self.elapsed = end - start

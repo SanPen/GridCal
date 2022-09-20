@@ -23,11 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="removed extra line breaks">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed dc_opf test imports&#10;Added the contingency planner GUI">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/dc_pf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/opf/dc_pf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NonLinearFactors/nonlinear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NonLinearFactors/nonlinear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NonLinearFactors/nonlinear_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NonLinearFactors/nonlinear_analysis_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,7 +173,7 @@
       <recent name="$PROJECT_DIR$/src/research/jacobian" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.Nosetests in test_nonlinear_contingency.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -315,28 +317,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -396,6 +376,22 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests in test_nonlinear_contingency.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -452,16 +448,16 @@
       <item itemvalue="Python.dc_pf" />
       <item itemvalue="Python.binary_ga" />
       <item itemvalue="Python.demo_sum_of_int" />
-      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.Nosetests in test_nonlinear_contingency.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests in test_nonlinear_contingency.py" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.dc_pf" />
         <item itemvalue="Python.demo_sum_of_int" />
         <item itemvalue="Python.binary_ga" />
-        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
@@ -1065,14 +1061,7 @@
       <workItem from="1663317297277" duration="3552000" />
       <workItem from="1663338572787" duration="408000" />
       <workItem from="1663442275476" duration="525000" />
-      <workItem from="1663669581077" duration="607000" />
-    </task>
-    <task id="LOCAL-00297" summary="parametric windings">
-      <created>1651485988510</created>
-      <option name="number" value="00297" />
-      <option name="presentableId" value="LOCAL-00297" />
-      <option name="project" value="LOCAL" />
-      <updated>1651485988511</updated>
+      <workItem from="1663669581077" duration="8034000" />
     </task>
     <task id="LOCAL-00298" summary="Merged changes">
       <created>1651694010753</created>
@@ -1410,7 +1399,14 @@
       <option name="project" value="LOCAL" />
       <updated>1662107480200</updated>
     </task>
-    <option name="localTasksCounter" value="346" />
+    <task id="LOCAL-00346" summary="Fixed dc_opf test imports&#10;Added the contingency planner GUI">
+      <created>1663674681646</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1663674681646</updated>
+    </task>
+    <option name="localTasksCounter" value="347" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1444,7 +1440,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved newtonpa integration" />
     <MESSAGE value="Derivatives investigation" />
     <MESSAGE value="added newton pa support for clustering time series" />
     <MESSAGE value="Worked on new expressions" />
@@ -1469,7 +1464,8 @@
     <MESSAGE value="Extended inputs analysis to add time series" />
     <MESSAGE value="Added grouping in most of the results" />
     <MESSAGE value="removed extra line breaks" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed extra line breaks" />
+    <MESSAGE value="Fixed dc_opf test imports&#10;Added the contingency planner GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed dc_opf test imports&#10;Added the contingency planner GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2007,6 +2003,16 @@
           <line>8</line>
           <option name="timeStamp" value="1205" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="1206" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NonLinearFactors/nonlinear_analysis.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="1207" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -2102,6 +2108,7 @@
     <SUITE FILE_PATH="coverage/GridCal$build_z_bus_by_steps.coverage" NAME="build_z_bus_by_steps Coverage Results" MODIFIED="1645718877250" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$node_branch_drawing.coverage" NAME="node_branch_drawing Coverage Results" MODIFIED="1651392885483" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$schafer_jacobian_assembly.coverage" NAME="schafer_jacobian_assembly Coverage Results" MODIFIED="1617566032222" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow/jacobian" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_nonlinear_contingency_py.coverage" NAME="Nosetests in test_nonlinear_contingency.py Coverage Results" MODIFIED="1663688864436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_load_all_grids_py.coverage" NAME="Nosetests in test_load_all_grids.py Coverage Results" MODIFIED="1598802785581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$fuerte_esquivel_acha_ambriz_perez_paper.coverage" NAME="fuerte_esquivel_acha_ambriz_perez_paper Coverage Results" MODIFIED="1607805654887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/upfc" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow.coverage" NAME="jacobian_based_acdc_power_flow Coverage Results" MODIFIED="1617822039867" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />

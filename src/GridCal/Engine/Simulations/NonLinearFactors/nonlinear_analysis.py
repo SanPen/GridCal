@@ -21,7 +21,7 @@ import scipy as sp
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_AY, helm_preparation_AY
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
 
 
 def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
@@ -49,14 +49,15 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
     V_cont = np.zeros((nbus, nbr), dtype=complex)
     err = np.zeros(nbr)
 
-    mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_AY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
+    mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
 
     for i in range(nbr):
 
         row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
         row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
-        
-        AY = build_AY_outage(bus_f=col_buses_f[i],
+
+        # build the admittance matrix that modifies the original admittance matrix
+        dY = build_dY_outage(bus_f=col_buses_f[i],
                              bus_t=col_buses_t[i],
                              G0sw=branch_data.G0sw[i][0],
                              Beq=branch_data.Beq[i][0],
@@ -74,10 +75,11 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                              vtap_t=branch_data.tap_t[i],
                              tap_angle=branch_data.theta[i][0],
                              n_bus=nbus)
-        
-        U, V, iter_, norm_f = helm_coefficients_AY(AY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
-                                           vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
-                                           tolerance=1e-6, max_coeff=10, verbose=False)
+
+        # solve the modified HELM
+        U, V, iter_, norm_f = helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                                                   vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+                                                   tolerance=1e-6, max_coeff=10)
 
         V_cont[:, i] = V
         err[i] = norm_f
@@ -85,8 +87,30 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
     return V_cont, err
 
 
-def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus):
-
+def build_dY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs,
+                    gsh, bsh, tap_module, vtap_f, vtap_t, tap_angle, n_bus):
+    """
+    Construct the ∆Y admittance matrix for all the contingencies
+    :param bus_f:
+    :param bus_t:
+    :param G0sw:
+    :param Beq:
+    :param k:
+    :param If:
+    :param a:
+    :param b:
+    :param c:
+    :param rs:
+    :param xs:
+    :param gsh:
+    :param bsh:
+    :param tap_module:
+    :param vtap_f:
+    :param vtap_t:
+    :param tap_angle:
+    :param n_bus:
+    :return:
+    """
     # compute G-switch
     Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
@@ -104,18 +128,18 @@ def build_AY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs, gsh, bsh, t
     row = [bus_f, bus_f, bus_t, bus_t]
     col = [bus_f, bus_t, bus_f, bus_t]
 
-    AYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))
+    dYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))  # TODO: Make absolutely certain of this, as it is coded it matches the COO format
 
-    return -1 * AYmat  # negative because it is the difference
+    return -1 * dYmat  # negative because we are removing these admittances
 
 
 def calc_ptdf_from_V(V_cont, Y, Pini, correct_values=True):
     """
     Compute the power transfer distribution factor from the voltages
-
     :param V_cont: matrix of voltages for all outages, size nbus * nbranch
     :param Y: bus admittance matrix
     :param Pini: initial active power per bus
+    :param correct_values: Correct nonsense values
     :return: matrix of ptdf
     """
 
@@ -151,11 +175,11 @@ def calc_ptdf_from_V(V_cont, Y, Pini, correct_values=True):
 def calc_lodf_from_V(V_cont, Yf, Cf, Pini, correct_values=True):
     """
     Compute the line outage distribution factor from the voltages
-
     :param V_cont: matrix of voltages for all outages, size nbus * nbranch
     :param Yf: from bus admittance matrix
     :param Cf: from connectivity matrix
     :param Pini: initial active power per line (from side)
+    :param correct_values: Correct nonsense values
     :return: matrix of lodf
     """
 
@@ -345,13 +369,15 @@ class NonLinearAnalysis:
 
         self.numerical_circuit: SnapshotData = None
 
-        self.PTDF = None
+        self.PTDF = None  # power transfer distribution factors (n_br, n_bus)
 
-        self.LODF = None
+        self.LODF = None # line outage distribution factors (n_br, n_br)
 
-        self.__OTDF = None
+        self._OTDF = None
 
-        self.V_cont = None
+        self.V_cont = None  # contingency voltages (n_bus, n_br)
+
+        self.err = 0.0
 
         self.pf_results = pf_results
 
@@ -385,22 +411,27 @@ class NonLinearAnalysis:
                         if len(island.pqpv) > 0:
 
                             V_cont, err = calc_V_outage(island.branch_data, 
-                                                self.pf_results.If,
-                                                island.Ybus,
-                                                island.Yseries,
-                                                island.Vbus,
-                                                island.Sbus,
-                                                island.Yshunt,
-                                                island.pq,
-                                                island.pv,
-                                                island.vd,
-                                                island.pqpv)
+                                                        self.pf_results.If,
+                                                        island.Ybus,
+                                                        island.Yseries,
+                                                        island.Vbus,
+                                                        island.Sbus,
+                                                        island.Yshunt,
+                                                        island.pq,
+                                                        island.pv,
+                                                        island.vd,
+                                                        island.pqpv)
 
-                            Pini_bus = np.real(self.pf_results.Sbus)
-                            Pini_f = np.real(self.pf_results.Sf)
+                            ptdf_island = calc_ptdf_from_V(V_cont=V_cont,
+                                                           Y=island.Ybus,
+                                                           Pini=np.real(self.pf_results.Sbus),
+                                                           correct_values=self.correct_values)
 
-                            ptdf_island = calc_ptdf_from_V(V_cont, island.Ybus, Pini_bus, correct_values=self.correct_values)
-                            lodf_island = calc_lodf_from_V(V_cont, island.Yf, island.Cf, Pini_f, correct_values=self.correct_values)
+                            lodf_island = calc_lodf_from_V(V_cont=V_cont,
+                                                           Yf=island.Yf,
+                                                           Cf=island.Cf,
+                                                           Pini=np.real(self.pf_results.Sf),
+                                                           correct_values=self.correct_values)
 
                             # assign objects to the full matrix
                             self.err = err  # how to map it well?
@@ -417,27 +448,28 @@ class NonLinearAnalysis:
             else:
 
                 # there is only 1 island, use island[0]
-                self.V_cont, self.err = calc_V_outage(island[0].branch_data, 
-                                    self.pf_results.If,
-                                    island[0].Ybus,
-                                    island[0].Yseries,
-                                    island[0].Vbus,
-                                    island[0].Sbus,
-                                    island[0].Yshunt,
-                                    island[0].pq,
-                                    island[0].pv,
-                                    island[0].vd,
-                                    island[0].pqpv)
+                self.V_cont, self.err = calc_V_outage(islands[0].branch_data,
+                                                      self.pf_results.If,
+                                                      islands[0].Ybus,
+                                                      islands[0].Yseries,
+                                                      islands[0].Vbus,
+                                                      islands[0].Sbus,
+                                                      islands[0].Yshunt,
+                                                      islands[0].pq,
+                                                      islands[0].pv,
+                                                      islands[0].vd,
+                                                      islands[0].pqpv)
 
+                self.PTDF = calc_ptdf_from_V(V_cont=self.V_cont,
+                                             Y=islands[0].Ybus,
+                                             Pini=np.real(self.pf_results.Sbus))
 
-                Pini_bus = np.real(self.pf_results.Sbus)
-                Pini_f = np.real(self.pf_results.Sf)
-
-                self.PTDF = calc_ptdf_from_V(self.V_cont, island[0].Ybus, Pini_bus)
-                self.LODF = calc_lodf_from_V(self.V_cont, island[0].Yf, island[0].Cf, Pini_f)
+                self.LODF = calc_lodf_from_V(V_cont=self.V_cont,
+                                             Yf=islands[0].Yf,
+                                             Cf=islands[0].Cf,
+                                             Pini=np.real(self.pf_results.Sf))
 
             print('Done running')
-
 
     @property
     def OTDF(self):
@@ -446,10 +478,10 @@ class NonLinearAnalysis:
         LODF: outage transfer distribution factors
         :return: Maximum LODF matrix (n-branch, n-branch)
         """
-        if self.__OTDF is None:  # lazy-evaluation
-            self.__OTDF = make_otdf_max(self.PTDF, self.LODF)
+        if self._OTDF is None:  # lazy-evaluation
+            self._OTDF = make_otdf_max(self.PTDF, self.LODF)
 
-        return self.__OTDF
+        return self._OTDF
 
     def get_transfer_limits(self, flows):
         """
