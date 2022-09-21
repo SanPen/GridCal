@@ -51,27 +51,31 @@ def compress_array(arr, min_sparsity=0.2):
                        'data': arr}
     """
     if isinstance(arr, list) or isinstance(arr, np.ndarray):
-        u = np.unique(arr)
-        f = len(u) / len(arr)  # sparsity factor
-        if f < min_sparsity:
-            base = u[0]  # pick the first always as the base
-            if isinstance(base, np.bool_):
-                base = bool(base)
-            data = list()
-            indptr = list()
-            if len(u) > 1:
-                if isinstance(arr, list):
-                    data, indptr = compress_array_numba(nb.typed.List(arr), base)
-                elif isinstance(arr, np.ndarray):
-                    data, indptr = compress_array_numba(arr, base)
-                else:
-                    raise Exception('Unknown profile type' + str(type(arr)))
+        if len(arr) > 0:
+            u = np.unique(arr)
+            f = len(u) / len(arr)  # sparsity factor
+            if f < min_sparsity:
+                base = u[0]  # pick the first always as the base
+                if isinstance(base, np.bool_):
+                    base = bool(base)
+                data = list()
+                indptr = list()
+                if len(u) > 1:
+                    if isinstance(arr, list):
+                        data, indptr = compress_array_numba(nb.typed.List(arr), base)
+                    elif isinstance(arr, np.ndarray):
+                        data, indptr = compress_array_numba(arr, base)
+                    else:
+                        raise Exception('Unknown profile type' + str(type(arr)))
 
-            return {'type': 'sparse',
-                    'base': base,
-                    'size': len(arr),
-                    'data': data,
-                    'indptr': indptr}
+                return {'type': 'sparse',
+                        'base': base,
+                        'size': len(arr),
+                        'data': data,
+                        'indptr': indptr}
+            else:
+                return {'type': 'dense',
+                        'data': arr}
         else:
             return {'type': 'dense',
                     'data': arr}
