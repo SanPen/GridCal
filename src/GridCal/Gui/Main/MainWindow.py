@@ -1111,13 +1111,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_35.addWidget(self.newContingencyPlanButton)
 
-        self.addContingencyButton = QPushButton(self.frame_69)
-        self.addContingencyButton.setObjectName(u"addContingencyButton")
-        self.addContingencyButton.setIcon(icon66)
-
-        self.horizontalLayout_35.addWidget(self.addContingencyButton)
-
-        self.horizontalSpacer_25 = QSpacerItem(600, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_25 = QSpacerItem(634, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_35.addItem(self.horizontalSpacer_25)
 
@@ -1173,7 +1167,7 @@ class Ui_mainWindow(object):
         self.toolBox.setObjectName(u"toolBox")
         self.contingencyBranchesPage = QWidget()
         self.contingencyBranchesPage.setObjectName(u"contingencyBranchesPage")
-        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 454, 442))
+        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 258, 210))
         self.verticalLayout_40 = QVBoxLayout(self.contingencyBranchesPage)
         self.verticalLayout_40.setObjectName(u"verticalLayout_40")
         self.verticalLayout_40.setContentsMargins(0, 0, 0, 0)
@@ -1228,7 +1222,7 @@ class Ui_mainWindow(object):
         self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
         self.contingencyInjectionsPage = QWidget()
         self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
-        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 454, 442))
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
         self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
         self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
@@ -1716,9 +1710,11 @@ class Ui_mainWindow(object):
         self.settings_tabWidget = QTabWidget(self.SettingsTab)
         self.settings_tabWidget.setObjectName(u"settings_tabWidget")
         self.settings_tabWidget.setEnabled(True)
+        self.settings_tabWidget.setAutoFillBackground(False)
         self.settings_tabWidget.setTabPosition(QTabWidget.South)
         self.settings_tabWidget.setElideMode(Qt.ElideNone)
         self.settings_tabWidget.setDocumentMode(False)
+        self.settings_tabWidget.setMovable(False)
         self.settings_tabWidget.setTabBarAutoHide(False)
         self.tab_3 = QWidget()
         self.tab_3.setObjectName(u"tab_3")
@@ -3704,7 +3700,7 @@ class Ui_mainWindow(object):
 
         self.frame_7 = QFrame(self.SettingsTab)
         self.frame_7.setObjectName(u"frame_7")
-        self.frame_7.setFrameShape(QFrame.StyledPanel)
+        self.frame_7.setFrameShape(QFrame.NoFrame)
         self.frame_7.setFrameShadow(QFrame.Raised)
         self.verticalLayout_12 = QVBoxLayout(self.frame_7)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
@@ -4065,7 +4061,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.toolBox.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(1)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
 
@@ -4511,7 +4507,6 @@ class Ui_mainWindow(object):
         self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
         self.newContingencyPlanButton.setText("")
-        self.addContingencyButton.setText("")
         self.deleteContingencyButton.setText("")
 #if QT_CONFIG(tooltip)
         self.autoNminusXButton.setToolTip(QCoreApplication.translate("mainWindow", u"Automatically generate the all the N-x contingencies following the settings (see settings > Con)", None))
