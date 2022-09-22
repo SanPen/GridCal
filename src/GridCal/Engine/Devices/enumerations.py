@@ -176,6 +176,28 @@ class FaultType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class BranchAddOrRemove(Enum):
+    add = 'add'
+    remove = 'remove'
+
+    def __str__(self):
+        return str(self.values)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return BranchAddOrRemove[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class WindingsConnection(Enum):
     # G: grounded star
     # S: ungrounded star

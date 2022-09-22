@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType, WindingsConnection
+from GridCal.Engine.Devices.enumerations import BranchAddOrRemove, BranchType, TransformerControlType, WindingsConnection
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
@@ -412,6 +412,8 @@ class Transformer2W(EditableDevice):
 
         **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
 
+        **add_or_remove** (BranchAddOrRemove, BranchAddOrRemove.remove): Indicate if the line should be disconnected or added in the contingency analysis
+
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
@@ -432,7 +434,8 @@ class Transformer2W(EditableDevice):
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
                  r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
-                 conn: WindingsConnection = WindingsConnection.GG):
+                 conn: WindingsConnection = WindingsConnection.GG,
+                 add_or_remove: BranchAddOrRemove = BranchAddOrRemove.remove):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -518,6 +521,7 @@ class Transformer2W(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
+                                                  'add_or_remove': GCProp('', BranchAddOrRemove, ''),
                                                   'template': GCProp('', DeviceType.TransformerTypeDevice, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
@@ -611,6 +615,9 @@ class Transformer2W(EditableDevice):
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.Transformer
+
+        # add or remove
+        self.add_or_remove = add_or_remove
 
         # type template
         self.template = template
@@ -721,6 +728,7 @@ class Transformer2W(EditableDevice):
                           temp_base=self.temp_base,
                           temp_oper=self.temp_oper,
                           alpha=self.alpha,
+                          add_or_remove=self.add_or_remove,
                           template=self.template)
 
         b.measurements = self.measurements
@@ -956,7 +964,8 @@ class Transformer2W(EditableDevice):
 
                  'base_temperature': self.temp_base,
                  'operational_temperature': self.temp_oper,
-                 'alpha': self.alpha
+                 'alpha': self.alpha,
+                 'add_or_remove': str(self.add_or_remove)
                  }
 
         elif version == 3:
@@ -1006,7 +1015,8 @@ class Transformer2W(EditableDevice):
 
                  'base_temperature': self.temp_base,
                  'operational_temperature': self.temp_oper,
-                 'alpha': self.alpha
+                 'alpha': self.alpha,
+                 'add_or_remove': str(self.add_or_remove)
                  }
         else:
             d = dict()

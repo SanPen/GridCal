@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchAddOrRemove, BranchType
 from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
 from GridCal.Engine.Devices.line import SequenceLineType, Line
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
@@ -292,6 +292,8 @@ class Branch(EditableDevice):
         **alpha** (float, 0.0033): Thermal constant of the material in °C
 
         **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
+        
+        **add_or_remove** (BranchAddOrRemove, BranchAddOrRemove.remove): Indicate if the line should be disconnected or added in the contingency analysis
 
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
@@ -301,7 +303,8 @@ class Branch(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 bus_to_regulated=False, template=BranchTemplate(), ):
+                 bus_to_regulated=False, add_or_remove: BranchAddOrRemove = BranchAddOrRemove.remove,
+                 template=BranchTemplate(), ):
 
         EditableDevice.__init__(self,
                                 idtag=idtag,
@@ -360,6 +363,7 @@ class Branch(EditableDevice):
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
                                                   'branch_type': GCProp('', BranchType, ''),
+                                                  'add_or_remove': GCProp('', BranchAddOrRemove, ''),
                                                   'template': GCProp('', BranchTemplate, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
@@ -436,6 +440,9 @@ class Branch(EditableDevice):
         self.bus_to_regulated = bus_to_regulated
         self.vset = vset
 
+        # add or remove
+        self.add_or_remove = add_or_remove
+
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
                      'line': BranchType.Line,
@@ -500,6 +507,7 @@ class Branch(EditableDevice):
                    temp_oper=self.temp_oper,
                    alpha=self.alpha,
                    branch_type=self.branch_type,
+                   add_or_remove=self.add_or_remove,
                    template=self.template)
 
         b.measurements = self.measurements
@@ -626,6 +634,7 @@ class Branch(EditableDevice):
              'alpha': self.alpha,
              'tap_angle': self.angle,
              'branch_type': str(self.branch_type),
+             'add_or_remove': str(self.add_or_remove),
              'active_profile': [],
              'rate_prof': []}
 
@@ -708,6 +717,7 @@ def convert_branch(branch: Branch):
                     rate_prof=branch.rate_prof,
                     Cost_prof=branch.Cost_prof,
                     active_prof=branch.active_prof,
+                    add_or_remove=branch.add_or_remove,
                     temp_oper_prof=branch.temp_oper_prof)
 
     elif branch.branch_type == BranchType.Transformer:

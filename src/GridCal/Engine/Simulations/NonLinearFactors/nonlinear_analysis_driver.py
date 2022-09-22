@@ -150,7 +150,7 @@ class NonLinearAnalysisResults(ResultsTemplate):
 
 class NonLinearAnalysisOptions:
 
-    def __init__(self, distribute_slack=True, correct_values=True, pf_results=None):
+    def __init__(self, distribute_slack=True, correct_values=True, pf_results=None, branches_sets=None):
         """
         Power Transfer Distribution Factors' options
         :param distribute_slack:
@@ -158,6 +158,7 @@ class NonLinearAnalysisOptions:
         self.distribute_slack = distribute_slack
         self.correct_values = correct_values
         self.pf_results = pf_results
+        self.branches_sets = branches_sets
 
 
 class NonLinearAnalysisDriver(DriverTemplate):
@@ -208,7 +209,8 @@ class NonLinearAnalysisDriver(DriverTemplate):
         analysis = NonLinearAnalysis(grid=self.grid,
                                      distributed_slack=self.options.distribute_slack,
                                      correct_values=self.options.correct_values,
-                                     pf_results=self.options.pf_results)
+                                     pf_results=self.options.pf_results,
+                                     branches_sets=self.options.branches_sets)
 
         analysis.run()
         self.logger += analysis.logger

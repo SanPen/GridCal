@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchAddOrRemove, BranchType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.tower import Tower
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -223,6 +223,8 @@ class Line(EditableDevice):
 
         **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
 
+        **add_or_remove** (BranchAddOrRemove, BranchAddOrRemove.remove): Indicate if the line should be disconnected or added in the contingency analysis
+
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
@@ -232,7 +234,8 @@ class Line(EditableDevice):
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
                  contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20):
+                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
+                 add_or_remove: BranchAddOrRemove = BranchAddOrRemove.remove):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -300,6 +303,7 @@ class Line(EditableDevice):
                                                                       '0 would be at the "from" side,\n'
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
+                                                  'add_or_remove': GCProp('', BranchAddOrRemove, ''),
                                                   'template': GCProp('', DeviceType.SequenceLineDevice, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
@@ -366,6 +370,9 @@ class Line(EditableDevice):
         self.rate = rate
         self.rate_prof = rate_prof
 
+        # add or remove
+        self.add_or_remove = add_or_remove
+
         self.contingency_factor = contingency_factor
         self.contingency_factor_prof = contingency_factor_prof
 
@@ -422,6 +429,7 @@ class Line(EditableDevice):
                  temp_base=self.temp_base,
                  temp_oper=self.temp_oper,
                  alpha=self.alpha,
+                 add_or_remove=self.add_or_remove,
                  template=self.template)
 
         b.measurements = self.measurements
@@ -575,6 +583,7 @@ class Line(EditableDevice):
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
+                    'add_or_remove': str(self.add_or_remove),
                     'locations': []
                     }
 
@@ -600,6 +609,7 @@ class Line(EditableDevice):
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
+                    'add_or_remove': str(self.add_or_remove),
                     'locations': []
                     }
         else:
