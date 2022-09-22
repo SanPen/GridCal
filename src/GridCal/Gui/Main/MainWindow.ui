@@ -1552,6 +1552,18 @@ p, li { white-space: pre-wrap; }
             <string>Contingency planner</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_37">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QFrame" name="frame_70">
               <property name="frameShape">
@@ -1694,7 +1706,7 @@ p, li { white-space: pre-wrap; }
                       <item>
                        <widget class="QPushButton" name="autoNminusXButton">
                         <property name="toolTip">
-                         <string>Automatically generate the all the N-x contingencies following the settings (see settings &gt; Con)</string>
+                         <string>Automatically generate the all the N-x contingencies following the settings below</string>
                         </property>
                         <property name="text">
                          <string>Auto</string>
@@ -1733,15 +1745,15 @@ p, li { white-space: pre-wrap; }
                    <item>
                     <widget class="QToolBox" name="toolBox">
                      <property name="currentIndex">
-                      <number>1</number>
+                      <number>0</number>
                      </property>
                      <widget class="QWidget" name="contingencyBranchesPage">
                       <property name="geometry">
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>258</width>
-                        <height>210</height>
+                        <width>327</width>
+                        <height>491</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -1836,8 +1848,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>361</width>
-                        <height>242</height>
+                        <width>327</width>
+                        <height>491</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -8395,7 +8407,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

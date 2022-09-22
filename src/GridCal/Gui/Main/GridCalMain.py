@@ -58,6 +58,7 @@ from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
+from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
@@ -619,6 +620,10 @@ class MainGUI(QMainWindow):
         self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
 
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
+
+        self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
+        self.ui.newContingencyPlanButton.clicked.connect(self.new_contingency_plan)
+        self.ui.deleteContingencyButton.clicked.connect(self.delete_contingency_item)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -7095,6 +7100,30 @@ class MainGUI(QMainWindow):
         df = pd.DataFrame(data=objects, columns=['Name', 'Size (kb)'])
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
+
+    def auto_generate_contingencies(self):
+
+        plan = generate_automatic_contingency_plan(grid=self.circuit,
+                                                   k=self.ui.contingencyNspinBox.value(),
+                                                   filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
+                                                   vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
+                                                   vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
+                                                   branch_types=[DeviceType.LineDevice],
+                                                   filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
+                                                   contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
+                                                   pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
+                                                   pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
+                                                   injection_types=[DeviceType.GeneratorDevice])
+
+        model = get_contingency_planner_model(self.circuit, plan)
+
+        self.ui.contingencyPlannerTreeView.setModel(model)
+
+    def new_contingency_plan(self):
+        pass
+
+    def delete_contingency_item(self):
+        pass
 
 
 def run(use_native_dialogues=False):
