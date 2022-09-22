@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -236,7 +236,8 @@ class HvdcLine(EditableDevice):
                  max_firing_angle_t=1.0,  active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
                  contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset,
-                 dispatchable=False, angle_droop=0, angle_droop_prof=np.ones(0), contingency_factor_prof=None):
+                 dispatchable=False, angle_droop=0, angle_droop_prof=np.ones(0), contingency_factor_prof=None,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -320,6 +321,12 @@ class HvdcLine(EditableDevice):
 
                                                   'overload_cost': GCProp('e/MWh', float,
                                                                           'Cost of overloads. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
@@ -375,6 +382,12 @@ class HvdcLine(EditableDevice):
                                                                     self.max_firing_angle_t)
 
         self.overload_cost_prof = overload_cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         self.control_mode = control_mode
 
@@ -618,6 +631,9 @@ class HvdcLine(EditableDevice):
                  'base_temperature': 20,
                  'operational_temperature': 20,
                  'alpha': 0.00330,
+                 'capex': self.capex,
+                 'opex': self.opex,
+                 'build_status': str(self.build_status.value).lower(),
                  'locations': []
                  }
         else:

@@ -17,6 +17,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.enumerations import BuildStatus
 
 
 class Shunt(EditableDevice):
@@ -43,7 +44,8 @@ class Shunt(EditableDevice):
 
     def __init__(self, name='shunt', idtag=None, code='',
                  G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
-                 controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0):
+                 controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -65,7 +67,14 @@ class Shunt(EditableDevice):
                                                                  'Set voltage. '
                                                                  'This is used for controlled shunts.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
+                                                  },
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'G': 'G_prof',
@@ -92,6 +101,12 @@ class Shunt(EditableDevice):
         # admittance profile
         self.G_prof = G_prof
         self.B_prof = B_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
     def copy(self):
         """
@@ -145,6 +160,9 @@ class Shunt(EditableDevice):
                     'b': self.B,
                     'bmax': self.Bmax,
                     'bmin': self.Bmin,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
                     'id_impedance_table': "",
                     'technology': ""
                     }

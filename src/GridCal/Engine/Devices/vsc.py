@@ -20,7 +20,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType, ConverterControlType
+from GridCal.Engine.Devices.enumerations import BranchType, ConverterControlType, BuildStatus
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
@@ -38,7 +38,8 @@ class VSC(EditableDevice):
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 r0=0.0001, x0=0.05, r2=0.0001, x2=0.05):
+                 r0=0.0001, x0=0.05, r2=0.0001, x2=0.05,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -146,6 +147,12 @@ class VSC(EditableDevice):
                                                   'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
                                                   'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
@@ -213,6 +220,12 @@ class VSC(EditableDevice):
 
         self.Cost = cost
         self.Cost_prof = cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         self.mttf = mttf
         self.mttr = mttr
@@ -385,7 +398,11 @@ class VSC(EditableDevice):
                  'vac_set': self.Vac_set,
                  'vdc_set': self.Vdc_set,
 
-                 'control_mode': modes[self.control_mode]
+                 'control_mode': modes[self.control_mode],
+
+                 'capex': self.capex,
+                 'opex': self.opex,
+                 'build_status': str(self.build_status.value).lower(),
                  }
         else:
             d = dict()

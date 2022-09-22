@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Devices.tower import Tower
 from GridCal.Engine.Devices.line import LineTemplate, SequenceLineType, UndergroundLineType
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -34,7 +34,8 @@ class DcLine(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=None, rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
+                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
 
         :param bus_from:
@@ -109,6 +110,12 @@ class DcLine(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
                                                                     'Used in short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
@@ -154,6 +161,12 @@ class DcLine(EditableDevice):
         self.Cost = cost
 
         self.Cost_prof = Cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         self.active_prof = active_prof
 
@@ -367,6 +380,9 @@ class DcLine(EditableDevice):
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
                     'locations': []}
         else:
             return dict()

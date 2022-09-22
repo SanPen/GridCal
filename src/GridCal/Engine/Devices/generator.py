@@ -20,7 +20,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
-from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType
+from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType, BuildStatus
 
 
 def make_default_q_curve(Snom, Qmin, Qmax, n=3):
@@ -147,7 +147,8 @@ class Generator(EditableDevice):
                  Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
                  mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle,
                  q_points=None, use_reactive_power_curve=False,
-                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20):
+                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -186,6 +187,12 @@ class Generator(EditableDevice):
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
 
                                                   'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   'enabled_dispatch': GCProp('', bool,
                                                                              'Enabled for dispatch? Used in OPF.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
@@ -278,6 +285,12 @@ class Generator(EditableDevice):
         self.Cost = op_cost
 
         self.Cost_prof = Cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         # Dynamic vars
         # self.Ra = Ra
@@ -403,6 +416,9 @@ class Generator(EditableDevice):
                     'pmin': self.Pmin,
                     'pmax': self.Pmax,
                     'cost': self.Cost,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
                     'technology': "",
                     }
         else:
