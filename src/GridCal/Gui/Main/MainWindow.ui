@@ -1745,15 +1745,15 @@ p, li { white-space: pre-wrap; }
                    <item>
                     <widget class="QToolBox" name="toolBox">
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>1</number>
                      </property>
                      <widget class="QWidget" name="contingencyBranchesPage">
                       <property name="geometry">
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>327</width>
-                        <height>491</height>
+                        <width>319</width>
+                        <height>460</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -1848,8 +1848,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>327</width>
-                        <height>491</height>
+                        <width>361</width>
+                        <height>446</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -8407,7 +8407,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8458,6 +8458,7 @@ QProgressBar::chunk{
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
     <addaction name="menuSet_selected_buses"/>
+    <addaction name="actionNew_contingency_from_selection"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -9360,6 +9361,21 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Fix loads active based on the power</string>
+   </property>
+  </action>
+  <action name="actionNew_contingency_from_selection">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New contingency from selection</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new contingency from the schematic selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+C</string>
    </property>
   </action>
  </widget>

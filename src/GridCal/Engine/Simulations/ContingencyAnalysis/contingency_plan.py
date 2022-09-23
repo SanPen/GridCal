@@ -60,20 +60,129 @@ class Contingency:
         self.generator_indices.append(i)
         self.generator_power_amount_to_reduce.append(perc)
 
+    def get_dict(self):
+        """
+        Get this contingency as dictionary
+        :return:
+        """
+        return {'id': self.id,
+                'name': self.name,
+                'type': self.tpe,
+                'branch_indices': self.branch_indices,
+                'hvdc_indices': self.hvdc_indices,
+                'generator_indices': self.generator_indices,
+                'generator_power_amount_to_reduce': self.generator_power_amount_to_reduce}
+
+    def parse_dict(self, data: dict):
+        """
+        parse the dictionary
+        :param data:
+        :return:
+        """
+        self.id = data['id'] if 'id' in data else uuid.uuid4().hex
+        self.name = data['name'] if 'name' in data else ""
+        self.tpe = data['type'] if 'type' in data else ""
+        self.branch_indices = data['branch_indices'] if 'branch_indices' in data else list()
+        self.hvdc_indices = data['hvdc_indices'] if 'hvdc_indices' in data else list()
+        self.generator_indices = data['generator_indices'] if 'generator_indices' in data else list()
+        self.generator_power_amount_to_reduce = data['generator_power_amount_to_reduce'] if 'generator_power_amount_to_reduce' in data else list()
+
 
 class ContingencyPlan:
 
     def __init__(self):
-
         self.contingencies: List[Contingency] = list()
+
+    def add_contingency(self, c: Contingency):
+        self.contingencies.append(c)
+
+    def delete_contingency(self, idx):
+        self.contingencies.pop(idx)
+
+    def get_dict(self):
+        return [e.get_dict() for e in self.contingencies]
+
+    def parse_data(self, data: list):
+
+        for elm in data:
+            c = Contingency()
+            c.parse_dict(elm)
+            self.add_contingency(c)
 
 
 def get_branch_max_voltage(branch):
+    """
 
+    :param branch:
+    :return:
+    """
     v1 = branch.bus_from.Vnom
     v2 = branch.bus_to.Vnom
 
     return max(v1, v2)
+
+
+def add_n1_contingencies(plan: ContingencyPlan, branches, vmin, vmax, filter_branches_by_voltage, branch_types):
+    """
+
+    :param plan:
+    :param branches:
+    :param vmin:
+    :param vmax:
+    :param filter_branches_by_voltage:
+    :param branch_types:
+    :return:
+    """
+    for i, branch_i in enumerate(branches):
+
+        vi = get_branch_max_voltage(branch_i)
+
+        filter_ok_i = (vmin <= vi <= vmax) if filter_branches_by_voltage else True
+
+        if filter_ok_i and branch_i.device_type in branch_types:
+            ci = Contingency()
+            ci.add_branch(i)
+            plan.add_contingency(ci)
+            ci.name = branch_i.name
+            ci.tpe = 'N-1'
+
+
+def add_n2_contingencies(plan: ContingencyPlan, branches, vmin, vmax, filter_branches_by_voltage, branch_types):
+    """
+
+    :param plan:
+    :param branches:
+    :param vmin:
+    :param vmax:
+    :param filter_branches_by_voltage:
+    :param branch_types:
+    :return:
+    """
+    for i, branch_i in enumerate(branches):
+
+        vi = get_branch_max_voltage(branch_i)
+
+        filter_ok_i = (vmin <= vi <= vmax) if filter_branches_by_voltage else True
+
+        if filter_ok_i and branch_i.device_type in branch_types:
+
+            for j, branch_j in enumerate(branches):
+
+                if j != i:
+
+                    vj = get_branch_max_voltage(branch_j)
+
+                    filter_ok_j = (vmin <= vj <= vmax) if filter_branches_by_voltage else True
+
+                    if filter_ok_j and branch_j.device_type in branch_types:
+                        ci = Contingency()
+                        ci.tpe = 'N-2'
+                        ci.add_branch(i)
+                        ci.add_branch(j)
+                        ci.name = branch_i.name + ':' + branch_j.name
+
+                        # add the N-2 contingency
+                        plan.add_contingency(ci)
 
 
 def generate_automatic_contingency_plan(grid: MultiCircuit, k: int,
@@ -104,45 +213,10 @@ def generate_automatic_contingency_plan(grid: MultiCircuit, k: int,
     branches = grid.get_branches_wo_hvdc()
 
     if k == 1:
-        for i, branch_i in enumerate(branches):
-
-            vi = get_branch_max_voltage(branch_i)
-
-            filter_ok_i = (vmin <= vi <= vmax) if filter_branches_by_voltage else True
-
-            if filter_ok_i and branch_i.device_type in branch_types:
-                ci = Contingency()
-                ci.add_branch(i)
-                plan.contingencies.append(ci)
-                ci.name = branch_i.name
-                ci.tpe = 'N-1'
+        add_n1_contingencies(plan, branches, vmin, vmax, filter_branches_by_voltage, branch_types)
 
     elif k == 2:
-
-        for i, branch_i in enumerate(branches):
-
-            vi = get_branch_max_voltage(branch_i)
-
-            filter_ok_i = (vmin <= vi <= vmax) if filter_branches_by_voltage else True
-
-            if filter_ok_i and branch_i.device_type in branch_types:
-
-                for j, branch_j in enumerate(branches):
-
-                    if j != i:
-
-                        vj = get_branch_max_voltage(branch_j)
-
-                        filter_ok_j = (vmin <= vj <= vmax) if filter_branches_by_voltage else True
-
-                        if filter_ok_j and branch_j.device_type in branch_types:
-                            ci = Contingency()
-                            ci.tpe = 'N-2'
-                            ci.add_branch(i)
-                            ci.add_branch(j)
-                            ci.name = branch_i.name + ':' + branch_j.name
-
-                            # add the N-2 contingency
-                            plan.contingencies.append(ci)
+        add_n1_contingencies(plan, branches, vmin, vmax, filter_branches_by_voltage, branch_types)
+        add_n2_contingencies(plan, branches, vmin, vmax, filter_branches_by_voltage, branch_types)
 
     return plan

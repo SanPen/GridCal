@@ -21,7 +21,6 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit, DeviceType
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_plan import ContingencyPlan, generate_automatic_contingency_plan
 
 
-
 def get_contingency_planner_model(grid: MultiCircuit, plan: ContingencyPlan):
 
     model = QtGui.QStandardItemModel()

@@ -58,7 +58,7 @@ from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan
+from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan, ContingencyPlan
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
@@ -340,10 +340,10 @@ class MainGUI(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        # simulations session
+        # simulations session ------------------------------------------------------------------------------------------
         self.session: SimulationSession = SimulationSession(name='GUI session')
 
-        # threads
+        # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
@@ -355,7 +355,7 @@ class MainGUI(QMainWindow):
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
         self.stuff_running_now = list()
 
-        # window pointers
+        # window pointers ----------------------------------------------------------------------------------------------
         self.file_sync_window: SyncDialogueWindow = None
         self.sigma_dialogue: SigmaAnalysisGUI = None
         self.grid_generator_dialogue: GridGeneratorGUI = None
@@ -368,7 +368,7 @@ class MainGUI(QMainWindow):
 
         self.file_name = ''
 
-        # current results model
+        # current results model ----------------------------------------------------------------------------------------
         self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
                                                               columns=np.zeros(0),
                                                               index=np.zeros(0))
@@ -381,6 +381,27 @@ class MainGUI(QMainWindow):
         # dictionaries for available results
         self.available_results_dict = None
         self.available_results_steps_dict = None
+
+        ################################################################################################################
+        # Contingency planner
+        ################################################################################################################
+
+        self.contingency_branch_types = [DeviceType.LineDevice,
+                                         DeviceType.DCLineDevice,
+                                         DeviceType.Transformer2WDevice,
+                                         DeviceType.VscDevice,
+                                         DeviceType.UpfcDevice]
+
+        self.contingency_injection_types = [DeviceType.GeneratorDevice,
+                                            DeviceType.BatteryDevice]
+
+        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
+                                                                       checks=True, check_value=True))
+
+        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
+                                                                       checks=True, check_value=True))
+
+        self.contingency_plan: ContingencyPlan = ContingencyPlan()
 
         ################################################################################################################
         # Console
@@ -512,6 +533,8 @@ class MainGUI(QMainWindow):
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
+
+        self.ui.actionNew_contingency_from_selection.triggered.connect(self.add_contingency_from_selection)
 
         # Buttons
 
@@ -7102,27 +7125,57 @@ class MainGUI(QMainWindow):
         return df
 
     def auto_generate_contingencies(self):
+        """
+        Automatically generate the contingency plan from the selection
+        :return:
+        """
 
-        plan = generate_automatic_contingency_plan(grid=self.circuit,
-                                                   k=self.ui.contingencyNspinBox.value(),
-                                                   filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
-                                                   vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
-                                                   vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
-                                                   branch_types=[DeviceType.LineDevice],
-                                                   filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
-                                                   contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
-                                                   pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
-                                                   pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
-                                                   injection_types=[DeviceType.GeneratorDevice])
+        # filters
+        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
+                                                                       checks=True, check_value=True))
 
-        model = get_contingency_planner_model(self.circuit, plan)
+        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
+                                                                       checks=True, check_value=True))
+
+        branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
+        injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
+
+        branch_types = [self.contingency_branch_types[i] for i in branch_indices]
+        injection_types = [self.contingency_injection_types[i] for i in injection_indices]
+
+        # generate the contingency plan
+        self.contingency_plan = generate_automatic_contingency_plan(grid=self.circuit,
+                                                                    k=self.ui.contingencyNspinBox.value(),
+                                                                    filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
+                                                                    vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
+                                                                    vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
+                                                                    branch_types=branch_types,
+                                                                    filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
+                                                                    contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
+                                                                    pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
+                                                                    pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
+                                                                    injection_types=injection_types)
+
+        model = get_contingency_planner_model(self.circuit, self.contingency_plan)
 
         self.ui.contingencyPlannerTreeView.setModel(model)
+        self.ui.contingencyPlannerTreeView.expandToDepth(2)
 
     def new_contingency_plan(self):
-        pass
+        """
+        New contingency plan routine
+        :return:
+        """
+        ok = yes_no_question("Do you want to clear the contingency plan and create a new one?", "New contingency plan")
+
+        if ok:
+            self.contingency_plan = ContingencyPlan()
+            self.ui.contingencyPlannerTreeView.setModel(None)
 
     def delete_contingency_item(self):
+        pass
+
+    def add_contingency_from_selection(self):
         pass
 
 
