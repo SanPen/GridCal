@@ -7131,12 +7131,6 @@ class MainGUI(QMainWindow):
         """
 
         # filters
-        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
-                                                                       checks=True, check_value=True))
-
-        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
-                                                                       checks=True, check_value=True))
-
         branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
         injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
 
