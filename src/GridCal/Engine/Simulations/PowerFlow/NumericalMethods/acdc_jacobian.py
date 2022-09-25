@@ -727,10 +727,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
     Vc = np.conj(V)
-    dSf_dVa, dSf_dVm = deriv.dSf_dV_fast(Yf, V, Vc, E, F, Cf)
+    dSf_dVm = deriv.dSf_dVm_csc(Yf, V, F, T)
+    dSf_dVa = deriv.dSf_dVa_csc(Yf, V, F, T)
 
     if nQtma:
-        dSt_dVa, dSt_dVm = deriv.dSf_dV_fast(Yt, V, Vc, E, T, Ct)
+        dSf_dVm = deriv.dSt_dVm_csc(Yt, V, F, T)
+        dSf_dVa = deriv.dSt_dVa_csc(Yt, V, F, T)
     else:
         dSt_dVa = csc_matrix((nl, nb))
         dSt_dVm = csc_matrix((nl, nb))

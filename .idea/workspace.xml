@@ -23,266 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added to_dict and parse_data to the contingency_model">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/CIM_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim10/abb40busCPSM2_2006-04-28.rdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim10/ucte14_i3e_20060328.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim10/wapa262CIM.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim14/ABB40busModified.rdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim14/ABB40busModified.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim14/opencim3sub.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/CIM2Matpower.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/cim_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/mpc_bb2nodal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/mpc_nodal2bb.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/PostProcess_mpc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/PreProcess_CIM_files.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Topology_BusBranch.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Topology_NodeBreaker.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_imported.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_imported.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_EQ.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_SV.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_TP.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/ercot/sample_081208.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/CIM/transformer_as_cim.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/MCMC/1d_metropolis_algorithm_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/functions_PQ.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/josep_v2/main_v1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/josep_v2/main_v2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/josep_version/functions_PQ.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/josep_version/test2_PQ.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PCA/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PGD/V1_refractored.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PGD/all2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PGD/all2_refactored.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PGD/data_10PQ.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PGD/data_10PQ_mesh_r.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/ACPTDF_research.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/ACPTDF_research2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/ACPTDF_research3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/ATC1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_by_node_groups.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_research.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_research2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_research3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/Sensitivity_research_AchaDaza.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/StateEstimation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/TRX/TRX_1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/_compile_usa_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/admittance/admittance_variations.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cuda/cuda_solve.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cvxopt/cvxopt_matrices.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba1/cython_1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba1/cython_example.pyx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba2/matmul.pyx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba2/matmul_setup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba2/prueba_matmul.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba3/snrm2_.pyx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/cython/prueba3/snrm2_setup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/IEEE14 - ntc areas (JAcobian check).xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_4.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_5(sparse).py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/expressions.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/expressions2.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/fast_dSf_dV.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/jacobian_gomez_exposito.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/jacobian_lynn_cartesian.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/power_flow_new_j.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/power_flow_old_j.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/derivatives_and_jacobian/tinney1967.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/9_bus_dynamic.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/G1.mach" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/G2.mach" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/G3.mach" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/case9.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/dynamic_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/events.evnt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/dynamic/recorder.rcd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/experimental_readers/New Zealand shouth island (Arrillaga p150).gridcal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/experimental_readers/New Zealand shouth island (Arrillaga p150).xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/experimental_readers/arrillagas_book_grids_to_gridcal.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/generator/reactive_power_curve.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/binary_ga.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/IDONE.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_Rosenbrock.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_sum_of_int.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/example_25dRosenbrock.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/example_5dRosenbrock.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/grid_reduction.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/grid_reduction2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/grid_reduction_dfs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/minimal_graph_reduction_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/SE_Diagram1.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/SE_Diagram1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/SE_Diagram2.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/SE_Diagram2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/switch_reduction_dense.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/switch_reduction_early_investigation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/switch_reduction_sparse.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/interior_point/all_derivatives.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/interior_point/interior_point_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/interior_point/simplex_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/interpolation/impedances_clustering.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/interpolation/lhs_ts.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/jupyter_console_ABC_bug.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/krylov/gmres_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/Deriving System Y and Z Matrices.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/Carson.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/Carson_integral.cxx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/DC-EMTP.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/DC-EMTP.ps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/EMTP-series.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/EMTPTB.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/Series.ps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/Series.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/carson.ps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/emtp.ps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/ets-papers.sty" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/EMTP_Theory_Book_Correction/m-defs.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/Mutual Impedance with Earth Return.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/The PSCAD Line Constants Program.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/line_impedances/line_parameters.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/linear_algebra/F.npz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/linear_algebra/J.npz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/linear_algebra/test_frameworks.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/map/lightmap.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/map/map_test_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/map/map_test_simple.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/map/show_map_tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/DYCORS_OPF.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/ac_opf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/ac_pf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/black_box_opf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/dc_opf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/dc_opf_3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/dc_pf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/multi_time_frame/enumerations.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/multi_time_frame/short_term_general.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/opf/multi_time_frame/short_term_pulp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/example1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v7.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_pruebas.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools2.lp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools3.lp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v4.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_v7.lp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/parallel/async_pool_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/parallel/mpi4py_trivial_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/parallel/parallel_execution.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/parallel/star_map_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/per_unit/line_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/per_unit/transformer_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/performance.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/pf_performance.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/polynomial_fit/polyfit_tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/Comparison_automation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/Linear_AC_powerflow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/ZPF.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/asd/asd_power_flow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/fast_decoupled_research.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/fubm/derivatives_research0.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/fubm/derivatives_research1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/fubm/derivatives_research2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/fubm/jacobian_based_acdc_power_flow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/helm_data1.gridcal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/helm_josep.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/HELM_Chengxi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/HELM_Chengxi_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/HELM_Chengxi_corrected.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/HELM_Wallace.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/Helm.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/HelmVect_ASU.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/continued_fraction.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/helm_pq.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/helm_z_pq.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/helm_z_pv.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/thevenin.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm_power_flow_andre.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/devices_and_variables.ods" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/fubm_case_30_2MTDC_ctrls_vt2_pf_dp.ods" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/newton_line_search_acdc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/nr_acdc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/vsc_research.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/hvdc/vsc_research_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/iwamoto_1_bus_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/jacobian/high_speed_jacobian_csc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/jacobian/schafer_jacobian_assembly.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/levmar_pf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/lynn5buspq.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/lynn5buspv.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/nelder_mead_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/newton_continuation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/newton_current.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/newton_line_search.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/newton_svc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/rectangular/rectangular_nr1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_world_format/power_world_epc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/psse_transformer_impedance_conversion.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/ptdf_ts.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/add_asynchonously.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/add_asynchronously_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/adding_graphics.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/line_arrow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/more_complex_tree_view.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/node_branch_drawing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/pandas_table_view.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/pyside_enums.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/se_editor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/tree_data.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/qt_related/tree_view_example.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/running_avg_std.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/scipy_performance.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/short_circuit/IEEE_30.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/short_circuit/mid_line_short_circuit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/short_circuit/sequences_GC.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/short_circuit/sequences_v1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/slicing_experiments.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/state_estimation/5_bus_se.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/state_estimation/Bus5_GSO.EPC" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/branch.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/bus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/generator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/line.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/load.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/transformer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Engine.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Numerical/numerical_power_flow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Simulation/power_flow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/circuit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/circuit_matrix_inputs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/circuit_matrix_results.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/general.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/Delta_Wye_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/IEEE37.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/IEEE37.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/IEEE37_exponential_models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/IEEELineCodes.DSS" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/ieee37.dss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/sometext" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/test_engine_1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/test_engine_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/three_phase/tests/vectorized_y_bus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/time_series.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/upfc/fuerte_esquivel_acha_ambriz_perez_paper.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/voltage_collapse/v_collapse.py" beforeDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Deleted the research folder">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/acdc_jacobian.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/acdc_jacobian.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -310,7 +54,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel_REE2" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -1318,14 +1062,7 @@
       <workItem from="1663700169264" duration="261000" />
       <workItem from="1663788497577" duration="1956000" />
       <workItem from="1663916305574" duration="8786000" />
-      <workItem from="1664100326455" duration="307000" />
-    </task>
-    <task id="LOCAL-00300" summary="Slight modifications to display more data for debugging">
-      <created>1652692334167</created>
-      <option name="number" value="00300" />
-      <option name="presentableId" value="LOCAL-00300" />
-      <option name="project" value="LOCAL" />
-      <updated>1652692334168</updated>
+      <workItem from="1664100326455" duration="4885000" />
     </task>
     <task id="LOCAL-00301" summary="Fixed serious bug where the compiler was not considering the load active profiles">
       <created>1653569314433</created>
@@ -1663,7 +1400,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663933029950</updated>
     </task>
-    <option name="localTasksCounter" value="349" />
+    <task id="LOCAL-00349" summary="Deleted the research folder">
+      <created>1664100649556</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
+      <option name="project" value="LOCAL" />
+      <updated>1664100649556</updated>
+    </task>
+    <option name="localTasksCounter" value="350" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1697,7 +1441,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Worked on new expressions" />
     <MESSAGE value="added negative and zero sequence magnitudes to the branches" />
     <MESSAGE value="Added DPI support" />
     <MESSAGE value="Added sequence components to the generator and battery&#10;Modelled the south island of new zealand as per arrillaga's book" />
@@ -1722,7 +1465,8 @@
     <MESSAGE value="Fixed dc_opf test imports&#10;Added the contingency planner GUI" />
     <MESSAGE value="Minor gui improvement" />
     <MESSAGE value="Added to_dict and parse_data to the contingency_model" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added to_dict and parse_data to the contingency_model" />
+    <MESSAGE value="Deleted the research folder" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted the research folder" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2288,7 +2032,7 @@
     <SUITE FILE_PATH="coverage/GridCal$cim_parser.coverage" NAME="cim_parser Coverage Results" MODIFIED="1615738108202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO/cim" />
     <SUITE FILE_PATH="coverage/GridCal$admittance_variations.coverage" NAME="admittance_variations Coverage Results" MODIFIED="1603050030453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/admittance" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1663920052046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1664113671030" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf_black_box.coverage" NAME="ntc_opf_black_box Coverage Results" MODIFIED="1631801064353" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1633774223527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
     <SUITE FILE_PATH="coverage/GridCal$defining_a_grid_from_scratch_without_profiles.coverage" NAME="defining_a_grid_from_scratch_without_profiles Coverage Results" MODIFIED="1616960198337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />

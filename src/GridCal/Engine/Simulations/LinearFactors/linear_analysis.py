@@ -24,16 +24,16 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_fast
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dVm_csc, dSf_dVa_csc
 
 
-def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
+def compute_acptdf(Ybus, Yf, F, T, V, pq, pv, distribute_slack: bool = False):
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
     :param Yf: Admittance matrix of the buses "from"
-    :param Cf: Connectivity branch - bus "from"
     :param F: array if branches "from" bus indices
+    :param T: array if branches "to" bus indices
     :param V: voltages array
     :param pq: array of pq node indices
     :param pv: array of pv node indices
@@ -65,7 +65,9 @@ def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
     # compute branch derivatives
     Vc = np.conj(V)
     E = V / np.abs(V)
-    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf.tocsc(), V, Vc, E, F, Cf)
+    # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf.tocsc(), V, Vc, E, F, Cf)
+    dSf_dVm = dSf_dVm_csc(Yf, V, F, T)
+    dSf_dVa = dSf_dVa_csc(Yf, V, F, T)
 
     # compose the final AC-PTDF
     dPf_dVa = dSf_dVa.real[:, pvpq]
@@ -73,6 +75,7 @@ def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
     PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
 
     return PTDF
+
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     """

@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from scipy.sparse import lil_matrix, diags
+from scipy.sparse import lil_matrix, diags, csc_matrix
 
 
 def dSbus_dV(Ybus, V):
@@ -201,7 +201,7 @@ def dSbus_dV_csr(Ybus, V):
            sp.csr_matrix((dS_dVa, Ybus.indices, Ybus.indptr))
 
 
-def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
+def dSbr_dV_matpower(Yf, Yt, V, F, T, Cf, Ct):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
@@ -244,7 +244,7 @@ def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
     return dSf_dVa.tocsc(), dSf_dVm.tocsc(), dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
+def dSf_dV_matpower(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     """
     Derivatives of the branch power "from" w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
@@ -274,7 +274,7 @@ def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     return dSf_dVa.tocsc(), dSf_dVm.tocsc()
 
 
-def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
+def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     """
     Derivatives of the branch power "to" w.r.t the branch voltage modules and angles
     :param Yt: Admittances matrix of the branches with the "to" buses
@@ -303,128 +303,232 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-@nb.njit(cache=True)
-def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+@nb.jit(cache=True)
+def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
+    idx_f = np.zeros(nrows, dtype=nb.int32)
+    idx_t = np.zeros(nrows, dtype=nb.int32)
+    for j in range(ncols):  # para cada columna j ...
+        for k in range(indptr[j], indptr[j + 1]):  # para cada entrada de la columna ....
+            i = indices[k]  # obtener el índice de la fila
+
+            if j == F[i]:
+                idx_f[i] = k
+            elif j == T[i]:
+                idx_t[i] = k
+
+    return idx_f, idx_t
+
+
+@nb.jit(cache=True)
+def dSf_dVm_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
+    # traverse the rows
+    data2 = np.zeros(Yf_nnz, dtype=nb.complex128)
+    for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
+        f = F[k]
+        t = T[k]
+        kf = idx_f[k]
+        kt = idx_t[k]
+
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        th_f = np.angle(V[f])
+        th_t = np.angle(V[t])
+
+        data2[kf] = 2 * Vm_f * np.conj(Yf_data[kf]) + Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
+        data2[kt] = Vm_f * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
+
+    return data2
+
+
+@nb.jit(cache=True)
+def dSf_dVa_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
+    data2 = np.zeros(Yf_nnz, dtype=nb.complex128)
+    for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
+        f = F[k]
+        t = T[k]
+        kf = idx_f[k]
+        kt = idx_t[k]
+
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        th_f = np.angle(V[f])
+        th_t = np.angle(V[t])
+
+        data2[kf] = Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
+        data2[kt] = -Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
+
+    return data2
+
+
+@nb.jit(cache=True)
+def dSt_dVm_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
+    # traverse the rows
+    data2 = np.zeros(Yt_nnz, dtype=nb.complex128)
+    for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
+        f = F[k]
+        t = T[k]
+        kf = idx_f[k]
+        kt = idx_t[k]
+
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        th_f = np.angle(V[f])
+        th_t = np.angle(V[t])
+
+        data2[kf] = Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
+
+        data2[kt] = 2 * Vm_t * np.conj(Yt_data[kt]) + Vm_f * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
+
+    return data2
+
+
+@nb.jit(cache=True)
+def dSt_dVa_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
+
+    data2 = np.zeros(Yt_nnz, dtype=nb.complex128)
+    for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
+        f = F[k]
+        t = T[k]
+        kf = idx_f[k]
+        kt = idx_t[k]
+
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        th_f = np.angle(V[f])
+        th_t = np.angle(V[t])
+
+        data2[kf] = - Vm_f * Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j) * 1j
+        data2[kt] = - data2[kf]
+
+    return data2
+
+
+def dSf_dVm_csc(Yf, V, F, T):
     """
-    Performs the operations:
-        op1 = [diagIfc * Cf * diagV]
-        op4 = [diagIfc * Cf * diagE]
-    :param Cf_data:
-    :param Cf_indptr:
-    :param Cf_indices:
-    :param Ifc:
-    :param V: Array of voltages
-    :param E: Array of voltages unitary vectors
-    :param n_cols:
+    derived by SPV
+    :param Yf:
+    :param V:
+    :param F:
+    :param T:
     :return:
     """
-    data1 = np.empty(len(Cf_data), dtype=nb.complex128)
-    data4 = np.empty(len(Cf_data), dtype=nb.complex128)
-    for j in range(n_cols):  # column j ...
-        for k in range(Cf_indptr[j], Cf_indptr[j + 1]):  # for each column entry k ...
-            i = Cf_indices[k]  # row i
-            data1[k] = Cf_data[k] * Ifc[i] * V[j]
-            data4[k] = Cf_data[k] * Ifc[i] * E[j]
+    # map the i, j coordinates
+    idx_f, idx_t = map_coordinates_numba(nrows=Yf.shape[0],
+                                         ncols=Yf.shape[1],
+                                         indptr=Yf.indptr,
+                                         indices=Yf.indices,
+                                         F=F,
+                                         T=T)
 
-    return data1, data4
+    data2 = dSf_dVm_numba(Yf_nrows=Yf.shape[0],
+                          Yf_nnz=Yf.nnz,
+                          Yf_data=Yf.data,
+                          V=V,
+                          F=F,
+                          T=T,
+                          idx_f=idx_f,
+                          idx_t=idx_t)
+
+    return csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
 
 
-@nb.njit(cache=True)
-def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
+def dSf_dVa_csc(Yf, V, F, T):
     """
-    Performs the operations:
-        op2 = [diagVf * Yfc * diagVc]
-        op3 = [diagVf * np.conj(Yf * diagE)]
-    :param Yf_data:
-    :param Yf_indptr:
-    :param Yf_indices:
-    :param V: Array of voltages
-    :param F: Array of branch "from" bus indices
-    :param Vc: Array of voltages conjugates
-    :param E: Array of voltages unitary vectors
-    :param n_cols:
+    derived by SPV
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
     :return:
     """
-    data2 = np.empty(len(Yf_data), dtype=nb.complex128)
-    data3 = np.empty(len(Yf_data), dtype=nb.complex128)
-    for j in range(n_cols):  # column j ...
-        for k in range(Yf_indptr[j], Yf_indptr[j + 1]):  # for each column entry k ...
-            i = Yf_indices[k]  # row i
-            data2[k] = np.conj(Yf_data[k]) * V[F[i]] * Vc[j]
-            data3[k] = V[F[i]] * np.conj(Yf_data[k] * E[j])
-    return data2, data3
+
+    # map the i, j coordinates
+    idx_f, idx_t = map_coordinates_numba(nrows=Yf.shape[0],
+                                         ncols=Yf.shape[1],
+                                         indptr=Yf.indptr,
+                                         indices=Yf.indices,
+                                         F=F,
+                                         T=T)
+
+    # traverse the rows
+    data2 = dSf_dVa_numba(Yf_nrows=Yf.shape[0],
+                          Yf_nnz=Yf.nnz,
+                          Yf_data=Yf.data,
+                          V=V,
+                          F=F,
+                          T=T,
+                          idx_f=idx_f,
+                          idx_t=idx_t)
+
+    return csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
 
 
-def dSf_dV_fast(Yf, V, Vc, E, F, Cf):
+def dSt_dVm_csc(Yt, V, F, T):
     """
-    Derivatives of the branch power w.r.t the branch voltage modules and angles
-    Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
-    :param Yf: Admittance matrix of the branches with the "from" buses
-    :param V: Array of voltages
-    :param Vc: Array of voltages conjugates
-    :param E: Array of voltages unitary vectors
-    :param F: Array of branch "from" bus indices
-    :param Cf: Connectivity matrix of the branches with the "from" buses
-    :return: dSf_dVa, dSf_dVm
-    """
-
-    Ifc = np.conj(Yf) * Vc  # conjugate  of "from"  current
-
-    # Perform the following operations
-    # op1 = [diagIfc * Cf * diagV]
-    # op4 = [diagIfc * Cf * diagE]
-    data1, data4 = data_1_4(Cf.data, Cf.indptr, Cf.indices, Ifc, V, E, Cf.shape[1])
-    op1 = sp.csc_matrix((data1, Cf.indices, Cf.indptr), shape=Cf.shape)
-    op4 = sp.csc_matrix((data4, Cf.indices, Cf.indptr), shape=Cf.shape)
-
-    # Perform the following operations
-    # op2 = [diagVf * Yfc * diagVc]
-    # op3 = [diagVf * np.conj(Yf * diagE)]
-    data2, data3 = data_2_3(Yf.data, Yf.indptr, Yf.indices, V, F, Vc, E, Yf.shape[1])
-    op2 = sp.csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
-    op3 = sp.csc_matrix((data3, Yf.indices, Yf.indptr), shape=Yf.shape)
-
-    dSf_dVa = 1j * (op1 - op2)
-    dSf_dVm = op3 + op4
-
-    return dSf_dVa, dSf_dVm
-
-
-def dSt_dV_fast(Yt, V, Vc, E, T, Ct):
-    """
-    Derivatives of the branch power w.r.t the branch voltage modules and angles
-    note: Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
-          The operations are identical to dSf_dV_fast, only changing Cf by Ct and Yf by Yt
-    :param Yt: Admittance matrix of the branches with the "to" buses
-    :param V: Array of voltages
-    :param Vc: Array of voltages conjugates
-    :param E: Array of voltages unitary vectors
-    :param T: Array of branch "to" bus indices
-    :param Ct: Connectivity matrix of the branches with the "to" buses
-    :return: dSf_dVa, dSf_dVm
+    derived by SPV
+    :param Yt:
+    :param V:
+    :param F:
+    :param T:
+    :return:
     """
 
-    Ifc = np.conj(Yt) * Vc  # conjugate  of "from"  current
+    # map the i, j coordinates
+    idx_f, idx_t = map_coordinates_numba(nrows=Yt.shape[0],
+                                         ncols=Yt.shape[1],
+                                         indptr=Yt.indptr,
+                                         indices=Yt.indices,
+                                         F=F,
+                                         T=T)
 
-    # Perform the following operations
-    # op1 = [diagIfc * Cf * diagV]
-    # op4 = [diagIfc * Cf * diagE]
-    data1, data4 = data_1_4(Ct.data, Ct.indptr, Ct.indices, Ifc, V, E, Ct.shape[1])
-    op1 = sp.csc_matrix((data1, Ct.indices, Ct.indptr), shape=Ct.shape)
-    op4 = sp.csc_matrix((data4, Ct.indices, Ct.indptr), shape=Ct.shape)
+    data2 = dSt_dVm_numba(Yt_nrows=Yt.shape[0],
+                          Yt_nnz=Yt.nnz,
+                          Yt_data=Yt.data,
+                          V=V,
+                          F=F,
+                          T=T,
+                          idx_f=idx_f,
+                          idx_t=idx_t)
 
-    # Perform the following operations
-    # op2 = [diagVf * Yfc * diagVc]
-    # op3 = [diagVf * np.conj(Yf * diagE)]
-    data2, data3 = data_2_3(Yt.data, Yt.indptr, Yt.indices, V, T, Vc, E, Yt.shape[1])
-    op2 = sp.csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
-    op3 = sp.csc_matrix((data3, Yt.indices, Yt.indptr), shape=Yt.shape)
+    return csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
 
-    dSt_dVa = 1j * (op1 - op2)
-    dSt_dVm = op3 + op4
 
-    return dSt_dVa, dSt_dVm
+def dSt_dVa_csc(Yt, V, F, T):
+    """
+    derived by SPV
+    :param Yt:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
 
+    # map the i, j coordinates
+    idx_f, idx_t = map_coordinates_numba(nrows=Yt.shape[0],
+                                         ncols=Yt.shape[1],
+                                         indptr=Yt.indptr,
+                                         indices=Yt.indices,
+                                         F=F,
+                                         T=T)
+
+    # traverse the rows
+    data2 = dSt_dVa_numba(Yt_nrows=Yt.shape[0],
+                          Yt_nnz=Yt.nnz,
+                          Yt_data=Yt.data,
+                          V=V,
+                          F=F,
+                          T=T,
+                          idx_f=idx_f,
+                          idx_t=idx_t)
+
+    return csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     """
