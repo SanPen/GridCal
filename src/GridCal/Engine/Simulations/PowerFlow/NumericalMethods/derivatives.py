@@ -308,6 +308,16 @@ def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
 
 @nb.jit(cache=True)
 def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
+    """
+
+    :param nrows:
+    :param ncols:
+    :param indptr:
+    :param indices:
+    :param F:
+    :param T:
+    :return:
+    """
     idx_f = np.zeros(nrows, dtype=nb.int32)
     idx_t = np.zeros(nrows, dtype=nb.int32)
     for j in range(ncols):  # para cada columna j ...
@@ -324,7 +334,18 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
 
 @nb.jit(cache=True)
 def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
-    # traverse the rows
+    """
+
+    :param Yf_nrows:
+    :param Yf_nnz:
+    :param Yf_data:
+    :param V:
+    :param F:
+    :param T:
+    :param idx_f:
+    :param idx_t:
+    :return:
+    """
     dSf_dVm = np.zeros(Yf_nnz, dtype=nb.complex128)
     dSf_dVa = np.zeros(Yf_nnz, dtype=nb.complex128)
     for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
@@ -337,19 +358,30 @@ def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
         Vm_t = np.abs(V[t])
         th_f = np.angle(V[f])
         th_t = np.angle(V[t])
+        ea = np.exp((th_f - th_t) * 1j)
 
-        dSf_dVm[kf] = 2 * Vm_f * np.conj(Yf_data[kf]) + Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
-        dSf_dVm[kt] = Vm_f * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
-
-        dSf_dVa[kf] = Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
-        dSf_dVa[kt] = -Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
+        dSf_dVm[kf] = 2 * Vm_f * np.conj(Yf_data[kf]) + Vm_t * np.conj(Yf_data[kt]) * ea
+        dSf_dVm[kt] = Vm_f * np.conj(Yf_data[kt]) * ea
+        dSf_dVa[kf] = Vm_f * Vm_t * np.conj(Yf_data[kt]) * ea * 1j
+        dSf_dVa[kt] = -dSf_dVa[kf]
 
     return dSf_dVm, dSf_dVa
 
 
 @nb.jit(cache=True)
 def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
-    # traverse the rows
+    """
+
+    :param Yt_nrows:
+    :param Yt_nnz:
+    :param Yt_data:
+    :param V:
+    :param F:
+    :param T:
+    :param idx_f:
+    :param idx_t:
+    :return:
+    """
     dSt_dVm = np.zeros(Yt_nnz, dtype=nb.complex128)
     dSt_dVa = np.zeros(Yt_nnz, dtype=nb.complex128)
     for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
@@ -362,10 +394,11 @@ def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
         Vm_t = np.abs(V[t])
         th_f = np.angle(V[f])
         th_t = np.angle(V[t])
+        ea = np.exp((th_t - th_f) * 1j)
 
-        dSt_dVm[kf] = Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
-        dSt_dVm[kt] = 2 * Vm_t * np.conj(Yt_data[kt]) + Vm_f * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
-        dSt_dVa[kf] = - Vm_f * Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j) * 1j
+        dSt_dVm[kf] = Vm_t * np.conj(Yt_data[kf]) * ea
+        dSt_dVm[kt] = 2 * Vm_t * np.conj(Yt_data[kt]) + Vm_f * np.conj(Yt_data[kf]) * ea
+        dSt_dVa[kf] = - Vm_f * Vm_t * np.conj(Yt_data[kf]) * ea * 1j
         dSt_dVa[kt] = - dSt_dVa[kf]
 
     return dSt_dVm, dSt_dVa
@@ -373,7 +406,7 @@ def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
 
 def dSf_dV_csc(Yf, V, F, T):
     """
-    derived by SPV
+    Flow "from" derivative w.r.t the voltage
     :param Yf:
     :param V:
     :param F:
@@ -403,7 +436,7 @@ def dSf_dV_csc(Yf, V, F, T):
 
 def dSt_dV_csc(Yt, V, F, T):
     """
-    derived by SPV
+    Flow "to" derivative w.r.t the voltage
     :param Yt:
     :param V:
     :param F:
@@ -533,8 +566,8 @@ def derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V):
         # dSbus_dPxsh[f, k] = val_f
         # dSbus_dPxsh[t, k] = val_t
         dSbus_dsh_data[2 * k] = val_f
-        dSbus_dsh_indices[2 * k] = f
         dSbus_dsh_data[2 * k + 1] = val_t
+        dSbus_dsh_indices[2 * k] = f
         dSbus_dsh_indices[2 * k + 1] = t
         dSbus_dsh_indptr[k] = 2 * k
 
