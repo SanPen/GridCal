@@ -676,13 +676,13 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
     :param nb: number of buses
     :param nl: Number of lines
-    :param iPfsh: indices of the Pf controlled branches
-    :param iPfdp: indices of the droop controlled branches
-    :param iQfma: indices of the Qf controlled branches
-    :param iQtma: Indices of the Qt controlled branches
-    :param iVtma: Indices of the Vt controlled branches
-    :param iBeqz: Indices of the Qf controlled branches
-    :param iBeqv: Indices of the Vf Controlled branches
+    :param iPfsh: indices of the Pf controlled with the shunt susceptance branches
+    :param iPfdp: indices of the Pf-droop controlled branches
+    :param iQfma: indices of the Qf controlled with ma branches
+    :param iQtma: Indices of the Qt controlled with ma branches
+    :param iVtma: Indices of the Vt controlled with ma branches
+    :param iBeqz: Indices of the Qf made zero with the equivalent susceptance branches
+    :param iBeqv: Indices of the Vf Controlled with the equivalent susceptance branches
     :param F: Array of "from" bus indices
     :param T: Array of "to" bus indices
     :param Ys: Array of branch series admittances
@@ -726,13 +726,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
-    Vc = np.conj(V)
     dSf_dVm = deriv.dSf_dVm_csc(Yf, V, F, T)
     dSf_dVa = deriv.dSf_dVa_csc(Yf, V, F, T)
 
     if nQtma:
-        dSf_dVm = deriv.dSt_dVm_csc(Yt, V, F, T)
-        dSf_dVa = deriv.dSt_dVa_csc(Yt, V, F, T)
+        dSt_dVm = deriv.dSt_dVm_csc(Yt, V, F, T)
+        dSt_dVa = deriv.dSt_dVa_csc(Yt, V, F, T)
     else:
         dSt_dVa = csc_matrix((nl, nb))
         dSt_dVm = csc_matrix((nl, nb))
