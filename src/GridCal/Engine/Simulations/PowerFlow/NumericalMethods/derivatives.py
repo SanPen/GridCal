@@ -323,9 +323,10 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
 
 
 @nb.jit(cache=True)
-def dSf_dVm_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
+def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
     # traverse the rows
-    data2 = np.zeros(Yf_nnz, dtype=nb.complex128)
+    dSf_dVm = np.zeros(Yf_nnz, dtype=nb.complex128)
+    dSf_dVa = np.zeros(Yf_nnz, dtype=nb.complex128)
     for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
         f = F[k]
         t = T[k]
@@ -337,36 +338,20 @@ def dSf_dVm_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
         th_f = np.angle(V[f])
         th_t = np.angle(V[t])
 
-        data2[kf] = 2 * Vm_f * np.conj(Yf_data[kf]) + Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
-        data2[kt] = Vm_f * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
+        dSf_dVm[kf] = 2 * Vm_f * np.conj(Yf_data[kf]) + Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
+        dSf_dVm[kt] = Vm_f * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j)
 
-    return data2
+        dSf_dVa[kf] = Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
+        dSf_dVa[kt] = -Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
 
-
-@nb.jit(cache=True)
-def dSf_dVa_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
-    data2 = np.zeros(Yf_nnz, dtype=nb.complex128)
-    for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
-        f = F[k]
-        t = T[k]
-        kf = idx_f[k]
-        kt = idx_t[k]
-
-        Vm_f = np.abs(V[f])
-        Vm_t = np.abs(V[t])
-        th_f = np.angle(V[f])
-        th_t = np.angle(V[t])
-
-        data2[kf] = Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
-        data2[kt] = -Vm_f * Vm_t * np.conj(Yf_data[kt]) * np.exp((th_f - th_t) * 1j) * 1j
-
-    return data2
+    return dSf_dVm, dSf_dVa
 
 
 @nb.jit(cache=True)
-def dSt_dVm_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
+def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
     # traverse the rows
-    data2 = np.zeros(Yt_nnz, dtype=nb.complex128)
+    dSt_dVm = np.zeros(Yt_nnz, dtype=nb.complex128)
+    dSt_dVa = np.zeros(Yt_nnz, dtype=nb.complex128)
     for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
         f = F[k]
         t = T[k]
@@ -378,35 +363,15 @@ def dSt_dVm_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
         th_f = np.angle(V[f])
         th_t = np.angle(V[t])
 
-        data2[kf] = Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
+        dSt_dVm[kf] = Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
+        dSt_dVm[kt] = 2 * Vm_t * np.conj(Yt_data[kt]) + Vm_f * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
+        dSt_dVa[kf] = - Vm_f * Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j) * 1j
+        dSt_dVa[kt] = - dSt_dVa[kf]
 
-        data2[kt] = 2 * Vm_t * np.conj(Yt_data[kt]) + Vm_f * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j)
-
-    return data2
-
-
-@nb.jit(cache=True)
-def dSt_dVa_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
-
-    data2 = np.zeros(Yt_nnz, dtype=nb.complex128)
-    for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
-        f = F[k]
-        t = T[k]
-        kf = idx_f[k]
-        kt = idx_t[k]
-
-        Vm_f = np.abs(V[f])
-        Vm_t = np.abs(V[t])
-        th_f = np.angle(V[f])
-        th_t = np.angle(V[t])
-
-        data2[kf] = - Vm_f * Vm_t * np.conj(Yt_data[kf]) * np.exp((th_t - th_f) * 1j) * 1j
-        data2[kt] = - data2[kf]
-
-    return data2
+    return dSt_dVm, dSt_dVa
 
 
-def dSf_dVm_csc(Yf, V, F, T):
+def dSf_dV_csc(Yf, V, F, T):
     """
     derived by SPV
     :param Yf:
@@ -423,51 +388,20 @@ def dSf_dVm_csc(Yf, V, F, T):
                                          F=F,
                                          T=T)
 
-    data2 = dSf_dVm_numba(Yf_nrows=Yf.shape[0],
-                          Yf_nnz=Yf.nnz,
-                          Yf_data=Yf.data,
-                          V=V,
-                          F=F,
-                          T=T,
-                          idx_f=idx_f,
-                          idx_t=idx_t)
+    dSf_dVm_data, dSf_dVa_data = dSf_dV_numba(Yf_nrows=Yf.shape[0],
+                                              Yf_nnz=Yf.nnz,
+                                              Yf_data=Yf.data,
+                                              V=V,
+                                              F=F,
+                                              T=T,
+                                              idx_f=idx_f,
+                                              idx_t=idx_t)
 
-    return csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
-
-
-def dSf_dVa_csc(Yf, V, F, T):
-    """
-    derived by SPV
-    :param Cf:
-    :param Y:
-    :param V:
-    :param F:
-    :param T:
-    :return:
-    """
-
-    # map the i, j coordinates
-    idx_f, idx_t = map_coordinates_numba(nrows=Yf.shape[0],
-                                         ncols=Yf.shape[1],
-                                         indptr=Yf.indptr,
-                                         indices=Yf.indices,
-                                         F=F,
-                                         T=T)
-
-    # traverse the rows
-    data2 = dSf_dVa_numba(Yf_nrows=Yf.shape[0],
-                          Yf_nnz=Yf.nnz,
-                          Yf_data=Yf.data,
-                          V=V,
-                          F=F,
-                          T=T,
-                          idx_f=idx_f,
-                          idx_t=idx_t)
-
-    return csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
+    return csc_matrix((dSf_dVm_data, Yf.indices, Yf.indptr), shape=Yf.shape), \
+           csc_matrix((dSf_dVa_data, Yf.indices, Yf.indptr), shape=Yf.shape)
 
 
-def dSt_dVm_csc(Yt, V, F, T):
+def dSt_dV_csc(Yt, V, F, T):
     """
     derived by SPV
     :param Yt:
@@ -485,47 +419,17 @@ def dSt_dVm_csc(Yt, V, F, T):
                                          F=F,
                                          T=T)
 
-    data2 = dSt_dVm_numba(Yt_nrows=Yt.shape[0],
-                          Yt_nnz=Yt.nnz,
-                          Yt_data=Yt.data,
-                          V=V,
-                          F=F,
-                          T=T,
-                          idx_f=idx_f,
-                          idx_t=idx_t)
+    dSt_dVm_data, dSt_dVa_data = dSt_dV_numba(Yt_nrows=Yt.shape[0],
+                                              Yt_nnz=Yt.nnz,
+                                              Yt_data=Yt.data,
+                                              V=V,
+                                              F=F,
+                                              T=T,
+                                              idx_f=idx_f,
+                                              idx_t=idx_t)
 
-    return csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
-
-
-def dSt_dVa_csc(Yt, V, F, T):
-    """
-    derived by SPV
-    :param Yt:
-    :param V:
-    :param F:
-    :param T:
-    :return:
-    """
-
-    # map the i, j coordinates
-    idx_f, idx_t = map_coordinates_numba(nrows=Yt.shape[0],
-                                         ncols=Yt.shape[1],
-                                         indptr=Yt.indptr,
-                                         indices=Yt.indices,
-                                         F=F,
-                                         T=T)
-
-    # traverse the rows
-    data2 = dSt_dVa_numba(Yt_nrows=Yt.shape[0],
-                          Yt_nnz=Yt.nnz,
-                          Yt_data=Yt.data,
-                          V=V,
-                          F=F,
-                          T=T,
-                          idx_f=idx_f,
-                          idx_t=idx_t)
-
-    return csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
+    return csc_matrix((dSt_dVm_data, Yt.indices, Yt.indptr), shape=Yt.shape), \
+           csc_matrix((dSt_dVa_data, Yt.indices, Yt.indptr), shape=Yt.shape)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -726,12 +726,10 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
-    dSf_dVm = deriv.dSf_dVm_csc(Yf, V, F, T)
-    dSf_dVa = deriv.dSf_dVa_csc(Yf, V, F, T)
+    dSf_dVm, dSf_dVa = deriv.dSf_dV_csc(Yf, V, F, T)
 
     if nQtma:
-        dSt_dVm = deriv.dSt_dVm_csc(Yt, V, F, T)
-        dSt_dVa = deriv.dSt_dVa_csc(Yt, V, F, T)
+        dSt_dVm, dSt_dVa = deriv.dSt_dV_csc(Yt, V, F, T)
     else:
         dSt_dVa = csc_matrix((nl, nb))
         dSt_dVm = csc_matrix((nl, nb))
