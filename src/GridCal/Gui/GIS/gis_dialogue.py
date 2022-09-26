@@ -12,6 +12,7 @@ except ModuleNotFoundError:
     qt_web_engine_available = False
     print('QtWebEngineWidgets not found :(')
 
+from PySide2 import QtWidgets
 from GridCal.Gui.GIS.gui import *
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
