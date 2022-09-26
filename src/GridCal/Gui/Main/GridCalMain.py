@@ -7084,14 +7084,18 @@ class MainGUI(QMainWindow):
                                        hours_per_step=dlg.interval_hours.value())
             self.update_date_dependent_combos()
 
-    def fix_generators_active_based_on_the_power(self):
+    def fix_generators_active_based_on_the_power(self, ask_before=True):
         """
         set the generators active based on the active power values
         :return:
         """
-        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
-                             "such that ig a generator active power is zero, the active value is false",
-                             "Set generation active profile")
+
+        if ask_before:
+            ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                                 "such that ig a generator active power is zero, the active value is false",
+                                 "Set generation active profile")
+        else:
+            ok = True
 
         if ok:
             self.circuit.set_generators_active_profile_from_their_active_power()
@@ -7105,8 +7109,8 @@ class MainGUI(QMainWindow):
 
         if ask_before:
             ok = yes_no_question("This action sets the generation active profile based on the active power profile "
-                             "such that ig a generator active power is zero, the active value is false",
-                             "Set generation active profile")
+                                 "such that ig a generator active power is zero, the active value is false",
+                                 "Set generation active profile")
         else:
             ok = True
 

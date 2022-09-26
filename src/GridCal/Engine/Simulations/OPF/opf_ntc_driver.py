@@ -780,11 +780,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.BranchTapAngleRad:
-            labels = self.branch_names
-            y = self.phase_shift
-            y_label = '(rad)'
-            title = result_type.value[0]
+        # elif result_type == ResultTypes.BranchTapAngleRad:
+        #    labels = self.branch_names
+        #    y = self.phase_shift
+        #    y_label = '(rad)'
+        #    title = result_type.value[0]
 
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
@@ -804,11 +804,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.HvdcPmode3Slack:
-            labels = self.hvdc_names
-            y = self.hvdc_angle_slack
-            y_label = '(rad)'
-            title = result_type.value[0]
+        # elif result_type == ResultTypes.HvdcPmode3Slack:
+        #    labels = self.hvdc_names
+        #    y = self.hvdc_angle_slack
+        #    y_label = '(rad)'
+        #    title = result_type.value[0]
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             labels = self.branch_names
