@@ -1343,34 +1343,26 @@ class SnapshotData:
         elif structure_type == 'Jacobian':
 
             pvpq = np.r_[self.pv, self.pq]
-            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, pvpq)
 
-            """
-            J11 = dS_dVa[array([pvpq]).T, pvpq].real
-            J12 = dS_dVm[array([pvpq]).T, pq].real
-            J21 = dS_dVa[array([pq]).T, pvpq].imag
-            J22 = dS_dVm[array([pq]).T, pq].imag
-            """
-            npq = len(self.pq)
-            npv = len(self.pv)
-            pvpq = np.r_[self.pv, self.pq]
+            cols = ['1) dVa {0}'.format(i) for i in pvpq]
+            cols += ['2) dVm {0}'.format(i) for i in self.pq]
+            cols += ['3) dPfsh {0}'.format(i) for i in self.iPfsh]
+            cols += ['4) dQfma {0}'.format(i) for i in self.iQfma]
+            cols += ['5) dBeqz {0}'.format(i) for i in self.iBeqz]
+            cols += ['6) dBeqv {0}'.format(i) for i in self.iBeqv]
+            cols += ['7) dVtma {0}'.format(i) for i in self.iVtma]
+            cols += ['8) dQtma {0}'.format(i) for i in self.iQtma]
+            cols += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
 
-            cols = ['dVa {0}'.format(i) for i in pvpq]
-            cols += ['dVm {0}'.format(i) for i in self.pq]
-            cols += ['dPfsh {0}'.format(i) for i in self.iPfsh]
-            cols += ['dQfma {0}'.format(i) for i in self.iQfma]
-            cols += ['dBeqz {0}'.format(i) for i in self.iBeqz]
-            cols += ['dBeqv {0}'.format(i) for i in self.iBeqv]
-            cols += ['dVtma {0}'.format(i) for i in self.iVtma]
-            cols += ['dQtma {0}'.format(i) for i in self.iQtma]
-            cols += ['dPfdp {0}'.format(i) for i in self.iPfdp]
-
-            rows = ['dP {0}'.format(i) for i in pvpq]
-            rows += ['dQ {0}'.format(i) for i in np.r_[self.pq, self.iBeqv, self.iVtma]]
-            rows += ['dPf {0}'.format(i) for i in self.iPfsh]
-            rows += ['dQf {0}'.format(i) for i in np.r_[self.iQfma, self.iBeqz]]
-            rows += ['dQt {0}'.format(i) for i in self.iQtma]
-            rows += ['dPfdp {0}'.format(i) for i in self.iPfdp]
+            rows = ['1) dP {0}'.format(i) for i in pvpq]
+            rows += ['2) dQ {0}'.format(i) for i in self.pq]
+            rows += ['3) dQ {0}'.format(i) for i in self.iBeqv]
+            rows += ['4) dQ {0}'.format(i) for i in self.iVtma]
+            rows += ['5) dPf {0}'.format(i) for i in self.iPfsh]
+            rows += ['6) dQf {0}'.format(i) for i in self.iQfma]
+            rows += ['7) dQf {0}'.format(i) for i in self.iBeqz]
+            rows += ['8) dQt {0}'.format(i) for i in self.iQtma]
+            rows += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
 
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
