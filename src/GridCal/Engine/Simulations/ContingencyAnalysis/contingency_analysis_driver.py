@@ -26,6 +26,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
 
 def enumerate_states_n_k(m, k=1):
@@ -140,7 +141,14 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.logger.add_error(msg)
                 raise Exception(msg)
         else:
-            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus)
+            # compose the HVDC power injections
+            bus_dict = self.grid.get_bus_index_dict()
+            nbus = len(self.grid.buses)
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(nbus))
+
+            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus + Shvdc)
 
         self.progress_text.emit('Computing loading...')
 

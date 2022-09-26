@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.OPF.opf_ntc_driver import OptimalNetTransferCapa
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, AvailableTransferMode
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -450,6 +450,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             max_report_elements=self.options.max_report_elements,
             ntc_load_rule=self.options.ntc_load_rule)
 
+        self.installed_alpha = None
+        self.installed_alpha_n1 = None
+
     name = tpe.value
 
     def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t, with_n1=True):
@@ -537,6 +540,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 max_report_elements=self.options.max_report_elements,
                 ntc_load_rule=self.options.ntc_load_rule)
 
+        if self.options.sensitivity_mode == AvailableTransferMode.InstalledPower:
+            self.installed_alpha, self.installed_alpha_n1 = self.compute_exchange_sensitivity(
+                linear=linear,
+                numerical_circuit=nc,
+                t=0,
+                with_n1=self.options.n1_consideration)
+
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -551,11 +561,17 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha, alpha_n1 = self.compute_exchange_sensitivity(
-                    linear=linear,
-                    numerical_circuit=nc,
-                    t=t,
-                    with_n1=self.options.n1_consideration)
+
+                if self.options.sensitivity_mode == AvailableTransferMode.InstalledPower:
+                    alpha = self.installed_alpha
+                    alpha_n1 = self.installed_alpha_n1
+
+                else:
+                    alpha, alpha_n1 = self.compute_exchange_sensitivity(
+                        linear=linear,
+                        numerical_circuit=nc,
+                        t=t,
+                        with_n1=self.options.n1_consideration)
             else:
                 alpha = np.ones(nc.nbr)
                 alpha_n1 = np.ones((nc.nbr, nc.nbr))
