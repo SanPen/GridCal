@@ -1112,6 +1112,15 @@ def parse_json(file_name) -> MultiCircuit:
     return parse_json_data(data)
 
 
+class CustomJSONizer(json.JSONEncoder):
+    def default(self, obj):
+        # this solves the error:
+        # TypeError: Object of type bool_ is not JSON serializable
+        return super().encode(bool(obj)) \
+            if isinstance(obj, np.bool_) \
+            else super().default(obj)
+
+
 def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list()):
     """
     Save JSON file
@@ -1225,7 +1234,7 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
             'profiles': element_profiles,
             'results': results}
 
-    data_str = json.dumps(data, indent=True)
+    data_str = json.dumps(data, indent=True, cls=CustomJSONizer)
 
     # Save json to a text file
     text_file = open(file_path, "w")

@@ -748,7 +748,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
-        data.G0_[ii] = elm.G0
+        data.G0[ii] = elm.G0
         data.B0[ii] = elm.B0
 
         data.R2[ii] = elm.R2

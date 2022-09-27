@@ -30,6 +30,13 @@ def main():
     # create a circuit
 
     grid = MultiCircuit(name='lynn 5 bus')
+    a1 = Area('Area1')
+    z1 = Zone('Zone1')
+    s1 = Substation('S1')
+
+    grid.add_area(a1)
+    grid.add_zone(z1)
+    grid.add_substation(s1)
 
     # let's create a master profile
 
@@ -57,9 +64,9 @@ def main():
                width=0,   # Bus width in pixels
                active=True,   # Is the bus active?
                is_slack=False,  # Is this bus a slack bus?
-               area='Defualt',  # Area (for grouping purposes only)
-               zone='Default',  # Zone (for grouping purposes only)
-               substation='Default'  # Substation (for grouping purposes only)
+               area=a1,  # Area (for grouping purposes only)
+               zone=z1,  # Zone (for grouping purposes only)
+               substation=s1  # Substation (for grouping purposes only)
                )
 
     # the rest of the buses are defined with the default parameters
