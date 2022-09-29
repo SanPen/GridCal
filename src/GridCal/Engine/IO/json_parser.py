@@ -621,6 +621,36 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 circuit.add_line(elm)
 
+        if "DC line" in devices.keys():
+
+            if 'DC line' in profiles.keys():
+                device_profiles_dict = {e['id']: e for e in profiles["DC line"]}
+                has_profiles = True
+            else:
+                device_profiles_dict = dict()
+                has_profiles = False
+
+            for entry in devices["DC line"]:
+                elm = DcLine(bus_from=bus_dict[entry['bus_from']],
+                             bus_to=bus_dict[entry['bus_to']],
+                             name=str(entry['name']),
+                             idtag=str(entry['id']),
+                             code=str(entry['name_code']),
+                             r=float(entry['r']),
+                             rate=float(entry['rate']),
+                             active=entry['active'],
+                             length=float(entry['length']),
+                             temp_base=float(entry['base_temperature']),
+                             temp_oper=float(entry['operational_temperature']),
+                             alpha=float(entry['alpha']))
+
+                if has_profiles:
+                    profile_entry = device_profiles_dict[elm.idtag]
+                    elm.active_prof = decompress_array(profile_entry['active'])
+                    elm.rate_prof = decompress_array(profile_entry['rate'])
+
+                circuit.add_dc_line(elm)
+
         if "Transformer2w" in devices.keys() or "Transformer" in devices.keys():
 
             if "Transformer2w" in devices.keys():
