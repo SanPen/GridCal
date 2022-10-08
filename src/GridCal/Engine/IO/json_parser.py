@@ -768,7 +768,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     ('contingency_factor1', 'contingency_factor'),
                     ('r', 'R1'),
                     ('x', 'X1'),
-                    ('g', 'G0'),
+                    ('G0sw', 'G0sw'),
                     ('m', 'm'),
                     ('m_min', 'm_min'),
                     ('m_max', 'm_max'),

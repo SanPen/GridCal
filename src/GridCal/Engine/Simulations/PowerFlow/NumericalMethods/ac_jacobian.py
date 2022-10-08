@@ -247,7 +247,7 @@ def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pr
         Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
 
 
-def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
+def AC_jacobian(Ybus, V, pvpq, pq):
     """
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
@@ -275,17 +275,19 @@ def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
     Jj = empty(len(dS_dVm) * 4, dtype=int32)
 
     # fill Jx, Jj and Jp in CSR order
-    if len(pvpq) == len(pq):
-        create_J_no_pv(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, Jx, Jj, Jp)
-    else:
-        create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+    # if len(pvpq) == len(pq):
+    #     create_J_no_pv(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, Jx, Jj, Jp)
+    # else:
+    #     create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+
+    create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
 
     # resize before generating the scipy sparse matrix
     Jx.resize(Jp[-1], refcheck=False)
     Jj.resize(Jp[-1], refcheck=False)
 
     # generate scipy sparse matrix
-    nj = npv + npq + npq
+    nj = len(pvpq) + len(pq)
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj))
 
 

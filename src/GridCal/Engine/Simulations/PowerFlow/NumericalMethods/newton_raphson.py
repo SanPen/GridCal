@@ -93,7 +93,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             iteration += 1
 
             # evaluate Jacobian
-            J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq)
 
             # compute update step
             dx = linear_solver(J, f)

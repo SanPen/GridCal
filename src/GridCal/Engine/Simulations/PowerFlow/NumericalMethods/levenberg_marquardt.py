@@ -103,7 +103,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
 
             # evaluate Jacobian
             if update_jacobian:
-                H = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+                H = AC_jacobian(Ybus, V, pvpq, pq)
 
                 # system matrix
                 # H1 = H^t
