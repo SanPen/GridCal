@@ -183,7 +183,8 @@ class Load(EditableDevice):
                     'ir': self.Ir,
                     'ii': self.Ii,
                     'p': self.P,
-                    'q': self.Q
+                    'q': self.Q,
+                    'shedding_cost': self.Cost
                     }
         else:
             return dict()

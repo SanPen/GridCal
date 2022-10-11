@@ -380,6 +380,8 @@ class DcLine(EditableDevice):
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
+
+                    'overload_cost': self.Cost,
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),

@@ -233,6 +233,8 @@ class UPFC(EditableDevice):
                     'vsh': self.Vsh,
                     'Pfset': self.Pfset,
                     'Qfset': self.Qfset,
+
+                    'overload_cost': self.Cost,
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),
