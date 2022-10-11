@@ -445,7 +445,7 @@ class Line(EditableDevice):
 
         return b
 
-    def apply_template(self, obj: Tower, Sbase, logger=Logger()):
+    def apply_template(self, obj: Tower  | UndergroundLineType | SequenceLineType, Sbase, logger=Logger()):
         """
         Apply a line template to this object
 
