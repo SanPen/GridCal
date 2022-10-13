@@ -168,7 +168,7 @@ class FloatDelegate(QItemDelegate):
     A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, min_=-9999, max_=9999):
+    def __init__(self, parent, min_=-1e200, max_=1e200):
         """
         Constructoe
         :param parent: QTableView parent object
