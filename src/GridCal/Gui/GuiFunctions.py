@@ -170,7 +170,7 @@ class FloatDelegate(QItemDelegate):
     """
     def __init__(self, parent, min_=-1e200, max_=1e200):
         """
-        Constructoe
+        Constructor
         :param parent: QTableView parent object
         """
         QItemDelegate.__init__(self, parent)
