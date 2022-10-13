@@ -36,6 +36,7 @@ from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.IO.rawx_parser import rawx_parse, rawx_writer
+from GridCal.Engine.IO.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
@@ -198,6 +199,10 @@ class FileOpen:
                     parser = CIMImport(text_func=text_func,  progress_func=progress_func)
                     self.circuit = parser.load_cim_file(self.file_name)  # file_name might be a list of files
                     self.logger += parser.logger
+                elif file_extension.lower() == '.hdf5':
+                    self.circuit = parse_hdf5(self.file_name, self.logger)
+                elif file_extension.lower() == '.nc':
+                    self.circuit = parse_netcdf(self.file_name, self.logger)
 
             else:
                 # warn('The file does not exist.')
