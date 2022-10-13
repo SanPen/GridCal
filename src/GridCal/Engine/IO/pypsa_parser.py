@@ -19,6 +19,7 @@ from GridCal.Engine.Devices.line import SequenceLineType, Line
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Devices.shunt import Shunt
 from GridCal.Engine.Devices.groupings import Country
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
@@ -93,8 +94,16 @@ class PyPSAParser:
         """
         for ix, data in self.src.generators.iterrows():
             bus = self.buses[data['bus']]
-            generator = Generator(ix, active_power=data['p_nom'], p_min=data['p_nom_min'], p_max=data['p_nom_max'],
-                                  opex=data['capital_cost'])
+            power_factor = data['p_set'] / math.sqrt(data['q_set'] ** 2 + data['p_set'] ** 2)
+            is_controlled = data['control'] == 'PV'
+            generator = Generator(ix, active_power=data['p_set'] * data['sign'],
+                                  power_factor=power_factor,
+                                  is_controlled=is_controlled,
+                                  p_min=data['p_nom_min'],
+                                  p_max=data['p_nom_max'],
+                                  opex=data['marginal_cost'],
+                                  op_cost=data['marginal_cost'],
+                                  capex=data['capital_cost'] * data['p_nom'])
             self.dest.add_generator(bus, generator)
             try:
                 P_prof = self.src.generators_t.p_max_pu[ix].to_numpy()
@@ -102,6 +111,20 @@ class PyPSAParser:
                 generator.P_prof = P_prof
             except KeyError:  # missing p_max_pu[ix]
                 pass
+
+    def _parse_storage_units(self):
+        """
+        Parses the storage units data from the PyPSA network.
+        """
+        if len(self.src.storage_units) > 0:
+            self.logger.add_warning('Storage units not currently supported')
+
+    def _parse_stores(self):
+        """
+        Parses the stores data from the PyPSA network.
+        """
+        if len(self.src.stores) > 0:
+            self.logger.add_warning('Shunt impedances not currently supported')
 
     def _parse_loads(self):
         """
@@ -224,16 +247,26 @@ class PyPSAParser:
                 transformer.name = f'{ix}-{i}'
                 self.dest.add_transformer2w(transformer)
 
+    def _parse_shunts(self):
+        """
+        Parses the shunt impedances data from the PyPSA network.
+        """
+        if len(self.src.shunt_impedances) > 0:
+            self.logger.add_warning('Shunt impedances not currently supported')
+
     def parse(self) -> MultiCircuit:
         """
         Parses the PyPSA network.
         :return: the GridCal circuit object.
         """
         self._parse_generators()
+        self._parse_storage_units()
+        self._parse_stores()
         self._parse_loads()
         self._parse_lines()
         self._parse_hvdc()
         self._parse_transformers()
+        self._parse_shunts()
         return self.dest
 
 
