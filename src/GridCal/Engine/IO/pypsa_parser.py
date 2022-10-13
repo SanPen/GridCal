@@ -93,7 +93,8 @@ class PyPSAParser:
         """
         for ix, data in self.src.generators.iterrows():
             bus = self.buses[data['bus']]
-            generator = Generator(ix, active_power=data['p_nom'], p_min=data['p_nom_min'], p_max=data['p_nom_max'])
+            generator = Generator(ix, active_power=data['p_nom'], p_min=data['p_nom_min'], p_max=data['p_nom_max'],
+                                  opex=data['capital_cost'])
             self.dest.add_generator(bus, generator)
             try:
                 P_prof = self.src.generators_t.p_max_pu[ix].to_numpy()
@@ -153,8 +154,7 @@ class PyPSAParser:
             is_active = self._is_active(data)
             status = BuildStatus.Commissioned if is_active else BuildStatus.Planned
             proto = Line(from_bus, to_bus, name=f'{ix}-proto', active=is_active, length=length,
-                         capex=data['capital_cost'] / 1e3,  # k€ to M€
-                         build_status=status)
+                         opex=data['capital_cost'], build_status=status)
 
             copy_count = int(data['num_parallel'])
             if data['type']:
@@ -181,7 +181,7 @@ class PyPSAParser:
             active = self._is_active(data)
             self.dest.add_hvdc(
                 HvdcLine(from_bus, to_bus, name=ix, active=active, rate=data['p_nom'] * data['p_max_pu'],
-                         Pset=data['p_set'], capex=data['capital_cost'], length=data['length']))
+                         Pset=data['p_set'], opex=data['capital_cost'], length=data['length']))
 
     def _parse_transformer_types(self) -> Mapping[str, TransformerType]:
         """
