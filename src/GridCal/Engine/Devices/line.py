@@ -435,7 +435,9 @@ class Line(EditableDevice):
                  temp_base=self.temp_base,
                  temp_oper=self.temp_oper,
                  alpha=self.alpha,
-                 template=self.template)
+                 template=self.template,
+                 opex=self.opex,
+                 capex=self.capex)
 
         b.measurements = self.measurements
 
