@@ -23,10 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Increased FloatDelegate limits">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved Newton integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1082,14 +1080,8 @@
       <workItem from="1665219439939" duration="848000" />
       <workItem from="1665470299222" duration="605000" />
       <workItem from="1665499233445" duration="1095000" />
-      <workItem from="1665656975862" duration="4106000" />
-    </task>
-    <task id="LOCAL-00307" summary="derivatives research">
-      <created>1655638721837</created>
-      <option name="number" value="00307" />
-      <option name="presentableId" value="LOCAL-00307" />
-      <option name="project" value="LOCAL" />
-      <updated>1655638721838</updated>
+      <workItem from="1665656975862" duration="4134000" />
+      <workItem from="1665730182015" duration="2335000" />
     </task>
     <task id="LOCAL-00308" summary="Added zoom to the lightmap research">
       <created>1655838916726</created>
@@ -1427,7 +1419,14 @@
       <option name="project" value="LOCAL" />
       <updated>1665657418724</updated>
     </task>
-    <option name="localTasksCounter" value="356" />
+    <task id="LOCAL-00356" summary="Improved Newton integration">
+      <created>1665693921117</created>
+      <option name="number" value="00356" />
+      <option name="presentableId" value="LOCAL-00356" />
+      <option name="project" value="LOCAL" />
+      <updated>1665693921117</updated>
+    </task>
+    <option name="localTasksCounter" value="357" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1461,7 +1460,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored the short circuit functions" />
     <MESSAGE value="added docstrings and deleted commented code" />
     <MESSAGE value="completely refactored the ShortCircuitResults object to properly represent the sequence results" />
     <MESSAGE value="Added icons to the results tree view" />
@@ -1486,7 +1484,8 @@
     <MESSAGE value="Fixed missing import" />
     <MESSAGE value="added cost metrics to the jsonv3 export" />
     <MESSAGE value="Increased FloatDelegate limits" />
-    <option name="LAST_COMMIT_MESSAGE" value="Increased FloatDelegate limits" />
+    <MESSAGE value="Improved Newton integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved Newton integration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
