@@ -35,6 +35,12 @@ def compress_array_numba(value, base):
     return data, indptr
 
 
+def get_most_frequent(arr):
+    values, counts = np.unique(arr, return_counts=True)
+    ind = np.argmax(counts)
+    return values[ind]
+
+
 def compress_array(arr, min_sparsity=0.2):
     """
     Compress array
@@ -52,10 +58,11 @@ def compress_array(arr, min_sparsity=0.2):
     """
     if isinstance(arr, list) or isinstance(arr, np.ndarray):
         if len(arr) > 0:
-            u = np.unique(arr)
+            u, counts = np.unique(arr, return_counts=True)
             f = len(u) / len(arr)  # sparsity factor
             if f < min_sparsity:
-                base = u[0]  # pick the first always as the base
+                ind = np.argmax(counts)
+                base = u[ind]  # this is the most frequent value
                 if isinstance(base, np.bool_):
                     base = bool(base)
                 data = list()
