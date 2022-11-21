@@ -435,7 +435,9 @@ class Line(EditableDevice):
                  temp_base=self.temp_base,
                  temp_oper=self.temp_oper,
                  alpha=self.alpha,
-                 template=self.template)
+                 template=self.template,
+                 opex=self.opex,
+                 capex=self.capex)
 
         b.measurements = self.measurements
 
@@ -445,7 +447,7 @@ class Line(EditableDevice):
 
         return b
 
-    def apply_template(self, obj: Tower, Sbase, logger=Logger()):
+    def apply_template(self, obj, Sbase, logger=Logger()):
         """
         Apply a line template to this object
 
@@ -614,6 +616,7 @@ class Line(EditableDevice):
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
 
+                    'overload_cost': self.Cost,
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),

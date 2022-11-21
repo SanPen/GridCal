@@ -734,7 +734,9 @@ class Transformer2W(EditableDevice):
                           temp_base=self.temp_base,
                           temp_oper=self.temp_oper,
                           alpha=self.alpha,
-                          template=self.template)
+                          template=self.template,
+                          opex=self.opex,
+                          capex=self.capex)
 
         b.measurements = self.measurements
 
@@ -745,7 +747,9 @@ class Transformer2W(EditableDevice):
         return b
 
     def flip(self):
-
+        """
+        Change the terminals' positions
+        """
         F, T = self.bus_from, self.bus_to
         self.bus_to, self.bus_from = F, T
 
@@ -779,7 +783,11 @@ class Transformer2W(EditableDevice):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
-    def get_buses_voltages(self):
+    def get_sorted_buses_voltages(self):
+        """
+        GEt the sorted bus voltages
+        :return: high voltage, low voltage
+        """
         bus_f_v = self.bus_from.Vnom
         bus_t_v = self.bus_to.Vnom
         if bus_f_v > bus_t_v:
@@ -849,7 +857,7 @@ class Transformer2W(EditableDevice):
         """
         if isinstance(obj, TransformerType):
 
-            VH, VL = self.get_buses_voltages()
+            VH, VL = self.get_sorted_buses_voltages()
 
             # get the transformer impedance in the base of the transformer
             z_series, y_shunt = obj.get_impedances(VH=VH, VL=VL, Sbase=Sbase)
@@ -1021,6 +1029,7 @@ class Transformer2W(EditableDevice):
                  'operational_temperature': self.temp_oper,
                  'alpha': self.alpha,
 
+                 'overload_cost': self.Cost,
                  'capex': self.capex,
                  'opex': self.opex,
                  'build_status': str(self.build_status.value).lower(),

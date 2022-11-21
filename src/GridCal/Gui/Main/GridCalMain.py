@@ -1253,7 +1253,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.ejson4 *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.ejson4 *.xml *.zip *.dpx *.epc *.nc *.hdf5)"
         # files_types = ''
         # call dialog to select the file
 

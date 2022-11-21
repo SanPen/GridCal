@@ -116,8 +116,10 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             load.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             load.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             load.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
+            load.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
+            load.setAllCostB(elm.Cost)
 
         npa_circuit.addLoad(load)
 
@@ -147,8 +149,10 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
             pe_inj.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             pe_inj.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             pe_inj.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
+            pe_inj.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             pe_inj.active = np.ones(ntime, dtype=BINT) * int(elm.active)
+            pe_inj.setAllCostB(elm.Cost)
 
         npa_circuit.addPowerElectronicsInjection(pe_inj)
 
@@ -207,16 +211,16 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
                             Qmin=elm.Qmin,
                             Qmax=elm.Qmax)
 
-        gen.cost_b = elm.Cost
-
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
+            gen.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
+            gen.setAllCostB(elm.Cost)
 
         npa_circuit.addGenerator(gen)
 
@@ -251,16 +255,17 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
 
         gen.charge_efficiency = elm.charge_efficiency
         gen.discharge_efficiency = elm.discharge_efficiency
-        gen.cost_b = elm.Cost
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
+            gen.setAllCostB(elm.Cost_prof if tidx is None else elm.Cost_prof[tidx])
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
+            gen.setAllCostB(elm.Cost)
 
         npa_circuit.addBattery(gen)
 
@@ -292,12 +297,16 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                          monitor_loading_default=elm.monitor_loading,
                          monitor_contingency_default=elm.contingency_enabled)
 
+
+
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             lne.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
-
             contingency_rates = elm.rate_prof * elm.contingency_factor
             lne.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
+            lne.overload_cost = elm.Cost_prof
+        else:
+            lne.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addAcLine(lne)
 
@@ -338,6 +347,9 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
             tr2.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
             tr2.tap = elm.tap_module_prof if tidx is None else elm.tap_module_prof[tidx]
             tr2.phase = elm.angle_prof if tidx is None else elm.angle_prof[tidx]
+            tr2.overload_cost = elm.Cost_prof
+        else:
+            tr2.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addTransformers2wFul(tr2)
 
@@ -387,6 +399,9 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
             vsc.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
             contingency_rates = elm.rate_prof * elm.contingency_factor
             vsc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
+            vsc.overload_cost = elm.Cost_prof
+        else:
+            vsc.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addAcDcConverter(vsc)
 
@@ -421,6 +436,9 @@ def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
 
             contingency_rates = elm.rate_prof * elm.contingency_factor
             lne.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
+            lne.overload_cost = elm.Cost_prof
+        else:
+            lne.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addDcLine(lne)
 
@@ -503,9 +521,11 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             hvdc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
 
             hvdc.angle_droop = elm.angle_droop_prof if tidx is None else elm.angle_droop_prof[tidx]
+            hvdc.overload_cost = elm.overload_cost_prof
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
+            hvdc.setAllOverloadCost(elm.overload_cost)
 
         npa_circuit.addHvdcLine(hvdc)
 
@@ -763,7 +783,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results.hvdc_losses = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
-    results.bus_types = res.bus_types[0, :]
+    results.bus_types = res.bus_types[0]  # this is a list of lists
 
     for rep in res.stats[0]:
         report = bs.ConvergenceReport()

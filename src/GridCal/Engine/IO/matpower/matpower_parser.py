@@ -338,7 +338,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                              theta=table[i, matpower_branches.SHIFT],
                              theta_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
                              theta_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
-                             G0=table[i, matpower_branches.GSW],
+                             G0sw=table[i, matpower_branches.GSW],
                              Beq=table[i, matpower_branches.BEQ],
                              Beq_max=table[i, matpower_branches.BEQ_MAX],
                              Beq_min=table[i, matpower_branches.BEQ_MIN],

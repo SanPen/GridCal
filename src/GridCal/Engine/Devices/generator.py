@@ -371,6 +371,9 @@ class Generator(EditableDevice):
 
         gen.technology = self.technology
 
+        gen.opex = self.opex
+        gen.capex = self.capex
+
         return gen
 
     def get_properties_dict(self, version=3):

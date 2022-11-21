@@ -32,7 +32,7 @@ class VSC(EditableDevice):
                  m=1.0, m_max=1.1, m_min=0.8,
                  theta=0.1, theta_max=6.28, theta_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
-                 G0=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
+                 G0sw=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
@@ -55,7 +55,7 @@ class VSC(EditableDevice):
         :param theta:
         :param theta_max:
         :param theta_min:
-        :param G0:
+        :param G0sw:
         :param Beq:
         :param Beq_min:
         :param Beq_max:
@@ -195,7 +195,7 @@ class VSC(EditableDevice):
         self.R2 = r2
         self.X2 = x2
 
-        self.G0sw = G0
+        self.G0sw = G0sw
         self.Beq = Beq
         self.m = m
         self.theta = theta
@@ -329,7 +329,7 @@ class VSC(EditableDevice):
                  'rate': self.rate,
                  'r': self.R1,
                  'x': self.X1,
-                 'g': self.G0sw,
+                 'G0sw': self.G0sw,
 
                  'm': self.m,
                  'm_min': self.m_min,
@@ -400,6 +400,7 @@ class VSC(EditableDevice):
 
                  'control_mode': modes[self.control_mode],
 
+                 'overload_cost': self.Cost,
                  'capex': self.capex,
                  'opex': self.opex,
                  'build_status': str(self.build_status.value).lower(),

@@ -543,7 +543,9 @@ class HvdcLine(EditableDevice):
                      Pset_prof=self.Pset_prof,
                      Vset_f_prof=self.Vset_f_prof,
                      Vset_t_prof=self.Vset_t_prof,
-                     overload_cost_prof=self.overload_cost_prof)
+                     overload_cost_prof=self.overload_cost_prof,
+                     opex=self.opex,
+                     capex=self.capex)
 
         b.measurements = self.measurements
 

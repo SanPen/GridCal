@@ -46,7 +46,7 @@ def compute_acptdf(Ybus, Yf, F, T, V, pq, pv, distribute_slack: bool = False):
     npv = len(pv)
 
     # compute the Jacobian
-    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+    J = AC_jacobian(Ybus, V, pvpq, pq)
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
