@@ -3,7 +3,7 @@ from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Devices.enumerations import FaultType
 
 # grid = FileOpen('IEEE30.xlsx').open()
-grid = FileOpen('../../../5bus_Saadat.xlsx').open()
+grid = FileOpen('5bus_Saadat.xlsx').open()
 
 pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
                           verbose=False,  # Verbose option where available
