@@ -286,7 +286,7 @@ class TimeSeries(DriverTemplate):
         # results.If = res.If
         # results.It = res.It
         results.Beq = res.Beq
-        results.m = res.tap_module
+        results.ma = res.tap_module
         results.theta = res.tap_angle
         results.F = res.F
         results.T = res.T

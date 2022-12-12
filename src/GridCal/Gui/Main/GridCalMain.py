@@ -1767,6 +1767,9 @@ class MainGUI(QMainWindow):
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
 
+            if not (filename.endswith('.svg') or filename.endswith('.png')):
+                filename += ".svg"
+
             if filename != "":
                 # save in factor * K
                 factor = self.ui.resolution_factor_spinBox.value()

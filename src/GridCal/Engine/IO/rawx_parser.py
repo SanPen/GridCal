@@ -1198,17 +1198,17 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
 
             # this is fixed
             block.set_data([[1, "RATE1", "RATING SET 1"],
-                                 [2, "RATE2", "RATING SET 2"],
-                                 [3, "RATE3", "RATING SET 3"],
-                                 [4, "RATE4", "RATING SET 4"],
-                                 [5, "RATE5", "RATING SET 5"],
-                                 [6, "RATE6", "RATING SET 6"],
-                                 [7, "RATE7", "RATING SET 7"],
-                                 [8, "RATE8", "RATING SET 8"],
-                                 [9, "RATE9", "RATING SET 9"],
-                                 [10, "RATE10", "RATING SET 10"],
-                                 [11, "RATE11", "RATING SET 11"],
-                                 [12, "RATE12", "RATING SET 12"]])
+                            [2, "RATE2", "RATING SET 2"],
+                            [3, "RATE3", "RATING SET 3"],
+                            [4, "RATE4", "RATING SET 4"],
+                            [5, "RATE5", "RATING SET 5"],
+                            [6, "RATE6", "RATING SET 6"],
+                            [7, "RATE7", "RATING SET 7"],
+                            [8, "RATE8", "RATING SET 8"],
+                            [9, "RATE9", "RATING SET 9"],
+                            [10, "RATE10", "RATING SET 10"],
+                            [11, "RATE11", "RATING SET 11"],
+                            [12, "RATE12", "RATING SET 12"]])
 
         elif entry == 'bus':
             block, rev_bus_dict = get_buses_block(circuit=circuit, fields=fields)
@@ -1292,7 +1292,7 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
             pass
 
         else:
-            logger.add_warning('Unkown rawx structure ' + entry)
+            logger.add_warning('Unknown rawx structure ' + entry)
 
         # get the dictionary
         data[entry] = block.get_final_dict()
