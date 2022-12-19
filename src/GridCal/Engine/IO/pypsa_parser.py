@@ -58,7 +58,7 @@ class PyPSAParser:
         except KeyError:
             return True
 
-    def _parse_countries(self) -> Mapping[str, Country]:
+    def _parse_countries(self) -> "Mapping[str, Country]":
         """
         Parses the country data from the PyPSA network.
         :return: a mapping from country name to GridCal `Country` objects.
@@ -70,7 +70,7 @@ class PyPSAParser:
             by_name[name] = country
         return by_name
 
-    def _parse_buses(self) -> Mapping[str, Bus]:
+    def _parse_buses(self) -> "Mapping[str, Bus]":
         """
         Parses the bus data from the PyPSA network.
         :return: a mapping from bus name to GridCal `Bus` objects.
@@ -142,7 +142,7 @@ class PyPSAParser:
             except KeyError:
                 pass
 
-    def _parse_line_types(self) -> Mapping[str, SequenceLineType]:
+    def _parse_line_types(self) -> "Mapping[str, SequenceLineType]":
         """
         Parses the line type data from the PyPSA network.
         :return: a mapping from type name to GridCal `SequenceLineType` objects.
@@ -206,7 +206,7 @@ class PyPSAParser:
                 HvdcLine(from_bus, to_bus, name=ix, active=active, rate=data['p_nom'] * data['p_max_pu'],
                          Pset=data['p_set'], opex=data['capital_cost'], length=data['length']))
 
-    def _parse_transformer_types(self) -> Mapping[str, TransformerType]:
+    def _parse_transformer_types(self) -> "Mapping[str, TransformerType]":
         """
         Parses the transformer type data from the PyPSA network.
         :return: a mapping from type name to GridCal `TransformerType` objects.
