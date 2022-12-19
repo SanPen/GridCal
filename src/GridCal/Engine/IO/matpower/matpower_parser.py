@@ -229,6 +229,8 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
         names = data['gen_names']
     else:
         names = ['gen ' + str(i) for i in range(n)]
+
+    gen_dict = dict()
     for i in range(len(table)):
         bus_idx = bus_idx_dict[int(table[i, matpower_gen.GEN_BUS])]
         # TODO: Calculate pf based on reactive_power
@@ -241,9 +243,33 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
                         p_max=table[i, matpower_gen.PMAX]
                         )
 
+        gen_dict[i] = gen
+
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
         circuit.buses[bus_idx].controlled_generators.append(gen)
+
+    if 'gen_cost' in data:
+        # parse the OPF data
+        opf_table = data['gen_cost']
+
+        for i in range(opf_table.shape[0]):
+            curve_model = opf_table[i, 0]
+            startup_cost = opf_table[i, 1]
+            shutdown_cost = opf_table[i, 2]
+            n_cost = opf_table[i, 3]
+            points = opf_table[i, 4:]
+            if curve_model == 2:
+                if len(points) > 1:
+                    gen_dict[i].Cost = points[1]
+            elif curve_model == 1:
+                # fit a quadratic curve
+                x = points[0::1]
+                y = points[0::2]
+                coeff = np.polyfit(x, y, 2)
+                gen_dict[i].Cost = coeff[1]
+            else:
+                logger.add_warning("Unsupported curve model", gen_dict[i].name, curve_model)
 
 
 def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):

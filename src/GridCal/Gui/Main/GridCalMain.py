@@ -308,6 +308,7 @@ class MainGUI(QMainWindow):
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
 
+
         self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value
                                                                 for o in self.circuit.objects_with_profiles]))
 
