@@ -214,6 +214,7 @@ class MainGUI(QMainWindow):
         self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
         mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
+        self.ui.automatic_layout_comboBox.setCurrentIndex(6)
 
         # list of stochastic power flow methods
         self.stochastic_pf_methods_dict = OrderedDict()

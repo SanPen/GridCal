@@ -57,7 +57,8 @@ def enumerate_states_n_k(m, k=1):
 class ContingencyAnalysisOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
-                 use_provided_flows=False, Pf=None, pf_results=None):
+                 use_provided_flows=False, Pf=None, pf_results=None,
+                 nonlinear=False):
 
         self.distributed_slack = distributed_slack
 
@@ -68,6 +69,8 @@ class ContingencyAnalysisOptions:
         self.Pf = Pf
 
         self.pf_results = pf_results
+
+        self.nonlinear = nonlinear
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -217,7 +220,6 @@ class ContingencyAnalysisDriver(DriverTemplate):
         results.otdf = LODF
 
         return results
-
 
     def run(self):
         """
