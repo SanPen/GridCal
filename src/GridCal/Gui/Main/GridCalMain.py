@@ -195,7 +195,7 @@ class MainGUI(QMainWindow):
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
-                                    '.ejson2', '.ejson3', '.ejson4',
+                                    '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
@@ -214,6 +214,7 @@ class MainGUI(QMainWindow):
         self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
         mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
+        self.ui.automatic_layout_comboBox.setCurrentIndex(6)
 
         # list of stochastic power flow methods
         self.stochastic_pf_methods_dict = OrderedDict()
@@ -308,6 +309,7 @@ class MainGUI(QMainWindow):
 
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
+
 
         self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value
                                                                 for o in self.circuit.objects_with_profiles]))
@@ -1254,7 +1256,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.ejson4 *.xml *.zip *.dpx *.epc *.nc *.hdf5)"
+                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.nc *.hdf5)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1487,7 +1489,6 @@ class MainGUI(QMainWindow):
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
                       "Electrical Json V3 (*.ejson3);;"\
-                      "Electrical Json V4 (*.ejson4);;" \
                       "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
@@ -1522,7 +1523,6 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                 extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
-                extension['Electrical Json V4 (*.ejson4)'] = '.ejson4'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
                 extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
