@@ -817,6 +817,8 @@ def convert_bus_types(arr: List[npa.BusType]):
         elif val == npa.BusType.PQ:
             tpe[i] = 1
     return tpe
+
+
 def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults) -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
@@ -874,13 +876,13 @@ def translate_newton_pa_opf_results(res: npa.OptimalPowerFlowResults) -> Optimal
                                       battery_names=res.battery_names,
                                       Sbus=res.Scalc[0, :],
                                       voltage=res.voltage[0, :],
-                                      load_shedding=res.load_shedding,
+                                      load_shedding=res.load_shedding[0, :],
                                       hvdc_names=res.hvdc_names,
                                       hvdc_power=res.hvdc_Pf[0, :],
                                       hvdc_loading=res.hvdc_loading[0, :],
                                       phase_shift=res.tap_angle[0, :],
                                       bus_shadow_prices=res.bus_shadow_prices[0, :],
-                                      generator_shedding=res.generator_shedding,
+                                      generator_shedding=res.generator_shedding[0, :],
                                       battery_power=res.PB[0, :],
                                       controlled_generation_power=res.PG[0, :],
                                       Sf=res.Sf[0, :],
@@ -891,6 +893,9 @@ def translate_newton_pa_opf_results(res: npa.OptimalPowerFlowResults) -> Optimal
                                       contingency_rates=res.contingency_rates[0, :],
                                       converged=res.converged[0],
                                       bus_types=convert_bus_types(res.bus_types[0]))
+
+    results.contingency_flows_list = list()
+    results.losses = res.Losses[0, :]
 
     return results
 
