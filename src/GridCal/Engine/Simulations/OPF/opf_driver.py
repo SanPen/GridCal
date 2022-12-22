@@ -97,7 +97,8 @@ class OptimalPowerFlow(DriverTemplate):
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
             # problem = OpfAc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
-            return self.newton_pa_ac_opf()
+            self.results = self.newton_pa_ac_opf()
+            return self.results
 
         elif self.options.solver == SolverType.Simple_OPF:
             # simplistic dispatch

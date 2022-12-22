@@ -806,6 +806,17 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
     return results
 
 
+def convert_bus_types(arr: List[npa.BusType]):
+
+    tpe = np.zeros(len(arr), dtype=int)
+    for i, val in enumerate(arr):
+        if val == npa.BusType.VD:
+            tpe[i] = 3
+        elif val == npa.BusType.PV:
+            tpe[i] = 2
+        elif val == npa.BusType.PQ:
+            tpe[i] = 1
+    return tpe
 def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults) -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
@@ -839,7 +850,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults
     results.hvdc_losses = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
-    results.bus_types = res.bus_types[0]  # this is a list of lists
+    results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
     for rep in res.stats[0]:
         report = bs.ConvergenceReport()
@@ -861,25 +872,25 @@ def translate_newton_pa_opf_results(res: npa.OptimalPowerFlowResults) -> Optimal
                                       load_names=res.load_names,
                                       generator_names=res.generator_names,
                                       battery_names=res.battery_names,
-                                      Sbus=res.Scalc[:, 0],
-                                      voltage=res.voltage[:, 0],
+                                      Sbus=res.Scalc[0, :],
+                                      voltage=res.voltage[0, :],
                                       load_shedding=res.load_shedding,
                                       hvdc_names=res.hvdc_names,
-                                      hvdc_power=res.hvdc_Pf[:, 0],
-                                      hvdc_loading=res.hvdc_loading[:, 0],
-                                      phase_shift=res.tap_angle[:, 0],
-                                      bus_shadow_prices=res.bus_shadow_prices[:, 0],
+                                      hvdc_power=res.hvdc_Pf[0, :],
+                                      hvdc_loading=res.hvdc_loading[0, :],
+                                      phase_shift=res.tap_angle[0, :],
+                                      bus_shadow_prices=res.bus_shadow_prices[0, :],
                                       generator_shedding=res.generator_shedding,
-                                      battery_power=res.PB[:, 0],
-                                      controlled_generation_power=res.PG[:, 0],
-                                      Sf=res.Sf[:, 0],
-                                      St=res.St[:, 0],
-                                      overloads=res.overload[:, 0],
-                                      loading=res.Loading[:, 0],
-                                      rates=res.rates[:, 0],
-                                      contingency_rates=res.contingency_rates[:, 0],
-                                      converged=res.converged,
-                                      bus_types=res.bus_types)
+                                      battery_power=res.PB[0, :],
+                                      controlled_generation_power=res.PG[0, :],
+                                      Sf=res.Sf[0, :],
+                                      St=res.St[0, :],
+                                      overloads=res.overload[0, :],
+                                      loading=res.Loading[0, :],
+                                      rates=res.rates[0, :],
+                                      contingency_rates=res.contingency_rates[0, :],
+                                      converged=res.converged[0],
+                                      bus_types=convert_bus_types(res.bus_types[0]))
 
     return results
 
