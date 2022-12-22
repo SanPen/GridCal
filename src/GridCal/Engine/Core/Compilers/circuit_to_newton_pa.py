@@ -25,13 +25,14 @@ from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
 try:
     import newtonpa as npa
 
-    npa.findAndActivateLicense()
+    activation = npa.findAndActivateLicense()
     # activate
     if not npa.isLicenseActivated():
         npa_license = os.path.join(get_create_gridcal_folder(), 'newton.lic')
@@ -706,7 +707,32 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
                                 control_q_mode=q_control_dict[opt.control_Q])
 
 
-def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None):
+def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
+    """
+    Translate GridCal power flow options to Newton power flow options
+    :param opt:
+    :return:
+    """
+    q_control_dict = {ReactivePowerControlMode.NoControl: npa.ReactivePowerControlMode.NoControl,
+                      ReactivePowerControlMode.Direct: npa.ReactivePowerControlMode.Direct}
+
+    """
+    tolerance: float = 1e-06, 
+    max_iter: int = 20, 
+    mu0: float = 1.0, 
+    q_control: newtonpa.ReactivePowerControlMode = < ReactivePowerControlMode.Direct: 1 >, 
+    flow_control: bool = True, 
+    verbose: bool = False
+    """
+    #
+    return npa.OptimalPowerFlowOptions(tolerance=pfopt.tolerance,
+                                       max_iter=pfopt.max_iter,
+                                       mu0=pfopt.mu,
+                                       control_q_mode=q_control_dict[pfopt.control_Q],
+                                       flow_control=True)
+
+
+def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> npa.PowerFlowResults:
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -715,7 +741,7 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+    npa_circuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
 
     pf_options = get_newton_pa_pf_options(opt)
 
@@ -727,10 +753,40 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
         time_indices = [0]
         n_threads = 1
 
-    pf_res = npa.runPowerFlow(numeric_circuit=npaCircuit,
+    pf_res = npa.runPowerFlow(circuit=npa_circuit,
                               pf_options=pf_options,
                               time_indices=time_indices,
                               n_threads=n_threads)
+
+    return pf_res
+
+
+def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
+                  time_series=False, tidx=None) -> npa.OptimalPowerFlowResults:
+    """
+    Newton power flow
+    :param circuit: MultiCircuit instance
+    :param pfopt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :param tidx: Array of time indices
+    :return: Newton Power flow results object
+    """
+    npaCircuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+
+    pf_options = get_newton_pa_opf_options(pfopt)
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        time_indices = [i for i in range(circuit.get_time_number())]
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    pf_res = npa.runOptimalPowerFlow(circuit=npaCircuit,
+                                     pf_options=pf_options,
+                                     time_indices=time_indices,
+                                     n_threads=n_threads)
 
     return pf_res
 
@@ -745,12 +801,12 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
     npa_circuit = to_newton_pa(circuit, time_series=False)
 
     options = npa.LinearAnalysisOptions(distribute_slack=distributed_slack)
-    results = npa.runLinearAnalysisAt(t=0, grid=npa_circuit, options=options)
+    results = npa.runLinearAnalysisAt(t=0, circuit=npa_circuit, options=options)
 
     return results
 
 
-def translate_newton_pa_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
+def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults) -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_tr=grid.get_transformers2w_number(),
@@ -794,6 +850,36 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
                        elapsed=rep.elapsed[i],
                        iterations=rep.iterations[i])
             results.convergence_reports.append(report)
+
+    return results
+
+
+def translate_newton_pa_opf_results(res: npa.OptimalPowerFlowResults) -> OptimalPowerFlowResults:
+
+    results = OptimalPowerFlowResults(bus_names=res.bus_names,
+                                      branch_names=res.branch_names,
+                                      load_names=res.load_names,
+                                      generator_names=res.generator_names,
+                                      battery_names=res.battery_names,
+                                      Sbus=res.Scalc[:, 0],
+                                      voltage=res.voltage[:, 0],
+                                      load_shedding=res.load_shedding,
+                                      hvdc_names=res.hvdc_names,
+                                      hvdc_power=res.hvdc_Pf[:, 0],
+                                      hvdc_loading=res.hvdc_loading[:, 0],
+                                      phase_shift=res.tap_angle[:, 0],
+                                      bus_shadow_prices=res.bus_shadow_prices[:, 0],
+                                      generator_shedding=res.generator_shedding,
+                                      battery_power=res.PB[:, 0],
+                                      controlled_generation_power=res.PG[:, 0],
+                                      Sf=res.Sf[:, 0],
+                                      St=res.St[:, 0],
+                                      overloads=res.overload[:, 0],
+                                      loading=res.Loading[:, 0],
+                                      rates=res.rates[:, 0],
+                                      contingency_rates=res.contingency_rates[:, 0],
+                                      converged=res.converged,
+                                      bus_types=res.bus_types)
 
     return results
 
