@@ -732,7 +732,7 @@ def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
                                        flow_control=True)
 
 
-def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> npa.PowerFlowResults:
+def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.PowerFlowResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -761,8 +761,7 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     return pf_res
 
 
-def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
-                  time_series=False, tidx=None) -> npa.OptimalPowerFlowResults:
+def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.OptimalPowerFlowResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -806,7 +805,7 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
     return results
 
 
-def convert_bus_types(arr: List[npa.BusType]):
+def convert_bus_types(arr: List["npa.BusType"]):
 
     tpe = np.zeros(len(arr), dtype=int)
     for i, val in enumerate(arr):
@@ -819,7 +818,7 @@ def convert_bus_types(arr: List[npa.BusType]):
     return tpe
 
 
-def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults) -> PowerFlowResults:
+def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResults") -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_tr=grid.get_transformers2w_number(),
@@ -867,7 +866,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: npa.PowerFlowResults
     return results
 
 
-def translate_newton_pa_opf_results(res: npa.OptimalPowerFlowResults) -> OptimalPowerFlowResults:
+def translate_newton_pa_opf_results(res: "npa.OptimalPowerFlowResults") -> OptimalPowerFlowResults:
 
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
