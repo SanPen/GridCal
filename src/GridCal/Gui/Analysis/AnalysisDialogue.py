@@ -525,13 +525,14 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
 
         if p_ratio > imbalance_threshold:
-            msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+            msg = ">> " + str(imbalance_threshold) + "%"
             self.log.add(object_type='Grid snapshot',
                          element_name=self.circuit,
                          element_index=-1,
                          severity='High',
                          propty='Active power balance ' + msg,
-                         message='There is too much active power imbalance')
+                         message='There is too much active power imbalance',
+                         val="{:.1f}".format(p_ratio * 100))
 
         # compare reactive power limits
         if not (Qmin <= -Ql <= Qmax):
@@ -550,13 +551,14 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 # compare loads
                 p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
                 if p_ratio > imbalance_threshold:
-                    msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
+                    msg = ">> " + str(imbalance_threshold) + "%"
                     self.log.add(object_type='Active power balance',
                                  element_name=self.circuit,
                                  element_index=t,
                                  severity='High',
                                  propty=msg,
-                                 message='There is too much active power imbalance')
+                                 message='There is too much active power imbalance',
+                                 val="{:.1f}".format(p_ratio * 100))
 
                 # compare reactive power limits
                 if not (Qmin <= -Ql_prof[t] <= Qmax):

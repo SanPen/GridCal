@@ -601,7 +601,7 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit):
 
         conn = npa_data.getConnectivity()
         inj = npa_data.getInjections()
-        tpes = npa_data.getTypes(inj.S0)
+        tpes = npa_data.getSimulationIndices(inj.S0)
         adm = npa_data.getAdmittances(conn)
         lin = npa_data.getLinearMatrices(conn)
         series_adm = npa_data.getSeriesAdmittances(conn)

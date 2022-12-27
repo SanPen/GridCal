@@ -31,7 +31,9 @@ class PSSeGrid:
         Args:
             data: array with the values
         """
-
+        a = ""
+        b = ""
+        var = [a, b]
         self.IC, self.SBASE, self.REV, self.XFRRAT, self.NXFRAT, self.BASFRQ = data
 
         """
@@ -328,6 +330,8 @@ class PSSeLoad:
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
             self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
+            self.SCALE = 1.0
+
         else:
             logger.add_warning('Load not implemented for version', str(version))
 
@@ -346,9 +350,12 @@ class PSSeLoad:
         if vv == 0:
             logger.add_error('Voltage equal to zero in shunt conversion', name)
 
-        g, b = self.YP, self.YQ
-        ir, ii = self.IP, self.IQ
-        p, q = self.PL, self.QL
+        g = self.YP * self.SCALE
+        b = self.YQ * self.SCALE
+        ir = self.IP * self.SCALE
+        ii = self.IQ * self.SCALE
+        p = self.PL * self.SCALE
+        q = self.QL * self.SCALE
 
         elm = Load(name=name,
                    idtag=None,
@@ -1021,16 +1028,13 @@ class PSSeTransformer:
                 self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, \
-                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[
-                    2]
+                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[
-                    3]
+                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[
-                    4]
+                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
 
         elif version == 32:
 
@@ -1046,9 +1050,7 @@ class PSSeTransformer:
             '''
 
             # Line 1: for both types
-
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            self.NAME, self.STAT, *var = data[0]
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, self.NAME, self.STAT, *var = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -1222,7 +1224,7 @@ class PSSeTransformer:
             R1-2 = 0.0 by default, but no default is allowed for X1-2.
         '''
 
-        self.CKT = self.CKT.replace("'", "")
+        self.CKT = str(self.CKT).replace("'", "")
 
         self.NAME = self.NAME.replace("'", "").strip()
 
@@ -1613,14 +1615,35 @@ class PSSeZone:
             logger.add_warning('Zones not defined for version', str(version))
 
 
+def delete_comment(raw_line):
+
+    lne = ""
+    text_active = False
+    for c in raw_line:
+
+        if c == "'":
+            text_active = not text_active
+
+        if c == "/":
+            if text_active:
+                pass
+            else:
+                return lne
+
+        lne += c
+
+    return lne
+
 def interpret_line(raw_line, splitter=','):
     """
     Split text into arguments and parse each of them to an appropriate format (int, float or string)
     Args:
-        line: text line
+        raw_line: text line
         splitter: value to split by
     Returns: list of arguments
     """
+    raw_line = delete_comment(raw_line)
+
     # Remove the last useless comma if it is there:
     if raw_line[-1] == ",":
         lne = raw_line[:-1]
@@ -1631,17 +1654,30 @@ def interpret_line(raw_line, splitter=','):
     elms = lne.split(splitter)
 
     for elm in elms:
-        try:
-            # try int
-            el = int(elm)
-        except ValueError as ex1:
+
+        if "'" in elm:
+            el = elm.replace("'", "").strip()
+        else:
+
+            if "/" in elm:
+                # the line might end with a comment "/ whatever" so we must remove the comment
+                print("Comment detected:", elm, end="")
+                ss = elm.split("/")
+                elm = ss[0]
+                print(" corrected to:", elm)
+
             try:
-                # try float
-                el = float(elm)
-            except ValueError as ex2:
-                # otherwise just leave it as string
-                el = elm.strip()
+                # try int
+                el = int(elm)
+            except ValueError as ex1:
+                try:
+                    # try float
+                    el = float(elm)
+                except ValueError as ex2:
+                    # otherwise just leave it as string
+                    el = elm.strip()
         parsed.append(el)
+
     return parsed
 
 
@@ -1669,7 +1705,7 @@ class PSSeParser:
         self.circuit.comments = 'Converted from the PSS/e .raw file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
-    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split_old(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
@@ -1690,13 +1726,16 @@ class PSSeParser:
             text_func("Reading raw file...")
 
         txt = ''
+        lines = list()
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
             for line in my_file:
                 if line[0] != '@':
                     txt += line
+                    lines.append(line)
 
         # split the text file into sections
         sections = txt.split(' /')
+        # sections = txt.split(' 0 /')
 
         sections_dict = dict()
 
@@ -1728,6 +1767,64 @@ class PSSeParser:
 
         return sections, sections_dict
 
+    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+        """
+        Read the text file and split it into sections
+        :return: list of sections, dictionary of sections by type
+        """
+
+        if text_func is not None:
+            text_func("Detecting raw file encoding...")
+
+        if progress_func is not None:
+            progress_func(0)
+
+        # make a guess of the file encoding
+        detection = chardet.detect(open(self.file_name, "rb").read())
+
+        # open the text file into a variable
+
+        if text_func is not None:
+            text_func("Reading raw file...")
+
+        sections_dict: Dict[str, List[str | float | int]] = dict()
+        sections_dict["bus"] = list()
+        sep = ","
+        with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
+            i = 0
+            block_category = "bus"
+            for line_ in my_file:
+                # remove garbage
+                lne = line_.strip()
+
+                if i == 0:
+                    sections_dict['info'] = [interpret_line(lne, sep)]
+                elif i == 1:
+                    sections_dict['comment'] = [lne]
+                elif i == 2:
+                    sections_dict['comment2'] = [lne]
+                else:
+                    if line_[0] != '@':
+                        if lne.startswith("0 /"):
+                            # this is a category splitter
+                            if lne.startswith("cards"):
+                                # MISO file
+                                pass
+                            else:
+                                # common header
+                                s = lne.lower().split(", begin")
+                                if len(s) == 2:
+                                    block_category = s[1].replace("begin", "").replace("data", "").strip()
+                                    sections_dict[block_category] = list()
+
+                        elif lne.startswith("Q"):
+                            pass
+                        else:
+                            sections_dict[block_category].append(interpret_line(lne, sep))
+                i += 1
+
+        return sections_dict
+
     def parse_psse(self, text_func=None,  progress_func=None) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
@@ -1743,10 +1840,11 @@ class PSSeParser:
         if text_func is not None:
             text_func("Reading file...")
 
-        sections, sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
+        sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
 
         # header -> new grid
-        grid = PSSeGrid(interpret_line(sections[0]))
+        # grid = PSSeGrid(interpret_line(sections[0]))
+        grid = PSSeGrid(sections_dict['info'][0])
 
         if grid.REV not in self.versions:
             msg = 'The PSSe version is not compatible. Compatible versions are:'
@@ -1804,39 +1902,45 @@ class PSSeParser:
         meta_data['inter-area transfer'] = [grid.areas, PSSeInterArea, 1]
         meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
-        for key, values in meta_data.items():
+        bus_set = {lne[0] for lne in sections_dict["bus"]}
 
-            # get the parsers for the declared object type
-            objects_list, ObjectT, lines_per_object = values
+        def is_3w(row):
+            return row[0] in bus_set and row[1] in bus_set and row[2] in bus_set
 
-            if text_func is not None:
-                text_func("Converting {0}...".format(key))
+        for key, lines in sections_dict.items():
 
-            if key in sections_dict.keys():
-                lines = sections_dict[key]
+            if key in meta_data:
 
-                # iterate ove the object's lines to pack them as expected (normally 1 per object except transformers...)
-                l = 0
-                while l < len(lines):
+                # get the parsers for the declared object type
+                objects_list, ObjectT, lines_per_object = meta_data[key]
 
-                    lines_per_object2 = lines_per_object
+                if text_func is not None:
+                    text_func("Converting {0}...".format(key))
 
-                    if version in self.versions and key == 'transformer':
-                        # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
-                        # the transformers may have 4 or 5 lines to define them
-                        if (l + 1) < len(lines):
-                            dta = lines[l + 1].split(',')
-                            if len(dta) > 3:
+                if key in sections_dict.keys():
+
+                    # iterate ove the object's lines to pack them as expected
+                    # (normally 1 per object except transformers...)
+                    l_count = 0
+                    while l_count < len(lines):
+
+                        lines_per_object2 = lines_per_object
+
+                        if version in self.versions and key == 'transformer':
+                            # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
+                            # the transformers may have 4 or 5 lines to define them
+                            # so, to be able to know, we look at the line "l" and check if the first arguments
+                            # are 2 or 3 buses
+                            if is_3w(lines[l_count]):
                                 # 3 - windings
                                 lines_per_object2 = 5
                             else:
                                 # 2-windings
                                 lines_per_object2 = 4
 
-                    if ',' in lines[l]:
                         data = list()
                         for k in range(lines_per_object2):
-                            data.append(interpret_line(lines[l + k]))
+                            data.append(lines[l_count + k])
 
                         # pick the line that matches the object and split it by line returns \n
                         # object_lines = line.split('\n')
@@ -1850,23 +1954,19 @@ class PSSeParser:
                         # pass the data to the according object to assign it to the matching variables
                         objects_list.append(ObjectT(data, version, logger))
 
-                    else:
-                        if lines[l].strip() != '0':
-                            logger.add_info('Skipped', lines[l])
+                        # add lines
+                        l_count += lines_per_object2
 
-                    # add lines
-                    l += lines_per_object2
+                        if progress_func is not None:
+                            progress_func((l_count / len(lines)) * 100)
 
-                    if progress_func is not None:
-                        progress_func((l / len(lines)) * 100)
+                else:
+                    pass
 
             else:
-                pass
-
-        # add logs for the non parsed objects
-        for key in sections_dict.keys():
-            if key not in meta_data.keys():
-                logger.add_warning('Not implemented in the parser', key)
+                if len(lines) > 0 and key not in ['info', 'comment', 'comment2']:
+                    # add logs for the non parsed objects
+                    logger.add_warning('Not implemented in the parser', key)
 
         return grid, logger
 
