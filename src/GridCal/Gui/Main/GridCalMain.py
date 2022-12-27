@@ -6526,7 +6526,14 @@ class MainGUI(QMainWindow):
                         buses = objects
                         values = [getattr(elm, attr) for elm in objects]
 
-                    elif elm.device_type == DeviceType.BranchDevice:
+                    elif elm.device_type in [DeviceType.BranchDevice,
+                                             DeviceType.LineDevice,
+                                             DeviceType.DCLineDevice,
+                                             DeviceType.HVDCLineDevice,
+                                             DeviceType.Transformer2WDevice,
+                                             DeviceType.SwitchDevice,
+                                             DeviceType.VscDevice,
+                                             DeviceType.UpfcDevice]:
                         # branches
                         buses = list()
                         values = list()
