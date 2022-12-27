@@ -1792,6 +1792,7 @@ class PSSeParser:
         meta_data['generator'] = [grid.generators, PSSeGenerator, 1]
         meta_data['induction machine'] = [grid.generators, PSSeInductionMachine, 3]
         meta_data['branch'] = [grid.lines, PSSeBranch, 1]
+        meta_data['nontransformer branch'] = [grid.lines, PSSeBranch, 1]
         meta_data['transformer'] = [grid.transformers, PSSeTransformer, 4]
         meta_data['two-terminal dc'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
         meta_data['two-terminal dc line'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
