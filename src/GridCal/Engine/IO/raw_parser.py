@@ -350,12 +350,13 @@ class PSSeLoad:
         if vv == 0:
             logger.add_error('Voltage equal to zero in shunt conversion', name)
 
-        g = self.YP * self.SCALE
-        b = self.YQ * self.SCALE
-        ir = self.IP * self.SCALE
-        ii = self.IQ * self.SCALE
-        p = self.PL * self.SCALE
-        q = self.QL * self.SCALE
+        # self.SCALEs means if the load is scalable, so omit it
+        g = self.YP
+        b = self.YQ
+        ir = self.IP
+        ii = self.IQ
+        p = self.PL
+        q = self.QL
 
         elm = Load(name=name,
                    idtag=None,
