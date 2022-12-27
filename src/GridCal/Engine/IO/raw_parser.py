@@ -142,11 +142,21 @@ class PSSeGrid:
             circuit.add_load(bus, api_obj)
 
         # Go through shunts
-        for psse_shunt in self.shunts + self.switched_shunts:
-            bus = psse_bus_dict[psse_shunt.I]
-            api_obj = psse_shunt.get_object(bus, logger)
+        for psse_shunt in self.shunts:
+            if psse_shunt.I in psse_bus_dict:
+                bus = psse_bus_dict[psse_shunt.I]
+                api_obj = psse_shunt.get_object(bus, logger)
+                circuit.add_shunt(bus, api_obj)
+            else:
+                logger.add_error("Shunt bus missing", psse_shunt.I, psse_shunt.I)
 
-            circuit.add_shunt(bus, api_obj)
+        for psse_shunt in self.switched_shunts:
+            if psse_shunt.I in psse_bus_dict:
+                bus = psse_bus_dict[psse_shunt.I]
+                api_obj = psse_shunt.get_object(bus, logger)
+                circuit.add_shunt(bus, api_obj)
+            else:
+                logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
 
         # Go through generators
         for psse_gen in self.generators:
@@ -1603,7 +1613,7 @@ class PSSeZone:
             logger.add_warning('Zones not defined for version', str(version))
 
 
-def interpret_line(line, splitter=','):
+def interpret_line(raw_line, splitter=','):
     """
     Split text into arguments and parse each of them to an appropriate format (int, float or string)
     Args:
@@ -1611,8 +1621,14 @@ def interpret_line(line, splitter=','):
         splitter: value to split by
     Returns: list of arguments
     """
+    # Remove the last useless comma if it is there:
+    if raw_line[-1] == ",":
+        lne = raw_line[:-1]
+    else:
+        lne = raw_line
+
     parsed = list()
-    elms = line.split(splitter)
+    elms = lne.split(splitter)
 
     for elm in elms:
         try:
@@ -1770,6 +1786,7 @@ class PSSeParser:
         meta_data['bus'] = [grid.buses, PSSeBus, 1]
         meta_data['load'] = [grid.loads, PSSeLoad, 1]
         meta_data['fixed shunt'] = [grid.shunts, PSSeShunt, 1]
+        meta_data['fixed bus shunt'] = [grid.shunts, PSSeShunt, 1]
         meta_data['shunt'] = [grid.shunts, PSSeShunt, 1]
         meta_data['switched shunt'] = [grid.switched_shunts, PSSeSwitchedShunt, 1]
         meta_data['generator'] = [grid.generators, PSSeGenerator, 1]
@@ -1823,7 +1840,7 @@ class PSSeParser:
                         # pick the line that matches the object and split it by line returns \n
                         # object_lines = line.split('\n')
 
-                        # interpret each line of the object and store into data
+                        # interpret each line of the object and store into data.
                         # data is a vector of vectors with data definitions
                         # for the buses, branches, loads etc. data contains 1 vector,
                         # for the transformers data contains 4 vectors
