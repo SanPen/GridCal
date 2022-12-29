@@ -74,7 +74,7 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
     for i, bus in enumerate(circuit.buses):
 
         elm = npa.CalculationNode(uuid=bus.idtag,
-                                  secondary_id=bus.code,
+                                  secondary_id=str(bus.code),
                                   name=bus.name,
                                   time_steps=ntime,
                                   slack=bus.is_slack,

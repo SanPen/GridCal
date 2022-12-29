@@ -1385,7 +1385,7 @@ class MainGUI(QMainWindow):
                 except:
                     pass
 
-                # update the drop down menus that display dates
+                # update the drop-down menus that display dates
                 self.update_date_dependent_combos()
                 self.update_area_combos()
 

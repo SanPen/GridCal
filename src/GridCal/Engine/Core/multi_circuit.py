@@ -2277,7 +2277,10 @@ class MultiCircuit:
 
         lst = np.zeros(len(self.buses), dtype=int)
         for k, bus in enumerate(self.buses):
-            lst[k] = d[bus.area]
+            if bus.area is not None:
+                lst[k] = d[bus.area]
+            else:
+                lst[k] = 0
         return lst
 
     def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
