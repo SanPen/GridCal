@@ -676,15 +676,21 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.clear_highlight_pushButton)
 
+        self.structure_analysis_pushButton = QPushButton(self.frame_54)
+        self.structure_analysis_pushButton.setObjectName(u"structure_analysis_pushButton")
+        self.structure_analysis_pushButton.setIcon(icon21)
+
+        self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
+
         self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
         self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
         self.delete_and_reduce_pushButton.setIcon(icon61)
 
         self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
-
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
 
 
         self.verticalLayout_26.addWidget(self.frame_54)
@@ -1171,7 +1177,7 @@ class Ui_mainWindow(object):
         self.toolBox.setObjectName(u"toolBox")
         self.contingencyBranchesPage = QWidget()
         self.contingencyBranchesPage.setObjectName(u"contingencyBranchesPage")
-        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 319, 460))
+        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 258, 210))
         self.verticalLayout_40 = QVBoxLayout(self.contingencyBranchesPage)
         self.verticalLayout_40.setObjectName(u"verticalLayout_40")
         self.verticalLayout_40.setContentsMargins(0, 0, 0, 0)
@@ -1226,7 +1232,7 @@ class Ui_mainWindow(object):
         self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
         self.contingencyInjectionsPage = QWidget()
         self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
-        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 385, 460))
         self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
         self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
@@ -4066,7 +4072,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.toolBox.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(1)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
 
@@ -4398,6 +4404,10 @@ class Ui_mainWindow(object):
         self.clear_highlight_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Clear the bus highlight", None))
 #endif // QT_CONFIG(tooltip)
         self.clear_highlight_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.structure_analysis_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Run the histogram analysis of the selected data structure</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.structure_analysis_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

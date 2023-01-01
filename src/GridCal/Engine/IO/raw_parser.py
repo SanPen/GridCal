@@ -696,7 +696,7 @@ class PSSeInductionMachine(PSSeObject):
         :param logger:
         """
 
-        if version in [30, 32, 33]:
+        if version > 30:
             '''
             I,ID,STAT,SCODE,DCODE,AREA,ZONE,OWNER,TCODE,BCODE,MBASE,RATEKV,
             PCODE,PSET,H,A,B,D,E,RA,XA,XM,R1,X1,R2,X2,X3,E1,SE1,E2,SE2,IA1,IA2,
@@ -1504,7 +1504,8 @@ class PSSeTransformer(PSSeObject):
             '''
 
             # Line 1: for both types
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, self.NAME, self.STAT, *var = data[0]
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+            self.NAME, self.STAT, *var = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -2318,6 +2319,7 @@ class PSSeParser:
                                 if len(s) == 2:
                                     block_category = s[1].replace("begin", "").replace("data", "").strip()
                                     sections_dict[block_category] = list()
+
                         elif lne.startswith("Q"):
                             pass
                         else:

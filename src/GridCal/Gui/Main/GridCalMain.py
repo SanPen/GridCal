@@ -45,6 +45,7 @@ from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -650,6 +651,8 @@ class MainGUI(QMainWindow):
         self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
         self.ui.newContingencyPlanButton.clicked.connect(self.new_contingency_plan)
         self.ui.deleteContingencyButton.clicked.connect(self.delete_contingency_item)
+
+        self.ui.structure_analysis_pushButton.clicked.connect(self.structure_analysis_plot)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -7186,6 +7189,16 @@ class MainGUI(QMainWindow):
 
     def add_contingency_from_selection(self):
         pass
+
+    def structure_analysis_plot(self):
+
+        if len(self.ui.dataStructuresListView.selectedIndexes()) > 0:
+            elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+
+            object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
+            plt.show()
+        else:
+            self.msg('Select a data structure')
 
 
 def run(use_native_dialogues=False):
