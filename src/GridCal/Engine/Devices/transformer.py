@@ -1119,7 +1119,7 @@ class Transformer2W(EditableDevice):
 
     def fix_inconsistencies(self, logger: Logger, maximum_difference=0.1):
         """
-        Fix the voltage inconsistencies
+        Fix the inconsistencies
         :param logger:
         :param maximum_difference: proportion to be under or above (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
         :return:
@@ -1145,6 +1145,11 @@ class Transformer2W(EditableDevice):
         if not (LB <= rLV <= UB):
             logger.add_warning("Corrected transformer LV", self.name, self.LV, LV)
             self.LV = LV
+            errors = True
+
+        if self.R < 0.0:
+            logger.add_warning("Corrected transformer R<0", self.name, self.R, -self.R)
+            self.R = -self.R
             errors = True
 
         return errors

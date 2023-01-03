@@ -713,3 +713,18 @@ class Line(EditableDevice):
                 return False
         else:
             return False
+
+    def fix_inconsistencies(self, logger: Logger):
+        """
+        Fix the inconsistencies
+        :param logger:
+        :return:
+        """
+        errors = False
+
+        if self.R < 0.0:
+            logger.add_warning("Corrected transformer R<0", self.name, self.R, -self.R)
+            self.R = -self.R
+            errors = True
+
+        return errors

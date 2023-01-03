@@ -2513,6 +2513,9 @@ class MultiCircuit:
             elm.fix_inconsistencies(logger,
                                     maximum_difference=maximum_difference)
 
+        for elm in self.lines:
+            elm.fix_inconsistencies(logger)
+
         for elm in self.get_generators():
             elm.fix_inconsistencies(logger,
                                     min_vset=min_vset,

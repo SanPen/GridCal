@@ -271,6 +271,9 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
             else:
                 logger.add_warning("Unsupported curve model", gen_dict[i].name, curve_model)
 
+            # if gen_dict[i].Cost == 0.0:
+            #     gen_dict[i].enabled_dispatch = False
+
 
 def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
     """
