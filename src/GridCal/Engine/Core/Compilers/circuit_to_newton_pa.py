@@ -729,7 +729,8 @@ def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
                                        max_iter=pfopt.max_iter,
                                        mu0=pfopt.mu,
                                        control_q_mode=q_control_dict[pfopt.control_Q],
-                                       flow_control=True)
+                                       flow_control=True,
+                                       voltage_control=True)
 
 
 def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.PowerFlowResults":
