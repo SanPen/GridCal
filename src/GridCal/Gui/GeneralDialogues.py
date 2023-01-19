@@ -351,7 +351,8 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
         self.accepted = False
 
         # year
-        d = datetime.now()
+        d2 = datetime.now()
+        d = datetime(year=d2.year, month=d2.month, day=d2.day, hour=d2.hour, minute=d2.minute, second=0)
         self.date_time_editor = QtWidgets.QDateTimeEdit()
         self.date_time_editor.setDateTime(d)
 
