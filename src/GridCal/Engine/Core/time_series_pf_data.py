@@ -242,6 +242,7 @@ class TimeCircuit(SnapshotData):
         nc.original_load_idx = load_idx
         nc.original_stagen_idx = stagen_idx
         nc.original_shunt_idx = shunt_idx
+        nc.original_time_idx = time_idx
 
         # slice data
         nc.bus_data = self.bus_data.slice(bus_idx, time_idx)
@@ -311,11 +312,11 @@ class TimeCircuit(SnapshotData):
                 # compute the adjacency matrix
                 A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
                                             C_branch_bus_t=self.Ct,
-                                            branch_active=self.branch_data.branch_active[:, t_array],
-                                            bus_active=self.bus_data.bus_active[:, t_array])
+                                            branch_active=self.branch_data.branch_active[:, t],
+                                            bus_active=self.bus_data.bus_active[:, t])
 
                 # find the matching islands
-                idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t_array])
+                idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t])
 
                 # if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
                 #
