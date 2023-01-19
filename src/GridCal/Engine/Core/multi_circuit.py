@@ -215,7 +215,7 @@ class MultiCircuit:
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
 
-        self.device_type_name_dict = dict()
+        self.device_type_name_dict: Dict[str, DeviceType] = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -596,6 +596,9 @@ class MultiCircuit:
         elif element_type == DeviceType.Transformer2WDevice:
             return self.transformers2w
 
+        elif element_type == DeviceType.Transformer3WDevice:
+            return self.transformers3w
+
         elif element_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
@@ -640,6 +643,13 @@ class MultiCircuit:
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
+
+    def get_elements_dict_by_type(self, element_type: DeviceType, use_secondary_key=False):
+
+        if use_secondary_key:
+            return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
+        else:
+            return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
     def get_node_elements_by_type2(self, element_type: DeviceType):
         """

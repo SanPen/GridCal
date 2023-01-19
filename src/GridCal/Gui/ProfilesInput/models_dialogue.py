@@ -97,9 +97,66 @@ class GridsModel(QAbstractTableModel):
                 return p_int
         return None
 
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        return Qt.ItemIsDropEnabled | Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
 
-def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit):
-    pass
+    def supportedDropActions(self) -> bool:
+        return Qt.MoveAction | Qt.CopyAction
+
+    def dropEvent(self, event):
+        if (event.source() is not self or
+                (event.dropAction() != Qt.MoveAction and
+                 self.dragDropMode() != QAbstractItemView.InternalMove)):
+            super().dropEvent(event)
+        selection = self.selectedIndexes()
+        from_index = selection[0].row() if selection else -1
+
+        globalPos = self.viewport().mapToGlobal(event.pos())
+        header = self.verticalHeader()
+        to_index = header.logicalIndexAt(header.mapFromGlobal(globalPos).y())
+        if to_index < 0:
+            to_index = header.logicalIndex(self.model().rowCount() - 1)
+
+        if from_index != to_index:
+            from_index = header.visualIndex(from_index)
+            to_index = header.visualIndex(to_index)
+            header.moveSection(from_index, to_index)
+            event.accept()
+            event.setDropAction(Qt.IgnoreAction)
+        super().dropEvent(event)
+
+
+def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secondary_key):
+    """
+    Assign all the values of the loaded grid to the profiles of the main grid at the time step t
+    :param t: time step index
+    :param loaded_grid: loaded grid
+    :param main_grid: main grid
+    """
+    # for each list of devices with profiles...
+    for dev_template in main_grid.objects_with_profiles:
+
+        # get the device type
+        device_type = dev_template.device_type
+
+        # get dictionary of devices
+        main_elms_dict = main_grid.get_elements_dict_by_type(device_type, use_secondary_key=use_secondary_key)
+
+        # get list of devices
+        loaded_elms = loaded_grid.get_elements_by_type(device_type)
+
+        # for each device
+        for loaded_elm in loaded_elms:
+
+            # fast way to avoid double lookup
+            main_elm = main_elms_dict.get(loaded_elm.code if use_secondary_key else loaded_elm.idtag, None)
+
+            if main_elm is not None:
+
+                # for every property with profile, set the profile value with the element value
+                for prop, profile_prop in main_elm.properties_with_profile.items():
+
+                    getattr(main_elm, profile_prop)[t] = getattr(loaded_elm, prop)
 
 
 class ModelsInputGUI(QtWidgets.QDialog):
@@ -137,6 +194,10 @@ class ModelsInputGUI(QtWidgets.QDialog):
 
         # click
         self.ui.addModelsButton.clicked.connect(self.add_models)
+        self.ui.acceptModelsButton.clicked.connect(self.accept)
+
+    def accept(self):
+        self.close()
 
     def add_models(self):
         # declare the allowed file types
@@ -168,13 +229,17 @@ class ModelsInputGUI(QtWidgets.QDialog):
         :param main_grid: Grid to apply the values to, it has to have declared profiles already
         :return: None
         """
+        use_secondary_key = True
+
         for t, entry in enumerate(self.grids_model.items()):
 
             if os.path.exists(entry.path):
+                print(entry.path)
                 loaded_grid = FileOpen(entry.path).open()
-                assign_grid(t=t, loaded_grid=loaded_grid, main_grid=main_grid)
-
-
+                assign_grid(t=t,
+                            loaded_grid=loaded_grid,
+                            main_grid=main_grid,
+                            use_secondary_key=use_secondary_key)
 
 
 if __name__ == "__main__":

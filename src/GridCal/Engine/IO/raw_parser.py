@@ -502,7 +502,8 @@ class PSSeSwitchedShunt(PSSeObject):
 
         elm = Shunt(name='Switched shunt ' + name,
                     G=g, B=b,
-                    active=bool(self.STAT))
+                    active=bool(self.STAT),
+                    code=name)
 
         return elm
 
@@ -552,7 +553,8 @@ class PSSeShunt(PSSeObject):
         elm = Shunt(name=name,
                     idtag=name,
                     G=g, B=b,
-                    active=bool(self.STATUS))
+                    active=bool(self.STATUS),
+                    code=name)
 
         return elm
 

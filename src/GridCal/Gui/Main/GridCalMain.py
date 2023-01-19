@@ -7185,6 +7185,9 @@ class MainGUI(QMainWindow):
         """
         Open the dialogue to load profile data from models
         """
+        if self.circuit.time_profile is None:
+            self.new_profiles_structure()
+
         # if there are no profiles:
         if self.circuit.time_profile is not None:
             self.models_input_dialogue = ModelsInputGUI(parent=self,
@@ -7203,11 +7206,11 @@ class MainGUI(QMainWindow):
                 self.display_profiles()
 
         else:
-            warning_msg("You need to declare a time profile first. "
-                        "Then, this button will show the dialogue to "
-                        "load the data from the modes at the time steps that you prefer.\n"
+            warning_msg("You need to declare a time profile first.\n\n"
+                        "Then, this button will show the dialogue to\n"
+                        "load the data from the models at the time steps\n"
+                        "that you prefer.\n\n"
                         "Use the 'Create profiles button'.")
-            return False
 
 
 def run(use_native_dialogues=False):
