@@ -2453,16 +2453,26 @@ class MultiCircuit:
             year = t0.year
 
         t0 = datetime(year=year, month=1, day=1)
-        self.re_index_time2(t0=t0, hours_per_step=hours_per_step)
+        self.re_index_time2(t0=t0, step_size=hours_per_step, step_unit='h')
 
-    def re_index_time2(self, t0, hours_per_step=1.0):
+    def re_index_time2(self, t0, step_size, step_unit):
         """
         Generate sequential time steps to correct the time_profile
         :param t0: base time
-        :param hours_per_step: number of hours per step, by default 1 hour by step
+        :param step_size: number of hours per step, by default 1 hour by step
+        :param step_unit: 'h', 'm', 's'
         """
         nt = self.get_time_number()
-        tm = [t0 + timedelta(hours=t * hours_per_step) for t in range(nt)]
+
+        if step_unit == 'h':
+            tm = [t0 + timedelta(hours=t * step_size) for t in range(nt)]
+        elif step_unit == 'm':
+            tm = [t0 + timedelta(minutes=t * step_size) for t in range(nt)]
+        elif step_unit == 's':
+            tm = [t0 + timedelta(seconds=t * step_size) for t in range(nt)]
+        else:
+            raise Exception("Unsupported time unit")
+
         self.time_profile = pd.to_datetime(tm)
 
     def set_generators_active_profile_from_their_active_power(self):

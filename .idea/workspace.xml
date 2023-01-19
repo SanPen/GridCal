@@ -23,18 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="made the contingency planner tab invisible for the 4.6.2 release">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="removed a lot of &quot;if key in dict.keys()&quot; by a more efficient way &quot;dict.get&quot;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_devices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_devices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/dgs_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/dgs_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/pack_unpack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/iwamoto_newton_raphson.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/iwamoto_newton_raphson.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GeneralDialogues.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GeneralDialogues.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1084,14 +1078,7 @@
       <workItem from="1673425637515" duration="63000" />
       <workItem from="1674117110000" duration="7747000" />
       <workItem from="1674125524670" duration="2471000" />
-      <workItem from="1674140086971" duration="1882000" />
-    </task>
-    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
-      <created>1656759710081</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1656759710081</updated>
+      <workItem from="1674140086971" duration="4707000" />
     </task>
     <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
       <created>1656760923750</created>
@@ -1429,7 +1416,14 @@
       <option name="project" value="LOCAL" />
       <updated>1674125449963</updated>
     </task>
-    <option name="localTasksCounter" value="362" />
+    <task id="LOCAL-00362" summary="removed a lot of &quot;if key in dict.keys()&quot; by a more efficient way &quot;dict.get&quot;">
+      <created>1674142013631</created>
+      <option name="number" value="00362" />
+      <option name="presentableId" value="LOCAL-00362" />
+      <option name="project" value="LOCAL" />
+      <updated>1674142013631</updated>
+    </task>
+    <option name="localTasksCounter" value="363" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1463,7 +1457,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Set the SC loading values to display in %" />
     <MESSAGE value="fixed issue with no-slack islands" />
     <MESSAGE value="Minor refactor of the newer get admmitance functions in generatorDate and BatteryData" />
     <MESSAGE value="Made the short circuit vastly more efficient by avoiding Y inversions" />
@@ -1488,7 +1481,8 @@
     <MESSAGE value="Working version of the importer" />
     <MESSAGE value="Improved re-indexing" />
     <MESSAGE value="made the contingency planner tab invisible for the 4.6.2 release" />
-    <option name="LAST_COMMIT_MESSAGE" value="made the contingency planner tab invisible for the 4.6.2 release" />
+    <MESSAGE value="removed a lot of &quot;if key in dict.keys()&quot; by a more efficient way &quot;dict.get&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed a lot of &quot;if key in dict.keys()&quot; by a more efficient way &quot;dict.get&quot;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2081,7 +2075,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ortools_opf_v2.coverage" NAME="ortools_opf_v2 Coverage Results" MODIFIED="1630065515013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$rpgm_algo.coverage" NAME="rpgm_algo Coverage Results" MODIFIED="1603645665438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
     <SUITE FILE_PATH="coverage/GridCal$line_example.coverage" NAME="line_example Coverage Results" MODIFIED="1619379775789" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1674141965626" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1674144625173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_voltage_controlled_generator_py.coverage" NAME="Nosetests in test_voltage_controlled_generator.py Coverage Results" MODIFIED="1616959365012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_monte_carlo_py.coverage" NAME="Nosetests in test_monte_carlo.py Coverage Results" MODIFIED="1617046279834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_bus_types_py.coverage" NAME="Nosetests in test_bus_types.py Coverage Results" MODIFIED="1645114540203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

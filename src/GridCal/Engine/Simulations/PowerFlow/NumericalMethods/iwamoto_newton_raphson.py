@@ -197,6 +197,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # check for absurd values
             if np.isnan(V).any() or (Vm == 0).any():
+                converged = False
                 break
 
     else:

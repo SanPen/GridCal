@@ -7078,7 +7078,9 @@ class MainGUI(QMainWindow):
 
         if dlg.accepted:
             self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),
-                                        hours_per_step=dlg.interval_hours.value())
+                                        step_size=dlg.step_length.value(),
+                                        step_unit=dlg.units.currentText())
+
             self.update_date_dependent_combos()
 
     def fix_generators_active_based_on_the_power(self, ask_before=True):
