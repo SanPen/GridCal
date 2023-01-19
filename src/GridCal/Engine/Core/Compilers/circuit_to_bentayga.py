@@ -605,10 +605,7 @@ def get_bentayga_pf_options(opt: PowerFlowOptions):
     q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,
                       ReactivePowerControlMode.Direct: btg.QControlMode.Direct}
 
-    if opt.solver_type in solver_dict.keys():
-        solver_type = solver_dict[opt.solver_type]
-    else:
-        solver_type = btg.PowerFlowSolvers.NewtonRaphson
+    solver_type = solver_dict.get(opt.solver_type, btg.PowerFlowSolvers.NewtonRaphson)
 
     return btg.PowerFlowOptions(solver=solver_type,
                                 tolerance=opt.tolerance,

@@ -100,9 +100,7 @@ def get_allowed_sheets(circuit=MultiCircuit()):
                            'shunt_Y_profiles': complex,
                            'tower_wires': None}
 
-    for object_type_name in object_types.keys():
-
-        object_sample = object_types[object_type_name]
+    for object_type_name, object_sample in object_types.items():
 
         for main_property, profile_property in object_sample.properties_with_profile.items():
 

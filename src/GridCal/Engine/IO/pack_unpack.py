@@ -110,14 +110,6 @@ def create_data_frames(circuit: MultiCircuit):
     # names_count = dict()
     if len(circuit.buses) > 0:
         for elm in circuit.buses:
-
-            # check name: if the name is repeated, change it so that it is not
-            # if elm.name in names_count.keys():
-            #     names_count[elm.name] += 1
-            #     elm.name = elm.name + '_' + str(names_count[elm.name])
-            # else:
-            #     names_count[elm.name] = 1
-
             elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
             elm.retrieve_graphic_position()
@@ -133,9 +125,7 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     # generic object iteration
     ########################################################################################################
-    for object_type_name in object_types.keys():
-
-        object_sample = object_types[object_type_name]
+    for object_type_name, object_sample in object_types.items():
 
         headers = object_sample.editable_headers.keys()
 

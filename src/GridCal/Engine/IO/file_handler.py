@@ -84,8 +84,7 @@ class FileOpen:
 
                     # Pass the table-like data dictionary to objects in this circuit
                     if 'version' not in data_dictionary.keys():
-
-                        interpret_data_v1(self.circuit, data_dictionary)
+                        interpret_data_v1(self.circuit, data_dictionary, self.logger)
 
                     elif data_dictionary['version'] == 2.0:
                         interprete_excel_v2(self.circuit, data_dictionary)
