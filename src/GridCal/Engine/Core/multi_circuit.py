@@ -2442,7 +2442,7 @@ class MultiCircuit:
         for bus in self.buses:
             bus.fuse_devices()
 
-    def re_index_time(self, year=None, hours_per_step=1):
+    def re_index_time(self, year=None, hours_per_step=1.0):
         """
         Generate sequential time steps to correct the time_profile
         :param year: base year, if None, this year is taken
@@ -2452,8 +2452,16 @@ class MultiCircuit:
             t0 = datetime.now()
             year = t0.year
 
-        nt = self.get_time_number()
         t0 = datetime(year=year, month=1, day=1)
+        self.re_index_time2(t0=t0, hours_per_step=hours_per_step)
+
+    def re_index_time2(self, t0, hours_per_step=1.0):
+        """
+        Generate sequential time steps to correct the time_profile
+        :param t0: base time
+        :param hours_per_step: number of hours per step, by default 1 hour by step
+        """
+        nt = self.get_time_number()
         tm = [t0 + timedelta(hours=t * hours_per_step) for t in range(nt)]
         self.time_profile = pd.to_datetime(tm)
 

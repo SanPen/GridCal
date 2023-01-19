@@ -181,6 +181,8 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Models import dialogue')
 
+        self.ui.deleteModelsButton.setVisible(False)
+
         self.use_native_dialogues = use_native_dialogues
 
         self.grids_model: GridsModel = GridsModel()

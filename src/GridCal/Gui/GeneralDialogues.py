@@ -355,10 +355,8 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
 
         # year
         d = datetime.now()
-        self.year_spinner = QtWidgets.QSpinBox()
-        self.year_spinner.setMinimum(0)
-        self.year_spinner.setMaximum(3000)
-        self.year_spinner.setValue(d.year)
+        self.date_time_editor = QtWidgets.QDateTimeEdit()
+        self.date_time_editor.setDateTime(d)
 
         self.label2 = QtWidgets.QLabel()
         self.label2.setText("Hours per interval")
@@ -375,7 +373,7 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
 
         # add all to the GUI
         self.main_layout.addWidget(self.label1)
-        self.main_layout.addWidget(self.year_spinner)
+        self.main_layout.addWidget(self.date_time_editor)
         self.main_layout.addWidget(self.label2)
         self.main_layout.addWidget(self.interval_hours)
         self.main_layout.addWidget(self.accept_btn)

@@ -2211,7 +2211,7 @@ class MainGUI(QMainWindow):
                 pass  # the dialogue was closed
 
         else:
-            warning_msg("There are no objects to which to assign a profile")
+            warning_msg("There are no objects to which to assign a profile. \nYou need to load or create a grid!")
 
     def modify_profiles(self, operation='+'):
         """
@@ -7075,8 +7075,8 @@ class MainGUI(QMainWindow):
         dlg.exec_()
 
         if dlg.accepted:
-            self.circuit.re_index_time(year=dlg.year_spinner.value(),
-                                       hours_per_step=dlg.interval_hours.value())
+            self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),
+                                        hours_per_step=dlg.interval_hours.value())
             self.update_date_dependent_combos()
 
     def fix_generators_active_based_on_the_power(self, ask_before=True):
@@ -7185,6 +7185,12 @@ class MainGUI(QMainWindow):
         """
         Open the dialogue to load profile data from models
         """
+
+        if len(self.circuit.buses) == 0:
+            warning_msg("There are no objects to which to assign a profile. \n"
+                        "You need to load or create a grid!")
+            return
+
         if self.circuit.time_profile is None:
             self.new_profiles_structure()
 
