@@ -312,7 +312,6 @@ class MainGUI(QMainWindow):
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
 
-
         self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value
                                                                 for o in self.circuit.objects_with_profiles]))
 
@@ -716,6 +715,9 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         self.ui.grid_colouring_frame.setVisible(False)
+
+        # this is the contingency planner tab, invisible until done
+        self.ui.tabWidget_3.setTabVisible(4, False)
 
         # template
         self.view_templates(False)

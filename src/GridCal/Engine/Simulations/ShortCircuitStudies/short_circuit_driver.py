@@ -199,7 +199,7 @@ class ShortCircuitDriver(DriverTemplate):
             else:
                 raise Exception('Unknown fault type!')
 
-        # if we get here, no short circuit was done, so declare empty results and exit
+        # if we get here, no short circuit was done, so declare empty results and exit --------------------------------
         nbus = calculation_inputs.Ybus.shape[0]
         nbr = calculation_inputs.nbr
 
