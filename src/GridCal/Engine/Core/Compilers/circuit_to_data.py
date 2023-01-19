@@ -32,10 +32,12 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_g
 
         bus_data.bus_types[i] = bus.determine_bus_type().value
 
-        if bus.area in areas_dict.keys():
-            bus_data.areas[i] = areas_dict[bus.area]
-        else:
-            bus_data.areas[i] = 0
+        bus_data.areas[i] = areas_dict.get(bus.area, 0)
+
+        # if bus.area in areas_dict.keys():
+        #     bus_data.areas[i] = areas_dict[bus.area]
+        # else:
+        #     bus_data.areas[i] = 0
 
         if time_series:
             bus_data.bus_active[i, :] = bus.active_prof
@@ -748,7 +750,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
-        data.G0_[ii] = elm.G0
+        data.G0[ii] = elm.G0
         data.B0[ii] = elm.B0
 
         data.R2[ii] = elm.R2

@@ -135,9 +135,9 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
     :param C_bus_shunt:
     :param shunt_admittance:
     :param shunt_active:
-    :param ys:
-    :param B:
-    :param Sbase:
+    :param ys: array of branch series admittances
+    :param B: array of branch susceptances
+    :param Sbase: base power (i.e. 100 MVA)
     :param m: array of tap modules (for all branches, regardless of their type)
     :param theta: array of tap angles (for all branches, regardless of their type)
     :param Beq: Array of equivalent susceptance

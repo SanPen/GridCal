@@ -26,6 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
@@ -1342,20 +1343,54 @@ class SnapshotData:
         elif structure_type == 'Jacobian':
 
             pvpq = np.r_[self.pv, self.pq]
-            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, pvpq)
 
-            """
-            J11 = dS_dVa[array([pvpq]).T, pvpq].real
-            J12 = dS_dVm[array([pvpq]).T, pq].real
-            J21 = dS_dVa[array([pq]).T, pvpq].imag
-            J22 = dS_dVm[array([pq]).T, pq].imag
-            """
-            npq = len(self.pq)
-            npv = len(self.pv)
-            npqpv = npq + npv
-            cols = ['dS/dVa {0}'.format(i) for i in range(npqpv)] + ['dS/dVm {0}'.format(i) for i in range(npq)]
-            rows = cols
+            cols = ['1) dVa {0}'.format(i) for i in pvpq]
+            cols += ['2) dVm {0}'.format(i) for i in self.pq]
+            cols += ['3) dPfsh {0}'.format(i) for i in self.iPfsh]
+            cols += ['4) dQfma {0}'.format(i) for i in self.iQfma]
+            cols += ['5) dBeqz {0}'.format(i) for i in self.iBeqz]
+            cols += ['6) dBeqv {0}'.format(i) for i in self.iBeqv]
+            cols += ['7) dVtma {0}'.format(i) for i in self.iVtma]
+            cols += ['8) dQtma {0}'.format(i) for i in self.iQtma]
+            cols += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
+
+            rows = ['1) dP {0}'.format(i) for i in pvpq]
+            rows += ['2) dQ {0}'.format(i) for i in self.pq]
+            rows += ['3) dQ {0}'.format(i) for i in self.iBeqv]
+            rows += ['4) dQ {0}'.format(i) for i in self.iVtma]
+            rows += ['5) dPf {0}'.format(i) for i in self.iPfsh]
+            rows += ['6) dQf {0}'.format(i) for i in self.iQfma]
+            rows += ['7) dQf {0}'.format(i) for i in self.iBeqz]
+            rows += ['8) dQt {0}'.format(i) for i in self.iQtma]
+            rows += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
+
+            # compute admittances
+            Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
+            Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(Cf=self.Cf, Ct=self.Ct,
+                                                     C_bus_shunt=self.shunt_data.C_bus_shunt,
+                                                     shunt_admittance=self.shunt_data.shunt_admittance[:, 0],
+                                                     shunt_active=self.shunt_data.shunt_active[:, 0],
+                                                     ys=Ys,
+                                                     B=self.branch_data.B,
+                                                     Sbase=self.Sbase,
+                                                     m=self.branch_data.m[:, 0],
+                                                     theta=self.branch_data.theta[:, 0],
+                                                     Beq=self.branch_data.Beq[:, 0],
+                                                     Gsw=self.branch_data.G0sw[:, 0],
+                                                     mf=self.branch_data.tap_f,
+                                                     mt=self.branch_data.tap_t)
+
+            J = fubm_jacobian(self.nbus, self.nbr, self.iPfsh, self.iPfdp,
+                              self.iQfma, self.iQtma, self.iVtma, self.iBeqz, self.iBeqv,
+                              self.VfBeqbus, self.Vtmabus,
+                              self.F, self.T, Ys,
+                              self.branch_data.k, tap, self.branch_data.m[:, 0], self.branch_data.B,
+                              self.branch_data.Beq[:, 0], self.branch_data.Kdp,
+                              self.Vbus, Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), self.Cf.tocsc(), self.Ct.tocsc(),
+                              pvpq, self.pq)
+
             df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
+
 
         elif structure_type == 'iPfsh':
             df = pd.DataFrame(data=self.iPfsh, columns=['iPfsh'], index=self.branch_data.branch_names[self.iPfsh])

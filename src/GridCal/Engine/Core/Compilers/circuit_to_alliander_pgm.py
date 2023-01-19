@@ -292,6 +292,12 @@ def get_pgm_line(circuit: MultiCircuit, bus_dict, idx0, logger: Logger):
         line['x1'][i] = elm.X * Zbase  # Ohm
         line['c1'][i] = elm.B / (omega * Zbase)  # Farad
         line['tan1'][i] = 0.0  # this is the ratio G/B, which does not apply here because we do not have G
+
+        line['r0'][i] = elm.R0 * Zbase  # Ohm
+        line['x0'][i] = elm.X0 * Zbase  # Ohm
+        line['c0'][i] = elm.B0 / (omega * Zbase)  # Farad
+        line['tan0'][i] = 0.0  # this is the ratio G/B, which does not apply here because we do not have G
+
         line['i_n'][i] = 1e6 * elm.rate / r3 / (Vf * 1000)  # rating in A
         idx += 1
 
@@ -327,7 +333,6 @@ def get_pgm_transformer_data(circuit: MultiCircuit, bus_dict, idx0):
         xfo['pk'][i] = 0  # short circuit (copper) loss (W)
         xfo['i0'][i] = 0  # relative no-load current (p.u.)
         xfo['p0'][i] = 0  # no-load (iron) loss (W)
-
 
         # clock number of phase shift.
         # Even number is not possible if one side is Y(N)
@@ -453,18 +458,19 @@ def to_pgm(circuit: MultiCircuit, logger: Logger = Logger()) -> "pgm.PowerGridMo
     return model
 
 
-def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logger):
+def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logger, symmetric=True):
     """
     Alliander's PGM power flow
     :param circuit: MultiCircuit instance
     :param opt: Power Flow Options
     :param logger: Logger object
+    :param symmetric: Symmetric (3-phase balanced calculation? / asymmetric)
     :return: Alliander's PGM Power flow results object
     """
     model = to_pgm(circuit, logger=logger)
 
     try:
-        pf_res = model.calculate_power_flow()
+        pf_res = model.calculate_power_flow(symmetric=symmetric)
 
     except RuntimeError as e:
         logger.add_error('Power flow failed\n' + str(e))

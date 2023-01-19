@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.tower import Tower
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -232,7 +232,8 @@ class Line(EditableDevice):
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
                  contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20):
+                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -291,6 +292,12 @@ class Line(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
                                                                     'Used in short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
@@ -350,6 +357,12 @@ class Line(EditableDevice):
         self.Cost = cost
 
         self.Cost_prof = Cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         self.active_prof = active_prof
 
@@ -422,7 +435,9 @@ class Line(EditableDevice):
                  temp_base=self.temp_base,
                  temp_oper=self.temp_oper,
                  alpha=self.alpha,
-                 template=self.template)
+                 template=self.template,
+                 opex=self.opex,
+                 capex=self.capex)
 
         b.measurements = self.measurements
 
@@ -432,7 +447,7 @@ class Line(EditableDevice):
 
         return b
 
-    def apply_template(self, obj: Tower, Sbase, logger=Logger()):
+    def apply_template(self, obj, Sbase, logger=Logger()):
         """
         Apply a line template to this object
 
@@ -600,6 +615,12 @@ class Line(EditableDevice):
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
+
+                    'overload_cost': self.Cost,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
+
                     'locations': []
                     }
         else:
@@ -692,3 +713,18 @@ class Line(EditableDevice):
                 return False
         else:
             return False
+
+    def fix_inconsistencies(self, logger: Logger):
+        """
+        Fix the inconsistencies
+        :param logger:
+        :return:
+        """
+        errors = False
+
+        if self.R < 0.0:
+            logger.add_warning("Corrected transformer R<0", self.name, self.R, -self.R)
+            self.R = -self.R
+            errors = True
+
+        return errors

@@ -265,7 +265,7 @@ def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     nj = npv + npq * 2
 
     # compute Jacobian for the power flow equations
-    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+    J = AC_jacobian(Ybus, V, pvpq, pq)
 
     dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
@@ -392,7 +392,7 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
         i += 1
         
         # evaluate Jacobian
-        J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+        J = AC_jacobian(Ybus, V, pvpq, pq)
 
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     

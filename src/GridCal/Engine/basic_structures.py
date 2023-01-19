@@ -104,7 +104,7 @@ class SolverType(Enum):
     FASTDECOUPLED = 'Fast decoupled'
     LACPF = 'Linear AC'
     DC_OPF = 'Linear DC OPF'
-    AC_OPF = 'Linear AC OPF'
+    AC_OPF = 'Nonlinear AC OPF'
     Simple_OPF = 'Simple dispatch'
     Proportional_OPF = 'Proportional OPF'
     NRI = 'Newton-Raphson in current'

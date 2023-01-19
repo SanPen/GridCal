@@ -350,23 +350,21 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
 
         self.accepted = False
 
-        self.label1 = QtWidgets.QLabel()
-        self.label1.setText("Year")
-
         # year
-        d = datetime.now()
-        self.year_spinner = QtWidgets.QSpinBox()
-        self.year_spinner.setMinimum(0)
-        self.year_spinner.setMaximum(3000)
-        self.year_spinner.setValue(d.year)
+        d2 = datetime.now()
+        d = datetime(year=d2.year, month=d2.month, day=d2.day, hour=d2.hour, minute=d2.minute, second=0)
+        self.date_time_editor = QtWidgets.QDateTimeEdit()
+        self.date_time_editor.setDateTime(d)
 
-        self.label2 = QtWidgets.QLabel()
-        self.label2.setText("Hours per interval")
+        # time step length
+        self.step_length = QtWidgets.QDoubleSpinBox()
+        self.step_length.setMinimum(0.0001)
+        self.step_length.setMaximum(1000)
+        self.step_length.setValue(1)
 
-        self.interval_hours = QtWidgets.QDoubleSpinBox()
-        self.interval_hours.setMinimum(0.0001)
-        self.interval_hours.setMaximum(1000)
-        self.interval_hours.setValue(1)
+        # units combo box
+        self.units = QtWidgets.QComboBox()
+        self.units.setModel(get_list_model(['h', 'm', 's']))
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()
@@ -374,10 +372,15 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
         self.accept_btn.clicked.connect(self.accept_click)
 
         # add all to the GUI
-        self.main_layout.addWidget(self.label1)
-        self.main_layout.addWidget(self.year_spinner)
-        self.main_layout.addWidget(self.label2)
-        self.main_layout.addWidget(self.interval_hours)
+        self.main_layout.addWidget(QtWidgets.QLabel("Start date"))
+        self.main_layout.addWidget(self.date_time_editor)
+
+        self.main_layout.addWidget(QtWidgets.QLabel("Time step length"))
+        self.main_layout.addWidget(self.step_length)
+
+        self.main_layout.addWidget(QtWidgets.QLabel("Time units"))
+        self.main_layout.addWidget(self.units)
+
         self.main_layout.addWidget(self.accept_btn)
 
         self.setLayout(self.main_layout)

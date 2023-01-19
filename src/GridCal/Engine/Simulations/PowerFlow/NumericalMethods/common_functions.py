@@ -288,58 +288,7 @@ def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F
     return fx
 
 
-def compute_acdc_fx_old(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
-                        pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
-    """
-    Compute the increments vector
-    :param Vm: Voltages module array
-    :param Sbus: Array of bus power matrix
-    :param Pfset: Array of Pf set values per branch
-    :param Qfset: Array of Qf set values per branch
-    :param Qtset: Array of Qt set values per branch
-    :param Vmfset: Array of Vf module set values per branch
-    :param Kdp: Array of branch droop value per branch
-    :param F:
-    :param T:
-    :param pvpq:
-    :param pq:
-    :param iPfsh:
-    :param iQfma:
-    :param iBeqz:
-    :param iQtma:
-    :param iPfdp:
-    :param VfBeqbus:
-    :param Vtmabus:
-    :return:
-    """
-    mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    misPbus = mis[pvpq].real  # F1(x0) Power balance mismatch - Va
-    misQbus = mis[pq].imag  # F2(x0) Power balance mismatch - Vm
-    misBeqv = mis[VfBeqbus].imag  # F6(x0) Vf control mismatch
-    misVtma = mis[Vtmabus].imag  # F7(x0) Vt control mismatch
-
-    misPfsh = Sf[iPfsh].real - Pfset[iPfsh]  # F3(x0) Pf control mismatch
-    misQfma = Sf[iQfma].imag - Qfset[iQfma]  # F4(x0) Qf control mismatch
-    misBeqz = Sf[iBeqz].imag - 0  # F5(x0) Qf control mismatch
-    misQtma = St[iQtma].imag - Qtset[iQtma]  # F8(x0) Qt control mismatch
-    misPfdp = -Sf[iPfdp].real + Pfset[iPfdp] + Kdp[iPfdp] * (Vm[F[iPfdp]] - Vmfset[iPfdp])  # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
-    # -------------------------------------------------------------------------
-
-    #  Create F vector
-    # FUBM ---------------------------------------------------------------------
-
-    fx = np.r_[misPbus,  # F1(x0) Power balance mismatch - Va
-               misQbus,  # F2(x0) Power balance mismatch - Vm
-               misBeqv,  # F5(x0) Qf control    mismatch - Beq
-               misVtma,  # F6(x0) Vf control    mismatch - Beq
-               misPfsh,  # F4(x0) Qf control    mismatch - ma
-               misQfma,  # F8(x0) Qt control    mismatch - ma
-               misBeqz,  # F7(x0) Vt control    mismatch - ma
-               misQtma,  # F3(x0) Pf control    mismatch - Theta_shift
-               misPfdp]  # F9(x0) Pf control    mismatch - Theta_shift Droop
-
-    return fx
 
 
 

@@ -20,7 +20,7 @@ from warnings import warn
 import pandas as pd
 import numpy as np
 from GridCal.Engine.Devices.editable_device import DeviceType, GCProp
-from GridCal.Engine.Devices.generator import Generator
+from GridCal.Engine.Devices.generator import Generator, BuildStatus
 
 
 class Battery(Generator):
@@ -94,7 +94,8 @@ class Battery(Generator):
                  op_cost=1.0, power_prof=None, power_factor_prof=None, vset_prof=None, active=True, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
-                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20):
+                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         Generator.__init__(self, name=name,
                            idtag=idtag,
@@ -115,7 +116,10 @@ class Battery(Generator):
                            mttr=mttr,
                            r1=r1, x1=x1,
                            r0=r0, x0=x0,
-                           r2=r2, x2=x2)
+                           r2=r2, x2=x2,
+                           capex=capex,
+                           opex=opex,
+                           build_status=build_status)
 
         # type of this device
         self.device_type = DeviceType.BatteryDevice
@@ -153,6 +157,12 @@ class Battery(Generator):
                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
 
                                  'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                 'capex': GCProp('e/MW', float,
+                                                 'Cost of investment. Used in expansion planning.'),
+                                 'opex': GCProp('e/MWh', float,
+                                                'Cost of operation. Used in expansion planning.'),
+                                 'build_status': GCProp('', BuildStatus,
+                                                        'Branch build status. Used in expansion planning.'),
                                  'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
                                  'mttf': GCProp('h', float, 'Mean time to failure'),
                                  'mttr': GCProp('h', float, 'Mean time to recovery')}
@@ -322,6 +332,9 @@ class Battery(Generator):
                     'pmin': self.Pmin,
                     'pmax': self.Pmax,
                     'cost': self.Cost,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
                     'charge_efficiency': self.charge_efficiency,
                     'discharge_efficiency': self.discharge_efficiency,
                     'min_soc': self.min_soc,

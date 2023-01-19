@@ -136,12 +136,36 @@ def parse_substations(data_lst: List[List]):
     return data
 
 
-def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation]):
+def parse_areas(data_lst: List[List]):
+
+    data = dict()
+    for raw in data_lst:
+        code = raw[0]
+        data[code] = dev.Area(name=raw[1],
+                              idtag=None,
+                              code=code,)
+
+    return data
+
+
+def parse_zones(data_lst: List[List]):
+
+    data = dict()
+    for raw in data_lst:
+        code = raw[0]
+        data[code] = dev.Zone(name=raw[1],
+                              idtag=None,
+                              code=code)
+
+    return data
+
+
+def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation], area_dict: Dict[int, dev.Area], zone_dict: Dict[int, dev.Zone]):
     buses_dict = dict()
     bus_volt = dict()
     for raw in data_lst:
         code = raw[0]
-        area_idx = raw[9]
+
         zone_idx = raw[10]
 
         lat = raw[19]
@@ -160,6 +184,18 @@ def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation
         else:
             substation = None
 
+        if area_dict is not None:
+            area_idx = raw[9]  # or maybe 28
+            area = area_dict[area_idx]
+        else:
+            area = None
+
+        if area_dict is not None:
+            zone_idx = raw[9]  # or maybe 28
+            zone = zone_dict[zone_idx]
+        else:
+            zone = None
+
         bus_volt[code] = raw[6]
 
         buses_dict[code] = dev.Bus(name=raw[1],
@@ -173,8 +209,8 @@ def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation
                                    active=active,
                                    is_slack=False,
                                    is_dc=False,
-                                   area=None,
-                                   zone=None,
+                                   area=area,
+                                   zone=zone,
                                    substation=substation,
                                    country=None,
                                    longitude=lon,
@@ -502,7 +538,19 @@ class PowerWorldParser:
         else:
             substations_dict = None
 
-        buses_dict, bus_volt = parse_buses(data_dict['bus data']['data'], substations_dict)
+        if 'area data' in data_dict.keys():
+            area_dict = parse_areas(data_dict['area data']['data'])
+            grid.areas = list(area_dict.values())
+        else:
+            area_dict = None
+
+        if 'zone data' in data_dict.keys():
+            zone_dict = parse_zones(data_dict['zone data']['data'])
+            grid.zones = list(zone_dict.values())
+        else:
+            zone_dict = None
+
+        buses_dict, bus_volt = parse_buses(data_dict['bus data']['data'], substations_dict, area_dict, zone_dict)
 
         # create devices
         grid.buses = list(buses_dict.values())

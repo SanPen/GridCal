@@ -51,7 +51,7 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq, npv, npq):
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
 
-    J2 = AC_jacobian(Ybus, dV, pvpq, pq, npv, npq)
+    J2 = AC_jacobian(Ybus, dV, pvpq, pq)
 
     a = incS
     b = J * dx
@@ -122,7 +122,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
             iter_ += 1
 
             # evaluate Jacobian
-            J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq)
 
             # compute update step
             try:
@@ -197,6 +197,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # check for absurd values
             if np.isnan(V).any() or (Vm == 0).any():
+                converged = False
                 break
 
     else:

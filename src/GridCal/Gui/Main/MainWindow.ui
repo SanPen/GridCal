@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1194</width>
+    <width>1205</width>
     <height>773</height>
    </rect>
   </property>
@@ -743,16 +743,16 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
+                     <widget class="QPushButton" name="structure_analysis_pushButton">
                       <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
                       <property name="text">
                        <string/>
                       </property>
                       <property name="icon">
                        <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+                        <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
                       </property>
                      </widget>
                     </item>
@@ -768,6 +768,20 @@ p, li { white-space: pre-wrap; }
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -1179,20 +1193,6 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="delete_profiles_structure_pushButton">
-                 <property name="toolTip">
-                  <string>Delete profiles</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QPushButton" name="edit_profiles_pushButton">
                  <property name="toolTip">
                   <string>Import profiles</string>
@@ -1206,6 +1206,37 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="flat">
                   <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="edit_profiles_from_models_pushButton">
+                 <property name="toolTip">
+                  <string>Import profiles from models. This is, load many individual grids and take the operational data from them</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
+                 </property>
+                 <property name="flat">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Delete profiles</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1536,6 +1567,430 @@ p, li { white-space: pre-wrap; }
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="contingencyPlannerTab">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>Contingency planner</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_37">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QFrame" name="frame_70">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_39">
+               <item>
+                <widget class="QSplitter" name="splitter_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <widget class="QFrame" name="frame_73">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_35">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_69">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_35">
+                      <property name="leftMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>2</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>2</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="newContingencyPlanButton">
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/new.svg</normaloff>:/Icons/icons/new.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_25">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>634</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="deleteContingencyButton">
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/delete3.svg</normaloff>:/Icons/icons/delete3.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTreeView" name="contingencyPlannerTreeView"/>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QFrame" name="frame_74">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_38">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_75">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_37">
+                      <property name="leftMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>2</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>1</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>2</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="autoNminusXButton">
+                        <property name="toolTip">
+                         <string>Automatically generate the all the N-x contingencies following the settings below</string>
+                        </property>
+                        <property name="text">
+                         <string>Auto</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="contingencyNspinBox">
+                        <property name="prefix">
+                         <string>N-</string>
+                        </property>
+                        <property name="minimum">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <number>2</number>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_27">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolBox" name="toolBox">
+                     <property name="currentIndex">
+                      <number>1</number>
+                     </property>
+                     <widget class="QWidget" name="contingencyBranchesPage">
+                      <property name="geometry">
+                       <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>258</width>
+                        <height>210</height>
+                       </rect>
+                      </property>
+                      <attribute name="label">
+                       <string>Branches</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="verticalLayout_40">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QFrame" name="frame_71">
+                         <property name="frameShape">
+                          <enum>QFrame::NoFrame</enum>
+                         </property>
+                         <property name="frameShadow">
+                          <enum>QFrame::Raised</enum>
+                         </property>
+                         <layout class="QGridLayout" name="gridLayout_26">
+                          <item row="5" column="0">
+                           <widget class="QLabel" name="label_100">
+                            <property name="text">
+                             <string>Max</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QLabel" name="label_99">
+                            <property name="text">
+                             <string>Min</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0" colspan="3">
+                           <widget class="QCheckBox" name="filterContingencyBranchesByVoltageCheckBox">
+                            <property name="text">
+                             <string>Filter branches by voltage</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0" colspan="3">
+                           <widget class="QListView" name="contingencyBranchTypesListView"/>
+                          </item>
+                          <item row="0" column="0" colspan="3">
+                           <widget class="QCheckBox" name="addBranchesToContingencyCheckBox">
+                            <property name="text">
+                             <string>Add branches</string>
+                            </property>
+                            <property name="checked">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="1" colspan="2">
+                           <widget class="QDoubleSpinBox" name="filterContingencyBranchesByVoltageMinSpinBox">
+                            <property name="suffix">
+                             <string> kV</string>
+                            </property>
+                            <property name="maximum">
+                             <double>99999999999.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1" colspan="2">
+                           <widget class="QDoubleSpinBox" name="filterContingencyBranchesByVoltageMaxSpinBox">
+                            <property name="suffix">
+                             <string> kV</string>
+                            </property>
+                            <property name="maximum">
+                             <double>999999999999.000000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>600.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="contingencyInjectionsPage">
+                      <property name="geometry">
+                       <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>361</width>
+                        <height>242</height>
+                       </rect>
+                      </property>
+                      <attribute name="label">
+                       <string>Injections</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="verticalLayout_41">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QFrame" name="frame_72">
+                         <property name="frameShape">
+                          <enum>QFrame::NoFrame</enum>
+                         </property>
+                         <property name="frameShadow">
+                          <enum>QFrame::Raised</enum>
+                         </property>
+                         <layout class="QGridLayout" name="gridLayout_27">
+                          <item row="1" column="0" colspan="2">
+                           <widget class="QListView" name="contingenctyInjectionsListView"/>
+                          </item>
+                          <item row="6" column="1">
+                           <widget class="QDoubleSpinBox" name="contingencyFilterInjectionsByPowerMinSpinBox">
+                            <property name="suffix">
+                             <string> MW</string>
+                            </property>
+                            <property name="maximum">
+                             <double>999999999999999.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QDoubleSpinBox" name="contingencyInjectionPowerReductionSpinBox">
+                            <property name="suffix">
+                             <string> %</string>
+                            </property>
+                            <property name="maximum">
+                             <double>100.000000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>100.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_112">
+                            <property name="text">
+                             <string>Contingency power</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0" colspan="2">
+                           <widget class="QCheckBox" name="addInjectionsToContingencyCheckBox">
+                            <property name="text">
+                             <string>Add Injections</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0" colspan="2">
+                           <widget class="QCheckBox" name="contingencyFilterInjectionsByPowerCheckBox">
+                            <property name="text">
+                             <string>Filter by power</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="1">
+                           <widget class="QDoubleSpinBox" name="contingencyFilterInjectionsByPowerMaxSpinBox">
+                            <property name="suffix">
+                             <string> MW</string>
+                            </property>
+                            <property name="maximum">
+                             <double>9999999999999.000000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>1000.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="0">
+                           <widget class="QLabel" name="label_110">
+                            <property name="text">
+                             <string>Min</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="0">
+                           <widget class="QLabel" name="label_111">
+                            <property name="text">
+                             <string>Max</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </item>
               </layout>
@@ -2709,10 +3164,16 @@ p, li { white-space: pre-wrap; }
         <string>Settings</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
-        <item row="0" column="3">
+        <item row="0" column="2">
          <widget class="QTabWidget" name="settings_tabWidget">
           <property name="enabled">
            <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Select the solver in the OPF tab and the areas in the areas tab</string>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
           </property>
           <property name="tabPosition">
            <enum>QTabWidget::South</enum>
@@ -2724,6 +3185,9 @@ p, li { white-space: pre-wrap; }
            <enum>Qt::ElideNone</enum>
           </property>
           <property name="documentMode">
+           <bool>false</bool>
+          </property>
+          <property name="movable">
            <bool>false</bool>
           </property>
           <property name="tabBarAutoHide">
@@ -2977,7 +3441,7 @@ p, li { white-space: pre-wrap; }
                    <widget class="QComboBox" name="reactive_power_control_mode_comboBox"/>
                   </item>
                   <item>
-                   <widget class="QLabel" name="label_64">
+                   <widget class="QLabel" name="label_641">
                     <property name="text">
                      <string/>
                     </property>
@@ -3872,7 +4336,18 @@ p, li { white-space: pre-wrap; }
               </layout>
              </widget>
             </item>
-            <item row="0" column="1" rowspan="2">
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_12">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/ntc_opf.svg</normaloff>:/Icons/icons/ntc_opf.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>NTC</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_36">
+            <item>
              <widget class="QFrame" name="frame_65">
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
@@ -3945,7 +4420,7 @@ p, li { white-space: pre-wrap; }
                    </widget>
                   </item>
                   <item row="6" column="0">
-                   <widget class="QLabel" name="label_23">
+                   <widget class="QLabel" name="label_231">
                     <property name="toolTip">
                      <string>Transmission reliability margin (TRM)</string>
                     </property>
@@ -4171,6 +4646,9 @@ p, li { white-space: pre-wrap; }
                   <font>
                    <pointsize>16</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Select the solver in the OPF tab and the areas in the areas tab</string>
                  </property>
                  <property name="text">
                   <string>NTC optimization</string>
@@ -4413,6 +4891,19 @@ p, li { white-space: pre-wrap; }
                </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_26">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -4690,16 +5181,6 @@ p, li { white-space: pre-wrap; }
                <property name="topMargin">
                 <number>0</number>
                </property>
-               <item row="2" column="0" colspan="2">
-                <widget class="QCheckBox" name="ptdf_distributed_slack_checkBox">
-                 <property name="text">
-                  <string>Distributed slack</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
                <item row="3" column="0" colspan="2">
                 <widget class="QCheckBox" name="ptdf_correct_nonsense_values_checkBox">
                  <property name="text">
@@ -4921,7 +5402,7 @@ p, li { white-space: pre-wrap; }
              <normaloff>:/Icons/icons/stochastic_power_flow.svg</normaloff>:/Icons/icons/stochastic_power_flow.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Stochastic</string>
+            <string>Sto</string>
            </attribute>
            <attribute name="toolTip">
             <string>Stochastic power flow settings</string>
@@ -6018,7 +6499,7 @@ p, li { white-space: pre-wrap; }
              <normaloff>:/Icons/icons/automatic_layout.svg</normaloff>:/Icons/icons/automatic_layout.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Topology</string>
+            <string>Tplgy</string>
            </attribute>
            <attribute name="toolTip">
             <string>Topology related settings</string>
@@ -6787,7 +7268,7 @@ p, li { white-space: pre-wrap; }
              <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Visualization</string>
+            <string>Viz</string>
            </attribute>
            <attribute name="toolTip">
             <string>Visualization related settings</string>
@@ -7458,7 +7939,7 @@ p, li { white-space: pre-wrap; }
         <item row="0" column="0">
          <widget class="QFrame" name="frame_7">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -7956,8 +8437,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1194</width>
-     <height>21</height>
+     <width>1205</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8008,6 +8489,7 @@ QProgressBar::chunk{
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
     <addaction name="menuSet_selected_buses"/>
+    <addaction name="actionNew_contingency_from_selection"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -8910,6 +9392,21 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Fix loads active based on the power</string>
+   </property>
+  </action>
+  <action name="actionNew_contingency_from_selection">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New contingency from selection</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new contingency from the schematic selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+C</string>
    </property>
   </action>
  </widget>

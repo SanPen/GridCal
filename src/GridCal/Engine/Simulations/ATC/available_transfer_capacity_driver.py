@@ -28,6 +28,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -607,7 +608,15 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                 self.logger.add_error(msg)
                 raise Exception(msg)
         else:
-            flows = linear.get_flows(nc.Sbus)
+            # compose the HVDC power injections
+            bus_dict = self.grid.get_bus_index_dict()
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(nc.nbus))
+
+            flows = linear.get_flows(nc.Sbus + Shvdc)
+
+
 
         # base exchange
         base_exchange = (self.options.inter_area_branch_sense * flows[self.options.inter_area_branch_idx]).sum()

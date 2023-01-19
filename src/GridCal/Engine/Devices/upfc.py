@@ -20,7 +20,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType, ConverterControlType
+from GridCal.Engine.Devices.enumerations import BranchType, ConverterControlType, BuildStatus
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
@@ -32,7 +32,8 @@ class UPFC(EditableDevice):
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  rs0=0.0, xs0=0.00001, rp0=0.0, xp0=0.0,
-                 rs2=0.0, xs2=0.00001, rp2=0.0, xp2=0.0):
+                 rs2=0.0, xs2=0.00001, rp2=0.0, xp2=0.0,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Unified Power Flow Converter (UPFC)
         :param bus_from:
@@ -101,6 +102,12 @@ class UPFC(EditableDevice):
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Active power set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
@@ -136,6 +143,12 @@ class UPFC(EditableDevice):
 
         self.Cost = cost
         self.Cost_prof = cost_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
         self.mttf = mttf
         self.mttr = mttr
@@ -219,7 +232,12 @@ class UPFC(EditableDevice):
                     'xsh': self.Xsh,
                     'vsh': self.Vsh,
                     'Pfset': self.Pfset,
-                    'Qfset': self.Qfset
+                    'Qfset': self.Qfset,
+
+                    'overload_cost': self.Cost,
+                    'capex': self.capex,
+                    'opex': self.opex,
+                    'build_status': str(self.build_status.value).lower(),
                     }
         else:
             return dict()

@@ -97,6 +97,8 @@ class TimeSeries(DriverTemplate):
         # compose total buses-> bus index dict
         bus_dict = self.grid.get_bus_index_dict()
 
+        time_indices_set = set(time_indices)
+
         # For every island, run the time series
         for island_index, calculation_input in enumerate(time_islands):
 
@@ -132,7 +134,7 @@ class TimeSeries(DriverTemplate):
                                         transformer_names=calculation_input.tr_names,
                                         hvdc_names=calculation_input.hvdc_names,
                                         bus_types=time_circuit.bus_types,
-                                        time_array=self.grid.time_profile[time_indices])
+                                        time_array=self.grid.time_profile[calculation_input.original_time_idx])
 
             self.progress_signal.emit(0.0)
 
@@ -140,78 +142,81 @@ class TimeSeries(DriverTemplate):
             dt = 1.0
 
             # traverse the time profiles of the partition and simulate each time step
-            for it, t in enumerate(time_indices):
+            nt = len(calculation_input.original_time_idx)
+            for it, t in enumerate(calculation_input.original_time_idx):
 
-                # set the power values
-                # if the storage dispatch option is active, the batteries power is not included
-                # therefore, it shall be included after processing
-                V = calculation_input.Vbus[:, t]
-                I = calculation_input.Ibus[:, t]
-                S = calculation_input.Sbus[:, t]
-                Yload = calculation_input.YLoadBus[:, t]
-                branch_rates = calculation_input.Rates[:, t]
+                if t in time_indices_set:
 
-                # add the controlled storage power if we are controlling the storage devices
-                if self.options.dispatch_storage:
+                    # set the power values
+                    # if the storage dispatch option is active, the batteries power is not included
+                    # therefore, it shall be included after processing
+                    V = calculation_input.Vbus[:, it]
+                    I = calculation_input.Ibus[:, it]
+                    S = calculation_input.Sbus[:, it]
+                    Yload = calculation_input.YLoadBus[:, it]
+                    branch_rates = calculation_input.Rates[:, it]
 
-                    if (it+1) < len(calculation_input.original_time_idx):
-                        # compute the time delta: the time values come in nanoseconds
-                        dt = (calculation_input.time_array[it + 1]
-                              - calculation_input.time_array[it]).value * 1e-9 / 3600.0
+                    # add the controlled storage power if we are controlling the storage devices
+                    if self.options.dispatch_storage:
 
-                    for k, battery in enumerate(batteries):
+                        if (it+1) < len(calculation_input.original_time_idx):
+                            # compute the time delta: the time values come in nanoseconds
+                            dt = (calculation_input.time_array[it + 1]
+                                  - calculation_input.time_array[it]).value * 1e-9 / 3600.0
 
-                        power = battery.get_processed_at(it, dt=dt, store_values=True)
+                        for k, battery in enumerate(batteries):
 
-                        bus_idx = batteries_bus_idx[k]
+                            power = battery.get_processed_at(it, dt=dt, store_values=True)
 
-                        S[bus_idx] += power / calculation_input.Sbase
+                            bus_idx = batteries_bus_idx[k]
 
-                # run power flow at the circuit
-                res = single_island_pf(circuit=calculation_input,
-                                       Vbus=V,
-                                       Sbus=S,
-                                       Ibus=I,
-                                       Yloadbus=Yload,
-                                       ma=calculation_input.branch_data.m[:, t],
-                                       theta=calculation_input.branch_data.theta[:, t],
-                                       Beq=calculation_input.branch_data.Beq[:, t],
-                                       pq=calculation_input.pq_prof[t],
-                                       pv=calculation_input.pv_prof[t],
-                                       vd=calculation_input.vd_prof[t],
-                                       pqpv=calculation_input.pqpv_prof[t],
-                                       Qmin=calculation_input.Qmin_bus[:, t],
-                                       Qmax=calculation_input.Qmax_bus[:, t],
-                                       branch_rates=branch_rates,
-                                       options=self.options,
-                                       logger=self.logger)
+                            S[bus_idx] += power / calculation_input.Sbase
 
-                # Recycle voltage solution
-                # last_voltage = res.voltage
+                    # run power flow at the circuit
+                    res = single_island_pf(circuit=calculation_input,
+                                           Vbus=V,
+                                           Sbus=S,
+                                           Ibus=I,
+                                           Yloadbus=Yload,
+                                           ma=calculation_input.branch_data.m[:, it],
+                                           theta=calculation_input.branch_data.theta[:, it],
+                                           Beq=calculation_input.branch_data.Beq[:, it],
+                                           pq=calculation_input.pq_prof[it],
+                                           pv=calculation_input.pv_prof[it],
+                                           vd=calculation_input.vd_prof[it],
+                                           pqpv=calculation_input.pqpv_prof[it],
+                                           Qmin=calculation_input.Qmin_bus[:, it],
+                                           Qmax=calculation_input.Qmax_bus[:, it],
+                                           branch_rates=branch_rates,
+                                           options=self.options,
+                                           logger=self.logger)
 
-                # store circuit results at the time index 'it'
-                results.set_at(it, res)
+                    # Recycle voltage solution
+                    # last_voltage = res.voltage
 
-                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                self.progress_signal.emit(progress)
-                self.progress_text.emit('Simulating island ' + str(island_index)
-                                        + ' at ' + str(self.grid.time_profile[t]))
+                    # store circuit results at the time index 'it'
+                    results.set_at(it, res)
 
-                if self.__cancel__:
-                    # merge the circuit's results
-                    time_series_results.apply_from_island(results,
-                                                          bus_original_idx,
-                                                          branch_original_idx,
-                                                          time_indices,
-                                                          'TS')
-                    # abort by returning at this point
-                    return time_series_results
+                    progress = ((it + 1) / nt) * 100
+                    self.progress_signal.emit(progress)
+                    self.progress_text.emit('Simulating island ' + str(island_index)
+                                            + ' at ' + str(self.grid.time_profile[t]))
+
+                    if self.__cancel__:
+                        # merge the circuit's results
+                        time_series_results.apply_from_island(results,
+                                                              bus_original_idx,
+                                                              branch_original_idx,
+                                                              calculation_input.original_time_idx,
+                                                              'TS')
+                        # abort by returning at this point
+                        return time_series_results
 
             # merge the circuit's results
             time_series_results.apply_from_island(results,
                                                   bus_original_idx,
                                                   branch_original_idx,
-                                                  time_indices,
+                                                  calculation_input.original_time_idx,
                                                   'TS')
 
         # set the HVDC results here since the HVDC is not a branch in this modality
@@ -286,7 +291,7 @@ class TimeSeries(DriverTemplate):
         # results.If = res.If
         # results.It = res.It
         results.Beq = res.Beq
-        results.m = res.tap_module
+        results.ma = res.tap_module
         results.theta = res.tap_angle
         results.F = res.F
         results.T = res.T

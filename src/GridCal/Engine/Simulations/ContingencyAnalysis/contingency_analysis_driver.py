@@ -23,8 +23,10 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
 
 def enumerate_states_n_k(m, k=1):
@@ -55,7 +57,8 @@ def enumerate_states_n_k(m, k=1):
 class ContingencyAnalysisOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
-                 use_provided_flows=False, Pf=None):
+                 use_provided_flows=False, Pf=None, pf_results=None,
+                 nonlinear=False):
 
         self.distributed_slack = distributed_slack
 
@@ -64,6 +67,10 @@ class ContingencyAnalysisOptions:
         self.use_provided_flows = use_provided_flows
 
         self.Pf = Pf
+
+        self.pf_results = pf_results
+
+        self.nonlinear = nonlinear
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -137,7 +144,69 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.logger.add_error(msg)
                 raise Exception(msg)
         else:
-            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus)
+            # compose the HVDC power injections
+            bus_dict = self.grid.get_bus_index_dict()
+            nbus = len(self.grid.buses)
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(nbus))
+
+            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus + Shvdc)
+
+        self.progress_text.emit('Computing loading...')
+
+        for ic, c in enumerate(br_idx):  # branch that fails (contingency)
+            results.Sf[mon_idx, c] = flows_n[mon_idx] + LODF[mon_idx, c] * flows_n[c]
+            results.loading[mon_idx, c] = results.Sf[mon_idx, c] / (self.numerical_circuit.ContingencyRates[mon_idx] + 1e-9)
+            results.S[c, :] = Pbus
+
+            self.progress_signal.emit((ic + 1) / len(br_idx) * 100)
+
+        results.otdf = LODF
+
+        return results
+
+
+    def n_minus_k_nl(self):
+        """
+        Run N-1 simulation in series with HELM, non-linear solution
+        :return: returns the results
+        """
+
+        self.progress_text.emit('Analyzing outage distribution factors in a non-linear fashion...')
+        nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
+                                               distributed_slack=self.options.distributed_slack,
+                                               correct_values=self.options.correct_values,
+                                               pf_results=self.options.pf_results)
+        nonlinear_analysis.run()
+
+        # set the numerical circuit
+        self.numerical_circuit = nonlinear_analysis.numerical_circuit
+
+        # declare the results
+        results = ContingencyAnalysisResults(nbr=self.numerical_circuit.nbr,
+                                             nbus=self.numerical_circuit.nbus,
+                                             branch_names=self.numerical_circuit.branch_names,
+                                             bus_names=self.numerical_circuit.bus_names,
+                                             bus_types=self.numerical_circuit.bus_types)
+
+        # get the contingency branch indices
+        br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+        mon_idx = nonlinear_analysis.numerical_circuit.branch_data.get_monitor_enabled_indices()
+        Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
+        PTDF = nonlinear_analysis.PTDF
+        LODF = nonlinear_analysis.LODF
+
+        # compute the branch Sf in "n"
+        if self.options.use_provided_flows:
+            flows_n = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            flows_n = nonlinear_analysis.get_flows(self.numerical_circuit.Sbus)
 
         self.progress_text.emit('Computing loading...')
 
@@ -158,7 +227,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
         :return:
         """
         start = time.time()
-        self.results = self.n_minus_k()
+
+        if not self.options.nonlinear:
+            self.results = self.n_minus_k()
+
+        else:
+            self.results = self.n_minus_k_nl()
 
         end = time.time()
         self.elapsed = end - start

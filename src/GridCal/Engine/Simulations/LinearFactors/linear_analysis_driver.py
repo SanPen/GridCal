@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 # from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, new
 import GridCal.Engine.basic_structures as bs
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
 
 ########################################################################################################################
@@ -220,7 +221,15 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
-            self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
+
+            # compose the HVDC power injections
+            bus_dict = self.grid.get_bus_index_dict()
+            nbus = len(self.grid.buses)
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(nbus))
+
+            self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real
         elif self.engine == bs.EngineType.Bentayga:

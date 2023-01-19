@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1194, 773)
+        mainWindow.resize(1205, 773)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -338,6 +338,11 @@ class Ui_mainWindow(object):
         self.actionFix_loads_active_based_on_the_power = QAction(mainWindow)
         self.actionFix_loads_active_based_on_the_power.setObjectName(u"actionFix_loads_active_based_on_the_power")
         self.actionFix_loads_active_based_on_the_power.setIcon(icon49)
+        self.actionNew_contingency_from_selection = QAction(mainWindow)
+        self.actionNew_contingency_from_selection.setObjectName(u"actionNew_contingency_from_selection")
+        icon53 = QIcon()
+        icon53.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionNew_contingency_from_selection.setIcon(icon53)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -389,25 +394,25 @@ class Ui_mainWindow(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.run_cascade_pushButton = QPushButton(self.frame_11)
         self.run_cascade_pushButton.setObjectName(u"run_cascade_pushButton")
-        icon53 = QIcon()
-        icon53.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.run_cascade_pushButton.setIcon(icon53)
+        icon54 = QIcon()
+        icon54.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.run_cascade_pushButton.setIcon(icon54)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_pushButton)
 
         self.run_cascade_step_pushButton = QPushButton(self.frame_11)
         self.run_cascade_step_pushButton.setObjectName(u"run_cascade_step_pushButton")
-        icon54 = QIcon()
-        icon54.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.run_cascade_step_pushButton.setIcon(icon54)
+        icon55 = QIcon()
+        icon55.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.run_cascade_step_pushButton.setIcon(icon55)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_step_pushButton)
 
         self.copy_cascade_step_pushButton = QPushButton(self.frame_11)
         self.copy_cascade_step_pushButton.setObjectName(u"copy_cascade_step_pushButton")
-        icon55 = QIcon()
-        icon55.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.copy_cascade_step_pushButton.setIcon(icon55)
+        icon56 = QIcon()
+        icon56.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.copy_cascade_step_pushButton.setIcon(icon56)
 
         self.horizontalLayout_3.addWidget(self.copy_cascade_step_pushButton)
 
@@ -467,9 +472,9 @@ class Ui_mainWindow(object):
 
         self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
-        icon56 = QIcon()
-        icon56.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_next_simulation_step_pushButton.setIcon(icon56)
+        icon57 = QIcon()
+        icon57.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_next_simulation_step_pushButton.setIcon(icon57)
 
         self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 7, 1, 1)
 
@@ -481,25 +486,25 @@ class Ui_mainWindow(object):
 
         self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
-        icon57 = QIcon()
-        icon57.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_previous_simulation_step_pushButton.setIcon(icon57)
+        icon58 = QIcon()
+        icon58.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_previous_simulation_step_pushButton.setIcon(icon58)
 
         self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 5, 1, 1)
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
-        icon58 = QIcon()
-        icon58.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.colour_results_pushButton.setIcon(icon58)
+        icon59 = QIcon()
+        icon59.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.colour_results_pushButton.setIcon(icon59)
 
         self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 4, 1, 1)
 
         self.show_map_pushButton = QPushButton(self.grid_colouring_frame)
         self.show_map_pushButton.setObjectName(u"show_map_pushButton")
-        icon59 = QIcon()
-        icon59.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.show_map_pushButton.setIcon(icon59)
+        icon60 = QIcon()
+        icon60.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.show_map_pushButton.setIcon(icon60)
 
         self.gridLayout_20.addWidget(self.show_map_pushButton, 1, 1, 1, 1)
 
@@ -525,9 +530,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.cascade_grid_splitter)
 
-        icon60 = QIcon()
-        icon60.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.GridSectionTab, icon60, "")
+        icon61 = QIcon()
+        icon61.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_3.addTab(self.GridSectionTab, icon61, "")
         self.DataTab = QWidget()
         self.DataTab.setObjectName(u"DataTab")
         self.verticalLayout_8 = QVBoxLayout(self.DataTab)
@@ -621,17 +626,17 @@ class Ui_mainWindow(object):
 
         self.filter_pushButton = QPushButton(self.frame_54)
         self.filter_pushButton.setObjectName(u"filter_pushButton")
-        icon61 = QIcon()
-        icon61.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.filter_pushButton.setIcon(icon61)
+        icon62 = QIcon()
+        icon62.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.filter_pushButton.setIcon(icon62)
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
         self.highlight_selection_buses_pushButton = QPushButton(self.frame_54)
         self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
-        icon62 = QIcon()
-        icon62.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_selection_buses_pushButton.setIcon(icon62)
+        icon63 = QIcon()
+        icon63.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_selection_buses_pushButton.setIcon(icon63)
 
         self.horizontalLayout_28.addWidget(self.highlight_selection_buses_pushButton)
 
@@ -643,43 +648,49 @@ class Ui_mainWindow(object):
 
         self.copyObjectsTableButton = QPushButton(self.frame_54)
         self.copyObjectsTableButton.setObjectName(u"copyObjectsTableButton")
-        self.copyObjectsTableButton.setIcon(icon55)
+        self.copyObjectsTableButton.setIcon(icon56)
 
         self.horizontalLayout_28.addWidget(self.copyObjectsTableButton)
 
         self.setValueToColumnButton = QPushButton(self.frame_54)
         self.setValueToColumnButton.setObjectName(u"setValueToColumnButton")
-        icon63 = QIcon()
-        icon63.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.setValueToColumnButton.setIcon(icon63)
+        icon64 = QIcon()
+        icon64.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.setValueToColumnButton.setIcon(icon64)
 
         self.horizontalLayout_28.addWidget(self.setValueToColumnButton)
 
         self.highlight_by_property_pushButton = QPushButton(self.frame_54)
         self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
-        icon64 = QIcon()
-        icon64.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_by_property_pushButton.setIcon(icon64)
+        icon65 = QIcon()
+        icon65.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_by_property_pushButton.setIcon(icon65)
 
         self.horizontalLayout_28.addWidget(self.highlight_by_property_pushButton)
 
         self.clear_highlight_pushButton = QPushButton(self.frame_54)
         self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
-        icon65 = QIcon()
-        icon65.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.clear_highlight_pushButton.setIcon(icon65)
+        icon66 = QIcon()
+        icon66.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.clear_highlight_pushButton.setIcon(icon66)
 
         self.horizontalLayout_28.addWidget(self.clear_highlight_pushButton)
 
-        self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
-        self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
-        self.delete_and_reduce_pushButton.setIcon(icon60)
+        self.structure_analysis_pushButton = QPushButton(self.frame_54)
+        self.structure_analysis_pushButton.setObjectName(u"structure_analysis_pushButton")
+        self.structure_analysis_pushButton.setIcon(icon21)
 
-        self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
+        self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
 
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
+
+        self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
+        self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
+        self.delete_and_reduce_pushButton.setIcon(icon61)
+
+        self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
 
 
         self.verticalLayout_26.addWidget(self.frame_54)
@@ -698,9 +709,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.add_object_pushButton = QPushButton(self.frame_9)
         self.add_object_pushButton.setObjectName(u"add_object_pushButton")
-        icon66 = QIcon()
-        icon66.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.add_object_pushButton.setIcon(icon66)
+        self.add_object_pushButton.setIcon(icon53)
 
         self.horizontalLayout_25.addWidget(self.add_object_pushButton)
 
@@ -837,7 +846,7 @@ class Ui_mainWindow(object):
 
         self.catalogue_add_pushButton = QPushButton(self.frame_35)
         self.catalogue_add_pushButton.setObjectName(u"catalogue_add_pushButton")
-        self.catalogue_add_pushButton.setIcon(icon66)
+        self.catalogue_add_pushButton.setIcon(icon53)
 
         self.gridLayout_18.addWidget(self.catalogue_add_pushButton, 0, 2, 1, 1)
 
@@ -885,12 +894,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout.addWidget(self.new_profiles_structure_pushButton)
 
-        self.delete_profiles_structure_pushButton = QPushButton(self.frame)
-        self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        self.delete_profiles_structure_pushButton.setIcon(icon50)
-
-        self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
-
         self.edit_profiles_pushButton = QPushButton(self.frame)
         self.edit_profiles_pushButton.setObjectName(u"edit_profiles_pushButton")
         icon72 = QIcon()
@@ -899,6 +902,19 @@ class Ui_mainWindow(object):
         self.edit_profiles_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_pushButton)
+
+        self.edit_profiles_from_models_pushButton = QPushButton(self.frame)
+        self.edit_profiles_from_models_pushButton.setObjectName(u"edit_profiles_from_models_pushButton")
+        self.edit_profiles_from_models_pushButton.setIcon(icon44)
+        self.edit_profiles_from_models_pushButton.setFlat(False)
+
+        self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
+
+        self.delete_profiles_structure_pushButton = QPushButton(self.frame)
+        self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
+        self.delete_profiles_structure_pushButton.setIcon(icon50)
+
+        self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
         self.horizontalSpacer = QSpacerItem(183, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -920,7 +936,7 @@ class Ui_mainWindow(object):
 
         self.copy_profile_pushButton = QPushButton(self.frame)
         self.copy_profile_pushButton.setObjectName(u"copy_profile_pushButton")
-        self.copy_profile_pushButton.setIcon(icon55)
+        self.copy_profile_pushButton.setIcon(icon56)
 
         self.horizontalLayout.addWidget(self.copy_profile_pushButton)
 
@@ -999,7 +1015,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.setContentsMargins(1, 2, 1, 2)
         self.profile_add_pushButton = QPushButton(self.frame_12)
         self.profile_add_pushButton.setObjectName(u"profile_add_pushButton")
-        self.profile_add_pushButton.setIcon(icon66)
+        self.profile_add_pushButton.setIcon(icon53)
 
         self.horizontalLayout_4.addWidget(self.profile_add_pushButton)
 
@@ -1078,6 +1094,226 @@ class Ui_mainWindow(object):
         icon80 = QIcon()
         icon80.addFile(u":/Icons/icons/clock.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.tabWidget_3.addTab(self.timeEventsTab, icon80, "")
+        self.contingencyPlannerTab = QWidget()
+        self.contingencyPlannerTab.setObjectName(u"contingencyPlannerTab")
+        self.verticalLayout_37 = QVBoxLayout(self.contingencyPlannerTab)
+        self.verticalLayout_37.setObjectName(u"verticalLayout_37")
+        self.verticalLayout_37.setContentsMargins(0, 0, 0, 0)
+        self.frame_70 = QFrame(self.contingencyPlannerTab)
+        self.frame_70.setObjectName(u"frame_70")
+        self.frame_70.setFrameShape(QFrame.NoFrame)
+        self.frame_70.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_39 = QVBoxLayout(self.frame_70)
+        self.verticalLayout_39.setObjectName(u"verticalLayout_39")
+        self.splitter_3 = QSplitter(self.frame_70)
+        self.splitter_3.setObjectName(u"splitter_3")
+        self.splitter_3.setOrientation(Qt.Horizontal)
+        self.frame_73 = QFrame(self.splitter_3)
+        self.frame_73.setObjectName(u"frame_73")
+        self.frame_73.setFrameShape(QFrame.NoFrame)
+        self.frame_73.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_35 = QVBoxLayout(self.frame_73)
+        self.verticalLayout_35.setObjectName(u"verticalLayout_35")
+        self.verticalLayout_35.setContentsMargins(0, 0, 0, 0)
+        self.frame_69 = QFrame(self.frame_73)
+        self.frame_69.setObjectName(u"frame_69")
+        self.frame_69.setFrameShape(QFrame.NoFrame)
+        self.frame_69.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
+        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
+        self.horizontalLayout_35.setContentsMargins(1, 2, 1, 2)
+        self.newContingencyPlanButton = QPushButton(self.frame_69)
+        self.newContingencyPlanButton.setObjectName(u"newContingencyPlanButton")
+        self.newContingencyPlanButton.setIcon(icon22)
+
+        self.horizontalLayout_35.addWidget(self.newContingencyPlanButton)
+
+        self.horizontalSpacer_25 = QSpacerItem(634, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_35.addItem(self.horizontalSpacer_25)
+
+        self.deleteContingencyButton = QPushButton(self.frame_69)
+        self.deleteContingencyButton.setObjectName(u"deleteContingencyButton")
+        self.deleteContingencyButton.setIcon(icon24)
+
+        self.horizontalLayout_35.addWidget(self.deleteContingencyButton)
+
+
+        self.verticalLayout_35.addWidget(self.frame_69)
+
+        self.contingencyPlannerTreeView = QTreeView(self.frame_73)
+        self.contingencyPlannerTreeView.setObjectName(u"contingencyPlannerTreeView")
+
+        self.verticalLayout_35.addWidget(self.contingencyPlannerTreeView)
+
+        self.splitter_3.addWidget(self.frame_73)
+        self.frame_74 = QFrame(self.splitter_3)
+        self.frame_74.setObjectName(u"frame_74")
+        self.frame_74.setFrameShape(QFrame.NoFrame)
+        self.frame_74.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_38 = QVBoxLayout(self.frame_74)
+        self.verticalLayout_38.setObjectName(u"verticalLayout_38")
+        self.verticalLayout_38.setContentsMargins(0, 0, 0, 0)
+        self.frame_75 = QFrame(self.frame_74)
+        self.frame_75.setObjectName(u"frame_75")
+        self.frame_75.setFrameShape(QFrame.NoFrame)
+        self.frame_75.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_37 = QHBoxLayout(self.frame_75)
+        self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
+        self.horizontalLayout_37.setContentsMargins(1, 2, 1, 2)
+        self.autoNminusXButton = QPushButton(self.frame_75)
+        self.autoNminusXButton.setObjectName(u"autoNminusXButton")
+
+        self.horizontalLayout_37.addWidget(self.autoNminusXButton)
+
+        self.contingencyNspinBox = QSpinBox(self.frame_75)
+        self.contingencyNspinBox.setObjectName(u"contingencyNspinBox")
+        self.contingencyNspinBox.setMinimum(1)
+        self.contingencyNspinBox.setMaximum(2)
+
+        self.horizontalLayout_37.addWidget(self.contingencyNspinBox)
+
+        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_37.addItem(self.horizontalSpacer_27)
+
+
+        self.verticalLayout_38.addWidget(self.frame_75)
+
+        self.toolBox = QToolBox(self.frame_74)
+        self.toolBox.setObjectName(u"toolBox")
+        self.contingencyBranchesPage = QWidget()
+        self.contingencyBranchesPage.setObjectName(u"contingencyBranchesPage")
+        self.contingencyBranchesPage.setGeometry(QRect(0, 0, 258, 210))
+        self.verticalLayout_40 = QVBoxLayout(self.contingencyBranchesPage)
+        self.verticalLayout_40.setObjectName(u"verticalLayout_40")
+        self.verticalLayout_40.setContentsMargins(0, 0, 0, 0)
+        self.frame_71 = QFrame(self.contingencyBranchesPage)
+        self.frame_71.setObjectName(u"frame_71")
+        self.frame_71.setFrameShape(QFrame.NoFrame)
+        self.frame_71.setFrameShadow(QFrame.Raised)
+        self.gridLayout_26 = QGridLayout(self.frame_71)
+        self.gridLayout_26.setObjectName(u"gridLayout_26")
+        self.label_100 = QLabel(self.frame_71)
+        self.label_100.setObjectName(u"label_100")
+
+        self.gridLayout_26.addWidget(self.label_100, 5, 0, 1, 1)
+
+        self.label_99 = QLabel(self.frame_71)
+        self.label_99.setObjectName(u"label_99")
+
+        self.gridLayout_26.addWidget(self.label_99, 4, 0, 1, 1)
+
+        self.filterContingencyBranchesByVoltageCheckBox = QCheckBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageCheckBox.setObjectName(u"filterContingencyBranchesByVoltageCheckBox")
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageCheckBox, 2, 0, 1, 3)
+
+        self.contingencyBranchTypesListView = QListView(self.frame_71)
+        self.contingencyBranchTypesListView.setObjectName(u"contingencyBranchTypesListView")
+
+        self.gridLayout_26.addWidget(self.contingencyBranchTypesListView, 1, 0, 1, 3)
+
+        self.addBranchesToContingencyCheckBox = QCheckBox(self.frame_71)
+        self.addBranchesToContingencyCheckBox.setObjectName(u"addBranchesToContingencyCheckBox")
+        self.addBranchesToContingencyCheckBox.setChecked(True)
+
+        self.gridLayout_26.addWidget(self.addBranchesToContingencyCheckBox, 0, 0, 1, 3)
+
+        self.filterContingencyBranchesByVoltageMinSpinBox = QDoubleSpinBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageMinSpinBox.setObjectName(u"filterContingencyBranchesByVoltageMinSpinBox")
+        self.filterContingencyBranchesByVoltageMinSpinBox.setMaximum(99999999999.000000000000000)
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageMinSpinBox, 4, 1, 1, 2)
+
+        self.filterContingencyBranchesByVoltageMaxSpinBox = QDoubleSpinBox(self.frame_71)
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setObjectName(u"filterContingencyBranchesByVoltageMaxSpinBox")
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setMaximum(999999999999.000000000000000)
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setValue(600.000000000000000)
+
+        self.gridLayout_26.addWidget(self.filterContingencyBranchesByVoltageMaxSpinBox, 5, 1, 1, 2)
+
+
+        self.verticalLayout_40.addWidget(self.frame_71)
+
+        self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
+        self.contingencyInjectionsPage = QWidget()
+        self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
+        self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
+        self.verticalLayout_41.setObjectName(u"verticalLayout_41")
+        self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
+        self.frame_72 = QFrame(self.contingencyInjectionsPage)
+        self.frame_72.setObjectName(u"frame_72")
+        self.frame_72.setFrameShape(QFrame.NoFrame)
+        self.frame_72.setFrameShadow(QFrame.Raised)
+        self.gridLayout_27 = QGridLayout(self.frame_72)
+        self.gridLayout_27.setObjectName(u"gridLayout_27")
+        self.contingenctyInjectionsListView = QListView(self.frame_72)
+        self.contingenctyInjectionsListView.setObjectName(u"contingenctyInjectionsListView")
+
+        self.gridLayout_27.addWidget(self.contingenctyInjectionsListView, 1, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerMinSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setObjectName(u"contingencyFilterInjectionsByPowerMinSpinBox")
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setMaximum(999999999999999.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerMinSpinBox, 6, 1, 1, 1)
+
+        self.contingencyInjectionPowerReductionSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyInjectionPowerReductionSpinBox.setObjectName(u"contingencyInjectionPowerReductionSpinBox")
+        self.contingencyInjectionPowerReductionSpinBox.setMaximum(100.000000000000000)
+        self.contingencyInjectionPowerReductionSpinBox.setValue(100.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyInjectionPowerReductionSpinBox, 2, 1, 1, 1)
+
+        self.label_112 = QLabel(self.frame_72)
+        self.label_112.setObjectName(u"label_112")
+
+        self.gridLayout_27.addWidget(self.label_112, 2, 0, 1, 1)
+
+        self.addInjectionsToContingencyCheckBox = QCheckBox(self.frame_72)
+        self.addInjectionsToContingencyCheckBox.setObjectName(u"addInjectionsToContingencyCheckBox")
+
+        self.gridLayout_27.addWidget(self.addInjectionsToContingencyCheckBox, 0, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerCheckBox = QCheckBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerCheckBox.setObjectName(u"contingencyFilterInjectionsByPowerCheckBox")
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerCheckBox, 4, 0, 1, 2)
+
+        self.contingencyFilterInjectionsByPowerMaxSpinBox = QDoubleSpinBox(self.frame_72)
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setObjectName(u"contingencyFilterInjectionsByPowerMaxSpinBox")
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setMaximum(9999999999999.000000000000000)
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setValue(1000.000000000000000)
+
+        self.gridLayout_27.addWidget(self.contingencyFilterInjectionsByPowerMaxSpinBox, 7, 1, 1, 1)
+
+        self.label_110 = QLabel(self.frame_72)
+        self.label_110.setObjectName(u"label_110")
+
+        self.gridLayout_27.addWidget(self.label_110, 6, 0, 1, 1)
+
+        self.label_111 = QLabel(self.frame_72)
+        self.label_111.setObjectName(u"label_111")
+
+        self.gridLayout_27.addWidget(self.label_111, 7, 0, 1, 1)
+
+
+        self.verticalLayout_41.addWidget(self.frame_72)
+
+        self.toolBox.addItem(self.contingencyInjectionsPage, u"Injections")
+
+        self.verticalLayout_38.addWidget(self.toolBox)
+
+        self.splitter_3.addWidget(self.frame_74)
+
+        self.verticalLayout_39.addWidget(self.splitter_3)
+
+
+        self.verticalLayout_37.addWidget(self.frame_70)
+
+        self.tabWidget_3.addTab(self.contingencyPlannerTab, icon43, "")
         self.compiledArraysTab = QWidget()
         self.compiledArraysTab.setObjectName(u"compiledArraysTab")
         self.horizontalLayout_7 = QHBoxLayout(self.compiledArraysTab)
@@ -1157,7 +1393,7 @@ class Ui_mainWindow(object):
         self.copyArraysButton = QPushButton(self.frame_29)
         self.copyArraysButton.setObjectName(u"copyArraysButton")
         self.copyArraysButton.setMinimumSize(QSize(32, 0))
-        self.copyArraysButton.setIcon(icon55)
+        self.copyArraysButton.setIcon(icon56)
 
         self.gridLayout_23.addWidget(self.copyArraysButton, 0, 2, 1, 1)
 
@@ -1181,7 +1417,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
-        self.tabWidget.addTab(self.GridTab, icon60, "")
+        self.tabWidget.addTab(self.GridTab, icon61, "")
         self.ResultsTab = QWidget()
         self.ResultsTab.setObjectName(u"ResultsTab")
         self.verticalLayout_13 = QVBoxLayout(self.ResultsTab)
@@ -1299,7 +1535,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
-        self.copy_results_pushButton.setIcon(icon55)
+        self.copy_results_pushButton.setIcon(icon56)
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
@@ -1347,7 +1583,7 @@ class Ui_mainWindow(object):
 
         self.search_results_Button = QPushButton(self.frame_8)
         self.search_results_Button.setObjectName(u"search_results_Button")
-        self.search_results_Button.setIcon(icon61)
+        self.search_results_Button.setIcon(icon62)
 
         self.horizontalLayout_2.addWidget(self.search_results_Button)
 
@@ -1491,9 +1727,11 @@ class Ui_mainWindow(object):
         self.settings_tabWidget = QTabWidget(self.SettingsTab)
         self.settings_tabWidget.setObjectName(u"settings_tabWidget")
         self.settings_tabWidget.setEnabled(True)
+        self.settings_tabWidget.setAutoFillBackground(False)
         self.settings_tabWidget.setTabPosition(QTabWidget.South)
         self.settings_tabWidget.setElideMode(Qt.ElideNone)
         self.settings_tabWidget.setDocumentMode(False)
+        self.settings_tabWidget.setMovable(False)
         self.settings_tabWidget.setTabBarAutoHide(False)
         self.tab_3 = QWidget()
         self.tab_3.setObjectName(u"tab_3")
@@ -1639,10 +1877,10 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.reactive_power_control_mode_comboBox)
 
-        self.label_64 = QLabel(self.frame_36)
-        self.label_64.setObjectName(u"label_64")
+        self.label_641 = QLabel(self.frame_36)
+        self.label_641.setObjectName(u"label_641")
 
-        self.verticalLayout_4.addWidget(self.label_64)
+        self.verticalLayout_4.addWidget(self.label_641)
 
         self.label_50 = QLabel(self.frame_36)
         self.label_50.setObjectName(u"label_50")
@@ -2060,7 +2298,12 @@ class Ui_mainWindow(object):
 
         self.gridLayout_10.addWidget(self.frame_30, 0, 0, 1, 1)
 
-        self.frame_65 = QFrame(self.tab_4)
+        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
+        self.tab_12 = QWidget()
+        self.tab_12.setObjectName(u"tab_12")
+        self.horizontalLayout_36 = QHBoxLayout(self.tab_12)
+        self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
+        self.frame_65 = QFrame(self.tab_12)
         self.frame_65.setObjectName(u"frame_65")
         self.frame_65.setFrameShape(QFrame.NoFrame)
         self.frame_65.setFrameShadow(QFrame.Raised)
@@ -2141,14 +2384,14 @@ class Ui_mainWindow(object):
         self.frame_51.setFrameShadow(QFrame.Raised)
         self.gridLayout_25 = QGridLayout(self.frame_51)
         self.gridLayout_25.setObjectName(u"gridLayout_25")
-        self.label_641 = QLabel(self.frame_51)
-        self.label_641.setObjectName(u"label_641")
+        self.label_64 = QLabel(self.frame_51)
+        self.label_64.setObjectName(u"label_64")
         font3 = QFont()
         font3.setBold(True)
         font3.setWeight(75)
-        self.label_641.setFont(font3)
+        self.label_64.setFont(font3)
 
-        self.gridLayout_25.addWidget(self.label_641, 0, 0, 1, 1)
+        self.gridLayout_25.addWidget(self.label_64, 0, 0, 1, 1)
 
         self.ntcSelectBasedOnExchangeSensitivityRadioButton = QRadioButton(self.frame_51)
         self.ntcSelectBasedOnExchangeSensitivityRadioButton.setObjectName(u"ntcSelectBasedOnExchangeSensitivityRadioButton")
@@ -2311,9 +2554,13 @@ class Ui_mainWindow(object):
         self.gridLayout_15.addWidget(self.line_27, 1, 0, 1, 4)
 
 
-        self.gridLayout_10.addWidget(self.frame_65, 0, 1, 2, 1)
+        self.horizontalLayout_36.addWidget(self.frame_65)
 
-        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
+        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_36.addItem(self.horizontalSpacer_26)
+
+        self.settings_tabWidget.addTab(self.tab_12, icon45, "")
         self.tab_9 = QWidget()
         self.tab_9.setObjectName(u"tab_9")
         self.horizontalLayout_8 = QHBoxLayout(self.tab_9)
@@ -2434,12 +2681,6 @@ class Ui_mainWindow(object):
         self.gridLayout_14 = QGridLayout(self.frame_32)
         self.gridLayout_14.setObjectName(u"gridLayout_14")
         self.gridLayout_14.setContentsMargins(-1, 0, -1, -1)
-        self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
-        self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
-        self.ptdf_distributed_slack_checkBox.setChecked(False)
-
-        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 2)
-
         self.ptdf_correct_nonsense_values_checkBox = QCheckBox(self.frame_32)
         self.ptdf_correct_nonsense_values_checkBox.setObjectName(u"ptdf_correct_nonsense_values_checkBox")
         self.ptdf_correct_nonsense_values_checkBox.setChecked(False)
@@ -2500,11 +2741,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
 
-        self.ptdf_distributed_slack_checkBox1 = QCheckBox(self.frame_32)
-        self.ptdf_distributed_slack_checkBox1.setObjectName(u"ptdf_distributed_slack_checkBox1")
-        self.ptdf_distributed_slack_checkBox1.setChecked(False)
+        self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
+        self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
+        self.ptdf_distributed_slack_checkBox.setChecked(False)
 
-        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox1, 2, 0, 1, 2)
+        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_32)
@@ -3470,13 +3711,13 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
 
-        self.settings_tabWidget.addTab(self.tab_10, icon58, "")
+        self.settings_tabWidget.addTab(self.tab_10, icon59, "")
 
-        self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 3, 1, 1)
+        self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
 
         self.frame_7 = QFrame(self.SettingsTab)
         self.frame_7.setObjectName(u"frame_7")
-        self.frame_7.setFrameShape(QFrame.StyledPanel)
+        self.frame_7.setFrameShape(QFrame.NoFrame)
         self.frame_7.setFrameShadow(QFrame.Raised)
         self.verticalLayout_12 = QVBoxLayout(self.frame_7)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
@@ -3691,7 +3932,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1194, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1205, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuAbout = QMenu(self.menuBar)
@@ -3747,6 +3988,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionReset_console)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.menuSet_selected_buses.menuAction())
+        self.menuActions.addAction(self.actionNew_contingency_from_selection)
         self.menuSet_selected_buses.addAction(self.actionSetSelectedBusCountry)
         self.menuSet_selected_buses.addAction(self.actionSetSelectedBusZone)
         self.menuSet_selected_buses.addAction(self.actionSetSelectedBusArea)
@@ -3837,6 +4079,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(1)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
 
@@ -4078,6 +4321,13 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionFix_loads_active_based_on_the_power.setToolTip(QCoreApplication.translate("mainWindow", u"Fix loads active based on the power", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionNew_contingency_from_selection.setText(QCoreApplication.translate("mainWindow", u"New contingency from selection", None))
+#if QT_CONFIG(tooltip)
+        self.actionNew_contingency_from_selection.setToolTip(QCoreApplication.translate("mainWindow", u"Add a new contingency from the schematic selection", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(shortcut)
+        self.actionNew_contingency_from_selection.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+A, Ctrl+C", None))
+#endif // QT_CONFIG(shortcut)
 #if QT_CONFIG(tooltip)
         self.run_cascade_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run complete cascading process", None))
 #endif // QT_CONFIG(tooltip)
@@ -4162,6 +4412,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.clear_highlight_pushButton.setText("")
 #if QT_CONFIG(tooltip)
+        self.structure_analysis_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Run the histogram analysis of the selected data structure</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.structure_analysis_pushButton.setText("")
+#if QT_CONFIG(tooltip)
         self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.delete_and_reduce_pushButton.setText("")
@@ -4207,13 +4461,17 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.new_profiles_structure_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.delete_profiles_structure_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete profiles", None))
-#endif // QT_CONFIG(tooltip)
-        self.delete_profiles_structure_pushButton.setText("")
-#if QT_CONFIG(tooltip)
         self.edit_profiles_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Import profiles", None))
 #endif // QT_CONFIG(tooltip)
         self.edit_profiles_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.edit_profiles_from_models_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Import profiles from models. This is, load many individual grids and take the operational data from them", None))
+#endif // QT_CONFIG(tooltip)
+        self.edit_profiles_from_models_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.delete_profiles_structure_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete profiles", None))
+#endif // QT_CONFIG(tooltip)
+        self.delete_profiles_structure_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.undo_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Un-do action (only for the current profile)", None))
 #endif // QT_CONFIG(tooltip)
@@ -4281,6 +4539,30 @@ class Ui_mainWindow(object):
         self.label_36.setText(QCoreApplication.translate("mainWindow", u"Start", None))
         self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
+        self.newContingencyPlanButton.setText("")
+        self.deleteContingencyButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.autoNminusXButton.setToolTip(QCoreApplication.translate("mainWindow", u"Automatically generate the all the N-x contingencies following the settings below", None))
+#endif // QT_CONFIG(tooltip)
+        self.autoNminusXButton.setText(QCoreApplication.translate("mainWindow", u"Auto", None))
+        self.contingencyNspinBox.setPrefix(QCoreApplication.translate("mainWindow", u"N-", None))
+        self.label_100.setText(QCoreApplication.translate("mainWindow", u"Max", None))
+        self.label_99.setText(QCoreApplication.translate("mainWindow", u"Min", None))
+        self.filterContingencyBranchesByVoltageCheckBox.setText(QCoreApplication.translate("mainWindow", u"Filter branches by voltage", None))
+        self.addBranchesToContingencyCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add branches", None))
+        self.filterContingencyBranchesByVoltageMinSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
+        self.filterContingencyBranchesByVoltageMaxSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.contingencyBranchesPage), QCoreApplication.translate("mainWindow", u"Branches", None))
+        self.contingencyFilterInjectionsByPowerMinSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.contingencyInjectionPowerReductionSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
+        self.label_112.setText(QCoreApplication.translate("mainWindow", u"Contingency power", None))
+        self.addInjectionsToContingencyCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add Injections", None))
+        self.contingencyFilterInjectionsByPowerCheckBox.setText(QCoreApplication.translate("mainWindow", u"Filter by power", None))
+        self.contingencyFilterInjectionsByPowerMaxSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.label_110.setText(QCoreApplication.translate("mainWindow", u"Min", None))
+        self.label_111.setText(QCoreApplication.translate("mainWindow", u"Max", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.contingencyInjectionsPage), QCoreApplication.translate("mainWindow", u"Injections", None))
+        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.contingencyPlannerTab), QCoreApplication.translate("mainWindow", u"Contingency planner", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
 #endif // QT_CONFIG(tooltip)
@@ -4354,6 +4636,9 @@ class Ui_mainWindow(object):
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.pythonConsoleTab), QCoreApplication.translate("mainWindow", u"Python console", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Console", None))
 #if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
@@ -4392,7 +4677,7 @@ class Ui_mainWindow(object):
         self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
         self.label_87.setText("")
         self.label_48.setText(QCoreApplication.translate("mainWindow", u"Reactive power control mode", None))
-        self.label_64.setText("")
+        self.label_641.setText("")
         self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
         self.label_65.setText("")
 #if QT_CONFIG(tooltip)
@@ -4450,6 +4735,10 @@ class Ui_mainWindow(object):
         self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
         self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
         self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
+#if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
 #endif // QT_CONFIG(tooltip)
@@ -4479,9 +4768,9 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
 #if QT_CONFIG(tooltip)
-        self.label_641.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
+        self.label_64.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_641.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
+        self.label_64.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
 #if QT_CONFIG(tooltip)
         self.ntcSelectBasedOnExchangeSensitivityRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
@@ -4496,6 +4785,9 @@ class Ui_mainWindow(object):
         self.ntcSelectBasedOnAcerCriteriaRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
         self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
         self.label_97.setText("")
+#if QT_CONFIG(tooltip)
+        self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
+#endif // QT_CONFIG(tooltip)
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
 #if QT_CONFIG(tooltip)
         self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
@@ -4519,10 +4811,7 @@ class Ui_mainWindow(object):
         self.label_98.setText(QCoreApplication.translate("mainWindow", u"Overloads", None))
         self.weightsOverloadsSpinBox.setSuffix("")
         self.weightsOverloadsSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
-#if QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
-#endif // QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"NTC", None))
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear NTC", None))
         self.label_30.setText(QCoreApplication.translate("mainWindow", u"Number of elements to report", None))
 #if QT_CONFIG(tooltip)
@@ -4540,7 +4829,6 @@ class Ui_mainWindow(object):
         self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
         self.n1ConsiderationCheckBox.setText(QCoreApplication.translate("mainWindow", u"n-1 sensibility consideration", None))
         self.label_90.setText("")
-        self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.ptdf_correct_nonsense_values_checkBox.setText(QCoreApplication.translate("mainWindow", u"Correct nonsense values", None))
         self.label_70.setText("")
         self.label_71.setText(QCoreApplication.translate("mainWindow", u"PTDF / LODF", None))
@@ -4548,7 +4836,7 @@ class Ui_mainWindow(object):
         self.usePfValuesForAtcCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Use existing power flow values for the contingency initialization in the net transfer capacity and contingency simulations", None))
 #endif // QT_CONFIG(tooltip)
         self.usePfValuesForAtcCheckBox.setText(QCoreApplication.translate("mainWindow", u"Use power flow values for initialization", None))
-        self.ptdf_distributed_slack_checkBox1.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
+        self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear calculations related settings", None))
@@ -4562,7 +4850,7 @@ class Ui_mainWindow(object):
         self.label_78.setText("")
         self.label_79.setText(QCoreApplication.translate("mainWindow", u"Cascading", None))
         self.label_28.setText(QCoreApplication.translate("mainWindow", u"Aditional islands until stop", None))
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Stochastic", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Sto", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_6), QCoreApplication.translate("mainWindow", u"Stochastic power flow settings", None))
 #endif // QT_CONFIG(tooltip)
@@ -4627,7 +4915,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.rxThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the threshold to use.</p><p>threshold = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>threshold = 1e-3</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Topology", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Tplgy", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Topology related settings", None))
 #endif // QT_CONFIG(tooltip)
@@ -4656,7 +4944,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.plt_style_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"MatPlotlib plot styles to choose from", None))
 #endif // QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Visualization", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Viz", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"Visualization related settings", None))
 #endif // QT_CONFIG(tooltip)

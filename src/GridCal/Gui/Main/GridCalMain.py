@@ -45,6 +45,7 @@ from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -58,11 +59,13 @@ from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
+from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan, ContingencyPlan
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession
+from GridCal.Gui.Session.session import SimulationSession, ResultsModel
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -194,7 +197,7 @@ class MainGUI(QMainWindow):
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
-                                    '.ejson2', '.ejson3', '.ejson4',
+                                    '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
@@ -213,6 +216,7 @@ class MainGUI(QMainWindow):
         self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
         mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
+        self.ui.automatic_layout_comboBox.setCurrentIndex(6)
 
         # list of stochastic power flow methods
         self.stochastic_pf_methods_dict = OrderedDict()
@@ -237,7 +241,8 @@ class MainGUI(QMainWindow):
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-        # self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
+        if NEWTON_PA_AVAILABLE:
+            self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
         self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
@@ -339,10 +344,10 @@ class MainGUI(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        # simulations session
+        # simulations session ------------------------------------------------------------------------------------------
         self.session: SimulationSession = SimulationSession(name='GUI session')
 
-        # threads
+        # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
@@ -354,12 +359,13 @@ class MainGUI(QMainWindow):
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
         self.stuff_running_now = list()
 
-        # window pointers
+        # window pointers ----------------------------------------------------------------------------------------------
         self.file_sync_window: SyncDialogueWindow = None
         self.sigma_dialogue: SigmaAnalysisGUI = None
         self.grid_generator_dialogue: GridGeneratorGUI = None
         self.analysis_dialogue: GridAnalysisGUI = None
         self.profile_input_dialogue: ProfileInputGUI = None
+        self.models_input_dialogue: ModelsInputGUI = None
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
         self.about_msg_window: AboutDialogueGuiGUI = None
@@ -367,7 +373,7 @@ class MainGUI(QMainWindow):
 
         self.file_name = ''
 
-        # current results model
+        # current results model ----------------------------------------------------------------------------------------
         self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
                                                               columns=np.zeros(0),
                                                               index=np.zeros(0))
@@ -380,6 +386,27 @@ class MainGUI(QMainWindow):
         # dictionaries for available results
         self.available_results_dict = None
         self.available_results_steps_dict = None
+
+        ################################################################################################################
+        # Contingency planner
+        ################################################################################################################
+
+        self.contingency_branch_types = [DeviceType.LineDevice,
+                                         DeviceType.DCLineDevice,
+                                         DeviceType.Transformer2WDevice,
+                                         DeviceType.VscDevice,
+                                         DeviceType.UpfcDevice]
+
+        self.contingency_injection_types = [DeviceType.GeneratorDevice,
+                                            DeviceType.BatteryDevice]
+
+        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
+                                                                       checks=True, check_value=True))
+
+        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
+                                                                       checks=True, check_value=True))
+
+        self.contingency_plan: ContingencyPlan = ContingencyPlan()
 
         ################################################################################################################
         # Console
@@ -512,6 +539,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
 
+        self.ui.actionNew_contingency_from_selection.triggered.connect(self.add_contingency_from_selection)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -523,6 +552,8 @@ class MainGUI(QMainWindow):
         # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
+
+        self.ui.edit_profiles_from_models_pushButton.clicked.connect(self.import_profiles_from_models)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
 
@@ -620,6 +651,12 @@ class MainGUI(QMainWindow):
 
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
+        self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
+        self.ui.newContingencyPlanButton.clicked.connect(self.new_contingency_plan)
+        self.ui.deleteContingencyButton.clicked.connect(self.delete_contingency_item)
+
+        self.ui.structure_analysis_pushButton.clicked.connect(self.structure_analysis_plot)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -678,6 +715,9 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         self.ui.grid_colouring_frame.setVisible(False)
+
+        # this is the contingency planner tab, invisible until done
+        self.ui.tabWidget_3.setTabVisible(4, False)
 
         # template
         self.view_templates(False)
@@ -1225,7 +1265,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.ejson4 *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.nc *.hdf5)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1354,7 +1394,7 @@ class MainGUI(QMainWindow):
                 except:
                     pass
 
-                # update the drop down menus that display dates
+                # update the drop-down menus that display dates
                 self.update_date_dependent_combos()
                 self.update_area_combos()
 
@@ -1458,7 +1498,6 @@ class MainGUI(QMainWindow):
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
                       "Electrical Json V3 (*.ejson3);;"\
-                      "Electrical Json V4 (*.ejson4);;" \
                       "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
@@ -1493,7 +1532,6 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                 extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
-                extension['Electrical Json V4 (*.ejson4)'] = '.ejson4'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
                 extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
@@ -1738,6 +1776,9 @@ class MainGUI(QMainWindow):
             # call dialog to select the file
             filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
                                                                   options=options)
+
+            if not (filename.endswith('.svg') or filename.endswith('.png')):
+                filename += ".svg"
 
             if filename != "":
                 # save in factor * K
@@ -2094,29 +2135,6 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no profiles', 'Delete profiles')
 
-    # def set_profiles_state_to_grid(self):
-    #     """
-    #     Set the profiles scenario at the selected time index to the main values of the grid
-    #     :return: Nothing
-    #     """
-    #     if self.circuit.time_profile is not None:
-    #         t = self.ui.profile_time_selection_comboBox.currentIndex()
-    #
-    #         if t > -1:
-    #             name_t = self.ui.profile_time_selection_comboBox.currentText()
-    #             quit_msg = "Replace the grid values by the scenario at " + name_t
-    #             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
-    #
-    #             if reply == QMessageBox.Yes:
-    #                 for bus in self.circuit.buses:
-    #                     bus.set_profile_values(t)
-    #             else:
-    #                 pass
-    #         else:
-    #             warning_msg('No profile time selected', 'Set profile values')
-    #     else:
-    #         warning_msg('There are no profiles', 'Set profile values')
-
     def import_profiles(self):
         """
         Profile importer
@@ -2195,7 +2213,7 @@ class MainGUI(QMainWindow):
                 pass  # the dialogue was closed
 
         else:
-            warning_msg("There are no objects to which to assign a profile")
+            warning_msg("There are no objects to which to assign a profile. \nYou need to load or create a grid!")
 
     def modify_profiles(self, operation='+'):
         """
@@ -5371,7 +5389,7 @@ class MainGUI(QMainWindow):
         """
         Plot the results
         """
-        mdl = self.ui.resultsTableView.model()
+        mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
 
@@ -5403,7 +5421,7 @@ class MainGUI(QMainWindow):
                 rows = None
 
             # none selected, plot all
-            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows)
+            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows, stacked=False)
 
             plt.show()
 
@@ -5411,7 +5429,7 @@ class MainGUI(QMainWindow):
         """
         Save the data displayed at the results as excel
         """
-        mdl = self.ui.resultsTableView.model()
+        mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
 
@@ -6494,7 +6512,14 @@ class MainGUI(QMainWindow):
                         buses = objects
                         values = [getattr(elm, attr) for elm in objects]
 
-                    elif elm.device_type == DeviceType.BranchDevice:
+                    elif elm.device_type in [DeviceType.BranchDevice,
+                                             DeviceType.LineDevice,
+                                             DeviceType.DCLineDevice,
+                                             DeviceType.HVDCLineDevice,
+                                             DeviceType.Transformer2WDevice,
+                                             DeviceType.SwitchDevice,
+                                             DeviceType.VscDevice,
+                                             DeviceType.UpfcDevice]:
                         # branches
                         buses = list()
                         values = list()
@@ -7052,18 +7077,24 @@ class MainGUI(QMainWindow):
         dlg.exec_()
 
         if dlg.accepted:
-            self.circuit.re_index_time(year=dlg.year_spinner.value(),
-                                       hours_per_step=dlg.interval_hours.value())
+            self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),
+                                        step_size=dlg.step_length.value(),
+                                        step_unit=dlg.units.currentText())
+
             self.update_date_dependent_combos()
 
-    def fix_generators_active_based_on_the_power(self):
+    def fix_generators_active_based_on_the_power(self, ask_before=True):
         """
         set the generators active based on the active power values
         :return:
         """
-        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
-                             "such that ig a generator active power is zero, the active value is false",
-                             "Set generation active profile")
+
+        if ask_before:
+            ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                                 "such that ig a generator active power is zero, the active value is false",
+                                 "Set generation active profile")
+        else:
+            ok = True
 
         if ok:
             self.circuit.set_generators_active_profile_from_their_active_power()
@@ -7077,8 +7108,8 @@ class MainGUI(QMainWindow):
 
         if ask_before:
             ok = yes_no_question("This action sets the generation active profile based on the active power profile "
-                             "such that ig a generator active power is zero, the active value is false",
-                             "Set generation active profile")
+                                 "such that ig a generator active power is zero, the active value is false",
+                                 "Set generation active profile")
         else:
             ok = True
 
@@ -7095,6 +7126,101 @@ class MainGUI(QMainWindow):
         df = pd.DataFrame(data=objects, columns=['Name', 'Size (kb)'])
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
+
+    def auto_generate_contingencies(self):
+        """
+        Automatically generate the contingency plan from the selection
+        :return:
+        """
+
+        # filters
+        branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
+        injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
+
+        branch_types = [self.contingency_branch_types[i] for i in branch_indices]
+        injection_types = [self.contingency_injection_types[i] for i in injection_indices]
+
+        # generate the contingency plan
+        self.contingency_plan = generate_automatic_contingency_plan(grid=self.circuit,
+                                                                    k=self.ui.contingencyNspinBox.value(),
+                                                                    filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
+                                                                    vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
+                                                                    vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
+                                                                    branch_types=branch_types,
+                                                                    filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
+                                                                    contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
+                                                                    pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
+                                                                    pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
+                                                                    injection_types=injection_types)
+
+        model = get_contingency_planner_model(self.circuit, self.contingency_plan)
+
+        self.ui.contingencyPlannerTreeView.setModel(model)
+        self.ui.contingencyPlannerTreeView.expandToDepth(2)
+
+    def new_contingency_plan(self):
+        """
+        New contingency plan routine
+        :return:
+        """
+        ok = yes_no_question("Do you want to clear the contingency plan and create a new one?", "New contingency plan")
+
+        if ok:
+            self.contingency_plan = ContingencyPlan()
+            self.ui.contingencyPlannerTreeView.setModel(None)
+
+    def delete_contingency_item(self):
+        pass
+
+    def add_contingency_from_selection(self):
+        pass
+
+    def structure_analysis_plot(self):
+
+        if len(self.ui.dataStructuresListView.selectedIndexes()) > 0:
+            elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+
+            object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
+            plt.show()
+        else:
+            self.msg('Select a data structure')
+
+    def import_profiles_from_models(self):
+        """
+        Open the dialogue to load profile data from models
+        """
+
+        if len(self.circuit.buses) == 0:
+            warning_msg("There are no objects to which to assign a profile. \n"
+                        "You need to load or create a grid!")
+            return
+
+        if self.circuit.time_profile is None:
+            self.new_profiles_structure()
+
+        # if there are no profiles:
+        if self.circuit.time_profile is not None:
+            self.models_input_dialogue = ModelsInputGUI(parent=self,
+                                                        use_native_dialogues=self.use_native_dialogues,
+                                                        time_array=self.circuit.time_profile)
+
+            self.models_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+            self.models_input_dialogue.exec_()  # exec leaves the parent on hold
+
+            if self.models_input_dialogue.grids_model is not None:
+                self.models_input_dialogue.process(main_grid=self.circuit)
+
+                # set up sliders
+                self.set_up_profile_sliders()
+                self.update_date_dependent_combos()
+                self.display_profiles()
+
+        else:
+            warning_msg("You need to declare a time profile first.\n\n"
+                        "Then, this button will show the dialogue to\n"
+                        "load the data from the models at the time steps\n"
+                        "that you prefer.\n\n"
+                        "Use the 'Create profiles button'.")
 
 
 def run(use_native_dialogues=False):

@@ -215,7 +215,7 @@ class MultiCircuit:
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
 
-        self.device_type_name_dict = dict()
+        self.device_type_name_dict: Dict[str, DeviceType] = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -596,6 +596,9 @@ class MultiCircuit:
         elif element_type == DeviceType.Transformer2WDevice:
             return self.transformers2w
 
+        elif element_type == DeviceType.Transformer3WDevice:
+            return self.transformers3w
+
         elif element_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
@@ -640,6 +643,13 @@ class MultiCircuit:
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
+
+    def get_elements_dict_by_type(self, element_type: DeviceType, use_secondary_key=False):
+
+        if use_secondary_key:
+            return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
+        else:
+            return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
     def get_node_elements_by_type2(self, element_type: DeviceType):
         """
@@ -2277,7 +2287,10 @@ class MultiCircuit:
 
         lst = np.zeros(len(self.buses), dtype=int)
         for k, bus in enumerate(self.buses):
-            lst[k] = d[bus.area]
+            if bus.area is not None:
+                lst[k] = d[bus.area]
+            else:
+                lst[k] = 0
         return lst
 
     def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
@@ -2429,7 +2442,7 @@ class MultiCircuit:
         for bus in self.buses:
             bus.fuse_devices()
 
-    def re_index_time(self, year=None, hours_per_step=1):
+    def re_index_time(self, year=None, hours_per_step=1.0):
         """
         Generate sequential time steps to correct the time_profile
         :param year: base year, if None, this year is taken
@@ -2439,9 +2452,27 @@ class MultiCircuit:
             t0 = datetime.now()
             year = t0.year
 
-        nt = self.get_time_number()
         t0 = datetime(year=year, month=1, day=1)
-        tm = [t0 + timedelta(hours=t * hours_per_step) for t in range(nt)]
+        self.re_index_time2(t0=t0, step_size=hours_per_step, step_unit='h')
+
+    def re_index_time2(self, t0, step_size, step_unit):
+        """
+        Generate sequential time steps to correct the time_profile
+        :param t0: base time
+        :param step_size: number of hours per step, by default 1 hour by step
+        :param step_unit: 'h', 'm', 's'
+        """
+        nt = self.get_time_number()
+
+        if step_unit == 'h':
+            tm = [t0 + timedelta(hours=t * step_size) for t in range(nt)]
+        elif step_unit == 'm':
+            tm = [t0 + timedelta(minutes=t * step_size) for t in range(nt)]
+        elif step_unit == 's':
+            tm = [t0 + timedelta(seconds=t * step_size) for t in range(nt)]
+        else:
+            raise Exception("Unsupported time unit")
+
         self.time_profile = pd.to_datetime(tm)
 
     def set_generators_active_profile_from_their_active_power(self):
@@ -2509,6 +2540,9 @@ class MultiCircuit:
         for elm in self.transformers2w:
             elm.fix_inconsistencies(logger,
                                     maximum_difference=maximum_difference)
+
+        for elm in self.lines:
+            elm.fix_inconsistencies(logger)
 
         for elm in self.get_generators():
             elm.fix_inconsistencies(logger,

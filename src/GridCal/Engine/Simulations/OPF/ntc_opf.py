@@ -184,21 +184,30 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
             lst.append((k, -1.0))
     return lst
 
+
 def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
     '''
 
     :param inter_area_branches:
     :param inter_area_hvdc:
-    :param branch_rates:
+    :param branch_ratings:
     :param hvdc_ratings:
     :return:
     '''
-    idx_branch, b = list(zip(*inter_area_branches))
-    idx_branch = list(idx_branch)
+    if len(inter_area_branches):
+        idx_branch, b = list(zip(*inter_area_branches))
+        idx_branch = list(idx_branch)
+    else:
+        idx_branch = list()
 
-    idx_hvdc, b = list(zip(*inter_area_hvdc))
-    idx_hvdc = list(idx_hvdc)
+    if len(inter_area_hvdc):
+        idx_hvdc, b = list(zip(*inter_area_hvdc))
+        idx_hvdc = list(idx_hvdc)
+    else:
+        idx_hvdc = list()
+
     return sum(branch_ratings[idx_branch]) + sum(hvdc_ratings[idx_hvdc])
+
 
 def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
     """
@@ -867,7 +876,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                             branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
                             branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, ntc_load_rule,
+                            alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, cep_rule,
                             structural_ntc, logger):
     """
 
@@ -891,6 +900,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
     :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
     :param structural_ntc: Maximun NTC available by thermal interconexion rates.
+    :param cep_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -911,8 +921,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
         if branch_active[m]:
 
             max_alpha = max(alpha_abs[m], max(alpha_n1_abs[m]))
-            # NTC min for considering as limiting element by ACER
-            branch_ntc_load_rule[m] = rates[m] * ntc_load_rule / (max_alpha + 1e-20)
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
@@ -935,6 +943,9 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(
                     -inf, inf, 'branch_flow_{0}:{1}'.format(branch_names[m], m))
+
+            # NTC min for considering as limiting element by CEP rule
+            branch_ntc_load_rule[m] = cep_rule * rates[m] / (max_alpha + 1e-20)
 
             # compute the flow
             _f = F[m]
@@ -1094,7 +1105,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
 
             c1 = m != c
             c2 = LODF[m, c] > branch_sensitivity_threshold
-            c3 = alpha_n1[m, c] > branch_sensitivity_threshold
+            c3 = np.abs(alpha_n1[m, c]) > branch_sensitivity_threshold
 
             if c1 and c2 and c3:
 
@@ -1810,7 +1821,7 @@ class OpfNTC(Opf):
             alpha_abs=alpha_abs,
             alpha_n1_abs=alpha_n1_abs,
             monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            ntc_load_rule=self.ntc_load_rule,
+            cep_rule=self.ntc_load_rule,
             structural_ntc=structural_ntc,
             logger=self.logger)
 
@@ -2156,7 +2167,7 @@ class OpfNTC(Opf):
             alpha_abs=alpha_abs,
             alpha_n1_abs=alpha_n1_abs,
             monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            ntc_load_rule=self.ntc_load_rule,
+            cep_rule=self.ntc_load_rule,
             structural_ntc=structural_ntc,
             logger=self.logger)
 

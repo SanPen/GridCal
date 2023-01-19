@@ -145,12 +145,9 @@ class GeneralContainer:
         print('Type:' + self.tpe)
         print('Id:' + self.rfid)
 
-        for key in self.properties.keys():
-            val = self.properties[key]
-
+        for key, val in self.properties.items():
             if type(val) == GeneralContainer:
-                for key2 in val.properties.keys():
-                    val2 = val.properties[key2]
+                for key2, val2 in val.properties.items():
                     print(key, '->', key2, ':', val2)
             else:
                 print(key, ':', val)

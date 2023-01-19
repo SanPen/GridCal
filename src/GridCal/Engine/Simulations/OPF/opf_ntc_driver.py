@@ -31,7 +31,8 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, ContingencyAnalysisOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+# from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+# from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.basic_structures import Logger
@@ -780,11 +781,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.BranchTapAngleRad:
-            labels = self.branch_names
-            y = self.phase_shift
-            y_label = '(rad)'
-            title = result_type.value[0]
+        # elif result_type == ResultTypes.BranchTapAngleRad:
+        #    labels = self.branch_names
+        #    y = self.phase_shift
+        #    y_label = '(rad)'
+        #    title = result_type.value[0]
 
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
@@ -804,11 +805,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.HvdcPmode3Slack:
-            labels = self.hvdc_names
-            y = self.hvdc_angle_slack
-            y_label = '(rad)'
-            title = result_type.value[0]
+        # elif result_type == ResultTypes.HvdcPmode3Slack:
+        #    labels = self.hvdc_names
+        #    y = self.hvdc_angle_slack
+        #    y_label = '(rad)'
+        #    title = result_type.value[0]
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             labels = self.branch_names
@@ -885,7 +886,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: "PowerFlowOptions"):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -974,6 +975,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
             # run dc power flow ----------------------------------------------------------------------------------------
             self.progress_text.emit('Pre-solving base state (DC power flow)...')
+            from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
             pf_options = PowerFlowOptions(solver_type=SolverType.DC)
             pf_drv = PowerFlowDriver(grid=self.grid, options=pf_options)
             pf_drv.run()

@@ -270,7 +270,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         solution.method = solver_type
 
         # record the method used, if it improved the solution
-        if solution.norm_f < final_solution.norm_f:
+        if abs(solution.norm_f) < abs(final_solution.norm_f):
             report.add(method=solver_type,
                        converged=solution.converged,
                        error=solution.norm_f,
@@ -478,6 +478,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
         # Branch power in MVA
         Sfb = Sf * calculation_inputs.Sbase
         Stb = St * calculation_inputs.Sbase
+
     else:
         # DC power flow
         theta_f = np.angle(Vf, deg=False)
@@ -486,9 +487,10 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
         Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
         Sfb = Sf * calculation_inputs.Sbase
         Stb = Sf * calculation_inputs.Sbase
-        If = Sfb
-        It = Stb
-        losses = np.zeros(calculation_inputs.nbr)
+        If = Sf / (Vf + 1e-20)
+        It = -If
+        # losses are not considered in the power flow computation
+        losses = If * If * calculation_inputs.branch_data.R * calculation_inputs.Sbase
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)

@@ -199,7 +199,7 @@ class ShortCircuitDriver(DriverTemplate):
             else:
                 raise Exception('Unknown fault type!')
 
-        # if we get here, no short circuit was done, so declare empty results and exit
+        # if we get here, no short circuit was done, so declare empty results and exit --------------------------------
         nbus = calculation_inputs.Ybus.shape[0]
         nbr = calculation_inputs.nbr
 
@@ -288,12 +288,14 @@ class ShortCircuitDriver(DriverTemplate):
                 # in the island, do not perform any calculation
                 reverse_bus_index = {b: i for i, b in enumerate(bus_original_idx)}
 
-                if self.options.bus_index in reverse_bus_index.keys():
+                island_bus_index = reverse_bus_index.get(self.options.bus_index, None)
+
+                if island_bus_index is not None:
 
                     res = self.single_short_circuit(calculation_inputs=calculation_input,
                                                     Vpf=self.pf_results.voltage[bus_original_idx],
                                                     Zf=Zf[bus_original_idx],
-                                                    island_bus_index=reverse_bus_index[self.options.bus_index],
+                                                    island_bus_index=island_bus_index,
                                                     fault_type=self.options.fault_type)
 
                     # merge results

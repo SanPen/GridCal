@@ -143,8 +143,10 @@ class CIMCircuit:
                     if len(value) > 0:  # if the property value is something
                         if value[0] == '_':  # the value is an RFID reference
                             if hasattr(element, prop):  # if the object has the property to cross reference
-                                if value in self.elm_dict.keys():  # if the reference was found ...
-                                    ref = self.elm_dict[value]
+
+                                ref = self.elm_dict.get(value, None)
+
+                                if ref is not None:  # if the reference was found ...
                                     setattr(element, prop, ref)  # set the referenced object in the property
                                     ref.add_reference(element)  # register the inverse reference
                                 else:
@@ -236,10 +238,11 @@ class CIMCircuit:
                         id = cimdev.index_find(xml_line, '"', '">').replace('#', '')
 
                         # start recording object
-                        if tpe in class_dict.keys():
-                            CLS = class_dict[tpe]
-                        else:
-                            CLS = cimdev.GeneralContainer
+                        CLS = class_dict.get(tpe, cimdev.GeneralContainer)
+                        # if tpe in class_dict.keys():
+                        #     CLS = class_dict[tpe]
+                        # else:
+                        #     CLS = cimdev.GeneralContainer
                         element = CLS(id, tpe)
 
                         recording = True
@@ -248,8 +251,9 @@ class CIMCircuit:
                         # stop recording object
                         if recording:
 
-                            if element.rfid in self.elm_dict.keys():
-                                found_element = self.elm_dict[element.rfid]
+                            found_element = self.elm_dict.get(element.rfid, None)
+
+                            if found_element is not None:
                                 found_element.merge(element)
 
                             else:

@@ -139,7 +139,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
 
     adm0 = compute_admittances(R=calculation_inputs.branch_data.R0,
                                X=calculation_inputs.branch_data.X0,
-                               G=calculation_inputs.branch_data.G0_,  # renamed, it was overwritten
+                               G=calculation_inputs.branch_data.G0,  # renamed, it was overwritten
                                B=calculation_inputs.branch_data.B0,
                                k=calculation_inputs.branch_data.k,
                                tap_module=calculation_inputs.branch_data.m[:, 0],

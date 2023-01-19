@@ -23,6 +23,13 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
 
+class PSSeObject:
+
+    def __init__(self):
+
+        self.REV = 33
+
+
 class PSSeGrid:
 
     def __init__(self, data):
@@ -31,7 +38,9 @@ class PSSeGrid:
         Args:
             data: array with the values
         """
-
+        a = ""
+        b = ""
+        var = [a, b]
         self.IC, self.SBASE, self.REV, self.XFRRAT, self.NXFRAT, self.BASFRQ = data
 
         """
@@ -142,11 +151,21 @@ class PSSeGrid:
             circuit.add_load(bus, api_obj)
 
         # Go through shunts
-        for psse_shunt in self.shunts + self.switched_shunts:
-            bus = psse_bus_dict[psse_shunt.I]
-            api_obj = psse_shunt.get_object(bus, logger)
+        for psse_shunt in self.shunts:
+            if psse_shunt.I in psse_bus_dict:
+                bus = psse_bus_dict[psse_shunt.I]
+                api_obj = psse_shunt.get_object(bus, logger)
+                circuit.add_shunt(bus, api_obj)
+            else:
+                logger.add_error("Shunt bus missing", psse_shunt.I, psse_shunt.I)
 
-            circuit.add_shunt(bus, api_obj)
+        for psse_shunt in self.switched_shunts:
+            if psse_shunt.I in psse_bus_dict:
+                bus = psse_bus_dict[psse_shunt.I]
+                api_obj = psse_shunt.get_object(bus, logger)
+                circuit.add_shunt(bus, api_obj)
+            else:
+                logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
 
         # Go through generators
         for psse_gen in self.generators:
@@ -213,9 +232,26 @@ class PSSeGrid:
         return circuit
 
 
-class PSSeBus:
+class PSSeBus(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = 1
+        self.NAME = ""
+        self.BASKV = 1
+        self.IDE = 1
+        self.AREA = 0
+        self.ZONE = 0
+        self.OWNER = 0
+        self.VM = 1.0
+        self.VA = 0.0
+        self.NVHI = 0
+        self.NVLO = 0
+        self.EVHI = 0
+        self.EVLO = 0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -289,9 +325,33 @@ class PSSeBus:
             self.bus.name = 'Bus ' + str(self.I)
 
 
-class PSSeLoad:
+class PSSeLoad(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = 0
+        self.ID = ''
+        self.STATUS = 1
+        self.AREA = 0
+        self.ZONE = 0
+        self.PL = 0
+        self.QL = 0
+        self.IP = 0
+        self.IQ = 0
+        self.YP = 0
+        self.YQ = 0
+        self.OWNER = 0
+        self.SCALE = 0
+        self.INTRPT = 0
+
+        self.DGENP = 0
+        self.DGENQ = 0
+        self.DGENM = 0
+        self.LOADTYPE = ''
+
+    def parse(self, data, version, logger: Logger):
+
         """
 
         :param data:
@@ -299,7 +359,13 @@ class PSSeLoad:
         :param logger:
         """
 
-        if version == 33:
+        if version >= 35:
+
+            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
+            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT, \
+            self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE = data[0]
+
+        elif version in [33, 34]:
 
             n = len(data[0])
             dta = np.zeros(14, dtype=object)
@@ -317,6 +383,8 @@ class PSSeLoad:
             # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
             self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+
+            self.SCALE = 1.0
 
         else:
             logger.add_warning('Load not implemented for version', str(version))
@@ -336,9 +404,13 @@ class PSSeLoad:
         if vv == 0:
             logger.add_error('Voltage equal to zero in shunt conversion', name)
 
-        g, b = self.YP, self.YQ
-        ir, ii = self.IP, self.IQ
-        p, q = self.PL, self.QL
+        # self.SCALEs means if the load is scalable, so omit it
+        g = self.YP
+        b = self.YQ
+        ir = self.IP
+        ii = self.IQ
+        p = self.PL
+        q = self.QL
 
         elm = Load(name=name,
                    idtag=None,
@@ -349,15 +421,11 @@ class PSSeLoad:
         return elm
 
 
-class PSSeSwitchedShunt:
+class PSSeSwitchedShunt(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
-        :param data:
-        :param version:
-        :param logger:
-        """
         self.N1 = ''
         self.N2 = ''
         self.N3 = ''
@@ -375,16 +443,36 @@ class PSSeSwitchedShunt:
         self.B7 = ''
         self.B8 = ''
 
-        var = [self.N1, self.B1,
-               self.N2, self.B2,
-               self.N3, self.B3,
-               self.N4, self.B4,
-               self.N5, self.B5,
-               self.N6, self.B6,
-               self.N7, self.B7,
-               self.N8, self.B8, ]
+        self.I = 0
+        self.MODSW = 0
+        self.ADJM = 0
+        self.STAT = 0
+        self.VSWHI = 1
+        self.VSWLO = 1
+        self.SWREM = 0
+        self.RMPCT = 1
+        self.RMIDNT = 0
+        self.BINIT = 0
 
-        if version in [34, 33, 32]:
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        if version >= 29:
+
+            var = [self.N1, self.B1,
+                   self.N2, self.B2,
+                   self.N3, self.B3,
+                   self.N4, self.B4,
+                   self.N5, self.B5,
+                   self.N6, self.B6,
+                   self.N7, self.B7,
+                   self.N8, self.B8, ]
+
             self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
         else:
@@ -414,21 +502,31 @@ class PSSeSwitchedShunt:
 
         elm = Shunt(name='Switched shunt ' + name,
                     G=g, B=b,
-                    active=bool(self.STAT))
+                    active=bool(self.STAT),
+                    code=name)
 
         return elm
 
 
-class PSSeShunt:
+class PSSeShunt(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = 0
+        self.ID = ""
+        self.STATUS = 1
+        self.GL = 0
+        self.BL = 0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
         :param version:
         :param logger:
         """
-        if version in [33, 32]:
+        if version >= 29:
             self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
@@ -455,20 +553,16 @@ class PSSeShunt:
         elm = Shunt(name=name,
                     idtag=name,
                     G=g, B=b,
-                    active=bool(self.STATUS))
+                    active=bool(self.STATUS),
+                    code=name)
 
         return elm
 
 
-class PSSeGenerator:
+class PSSeGenerator(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
         self.I = 0
         self.ID = 0
@@ -499,15 +593,24 @@ class PSSeGenerator:
         self.WMOD = 0
         self.WPF = 0
 
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
         var = [self.O1, self.F1,
                self.O2, self.F2,
                self.O3, self.F3,
                self.O4, self.F4]
 
-        length = len(data[0])
-
-        if version in [33, 32, 30]:
-
+        if version >= 30:
+            # I,'ID',      PG,        QG,        QB,     VS,    IREG,     MBASE,
+            # ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,
+            # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
+            # WMOD,  WPF
             self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var, \
             self.WMOD, self.WPF = data[0]
@@ -547,9 +650,47 @@ class PSSeGenerator:
         return elm
 
 
-class PSSeInductionMachine:
+class PSSeInductionMachine(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = 0
+        self.ID = ""
+        self.STAT = 1
+        self.SCODE = ""
+        self.DCODE = ""
+        self.AREA = 0
+        self.ZONE = 0
+        self.OWNER = 0
+        self.TCODE = 0
+        self.BCODE = 0
+        self.MBASE = 0
+        self.RATEKV = 0
+        self.PCODE = 0
+        self.PSET = 0
+        self.H = 0
+        self.A = 0
+        self.B = 0
+        self.D = 0
+        self.E = 0
+        self.RA = 0
+        self.XA = 0
+        self.XM = 0
+        self.R1 = 0
+        self.X1 = 0
+        self.R2 = 0
+        self.X2 = 0
+        self.X3 = 0
+        self.E1 = 0
+        self.SE1 = 0
+        self.E2 = 0
+        self.SE2 = 0
+        self.IA1 = 0
+        self.IA2 = 0
+        self.XAMULT = 1.0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -557,7 +698,7 @@ class PSSeInductionMachine:
         :param logger:
         """
 
-        if version in [30, 32, 33]:
+        if version > 30:
             '''
             I,ID,STAT,SCODE,DCODE,AREA,ZONE,OWNER,TCODE,BCODE,MBASE,RATEKV,
             PCODE,PSET,H,A,B,D,E,RA,XA,XM,R1,X1,R2,X2,X3,E1,SE1,E2,SE2,IA1,IA2,
@@ -589,15 +730,10 @@ class PSSeInductionMachine:
         return elm
 
 
-class PSSeBranch:
+class PSSeBranch(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
         self.O1 = ''
         self.F1 = ''
@@ -607,9 +743,67 @@ class PSSeBranch:
         self.F3 = ''
         self.O4 = ''
         self.F4 = ''
-        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if version in [33, 32]:
+        self.I = 0
+        self.J = 0
+        self.CKT = 0
+        self.R = 0
+        self.X = 0
+        self.B = 0
+
+        self.NAME = ''
+
+        self.RATEA = 0
+        self.RATEB = 0
+        self.RATEC = 0
+
+        self.RATE1 = 0
+        self.RATE2 = 0
+        self.RATE3 = 0
+        self.RATE4 = 0
+        self.RATE5 = 0
+        self.RATE6 = 0
+        self.RATE7 = 0
+        self.RATE8 = 0
+        self.RATE9 = 0
+        self.RATE10 = 0
+        self.RATE11 = 0
+        self.RATE12 = 0
+
+        self.GI = 0
+        self.BI = 0
+        self.GJ = 0
+        self.BJ = 0
+        self.ST = 1
+        self.MET = 0
+        self.LEN = 0
+
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
+        if version >= 34:
+
+            """
+            I,     J,'CKT',     R,          X,         B, 'N A M E'                 ,   
+            RATE1,   RATE2,   RATE3,   RATE4,   RATE5,   RATE6,   RATE7,   RATE8,   RATE9,  RATE10,  RATE11,  RATE12,    
+            GI,       BI,       GJ,       BJ,STAT,MET,  LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
+            """
+
+            self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME, \
+             self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6, \
+             self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,  \
+             self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
+
+            self.RATEA = self.RATE1
+            self.RATEB = self.RATE1
+
+        elif version in [32, 33]:
 
             '''
             I,J,CKT,R,X,B,RATEA,RATEB,RATEC,GI,BI,GJ,BJ,ST,MET,LEN,O1,F1,...,O4,F4
@@ -645,8 +839,12 @@ class PSSeBranch:
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
         code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
-        name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(i, bus_from.name, bus_from.Vnom, j, bus_to.name, bus_to.Vnom, self.CKT)
-        name = name.replace("'", "").replace(" ", "").strip()
+
+        if self.NAME.strip() == '':
+            name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(i, bus_from.name, bus_from.Vnom, j, bus_to.name, bus_to.Vnom, self.CKT)
+            name = name.replace("'", "").replace(" ", "").strip()
+        else:
+            name = self.NAME.strip()
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
@@ -670,9 +868,61 @@ class PSSeBranch:
         return branch
 
 
-class PSSeTwoTerminalDCLine:
+class PSSeTwoTerminalDCLine(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.NAME = ""
+        self.MDC = 0
+        self.RDC = 0
+        self.SETVL = 0
+        self.VSCHD = 0
+        self.VCMOD = 0
+        self.RCOMP = 0
+        self.DELTI = 0
+        self.METER = 0
+        self.DCVMIN = 0
+        self.CCCITMX = 0
+        self.CCCACC = 0
+
+        self.IPR = 0
+        self.NBR = 0
+        self.ANMXR = 0
+        self.ANMNR = 0
+        self.RCR = 0
+        self.XCR = 0
+        self.EBASR = 0
+        self.TRR = 0
+        self.TAPR = 0
+        self.TMXR = 0
+        self.TMNR = 0
+        self.STPR = 0
+        self.ICR = 0
+        self.IFR = 0
+        self.ITR = 0
+        self.IDR = 0
+        self.XCAPR = 0
+
+        self.IPI = 0
+        self.NBI = 0
+        self.ANMXI = 0
+        self.ANMNI = 0
+        self.RCI = 0
+        self.XCI = 0
+        self.EBASI = 0
+        self.TRI = 0
+        self.TAPI = 0
+        self.TMXI = 0
+        self.TMNI = 0
+        self.STPI = 0
+        self.ICI = 0
+        self.IFI = 0
+        self.ITI = 0
+        self.IDI = 0
+        self.XCAPI = 0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -680,7 +930,7 @@ class PSSeTwoTerminalDCLine:
         :param logger:
         """
 
-        if version in [32, 33, 34]:
+        if version >= 30:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
@@ -765,15 +1015,11 @@ class PSSeTwoTerminalDCLine:
         return obj
 
 
-class PSSeVscDCLine:
+class PSSeVscDCLine(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
-        :param data:
-        :param version:
-        :param logger:
-        """
         self.O1 = ''
         self.F1 = ''
         self.O2 = ''
@@ -782,13 +1028,57 @@ class PSSeVscDCLine:
         self.F3 = ''
         self.O4 = ''
         self.F4 = ''
+
+        self.NAME = ""
+        self.MDC = 0
+        self.RDC = 0
+
+        self.IBUS1 = 0
+        self.TYPE1 = 0
+        self.MODE1 = 0
+        self.DCSET1 = 0
+        self.ACSET1 = 0
+        self.ALOSS1 = 0
+        self.BLOSS1 = 0
+        self.MINLOSS1 = 0
+        self.SMAX1 = 0
+        self.IMAX1 = 0
+        self.PWF1 = 0
+        self.MAXQ1 = 0
+        self.MINQ1 = 0
+        self.REMOT1 = 0
+        self.RMPCT1 = 0
+
+        self.IBUS2 = 0
+        self.TYPE2 = 0
+        self.MODE2 = 0
+        self.DCSET2 = 0
+        self.ACSET2 = 0
+        self.ALOSS2 = 0
+        self.BLOSS2 = 0
+        self.MINLOSS2 = 0
+        self.SMAX2 = 0
+        self.IMAX2 = 0
+        self.PWF2 = 0
+        self.MAXQ2 = 0
+        self.MINQ2 = 0
+        self.REMOT2 = 0
+        self.RMPCT2 = 0
+
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if version in [32, 33, 34]:
+        if version >= 30:
 
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
-            IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
@@ -947,15 +1237,10 @@ def get_psse_transformer_impedances(CW, CZ, CM, V1, V2, sbase, logger, code,
     return r, x, g, b, tap_mod, tap_angle
 
 
-class PSSeTransformer:
+class PSSeTransformer(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
         self.windings = 0
         self.O1 = ''
@@ -966,12 +1251,200 @@ class PSSeTransformer:
         self.F3 = ''
         self.O4 = ''
         self.F4 = ''
+
+        self.I = 0
+        self.J = 0
+        self.K = 0
+        self.CKT = 0
+        self.CW = 0
+        self.CZ = 0
+        self.CM = 0
+        self.MAG1 = 0
+        self.MAG2 = 0
+        self.NMETR = 0
+        self.NAME = ""
+        self.STAT = 0
+        self.VECGRP = ""
+        self.ZCOD = 0
+
+        self.WINDV1 = 0
+        self.NOMV1 = 0
+        self.ANG1 = 0
+        self.RATA1 = 0
+        self.RATB1 = 0
+        self.RATC1 = 0
+        self.COD1 = 0
+        self.CONT1 = 0
+        self.RMA1 = 0
+        self.RMI1 = 0
+        self.VMA1 = 0
+        self.VMI1 = 0
+        self.NTP1 = 0
+        self.TAB1 = 0
+        self.CR1 = 0
+        self.CX1 = 0
+        self.CNXA1 = 0
+
+        self.WINDV2 = 0
+        self.NOMV2 = 0
+
+        # in case of 3 W
+        self.ANG2 = 0
+        self.RATA2 = 0
+        self.RATB2 = 0
+        self.RATC2 = 0
+        self.COD2 = 0
+        self.CONT2 = 0
+        self.RMA2 = 0
+        self.RMI2 = 0
+        self.VMA2 = 0
+        self.VMI2 = 0
+        self.NTP2 = 0
+        self.TAB2 = 0
+        self.CR2 = 0
+        self.CX2 = 0
+        self.CNXA2 = 0
+
+
+        self.WINDV3 = 0
+        self.NOMV3 = 0
+        self.ANG3 = 0
+        self.RATA3 = 0
+        self.RATB3 = 0
+        self.RATC3 = 0
+        self.COD3 = 0
+        self.CONT3 = 0
+        self.RMA3 = 0
+        self.RMI3 = 0
+        self.VMA3 = 0
+        self.VMI3 = 0
+        self.NTP3 = 0
+        self.TAB3 = 0
+        self.CR3 = 0
+        self.CX3 = 0
+        self.CNXA3 = 0
+
+        self.NOD1 = 0
+        self.NOD2 = 0
+        self.NOD3 = 0
+
+        self.RATE1_1 = 0
+        self.RATE1_2 = 0
+        self.RATE1_3 = 0
+        self.RATE1_4 = 0
+        self.RATE1_5 = 0
+        self.RATE1_6 = 0
+        self.RATE1_7 = 0
+        self.RATE1_8 = 0
+        self.RATE1_9 = 0
+        self.RATE1_10 = 0
+        self.RATE1_11 = 0
+        self.RATE1_12 = 0
+
+        self.RATE2_1 = 0
+        self.RATE2_2 = 0
+        self.RATE2_3 = 0
+        self.RATE2_4 = 0
+        self.RATE2_5 = 0
+        self.RATE2_6 = 0
+        self.RATE2_7 = 0
+        self.RATE2_8 = 0
+        self.RATE2_9 = 0
+        self.RATE2_10 = 0
+        self.RATE2_11 = 0
+        self.RATE2_12 = 0
+
+        self.RATE3_1 = 0
+        self.RATE3_2 = 0
+        self.RATE3_3 = 0
+        self.RATE3_4 = 0
+        self.RATE3_5 = 0
+        self.RATE3_6 = 0
+        self.RATE3_7 = 0
+        self.RATE3_8 = 0
+        self.RATE3_9 = 0
+        self.RATE3_10 = 0
+        self.RATE3_11 = 0
+        self.RATE3_12 = 0
+
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if version == 33:
+        if version >= 34:
 
             # Line 1: for both types
+            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
+             self.NAME, self.STAT, *var, self.VECGRP, self.ZCOD = data[0]
 
+            if len(data) == 4:
+                self.windings = 2
+
+                '''
+                @!   I,     J,     K,'CKT',CW,CZ,CM,    MAG1,       MAG2,NMETR,               'N A M E',               STAT,O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,     'VECGRP', ZCOD
+                @!   R1-2,       X1-2,   SBASE1-2,     R2-3,       X2-3,   SBASE2-3,     R3-1,       X3-1,   SBASE3-1, VMSTAR,   ANSTAR
+                @!WINDV1,  NOMV1,    ANG1,  RATE1-1,  RATE1-2,  RATE1-3,  RATE1-4,  RATE1-5,  RATE1-6,  RATE1-7,  RATE1-8,  RATE1-9, RATE1-10, RATE1-11, RATE1-12,COD1,CONT1,   NOD1,    RMA1,    RMI1,    VMA1,    VMI1, NTP1,TAB1,  CR1,     CX1,   CNXA1
+                @!WINDV2,  NOMV2,    ANG2,  RATE2-1,  RATE2-2,  RATE2-3,  RATE2-4,  RATE2-5,  RATE2-6,  RATE2-7,  RATE2-8,  RATE2-9, RATE2-10, RATE2-11, RATE2-12,COD2,CONT2,   NOD2,    RMA2,    RMI2,    VMA2,    VMI2, NTP2,TAB2,  CR2,     CX2,   CNXA2
+                @!WINDV3,  NOMV3,    ANG3,  RATE3-1,  RATE3-2,  RATE3-3,  RATE3-4,  RATE3-5,  RATE3-6,  RATE3-7,  RATE3-8,  RATE3-9, RATE3-10, RATE3-11, RATE3-12,COD3,CONT3,   NOD3,    RMA3,    RMI3,    VMA3,    VMI3, NTP3,TAB3,  CR3,     CX3,   CNXA3
+                '''
+
+                self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
+
+                self.WINDV1, self.NOMV1, self.ANG1, \
+                 self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
+                 self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
+                 self.COD1, self.CONT1, self.NOD1, self.RMA1, \
+                 self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+
+                self.WINDV2, self.NOMV2 = data[3]
+
+                self.RATA1 = self.RATE1_1
+
+            else:
+                self.windings = 3
+
+                '''
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4,VECGRP
+                R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
+                WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
+                WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2,COD2,CONT2,RMA2,RMI2,VMA2,VMI2,NTP2,TAB2,CR2,CX2,CNXA2
+                WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3,COD3,CONT3,RMA3,RMI3,VMA3,VMI3,NTP3,TAB3,CR3,CX3,CNXA3
+                '''
+
+                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
+                self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+
+                self.WINDV1, self.NOMV1, self.ANG1, \
+                self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
+                self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
+                self.COD1, self.CONT1, self.NOD1, \
+                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+
+                self.WINDV2, self.NOMV2, self.ANG2, \
+                self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6, \
+                self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12, \
+                self.COD2, self.CONT2, self.NOD2, \
+                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
+
+                self.WINDV3, self.NOMV3, self.ANG3, \
+                self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6, \
+                self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12, \
+                self.COD3, self.CONT3, self.NOD3, \
+                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
+
+                self.RATA1 = self.RATE1_1
+                self.RATA2 = self.RATE2_1
+                self.RATA3 = self.RATE3_1
+
+        elif version == 33:
+
+            # Line 1: for both types
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
             self.NAME, self.STAT, *var, self.VECGRP = data[0]
 
@@ -1011,16 +1484,13 @@ class PSSeTransformer:
                 self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, \
-                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[
-                    2]
+                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[
-                    3]
+                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[
-                    4]
+                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
 
         elif version == 32:
 
@@ -1036,7 +1506,6 @@ class PSSeTransformer:
             '''
 
             # Line 1: for both types
-
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
             self.NAME, self.STAT, *var = data[0]
 
@@ -1212,7 +1681,7 @@ class PSSeTransformer:
             R1-2 = 0.0 by default, but no default is allowed for X1-2.
         '''
 
-        self.CKT = self.CKT.replace("'", "")
+        self.CKT = str(self.CKT).replace("'", "")
 
         self.NAME = self.NAME.replace("'", "").strip()
 
@@ -1406,9 +1875,34 @@ class PSSeTransformer:
             raise Exception(str(self.windings) + ' number of windings!')
 
 
-class PSSeFACTS:
+class PSSeFACTS(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.NAME = ""
+        self.I = 0
+        self.J = 0
+        self.MODE = 0
+        self.PDES = 0
+        self.QDES = 0
+        self.VSET = 0
+        self.SHMX = 0
+        self.TRMX = 0
+        self.VTMN = 0
+        self.VTMX = 0
+        self.VSMX = 0
+        self.IMX = 0
+        self.LINX = 0
+        self.RMPCT = 0
+        self.OWNER = 0
+        self.SET1 = 0
+        self.SET2 = 0
+        self.VSREF = 0
+        self.REMOT = 0
+        self.MNAME = 0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1534,9 +2028,46 @@ class PSSeFACTS:
             return None
 
 
-class PSSeInterArea:
+class PSSeInterArea(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = -1
+        self.ARNAME = ''
+        self.ISW = 0
+        self.PDES = 0
+        self.PTOL = 0
+
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        if version >= 29:
+            # I, ISW, PDES, PTOL, 'ARNAME'
+            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+
+            self.ARNAME = self.ARNAME.replace("'", "").strip()
+        else:
+            logger.add_warning('Areas not defined for version', str(version))
+
+
+class PSSeArea(PSSeObject):
+
+    def __init__(self):
+        PSSeObject.__init__(self)
+
+        self.I = -1
+        self.ARNAME = ''
+        self.ISW = 0
+        self.PDES = 0
+        self.PTOL = 0
+
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1548,7 +2079,7 @@ class PSSeInterArea:
 
         self.ARNAME = ''
 
-        if version in [29, 30, 32, 33]:
+        if version >= 29:
             # I, ISW, PDES, PTOL, 'ARNAME'
             self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
 
@@ -1557,44 +2088,23 @@ class PSSeInterArea:
             logger.add_warning('Areas not defined for version', str(version))
 
 
-class PSSeArea:
+class PSSeZone(PSSeObject):
 
-    def __init__(self, data, version, logger: Logger):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
+    def __init__(self):
+        PSSeObject.__init__(self)
 
         self.I = -1
-
-        self.ARNAME = ''
-
-        if version in [29, 30, 32, 33]:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
-
-            self.ARNAME = self.ARNAME.replace("'", "").strip()
-        else:
-            logger.add_warning('Areas not defined for version', str(version))
-
-
-class PSSeZone:
-
-    def __init__(self, data, version, logger: Logger):
-        """
-
-        :param data:
-        :param version:
-        :param logger:
-        """
-
-        self.I = -1
-
         self.ZONAME = ''
 
-        if version in [29, 30, 32, 33]:
+    def parse(self, data, version, logger: Logger):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+        """
+
+        if version >= 29:
             # I, 'ZONAME'
             self.I, self.ZONAME = data[0]
 
@@ -1603,29 +2113,69 @@ class PSSeZone:
             logger.add_warning('Zones not defined for version', str(version))
 
 
-def interpret_line(line, splitter=','):
+def delete_comment(raw_line):
+
+    lne = ""
+    text_active = False
+    for c in raw_line:
+
+        if c == "'":
+            text_active = not text_active
+
+        if c == "/":
+            if text_active:
+                pass
+            else:
+                return lne
+
+        lne += c
+
+    return lne
+
+def interpret_line(raw_line, splitter=','):
     """
     Split text into arguments and parse each of them to an appropriate format (int, float or string)
     Args:
-        line: text line
+        raw_line: text line
         splitter: value to split by
     Returns: list of arguments
     """
+    raw_line = delete_comment(raw_line)
+
+    # Remove the last useless comma if it is there:
+    if raw_line[-1] == ",":
+        lne = raw_line[:-1]
+    else:
+        lne = raw_line
+
     parsed = list()
-    elms = line.split(splitter)
+    elms = lne.split(splitter)
 
     for elm in elms:
-        try:
-            # try int
-            el = int(elm)
-        except ValueError as ex1:
+
+        if "'" in elm:
+            el = elm.replace("'", "").strip()
+        else:
+
+            if "/" in elm:
+                # the line might end with a comment "/ whatever" so we must remove the comment
+                print("Comment detected:", elm, end="")
+                ss = elm.split("/")
+                elm = ss[0]
+                print(" corrected to:", elm)
+
             try:
-                # try float
-                el = float(elm)
-            except ValueError as ex2:
-                # otherwise just leave it as string
-                el = elm.strip()
+                # try int
+                el = int(elm)
+            except ValueError as ex1:
+                try:
+                    # try float
+                    el = float(elm)
+                except ValueError as ex2:
+                    # otherwise just leave it as string
+                    el = elm.strip()
         parsed.append(el)
+
     return parsed
 
 
@@ -1638,7 +2188,7 @@ class PSSeParser:
             file_name: file name or path
         """
         self.parsers = dict()
-        self.versions = [33, 32, 30, 29]
+        self.versions = [35, 34, 33, 32, 30, 29]
 
         self.logger = Logger()
 
@@ -1653,7 +2203,7 @@ class PSSeParser:
         self.circuit.comments = 'Converted from the PSS/e .raw file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
-    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split_old(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
@@ -1674,13 +2224,16 @@ class PSSeParser:
             text_func("Reading raw file...")
 
         txt = ''
+        lines = list()
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
             for line in my_file:
                 if line[0] != '@':
                     txt += line
+                    lines.append(line)
 
         # split the text file into sections
         sections = txt.split(' /')
+        # sections = txt.split(' 0 /')
 
         sections_dict = dict()
 
@@ -1712,6 +2265,77 @@ class PSSeParser:
 
         return sections, sections_dict
 
+    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+        """
+        Read the text file and split it into sections
+        :return: list of sections, dictionary of sections by type
+        """
+
+        if text_func is not None:
+            text_func("Detecting raw file encoding...")
+
+        if progress_func is not None:
+            progress_func(0)
+
+        # make a guess of the file encoding
+        detection = chardet.detect(open(self.file_name, "rb").read())
+
+        # open the text file into a variable
+
+        if text_func is not None:
+            text_func("Reading raw file...")
+
+        sections_dict: Dict[str, List[str | float | int]] = dict()
+        sections_dict["bus"] = list()
+        sep = ","
+        with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
+            i = 0
+            block_category = "bus"
+            for line_ in my_file:
+
+                if line_[0] != '@':
+                    # remove garbage
+                    lne = line_.strip()
+
+                    if lne.startswith("program"):
+                        # common header
+                        block_category = 'program'
+                        sections_dict[block_category] = list()
+
+                    if i == 0:
+                        sections_dict['info'] = [interpret_line(lne, sep)]
+                    elif i == 1:
+                        sections_dict['comment'] = [lne]
+                    elif i == 2:
+                        sections_dict['comment2'] = [lne]
+                    else:
+
+                        if lne.startswith("0 /"):
+                            # this is a category splitter
+                            if lne.startswith("cards"):
+                                # MISO file
+                                pass
+                            else:
+                                # common header
+                                s = lne.lower().split(", begin")
+                                if len(s) == 2:
+                                    block_category = s[1].replace("begin", "").replace("data", "").strip()
+                                    sections_dict[block_category] = list()
+
+                        elif lne.startswith("Q"):
+                            pass
+                        else:
+                            if lne.strip() != '':
+                                sections_dict[block_category].append(interpret_line(lne, sep))
+
+                    i += 1
+                else:
+                    # it is a header
+                    hdr = line_.strip()
+                    pass
+
+        return sections_dict
+
     def parse_psse(self, text_func=None,  progress_func=None) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
@@ -1727,10 +2351,11 @@ class PSSeParser:
         if text_func is not None:
             text_func("Reading file...")
 
-        sections, sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
+        sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
 
         # header -> new grid
-        grid = PSSeGrid(interpret_line(sections[0]))
+        # grid = PSSeGrid(interpret_line(sections[0]))
+        grid = PSSeGrid(sections_dict['info'][0])
 
         if grid.REV not in self.versions:
             msg = 'The PSSe version is not compatible. Compatible versions are:'
@@ -1770,11 +2395,13 @@ class PSSeParser:
         meta_data['bus'] = [grid.buses, PSSeBus, 1]
         meta_data['load'] = [grid.loads, PSSeLoad, 1]
         meta_data['fixed shunt'] = [grid.shunts, PSSeShunt, 1]
+        meta_data['fixed bus shunt'] = [grid.shunts, PSSeShunt, 1]
         meta_data['shunt'] = [grid.shunts, PSSeShunt, 1]
         meta_data['switched shunt'] = [grid.switched_shunts, PSSeSwitchedShunt, 1]
         meta_data['generator'] = [grid.generators, PSSeGenerator, 1]
         meta_data['induction machine'] = [grid.generators, PSSeInductionMachine, 3]
         meta_data['branch'] = [grid.lines, PSSeBranch, 1]
+        meta_data['nontransformer branch'] = [grid.lines, PSSeBranch, 1]
         meta_data['transformer'] = [grid.transformers, PSSeTransformer, 4]
         meta_data['two-terminal dc'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
         meta_data['two-terminal dc line'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
@@ -1786,69 +2413,73 @@ class PSSeParser:
         meta_data['inter-area transfer'] = [grid.areas, PSSeInterArea, 1]
         meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
-        for key, values in meta_data.items():
+        bus_set = {lne[0] for lne in sections_dict["bus"]}
 
-            # get the parsers for the declared object type
-            objects_list, ObjectT, lines_per_object = values
+        def is_3w(row):
+            return row[0] in bus_set and row[1] in bus_set and row[2] in bus_set
 
-            if text_func is not None:
-                text_func("Converting {0}...".format(key))
+        for key, lines in sections_dict.items():
 
-            if key in sections_dict.keys():
-                lines = sections_dict[key]
+            if key in meta_data:
 
-                # iterate ove the object's lines to pack them as expected (normally 1 per object except transformers...)
-                l = 0
-                while l < len(lines):
+                # get the parsers for the declared object type
+                objects_list, ObjectT, lines_per_object = meta_data[key]
 
-                    lines_per_object2 = lines_per_object
+                if text_func is not None:
+                    text_func("Converting {0}...".format(key))
 
-                    if version in self.versions and key == 'transformer':
-                        # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
-                        # the transformers may have 4 or 5 lines to define them
-                        if (l + 1) < len(lines):
-                            dta = lines[l + 1].split(',')
-                            if len(dta) > 3:
+                if key in sections_dict.keys():
+
+                    # iterate ove the object's lines to pack them as expected
+                    # (normally 1 per object except transformers...)
+                    l_count = 0
+                    while l_count < len(lines):
+
+                        lines_per_object2 = lines_per_object
+
+                        if version in self.versions and key == 'transformer':
+                            # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
+                            # the transformers may have 4 or 5 lines to define them
+                            # so, to be able to know, we look at the line "l" and check if the first arguments
+                            # are 2 or 3 buses
+                            if is_3w(lines[l_count]):
                                 # 3 - windings
                                 lines_per_object2 = 5
                             else:
                                 # 2-windings
                                 lines_per_object2 = 4
 
-                    if ',' in lines[l]:
                         data = list()
                         for k in range(lines_per_object2):
-                            data.append(interpret_line(lines[l + k]))
+                            data.append(lines[l_count + k])
 
                         # pick the line that matches the object and split it by line returns \n
                         # object_lines = line.split('\n')
 
-                        # interpret each line of the object and store into data
+                        # interpret each line of the object and store into data.
                         # data is a vector of vectors with data definitions
                         # for the buses, branches, loads etc. data contains 1 vector,
                         # for the transformers data contains 4 vectors
                         # data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
 
                         # pass the data to the according object to assign it to the matching variables
-                        objects_list.append(ObjectT(data, version, logger))
+                        obj = ObjectT()
+                        obj.parse(data, version, logger)
+                        objects_list.append(obj)
 
-                    else:
-                        if lines[l].strip() != '0':
-                            logger.add_info('Skipped', lines[l])
+                        # add lines
+                        l_count += lines_per_object2
 
-                    # add lines
-                    l += lines_per_object2
+                        if progress_func is not None:
+                            progress_func((l_count / len(lines)) * 100)
 
-                    if progress_func is not None:
-                        progress_func((l / len(lines)) * 100)
+                else:
+                    pass
 
             else:
-                pass
-
-        # add logs for the non parsed objects
-        for key in sections_dict.keys():
-            if key not in meta_data.keys():
-                logger.add_warning('Not implemented in the parser', key)
+                if len(lines) > 0 and key not in ['info', 'comment', 'comment2']:
+                    # add logs for the non parsed objects
+                    logger.add_warning('Not implemented in the parser', key)
 
         return grid, logger
 

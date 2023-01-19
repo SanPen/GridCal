@@ -238,10 +238,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  outserv: Out of Service
     *  pStoch: Failures: Element model in StoTyplne
     '''
-    if "ElmLne" in data.keys():
-        lines = data["ElmLne"]
-    else:
-        lines = np.zeros((0, 20))
+    lines = data.get("ElmLne", np.zeros((0, 20)))
 
     '''
     ###############################################################################

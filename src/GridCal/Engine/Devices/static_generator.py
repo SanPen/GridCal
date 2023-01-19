@@ -17,6 +17,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.enumerations import BuildStatus
 
 
 class StaticGenerator(EditableDevice):
@@ -42,7 +43,8 @@ class StaticGenerator(EditableDevice):
     """
 
     def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
-                 mttf=0.0, mttr=0.0):
+                 mttf=0.0, mttr=0.0,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -58,7 +60,14 @@ class StaticGenerator(EditableDevice):
                                                   'P': GCProp('MW', float, 'Active power'),
                                                   'Q': GCProp('MVAr', float, 'Reactive power'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery')},
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                  'capex': GCProp('e/MW', float,
+                                                                  'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float,
+                                                                 'Cost of operation. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus,
+                                                                         'Branch build status. Used in expansion planning.'),
+                                                  },
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',
@@ -79,6 +88,12 @@ class StaticGenerator(EditableDevice):
         # power profile for this load
         self.P_prof = P_prof
         self.Q_prof = Q_prof
+
+        self.capex = capex
+
+        self.opex = opex
+
+        self.build_status = build_status
 
     def copy(self):
         """
@@ -107,6 +122,9 @@ class StaticGenerator(EditableDevice):
                 'active': self.active,
                 'P': self.P,
                 'Q': self.Q,
+                'capex': self.capex,
+                'opex': self.opex,
+                'build_status': str(self.build_status.value).lower(),
                 'technology': ""
                 }
 

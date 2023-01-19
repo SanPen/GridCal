@@ -312,10 +312,7 @@ def get_newton_power_flow_options(opt: PowerFlowOptions):
     newton_q_control_dict = {ReactivePowerControlMode.NoControl: nn.NativeReactivePowerControlMode.NoControl,
                              ReactivePowerControlMode.Direct: nn.NativeReactivePowerControlMode.Direct}
 
-    if opt.solver_type in newton_solver_dict.keys():
-        solver_type = newton_solver_dict[opt.solver_type]
-    else:
-        solver_type = nn.NativeSolverType.NR
+    solver_type = newton_solver_dict.get(opt.solver_type, nn.NativeSolverType.NR)
 
     options = nn.NativePowerFlowOptions(solver_type=solver_type,
                                         retry_with_other_methods=opt.retry_with_other_methods,
