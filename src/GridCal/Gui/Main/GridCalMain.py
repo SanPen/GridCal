@@ -61,10 +61,11 @@ from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan, ContingencyPlan
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession
+from GridCal.Gui.Session.session import SimulationSession, ResultsModel
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -365,6 +366,7 @@ class MainGUI(QMainWindow):
         self.grid_generator_dialogue: GridGeneratorGUI = None
         self.analysis_dialogue: GridAnalysisGUI = None
         self.profile_input_dialogue: ProfileInputGUI = None
+        self.models_input_dialogue: ModelsInputGUI = None
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
         self.about_msg_window: AboutDialogueGuiGUI = None
@@ -551,6 +553,8 @@ class MainGUI(QMainWindow):
         # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
+
+        self.ui.edit_profiles_from_models_pushButton.clicked.connect(self.import_profiles_from_models)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
 
@@ -2128,29 +2132,6 @@ class MainGUI(QMainWindow):
                 pass
         else:
             warning_msg('There are no profiles', 'Delete profiles')
-
-    # def set_profiles_state_to_grid(self):
-    #     """
-    #     Set the profiles scenario at the selected time index to the main values of the grid
-    #     :return: Nothing
-    #     """
-    #     if self.circuit.time_profile is not None:
-    #         t = self.ui.profile_time_selection_comboBox.currentIndex()
-    #
-    #         if t > -1:
-    #             name_t = self.ui.profile_time_selection_comboBox.currentText()
-    #             quit_msg = "Replace the grid values by the scenario at " + name_t
-    #             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
-    #
-    #             if reply == QMessageBox.Yes:
-    #                 for bus in self.circuit.buses:
-    #                     bus.set_profile_values(t)
-    #             else:
-    #                 pass
-    #         else:
-    #             warning_msg('No profile time selected', 'Set profile values')
-    #     else:
-    #         warning_msg('There are no profiles', 'Set profile values')
 
     def import_profiles(self):
         """
@@ -5406,7 +5387,7 @@ class MainGUI(QMainWindow):
         """
         Plot the results
         """
-        mdl = self.ui.resultsTableView.model()
+        mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
 
@@ -5438,7 +5419,7 @@ class MainGUI(QMainWindow):
                 rows = None
 
             # none selected, plot all
-            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows)
+            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows, stacked=False)
 
             plt.show()
 
@@ -5446,7 +5427,7 @@ class MainGUI(QMainWindow):
         """
         Save the data displayed at the results as excel
         """
-        mdl = self.ui.resultsTableView.model()
+        mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
 
@@ -7199,6 +7180,34 @@ class MainGUI(QMainWindow):
             plt.show()
         else:
             self.msg('Select a data structure')
+
+    def import_profiles_from_models(self):
+        """
+        Open the dialogue to load profile data from models
+        """
+        # if there are no profiles:
+        if self.circuit.time_profile is not None:
+            self.models_input_dialogue = ModelsInputGUI(parent=self,
+                                                        use_native_dialogues=self.use_native_dialogues,
+                                                        time_array=self.circuit.time_profile)
+
+            self.models_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+            self.models_input_dialogue.exec_()  # exec leaves the parent on hold
+
+            if self.models_input_dialogue.grids_model is not None:
+                self.models_input_dialogue.process(main_grid=self.circuit)
+
+                # set up sliders
+                self.set_up_profile_sliders()
+                self.update_date_dependent_combos()
+                self.display_profiles()
+
+        else:
+            warning_msg("You need to declare a time profile first. "
+                        "Then, this button will show the dialogue to "
+                        "load the data from the modes at the time steps that you prefer.\n"
+                        "Use the 'Create profiles button'.")
+            return False
 
 
 def run(use_native_dialogues=False):

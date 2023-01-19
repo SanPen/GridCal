@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import string
 import sys
@@ -9,8 +25,9 @@ import pandas as pd
 from PySide2.QtWidgets import *
 from typing import List, Dict
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
-from GridCal.Gui.ProfilesInput.gui import *
+from GridCal.Gui.ProfilesInput.profiles_from_data_gui import *
 from GridCal.Gui.ProfilesInput.excel_dialog import *
+
 
 
 class MultiplierType(Enum):
@@ -53,7 +70,7 @@ class Association:
 class Associations(QAbstractTableModel):
 
     def __init__(self):
-        QtCore.QAbstractTableModel.__init__(self)
+        QAbstractTableModel.__init__(self)
 
         self.__values: List[Association] = list()
 
@@ -152,6 +169,7 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
             return None
     else:
         return None
+
 
 
 class ProfileInputGUI(QtWidgets.QDialog):
@@ -649,6 +667,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
             self.data = np.nan_to_num(self.data)  # set nan to zero
 
         self.close()
+
+
 
 
 class TestObj:

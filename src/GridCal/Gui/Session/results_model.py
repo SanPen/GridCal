@@ -279,7 +279,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def plot(self, ax=None, selected_col_idx=None, selected_rows=None):
+    def plot(self, ax=None, selected_col_idx=None, selected_rows=None, stacked=False):
         """
         Plot the data model
         :param ax: Matplotlib axis
@@ -287,4 +287,4 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param selected_rows: list of rows to plot
         """
 
-        self.table.plot(ax=ax, selected_col_idx=selected_col_idx, selected_rows=selected_rows)
+        self.table.plot(ax=ax, selected_col_idx=selected_col_idx, selected_rows=selected_rows, stacked=stacked)

@@ -348,12 +348,13 @@ class ResultsTable:
         index, columns, data = self.get_data()
         return pd.DataFrame(data=data, index=index, columns=columns)
 
-    def plot(self, ax=None, selected_col_idx=None, selected_rows=None):
+    def plot(self, ax=None, selected_col_idx=None, selected_rows=None, stacked=False):
         """
         Plot the data model
         :param ax: Matplotlib axis
         :param selected_col_idx: list of selected column indices
         :param selected_rows: list of rows to plot
+        :param stacked: Stack plot?
         """
         index, columns, data = self.get_data()
 
@@ -382,7 +383,7 @@ class ResultsTable:
         ax.set_ylabel(self.ylabel, fontsize=11)
         ax.set_xlabel(self.xlabel, fontsize=11)
         try:
-            df.plot(ax=ax, legend=plot_legend)
+            df.plot(ax=ax, legend=plot_legend, stacked=stacked)
         except TypeError:
             print('No numeric data to plot...')
 

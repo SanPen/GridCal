@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>933</width>
-    <height>528</height>
+    <width>925</width>
+    <height>561</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,10 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Assignation</string>
+       <string>Profile import</string>
+      </attribute>
+      <attribute name="toolTip">
+       <string>Import data from data files (like .csv or .xlsx)</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="leftMargin">
@@ -69,6 +72,12 @@
            </property>
            <item>
             <widget class="QFrame" name="frame">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
              </property>
@@ -79,7 +88,13 @@
               <property name="leftMargin">
                <number>0</number>
               </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
               <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -191,10 +206,16 @@
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>9</number>
            </property>
            <item>
             <widget class="QFrame" name="frame_10">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
              </property>
@@ -205,7 +226,13 @@
               <property name="leftMargin">
                <number>0</number>
               </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
               <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>

@@ -894,12 +894,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout.addWidget(self.new_profiles_structure_pushButton)
 
-        self.delete_profiles_structure_pushButton = QPushButton(self.frame)
-        self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        self.delete_profiles_structure_pushButton.setIcon(icon50)
-
-        self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
-
         self.edit_profiles_pushButton = QPushButton(self.frame)
         self.edit_profiles_pushButton.setObjectName(u"edit_profiles_pushButton")
         icon72 = QIcon()
@@ -908,6 +902,19 @@ class Ui_mainWindow(object):
         self.edit_profiles_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_pushButton)
+
+        self.edit_profiles_from_models_pushButton = QPushButton(self.frame)
+        self.edit_profiles_from_models_pushButton.setObjectName(u"edit_profiles_from_models_pushButton")
+        self.edit_profiles_from_models_pushButton.setIcon(icon44)
+        self.edit_profiles_from_models_pushButton.setFlat(False)
+
+        self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
+
+        self.delete_profiles_structure_pushButton = QPushButton(self.frame)
+        self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
+        self.delete_profiles_structure_pushButton.setIcon(icon50)
+
+        self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
         self.horizontalSpacer = QSpacerItem(183, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -1232,7 +1239,7 @@ class Ui_mainWindow(object):
         self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
         self.contingencyInjectionsPage = QWidget()
         self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
-        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 385, 460))
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
         self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
         self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
@@ -4454,13 +4461,17 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.new_profiles_structure_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.delete_profiles_structure_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete profiles", None))
-#endif // QT_CONFIG(tooltip)
-        self.delete_profiles_structure_pushButton.setText("")
-#if QT_CONFIG(tooltip)
         self.edit_profiles_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Import profiles", None))
 #endif // QT_CONFIG(tooltip)
         self.edit_profiles_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.edit_profiles_from_models_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Import profiles from models. This is, load many individual grids and take the operational data from them", None))
+#endif // QT_CONFIG(tooltip)
+        self.edit_profiles_from_models_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.delete_profiles_structure_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete profiles", None))
+#endif // QT_CONFIG(tooltip)
+        self.delete_profiles_structure_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.undo_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Un-do action (only for the current profile)", None))
 #endif // QT_CONFIG(tooltip)

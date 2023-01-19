@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'gui.ui'
+## Form generated from reading UI file 'profiles_from_data_gui.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -20,7 +20,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(933, 528)
+        Dialog.resize(925, 561)
         self.verticalLayout = QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -43,11 +43,12 @@ class Ui_Dialog(object):
         self.verticalLayout_5.setContentsMargins(-1, 0, -1, 0)
         self.frame = QFrame(self.frame_4)
         self.frame.setObjectName(u"frame")
+        self.frame.setMaximumSize(QSize(16777215, 40))
         self.frame.setFrameShape(QFrame.NoFrame)
         self.frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_5 = QHBoxLayout(self.frame)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, -1, 0, -1)
+        self.horizontalLayout_5.setContentsMargins(0, 4, 0, 0)
         self.open_button = QPushButton(self.frame)
         self.open_button.setObjectName(u"open_button")
         icon = QIcon()
@@ -112,14 +113,15 @@ class Ui_Dialog(object):
         self.frame_6.setFrameShadow(QFrame.Raised)
         self.verticalLayout_3 = QVBoxLayout(self.frame_6)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, -1)
+        self.verticalLayout_3.setContentsMargins(0, 0, 9, -1)
         self.frame_10 = QFrame(self.frame_6)
         self.frame_10.setObjectName(u"frame_10")
+        self.frame_10.setMaximumSize(QSize(16777215, 40))
         self.frame_10.setFrameShape(QFrame.NoFrame)
         self.frame_10.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_7 = QHBoxLayout(self.frame_10)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalLayout_7.setContentsMargins(0, -1, 0, -1)
+        self.horizontalLayout_7.setContentsMargins(0, 4, 0, 0)
         self.autolink_button = QPushButton(self.frame_10)
         self.autolink_button.setObjectName(u"autolink_button")
         icon2 = QIcon()
@@ -335,7 +337,10 @@ class Ui_Dialog(object):
         self.setUnassignedToZeroCheckBox.setStatusTip(QCoreApplication.translate("Dialog", u"The profiles for the unassigned objects are set to zero, otherwise they are not set and they remain the default value form the snapshot", None))
 #endif // QT_CONFIG(statustip)
         self.setUnassignedToZeroCheckBox.setText(QCoreApplication.translate("Dialog", u"Set unassigned to zero", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Dialog", u"Assignation", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Dialog", u"Profile import", None))
+#if QT_CONFIG(tooltip)
+        self.tabWidget.setTabToolTip(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Dialog", u"Import data from data files (like .csv or .xlsx)", None))
+#endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("Dialog", u"Plot", None))
     # retranslateUi
 
