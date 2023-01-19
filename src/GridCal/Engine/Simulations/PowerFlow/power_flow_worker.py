@@ -270,7 +270,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         solution.method = solver_type
 
         # record the method used, if it improved the solution
-        if solution.norm_f < final_solution.norm_f:
+        if abs(solution.norm_f) < abs(final_solution.norm_f):
             report.add(method=solver_type,
                        converged=solution.converged,
                        error=solution.norm_f,
