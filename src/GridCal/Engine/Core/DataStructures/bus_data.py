@@ -26,8 +26,8 @@ class BusData:
         """
         self.nbus = nbus
         self.ntime = ntime
-        self.bus_names = np.empty(nbus, dtype=object)
-        self.bus_active = np.ones((nbus, ntime), dtype=int)
+        self.names = np.empty(nbus, dtype=object)
+        self.active = np.ones((nbus, ntime), dtype=int)
         self.Vbus = np.ones((nbus, ntime), dtype=complex)
         self.Vmin = np.ones(nbus, dtype=float)
         self.Vmax = np.ones(nbus, dtype=float)
@@ -35,8 +35,8 @@ class BusData:
         self.angle_max = np.ones(nbus, dtype=float) * 3.14
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_types_prof = np.zeros((nbus, ntime), dtype=int)
-        self.bus_installed_power = np.zeros(nbus, dtype=float)
-        self.bus_is_dc = np.empty(nbus, dtype=bool)
+        self.installed_power = np.zeros(nbus, dtype=float)
+        self.is_dc = np.empty(nbus, dtype=bool)
         self.areas = np.empty(nbus, dtype=int)
 
     def slice(self, elm_idx, time_idx=None):
@@ -54,9 +54,9 @@ class BusData:
 
         data = BusData(nbus=len(elm_idx))
 
-        data.bus_names = self.bus_names[elm_idx]
+        data.names = self.names[elm_idx]
 
-        data.bus_active = self.bus_active[tidx]
+        data.active = self.active[tidx]
 
         data.Vbus = self.Vbus[tidx]
         data.Vmin = self.Vmin[elm_idx]
@@ -67,8 +67,8 @@ class BusData:
         data.bus_types = self.bus_types[elm_idx]
         data.bus_types_prof = self.bus_types_prof[tidx]
 
-        data.bus_installed_power = self.bus_installed_power[elm_idx]
-        data.bus_is_dc = self.bus_is_dc[elm_idx]
+        data.installed_power = self.installed_power[elm_idx]
+        data.is_dc = self.is_dc[elm_idx]
         data.areas = self.areas[elm_idx]
 
         return data

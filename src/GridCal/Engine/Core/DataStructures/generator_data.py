@@ -30,30 +30,29 @@ class GeneratorData:
         self.ngen = ngen
         self.ntime = ntime
 
-        self.generator_names = np.empty(ngen, dtype=object)
+        self.names = np.empty(ngen, dtype=object)
 
-        self.generator_controllable = np.zeros(ngen, dtype=bool)
-        self.generator_installed_p = np.zeros(ngen)
+        self.controllable = np.zeros(ngen, dtype=bool)
+        self.installed_p = np.zeros(ngen)
 
-        self.generator_active = np.zeros((ngen, ntime), dtype=bool)
-        self.generator_p = np.zeros((ngen, ntime))
-        self.generator_pf = np.zeros((ngen, ntime))
-        self.generator_v = np.zeros((ngen, ntime))
+        self.active = np.zeros((ngen, ntime), dtype=bool)
+        self.p = np.zeros((ngen, ntime))
+        self.pf = np.zeros((ngen, ntime))
+        self.v = np.zeros((ngen, ntime))
 
-        self.generator_qmin = np.zeros(ngen)
-        self.generator_qmax = np.zeros(ngen)
+        self.qmin = np.zeros(ngen)
+        self.qmax = np.zeros(ngen)
 
         self.C_bus_gen = sp.lil_matrix((nbus, ngen), dtype=int)
 
         # r0, r1, r2, x0, x1, x2
-        self.generator_r0 = np.zeros(ngen)
-        self.generator_r1 = np.zeros(ngen)
-        self.generator_r2 = np.zeros(ngen)
+        self.r0 = np.zeros(ngen)
+        self.r1 = np.zeros(ngen)
+        self.r2 = np.zeros(ngen)
 
-        self.generator_x0 = np.zeros(ngen)
-        self.generator_x1 = np.zeros(ngen)
-        self.generator_x2 = np.zeros(ngen)
-
+        self.x0 = np.zeros(ngen)
+        self.x1 = np.zeros(ngen)
+        self.x2 = np.zeros(ngen)
 
     def slice(self, elm_idx, bus_idx, time_idx=None):
         """
@@ -71,33 +70,33 @@ class GeneratorData:
 
         data = GeneratorData(ngen=len(elm_idx), nbus=len(bus_idx))
 
-        data.generator_names = self.generator_names[elm_idx]
-        data.generator_controllable = self.generator_controllable[elm_idx]
+        data.names = self.names[elm_idx]
+        data.controllable = self.controllable[elm_idx]
 
-        data.generator_active = self.generator_active[tidx]
-        data.generator_p = self.generator_p[tidx]
-        data.generator_pf = self.generator_pf[tidx]
-        data.generator_v = self.generator_v[tidx]
+        data.active = self.active[tidx]
+        data.p = self.p[tidx]
+        data.pf = self.pf[tidx]
+        data.v = self.v[tidx]
 
-        data.generator_qmin = self.generator_qmin[elm_idx]
-        data.generator_qmax = self.generator_qmax[elm_idx]
+        data.qmin = self.qmin[elm_idx]
+        data.qmax = self.qmax[elm_idx]
 
         data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, elm_idx)]
 
-        data.generator_r0 = self.generator_r0[elm_idx]
-        data.generator_r1 = self.generator_r1[elm_idx]
-        data.generator_r2 = self.generator_r2[elm_idx]
+        data.r0 = self.r0[elm_idx]
+        data.r1 = self.r1[elm_idx]
+        data.r2 = self.r2[elm_idx]
 
-        data.generator_x0 = self.generator_x0[elm_idx]
-        data.generator_x1 = self.generator_x1[elm_idx]
-        data.generator_x2 = self.generator_x2[elm_idx]
+        data.x0 = self.x0[elm_idx]
+        data.x1 = self.x1[elm_idx]
+        data.x2 = self.x2[elm_idx]
 
         return data
 
     def get_island(self, bus_idx, t_idx=0):
         if self.ngen:
             return tp.get_elements_of_the_island(self.C_bus_gen.T, bus_idx,
-                                                 active=self.generator_active[t_idx])
+                                                 active=self.active[t_idx])
         else:
             return np.zeros(0, dtype=int)
 
@@ -106,10 +105,10 @@ class GeneratorData:
         Compute the active and reactive power of non-controlled generators (assuming all)
         :return:
         """
-        pf2 = np.power(self.generator_pf, 2.0)
-        pf_sign = (self.generator_pf + 1e-20) / np.abs(self.generator_pf + 1e-20)
-        Q = pf_sign * self.generator_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
-        return self.generator_p + 1.0j * Q
+        pf2 = np.power(self.pf, 2.0)
+        pf_sign = (self.pf + 1e-20) / np.abs(self.pf + 1e-20)
+        Q = pf_sign * self.p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
+        return self.p + 1.0j * Q
 
     def get_Yshunt(self, seq=1):
         """
@@ -117,19 +116,19 @@ class GeneratorData:
         :param seq: sequence (0, 1 or 2)
         """
         if seq == 0:
-            return self.C_bus_gen @ (1.0 / (self.generator_r0 + 1j * self.generator_x0))
+            return self.C_bus_gen @ (1.0 / (self.r0 + 1j * self.x0))
         elif seq == 1:
-            return self.C_bus_gen @ (1.0 / (self.generator_r1 + 1j * self.generator_x1))
+            return self.C_bus_gen @ (1.0 / (self.r1 + 1j * self.x1))
         elif seq == 2:
-            return self.C_bus_gen @ (1.0 / (self.generator_r2 + 1j * self.generator_x2))
+            return self.C_bus_gen @ (1.0 / (self.r2 + 1j * self.x2))
         else:
             raise Exception('Sequence must be 0, 1, 2')
 
     def get_effective_generation(self):
-        return self.generator_p * self.generator_active
+        return self.p * self.active
 
     def get_injections_per_bus(self):
-        return self.C_bus_gen * (self.get_injections() * self.generator_active)
+        return self.C_bus_gen * (self.get_injections() * self.active)
 
     def get_bus_indices(self):
         return self.C_bus_gen.tocsc().indices
@@ -140,16 +139,16 @@ class GeneratorData:
         # the division by n_per_bus achieves the averaging of the voltage control
         # value if more than 1 battery is present per bus
         # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
-        return np.array((self.C_bus_gen * self.generator_v) / n_per_bus)
+        return np.array((self.C_bus_gen * self.v) / n_per_bus)
 
     def get_installed_power_per_bus(self):
-        return self.C_bus_gen * self.generator_installed_p
+        return self.C_bus_gen * self.installed_p
 
     def get_qmax_per_bus(self):
-        return self.C_bus_gen * (self.generator_qmax.reshape(-1, 1) * self.generator_active)
+        return self.C_bus_gen * (self.qmax.reshape(-1, 1) * self.active)
 
     def get_qmin_per_bus(self):
-        return self.C_bus_gen * (self.generator_qmin.reshape(-1, 1) * self.generator_active)
+        return self.C_bus_gen * (self.qmin.reshape(-1, 1) * self.active)
 
     def __len__(self):
         return self.ngen
@@ -187,21 +186,21 @@ class GeneratorOpfData(GeneratorData):
 
         data = GeneratorOpfData(ngen=len(elm_idx), nbus=len(bus_idx))
 
-        data.generator_names = self.generator_names[elm_idx]
-        data.generator_controllable = self.generator_controllable[elm_idx]
+        data.names = self.names[elm_idx]
+        data.controllable = self.controllable[elm_idx]
         data.generator_dispatchable = self.generator_dispatchable[elm_idx]
 
         data.generator_pmax = self.generator_pmax[elm_idx]
         data.generator_pmin = self.generator_pmin[elm_idx]
 
-        data.generator_active = self.generator_active[tidx]
-        data.generator_p = self.generator_p[tidx]
-        data.generator_pf = self.generator_pf[tidx]
-        data.generator_v = self.generator_v[tidx]
+        data.active = self.active[tidx]
+        data.p = self.p[tidx]
+        data.pf = self.pf[tidx]
+        data.v = self.v[tidx]
         data.generator_cost = self.generator_cost[tidx]
 
-        data.generator_qmin = self.generator_qmin[elm_idx]
-        data.generator_qmax = self.generator_qmax[elm_idx]
+        data.qmin = self.qmin[elm_idx]
+        data.qmax = self.qmax[elm_idx]
 
         data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, elm_idx)]
 

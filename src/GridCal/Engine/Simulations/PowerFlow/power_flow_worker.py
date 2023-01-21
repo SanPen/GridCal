@@ -615,9 +615,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         m=nc.nbr,
         n_tr=nc.ntr,
         n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.bus_names,
-        branch_names=nc.branch_data.branch_names,
-        transformer_names=nc.transformer_data.tr_names,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.branch_data.names,
+        transformer_names=nc.transformer_data.names,
         hvdc_names=nc.hvdc_data.names,
         bus_types=nc.bus_data.bus_types
     )
@@ -642,9 +642,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         m=nc.nbr,
         n_tr=nc.ntr,
         n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.bus_names,
-        branch_names=nc.branch_data.branch_names,
-        transformer_names=nc.transformer_data.tr_names,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.branch_data.names,
+        transformer_names=nc.transformer_data.names,
         hvdc_names=nc.hvdc_data.names,
         bus_types=nc.bus_data.bus_types
     )

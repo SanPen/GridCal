@@ -129,11 +129,11 @@ class TimeSeries(DriverTemplate):
                                         m=calculation_input.nbr,
                                         n_tr=calculation_input.ntr,
                                         n_hvdc=calculation_input.nhvdc,
-                                        bus_names=calculation_input.bus_names,
-                                        branch_names=calculation_input.branch_names,
-                                        transformer_names=calculation_input.tr_names,
-                                        hvdc_names=calculation_input.hvdc_names,
-                                        bus_types=time_circuit.bus_types,
+                                        bus_names=calculation_input.bus_data.names,
+                                        branch_names=calculation_input.branch_data.names,
+                                        transformer_names=calculation_input.transformer_data.names,
+                                        hvdc_names=calculation_input.hvdc_data.names,
+                                        bus_types=time_circuit.bus_data.bus_types,
                                         time_array=self.grid.time_profile[calculation_input.original_time_idx])
 
             self.progress_signal.emit(0.0)
@@ -244,8 +244,8 @@ class TimeSeries(DriverTemplate):
                                     m=self.grid.get_branch_number_wo_hvdc(),
                                     n_tr=self.grid.get_transformers2w_number(),
                                     n_hvdc=self.grid.get_hvdc_number(),
-                                    bus_names=res.bus_names,
-                                    branch_names=res.branch_names,
+                                    bus_names=res.names,
+                                    branch_names=res.names,
                                     transformer_names=[],
                                     hvdc_names=res.hvdc_names,
                                     bus_types=res.bus_types,

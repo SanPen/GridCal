@@ -30,14 +30,14 @@ class ShuntData:
         self.nshunt = nshunt
         self.ntime = ntime
 
-        self.shunt_names = np.empty(nshunt, dtype=object)
+        self.names = np.empty(nshunt, dtype=object)
 
-        self.shunt_active = np.zeros((nshunt, ntime), dtype=bool)
-        self.shunt_admittance = np.zeros((nshunt, ntime), dtype=complex)
+        self.active = np.zeros((nshunt, ntime), dtype=bool)
+        self.admittance = np.zeros((nshunt, ntime), dtype=complex)
 
-        self.shunt_controlled = np.zeros(nshunt, dtype=bool)
-        self.shunt_b_min = np.zeros(nshunt, dtype=float)
-        self.shunt_b_max = np.zeros(nshunt, dtype=float)
+        self.controlled = np.zeros(nshunt, dtype=bool)
+        self.b_min = np.zeros(nshunt, dtype=float)
+        self.b_max = np.zeros(nshunt, dtype=float)
 
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
@@ -57,14 +57,14 @@ class ShuntData:
 
         data = ShuntData(nshunt=len(elm_idx), nbus=len(bus_idx))
 
-        data.shunt_names = self.shunt_names[elm_idx]
+        data.names = self.names[elm_idx]
 
-        data.shunt_controlled = self.shunt_controlled[elm_idx]
-        data.shunt_b_min = self.shunt_b_min[elm_idx]
-        data.shunt_b_max = self.shunt_b_max[elm_idx]
+        data.controlled = self.controlled[elm_idx]
+        data.b_min = self.b_min[elm_idx]
+        data.b_max = self.b_max[elm_idx]
 
-        data.shunt_active = self.shunt_active[tidx]
-        data.shunt_admittance = self.shunt_admittance[tidx]
+        data.active = self.active[tidx]
+        data.admittance = self.admittance[tidx]
 
         data.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, elm_idx)]
 
@@ -72,21 +72,21 @@ class ShuntData:
 
     def get_island(self, bus_idx, t_idx=0):
         if self.nshunt:
-            return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx, active=self.shunt_active[t_idx])
+            return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx, active=self.active[t_idx])
         else:
             return np.zeros(0, dtype=int)
 
     def get_controlled_per_bus(self):
-        return self.C_bus_shunt * (self.shunt_controlled * self.shunt_active)
+        return self.C_bus_shunt * (self.controlled * self.active)
 
     def get_injections_per_bus(self):
-        return self.C_bus_shunt * (self.shunt_admittance * self.shunt_active)
+        return self.C_bus_shunt * (self.admittance * self.active)
 
     def get_b_max_per_bus(self):
-        return self.C_bus_shunt * (self.shunt_b_max.reshape(-1, 1) * self.shunt_active)
+        return self.C_bus_shunt * (self.b_max.reshape(-1, 1) * self.active)
 
     def get_b_min_per_bus(self):
-        return self.C_bus_shunt * (self.shunt_b_min.reshape(-1, 1) * self.shunt_active)
+        return self.C_bus_shunt * (self.b_min.reshape(-1, 1) * self.active)
 
     def __len__(self):
         return self.nshunt

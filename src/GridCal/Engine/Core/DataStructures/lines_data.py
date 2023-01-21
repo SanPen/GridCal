@@ -30,11 +30,11 @@ class LinesData:
         self.nline = nline
         self.ntime = ntime
 
-        self.line_names = np.zeros(nline, dtype=object)
-        self.line_active = np.zeros((nline, ntime), dtype=int)
-        self.line_R = np.zeros(nline, dtype=float)
-        self.line_X = np.zeros(nline, dtype=float)
-        self.line_B = np.zeros(nline, dtype=float)
+        self.names = np.zeros(nline, dtype=object)
+        self.active = np.zeros((nline, ntime), dtype=int)
+        self.R = np.zeros(nline, dtype=float)
+        self.X = np.zeros(nline, dtype=float)
+        self.B = np.zeros(nline, dtype=float)
 
         self.C_line_bus = sp.lil_matrix((nline, nbus), dtype=int)  # this ons is just for splitting islands
 
@@ -53,13 +53,13 @@ class LinesData:
 
         data = LinesData(nline=len(elm_idx), nbus=len(bus_idx))
 
-        data.line_active = self.line_active[idx]
+        data.active = self.active[idx]
 
-        data.line_names = self.line_names[elm_idx]
+        data.names = self.names[elm_idx]
 
-        data.line_R = self.line_R[elm_idx]
-        data.line_X = self.line_X[elm_idx]
-        data.line_B = self.line_B[elm_idx]
+        data.R = self.R[elm_idx]
+        data.X = self.X[elm_idx]
+        data.B = self.B[elm_idx]
         data.C_line_bus = self.C_line_bus[np.ix_(elm_idx, bus_idx)]
 
         return data
@@ -72,7 +72,7 @@ class LinesData:
         """
         if self.nline:
             return tp.get_elements_of_the_island(self.C_line_bus, bus_idx,
-                                                 active=self.line_active[:, t_idx])
+                                                 active=self.active[:, t_idx])
         else:
             return np.zeros(0, dtype=int)
 

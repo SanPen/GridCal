@@ -138,22 +138,22 @@ def run_events(nc: SnapshotData, events_list: list):
             pass
 
         elif tpe == DeviceType.BranchDevice:
-            nc.branch_data.branch_active[i] = state
+            nc.branch_data.active[i] = state
 
         elif tpe == DeviceType.GeneratorDevice:
-            nc.generator_data.generator_active[i] = state
+            nc.generator_data.active[i] = state
 
         elif tpe == DeviceType.StaticGeneratorDevice:
             nc.static_generator_data.static_gen_active[i] = state
 
         elif tpe == DeviceType.BatteryDevice:
-            nc.battery_data.battery_active[i] = state
+            nc.battery_data.active[i] = state
 
         elif tpe == DeviceType.ShuntDevice:
-            nc.shunt_data.shunt_active[i] = state
+            nc.shunt_data.active[i] = state
 
         elif tpe == DeviceType.LoadDevice:
-            nc.load_data.load_active[i] = state
+            nc.load_data.active[i] = state
 
         else:
             pass

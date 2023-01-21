@@ -149,7 +149,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
                 shift_idx = np.where(self.results_dict[t].phase_shift != 0)[0]
                 if len(shift_idx) > 0:
-                    names = self.results_dict[t].branch_names[shift_idx]
+                    names = self.results_dict[t].names[shift_idx]
                     all_names = all_names + [n for n in names if n not in all_names]
                     all_idx = all_idx + [ix for ix in shift_idx if ix not in all_idx]
 
@@ -164,7 +164,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
                 angle_idx = np.where(self.results_dict[t].hvdc_angle_slack != 0)[0]
                 if len(angle_idx) > 0:
-                    names = self.results_dict[t].branch_names[angle_idx]
+                    names = self.results_dict[t].names[angle_idx]
                     all_names = all_names + [n for n in names if n not in all_names]
                     all_idx = all_idx + [ix for ix in angle_idx if ix not in all_idx]
 
@@ -229,7 +229,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alpha_report(self):
         result = list(self.results_dict.values())[0]
-        columns = ['Time index', 'Time'] + list(result.branch_names)
+        columns = ['Time index', 'Time'] + list(result.names)
         data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
@@ -243,7 +243,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alpha_n1_report(self):
         result = list(self.results_dict.values())[0]
-        columns = ['Time index', 'Time'] + list(result.branch_names)
+        columns = ['Time index', 'Time'] + list(result.names)
         data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
@@ -659,11 +659,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # pack the results
             result = OptimalNetTransferCapacityResults(
-                bus_names=nc.bus_data.bus_names,
-                branch_names=nc.branch_data.branch_names,
-                load_names=nc.load_data.load_names,
-                generator_names=nc.generator_data.generator_names,
-                battery_names=nc.battery_data.battery_names,
+                bus_names=nc.bus_data.names,
+                branch_names=nc.branch_data.names,
+                load_names=nc.load_data.names,
+                generator_names=nc.generator_data.names,
+                battery_names=nc.battery_data.names,
                 hvdc_names=nc.hvdc_data.names,
                 trm=self.options.trm,
                 ntc_load_rule=self.options.ntc_load_rule,
@@ -697,8 +697,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
                 contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
                 branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
-                rates=nc.branch_data.branch_rates[:, t],
-                contingency_rates=nc.branch_data.branch_contingency_rates[:, t],
+                rates=nc.branch_data.rates[:, t],
+                contingency_rates=nc.branch_data.contingency_rates[:, t],
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
                 structural_ntc=problem.structural_ntc,

@@ -22,7 +22,7 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_g
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
-        bus_data.bus_names[i] = bus.name
+        bus_data.names[i] = bus.name
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
@@ -40,10 +40,10 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_g
         #     bus_data.areas[i] = 0
 
         if time_series:
-            bus_data.bus_active[i, :] = bus.active_prof
+            bus_data.active[i, :] = bus.active_prof
             bus_data.bus_types_prof[i, :] = bus.determine_bus_type_prof()
         else:
-            bus_data.bus_active[i] = bus.active
+            bus_data.active[i] = bus.active
 
     return bus_data
 
@@ -71,31 +71,31 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
 
         i = bus_dict[elm.bus]
 
-        data.load_names[k] = elm.name
+        data.names[k] = elm.name
 
         if time_series:
-            data.load_s[k, :] = elm.P_prof + 1j * elm.Q_prof
-            data.load_i[k, :] = elm.Ir_prof + 1j * elm.Ii_prof
-            data.load_y[k, :] = elm.G_prof + 1j * elm.B_prof
-            data.load_active[k] = elm.active_prof
+            data.S[k, :] = elm.P_prof + 1j * elm.Q_prof
+            data.I[k, :] = elm.Ir_prof + 1j * elm.Ii_prof
+            data.Y[k, :] = elm.G_prof + 1j * elm.B_prof
+            data.active[k] = elm.active_prof
 
             if opf:
                 data.load_cost[k, :] = elm.Cost_prof
 
             if opf_results is not None:
-                data.load_s[k, :] -= opf_results.load_shedding[:, k]
+                data.S[k, :] -= opf_results.load_shedding[:, k]
 
         else:
-            data.load_s[k] = complex(elm.P, elm.Q)
-            data.load_i[k] = complex(elm.Ir, elm.Ii)
-            data.load_y[k] = complex(elm.G, elm.B)
-            data.load_active[k] = elm.active
+            data.S[k] = complex(elm.P, elm.Q)
+            data.I[k] = complex(elm.Ir, elm.Ii)
+            data.Y[k] = complex(elm.G, elm.B)
+            data.active[k] = elm.active
 
             if opf:
                 data.load_cost[k] = elm.Cost
 
             if opf_results is not None:
-                data.load_s[k] -= opf_results.load_shedding[k]
+                data.S[k] -= opf_results.load_shedding[k]
 
         data.C_bus_load[i, k] = 1
 
@@ -118,14 +118,14 @@ def get_static_generator_data(circuit: MultiCircuit, bus_dict, time_series=False
 
         i = bus_dict[elm.bus]
 
-        data.static_generator_names[k] = elm.name
+        data.names[k] = elm.name
 
         if time_series:
-            data.static_generator_active[k, :] = elm.active_prof
-            data.static_generator_s[k, :] = elm.P_prof + 1j * elm.Q_prof
+            data.active[k, :] = elm.active_prof
+            data.S[k, :] = elm.P_prof + 1j * elm.Q_prof
         else:
-            data.static_generator_active[k] = elm.active
-            data.static_generator_s[k] = complex(elm.P, elm.Q)
+            data.active[k] = elm.active
+            data.S[k] = complex(elm.P, elm.Q)
 
         data.C_bus_static_generator[i, k] = 1
 
@@ -148,17 +148,17 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
 
         i = bus_dict[elm.bus]
 
-        data.shunt_names[k] = elm.name
-        data.shunt_controlled[k] = elm.is_controlled
-        data.shunt_b_min[k] = elm.Bmin
-        data.shunt_b_max[k] = elm.Bmax
+        data.names[k] = elm.name
+        data.controlled[k] = elm.is_controlled
+        data.b_min[k] = elm.Bmin
+        data.b_max[k] = elm.Bmax
 
         if time_series:
-            data.shunt_active[k, :] = elm.active_prof
-            data.shunt_admittance[k, :] = elm.G_prof + 1j * elm.B_prof
+            data.active[k, :] = elm.active_prof
+            data.admittance[k, :] = elm.G_prof + 1j * elm.B_prof
         else:
-            data.shunt_active[k] = elm.active
-            data.shunt_admittance[k] = complex(elm.G, elm.B)
+            data.active[k] = elm.active
+            data.admittance[k] = complex(elm.G, elm.B)
 
         if not use_stored_guess:
             if Vbus[i, 0].real == 1.0:
@@ -197,25 +197,25 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
         i = bus_dict[elm.bus]
 
-        data.generator_names[k] = elm.name
-        data.generator_qmin[k] = elm.Qmin
-        data.generator_qmax[k] = elm.Qmax
-        data.generator_controllable[k] = elm.is_controlled
-        data.generator_installed_p[k] = elm.Snom
+        data.names[k] = elm.name
+        data.qmin[k] = elm.Qmin
+        data.qmax[k] = elm.Qmax
+        data.controllable[k] = elm.is_controlled
+        data.installed_p[k] = elm.Snom
 
         # r0, r1, r2, x0, x1, x2
-        data.generator_r0[k] = elm.R0
-        data.generator_r1[k] = elm.R1
-        data.generator_r2[k] = elm.R2
-        data.generator_x0[k] = elm.X0
-        data.generator_x1[k] = elm.X1
-        data.generator_x2[k] = elm.X2
+        data.r0[k] = elm.R0
+        data.r1[k] = elm.R1
+        data.r2[k] = elm.R2
+        data.x0[k] = elm.X0
+        data.x1[k] = elm.X1
+        data.x2[k] = elm.X2
 
         if time_series:
-            data.generator_p[k] = elm.P_prof
-            data.generator_active[k] = elm.active_prof
-            data.generator_pf[k] = elm.Pf_prof
-            data.generator_v[k] = elm.Vset_prof
+            data.p[k] = elm.P_prof
+            data.active[k] = elm.active_prof
+            data.pf[k] = elm.Pf_prof
+            data.v[k] = elm.Vset_prof
 
             if opf:
                 data.generator_dispatchable[k] = elm.enabled_dispatch
@@ -225,13 +225,13 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_cost[k] = elm.Cost_prof
 
             if opf_results is not None:
-                data.generator_p[k, :] = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
+                data.p[k, :] = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
         else:
-            data.generator_p[k] = elm.P
-            data.generator_active[k] = elm.active
-            data.generator_pf[k] = elm.Pf
-            data.generator_v[k] = elm.Vset
+            data.p[k] = elm.P
+            data.active[k] = elm.active
+            data.pf[k] = elm.Pf
+            data.v[k] = elm.Vset
 
             if opf:
                 data.generator_dispatchable[k] = elm.enabled_dispatch
@@ -240,7 +240,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_cost[k] = elm.Cost
 
             if opf_results is not None:
-                data.generator_p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
+                data.p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
 
         data.C_bus_gen[i, k] = 1
 
@@ -279,26 +279,26 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
         i = bus_dict[elm.bus]
 
-        data.battery_names[k] = elm.name
-        data.battery_qmin[k] = elm.Qmin
-        data.battery_qmax[k] = elm.Qmax
+        data.names[k] = elm.name
+        data.qmin[k] = elm.Qmin
+        data.qmax[k] = elm.Qmax
 
-        data.battery_controllable[k] = elm.is_controlled
-        data.battery_installed_p[k] = elm.Snom
+        data.controllable[k] = elm.is_controlled
+        data.installed_p[k] = elm.Snom
 
         # r0, r1, r2, x0, x1, x2
-        data.battery_r0[k] = elm.R0
-        data.battery_r1[k] = elm.R1
-        data.battery_r2[k] = elm.R2
-        data.battery_x0[k] = elm.X0
-        data.battery_x1[k] = elm.X1
-        data.battery_x2[k] = elm.X2
+        data.r0[k] = elm.R0
+        data.r1[k] = elm.R1
+        data.r2[k] = elm.R2
+        data.x0[k] = elm.X0
+        data.x1[k] = elm.X1
+        data.x2[k] = elm.X2
 
         if time_series:
-            data.battery_p[k, :] = elm.P_prof
-            data.battery_active[k, :] = elm.active_prof
-            data.battery_pf[k, :] = elm.Pf_prof
-            data.battery_v[k, :] = elm.Vset_prof
+            data.p[k, :] = elm.P_prof
+            data.active[k, :] = elm.active_prof
+            data.pf[k, :] = elm.Pf_prof
+            data.v[k, :] = elm.Vset_prof
 
             if opf:
                 data.battery_dispatchable[k] = elm.enabled_dispatch
@@ -313,13 +313,13 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_cost[k] = elm.Cost_prof
 
             if opf_results is not None:
-                data.battery_p[k, :] = opf_results.battery_power[:, k]
+                data.p[k, :] = opf_results.battery_power[:, k]
 
         else:
-            data.battery_p[k] = elm.P
-            data.battery_active[k] = elm.active
-            data.battery_pf[k] = elm.Pf
-            data.battery_v[k] = elm.Vset
+            data.p[k] = elm.P
+            data.active[k] = elm.active
+            data.pf[k] = elm.Pf
+            data.v[k] = elm.Vset
 
             if opf:
                 data.battery_dispatchable[k] = elm.enabled_dispatch
@@ -334,7 +334,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_cost[k] = elm.Cost
 
             if opf_results is not None:
-                data.battery_p[k] = opf_results.battery_power[k]
+                data.p[k] = opf_results.battery_power[k]
 
         data.C_bus_batt[i, k] = 1
 
@@ -369,25 +369,25 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        data.line_names[i] = elm.name
+        data.names[i] = elm.name
 
         if time_series:
-            data.line_active[i, :] = elm.active_prof
+            data.active[i, :] = elm.active_prof
         else:
-            data.line_active[i] = elm.active
+            data.active[i] = elm.active
 
         if apply_temperature:
-            data.line_R[i] = elm.R_corrected
+            data.R[i] = elm.R_corrected
         else:
-            data.line_R[i] = elm.R
+            data.R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.line_R[i] *= (1 - elm.tolerance / 100.0)
+            data.R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.line_R[i] *= (1 + elm.tolerance / 100.0)
+            data.R[i] *= (1 + elm.tolerance / 100.0)
 
-        data.line_X[i] = elm.X
-        data.line_B[i] = elm.B
+        data.X[i] = elm.X
+        data.B[i] = elm.B
         data.C_line_bus[i, f] = 1
         data.C_line_bus[i, t] = 1
 
@@ -413,37 +413,37 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
         t = bus_dict[elm.bus_to]
 
         if time_series:
-            data.tr_active[i, :] = elm.active_prof
+            data.active[i, :] = elm.active_prof
         else:
-            data.tr_active[i] = elm.active
+            data.active[i] = elm.active
 
         # impedance
-        data.tr_names[i] = elm.name
+        data.names[i] = elm.name
 
-        data.tr_R[i] = elm.R
-        data.tr_X[i] = elm.X
-        data.tr_G[i] = elm.G
-        data.tr_B[i] = elm.B
+        data.R[i] = elm.R
+        data.X[i] = elm.X
+        data.G[i] = elm.G
+        data.B[i] = elm.B
 
         data.C_tr_bus[i, f] = 1
         data.C_tr_bus[i, t] = -1
 
         # tap changer
-        data.tr_tap_mod[i] = elm.tap_module
-        data.tr_tap_ang[i] = elm.angle
-        data.tr_is_bus_to_regulated[i] = elm.bus_to_regulated
-        data.tr_tap_position[i] = elm.tap_changer.tap
-        data.tr_min_tap[i] = elm.tap_changer.min_tap
-        data.tr_max_tap[i] = elm.tap_changer.max_tap
-        data.tr_tap_inc_reg_up[i] = elm.tap_changer.inc_reg_up
-        data.tr_tap_inc_reg_down[i] = elm.tap_changer.inc_reg_down
-        data.tr_vset[i] = elm.vset
-        data.tr_control_mode[i] = elm.control_mode
+        data.tap_mod[i] = elm.tap_module
+        data.tap_ang[i] = elm.angle
+        data.is_bus_to_regulated[i] = elm.bus_to_regulated
+        data.tap_position[i] = elm.tap_changer.tap
+        data.min_tap[i] = elm.tap_changer.min_tap
+        data.max_tap[i] = elm.tap_changer.max_tap
+        data.tap_inc_reg_up[i] = elm.tap_changer.inc_reg_up
+        data.tap_inc_reg_down[i] = elm.tap_changer.inc_reg_down
+        data.vset[i] = elm.vset
+        data.control_mode[i] = elm.control_mode
 
-        data.tr_bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
+        data.bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
 
         # virtual taps for transformers where the connection voltage is off
-        data.tr_tap_f[i], data.tr_tap_t[i] = elm.get_virtual_taps()
+        data.tap_f[i], data.tap_t[i] = elm.get_virtual_taps()
 
     return data
 
@@ -553,33 +553,33 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
         t = bus_dict[elm.bus_to]
 
         if time_series:
-            data.dc_line_active[i, :] = elm.active_prof
+            data.active[i, :] = elm.active_prof
         else:
-            data.dc_line_active[i] = elm.active
+            data.active[i] = elm.active
 
         # dc line values
-        data.dc_line_names[i] = elm.name
+        data.names[i] = elm.name
 
         if apply_temperature:
-            data.dc_line_R[i] = elm.R_corrected
+            data.R[i] = elm.R_corrected
         else:
-            data.dc_line_R[i] = elm.R
+            data.R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.dc_line_R[i] *= (1 - elm.tolerance / 100.0)
+            data.R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.dc_line_R[i] *= (1 + elm.tolerance / 100.0)
+            data.R[i] *= (1 + elm.tolerance / 100.0)
 
-        data.dc_line_impedance_tolerance[i] = elm.tolerance
+        data.impedance_tolerance[i] = elm.tolerance
         data.C_dc_line_bus[i, f] = 1
         data.C_dc_line_bus[i, t] = 1
-        data.dc_F[i] = f
-        data.dc_T[i] = t
+        data.F[i] = f
+        data.T[i] = t
 
         # Thermal correction
-        data.dc_line_temp_base[i] = elm.temp_base
-        data.dc_line_temp_oper[i] = elm.temp_oper
-        data.dc_line_alpha[i] = elm.alpha
+        data.temp_base[i] = elm.temp_base
+        data.temp_oper[i] = elm.temp_oper
+        data.alpha[i] = elm.alpha
 
     return data
 
@@ -616,20 +616,20 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
         # generic stuff
-        data.branch_names[i] = elm.name
+        data.names[i] = elm.name
 
         if time_series:
-            data.branch_active[i, :] = elm.active_prof
-            data.branch_rates[i, :] = elm.rate_prof
-            data.branch_contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor_prof
+            data.active[i, :] = elm.active_prof
+            data.rates[i, :] = elm.rate_prof
+            data.contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[i, :] = elm.Cost_prof
 
         else:
-            data.branch_active[i] = elm.active
-            data.branch_rates[i] = elm.rate
-            data.branch_contingency_rates[i] = elm.rate * elm.contingency_factor
+            data.active[i] = elm.active
+            data.rates[i] = elm.rate
+            data.contingency_rates[i] = elm.rate * elm.contingency_factor
 
             if opf:
                 data.branch_cost[i] = elm.Cost
@@ -676,20 +676,20 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
             f = bus_dict[elm.bus_from]
             t = bus_dict[elm.bus_to]
 
-            data.branch_names[ii] = elm.name
-            data.branch_dc[ii] = 1
+            data.names[ii] = elm.name
+            data.dc[ii] = 1
 
             if time_series:
-                data.branch_active[ii, :] = elm.active_prof
-                data.branch_rates[ii, :] = elm.rate_prof
-                data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
+                data.active[ii, :] = elm.active_prof
+                data.rates[ii, :] = elm.rate_prof
+                data.contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
                 if opf:
                     data.branch_cost[ii, :] = elm.Cost_prof
             else:
-                data.branch_active[ii] = elm.active
-                data.branch_rates[ii] = elm.rate
-                data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
+                data.active[ii] = elm.active
+                data.rates[ii] = elm.rate
+                data.contingency_rates[ii] = elm.rate * elm.contingency_factor
 
                 if opf:
                     data.branch_cost[ii] = elm.Cost
@@ -721,19 +721,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        data.branch_names[ii] = elm.name
+        data.names[ii] = elm.name
 
         if time_series:
-            data.branch_active[ii, :] = elm.active_prof
-            data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
+            data.active[ii, :] = elm.active_prof
+            data.rates[ii, :] = elm.rate_prof
+            data.contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
         else:
-            data.branch_active[ii] = elm.active
-            data.branch_rates[ii] = elm.rate
-            data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.active[ii] = elm.active
+            data.rates[ii] = elm.rate
+            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost
@@ -804,19 +804,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        data.branch_names[ii] = elm.name
+        data.names[ii] = elm.name
 
         if time_series:
-            data.branch_active[ii, :] = elm.active_prof
-            data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
+            data.active[ii, :] = elm.active_prof
+            data.rates[ii, :] = elm.rate_prof
+            data.contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
         else:
-            data.branch_active[ii] = elm.active
-            data.branch_rates[ii] = elm.rate
-            data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.active[ii] = elm.active
+            data.rates[ii] = elm.rate
+            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
 
             if opf:
                 data.branch_cost[ii] = elm.Cost
@@ -907,19 +907,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        data.branch_names[ii] = elm.name
+        data.names[ii] = elm.name
 
         if time_series:
-            data.branch_active[ii, :] = elm.active_prof
-            data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
+            data.active[ii, :] = elm.active_prof
+            data.rates[ii, :] = elm.rate_prof
+            data.contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor_prof
 
             if opf:
                 data.branch_cost[ii, :] = elm.Cost_prof
         else:
-            data.branch_active[ii] = elm.active
-            data.branch_rates[ii] = elm.rate
-            data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.active[ii] = elm.active
+            data.rates[ii] = elm.rate
+            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
 
             if opf:
                 data.branch_cost[ii] = elm.Cost

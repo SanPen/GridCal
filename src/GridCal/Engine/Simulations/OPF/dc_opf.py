@@ -196,7 +196,7 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
         if active[m]:
 
             # compute the branch susceptance
-            if nc.branch_data.branch_dc[m]:
+            if nc.branch_data.dc[m]:
                 bk = -1.0 / nc.branch_data.R[m]
             else:
                 bk = -1.0 / nc.branch_data.X[m]
@@ -467,7 +467,7 @@ class OpfDc(Opf):
         cost_l = self.numerical_circuit.load_cost
 
         # branch
-        branch_active = self.numerical_circuit.branch_data.branch_active[:, 0]
+        branch_active = self.numerical_circuit.branch_data.active[:, 0]
         branch_monitored = self.numerical_circuit.branch_data.monitor_loading
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
 

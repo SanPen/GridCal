@@ -123,11 +123,11 @@ class OptimalPowerFlow(DriverTemplate):
         hvdc_loading = hvdc_power / (numerical_circuit.hvdc_data.rate[:, 0] + 1e-20)
 
         # pack the results
-        self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.bus_names,
-                                               branch_names=numerical_circuit.branch_data.branch_names,
-                                               load_names=numerical_circuit.load_data.load_names,
-                                               generator_names=numerical_circuit.generator_data.generator_names,
-                                               battery_names=numerical_circuit.battery_data.battery_names,
+        self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.names,
+                                               branch_names=numerical_circuit.branch_data.names,
+                                               load_names=numerical_circuit.load_data.names,
+                                               generator_names=numerical_circuit.generator_data.names,
+                                               battery_names=numerical_circuit.battery_data.names,
                                                Sbus=problem.get_power_injections(),
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,
@@ -146,8 +146,8 @@ class OptimalPowerFlow(DriverTemplate):
                                                contingency_flows_list=problem.get_contingency_flows_list(),
                                                contingency_indices_list=problem.contingency_indices_list,
                                                contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
-                                               rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                                               contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
+                                               rates=numerical_circuit.branch_data.rates[:, 0],
+                                               contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
                                                converged=bool(problem.converged()),
                                                bus_types=numerical_circuit.bus_types)
 

@@ -176,7 +176,7 @@ class Cascading(DriverTemplate):
         for i, idx_val in enumerate(idx):
             if prob[i] >= min_prob:
                 any_removed = True
-                numerical_circuit.branch_data.branch_active[idx_val] = False
+                numerical_circuit.branch_data.active[idx_val] = False
                 indices.append(idx_val)
                 criteria = 'Overload probability > ' + str(min_prob)
 
@@ -193,7 +193,7 @@ class Cascading(DriverTemplate):
                     idx_val = int(np.where(loading == max(loading))[0][0])
                     criteria = 'Max loading, Overloads not seen'
 
-                numerical_circuit.branch_data.branch_active[idx_val] = False
+                numerical_circuit.branch_data.active[idx_val] = False
                 indices.append(idx_val)
             else:
                 indices = []

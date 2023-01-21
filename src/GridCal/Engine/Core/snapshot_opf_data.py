@@ -83,19 +83,19 @@ class SnapshotOpfData(SnapshotData):
 
     @property
     def generator_p(self):
-        return self.generator_data.generator_p[:, 0]
+        return self.generator_data.p[:, 0]
 
     @property
     def generator_active(self):
-        return self.generator_data.generator_active[:, 0]
+        return self.generator_data.active[:, 0]
 
     @property
     def load_active(self):
-        return self.load_data.load_active[:, 0]
+        return self.load_data.active[:, 0]
 
     @property
     def load_s(self):
-        return self.load_data.load_s[:, 0]
+        return self.load_data.S[:, 0]
 
     @property
     def load_cost(self):
@@ -111,7 +111,7 @@ class SnapshotOpfData(SnapshotData):
 
     @property
     def branch_active(self):
-        return self.branch_data.branch_active[:, 0]
+        return self.branch_data.active[:, 0]
 
     @property
     def branch_cost(self):

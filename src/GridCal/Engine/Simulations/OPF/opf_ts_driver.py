@@ -74,8 +74,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             time=self.grid.time_profile,
             bus_types=self.numerical_circuit.bus_types)
 
-        self.results.rates = self.numerical_circuit.branch_data.branch_rates
-        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
+        self.results.rates = self.numerical_circuit.branch_data.rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.contingency_rates
 
         self.all_solved = True
 
@@ -101,8 +101,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             time=self.grid.time_profile,
             bus_types=self.numerical_circuit.bus_types)
 
-        self.results.rates = self.numerical_circuit.branch_data.branch_rates
-        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
+        self.results.rates = self.numerical_circuit.branch_data.rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.contingency_rates
 
     def get_steps(self):
         """

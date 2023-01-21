@@ -108,19 +108,19 @@ class OpfTimeCircuit(TimeCircuit):
 
     @property
     def generator_p(self):
-        return self.generator_data.generator_p
+        return self.generator_data.p
 
     @property
     def generator_active(self):
-        return self.generator_data.generator_active
+        return self.generator_data.active
 
     @property
     def load_active(self):
-        return self.load_data.load_active
+        return self.load_data.active
 
     @property
     def load_s(self):
-        return self.load_data.load_s
+        return self.load_data.S
 
     @property
     def load_cost(self):
@@ -136,15 +136,15 @@ class OpfTimeCircuit(TimeCircuit):
 
     @property
     def branch_active(self):
-        return self.branch_data.branch_active
+        return self.branch_data.active
 
     @property
     def branch_rates(self):
-        return self.branch_data.branch_rates
+        return self.branch_data.rates
 
     @property
     def branch_contingency_rates(self):
-        return self.branch_data.branch_contingency_rates
+        return self.branch_data.contingency_rates
 
     @property
     def branch_cost(self):

@@ -5261,7 +5261,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               Sbus=results.S[current_step, :],
                               Sf=results.worst_flows[current_step, :],
-                              voltages=np.ones(len(results.bus_names), dtype=complex),
+                              voltages=np.ones(len(results.names), dtype=complex),
                               loadings=np.abs(results.worst_loading[current_step]),
                               types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,

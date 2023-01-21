@@ -207,7 +207,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                   apply_temperature=options.apply_temperature_correction,
                                   branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                   opf_results=None)
-    results.bus_names = nc.bus_data.bus_names
+    results.bus_names = nc.bus_data.names
 
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 

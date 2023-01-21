@@ -99,11 +99,11 @@ class TimeCircuit(SnapshotData):
 
     @property
     def Rates(self):
-        return self.branch_data.branch_rates
+        return self.branch_data.rates
 
     @property
     def ContingencyRates(self):
-        return self.branch_data.branch_contingency_rates
+        return self.branch_data.contingency_rates
 
     @property
     def vd(self):
@@ -273,19 +273,19 @@ class TimeCircuit(SnapshotData):
         all_time = np.arange(self.ntime)
 
         # find the probable time slices
-        states = find_different_states(states_array=np.c_[self.branch_data.branch_active.T,
-                                                          self.bus_data.bus_active.T],
+        states = find_different_states(states_array=np.c_[self.branch_data.active.T,
+                                                          self.bus_data.active.T],
                                        force_all=False)
 
         if len(states) == 1:
             # compute the adjacency matrix
             A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
                                         C_branch_bus_t=self.Ct,
-                                        branch_active=self.branch_data.branch_active[:, 0],
-                                        bus_active=self.bus_data.bus_active[:, 0])
+                                        branch_active=self.branch_data.active[:, 0],
+                                        bus_active=self.bus_data.active[:, 0])
 
             # find the matching islands
-            idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
+            idx_islands = tp.find_islands(A, active=self.bus_data.active[:, 0])
 
             for bus_idx in idx_islands:
 
@@ -308,11 +308,11 @@ class TimeCircuit(SnapshotData):
                 # compute the adjacency matrix
                 A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
                                             C_branch_bus_t=self.Ct,
-                                            branch_active=self.branch_data.branch_active[:, t],
-                                            bus_active=self.bus_data.bus_active[:, t])
+                                            branch_active=self.branch_data.active[:, t],
+                                            bus_active=self.bus_data.active[:, t])
 
                 # find the matching islands
-                idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t])
+                idx_islands = tp.find_islands(A, active=self.bus_data.active[:, t])
 
                 for bus_idx in idx_islands:  # for every group of bus indices of each island
 
