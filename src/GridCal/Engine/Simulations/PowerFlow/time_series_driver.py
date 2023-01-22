@@ -293,6 +293,9 @@ class TimeSeries(DriverTemplate):
             time_series_results.error_values[t] = pf_res.error
             time_series_results.converged_values[t] = pf_res.converged
 
+            if self.__cancel__:
+                return time_series_results
+
         return time_series_results
 
     def run_bentayga(self):
