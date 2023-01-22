@@ -110,6 +110,9 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
         self.addModelsButton.setText(QCoreApplication.translate("Dialog", u"Add", None))
         self.deleteModelsButton.setText(QCoreApplication.translate("Dialog", u"Delete", None))
+#if QT_CONFIG(tooltip)
+        self.matchUsingCodeCheckBox.setToolTip(QCoreApplication.translate("Dialog", u"If checked, the objects are match using the code property, otherwise the idtag property is used", None))
+#endif // QT_CONFIG(tooltip)
         self.matchUsingCodeCheckBox.setText(QCoreApplication.translate("Dialog", u"Match using code", None))
         self.acceptModelsButton.setText(QCoreApplication.translate("Dialog", u"Accept", None))
     # retranslateUi
