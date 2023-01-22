@@ -616,7 +616,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     else:
         nc = compile_snapshot_circuit_at(
             circuit=multi_circuit,
-            t=t,
+            t_idx=t,
             apply_temperature=options.apply_temperature_correction,
             branch_tolerance_mode=options.branch_impedance_tolerance_mode,
             opf_results=opf_results,

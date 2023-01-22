@@ -277,7 +277,20 @@ class TimeSeries(DriverTemplate):
                                                bus_dict=bus_dict,
                                                areas_dict=areas_dict)
 
+            # gather results
             time_series_results.voltage[t, :] = pf_res.voltage
+            time_series_results.S[t, :] = pf_res.Sbus
+            time_series_results.Sf[t, :] = pf_res.Sf
+            time_series_results.St[t, :] = pf_res.St
+            time_series_results.Vbranch[t, :] = pf_res.Vbranch
+            time_series_results.loading[t, :] = pf_res.loading
+            time_series_results.losses[t, :] = pf_res.losses
+            time_series_results.hvdc_losses[t, :] = pf_res.hvdc_losses
+            time_series_results.hvdc_Pf[t, :] = pf_res.hvdc_Pf
+            time_series_results.hvdc_Pt[t, :] = pf_res.hvdc_Pt
+            time_series_results.hvdc_loading[t, :] = pf_res.hvdc_loading
+            time_series_results.error_values[t] = pf_res.error
+            time_series_results.converged_values[t] = pf_res.converged
 
         return time_series_results
 

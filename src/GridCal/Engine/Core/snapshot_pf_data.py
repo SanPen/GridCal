@@ -1635,7 +1635,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     return nc
 
 
-def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=False,
+def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=False,
                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
                                 opf_results=None,
                                 use_stored_guess=False,
@@ -1644,7 +1644,7 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=Fals
     """
 
     :param circuit:
-    :param t: time step from the time series to gather data from
+    :param t_idx: time step from the time series to gather data from
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param opf_results:
@@ -1678,25 +1678,25 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=Fals
         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
 
     nc.bus_data = gc_compiler2.get_bus_data(circuit=circuit,
-                                            t=t,
+                                            t_idx=t_idx,
                                             time_series=True,
                                             areas_dict=areas_dict,
                                             use_stored_guess=use_stored_guess)
 
     nc.load_data = gc_compiler2.get_load_data(circuit=circuit,
                                               bus_dict=bus_dict,
-                                              t=t,
+                                              t_idx=t_idx,
                                               time_series=True,
                                               opf_results=opf_results)
 
     nc.static_generator_data = gc_compiler2.get_static_generator_data(circuit=circuit,
                                                                       bus_dict=bus_dict,
-                                                                      t=t,
+                                                                      t_idx=t_idx,
                                                                       time_series=True, )
 
     nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
                                                         bus_dict=bus_dict,
-                                                        t=t,
+                                                        t_idx=t_idx,
                                                         time_series=True,
                                                         Vbus=nc.bus_data.Vbus,
                                                         logger=logger,
@@ -1705,7 +1705,7 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=Fals
 
     nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
                                                     bus_dict=bus_dict,
-                                                    t=t,
+                                                    t_idx=t_idx,
                                                     time_series=True,
                                                     Vbus=nc.bus_data.Vbus,
                                                     logger=logger,
@@ -1714,43 +1714,43 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=Fals
 
     nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
                                                 bus_dict=bus_dict,
-                                                t=t,
+                                                t_idx=t_idx,
                                                 time_series=True,
                                                 Vbus=nc.bus_data.Vbus,
                                                 logger=logger,
                                                 use_stored_guess=use_stored_guess)
 
     nc.line_data = gc_compiler2.get_line_data(circuit=circuit,
-                                              t=t,
+                                              t_idx=t_idx,
                                               time_series=True,
                                               bus_dict=bus_dict,
                                               apply_temperature=apply_temperature,
                                               branch_tolerance_mode=branch_tolerance_mode)
 
     nc.transformer_data = gc_compiler2.get_transformer_data(circuit=circuit,
-                                                            t=t,
+                                                            t_idx=t_idx,
                                                             time_series=True,
                                                             bus_dict=bus_dict)
 
     nc.vsc_data = gc_compiler2.get_vsc_data(circuit=circuit,
-                                            t=t,
+                                            t_idx=t_idx,
                                             time_series=True,
                                             bus_dict=bus_dict)
 
     nc.upfc_data = gc_compiler2.get_upfc_data(circuit=circuit,
-                                              t=t,
+                                              t_idx=t_idx,
                                               time_series=True,
                                               bus_dict=bus_dict)
 
     nc.dc_line_data = gc_compiler2.get_dc_line_data(circuit=circuit,
-                                                    t=t,
+                                                    t_idx=t_idx,
                                                     time_series=True,
                                                     bus_dict=bus_dict,
                                                     apply_temperature=apply_temperature,
                                                     branch_tolerance_mode=branch_tolerance_mode)
 
     nc.branch_data = gc_compiler2.get_branch_data(circuit=circuit,
-                                                  t=t,
+                                                  t_idx=t_idx,
                                                   time_series=True,
                                                   bus_dict=bus_dict,
                                                   Vbus=nc.bus_data.Vbus,
@@ -1760,7 +1760,7 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t, apply_temperature=Fals
                                                   use_stored_guess=use_stored_guess)
 
     nc.hvdc_data = gc_compiler2.get_hvdc_data(circuit=circuit,
-                                              t=t,
+                                              t_idx=t_idx,
                                               time_series=True,
                                               bus_dict=bus_dict,
                                               bus_types=nc.bus_data.bus_types,
