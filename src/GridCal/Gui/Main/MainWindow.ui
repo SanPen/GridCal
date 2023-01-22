@@ -1783,8 +1783,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>192</width>
-                        <height>189</height>
+                        <width>258</width>
+                        <height>210</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>327</width>
-                        <height>491</height>
+                        <width>385</width>
+                        <height>460</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -8438,7 +8438,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
