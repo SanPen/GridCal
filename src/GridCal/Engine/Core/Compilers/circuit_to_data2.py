@@ -70,19 +70,25 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
         data.names[k] = elm.name
 
         if time_series:
-            data.S[k] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
+            if opf_results is not None:
+                data.S[k] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx] - opf_results.load_shedding[t_idx, k]
+            else:
+                data.S[k] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
+
             data.I[k] = elm.Ir_prof[t_idx] + 1j * elm.Ii_prof[t_idx]
             data.Y[k] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
+
             data.active[k] = elm.active_prof[t_idx]
 
             if opf:
                 data.load_cost[k] = elm.Cost_prof[t_idx]
 
-            if opf_results is not None:
-                data.S[k] -= opf_results.load_shedding[t_idx, k]
-
         else:
-            data.S[k] = complex(elm.P, elm.Q)
+            if opf_results is not None:
+                data.S[k] = complex(elm.P, elm.Q) - opf_results.load_shedding[k]
+            else:
+                data.S[k] = complex(elm.P, elm.Q)
+
             data.I[k] = complex(elm.Ir, elm.Ii)
             data.Y[k] = complex(elm.G, elm.B)
             data.active[k] = elm.active
@@ -90,8 +96,7 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
             if opf:
                 data.load_cost[k] = elm.Cost
 
-            if opf_results is not None:
-                data.S[k] -= opf_results.load_shedding[k]
+
 
         data.C_bus_load[i, k] = 1
 
@@ -211,7 +216,12 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.x2[k] = elm.X2
 
         if time_series:
-            data.p[k] = elm.P_prof[t_idx]
+
+            if opf_results is not None:
+                data.p[k] = opf_results.generator_power[t_idx, k] - opf_results.generator_shedding[t_idx, k]
+            else:
+                data.p[k] = elm.P_prof[t_idx]
+
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
@@ -222,11 +232,14 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_pmin[k] = elm.Pmin
                 data.generator_cost[k] = elm.Cost_prof[t_idx]
 
-            if opf_results is not None:
-                data.p[k] = opf_results.generator_power[t_idx, k] - opf_results.generator_shedding[t_idx, k]
+
 
         else:
-            data.p[k] = elm.P
+            if opf_results is not None:
+                data.p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
+            else:
+                data.p[k] = elm.P
+
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
@@ -236,9 +249,6 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_pmax[k] = elm.Pmax
                 data.generator_pmin[k] = elm.Pmin
                 data.generator_cost[k] = elm.Cost
-
-            if opf_results is not None:
-                data.p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
 
         data.C_bus_gen[i, k] = 1
 
@@ -293,10 +303,14 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.x2[k] = elm.X2
 
         if time_series:
-            data.p[k, :] = elm.P_prof[t_idx]
-            data.active[k, :] = elm.active_prof[t_idx]
-            data.pf[k, :] = elm.Pf_prof[t_idx]
-            data.v[k, :] = elm.Vset_prof[t_idx]
+            if opf_results is not None:
+                data.p[k] = opf_results.battery_power[t_idx, k]
+            else:
+                data.p[k] = elm.P_prof[t_idx]
+
+            data.active[k] = elm.active_prof[t_idx]
+            data.pf[k] = elm.Pf_prof[t_idx]
+            data.v[k] = elm.Vset_prof[t_idx]
 
             if opf:
                 data.battery_dispatchable[k] = elm.enabled_dispatch
@@ -310,11 +324,12 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost_prof[t_idx]
 
-            if opf_results is not None:
-                data.p[k] = opf_results.battery_power[t_idx, k]
-
         else:
-            data.p[k] = elm.P
+            if opf_results is not None:
+                data.p[k] = opf_results.battery_power[k]
+            else:
+                data.p[k] = elm.P
+
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
@@ -330,9 +345,6 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_discharge_efficiency[k] = elm.discharge_efficiency
                 data.battery_charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost
-
-            if opf_results is not None:
-                data.p[k] = opf_results.battery_power[k]
 
         data.C_bus_batt[i, k] = 1
 

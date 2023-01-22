@@ -274,6 +274,7 @@ class TimeSeries(DriverTemplate):
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,
+                                               opf_results=self.opf_time_series_results,
                                                bus_dict=bus_dict,
                                                areas_dict=areas_dict)
 
