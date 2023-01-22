@@ -80,6 +80,11 @@ class Ui_Dialog(object):
         self.horizontalLayout_8 = QHBoxLayout(self.frame_7)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.matchUsingCodeCheckBox = QCheckBox(self.frame_7)
+        self.matchUsingCodeCheckBox.setObjectName(u"matchUsingCodeCheckBox")
+
+        self.horizontalLayout_8.addWidget(self.matchUsingCodeCheckBox)
+
         self.horizontalSpacer_6 = QSpacerItem(814, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer_6)
@@ -105,6 +110,7 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
         self.addModelsButton.setText(QCoreApplication.translate("Dialog", u"Add", None))
         self.deleteModelsButton.setText(QCoreApplication.translate("Dialog", u"Delete", None))
+        self.matchUsingCodeCheckBox.setText(QCoreApplication.translate("Dialog", u"Match using code", None))
         self.acceptModelsButton.setText(QCoreApplication.translate("Dialog", u"Accept", None))
     # retranslateUi
 

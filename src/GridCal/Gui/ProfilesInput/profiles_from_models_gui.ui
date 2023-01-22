@@ -144,6 +144,16 @@
        <number>0</number>
       </property>
       <item>
+       <widget class="QCheckBox" name="matchUsingCodeCheckBox">
+        <property name="toolTip">
+         <string>If checked, the objects are match using the code property, otherwise the idtag property is used</string>
+        </property>
+        <property name="text">
+         <string>Match using code</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
