@@ -90,7 +90,7 @@ def short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index):
     Sfb, Stb, If, It, Vbranch, \
     loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
                                                  V=V,
-                                                 branch_rates=calculation_inputs.rates,
+                                                 branch_rates=calculation_inputs.branch_data.rates,
                                                  Yf=calculation_inputs.Yf,
                                                  Yt=calculation_inputs.Yt)
 
@@ -99,10 +99,10 @@ def short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index):
                                   m=calculation_inputs.nbr,
                                   n_tr=calculation_inputs.ntr,
                                   n_hvdc=calculation_inputs.nhvdc,
-                                  bus_names=calculation_inputs.names,
-                                  branch_names=calculation_inputs.names,
-                                  transformer_names=calculation_inputs.names,
-                                  hvdc_names=calculation_inputs.hvdc_names,
+                                  bus_names=calculation_inputs.bus_data.names,
+                                  branch_names=calculation_inputs.branch_data.names,
+                                  transformer_names=calculation_inputs.transformer_data.names,
+                                  hvdc_names=calculation_inputs.hvdc_data.names,
                                   bus_types=calculation_inputs.bus_types,
                                   area_names=None)
 
