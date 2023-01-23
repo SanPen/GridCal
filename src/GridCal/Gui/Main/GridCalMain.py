@@ -65,7 +65,7 @@ from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession, ResultsModel
+from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -794,7 +794,7 @@ class MainGUI(QMainWindow):
                        self.file_sync_thread]
         return all_threads
 
-    def get_all_threads(self):
+    def get_all_threads(self) -> List[GcThread]:
         """
         Get all threads
         :return: list of all threads

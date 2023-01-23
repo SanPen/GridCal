@@ -102,8 +102,9 @@ class GcThread(QThread):
         Cancel the simulation
         """
         self.__cancel__ = True
-        self.terminate()
-        self.quit()
+        # self.terminate()
+        # self.quit()
+        self.driver.__cancel__ = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
