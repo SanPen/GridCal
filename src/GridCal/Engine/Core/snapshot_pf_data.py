@@ -763,6 +763,10 @@ class SnapshotData:
         return self.branch_data.names
 
     @property
+    def rates(self):
+        return self.branch_data.rates[0, :]
+
+    @property
     def load_names(self):
         return self.load_data.names
 
