@@ -146,8 +146,8 @@ class OptimalPowerFlow(DriverTemplate):
                                                contingency_flows_list=problem.get_contingency_flows_list(),
                                                contingency_indices_list=problem.contingency_indices_list,
                                                contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
-                                               rates=numerical_circuit.branch_data.rates[:, 0],
-                                               contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
+                                               rates=numerical_circuit.rates,
+                                               contingency_rates=numerical_circuit.contingency_rates,
                                                converged=bool(problem.converged()),
                                                bus_types=numerical_circuit.bus_types)
 
