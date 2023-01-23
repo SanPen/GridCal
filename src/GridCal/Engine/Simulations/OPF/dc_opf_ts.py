@@ -202,7 +202,7 @@ def add_branch_loading_restriction(problem: LpProblem,
         if active[m, t]:
 
             # compute the branch susceptance
-            if nc.branch_data.branch_dc[m]:
+            if nc.branch_data.dc[m]:
                 bk = -1.0 / nc.branch_data.R[m]
             else:
                 bk = -1.0 / nc.branch_data.X[m]
@@ -555,7 +555,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
-        br_active = self.numerical_circuit.branch_data.branch_active[:, a:b]
+        br_active = self.numerical_circuit.branch_data.active[:, a:b]
         F = self.numerical_circuit.F
         T = self.numerical_circuit.T
         cost_br = self.numerical_circuit.branch_cost[:, a:b]

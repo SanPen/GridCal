@@ -492,7 +492,7 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
                                n_hvdc=nc.nhvdc,
                                bus_names=nc.bus_names,
                                branch_names=nc.branch_names,
-                               transformer_names=nc.transformer_data.tr_names,
+                               transformer_names=nc.transformer_data.names,
                                hvdc_names=nc.hvdc_names,
                                bus_types=nc.bus_types)
 

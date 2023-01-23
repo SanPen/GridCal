@@ -148,8 +148,8 @@ class PowerFlowDriver(DriverTemplate):
                                             m=self.grid.get_branch_number_wo_hvdc(),
                                             n_tr=self.grid.get_transformers2w_number(),
                                             n_hvdc=self.grid.get_hvdc_number(),
-                                            bus_names=res.bus_names,
-                                            branch_names=res.branch_names,
+                                            bus_names=res.names,
+                                            branch_names=res.names,
                                             transformer_names=[],
                                             hvdc_names=res.hvdc_names,
                                             bus_types=res.bus_types)

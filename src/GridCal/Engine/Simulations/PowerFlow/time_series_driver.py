@@ -25,8 +25,10 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
@@ -63,7 +65,7 @@ class TimeSeries(DriverTemplate):
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
 
-    def run_single_thread(self, time_indices) -> TimeSeriesResults:
+    def run_single_thread_old(self, time_indices) -> TimeSeriesResults:
         """
         Run single thread time series
         :param time_indices: array of time indices to consider
@@ -129,11 +131,11 @@ class TimeSeries(DriverTemplate):
                                         m=calculation_input.nbr,
                                         n_tr=calculation_input.ntr,
                                         n_hvdc=calculation_input.nhvdc,
-                                        bus_names=calculation_input.bus_names,
-                                        branch_names=calculation_input.branch_names,
-                                        transformer_names=calculation_input.tr_names,
-                                        hvdc_names=calculation_input.hvdc_names,
-                                        bus_types=time_circuit.bus_types,
+                                        bus_names=calculation_input.bus_data.names,
+                                        branch_names=calculation_input.branch_data.names,
+                                        transformer_names=calculation_input.transformer_data.names,
+                                        hvdc_names=calculation_input.hvdc_data.names,
+                                        bus_types=time_circuit.bus_data.bus_types,
                                         time_array=self.grid.time_profile[calculation_input.original_time_idx])
 
             self.progress_signal.emit(0.0)
@@ -236,6 +238,66 @@ class TimeSeries(DriverTemplate):
 
         return time_series_results
 
+    def run_single_thread(self, time_indices) -> TimeSeriesResults:
+        """
+        Run single thread time series
+        :param time_indices: array of time indices to consider
+        :return: TimeSeriesResults instance
+        """
+
+        n = self.grid.get_bus_number(),
+        m = self.grid.get_branch_number_wo_hvdc()
+
+        # initialize the grid time series results we will append the island results with another function
+        time_series_results = TimeSeriesResults(n=self.grid.get_bus_number(),
+                                                m=self.grid.get_branch_number_wo_hvdc(),
+                                                n_tr=self.grid.get_transformers2w_number(),
+                                                n_hvdc=self.grid.get_hvdc_number(),
+                                                bus_names=self.grid.get_bus_names(),
+                                                branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                transformer_names=self.grid.get_transformers2w_names(),
+                                                hvdc_names=self.grid.get_hvdc_names(),
+                                                bus_types=np.zeros(m),
+                                                time_array=self.grid.time_profile[time_indices])
+
+        # compile dictionaries once for speed
+        bus_dict = {bus: i for i, bus in enumerate(self.grid.buses)}
+        areas_dict = {elm: i for i, elm in enumerate(self.grid.areas)}
+        self.progress_signal.emit(0.0)
+        for it, t in enumerate(time_indices):
+
+            self.progress_text.emit('Time series at ' + str(self.grid.time_profile[t]) + '...')
+
+            progress = ((it + 1) / len(time_indices)) * 100
+            self.progress_signal.emit(progress)
+
+            pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
+                                               t=t,
+                                               options=self.options,
+                                               opf_results=self.opf_time_series_results,
+                                               bus_dict=bus_dict,
+                                               areas_dict=areas_dict)
+
+            # gather results
+            time_series_results.voltage[t, :] = pf_res.voltage
+            time_series_results.S[t, :] = pf_res.Sbus
+            time_series_results.Sf[t, :] = pf_res.Sf
+            time_series_results.St[t, :] = pf_res.St
+            time_series_results.Vbranch[t, :] = pf_res.Vbranch
+            time_series_results.loading[t, :] = pf_res.loading
+            time_series_results.losses[t, :] = pf_res.losses
+            time_series_results.hvdc_losses[t, :] = pf_res.hvdc_losses
+            time_series_results.hvdc_Pf[t, :] = pf_res.hvdc_Pf
+            time_series_results.hvdc_Pt[t, :] = pf_res.hvdc_Pt
+            time_series_results.hvdc_loading[t, :] = pf_res.hvdc_loading
+            time_series_results.error_values[t] = pf_res.error
+            time_series_results.converged_values[t] = pf_res.converged
+
+            if self.__cancel__:
+                return time_series_results
+
+        return time_series_results
+
     def run_bentayga(self):
 
         res = bentayga_pf(self.grid, self.options, time_series=True)
@@ -244,8 +306,8 @@ class TimeSeries(DriverTemplate):
                                     m=self.grid.get_branch_number_wo_hvdc(),
                                     n_tr=self.grid.get_transformers2w_number(),
                                     n_hvdc=self.grid.get_hvdc_number(),
-                                    bus_names=res.bus_names,
-                                    branch_names=res.branch_names,
+                                    bus_names=res.names,
+                                    branch_names=res.names,
                                     transformer_names=[],
                                     hvdc_names=res.hvdc_names,
                                     bus_types=res.bus_types,

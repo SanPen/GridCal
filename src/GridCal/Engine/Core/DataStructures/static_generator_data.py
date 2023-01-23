@@ -30,10 +30,10 @@ class StaticGeneratorData:
         self.nstagen = nstagen
         self.ntime = ntime
 
-        self.static_generator_names = np.empty(nstagen, dtype=object)
+        self.names = np.empty(nstagen, dtype=object)
 
-        self.static_generator_active = np.zeros((nstagen, ntime), dtype=bool)
-        self.static_generator_s = np.zeros((nstagen, ntime), dtype=complex)
+        self.active = np.zeros((nstagen, ntime), dtype=bool)
+        self.S = np.zeros((nstagen, ntime), dtype=complex)
 
         self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
 
@@ -51,10 +51,10 @@ class StaticGeneratorData:
             tidx = np.ix_(elm_idx, time_idx)
 
         data = StaticGeneratorData(nstagen=len(elm_idx), nbus=len(bus_idx))
-        data.static_generator_names = self.static_generator_names[elm_idx]
+        data.names = self.names[elm_idx]
 
-        data.static_generator_active = self.static_generator_active[tidx]
-        data.static_generator_s = self.static_generator_s[tidx]
+        data.active = self.active[tidx]
+        data.S = self.S[tidx]
 
         data.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, elm_idx)]
 
@@ -62,12 +62,12 @@ class StaticGeneratorData:
 
     def get_island(self, bus_idx, t_idx=0):
         if self.nstagen:
-            return tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx, active=self.static_generator_active[t_idx])
+            return tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx, active=self.active[t_idx])
         else:
             return np.zeros(0, dtype=int)
 
     def get_injections_per_bus(self):
-        return self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)
+        return self.C_bus_static_generator * (self.S * self.active)
 
     def __len__(self):
         return self.nstagen

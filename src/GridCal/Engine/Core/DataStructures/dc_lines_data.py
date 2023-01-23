@@ -30,17 +30,17 @@ class DcLinesData:
         self.ndcline = ndcline
         self.ntime = ntime
 
-        self.dc_line_names = np.zeros(ndcline, dtype=object)
-        self.dc_line_active = np.zeros((ndcline, ntime), dtype=int)
-        self.dc_line_R = np.zeros(ndcline, dtype=float)
-        self.dc_line_temp_base = np.zeros(ndcline, dtype=float)
-        self.dc_line_temp_oper = np.zeros(ndcline, dtype=float)
-        self.dc_line_alpha = np.zeros(ndcline, dtype=float)
-        self.dc_line_impedance_tolerance = np.zeros(ndcline, dtype=float)
+        self.names = np.zeros(ndcline, dtype=object)
+        self.active = np.zeros((ndcline, ntime), dtype=int)
+        self.R = np.zeros(ndcline, dtype=float)
+        self.temp_base = np.zeros(ndcline, dtype=float)
+        self.temp_oper = np.zeros(ndcline, dtype=float)
+        self.alpha = np.zeros(ndcline, dtype=float)
+        self.impedance_tolerance = np.zeros(ndcline, dtype=float)
 
         self.C_dc_line_bus = sp.lil_matrix((ndcline, nbus), dtype=int)  # this ons is just for splitting islands
-        self.dc_F = np.zeros(ndcline, dtype=int)
-        self.dc_T = np.zeros(ndcline, dtype=int)
+        self.F = np.zeros(ndcline, dtype=int)
+        self.T = np.zeros(ndcline, dtype=int)
 
     def slice(self, dc_line_idx, bus_idx, time_idx=None):
         """
@@ -53,16 +53,16 @@ class DcLinesData:
 
         data = DcLinesData(ndcline=len(dc_line_idx), nbus=len(bus_idx))
 
-        data.dc_line_names = self.dc_line_names[dc_line_idx]
-        data.dc_line_R = self.dc_line_R[dc_line_idx]
-        data.dc_line_temp_base = self.dc_line_temp_base[dc_line_idx]
-        data.dc_line_temp_oper = self.dc_line_temp_oper[dc_line_idx]
-        data.dc_line_alpha = self.dc_line_alpha[dc_line_idx]
-        data.dc_line_impedance_tolerance = self.dc_line_impedance_tolerance[dc_line_idx]
+        data.names = self.names[dc_line_idx]
+        data.R = self.R[dc_line_idx]
+        data.temp_base = self.temp_base[dc_line_idx]
+        data.temp_oper = self.temp_oper[dc_line_idx]
+        data.alpha = self.alpha[dc_line_idx]
+        data.impedance_tolerance = self.impedance_tolerance[dc_line_idx]
 
         data.C_dc_line_bus = self.C_dc_line_bus[np.ix_(dc_line_idx, bus_idx)]
-        data.dc_F = self.dc_F[dc_line_idx]
-        data.dc_T = self.dc_T[dc_line_idx]
+        data.F = self.F[dc_line_idx]
+        data.T = self.T[dc_line_idx]
 
         return data
 
@@ -74,7 +74,7 @@ class DcLinesData:
         """
         if self.ndcline:
             # the active status comes in branches data
-            return tp.get_elements_of_the_island(self.C_dc_line_bus, bus_idx, active=self.dc_line_active[:, t_idx])
+            return tp.get_elements_of_the_island(self.C_dc_line_bus, bus_idx, active=self.active[:, t_idx])
         else:
             return np.zeros(0, dtype=int)
 
@@ -85,7 +85,7 @@ class DcLinesData:
         https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
         (version of 2019-01-03 at 15:20 EST).
         """
-        return self.dc_line_R * (1.0 + self.dc_line_alpha * (self.dc_line_temp_oper - self.dc_line_temp_base))
+        return self.R * (1.0 + self.alpha * (self.temp_oper - self.temp_base))
 
     def __len__(self):
         return self.ndcline

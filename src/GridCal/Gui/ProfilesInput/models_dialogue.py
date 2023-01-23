@@ -132,6 +132,7 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
     :param t: time step index
     :param loaded_grid: loaded grid
     :param main_grid: main grid
+    :param use_secondary_key: Use the secondary key ("code") to match
     """
     # for each list of devices with profiles...
     for dev_template in main_grid.objects_with_profiles:
@@ -190,6 +191,8 @@ class ModelsInputGUI(QtWidgets.QDialog):
         for t in time_array:
             self.grids_model.append(GridsModelItem("", str(t)))
 
+        self.ui.matchUsingCodeCheckBox.setChecked(True)
+
         self.ui.modelsTableView.setModel(None)
         self.ui.modelsTableView.setModel(self.grids_model)
         self.ui.modelsTableView.repaint()
@@ -225,15 +228,24 @@ class ModelsInputGUI(QtWidgets.QDialog):
             self.ui.modelsTableView.setModel(self.grids_model)
             self.ui.modelsTableView.repaint()
 
-    def process(self, main_grid: MultiCircuit):
+    def process(self, main_grid: MultiCircuit, write_report=False, report_name="import_report.xlsx"):
         """
         Process the imported data
         :param main_grid: Grid to apply the values to, it has to have declared profiles already
+        :param write_report: Write the imports report
+        :param report_name: File name or complete path of the Excel report
         :return: None
         """
-        use_secondary_key = True
+        use_secondary_key = self.ui.matchUsingCodeCheckBox.isChecked()
+
+        n = len(self.grids_model.items())
+        data_m = dict()
+        data_a = dict()
+        index = [''] * n
 
         for t, entry in enumerate(self.grids_model.items()):
+
+            index[t] = entry.name
 
             if os.path.exists(entry.path):
                 print(entry.path)
@@ -242,6 +254,25 @@ class ModelsInputGUI(QtWidgets.QDialog):
                             loaded_grid=loaded_grid,
                             main_grid=main_grid,
                             use_secondary_key=use_secondary_key)
+
+                if write_report:
+                    for i, bus in enumerate(loaded_grid.buses):
+                        arr_m = data_m.get(bus.code, None)
+                        arr_a = data_a.get(bus.code, None)
+                        if arr_m is None:
+                            arr_m = np.zeros(n, dtype=float)
+                            data_m[bus.code] = arr_m
+                            arr_a = np.zeros(n, dtype=float)
+                            data_a[bus.code] = arr_a
+
+                        arr_m[t] = bus.Vm0 * float(bus.active)
+                        arr_a[t] = bus.Va0 * float(bus.active)
+
+        if write_report:
+            w = pd.ExcelWriter(report_name)
+            pd.DataFrame(data=data_m, index=index).to_excel(w, sheet_name="Vm")
+            pd.DataFrame(data=data_a, index=index).to_excel(w, sheet_name="Va")
+            w.close()
 
 
 if __name__ == "__main__":

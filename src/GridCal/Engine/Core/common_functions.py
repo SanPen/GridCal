@@ -67,38 +67,47 @@ def compile_types(Sbus, types):
     return ref, pq, pv, pqpv
 
 
-def find_different_states(branch_active_prof) -> Dict[int, List[int]]:
+def find_different_states(states_array, force_all=False) -> Dict[int, List[int]]:
     """
     Find the different branch states in time that may lead to different islands
-    :param branch_active_prof:
-    :return:
+    :param states_array: bool array indicating the different grid states (time, device)
+    :param force_all: Skip analysis and every time step is a state
+    :return: Dictionary with the time: [array of times] represented by the index, for instance
+             {0: [0, 1, 2, 3, 4], 5: [5, 6, 7, 8]}
+             This means that [0, 1, 2, 3, 4] are represented by the topology of 0
+             and that [5, 6, 7, 8] are represented by the topology of 5
     """
-    ntime = branch_active_prof.shape[0]
+    ntime = states_array.shape[0]
 
-    # initialize
-    states = dict()  # type: Dict[int, List[int]]
-    k = 1
-    for t in range(ntime):
+    if force_all:
+        return {i: [i] for i in range(ntime)}  # force all states
 
-        # search this state in the already existing states
-        keys = list(states.keys())
-        nn = len(keys)
-        found = False
-        i = 0
-        while i < nn and not found:
-            t2 = keys[i]
+    else:
 
-            # compare state at t2 with the state at t
-            if np.array_equal(branch_active_prof[t, :], branch_active_prof[t2, :]):
-                states[t2].append(t)
-                found = True
+        # initialize
+        states = dict()  # type: Dict[int, List[int]]
+        k = 1
+        for t in range(ntime):
 
-            i += 1
+            # search this state in the already existing states
+            keys = list(states.keys())
+            nn = len(keys)
+            found = False
+            i = 0
+            while i < nn and not found:
+                t2 = keys[i]
 
-        if not found:
-            # new state found (append itself)
-            states[t] = [t]
+                # compare state at t2 with the state at t
+                if np.array_equal(states_array[t, :], states_array[t2, :]):
+                    states[t2].append(t)  # add the state to the existing list of the key
+                    found = True
 
-        k += 1
+                i += 1
 
-    return states
+            if not found:
+                # new state found (append itself)
+                states[t] = [t]
+
+            k += 1
+
+        return states

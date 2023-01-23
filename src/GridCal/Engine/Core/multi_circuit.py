@@ -280,6 +280,14 @@ class MultiCircuit:
         """
         return [self.lines, self.transformers2w,  self.vsc_devices, self.dc_lines, self.upfc_devices]
 
+    def get_branch_names_wo_hvdc(self):
+
+        names = list()
+        for lst in self.get_branch_lists_wo_hvdc():
+            for elm in lst:
+                names.append(elm.name)
+        return names
+
     def get_branch_lists(self):
         """
         GEt list of the branch lists
@@ -411,6 +419,9 @@ class MultiCircuit:
     def get_transformers2w_number(self) -> int:
         return len(self.transformers2w)
 
+    def get_transformers2w_names(self) -> List[str]:
+        return [elm.name for elm in self.transformers2w]
+
     def get_vsc(self) -> List[VSC]:
         return self.vsc_devices
 
@@ -428,6 +439,9 @@ class MultiCircuit:
 
     def get_hvdc_number(self) -> int:
         return len(self.hvdc_lines)
+
+    def get_hvdc_names(self) -> List[str]:
+        return [elm.name for elm in self.hvdc_lines]
 
     def get_loads(self) -> List[Load]:
         """

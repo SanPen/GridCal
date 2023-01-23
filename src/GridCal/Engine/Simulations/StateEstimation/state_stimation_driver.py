@@ -214,7 +214,7 @@ class StateEstimation(DriverTemplate):
                                               n_tr=numerical_circuit.ntr,
                                               bus_names=numerical_circuit.bus_names,
                                               branch_names=numerical_circuit.branch_names,
-                                              transformer_names=numerical_circuit.transformer_data.tr_names,
+                                              transformer_names=numerical_circuit.transformer_data.names,
                                               bus_types=numerical_circuit.bus_types)
         # self.se_results.initialize(n, m)
 
@@ -260,7 +260,7 @@ class StateEstimation(DriverTemplate):
                                              n_tr=island.ntr,
                                              bus_names=island.bus_names,
                                              branch_names=island.branch_names,
-                                             transformer_names=island.transformer_data.tr_names,
+                                             transformer_names=island.transformer_data.names,
                                              bus_types=island.bus_types)
             results.Sbus = Sbus
             results.Sf = Sfb

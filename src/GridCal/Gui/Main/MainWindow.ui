@@ -1219,7 +1219,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
+                   <normaloff>:/Icons/icons/import_models.svg</normaloff>:/Icons/icons/import_models.svg</iconset>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>361</width>
-                        <height>242</height>
+                        <width>385</width>
+                        <height>460</height>
                        </rect>
                       </property>
                       <attribute name="label">

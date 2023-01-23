@@ -536,11 +536,11 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
         data.Ibus_ = btg_data.Ibus
-        data.branch_data.branch_names = np.array(btg_data.branch_data.names)
+        data.branch_data.names = np.array(btg_data.branch_data.names)
         data.branch_data.tap_f = btg_data.branch_data.virtual_tap_f
         data.branch_data.tap_t = btg_data.branch_data.virtual_tap_t
 
-        data.bus_data.bus_names = np.array(btg_data.bus_data.names)
+        data.bus_data.names = np.array(btg_data.bus_data.names)
 
         data.Admittances = FakeAdmittances()
         data.Admittances.Ybus = btg_data.admittances.Ybus
@@ -654,8 +654,8 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
                                m=grid.get_branch_number_wo_hvdc(),
                                n_tr=grid.get_transformers2w_number(),
                                n_hvdc=grid.get_hvdc_number(),
-                               bus_names=res.bus_names,
-                               branch_names=res.branch_names,
+                               bus_names=res.names,
+                               branch_names=res.names,
                                transformer_names=[],
                                hvdc_names=res.hvdc_names,
                                bus_types=res.bus_types)

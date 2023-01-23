@@ -65,7 +65,7 @@ from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession, ResultsModel
+from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -794,7 +794,7 @@ class MainGUI(QMainWindow):
                        self.file_sync_thread]
         return all_threads
 
-    def get_all_threads(self):
+    def get_all_threads(self) -> List[GcThread]:
         """
         Get all threads
         :return: list of all threads
@@ -5261,7 +5261,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               Sbus=results.S[current_step, :],
                               Sf=results.worst_flows[current_step, :],
-                              voltages=np.ones(len(results.bus_names), dtype=complex),
+                              voltages=np.ones(len(results.names), dtype=complex),
                               loadings=np.abs(results.worst_loading[current_step]),
                               types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,

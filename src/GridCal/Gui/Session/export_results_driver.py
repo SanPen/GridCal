@@ -63,8 +63,8 @@ class ExportAllThread(QThread):
 
         self.logger = Logger()
 
-        names_dict = {DeviceType.BusDevice: self.circuit.bus_names,
-                      DeviceType.BranchDevice: self.circuit.branch_names,
+        names_dict = {DeviceType.BusDevice: self.circuit.names,
+                      DeviceType.BranchDevice: self.circuit.names,
                       DeviceType.BusDevice.LoadDevice: self.circuit.get_load_names(),
                       DeviceType.BusDevice.GeneratorDevice: self.circuit.get_controlled_generator_names(),
                       DeviceType.BusDevice.BatteryDevice: self.circuit.get_battery_names()}

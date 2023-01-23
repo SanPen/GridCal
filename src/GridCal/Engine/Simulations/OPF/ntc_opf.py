@@ -1726,10 +1726,10 @@ class OpfNTC(Opf):
             generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
             gen_cost = formulate_optimal_generation(
                 solver=self.solver,
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
                 ngen=ng,
@@ -1747,10 +1747,10 @@ class OpfNTC(Opf):
             generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, \
             gen_cost = formulate_proportional_generation(
                 solver=self.solver,
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
@@ -1781,7 +1781,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             nbus=self.numerical_circuit.nbus,
             vd=self.numerical_circuit.vd,
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_names=self.numerical_circuit.bus_data.names,
             angle_min=self.numerical_circuit.bus_data.angle_min,
             angle_max=self.numerical_circuit.bus_data.angle_max,
             logger=self.logger)
@@ -1807,7 +1807,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active,
             branch_names=self.numerical_circuit.branch_names,
-            branch_dc=self.numerical_circuit.branch_data.branch_dc,
+            branch_dc=self.numerical_circuit.branch_data.dc,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
             F=self.numerical_circuit.F,
@@ -1852,8 +1852,8 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
             Pinj=Pinj - Pinj_tau,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_active=self.numerical_circuit.bus_data.active[:, t],
+            bus_names=self.numerical_circuit.bus_data.names,
             logger=self.logger)
 
         if self.consider_contingencies:
@@ -1886,7 +1886,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
                 branch_names=self.numerical_circuit.branch_names,
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pgen,
                 generation_contingency_threshold=self.generation_contingency_threshold,
@@ -2072,10 +2072,10 @@ class OpfNTC(Opf):
             generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
             gen_cost = formulate_optimal_generation(
                 solver=self.solver,
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
                 ngen=ng,
@@ -2093,10 +2093,10 @@ class OpfNTC(Opf):
             generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, \
             gen_cost = formulate_proportional_generation(
                 solver=self.solver,
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
@@ -2127,7 +2127,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             nbus=self.numerical_circuit.nbus,
             vd=self.numerical_circuit.vd,
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_names=self.numerical_circuit.bus_data.names,
             angle_min=self.numerical_circuit.bus_data.angle_min,
             angle_max=self.numerical_circuit.bus_data.angle_max,
             logger=self.logger)
@@ -2153,7 +2153,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active[:, t],
             branch_names=self.numerical_circuit.branch_names,
-            branch_dc=self.numerical_circuit.branch_data.branch_dc,
+            branch_dc=self.numerical_circuit.branch_data.dc,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
             F=self.numerical_circuit.F,
@@ -2200,8 +2200,8 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
             Pinj=Pinj - Pinj_tau,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_active=self.numerical_circuit.bus_data.active[:, t],
+            bus_names=self.numerical_circuit.bus_data.names,
             logger=self.logger)
 
 
@@ -2235,7 +2235,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
                 branch_names=self.numerical_circuit.branch_names,
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pgen,
                 generation_contingency_threshold=self.generation_contingency_threshold,
@@ -2388,9 +2388,9 @@ class OpfNTC(Opf):
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
             check_optimal_generation(
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
                 a1=self.area_from_bus_idx,
@@ -2402,10 +2402,10 @@ class OpfNTC(Opf):
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
             check_proportional_generation(
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
@@ -2427,7 +2427,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active,
             branch_names=self.numerical_circuit.branch_names,
-            branch_dc=self.numerical_circuit.branch_data.branch_dc,
+            branch_dc=self.numerical_circuit.branch_data.dc,
             control_mode=self.numerical_circuit.branch_data.control_mode,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
@@ -2481,8 +2481,8 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=self.extract(self.theta),
             Pinj=Pinj,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_active=self.numerical_circuit.bus_data.active[:, t],
+            bus_names=self.numerical_circuit.bus_data.names,
             logger=self.logger)
 
     def check_ts(self, t=0):
@@ -2548,9 +2548,9 @@ class OpfNTC(Opf):
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
             check_optimal_generation(
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
                 a1=self.area_from_bus_idx,
@@ -2562,10 +2562,10 @@ class OpfNTC(Opf):
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
             check_proportional_generation(
-                generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
+                generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
                 generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
-                generator_names=self.numerical_circuit.generator_data.generator_names,
+                generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
@@ -2587,7 +2587,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active[:, t],
             branch_names=self.numerical_circuit.branch_names,
-            branch_dc=self.numerical_circuit.branch_data.branch_dc,
+            branch_dc=self.numerical_circuit.branch_data.dc,
             control_mode=self.numerical_circuit.branch_data.control_mode,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
@@ -2641,8 +2641,8 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=self.extract(self.theta),
             Pinj=Pinj,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
-            bus_names=self.numerical_circuit.bus_data.bus_names,
+            bus_active=self.numerical_circuit.bus_data.active[:, t],
+            bus_names=self.numerical_circuit.bus_data.names,
             logger=self.logger)
 
     def save_lp(self, file_name="ntc_opf_problem.lp"):

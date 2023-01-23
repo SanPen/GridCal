@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, compile_snapshot_circuit_at
 from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
@@ -591,33 +591,48 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None,
-                    logger=bs.Logger()) -> "PowerFlowResults":
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None, t=None,
+                    logger=bs.Logger(), bus_dict=None, areas_dict=None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
+    :param t: time step, if None, the snapshot is compiled
     :param opf_results: OPF results, to be used if not None
     :param logger: list of events to add to
+    :param bus_dict: Dus object to index dictionary
+    :param area_dict: Area to area index dictionary
     :return: PowerFlowResults instance
     """
 
-    nc = compile_snapshot_circuit(
-        circuit=multi_circuit,
-        apply_temperature=options.apply_temperature_correction,
-        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-        opf_results=opf_results,
-        use_stored_guess=options.use_stored_guess
-    )
+    if t is None:
+        nc = compile_snapshot_circuit(
+            circuit=multi_circuit,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess
+        )
+    else:
+        nc = compile_snapshot_circuit_at(
+            circuit=multi_circuit,
+            t_idx=t,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess,
+            bus_dict=bus_dict,
+            areas_dict=areas_dict
+        )
 
     PowerFlowResults(
         n=nc.nbus,
         m=nc.nbr,
         n_tr=nc.ntr,
         n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.bus_names,
-        branch_names=nc.branch_data.branch_names,
-        transformer_names=nc.transformer_data.tr_names,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.branch_data.names,
+        transformer_names=nc.transformer_data.names,
         hvdc_names=nc.hvdc_data.names,
         bus_types=nc.bus_data.bus_types
     )
@@ -642,9 +657,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         m=nc.nbr,
         n_tr=nc.ntr,
         n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.bus_names,
-        branch_names=nc.branch_data.branch_names,
-        transformer_names=nc.transformer_data.tr_names,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.branch_data.names,
+        transformer_names=nc.transformer_data.names,
         hvdc_names=nc.hvdc_data.names,
         bus_types=nc.bus_data.bus_types
     )

@@ -611,11 +611,11 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit):
         data.Vbus_ = npa_data.Vbus.reshape(-1, 1)
         data.Sbus_ = inj.S0.reshape(-1, 1)
         data.Ibus_ = inj.I0.reshape(-1, 1)
-        data.branch_data.branch_names = np.array(npa_data.branch_data.names)
+        data.branch_data.names = np.array(npa_data.branch_data.names)
         data.branch_data.tap_f = npa_data.branch_data.vtap_f
         data.branch_data.tap_t = npa_data.branch_data.vtap_t
 
-        data.bus_data.bus_names = np.array(npa_data.bus_data.names)
+        data.bus_data.names = np.array(npa_data.bus_data.names)
 
         data.Admittances = FakeAdmittances()
         data.Admittances.Ybus = adm.Ybus
