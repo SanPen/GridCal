@@ -189,10 +189,15 @@ class ShortCircuitDriver(DriverTemplate):
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
             if fault_type == FaultType.ph3:
-                return short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index=island_bus_index)
+                return short_circuit_ph3(calculation_inputs,
+                                         Vpf[calculation_inputs.original_bus_idx],
+                                         Zf,
+                                         bus_index=island_bus_index)
 
             elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-                return short_circuit_unbalanced(calculation_inputs, Vpf, Zf,
+                return short_circuit_unbalanced(calculation_inputs,
+                                                Vpf[calculation_inputs.original_bus_idx],
+                                                Zf,
                                                 bus_index=island_bus_index,
                                                 fault_type=fault_type)
 
@@ -277,37 +282,37 @@ class ShortCircuitDriver(DriverTemplate):
 
         if len(calculation_inputs) > 1:  # multi-island
 
-            for i, calculation_input in enumerate(calculation_inputs):
-
-                bus_original_idx = calculation_input.original_bus_idx
-                branch_original_idx = calculation_input.original_branch_idx
+            for i, island in enumerate(calculation_inputs):
 
                 # the options give the bus index counting all the grid, however
                 # for the calculation we need the bus index in the island scheme.
                 # Hence, we need to convert it, and if the global bus index is not
                 # in the island, do not perform any calculation
-                reverse_bus_index = {b: i for i, b in enumerate(bus_original_idx)}
+                reverse_bus_index = {b: i for i, b in enumerate(island.original_bus_idx)}
 
                 island_bus_index = reverse_bus_index.get(self.options.bus_index, None)
 
                 if island_bus_index is not None:
 
-                    res = self.single_short_circuit(calculation_inputs=calculation_input,
-                                                    Vpf=self.pf_results.voltage[bus_original_idx],
-                                                    Zf=Zf[bus_original_idx],
+                    res = self.single_short_circuit(calculation_inputs=island,
+                                                    Vpf=self.pf_results.voltage[island.original_bus_idx],
+                                                    Zf=Zf[island.original_bus_idx],
                                                     island_bus_index=island_bus_index,
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, bus_original_idx, branch_original_idx)
+                    results.apply_from_island(res, island.original_bus_idx, island.original_branch_idx)
 
         else:  # single island
 
-            results = self.single_short_circuit(calculation_inputs=calculation_inputs[0],
-                                                Vpf=self.pf_results.voltage,
-                                                Zf=Zf,
-                                                island_bus_index=self.options.bus_index,
-                                                fault_type=self.options.fault_type)
+            res = self.single_short_circuit(calculation_inputs=calculation_inputs[0],
+                                            Vpf=self.pf_results.voltage,
+                                            Zf=Zf,
+                                            island_bus_index=self.options.bus_index,
+                                            fault_type=self.options.fault_type)
+
+            # merge results
+            results.apply_from_island(res, calculation_inputs[0].original_bus_idx, calculation_inputs[0].original_branch_idx)
 
         results.sc_type = self.options.fault_type
         results.sc_bus_index = self.options.bus_index
