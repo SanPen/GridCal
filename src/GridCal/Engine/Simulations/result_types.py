@@ -96,7 +96,8 @@ class ResultTypes(Enum):
     OpfNtcTsBaseReport = 'Base flow report', DeviceType.NoDevice
 
     # Short-circuit
-    BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
+    BusShortCircuitActivePower = 'Short circuit active power', DeviceType.BusDevice
+    BusShortCircuitReactivePower = 'Short circuit reactive power', DeviceType.BusDevice
 
     # PTDF
     PTDFBranchesSensitivity = 'Branch Flow sensitivity', DeviceType.BranchDevice

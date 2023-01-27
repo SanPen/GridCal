@@ -51,7 +51,10 @@ class ShortCircuitResults(ResultsTemplate):
 
                                                                              ResultTypes.BusVoltageAngle0,
                                                                              ResultTypes.BusVoltageAngle1,
-                                                                             ResultTypes.BusVoltageAngle2],
+                                                                             ResultTypes.BusVoltageAngle2,
+
+                                                                             ResultTypes.BusShortCircuitActivePower,
+                                                                             ResultTypes.BusShortCircuitReactivePower],
 
                                                     ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom0,
                                                                                 ResultTypes.BranchActivePowerFrom1,
@@ -185,6 +188,7 @@ class ShortCircuitResults(ResultsTemplate):
 
         self.sc_bus_index = 0
         self.sc_type = FaultType.ph3
+        self.SCpower = np.zeros(n, dtype=complex)
 
     @property
     def elapsed(self):
@@ -208,6 +212,8 @@ class ShortCircuitResults(ResultsTemplate):
 
             **elm_idx**: branch original indices
         """
+        self.SCpower[b_idx] = results.SCpower
+
         self.Sbus1[b_idx] = results.Sbus1
         self.voltage1[b_idx] = results.voltage1
         self.Sf1[br_idx] = results.Sf1
@@ -287,6 +293,16 @@ class ShortCircuitResults(ResultsTemplate):
             labels = self.bus_names
             y = np.angle(self.voltage0)
             y_label = '(p.u.)'
+
+        elif result_type == ResultTypes.BusShortCircuitActivePower:
+            labels = self.bus_names
+            y = np.real(self.SCpower)
+            y_label = '(MW)'
+
+        elif result_type == ResultTypes.BusShortCircuitReactivePower:
+            labels = self.bus_names
+            y = np.imag(self.SCpower)
+            y_label = '(MVAr)'
 
         elif result_type == ResultTypes.BranchActivePowerFrom0:
             labels = self.branch_names
