@@ -43,7 +43,7 @@ def get_bus_data(circuit: MultiCircuit, areas_dict: Dict[Area, int], t_idx=-1, t
 
 
 def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
-                  opf_results=None, time_series=False, opf=False) -> LoadOpfData | LoadData:
+                  opf_results=None, time_series=False, opf=False) -> LoadData:
     """
 
     :param circuit:
@@ -176,7 +176,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, t_idx=
 
 def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                        opf_results: "OptimalPowerFlowResults" = None, t_idx=-1, time_series=False, opf=False,
-                       use_stored_guess=False) -> GeneratorOpfData | GeneratorData:
+                       use_stored_guess=False) -> GeneratorData:
     """
 
     :param circuit:
@@ -263,7 +263,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
 def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                      opf_results=None, t_idx=-1, time_series=False, opf=False,
-                     use_stored_guess=False) -> BatteryOpfData | BatteryData:
+                     use_stored_guess=False) -> BatteryData:
     """
 
     :param circuit:
