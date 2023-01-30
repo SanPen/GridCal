@@ -4278,8 +4278,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4435,8 +4435,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()

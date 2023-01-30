@@ -22,7 +22,7 @@ import time
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC, GenerationNtcFormulation, get_inter_areas_branches
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit, SnapshotOpfData
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
@@ -189,26 +189,30 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
-                                 available_results=[ResultTypes.BusVoltageModule,
-                                                    ResultTypes.BusVoltageAngle,
-                                                    ResultTypes.BranchPower,
-                                                    ResultTypes.BranchLoading,
-                                                    ResultTypes.BranchTapAngle,
 
-                                                    ResultTypes.ContingencyFlowsReport,
-                                                    ResultTypes.ContingencyFlowsBranchReport,
-                                                    ResultTypes.ContingencyFlowsGenerationReport,
-                                                    ResultTypes.ContingencyFlowsHvdcReport,
+                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
+                                                                             ResultTypes.BusVoltageAngle],
 
-                                                    ResultTypes.HvdcPowerFrom,
-                                                    ResultTypes.BatteryPower,
-                                                    ResultTypes.GeneratorPower,
-                                                    ResultTypes.GenerationDelta,
+                                                    ResultTypes.BranchResults: [ResultTypes.BranchPower,
+                                                                                ResultTypes.BranchLoading,
+                                                                                ResultTypes.BranchTapAngle],
 
-                                                    ResultTypes.AvailableTransferCapacityAlpha,
-                                                    ResultTypes.AvailableTransferCapacityAlphaN1,
+                                                    ResultTypes.ReportsResults: [ResultTypes.ContingencyFlowsReport,
+                                                                                 ResultTypes.ContingencyFlowsBranchReport,
+                                                                                 ResultTypes.ContingencyFlowsGenerationReport,
+                                                                                 ResultTypes.ContingencyFlowsHvdcReport],
 
-                                                    ResultTypes.InterAreaExchange],
+                                                    ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom],
+
+                                                    ResultTypes.DispatchResults: [ResultTypes.BatteryPower,
+                                                                                  ResultTypes.GeneratorPower,
+                                                                                  ResultTypes.GenerationDelta],
+
+                                                    ResultTypes.AreaResults: [
+                                                        ResultTypes.AvailableTransferCapacityAlpha,
+                                                        ResultTypes.AvailableTransferCapacityAlphaN1,
+                                                        ResultTypes.InterAreaExchange]
+                                                    },
 
                                  data_variables=['bus_names',
                                                  'branch_names',
@@ -418,7 +422,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         shifter_names = self.branch_names[shifter_idx]
 
         return shifter_names, shifter_idx
-
 
     def get_contingency_branch_report(self, max_report_elements=0):
         labels = list()
@@ -818,7 +821,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
+
             labels = self.branch_names
+            columns = labels
             y = self.alpha_n1
             y_label = '(p.u.)'
             title = result_type.value[0]
@@ -882,6 +887,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                            units=y_label)
         return mdl
 
+
 class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
@@ -908,14 +914,14 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit, with_n1=True):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: SnapshotOpfData, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
         alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
             lodf=linear.LODF,
             P0=numerical_circuit.Sbus.real,
-            Pinstalled=numerical_circuit.installed_power,
+            Pinstalled=numerical_circuit.bus_installed_power,
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, 0].real,
             Pload=numerical_circuit.load_data.get_injections_per_bus()[:, 0].real,
             idx1=self.options.area_from_bus_idx,
@@ -961,7 +967,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         linear.run()
 
         # sensitivities
-        if self.options.monitor_only_sensitive_branches:
+        if self.options.monitor_only_sensitive_branches or self.options.monitor_only_ntc_load_rule_branches:
             alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=numerical_circuit,
@@ -1063,6 +1069,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 inter_area_branches=inter_area_branches,
                 inter_area_hvdc=inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
                 contingency_branch_flows_list=contingency_flows_list,
                 contingency_branch_indices_list=contingency_indices_list,
                 contingency_branch_alpha_list=contingency_branch_alpha_list,
@@ -1183,6 +1190,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
@@ -1222,7 +1230,7 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, LinearAnalysis
+    from GridCal.Engine import FileOpen, LinearAnalysis, PowerFlowOptions
 
     folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
     fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'

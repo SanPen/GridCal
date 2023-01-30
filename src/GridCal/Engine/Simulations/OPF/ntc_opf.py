@@ -197,16 +197,16 @@ def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvd
     if len(inter_area_branches):
         idx_branch, b = list(zip(*inter_area_branches))
         idx_branch = list(idx_branch)
+        sum_ratings = sum(branch_ratings[idx_branch])
     else:
-        idx_branch = list()
+        sum_ratings = 0.0
 
     if len(inter_area_hvdc):
         idx_hvdc, b = list(zip(*inter_area_hvdc))
         idx_hvdc = list(idx_hvdc)
-    else:
-        idx_hvdc = list()
+        sum_ratings += sum(hvdc_ratings[idx_hvdc])
 
-    return sum(branch_ratings[idx_branch]) + sum(hvdc_ratings[idx_hvdc])
+    return sum_ratings
 
 
 def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
@@ -925,6 +925,9 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
+            # NTC min for considering as limiting element by CEP rule
+            branch_ntc_load_rule[m] = cep_rule * rates[m] / (max_alpha + 1e-20)
+
             # determine the monitoring logic
             monitor[m] = monitor_loading[m]
 
@@ -943,9 +946,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(
                     -inf, inf, 'branch_flow_{0}:{1}'.format(branch_names[m], m))
-
-            # NTC min for considering as limiting element by CEP rule
-            branch_ntc_load_rule[m] = cep_rule * rates[m] / (max_alpha + 1e-20)
 
             # compute the flow
             _f = F[m]
@@ -1692,7 +1692,7 @@ class OpfNTC(Opf):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        hvdc_ratings = self.numerical_circuit.hvdc_data.rate / Sbase
+        hvdc_ratings = self.numerical_circuit.hvdc_data.rate[:, t] / Sbase  # TODO: Check dimensions
 
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
@@ -2226,7 +2226,7 @@ class OpfNTC(Opf):
         else:
             con_br_idx = list()
             n1flow_f = list()
-            alpha_n1_list = list()
+            con_brn_alpha = list()
 
         if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
             # formulate the generator contingencies
@@ -2249,6 +2249,7 @@ class OpfNTC(Opf):
         else:
             n1flow_gen_f = list()
             con_gen_idx = list()
+            con_gen_alpha = list()
 
         if self.consider_hvdc_contingencies:
             # formulate the hvdc contingencies
@@ -2270,6 +2271,7 @@ class OpfNTC(Opf):
         else:
             n1flow_hvdc_f = list()
             con_hvdc_idx = list()
+            con_hvdc_alpha = list()
 
         # formulate the objective
         formulate_objective(

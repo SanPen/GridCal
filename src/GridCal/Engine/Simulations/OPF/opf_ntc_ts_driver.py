@@ -42,12 +42,14 @@ except ModuleNotFoundError:
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, bus_names, br_names, rates, contingency_rates, time_array, time_indices,
+    def __init__(self, bus_names, branch_names, generator_names, load_names, rates, contingency_rates, time_array, time_indices,
                  sampled_probabilities=None, max_report_elements=5, trm=0, ntc_load_rule=100):
         """
 
-        :param br_names:
+        :param branch_names:
         :param bus_names:
+        :param gen_names:
+        :param load_names:
         :param rates:
         :param contingency_rates:
         :param time_array:
@@ -58,20 +60,28 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         ResultsTemplate.__init__(
             self,
             name='NTC Optimal time series results',
-            available_results=[
-                ResultTypes.OpfNtcTsContingencyReport,
-                ResultTypes.OpfNtcTsBaseReport,
+            available_results={
+                ResultTypes.NTCResults: [
+                    ResultTypes.OpfNtcTsContingencyReport,
+                    ResultTypes.OpfNtcTsBaseReport,
 
-                ResultTypes.AvailableTransferCapacityAlpha,
-                ResultTypes.AvailableTransferCapacityAlphaN1
-            ],
+                    ResultTypes.AvailableTransferCapacityAlpha,
+                    ResultTypes.AvailableTransferCapacityAlphaN1
+                ],
+                ResultTypes.SeriesResults: [
+                    ResultTypes.GeneratorPower,
+                ],
+        },
 
             data_variables=[])
 
         self.time_array = time_array
         self.time_indices = time_indices
-        self.branch_names = np.array(br_names, dtype=object)
+        self.branch_names = np.array(branch_names, dtype=object)
         self.bus_names = bus_names
+        self.generator_names = generator_names
+        self.load_names = load_names
+
         self.rates = rates
         self.contingency_rates = contingency_rates
         self.base_exchange = 0
@@ -125,6 +135,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             labels, columns, y = self.get_alpha_n1_report()
             y_label = ''
             title = result_type.value[0]
+        elif result_type == ResultTypes.GeneratorPower:
+            labels, columns, y = self.get_generation_report()
+            y_label = '(MW)'
+            title = 'Result generators power'
         else:
             raise Exception('No results available')
 
@@ -149,7 +163,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
                 shift_idx = np.where(self.results_dict[t].phase_shift != 0)[0]
                 if len(shift_idx) > 0:
-                    names = self.results_dict[t].names[shift_idx]
+                    names = self.results_dict[t].branch_names[shift_idx]
                     all_names = all_names + [n for n in names if n not in all_names]
                     all_idx = all_idx + [ix for ix in shift_idx if ix not in all_idx]
 
@@ -164,7 +178,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
                 angle_idx = np.where(self.results_dict[t].hvdc_angle_slack != 0)[0]
                 if len(angle_idx) > 0:
-                    names = self.results_dict[t].names[angle_idx]
+                    names = self.results_dict[t].branch_names[angle_idx]
                     all_names = all_names + [n for n in names if n not in all_names]
                     all_idx = all_idx + [ix for ix in angle_idx if ix not in all_idx]
 
@@ -229,7 +243,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alpha_report(self):
         result = list(self.results_dict.values())[0]
-        columns = ['Time index', 'Time'] + list(result.names)
+        columns = ['Time index', 'Time'] + list(result.branch_names)
         data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
@@ -243,7 +257,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alpha_n1_report(self):
         result = list(self.results_dict.values())[0]
-        columns = ['Time index', 'Time'] + list(result.names)
+        columns = ['Time index', 'Time'] + list(result.branch_names)
         data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
@@ -254,6 +268,19 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         labels = np.arange(data.shape[0])
 
         return labels, columns, data
+
+    def get_generation_report(self):
+        labels = self.time_array
+        columns = self.generator_names
+
+        data = np.empty(shape=(len(labels), len(columns)))
+
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                data[idx] = self.results_dict[t].generator_power
+
+        return labels, columns, data
+
 
     def get_base_report(self):
 
@@ -440,8 +467,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.logger = Logger()
 
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
-            br_names=[],
+            branch_names=[],
             bus_names=[],
+            generator_names=[],
+            load_names=[],
             rates=[],
             contingency_rates=[],
             time_array=[],
@@ -517,8 +546,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 X, n_points=self.cluster_number)
 
             self.results = OptimalNetTransferCapacityTimeSeriesResults(
-                br_names=linear.numerical_circuit.branch_names,
+                branch_names=linear.numerical_circuit.branch_names,
                 bus_names=linear.numerical_circuit.bus_names,
+                generator_names=linear.numerical_circuit.generator_names,
+                load_names=linear.numerical_circuit.load_names,
                 rates=nc.Rates,
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
@@ -530,8 +561,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         else:
             self.results = OptimalNetTransferCapacityTimeSeriesResults(
-                br_names=linear.numerical_circuit.branch_names,
+                branch_names=linear.numerical_circuit.branch_names,
                 bus_names=linear.numerical_circuit.bus_names,
+                generator_names=linear.numerical_circuit.generator_names,
+                load_names=linear.numerical_circuit.load_names,
                 rates=nc.Rates,
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
@@ -560,7 +593,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
 
             # sensitivities
-            if self.options.monitor_only_sensitive_branches:
+            if self.options.monitor_only_sensitive_branches or self.options.monitor_only_ntc_load_rule_branches:
 
                 if self.options.sensitivity_mode == AvailableTransferMode.InstalledPower:
                     alpha = self.installed_alpha
@@ -659,11 +692,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # pack the results
             result = OptimalNetTransferCapacityResults(
-                bus_names=nc.bus_data.names,
-                branch_names=nc.branch_data.names,
-                load_names=nc.load_data.names,
-                generator_names=nc.generator_data.names,
-                battery_names=nc.battery_data.names,
+                bus_names=nc.bus_data.bus_names,
+                branch_names=nc.branch_data.branch_names,
+                load_names=nc.load_data.load_names,
+                generator_names=nc.generator_data.generator_names,
+                battery_names=nc.battery_data.battery_names,
                 hvdc_names=nc.hvdc_data.names,
                 trm=self.options.trm,
                 ntc_load_rule=self.options.ntc_load_rule,

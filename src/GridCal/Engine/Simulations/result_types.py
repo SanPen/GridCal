@@ -196,6 +196,7 @@ class ResultTypes(Enum):
     ReportsResults = 'Reports', DeviceType.NoDevice
     SlacksResults = 'Slacks', DeviceType.NoDevice
     DispatchResults = 'Dispatch', DeviceType.NoDevice
+    NTCResults = 'NTC', DeviceType.NoDevice
     SeriesResults = 'Series', DeviceType.NoDevice
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
 

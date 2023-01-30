@@ -1241,7 +1241,7 @@ class Ui_mainWindow(object):
         self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
         self.contingencyInjectionsPage = QWidget()
         self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
-        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 385, 460))
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
         self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
         self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
@@ -2386,6 +2386,13 @@ class Ui_mainWindow(object):
         self.frame_51.setFrameShadow(QFrame.Raised)
         self.gridLayout_25 = QGridLayout(self.frame_51)
         self.gridLayout_25.setObjectName(u"gridLayout_25")
+        self.ntcLoadRuleSpinBox = QSpinBox(self.frame_51)
+        self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
+        self.ntcLoadRuleSpinBox.setMaximum(100)
+        self.ntcLoadRuleSpinBox.setValue(70)
+
+        self.gridLayout_25.addWidget(self.ntcLoadRuleSpinBox, 3, 1, 1, 1)
+
         self.label_64 = QLabel(self.frame_51)
         self.label_64.setObjectName(u"label_64")
         font3 = QFont()
@@ -2395,11 +2402,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_25.addWidget(self.label_64, 0, 0, 1, 1)
 
-        self.ntcSelectBasedOnExchangeSensitivityRadioButton = QRadioButton(self.frame_51)
-        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setObjectName(u"ntcSelectBasedOnExchangeSensitivityRadioButton")
-        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setChecked(True)
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox = QCheckBox(self.frame_51)
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setObjectName(u"ntcSelectBasedOnExchangeSensitivityCheckBox")
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setChecked(True)
 
-        self.gridLayout_25.addWidget(self.ntcSelectBasedOnExchangeSensitivityRadioButton, 1, 0, 1, 1)
+        self.gridLayout_25.addWidget(self.ntcSelectBasedOnExchangeSensitivityCheckBox, 1, 0, 1, 1)
 
         self.ntcAlphaSpinBox = QSpinBox(self.frame_51)
         self.ntcAlphaSpinBox.setObjectName(u"ntcAlphaSpinBox")
@@ -2408,17 +2415,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_25.addWidget(self.ntcAlphaSpinBox, 1, 1, 1, 1)
 
-        self.ntcSelectBasedOnAcerCriteriaRadioButton = QRadioButton(self.frame_51)
-        self.ntcSelectBasedOnAcerCriteriaRadioButton.setObjectName(u"ntcSelectBasedOnAcerCriteriaRadioButton")
+        self.ntcSelectBasedOnAcerCriteriaCheckBox = QCheckBox(self.frame_51)
+        self.ntcSelectBasedOnAcerCriteriaCheckBox.setObjectName(u"ntcSelectBasedOnAcerCriteriaCheckBox")
 
-        self.gridLayout_25.addWidget(self.ntcSelectBasedOnAcerCriteriaRadioButton, 2, 0, 1, 1)
-
-        self.ntcLoadRuleSpinBox = QSpinBox(self.frame_51)
-        self.ntcLoadRuleSpinBox.setObjectName(u"ntcLoadRuleSpinBox")
-        self.ntcLoadRuleSpinBox.setMaximum(100)
-        self.ntcLoadRuleSpinBox.setValue(70)
-
-        self.gridLayout_25.addWidget(self.ntcLoadRuleSpinBox, 2, 1, 1, 1)
+        self.gridLayout_25.addWidget(self.ntcSelectBasedOnAcerCriteriaCheckBox, 3, 0, 1, 1)
 
 
         self.gridLayout_15.addWidget(self.frame_51, 4, 0, 1, 3)
@@ -4769,23 +4769,23 @@ class Ui_mainWindow(object):
         self.optimalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified so that the transference is maximal.", None))
 #endif // QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
+        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
 #if QT_CONFIG(tooltip)
         self.label_64.setToolTip(QCoreApplication.translate("mainWindow", u"Determine the branches that enter the optimization", None))
 #endif // QT_CONFIG(tooltip)
         self.label_64.setText(QCoreApplication.translate("mainWindow", u"Branch monitoring selection criteria", None))
 #if QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>A branch is monitored solely based on its contribution to the inter-area excahge sensitivity. Therefore a branch is selected if it's alpha value is greater than the set alpha %</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnExchangeSensitivityRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch exchange sensitivity (\u03b1)", None))
+        self.ntcSelectBasedOnExchangeSensitivityCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch exchange sensitivity (\u03b1)", None))
 #if QT_CONFIG(tooltip)
         self.ntcAlphaSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Minimum exchange contribution (Alpha)", None))
 #endif // QT_CONFIG(tooltip)
         self.ntcAlphaSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
 #if QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnAcerCriteriaRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).</p><p>It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) </p><p><br/></p><p>A branch is monitored only if:</p><p>(branch_rate * 70%) / branch_alpha &lt;= total exchange rating</p></body></html>", None))
+        self.ntcSelectBasedOnAcerCriteriaCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This criteria springs from the ACER (Agency for the Cooperation for Energy Regulators).</p><p>It determines that a branch is only relevant to be considered in a NTC calculation if the flow due to the exchange is over a percentage (70%) </p><p><br/></p><p>A branch is monitored only if:</p><p>(branch_rate * 70%) / branch_alpha &lt;= total exchange rating</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.ntcSelectBasedOnAcerCriteriaRadioButton.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
-        self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+        self.ntcSelectBasedOnAcerCriteriaCheckBox.setText(QCoreApplication.translate("mainWindow", u"Branch rating contribution (ACER)", None))
         self.label_97.setText("")
 #if QT_CONFIG(tooltip)
         self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
