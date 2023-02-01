@@ -23,7 +23,6 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE, alliander_pgm_pf
@@ -75,11 +74,6 @@ class PowerFlowDriver(DriverTemplate):
         Pack run_pf for the QThread
         :return:
         """
-
-        if self.engine == bs.EngineType.Newton and not NEWTON_AVAILBALE:
-            self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
-
         if self.engine == bs.EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
@@ -98,29 +92,6 @@ class PowerFlowDriver(DriverTemplate):
                                            opf_results=self.opf_results,
                                            logger=self.logger)
             self.convergence_reports = self.results.convergence_reports
-
-        elif self.engine == bs.EngineType.Newton:
-
-            nc = to_newton_native(self.grid)
-            res = newton_power_flow(nc, self.options)
-
-            self.results = PowerFlowResults(n=nc.bus_data.active.shape[0],
-                                            m=nc.branch_data.active.shape[0],
-                                            n_tr=nc.transformer_data.active.shape[0],
-                                            n_hvdc=nc.transformer_data.active.shape[0],
-                                            bus_names=nc.bus_data.names,
-                                            branch_names=nc.branch_data.names,
-                                            transformer_names=nc.transformer_data.names,
-                                            hvdc_names=nc.hvdc_data.names,
-                                            bus_types=nc.bus_data.types)
-
-            self.results.voltage = res.voltage
-            self.results.Sbus = res.Sbus
-            self.results.Sf = res.Sf
-            self.results.St = res.St
-            self.results.loading = res.Loading
-            self.results.losses = res.Losses
-            self.results.Vbranch = res.VBranch
 
         elif self.engine == bs.EngineType.NewtonPA:
 

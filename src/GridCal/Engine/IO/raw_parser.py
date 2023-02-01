@@ -551,7 +551,7 @@ class PSSeShunt(PSSeObject):
         b = self.BL
 
         elm = Shunt(name=name,
-                    idtag=name,
+                    idtag=None,
                     G=g, B=b,
                     active=bool(self.STATUS),
                     code=name)
