@@ -20,12 +20,12 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from enum import Enum
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
-from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, \
-    GenerationNtcFormulation
+from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import Logger
 import os
 
@@ -1496,11 +1496,9 @@ def formulate_objective(solver: pywraplp.Solver,
     solver.Minimize(f)
 
 
-
-
 class OpfNTC(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotOpfData,
+    def __init__(self, numerical_circuit: Union[SnapshotOpfData, OpfTimeCircuit],
                  area_from_bus_idx,
                  area_to_bus_idx,
                  alpha,
