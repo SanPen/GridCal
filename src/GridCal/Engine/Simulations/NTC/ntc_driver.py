@@ -28,6 +28,7 @@ from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import co
 from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCal.Engine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, ContingencyAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.basic_structures import Logger
 
@@ -379,8 +380,8 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, LinearAnalysis, PowerFlowOptions
     from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
+    from GridCal.Engine import FileOpen, PowerFlowOptions
 
     folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
     fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'
