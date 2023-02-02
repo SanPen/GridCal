@@ -1240,11 +1240,15 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
 
-                hvdc_angle_slack_pos[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_pos_' + suffix)
-                hvdc_angle_slack_neg[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_neg_' + suffix)
+                # hvdc_angle_slack_pos[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_pos_' + suffix)
+                # hvdc_angle_slack_neg[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_neg_' + suffix)
+                #
+                # solver.Add(
+                #     flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t] + hvdc_angle_slack_pos[i] - hvdc_angle_slack_neg[i]),
+                #     'hvdc_flow_assignment_' + suffix)
 
                 solver.Add(
-                    flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t] + hvdc_angle_slack_pos[i] - hvdc_angle_slack_neg[i]),
+                    flow_f[i] >= P0 + angle_droop_rad * (angles[_f] - angles[_t]),
                     'hvdc_flow_assignment_' + suffix)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
