@@ -33,7 +33,7 @@ def kmeans_approximate_sampling(X, n_points=10):
     """
 
     # declare the model
-    model = KMeans(n_clusters=n_points, random_state=0, n_init='auto')
+    model = KMeans(n_clusters=n_points, random_state=0, n_init=10)
 
     # model fitting
     model.fit(X)

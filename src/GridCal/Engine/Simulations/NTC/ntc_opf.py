@@ -1236,6 +1236,47 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
 
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 # formulate the hvdc flow as an AC line equivalent
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
@@ -1248,7 +1289,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 #     'hvdc_flow_assignment_' + suffix)
 
                 solver.Add(
-                    flow_f[i] >= P0 + angle_droop_rad * (angles[_f] - angles[_t]),
+                    flow_f[i] <= P0 + angle_droop_rad * (angles[_f] - angles[_t]),
                     'hvdc_flow_assignment_' + suffix)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
@@ -1471,7 +1512,7 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
 
     return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
-def formulate_objective(solver: pywraplp.Solver,
+def formulate_objective_old (solver: pywraplp.Solver,
                         power_shift, gen_cost, generation_delta,
                         weight_power_shift, weight_generation_cost,
                         hvdc_angle_slack_pos, hvdc_angle_slack_neg,
@@ -1499,6 +1540,26 @@ def formulate_objective(solver: pywraplp.Solver,
 
     solver.Minimize(f)
 
+def formulate_objective(solver: pywraplp.Solver,
+                        inter_area_branches, inter_area_hvdcs,
+                        logger: Logger):
+    """
+
+    :param solver: Solver instance to which add the equations
+    :param power_shift: Array of branch phase shift angles (mix of values and LP variables)
+    :param gen_cost: Array of generation costs
+    :param generation_delta:  Array of generation delta LP variables
+    :param weight_power_shift: Power shift maximization weight
+    :param weight_generation_cost: Generation cost minimization weight
+    :param logger: logger instance
+    """
+
+    # include the cost of generation
+    gen_cost_f = solver.Sum(gen_cost * generation_delta)
+
+
+
+    solver.Minimize(f)
 
 class OpfNTC(Opf):
 
@@ -1713,14 +1774,14 @@ class OpfNTC(Opf):
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        inter_area_hvdc = get_inter_areas_branches(
+        inter_area_hvdcs = get_inter_areas_branches(
             nbr=self.numerical_circuit.nhvdc,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
             T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        structural_ntc = get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings)
+        structural_ntc = get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1844,7 +1905,7 @@ class OpfNTC(Opf):
             Pinj=Pinj,
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
-            inter_area_hvdc=inter_area_hvdc,
+            inter_area_hvdc=inter_area_hvdcs,
             force_exchange_sense=self.force_exchange_sense,
             logger=self.logger)
 
@@ -1927,16 +1988,24 @@ class OpfNTC(Opf):
             con_hvdc_alpha = list()
 
         # formulate the objective
+        # formulate_objective(
+        #     solver=self.solver,
+        #     power_shift=power_shift,
+        #     gen_cost=gen_cost[gen_a1_idx],
+        #     generation_delta=generation_delta[gen_a1_idx],
+        #     weight_power_shift=self.weight_power_shift,
+        #     weight_generation_cost=self.weight_generation_cost,
+        #     hvdc_angle_slack_pos=hvdc_angle_slack_pos,
+        #     hvdc_angle_slack_neg=hvdc_angle_slack_neg,
+        #     logger=self.logger)
+
+        #formulate the objective
         formulate_objective(
             solver=self.solver,
-            power_shift=power_shift,
-            gen_cost=gen_cost[gen_a1_idx],
-            generation_delta=generation_delta[gen_a1_idx],
-            weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost,
-            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
-            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
-            logger=self.logger)
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdcs,
+            logger=self.logger
+        )
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -1971,7 +2040,7 @@ class OpfNTC(Opf):
         self.nodal_restrictions = node_balance
 
         self.inter_area_branches = inter_area_branches
-        self.inter_area_hvdc = inter_area_hvdc
+        self.inter_area_hvdc = inter_area_hvdcs
 
         self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
         self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
@@ -2886,9 +2955,11 @@ if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+    from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+    from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
-    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
-    fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')
+    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_TRABAJO\Con alegac\AII\TYNDP 2022 V2\5GW 8.0\Con N-x\merged\GridCal'
+    fname = os.path.join(folder, 'MOU_2022_5GW_v6h-B_pmode1.gridcal')
 
     main_circuit = FileOpen(fname).open()
 
@@ -2907,16 +2978,37 @@ if __name__ == '__main__':
     a1 = np.where(areas == area_from_idx)[0]
     a2 = np.where(areas == area_to_idx)[0]
 
+    linear = LinearAnalysis(
+        grid=main_circuit,
+        distributed_slack=False,
+        correct_values=False)
+
+    linear.run()
+
+    alpha, alpha_n1 = compute_alpha(
+        ptdf=linear.PTDF,
+        lodf=linear.LODF,
+        P0=numerical_circuit_.Sbus.real,
+        Pinstalled=numerical_circuit_.bus_installed_power,
+        Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
+        Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
+        idx1=a1,
+        idx2=a2,
+        with_n1=True)
+
     problem = OpfNTC(
         numerical_circuit=numerical_circuit_,
         area_from_bus_idx=a1,
         area_to_bus_idx=a2,
+        alpha=alpha,
+        alpha_n1=alpha_n1,
+        LODF=linear.LODF,
+        PTDF=linear.PTDF,
         generation_formulation=GenerationNtcFormulation.Proportional)
 
     print('Solving...')
-    status = problem.solve()
-
-    print("Status:", status)
+    problem.formulate()
+    solved = problem.solve()
 
     print('Angles\n', np.angle(problem.get_voltage()))
     print('Branch loading\n', problem.get_loading())
