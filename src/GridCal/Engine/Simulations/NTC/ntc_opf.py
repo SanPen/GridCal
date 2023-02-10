@@ -1541,6 +1541,7 @@ def formulate_objective_old (solver: pywraplp.Solver,
     solver.Minimize(f)
 
 def formulate_objective(solver: pywraplp.Solver,
+                        flow_f,hvdc_flow_f,
                         inter_area_branches, inter_area_hvdcs,
                         logger: Logger):
     """
@@ -1555,10 +1556,13 @@ def formulate_objective(solver: pywraplp.Solver,
     """
 
     # include the cost of generation
-    gen_cost_f = solver.Sum(gen_cost * generation_delta)
+    k=1
+    branch_idx, branch_sign = zip(*inter_area_branches)
+    hvdc_idx, hvdc_sign = zip(*inter_area_hvdcs)
 
-
-
+    interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign )
+    interarea_hvdc_flow_f = solver.Sum( hvdc_flow_f[hvdc_idx] * hvdc_sign)
+    f=interarea_branch_flow_f+interarea_hvdc_flow_f
     solver.Minimize(f)
 
 class OpfNTC(Opf):
@@ -2002,6 +2006,8 @@ class OpfNTC(Opf):
         #formulate the objective
         formulate_objective(
             solver=self.solver,
+            flow_f=flow_f,
+            hvdc_flow_f=hvdc_flow_f,
             inter_area_branches=inter_area_branches,
             inter_area_hvdcs=inter_area_hvdcs,
             logger=self.logger
