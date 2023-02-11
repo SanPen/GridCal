@@ -26,6 +26,7 @@ from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerCon
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowOptions
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -707,7 +708,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
                                 control_q_mode=q_control_dict[opt.control_Q])
 
 
-def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
+def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions):
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
@@ -725,12 +726,43 @@ def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
     verbose: bool = False
     """
     #
-    return npa.OptimalPowerFlowOptions(tolerance=pfopt.tolerance,
-                                       max_iter=pfopt.max_iter,
-                                       mu0=pfopt.mu,
-                                       control_q_mode=q_control_dict[pfopt.control_Q],
-                                       flow_control=True,
-                                       voltage_control=True)
+    return npa.NonlinearOpfOptions(tolerance=pfopt.tolerance,
+                                   max_iter=pfopt.max_iter,
+                                   mu0=pfopt.mu,
+                                   control_q_mode=q_control_dict[pfopt.control_Q],
+                                   flow_control=True,
+                                   voltage_control=True)
+
+
+def get_newton_pa_linear_opf_options(opfopt: OptimalPowerFlowOptions, pfopt: PowerFlowOptions):
+    """
+    Translate GridCal power flow options to Newton power flow options
+    :param opt:
+    :return:
+    """
+
+    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+
+    grouping_dict = {TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
+                     TimeGrouping.Daily: npa.TimeGrouping.Daily,
+                     TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
+                     TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
+                     TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
+
+    pf_options = get_newton_pa_pf_options(pfopt)
+
+    return npa.LinearOpfOptions(solver=solver_dict[opfopt.mip_solver],
+                                grouping_dict=grouping_dict[opfopt.grouping],
+                                unit_commitment=True,
+                                run_groups_in_parallel=False,
+                                check_with_power_flow=False,
+                                pf_options=pf_options)
 
 
 def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.PowerFlowResults":
@@ -761,8 +793,8 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
 
     return pf_res
 
-
-def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.OptimalPowerFlowResults":
+def newton_pa_linear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
+                         time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -771,9 +803,11 @@ def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=Fa
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+    npaCircuit = to_newton_pa(circuit=circuit,
+                              time_series=time_series,
+                              tidx=tidx)
 
-    pf_options = get_newton_pa_opf_options(pfopt)
+    pf_options = get_newton_pa_nonlinear_opf_options(pfopt)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -783,10 +817,41 @@ def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=Fa
         time_indices = [0]
         n_threads = 1
 
-    pf_res = npa.runOptimalPowerFlow(circuit=npaCircuit,
-                                     pf_options=pf_options,
-                                     time_indices=time_indices,
-                                     n_threads=n_threads)
+    pf_res = npa.runLinearOpf(circuit=npaCircuit,
+                              pf_options=pf_options,
+                              time_indices=time_indices,
+                              n_threads=n_threads)
+
+    return pf_res
+
+def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
+                            time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
+    """
+    Newton power flow
+    :param circuit: MultiCircuit instance
+    :param pfopt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :param tidx: Array of time indices
+    :return: Newton Power flow results object
+    """
+    npaCircuit = to_newton_pa(circuit=circuit,
+                              time_series=time_series,
+                              tidx=tidx)
+
+    pf_options = get_newton_pa_nonlinear_opf_options(pfopt)
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        time_indices = [i for i in range(circuit.get_time_number())]
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    pf_res = npa.runNonlinearOpf(circuit=npaCircuit,
+                                 pf_options=pf_options,
+                                 time_indices=time_indices,
+                                 n_threads=n_threads)
 
     return pf_res
 
@@ -798,7 +863,7 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
     :param distributed_slack: distribute the PTDF slack
     :return: Newton LinearAnalysisMatrices object
     """
-    npa_circuit = to_newton_pa(circuit, time_series=False)
+    npa_circuit = to_newton_pa(circuit=circuit, time_series=False)
 
     options = npa.LinearAnalysisOptions(distribute_slack=distributed_slack)
     results = npa.runLinearAnalysisAt(t=0, circuit=npa_circuit, options=options)
@@ -867,7 +932,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     return results
 
 
-def translate_newton_pa_opf_results(res: "npa.OptimalPowerFlowResults") -> OptimalPowerFlowResults:
+def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> OptimalPowerFlowResults:
 
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
@@ -883,11 +948,11 @@ def translate_newton_pa_opf_results(res: "npa.OptimalPowerFlowResults") -> Optim
                                       phase_shift=res.tap_angle[0, :],
                                       bus_shadow_prices=res.bus_shadow_prices[0, :],
                                       generator_shedding=res.generator_shedding[0, :],
-                                      battery_power=res.PB[0, :],
-                                      controlled_generation_power=res.PG[0, :],
+                                      battery_power=res.battery_p[0, :],
+                                      controlled_generation_power=res.generator_p[0, :],
                                       Sf=res.Sf[0, :],
                                       St=res.St[0, :],
-                                      overloads=res.overload[0, :],
+                                      overloads=res.branch_overload[0, :],
                                       loading=res.Loading[0, :],
                                       rates=res.rates[0, :],
                                       contingency_rates=res.contingency_rates[0, :],
