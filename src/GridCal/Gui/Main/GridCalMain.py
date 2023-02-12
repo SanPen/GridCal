@@ -4105,6 +4105,7 @@ class MainGUI(QMainWindow):
                                                          options=options,
                                                          start_=start,
                                                          end_=end)
+                    drv.engine = self.get_preferred_engine()
 
                     self.session.run(drv,
                                      post_func=self.post_opf_time_series,

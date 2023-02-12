@@ -25,8 +25,8 @@ from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowOptions
+# from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -734,35 +734,50 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions):
                                    voltage_control=True)
 
 
-def get_newton_pa_linear_opf_options(opfopt: OptimalPowerFlowOptions, pfopt: PowerFlowOptions):
+def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions):
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
     :return:
     """
 
-    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   MIPSolvers.HiGS: npa.LpSolvers.Highs,
-                   MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
-                   MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
-                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
-                   MIPSolvers.SCIP: npa.LpSolvers.Highs,
-                   MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 
-    grouping_dict = {TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
-                     TimeGrouping.Daily: npa.TimeGrouping.Daily,
-                     TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
-                     TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
-                     TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
+    grouping_dict = {bs.TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
+                     bs.TimeGrouping.Daily: npa.TimeGrouping.Daily,
+                     bs.TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
+                     bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
+                     bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
     pf_options = get_newton_pa_pf_options(pfopt)
 
-    return npa.LinearOpfOptions(solver=solver_dict[opfopt.mip_solver],
-                                grouping_dict=grouping_dict[opfopt.grouping],
-                                unit_commitment=True,
-                                run_groups_in_parallel=False,
-                                check_with_power_flow=False,
-                                pf_options=pf_options)
+    # solver: newtonpa.LpSolvers = <LpSolvers.Highs: 1>,
+    # grouping: newtonpa.TimeGrouping = <TimeGrouping.NoGrouping: 0>,
+    # unit_commitment: bool = True,
+    # compute_flows: bool = True,
+    # run_groups_in_parallel: bool = True,
+    # check_with_power_flow: bool = True,
+    # pf_options: newtonpa.PowerFlowOptions = <newtonpa.PowerFlowOptions object at 0x7fd321d53ab0>
+
+    # solver=<LpSolvers.Highs: 1>,
+    # grouping_dict=<TimeGrouping.NoGrouping: 0>,
+    # unit_commitment=True,
+    # compute_flows=True,
+    # run_groups_in_parallel=False,
+    # check_with_power_flow=False,
+    # pf_options=<newtonpa.PowerFlowOptions object at 0x7fd1dc962370>
+
+    opt = npa.LinearOpfOptions()
+    opt.solver = solver_dict[opfopt.mip_solver]
+    opt.grouping = grouping_dict[opfopt.grouping]
+
+    return opt
 
 
 def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.PowerFlowResults":
@@ -793,8 +808,8 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
 
     return pf_res
 
-def newton_pa_linear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
-                         time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
+def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOptions,
+                         time_series=False, tidx=None) -> "npa.LinearOpfResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -807,8 +822,6 @@ def newton_pa_linear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
                               time_series=time_series,
                               tidx=tidx)
 
-    pf_options = get_newton_pa_nonlinear_opf_options(pfopt)
-
     if time_series:
         # it is already sliced to the relevant time indices
         time_indices = [i for i in range(circuit.get_time_number())]
@@ -817,12 +830,16 @@ def newton_pa_linear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
         time_indices = [0]
         n_threads = 1
 
+    options = get_newton_pa_linear_opf_options(opf_options, pfopt)
+
     pf_res = npa.runLinearOpf(circuit=npaCircuit,
-                              pf_options=pf_options,
+                              options=options,
                               time_indices=time_indices,
-                              n_threads=n_threads)
+                              n_threads=n_threads,
+                              mute_pg_bar=False)
 
     return pf_res
+
 
 def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
                             time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
@@ -932,7 +949,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     return results
 
 
-def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> OptimalPowerFlowResults:
+def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
 
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
@@ -963,6 +980,8 @@ def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> OptimalPo
     results.losses = res.Losses[0, :]
 
     return results
+
+
 
 
 def debug_newton_pa_circuit_at(npa_circuit: "npa.HybridCircuit", t: int = None):
