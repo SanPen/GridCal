@@ -185,16 +185,19 @@ class Generator(EditableDevice):
 
                                                   'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-
-                                                  'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  'enabled_dispatch': GCProp('', bool,
-                                                                             'Enabled for dispatch? Used in OPF.'),
+                                                  'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
+                                                  'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
+                                                  'Cost0': GCProp('e/MWh', float, 'Generation constant cost. Used in OPF.'),
+                                                  'StartupCost': GCProp('e/h', float, 'Generation start-up cost. Used in OPF.'),
+                                                  'ShutdownCost': GCProp('e/h', float, 'Generation shut-down cost. Used in OPF.'),
+                                                  'MinTimeUp': GCProp('h', float, 'Minimum time that the generator has to be on when started. Used in OPF.'),
+                                                  'MinTimeDown': GCProp('h', float, 'Minimum time that the generator has to be off when shut down. Used in OPF.'),
+                                                  'RampUp': GCProp('MW/h', float, 'Maximum amount of generation increase per hour.'),
+                                                  'RampDown': GCProp('MW/h', float, 'Maximum amount of generation decrease per hour.'),
+                                                  'capex': GCProp('e/MW', float, 'Cost of investment. Used in expansion planning.'),
+                                                  'opex': GCProp('e/MWh', float, 'Cost of maintenance. Used in expansion planning.'),
+                                                  'build_status': GCProp('', BuildStatus, 'Branch build status. Used in expansion planning.'),
+                                                  'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
                                                   'technology': GCProp('', GeneratorTechnologyType, 'Generator technology')},
@@ -281,8 +284,16 @@ class Generator(EditableDevice):
             self.q_points = make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set)
             self.custom_q_points = False
 
-        # Cost of operation €/MW
-        self.Cost = op_cost
+        self.Cost = 0.0  # Cost of operation €/MW
+        self.Cost2 = op_cost  # Cost of operation €/MW²
+        self.Cost0 = 0.0  # Cost of operation €/MW
+
+        self.StartupCost = 0.0
+        self.ShutdownCost = 0.0
+        self.MinTimeUp = 0.0
+        self.MinTimeDown = 0.0
+        self.RampUp = 1e20
+        self.RampDown = 1e20
 
         self.Cost_prof = Cost_prof
 
@@ -418,7 +429,9 @@ class Generator(EditableDevice):
                     'qmax': self.Qmax,
                     'pmin': self.Pmin,
                     'pmax': self.Pmax,
-                    'cost': self.Cost,
+                    'cost2': self.Cost2,
+                    'cost1': self.Cost,
+                    'cost0': self.Cost0,
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),
