@@ -35,7 +35,7 @@ except ModuleNotFoundError:
     print('ORTOOLS not found :(')
 
 import pandas as pd
-from scipy.sparse.csc import csc_matrix
+from scipy.sparse import csc_matrix
 
 
 def lpDot(mat, arr):
@@ -1541,7 +1541,7 @@ def formulate_objective_old (solver: pywraplp.Solver,
     solver.Minimize(f)
 
 def formulate_objective(solver: pywraplp.Solver,
-                        flow_f,hvdc_flow_f,
+                        flow_f, hvdc_flow_f,
                         inter_area_branches, inter_area_hvdcs,
                         logger: Logger):
     """
@@ -1555,14 +1555,17 @@ def formulate_objective(solver: pywraplp.Solver,
     :param logger: logger instance
     """
 
-    # include the cost of generation
-    k=1
-    branch_idx, branch_sign = zip(*inter_area_branches)
-    hvdc_idx, hvdc_sign = zip(*inter_area_hvdcs)
+    # Get power variables and signs from entry
+    branch_idx, branch_sign = map(list, zip(*inter_area_branches))
+    hvdc_idx, hvdc_sign = map(list, zip(*inter_area_hvdcs))
 
-    interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign )
-    interarea_hvdc_flow_f = solver.Sum( hvdc_flow_f[hvdc_idx] * hvdc_sign)
-    f=interarea_branch_flow_f+interarea_hvdc_flow_f
+    # compute interarea considering the signs
+    interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign)
+    interarea_hvdc_flow_f = solver.Sum(hvdc_flow_f[hvdc_idx] * hvdc_sign)
+
+    # define objective function
+    f = -(interarea_branch_flow_f + interarea_hvdc_flow_f)
+
     solver.Minimize(f)
 
 class OpfNTC(Opf):
@@ -2452,6 +2455,7 @@ class OpfNTC(Opf):
 
         # branch
         alpha_abs = np.abs(self.alpha)
+        alpha_n1_abs = np.abs(self.alpha_n1)
 
         # check variables
         for var in self.solver.variables():
@@ -2517,6 +2521,7 @@ class OpfNTC(Opf):
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             angles=self.extract(self.theta),
             alpha_abs=alpha_abs,
+            alpha_n1_abs=alpha_n1_abs,
             logger=self.logger,
             flow_f=self.extract(self.s_from),
             tau=self.extract(self.phase_shift))
