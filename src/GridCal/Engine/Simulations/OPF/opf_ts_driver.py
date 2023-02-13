@@ -209,7 +209,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 a = start_
                 b = end_
-                self.results.voltage[a:b, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_module)
+                self.results.voltage[a:b, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_angle)
                 self.results.bus_shadow_prices[a:b, :] = npa_res.nodal_shadow_prices
                 self.results.load_shedding[a:b, :] = npa_res.load_shedding
                 self.results.battery_power[a:b, :] = npa_res.battery_power
@@ -217,7 +217,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                 self.results.generator_power[a:b, :] = npa_res.generator_power
                 self.results.Sf[a:b, :] = npa_res.branch_flows
                 self.results.St[a:b, :] = -npa_res.branch_flows
-                # self.results.overloads[a:b, :] = npa_res.
+                self.results.overloads[a:b, :] = npa_res.branch_overloads
                 self.results.loading[a:b, :] = npa_res.branch_loading
                 self.results.phase_shift[a:b, :] = npa_res.branch_tap_angle
 

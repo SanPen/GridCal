@@ -528,6 +528,7 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
             hvdc.setAllOverloadCost(elm.overload_cost)
+            hvdc.setAllControlMode(cmode_dict[elm.control_mode])
 
         npa_circuit.addHvdcLine(hvdc)
 
@@ -950,7 +951,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
 
 
 def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
-
+    from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
                                       load_names=res.load_names,
