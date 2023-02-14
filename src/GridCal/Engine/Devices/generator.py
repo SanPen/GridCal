@@ -432,6 +432,14 @@ class Generator(EditableDevice):
                     'cost2': self.Cost2,
                     'cost1': self.Cost,
                     'cost0': self.Cost0,
+
+                    'startup_cost': self.StartupCost,
+                    'shutdown_cost': self.ShutdownCost,
+                    'min_time_up': self.MinTimeUp,
+                    'min_time_down': self.MinTimeDown,
+                    'ramp_up': self.RampUp,
+                    'ramp_down': self.RampDown,
+
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),
