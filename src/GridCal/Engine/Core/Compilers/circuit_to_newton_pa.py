@@ -951,6 +951,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
 
 
 def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
+
     from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,

@@ -381,9 +381,6 @@ class TimeSeries(DriverTemplate):
         if self.engine == bs.EngineType.GridCal:
             self.results = self.run_single_thread(time_indices=time_indices)
 
-        elif self.engine == bs.EngineType.Newton:
-            pass
-
         elif self.engine == bs.EngineType.Bentayga:
             self.progress_text.emit('Running Bentayga... ')
             self.results = self.run_bentayga()
