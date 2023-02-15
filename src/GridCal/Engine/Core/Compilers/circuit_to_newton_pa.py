@@ -366,35 +366,58 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
     :param ntime: number of time steps
     """
     for i, elm in enumerate(circuit.vsc_devices):
+
+        """
+        uuid: str = '', 
+        secondary_id: str = '', 
+        name: str = '', 
+        calc_node_from: newtonpa.CalculationNode = None, 
+        calc_node_to: newtonpa.CalculationNode = None, 
+        cn_from: newtonpa.ConnectivityNode = None, 
+        cn_to: newtonpa.ConnectivityNode = None, 
+        time_steps: int = 1, 
+        active_default: int = 1)
+        
+        uuid='', secondary_id='', name='', calc_node_from=None, calc_node_to=None, cn_from=None, cn_to=None, time_steps=1, active_default=1
+        """
+
         vsc = npa.AcDcConverter(uuid=elm.idtag,
+                                secondary_id=elm.code,
                                 name=elm.name,
-                                node_from=bus_dict[elm.bus_from.idtag],
-                                node_to=bus_dict[elm.bus_to.idtag],
+                                calc_node_from=bus_dict[elm.bus_from.idtag],
+                                calc_node_to=bus_dict[elm.bus_to.idtag],
                                 time_steps=ntime,
-                                rate=elm.rate,
-                                active_default=elm.active,
-                                r1=elm.R1,
-                                x1=elm.X1,
-                                g0=elm.G0sw,
-                                beq=elm.Beq,
-                                beq_max=elm.Beq_max,
-                                beq_min=elm.Beq_min,
-                                k=elm.k,
-                                tap=elm.m,
-                                tap_max=elm.m_max,
-                                tap_min=elm.m_min,
-                                phase=elm.theta,
-                                phase_max=elm.theta_max,
-                                phase_min=elm.theta_min,
-                                Pf_set=elm.Pdc_set,
-                                vac_set=elm.Vac_set,
-                                vdc_set=elm.Vdc_set,
-                                kdp=elm.kdp,
-                                alpha1=elm.alpha1,
-                                alpha2=elm.alpha2,
-                                alpha3=elm.alpha3,
-                                monitor_loading_default=elm.monitor_loading,
-                                monitor_contingency_default=elm.contingency_enabled)
+                                active_default=elm.active)
+
+        vsc.r = elm.R1
+        vsc.x = elm.X1
+        vsc.g0 = elm.G0sw
+
+        vsc.setAllBeq(elm.Beq)
+        vsc.beq_max = elm.Beq_max
+        vsc.beq_min = elm.Beq_min
+
+        vsc.k = elm.k
+
+        vsc.setAllTapModule(elm.m)
+        vsc.tap_max = elm.m_max
+        vsc.tap_min = elm.m_min
+
+        vsc.setAllTapPhase(elm.theta)
+        vsc.phase_max = elm.theta_max
+        vsc.phase_min = elm.theta_min
+
+        vsc.setAllPdcSet(elm.Pdc_set)
+        vsc.setAllVacSet(elm.Vac_set)
+        vsc.setAllVdcSet(elm.Vdc_set)
+        vsc.k_droop = elm.kdp
+
+        vsc.alpha1 = elm.alpha1
+        vsc.alpha2 = elm.alpha2
+        vsc.alpha3 = elm.alpha3
+
+        vsc.setAllMonitorloading(elm.monitor_loading)
+        vsc.setAllContingencyenabled(elm.contingency_enabled)
 
         if time_series:
             vsc.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
@@ -403,6 +426,7 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
             vsc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
             vsc.overload_cost = elm.Cost_prof
         else:
+            vsc.setAllRates(elm.rate)
             vsc.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addAcDcConverter(vsc)
@@ -869,7 +893,8 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
     pf_res = npa.runNonlinearOpf(circuit=npaCircuit,
                                  pf_options=pf_options,
                                  time_indices=time_indices,
-                                 n_threads=n_threads)
+                                 n_threads=n_threads,
+                                 mute_pg_bar=False)
 
     return pf_res
 
