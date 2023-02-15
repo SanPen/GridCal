@@ -454,6 +454,15 @@ class MultiCircuit:
             lst = lst + bus.loads
         return lst
 
+    def get_loads_number(self) -> List[Load]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        val = 0
+        for bus in self.buses:
+            val = val + len(bus.loads)
+        return val
+
     def get_load_names(self):
         """
         Returns a list of :ref:`Load<load>` names.
@@ -538,6 +547,12 @@ class MultiCircuit:
             lst = lst + bus.controlled_generators
         return lst
 
+    def get_generators_number(self):
+        val = 0
+        for bus in self.buses:
+            val = val + len(bus.controlled_generators)
+        return val
+
     def get_controlled_generator_names(self):
         """
         Returns a list of :ref:`Generator<generator>` names.
@@ -558,6 +573,15 @@ class MultiCircuit:
                 elm.bus = bus
             lst = lst + bus.batteries
         return lst
+
+    def get_batteries_number(self) -> List[Battery]:
+        """
+        Returns a list of :ref:`Battery<battery>` objects in the grid.
+        """
+        val = 0
+        for bus in self.buses:
+            val = val + len(bus.batteries)
+        return val
 
     def get_battery_names(self):
         """

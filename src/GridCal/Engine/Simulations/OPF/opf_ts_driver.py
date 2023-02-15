@@ -57,7 +57,22 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.numerical_circuit: "OpfTimeCircuit" = None
 
         # OPF results
-        self.results: OptimalPowerFlowTimeSeriesResults = None
+        self.results: OptimalPowerFlowTimeSeriesResults = OptimalPowerFlowTimeSeriesResults(
+                                                            bus_names=self.grid.get_bus_names(),
+                                                            branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                            load_names=self.grid.get_load_names(),
+                                                            generator_names=self.grid.get_controlled_generator_names(),
+                                                            battery_names=self.grid.get_battery_names(),
+                                                            hvdc_names=self.grid.get_hvdc_names(),
+                                                            n=self.grid.get_bus_number(),
+                                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                                            nt=self.grid.get_time_number(),
+                                                            ngen=self.grid.get_generators_number(),
+                                                            nbat=self.grid.get_batteries_number(),
+                                                            nload=self.grid.get_loads_number(),
+                                                            nhvdc=self.grid.get_hvdc_number(),
+                                                            time=self.grid.time_profile,
+                                                            bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
 
         self.all_solved = True
 
@@ -283,7 +298,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 # self.results.Sbus[a:b, :] = problem.get_power_injections()
                 self.results.hvdc_Pf[a:b, :] = npa_res.hvdc_flows
-                self.results.hvdc_loading[a:b, :] = npa_res.hvdc_flows / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
+                # self.results.hvdc_loading[a:b, :] = npa_res.hvdc_flows / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
 
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')
