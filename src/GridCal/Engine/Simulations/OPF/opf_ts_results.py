@@ -230,8 +230,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchTapAngle:
             labels = self.branch_names
-            y = np.rad2deg(self.phase_shift)
-            y_label = '(deg)'
+            # y = np.rad2deg(self.phase_shift)
+            # y_label = '(deg)'
+            y = self.phase_shift
+            y_label = '(rad)'
             title = 'Branch tap angle '
 
         elif result_type == ResultTypes.HvdcPowerFrom:

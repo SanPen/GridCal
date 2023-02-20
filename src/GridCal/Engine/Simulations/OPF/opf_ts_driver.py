@@ -298,7 +298,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 # self.results.Sbus[a:b, :] = problem.get_power_injections()
                 self.results.hvdc_Pf[a:b, :] = npa_res.hvdc_flows
-                # self.results.hvdc_loading[a:b, :] = npa_res.hvdc_flows / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
+                self.results.hvdc_loading[a:b, :] = npa_res.hvdc_loading
 
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')

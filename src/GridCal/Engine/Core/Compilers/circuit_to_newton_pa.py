@@ -26,7 +26,7 @@ from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerCon
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 # from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-# from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+# from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -313,7 +313,8 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         npa_circuit.addAcLine(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
+                         time_series: bool, ntime=1, tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -322,6 +323,16 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
     :param bus_dict: dictionary of bus id to Newton bus object
     :param ntime: number of time steps
     """
+
+    ctrl_dict = {
+        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
+        TransformerControlType.PtVt: npa.BranchControlModes.BranchPt,
+    }
+
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
                                     secondary_id=elm.code,
@@ -353,6 +364,12 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
         else:
             tr2.setAllOverloadCost(elm.Cost)
 
+        # control vars
+        tr2.setAllControlMode(ctrl_dict[elm.control_mode])
+        tr2.phase_min = elm.angle_min
+        tr2.phase_max = elm.angle_max
+        tr2.tap_min = elm.tap_module_min
+        tr2.tap_max = elm.tap_module_max
         npa_circuit.addTransformers2wFul(tr2)
 
 
@@ -780,27 +797,19 @@ def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: P
                      bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
                      bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
-    pf_options = get_newton_pa_pf_options(pfopt)
-
-    # solver: newtonpa.LpSolvers = <LpSolvers.Highs: 1>,
-    # grouping: newtonpa.TimeGrouping = <TimeGrouping.NoGrouping: 0>,
-    # unit_commitment: bool = True,
-    # compute_flows: bool = True,
-    # run_groups_in_parallel: bool = True,
-    # check_with_power_flow: bool = True,
-    # pf_options: newtonpa.PowerFlowOptions = <newtonpa.PowerFlowOptions object at 0x7fd321d53ab0>
-
-    # solver=<LpSolvers.Highs: 1>,
-    # grouping_dict=<TimeGrouping.NoGrouping: 0>,
-    # unit_commitment=True,
-    # compute_flows=True,
-    # run_groups_in_parallel=False,
-    # check_with_power_flow=False,
-    # pf_options=<newtonpa.PowerFlowOptions object at 0x7fd1dc962370>
-
+    from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
     opt = npa.LinearOpfOptions()
     opt.solver = solver_dict[opfopt.mip_solver]
     opt.grouping = grouping_dict[opfopt.grouping]
+    opt.unit_commitment = False
+    opt.compute_flows = opfopt.zonal_grouping == ZonalGrouping.NoGrouping
+    opt.check_with_power_flow = False
+    opt.add_contingencies = opfopt.consider_contingencies
+    opt.skip_generation_limits = opfopt.skip_generation_limits
+    opt.maximize_area_exchange = opfopt.maximize_flows
+    opt.use_ramp_constraints = False
+    opt.lodf_threshold = opfopt.lodf_tolerance
+    opt.pf_options = get_newton_pa_pf_options(pfopt)
 
     return opt
 

@@ -3945,7 +3945,7 @@ class MainGUI(QMainWindow):
                     LODF = linear_results.LODF
                 else:
                     LODF = None
-                    if consider_contingencies:
+                    if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
                         warning_msg("To consider contingencies, the LODF matrix is required.\n"
                                     "Run a linear simulation first", "OPF time series")
                         return
@@ -4076,7 +4076,7 @@ class MainGUI(QMainWindow):
                         LODF = linear_results.LODF
                     else:
                         LODF = None
-                        if consider_contingencies:
+                        if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
                             warning_msg("To consider contingencies, the LODF matrix is required.\n"
                                         "Run a linear simulation first", "OPF time series")
                             return

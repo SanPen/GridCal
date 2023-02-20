@@ -201,10 +201,6 @@ class LinearAnalysisDriver(DriverTemplate):
 
         # Run Analysis
         NEWTON_AVAILBALE = False
-        if self.engine == bs.EngineType.Newton and not NEWTON_AVAILBALE:
-            self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
-
         if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
