@@ -1557,14 +1557,20 @@ def formulate_objective(solver: pywraplp.Solver,
 
     # Get power variables and signs from entry
     branch_idx, branch_sign = map(list, zip(*inter_area_branches))
-    hvdc_idx, hvdc_sign = map(list, zip(*inter_area_hvdcs))
-
     # compute interarea considering the signs
     interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign)
-    interarea_hvdc_flow_f = solver.Sum(hvdc_flow_f[hvdc_idx] * hvdc_sign)
 
     # define objective function
-    f = -(interarea_branch_flow_f + interarea_hvdc_flow_f)
+    f = -interarea_branch_flow_f
+
+    if len(inter_area_hvdcs):
+        # Get power variables and signs from entry
+        hvdc_idx, hvdc_sign = map(list, zip(*inter_area_hvdcs))
+        # compute interarea considering the signs
+        interarea_hvdc_flow_f = solver.Sum(hvdc_flow_f[hvdc_idx] * hvdc_sign)
+
+        # add to the objective function
+        f -= interarea_hvdc_flow_f
 
     solver.Minimize(f)
 
@@ -2356,13 +2362,10 @@ class OpfNTC(Opf):
         # formulate the objective
         formulate_objective(
             solver=self.solver,
-            power_shift=power_shift,
-            gen_cost=gen_cost[gen_a1_idx],
-            generation_delta=generation_delta[gen_a1_idx],
-            weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost,
-            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
-            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
+            flow_f=flow_f,
+            hvdc_flow_f=hvdc_flow_f,
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdc,
             logger=self.logger)
 
         # Assign variables to keep
