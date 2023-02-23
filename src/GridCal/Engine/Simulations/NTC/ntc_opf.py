@@ -1555,13 +1555,14 @@ def formulate_objective(solver: pywraplp.Solver,
     :param logger: logger instance
     """
 
-    # Get power variables and signs from entry
-    branch_idx, branch_sign = map(list, zip(*inter_area_branches))
-    # compute interarea considering the signs
-    interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign)
+    if len(inter_area_branches):
+        # Get power variables and signs from entry
+        branch_idx, branch_sign = map(list, zip(*inter_area_branches))
+        # compute interarea considering the signs
+        interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign)
 
-    # define objective function
-    f = -interarea_branch_flow_f
+        # define objective function
+        f = -interarea_branch_flow_f
 
     if len(inter_area_hvdcs):
         # Get power variables and signs from entry
