@@ -686,6 +686,8 @@ class MainGUI(QMainWindow):
 
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
+        self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
+
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
@@ -712,6 +714,8 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         self.ui.grid_colouring_frame.setVisible(False)
+
+        self.modify_ui_options_according_to_the_engine()
 
         # this is the contingency planner tab, invisible until done
         self.ui.tabWidget_3.setTabVisible(4, False)
@@ -740,6 +744,31 @@ class MainGUI(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    def modify_ui_options_according_to_the_engine(self):
+        """
+        Change the UI depending on the engine options
+        :return:
+        """
+        eng = self.get_preferred_engine()
+
+        if eng == bs.EngineType.NewtonPA:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(True)
+
+            # add the AC_OPF option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+        else:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+
+            # no AC opf option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
     @staticmethod
     def collect_memory():
@@ -3921,6 +3950,7 @@ class MainGUI(QMainWindow):
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                 maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+                unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
 
                 # available transfer capacity inter areas
                 if maximize_flows:
@@ -3962,7 +3992,8 @@ class MainGUI(QMainWindow):
                                                       lodf_tolerance=lodf_tolerance,
                                                       maximize_flows=maximize_flows,
                                                       area_from_bus_idx=idx_from,
-                                                      area_to_bus_idx=idx_to)
+                                                      area_to_bus_idx=idx_to,
+                                                      unit_commitment=unit_commitment)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -4052,6 +4083,7 @@ class MainGUI(QMainWindow):
                     tolerance = 10**self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                     maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+                    unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
 
                     # available transfer capacity inter areas
                     if maximize_flows:
@@ -4093,7 +4125,8 @@ class MainGUI(QMainWindow):
                                                           lodf_tolerance=lodf_tolerance,
                                                           maximize_flows=maximize_flows,
                                                           area_from_bus_idx=idx_from,
-                                                          area_to_bus_idx=idx_to
+                                                          area_to_bus_idx=idx_to,
+                                                          unit_commitment=unit_commitment
                                                           )
 
                     start = self.ui.profile_start_slider.value()

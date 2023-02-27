@@ -187,7 +187,7 @@ class Generator(EditableDevice):
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
                                                   'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
                                                   'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
-                                                  'Cost0': GCProp('e/MWh', float, 'Generation constant cost. Used in OPF.'),
+                                                  'Cost0': GCProp('e', float, 'Generation constant cost. Used in OPF.'),
                                                   'StartupCost': GCProp('e/h', float, 'Generation start-up cost. Used in OPF.'),
                                                   'ShutdownCost': GCProp('e/h', float, 'Generation shut-down cost. Used in OPF.'),
                                                   'MinTimeUp': GCProp('h', float, 'Minimum time that the generator has to be on when started. Used in OPF.'),
