@@ -306,6 +306,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                 # pack the results
                 npa_res = newton_pa_nonlinear_opf(circuit=self.grid,
                                                   pfopt=self.pf_options,
+                                                  opfopt=self.options,
                                                   time_series=True,
                                                   tidx=t_idx)
                 a = self.start_

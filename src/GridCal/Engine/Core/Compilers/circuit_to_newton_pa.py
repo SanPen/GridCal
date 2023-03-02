@@ -118,10 +118,10 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             load.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             load.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             load.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
-            load.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            load.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
-            load.setAllCostB(elm.Cost)
+            load.setAllCost1(elm.Cost)
 
         npa_circuit.addLoad(load)
 
@@ -151,10 +151,10 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
             pe_inj.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             pe_inj.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             pe_inj.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
-            pe_inj.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            pe_inj.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             pe_inj.active = np.ones(ntime, dtype=BINT) * int(elm.active)
-            pe_inj.setAllCostB(elm.Cost)
+            pe_inj.setAllCost1(elm.Cost)
 
         npa_circuit.addPowerElectronicsInjection(pe_inj)
 
@@ -211,18 +211,23 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
                             Pmin=elm.Pmin,
                             Pmax=elm.Pmax,
                             Qmin=elm.Qmin,
-                            Qmax=elm.Qmax)
+                            Qmax=elm.Qmax,
+                            dispatchable_default=BINT(elm.enabled_dispatch))
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
-            gen.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_0 = elm.Cost0_prof if tidx is None else elm.Cost0_prof[tidx]
+            gen.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_2 = elm.Cost2_prof if tidx is None else elm.Cost2_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
-            gen.setAllCostB(elm.Cost)
+            gen.setAllCost0(elm.Cost0)
+            gen.setAllCost1(elm.Cost)
+            gen.setAllCost2(elm.Cost2)
 
         npa_circuit.addGenerator(gen)
 
@@ -262,12 +267,12 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
-            gen.setAllCostB(elm.Cost_prof if tidx is None else elm.Cost_prof[tidx])
+            gen.setAllCost1(elm.Cost_prof if tidx is None else elm.Cost_prof[tidx])
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
-            gen.setAllCostB(elm.Cost)
+            gen.setAllCost1(elm.Cost)
 
         npa_circuit.addBattery(gen)
 
@@ -750,7 +755,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
                                 control_q_mode=q_control_dict[opt.control_Q])
 
 
-def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions):
+def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions"):
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
@@ -767,13 +772,22 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions):
     flow_control: bool = True, 
     verbose: bool = False
     """
-    #
+
+    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+
     return npa.NonlinearOpfOptions(tolerance=pfopt.tolerance,
                                    max_iter=pfopt.max_iter,
                                    mu0=pfopt.mu,
                                    control_q_mode=q_control_dict[pfopt.control_Q],
                                    flow_control=True,
-                                   voltage_control=True)
+                                   voltage_control=False,
+                                   solver=solver_dict[opfopt.mip_solver])
 
 
 def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions):
@@ -843,6 +857,7 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
 
     return pf_res
 
+
 def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOptions,
                          time_series=False, tidx=None) -> "npa.LinearOpfResults":
     """
@@ -876,7 +891,7 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
     return pf_res
 
 
-def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
+def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions",
                             time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
     """
     Newton power flow
@@ -890,7 +905,7 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions,
                               time_series=time_series,
                               tidx=tidx)
 
-    pf_options = get_newton_pa_nonlinear_opf_options(pfopt)
+    pf_options = get_newton_pa_nonlinear_opf_options(pfopt, opfopt)
 
     if time_series:
         # it is already sliced to the relevant time indices

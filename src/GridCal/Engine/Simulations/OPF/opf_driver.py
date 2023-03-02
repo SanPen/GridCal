@@ -69,6 +69,7 @@ class OptimalPowerFlow(DriverTemplate):
         # pack the results
         npa_opf_res = newton_pa.newton_pa_nonlinear_opf(circuit=self.grid,
                                                         pfopt=self.pf_options,
+                                                        opfopt=self.options,
                                                         time_series=False,
                                                         tidx=None)
         return newton_pa.translate_newton_pa_opf_results(res=npa_opf_res)

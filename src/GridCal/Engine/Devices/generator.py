@@ -148,7 +148,8 @@ class Generator(EditableDevice):
                  mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle,
                  q_points=None, use_reactive_power_curve=False,
                  r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned,
+                 Cost2_prof=None,Cost0_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -185,9 +186,11 @@ class Generator(EditableDevice):
 
                                                   'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
+
                                                   'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
                                                   'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
-                                                  'Cost0': GCProp('e', float, 'Generation constant cost. Used in OPF.'),
+                                                  'Cost0': GCProp('e/h', float, 'Generation constant cost. Used in OPF.'),
+
                                                   'StartupCost': GCProp('e/h', float, 'Generation start-up cost. Used in OPF.'),
                                                   'ShutdownCost': GCProp('e/h', float, 'Generation shut-down cost. Used in OPF.'),
                                                   'MinTimeUp': GCProp('h', float, 'Minimum time that the generator has to be on when started. Used in OPF.'),
@@ -206,7 +209,9 @@ class Generator(EditableDevice):
                                                          'P': 'P_prof',
                                                          'Pf': 'Pf_prof',
                                                          'Vset': 'Vset_prof',
-                                                         'Cost': 'Cost_prof'})
+                                                         'Cost2': 'Cost2_prof',
+                                                         'Cost': 'Cost_prof',
+                                                         'Cost0': 'Cost0_prof'})
 
         self.bus = None
 
@@ -284,8 +289,8 @@ class Generator(EditableDevice):
             self.q_points = make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set)
             self.custom_q_points = False
 
-        self.Cost = 0.0  # Cost of operation €/MW
-        self.Cost2 = op_cost  # Cost of operation €/MW²
+        self.Cost2 = 0.0  # Cost of operation €/MW²
+        self.Cost = op_cost  # Cost of operation €/MW
         self.Cost0 = 0.0  # Cost of operation €/MW
 
         self.StartupCost = 0.0
@@ -295,7 +300,9 @@ class Generator(EditableDevice):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
+        self.Cost2_prof = Cost2_prof
         self.Cost_prof = Cost_prof
+        self.Cost0_prof = Cost0_prof
 
         self.capex = capex
 

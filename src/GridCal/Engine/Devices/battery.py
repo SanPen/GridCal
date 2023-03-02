@@ -156,7 +156,9 @@ class Battery(Generator):
                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
 
-                                 'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
+                                 'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
+                                 'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
+                                 'Cost0': GCProp('e/h', float, 'Generation constant cost. Used in OPF.'),
                                  'capex': GCProp('e/MW', float,
                                                  'Cost of investment. Used in expansion planning.'),
                                  'opex': GCProp('e/MWh', float,
