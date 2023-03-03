@@ -185,11 +185,11 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
-def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
+def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings):
     '''
 
     :param inter_area_branches:
-    :param inter_area_hvdc:
+    :param inter_area_hvdcs:
     :param branch_ratings:
     :param hvdc_ratings:
     :return:
@@ -201,8 +201,8 @@ def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvd
     else:
         sum_ratings = 0.0
 
-    if len(inter_area_hvdc):
-        idx_hvdc, b = list(zip(*inter_area_hvdc))
+    if len(inter_area_hvdcs):
+        idx_hvdc, b = list(zip(*inter_area_hvdcs))
         idx_hvdc = list(idx_hvdc)
         sum_ratings += sum(hvdc_ratings[idx_hvdc])
 
@@ -610,6 +610,61 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     return generation, delta, a1_gen_idx, a2_gen_idx, power_shift, gen_cost
 
 
+def formulate_monitorization_logic(
+        monitor_only_sensitive_branches, monitor_only_ntc_load_rule_branches, monitor_loading,
+        max_alpha, branch_sensitivity_threshold, base_flows, structural_ntc, ntc_load_rule, rates):
+    """
+    Function to formulate branch monitor status due the given logic
+    :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.
+    :param monitor_only_ntc_load_rule_branches: boolean to apply ntc load rule to the monitorization logic.
+    :param monitor_loading: Array of branch monitor loading status given by user(True/False)
+    :param max_alpha: Array of max absolute branch sensitivity to the exchange in n and n-1 condition
+    :param branch_sensitivity_threshold: branch sensitivity to the exchange threshold
+    :param base_flows: branch base flows
+    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
+    :param ntc_load_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
+    :param rates: array of branch rates
+    return:
+        - monitor: Array of final monitor status per branch after applying the logic
+        - monitor_loading: monitor status per branch set by user interface
+        - monitor_by_sensitivity: monitor status per branch due exchange sensibility
+        - monitor_by_unrealistic_ntc: monitor status per branch due unrealistic minimum ntc
+        - monitor_by_zero_exchange: monitor status per branch due zero exchange loading
+        - branch_ntc_load_rule: branch minimum ntc to be considered as limiting element
+        - branch_zero_exchange_load: branch load for zero exchange situation.
+    """
+
+    # NTC min for considering as limiting element by CEP rule
+    branch_ntc_load_rule = ntc_load_rule * rates / (max_alpha + 1e-20)
+
+    # Branch load without exchange
+    branch_zero_exchange_load = base_flows * (1 - max_alpha) / rates
+
+    # Exclude branches with not enough sensibility to exchange
+    if monitor_only_sensitive_branches:
+        monitor_by_sensitivity = max_alpha > branch_sensitivity_threshold
+    else:
+        monitor_by_sensitivity = np.ones(len(base_flows), dtype=bool)
+
+    # Avoid unrealistic ntc && Exclude branches with 'interchange zero' flows over CEP rule limit
+    if monitor_only_ntc_load_rule_branches:
+        monitor_by_unrealistic_ntc = branch_ntc_load_rule <= structural_ntc
+        monitor_by_zero_exchange = branch_zero_exchange_load >= (1 - ntc_load_rule)
+    else:
+        monitor_by_unrealistic_ntc = np.ones(len(base_flows), dtype=bool)
+        monitor_by_zero_exchange = np.ones(len(base_flows), dtype=bool)
+
+    monitor_loading = np.array(monitor_loading, dtype=bool)
+
+    monitor = monitor_loading * \
+              monitor_by_sensitivity * \
+              monitor_by_unrealistic_ntc * \
+              monitor_by_zero_exchange
+
+    return monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+           branch_ntc_load_rule, branch_zero_exchange_load
+
+
 def check_proportional_generation(generator_active, generator_dispatchable, generator_cost, generator_names,
                                   Sbase, Cgen, Pgen, Pmax, Pmin, a1, a2, generation, delta,
                                   power_shift, logger: Logger):
@@ -876,11 +931,10 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
     return calculated_power
 
 
-def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
-                            branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
-                            branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, cep_rule,
-                            structural_ntc, logger):
+def formulate_branches_flow(
+        solver: pywraplp.Solver, nbr, nbus, Rates, Sbase, branch_active, branch_names, branch_dc, R, X, F, T, inf,
+        monitor, angles, tau, logger
+):
     """
 
     :param solver: Solver instance to which add the equations
@@ -895,15 +949,9 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param inf: Value representing the infinite (i.e. 1e20)
-    :param monitor_loading: Array of branch monitor loading status (True/False)
-    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
-    :param monitor_only_sensitive_branches: Flag to monitor only sensitive branches
+    :param monitor: Array of branch monitor loading status (True/False)
     :param angles: array of bus voltage angles (LP variables)
     :param tau: Array branch phase shift angles (mix of values and LP variables)
-    :param alpha_abs: Array of absolute branch sensitivity to the exchange
-    :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
-    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
-    :param cep_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -917,15 +965,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     Pinj_tau = np.zeros(nbus, dtype=object)
     rates = Rates / Sbase
 
-    # Maximum alpha n-1 value for each branch
-    max_alpha_abs_n1 = np.amax(alpha_n1_abs, axis=1)
-
-    # Maximum alpha or alpha n-1 value for each branch
-    max_alpha = np.amax(np.array([alpha_abs, max_alpha_abs_n1]), axis=0)
-
-    # NTC min for considering as limiting element by CEP rule
-    branch_ntc_load_rule = cep_rule * rates / (max_alpha + 1e-20)
-
     # formulate flows
     for m in range(nbr):
 
@@ -933,15 +972,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
-
-            # determine the monitoring logic
-            monitor[m] = monitor_loading[m]
-
-            if monitor_only_sensitive_branches:
-                monitor[m] = monitor[m] and max_alpha[m] > branch_sensitivity_threshold
-
-            if monitor_only_ntc_load_rule_branches:
-                monitor[m] = monitor[m] and branch_ntc_load_rule[m] <= structural_ntc
 
             # determine branch rate according monitor logic
             if monitor[m]:
@@ -974,7 +1004,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
             Pinj_tau[_f] = -Ptau
             Pinj_tau[_t] = Ptau
 
-    return flow_f, monitor, Pinj_tau, branch_ntc_load_rule
+    return flow_f, monitor, Pinj_tau
 
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
@@ -1650,6 +1680,14 @@ class OpfNTC(Opf):
 
         self.structural_ntc = 0
 
+        self.base_flows = list()
+        self.monitor = list()
+        self.monitor_loading = list()
+        self.monitor_by_sensitivity = list()
+        self.monitor_by_unrealistic_ntc = list()
+        self.monitor_by_zero_exchange = list()
+        self.branch_ntc_load_rule = list()
+        self.branch_zero_exchange_load = list()
         self.logger = logger
 
         # this builds the formulation right away
@@ -1725,7 +1763,10 @@ class OpfNTC(Opf):
         Pload = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         if self.match_gen_load:
-            Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
+            Pgen = self.scale_to_reference(
+                reference=Pload,
+                scalable=Pgen_orig
+            )
         else:
             Pgen = Pgen_orig
 
@@ -1736,9 +1777,20 @@ class OpfNTC(Opf):
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
+        # Maximum alpha n-1 value for each branch
+        max_alpha_abs_n1 = np.amax(alpha_n1_abs, axis=1)
+
+        # Maximum alpha or alpha n-1 value for each branch
+        max_alpha = np.amax(np.array([alpha_abs, max_alpha_abs_n1]), axis=0)
+
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
+
+        Sbus = self.numerical_circuit.generator_data.get_injections_per_bus()[:, t] - \
+               self.numerical_circuit.load_data.get_injections_per_bus()[:, t]
+
+        base_flows = np.dot(self.PTDF, Sbus.real)
 
         load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 
@@ -1757,7 +1809,25 @@ class OpfNTC(Opf):
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        structural_ntc = get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings)
+        structural_ntc = get_structural_ntc(
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdcs,
+            branch_ratings=branch_ratings,
+            hvdc_ratings=hvdc_ratings
+        )
+
+        monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+        branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
+            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
+            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            max_alpha=max_alpha,
+            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
+            base_flows=base_flows,
+            structural_ntc=structural_ntc,
+            ntc_load_rule=self.ntc_load_rule,
+            rates=self.numerical_circuit.Rates,
+        )
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1837,7 +1907,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -1853,14 +1923,7 @@ class OpfNTC(Opf):
             angles=theta,
             tau=tau,
             inf=self.inf,
-            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
-            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
-            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
-            alpha_abs=alpha_abs,
-            alpha_n1_abs=alpha_n1_abs,
-            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            cep_rule=self.ntc_load_rule,
-            structural_ntc=structural_ntc,
+            monitor=monitor,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -2038,6 +2101,16 @@ class OpfNTC(Opf):
 
         self.structural_ntc = structural_ntc
 
+        self.base_flows = base_flows
+        self.monitor=monitor
+        self.monitor_loading=monitor_loading
+        self.monitor_by_sensitivity=monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc=monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange=monitor_by_zero_exchange
+
+        self.branch_ntc_load_rule=branch_ntc_load_rule
+        self.branch_zero_exchange_load=branch_zero_exchange_load
+
         return self.solver
 
     def formulate_ts(self, t=0):
@@ -2087,9 +2160,20 @@ class OpfNTC(Opf):
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
+        # Maximum alpha n-1 value for each branch
+        max_alpha_abs_n1 = np.amax(alpha_n1_abs, axis=1)
+
+        # Maximum alpha or alpha n-1 value for each branch
+        max_alpha = np.amax(np.array([alpha_abs, max_alpha_abs_n1]), axis=0)
+
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
+
+        Sbus_at_t = self.numerical_circuit.generator_data.get_injections_per_bus()[:, t] - \
+                    self.numerical_circuit.load_data.get_injections_per_bus()[:, t]
+
+        base_flows = np.dot(self.PTDF, Sbus_at_t.real)
 
         load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 
@@ -2110,9 +2194,23 @@ class OpfNTC(Opf):
 
         structural_ntc = get_structural_ntc(
             inter_area_branches=inter_area_branches,
-            inter_area_hvdc=inter_area_hvdc,
+            inter_area_hvdcs=inter_area_hvdc,
             branch_ratings=branch_ratings,
             hvdc_ratings=hvdc_ratings)
+
+        # formulate the monitorization
+        monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+        branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
+            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
+            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            max_alpha=max_alpha,
+            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
+            base_flows=base_flows,
+            structural_ntc=structural_ntc,
+            ntc_load_rule=self.ntc_load_rule,
+            rates=self.numerical_circuit.Rates[:, t],
+        )
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -2192,7 +2290,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -2208,14 +2306,7 @@ class OpfNTC(Opf):
             angles=theta,
             tau=tau,
             inf=self.inf,
-            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
-            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
-            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
-            alpha_abs=alpha_abs,
-            alpha_n1_abs=alpha_n1_abs,
-            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            cep_rule=self.ntc_load_rule,
-            structural_ntc=structural_ntc,
+            monitor=monitor,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -2377,6 +2468,18 @@ class OpfNTC(Opf):
         self.contingency_branch_alpha_list = con_brn_alpha
         self.contingency_generation_alpha_list = con_gen_alpha
         self.contingency_hvdc_alpha_list = con_hvdc_alpha
+
+        self.structural_ntc = structural_ntc
+
+        self.base_flows = base_flows
+        self.monitor=monitor
+        self.monitor_loading=monitor_loading
+        self.monitor_by_sensitivity=monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc=monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange=monitor_by_zero_exchange
+
+        self.branch_ntc_load_rule=branch_ntc_load_rule
+        self.branch_zero_exchange_load=branch_zero_exchange_load
 
         return self.solver
 
@@ -2932,7 +3035,9 @@ if __name__ == '__main__':
     folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
     fname = os.path.join(folder, 'MOU_2022_5GW_v6h-B_pmode1.gridcal')
 
+    tm0 = time.time()
     main_circuit = FileOpen(fname).open()
+    print('circuit opened in {0} scs.'.format(time.time() - tm0))
 
     # compute information about areas ----------------------------------------------------------------------------------
     area_from_idx = 0
@@ -2956,7 +3061,9 @@ if __name__ == '__main__':
         distributed_slack=False,
         correct_values=False)
 
+    tm0 = time.time()
     linear.run()
+    print('linear analysis computed in {0} scs.'.format(time.time() - tm0))
 
     tm0 = time.time()
     alpha, alpha_n1 = compute_alpha(
@@ -2984,8 +3091,13 @@ if __name__ == '__main__':
     )
 
     print('Solving...')
+    tm0 = time.time()
     problem.formulate()
+    print('optimization formulated in {0} scs.'.format(time.time() - tm0))
+
+    tm0 = time.time()
     solved = problem.solve()
+    print('optimization computed in {0} scs.'.format(time.time() - tm0))
 
     print('Angles\n', np.angle(problem.get_voltage()))
     print('Branch loading\n', problem.get_loading())

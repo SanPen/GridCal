@@ -26,7 +26,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New objective function:&#10; - Prevent none inter area branches">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" afterDir="false" />
     </list>
@@ -1063,13 +1063,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00305" summary="Qt6 migration working">
-      <created>1655053956835</created>
-      <option name="number" value="00305" />
-      <option name="presentableId" value="LOCAL-00305" />
-      <option name="project" value="LOCAL" />
-      <updated>1655053956836</updated>
-    </task>
     <task id="LOCAL-00306" summary="Added coordinates offset correction&#10;improved fill_xy_from_lat_lon&#10;Fixed newton HVDC call">
       <created>1655560489801</created>
       <option name="number" value="00306" />
@@ -1406,7 +1399,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677156429375</updated>
     </task>
-    <option name="localTasksCounter" value="354" />
+    <task id="LOCAL-00354" summary="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha">
+      <created>1677747149145</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1677747149145</updated>
+    </task>
+    <option name="localTasksCounter" value="355" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1440,7 +1440,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Integrated the new short circuit logic in the GUI" />
     <MESSAGE value="Refactored the short circuit functions" />
     <MESSAGE value="added docstrings and deleted commented code" />
     <MESSAGE value="completely refactored the ShortCircuitResults object to properly represent the sequence results" />
@@ -1465,7 +1464,8 @@
     <MESSAGE value="Fixed PMode3 implementation. Inequality restriction!!" />
     <MESSAGE value="New objective function:&#10; - Fixed call from ts&#10; - Fixed with scenarios with none hvdc" />
     <MESSAGE value="New objective function:&#10; - Prevent none inter area branches" />
-    <option name="LAST_COMMIT_MESSAGE" value="New objective function:&#10; - Prevent none inter area branches" />
+    <MESSAGE value="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha" />
+    <option name="LAST_COMMIT_MESSAGE" value="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1990,13 +1990,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
-          <line>2992</line>
-          <option name="timeStamp" value="1187" />
+          <line>3101</line>
+          <option name="timeStamp" value="1190" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
-          <line>927</line>
-          <option name="timeStamp" value="1193" />
+          <line>663</line>
+          <option name="timeStamp" value="1198" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
