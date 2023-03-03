@@ -26,8 +26,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf:&#10; - New function to compute monitorization logic">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -189,7 +188,7 @@
       <recent name="$PROJECT_DIR$/src" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ntc_opf">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -463,8 +462,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ntc_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.ntc_opf" />
         <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.test_short_circuit.test_short_circuit" />
@@ -1063,13 +1062,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00306" summary="Added coordinates offset correction&#10;improved fill_xy_from_lat_lon&#10;Fixed newton HVDC call">
-      <created>1655560489801</created>
-      <option name="number" value="00306" />
-      <option name="presentableId" value="LOCAL-00306" />
-      <option name="project" value="LOCAL" />
-      <updated>1655560489801</updated>
-    </task>
     <task id="LOCAL-00307" summary="derivatives research">
       <created>1655638721837</created>
       <option name="number" value="00307" />
@@ -1406,7 +1398,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677747149145</updated>
     </task>
-    <option name="localTasksCounter" value="355" />
+    <task id="LOCAL-00355" summary="ntc_opf:&#10; - New function to compute monitorization logic">
+      <created>1677854915146</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
+      <option name="project" value="LOCAL" />
+      <updated>1677854915146</updated>
+    </task>
+    <option name="localTasksCounter" value="356" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1440,7 +1439,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored the short circuit functions" />
     <MESSAGE value="added docstrings and deleted commented code" />
     <MESSAGE value="completely refactored the ShortCircuitResults object to properly represent the sequence results" />
     <MESSAGE value="Added icons to the results tree view" />
@@ -1465,7 +1463,8 @@
     <MESSAGE value="New objective function:&#10; - Fixed call from ts&#10; - Fixed with scenarios with none hvdc" />
     <MESSAGE value="New objective function:&#10; - Prevent none inter area branches" />
     <MESSAGE value="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha" />
-    <option name="LAST_COMMIT_MESSAGE" value="ntc_opf:&#10; - Changed how to compute max_alpha_n1, and max_alpha" />
+    <MESSAGE value="ntc_opf:&#10; - New function to compute monitorization logic" />
+    <option name="LAST_COMMIT_MESSAGE" value="ntc_opf:&#10; - New function to compute monitorization logic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1990,13 +1989,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
-          <line>3101</line>
+          <line>3100</line>
           <option name="timeStamp" value="1190" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
           <line>663</line>
-          <option name="timeStamp" value="1198" />
+          <option name="timeStamp" value="1199" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
+          <line>1928</line>
+          <option name="timeStamp" value="1200" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

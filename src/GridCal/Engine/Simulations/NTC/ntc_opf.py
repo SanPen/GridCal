@@ -961,7 +961,6 @@ def formulate_branches_flow(
     """
 
     flow_f = np.zeros(nbr, dtype=object)
-    monitor = np.zeros(nbr, dtype=bool)
     Pinj_tau = np.zeros(nbus, dtype=object)
     rates = Rates / Sbase
 
