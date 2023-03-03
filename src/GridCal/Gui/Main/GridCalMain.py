@@ -3116,7 +3116,7 @@ class MainGUI(QMainWindow):
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -3231,7 +3231,7 @@ class MainGUI(QMainWindow):
                     max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                     if not compatible_areas:
                         return
@@ -3370,7 +3370,7 @@ class MainGUI(QMainWindow):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                         if compatible_areas:
                             idx_from = [i for i, bus in lst_from]
@@ -3954,7 +3954,7 @@ class MainGUI(QMainWindow):
 
                 # available transfer capacity inter areas
                 if maximize_flows:
-                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
 
@@ -3968,6 +3968,8 @@ class MainGUI(QMainWindow):
                 else:
                     idx_from = None
                     idx_to = None
+                    areas_from = None
+                    areas_to = None
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3993,6 +3995,8 @@ class MainGUI(QMainWindow):
                                                       maximize_flows=maximize_flows,
                                                       area_from_bus_idx=idx_from,
                                                       area_to_bus_idx=idx_to,
+                                                      areas_from=areas_from,
+                                                      areas_to=areas_to,
                                                       unit_commitment=unit_commitment)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
@@ -4087,7 +4091,7 @@ class MainGUI(QMainWindow):
 
                     # available transfer capacity inter areas
                     if maximize_flows:
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
                         idx_from = np.array([i for i, bus in lst_from])
                         idx_to = np.array([i for i, bus in lst_to])
 
@@ -4101,6 +4105,8 @@ class MainGUI(QMainWindow):
                     else:
                         idx_from = None
                         idx_to = None
+                        areas_from = None
+                        areas_to = None
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -4126,6 +4132,8 @@ class MainGUI(QMainWindow):
                                                           maximize_flows=maximize_flows,
                                                           area_from_bus_idx=idx_from,
                                                           area_to_bus_idx=idx_to,
+                                                          areas_from=areas_from,
+                                                          areas_to=areas_to,
                                                           unit_commitment=unit_commitment
                                                           )
 
@@ -4276,7 +4284,7 @@ class MainGUI(QMainWindow):
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -4433,7 +4441,7 @@ class MainGUI(QMainWindow):
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
 
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -7035,7 +7043,7 @@ class MainGUI(QMainWindow):
         lst_to = self.circuit.get_areas_buses(areas_to)
         lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
-        return True, lst_from, lst_to, lst_br, lst_br_hvdc
+        return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
 
     @property
     def numerical_circuit(self):

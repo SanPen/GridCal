@@ -60,7 +60,42 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
-def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None):
+def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int=1):
+
+    d = dict()
+
+    for i, area in enumerate(circuit.areas):
+
+        elm = npa.Area(uuid=area.idtag,
+                       secondary_id=area.code,
+                       name=area.name,
+                       time_steps=ntime)
+
+        npa_circuit.addArea(elm)
+
+        d[area] = elm
+
+    return d
+
+
+def add_npa_zones(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, area in enumerate(circuit.zones):
+        elm = npa.Zone(uuid=area.idtag,
+                       secondary_id=area.code,
+                       name=area.name,
+                       time_steps=ntime)
+
+        npa_circuit.addZone(elm)
+
+        d[area] = elm
+
+    return d
+
+
+def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None,
+                  area_dict=None):
     """
     Convert the buses to Newton buses
     :param circuit: GridCal circuit
@@ -80,7 +115,8 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
                                   time_steps=ntime,
                                   slack=bus.is_slack,
                                   dc=bus.is_dc,
-                                  nominal_voltage=bus.Vnom)
+                                  nominal_voltage=bus.Vnom,
+                                  area=area_dict[bus.area] if bus.area is not None else None)
 
         if time_series and ntime > 1:
             elm.active = bus.active_prof.astype(BINT) if tidx is None else bus.active_prof.astype(BINT)[tidx]
@@ -303,8 +339,6 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                          b=elm.B,
                          monitor_loading_default=elm.monitor_loading,
                          monitor_contingency_default=elm.contingency_enabled)
-
-
 
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
@@ -597,7 +631,9 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
 
     npaCircuit = npa.HybridCircuit(uuid=circuit.idtag, name=circuit.name, time_steps=ntime)
 
-    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx)
+    area_dict = add_npa_areas(circuit, npaCircuit, ntime)
+    zone_dict = add_npa_zones(circuit, npaCircuit, ntime)
+    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx, area_dict)
     add_npa_loads(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_shunts(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
@@ -609,7 +645,7 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
     get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
 
-    return npaCircuit
+    return npaCircuit, (bus_dict, area_dict, zone_dict)
 
 
 class FakeAdmittances:
@@ -624,7 +660,7 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit):
 
     from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 
-    npaCircuit = to_newton_pa(circuit, time_series=False)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit, time_series=False)
 
     npa_data_lst = npa.compileAt(npaCircuit, t=0).splitIntoIslands()
 
@@ -790,7 +826,7 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    solver=solver_dict[opfopt.mip_solver])
 
 
-def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions):
+def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
@@ -826,6 +862,12 @@ def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: P
     opt.lodf_threshold = opfopt.lodf_tolerance
     opt.pf_options = get_newton_pa_pf_options(pfopt)
 
+    if opfopt.areas_from is not None:
+        opt.areas_from = [area_dict[e] for e in opfopt.areas_from]
+
+    if opfopt.areas_to is not None:
+        opt.areas_to = [area_dict[e] for e in opfopt.areas_to]
+
     return opt
 
 
@@ -838,7 +880,7 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npa_circuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
 
     pf_options = get_newton_pa_pf_options(opt)
 
@@ -868,9 +910,9 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit=circuit,
-                              time_series=time_series,
-                              tidx=tidx)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                  time_series=time_series,
+                                                                  tidx=tidx)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -880,7 +922,7 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
         time_indices = [0]
         n_threads = 1
 
-    options = get_newton_pa_linear_opf_options(opf_options, pfopt)
+    options = get_newton_pa_linear_opf_options(opf_options, pfopt, npaCircuit, area_dict)
 
     pf_res = npa.runLinearOpf(circuit=npaCircuit,
                               options=options,
@@ -901,9 +943,9 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit=circuit,
-                              time_series=time_series,
-                              tidx=tidx)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                  time_series=time_series,
+                                                                  tidx=tidx)
 
     pf_options = get_newton_pa_nonlinear_opf_options(pfopt, opfopt)
 
@@ -931,7 +973,7 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
     :param distributed_slack: distribute the PTDF slack
     :return: Newton LinearAnalysisMatrices object
     """
-    npa_circuit = to_newton_pa(circuit=circuit, time_series=False)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit, time_series=False)
 
     options = npa.LinearAnalysisOptions(distribute_slack=distributed_slack)
     results = npa.runLinearAnalysisAt(t=0, circuit=npa_circuit, options=options)
@@ -952,7 +994,7 @@ def convert_bus_types(arr: List["npa.BusType"]):
     return tpe
 
 
-def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResults") -> PowerFlowResults:
+def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResults") -> "PowerFlowResults":
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_tr=grid.get_transformers2w_number(),
