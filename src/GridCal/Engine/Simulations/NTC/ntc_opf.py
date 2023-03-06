@@ -2056,7 +2056,6 @@ class OpfNTC(Opf):
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
 
-        self.monitor = monitor
 
         # self.Pb = Pb
         self.Pl = Pload
@@ -2101,6 +2100,7 @@ class OpfNTC(Opf):
         self.structural_ntc = structural_ntc
 
         self.base_flows = base_flows
+
         self.monitor=monitor
         self.monitor_loading=monitor_loading
         self.monitor_by_sensitivity=monitor_by_sensitivity
@@ -2426,7 +2426,6 @@ class OpfNTC(Opf):
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
 
-        self.monitor = monitor
 
         # self.Pb = Pb
         self.Pl = Pload
@@ -2471,6 +2470,7 @@ class OpfNTC(Opf):
         self.structural_ntc = structural_ntc
 
         self.base_flows = base_flows
+
         self.monitor=monitor
         self.monitor_loading=monitor_loading
         self.monitor_by_sensitivity=monitor_by_sensitivity

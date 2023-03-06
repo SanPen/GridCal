@@ -43,16 +43,21 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self,
             name='NTC Optimal time series results',
             available_results={
-                ResultTypes.NTCResults: [
+                ResultTypes.FlowReports: [
                     ResultTypes.OpfNtcTsContingencyReport,
                     ResultTypes.OpfNtcTsBaseReport,
-
+                ],
+                ResultTypes.Sensibilities: [
                     ResultTypes.AvailableTransferCapacityAlpha,
-                    ResultTypes.AvailableTransferCapacityAlphaN1
+                    ResultTypes.AvailableTransferCapacityAlphaN1,
                 ],
-                ResultTypes.SeriesResults: [
+                ResultTypes.DispatchResults: [
                     ResultTypes.GeneratorPower,
+                    ResultTypes.GenerationDelta,
                 ],
+                ResultTypes.BranchMonitoring:[
+                    ResultTypes.BranchMonitoring,
+                ]
         },
 
             data_variables=[])
@@ -120,7 +125,15 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.GeneratorPower:
             labels, columns, y = self.get_generation_report()
             y_label = '(MW)'
-            title = 'Result generators power'
+            title = result_type.value[0]
+        elif result_type == ResultTypes.GenerationDelta:
+            labels, columns, y = self.get_generation_delta_report()
+            y_label = '(MW)'
+            title = result_type.value[0]
+        elif result_type == ResultTypes.BranchMonitoring:
+            labels, columns, y = self.get_branch_monitoring_report()
+            y_label = '(p.u.)'
+            title = result_type.value[0]
         else:
             raise Exception('No results available')
 
@@ -266,6 +279,17 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         return labels, columns, data
 
+    def get_generation_delta_report(self):
+        labels = self.time_array
+        columns = self.generator_names
+
+        data = np.empty(shape=(len(labels), len(columns)))
+
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                data[idx] = self.results_dict[t].generation_delta
+
+        return labels, columns, data
 
     def get_base_report(self):
 
@@ -421,3 +445,28 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
+    def get_branch_monitoring_report(self):
+        if len(self.results_dict.values()) == 0:
+            return
+
+        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        columns_all = ['Time index', 'Time'] + columns
+        data_all = np.empty(shape=(0, len(columns_all)))
+
+        for idx, t in enumerate(self.time_indices):
+
+            if t in self.results_dict.keys():
+                # critical_elements = self.results_dict[t].
+                l, c, data = self.results_dict[t].get_branch_monitoring_report()
+
+                # complete the report data with Time info
+                time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+                data = np.concatenate((time_data, data), axis=1)
+
+                # add to main data set
+                data_all = np.concatenate((data_all, data), axis=0)
+
+        # columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
+
+        labels_all = np.arange(data_all.shape[0])
+        return labels_all, columns_all, data_all

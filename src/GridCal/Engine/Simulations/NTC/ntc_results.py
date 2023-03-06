@@ -30,50 +30,90 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 hvdc_names, trm, ntc_load_rule, branch_control_modes, hvdc_control_modes,
-                 Sbus=None, voltage=None, battery_power=None, controlled_generation_power=None, Sf=None, loading=None,
-                 losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None, hvdc_angle_slack=None,
-                 phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
-                 alpha=None, alpha_n1=None, rates=None, monitor=None, contingency_branch_flows_list=None,
-                 contingency_branch_indices_list=None, contingency_generation_flows_list=None,
-                 contingency_generation_indices_list=None, contingency_hvdc_flows_list=None,
-                 contingency_hvdc_indices_list=None, contingency_rates=None, branch_ntc_load_rule=None,
-                 area_from_bus_idx=None, area_to_bus_idx=None, contingency_branch_alpha_list=None,
-                 contingency_generation_alpha_list=None, contingency_hvdc_alpha_list=None, structural_ntc=None,
-                 sbase=None):
+    def __init__(self,
+                 bus_names,
+                 branch_names,
+                 load_names,
+                 generator_names,
+                 battery_names,
+                 hvdc_names,
+                 trm,
+                 ntc_load_rule,
+                 branch_control_modes,
+                 hvdc_control_modes,
+                 Sbus=None,
+                 voltage=None,
+                 battery_power=None,
+                 controlled_generation_power=None,
+                 Sf=None,
+                 loading=None,
+                 losses=None,
+                 solved=None,
+                 bus_types=None,
+                 hvdc_flow=None,
+                 hvdc_loading=None,
+                 hvdc_angle_slack=None,
+                 phase_shift=None,
+                 generation_delta=None,
+                 inter_area_branches=None,
+                 inter_area_hvdc=None,
+                 alpha=None,
+                 alpha_n1=None,
+                 rates=None,
+                 contingency_branch_flows_list=None,
+                 contingency_branch_indices_list=None,
+                 contingency_generation_flows_list=None,
+                 contingency_generation_indices_list=None,
+                 contingency_hvdc_flows_list=None,
+                 contingency_hvdc_indices_list=None,
+                 contingency_rates=None,
+                 branch_ntc_load_rule=None,
+                 area_from_bus_idx=None,
+                 area_to_bus_idx=None,
+                 contingency_branch_alpha_list=None,
+                 contingency_generation_alpha_list=None,
+                 contingency_hvdc_alpha_list=None,
+                 structural_ntc=None,
+                 sbase=None,
+                 monitor=None,
+                 monitor_loading=None,
+                 monitor_by_sensitivity=None,
+                 monitor_by_unrealistic_ntc=None,
+                 monitor_by_zero_exchange=None,
+                 ):
 
         ResultsTemplate.__init__(
             self,
             name='OPF',
             available_results={
+                ResultTypes.FlowReports: [
+                    ResultTypes.ContingencyFlowsReport,
+                    ResultTypes.ContingencyFlowsBranchReport,
+                    ResultTypes.ContingencyFlowsGenerationReport,
+                    ResultTypes.ContingencyFlowsHvdcReport,
+                ],
                 ResultTypes.BusResults: [
                     ResultTypes.BusVoltageModule,
-                    ResultTypes.BusVoltageAngle
+                    ResultTypes.BusVoltageAngle,
                 ],
                 ResultTypes.BranchResults: [
                     ResultTypes.BranchPower,
                     ResultTypes.BranchLoading,
-                    ResultTypes.BranchTapAngle
-                ],
-                ResultTypes.ReportsResults: [
-                    ResultTypes.ContingencyFlowsReport,
-                    ResultTypes.ContingencyFlowsBranchReport,
-                    ResultTypes.ContingencyFlowsGenerationReport,
-                    ResultTypes.ContingencyFlowsHvdcReport
+                    ResultTypes.BranchTapAngle,
+                    ResultTypes.BranchMonitoring
                 ],
                 ResultTypes.HvdcResults: [
-                    ResultTypes.HvdcPowerFrom
+                    ResultTypes.HvdcPowerFrom,
                 ],
                 ResultTypes.DispatchResults: [
                     ResultTypes.BatteryPower,
                     ResultTypes.GeneratorPower,
-                    ResultTypes.GenerationDelta
+                    ResultTypes.GenerationDelta,
                 ],
                 ResultTypes.AreaResults: [
                     ResultTypes.AvailableTransferCapacityAlpha,
                     ResultTypes.AvailableTransferCapacityAlphaN1,
-                    ResultTypes.InterAreaExchange
+                    ResultTypes.InterAreaExchange,
                 ]
             },
             data_variables=[
@@ -107,8 +147,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_control_modes = hvdc_control_modes
         self.branch_control_modes = branch_control_modes
 
-        self.inter_area_branches = inter_area_branches
-        self.inter_area_hvdc = inter_area_hvdc
+        self.inter_area_branches = inter_area_branches or list()
+        self.inter_area_hvdc = inter_area_hvdc or list()
 
         self.area_from_bus_idx = area_from_bus_idx
         self.area_to_bus_idx = area_to_bus_idx
@@ -143,6 +183,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.alpha_n1 = alpha_n1
 
         self.monitor = monitor
+        self.monitor_loading = monitor_loading
+        self.monitor_by_sensitivity = monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange = monitor_by_zero_exchange
 
         self.contingency_branch_flows_list = contingency_branch_flows_list
         self.contingency_branch_indices_list = contingency_branch_indices_list  # [(t, m, c), ...]
@@ -230,6 +274,40 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return labels, columns, y
 
+    def get_monitoring_logic_report(self, loading=.98):
+
+        overloaded_idx = np.where(self.contingency_branch_flows_list > loading)[0]
+        flows = self.contingency_branch_flows_list[overloaded_idx]
+        m, c = list(map(list, zip(*np.array(self.contingency_branch_indices_list)[overloaded_idx])))
+
+        y = np.array([
+            self.branch_names[m],
+            self.branch_names[c],
+            self.monitor[m],
+            self.monitor_loading[m],
+            self.monitor_by_sensitivity[m],
+            self.monitor_by_unrealistic_ntc[m],
+            self.monitor_by_zero_exchange[m],
+            self.alpha[m],
+            np.amax(np.abs(self.alpha_n1[m]), axis=1),
+            flows,
+        ]).T
+        m, c = self.contingency_branch_indices_list[overloaded_idx]
+        labels = self.branch_names[m]
+        columns = [
+            'Branch',
+            'Contingency',
+            'Monitor',
+            'By model',
+            'By exchange sensibility',
+            'By unrealistic NTC',
+            'By zero exchange',
+            'Alpha',
+            'Max abs alpha n-1 ',
+            'Branch flow',
+        ]
+
+        return labels, columns, y
     def get_base_report(self, max_report_elements=0):
 
         labels = self.branch_names
@@ -655,6 +733,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         #    y_label = '(rad)'
         #    title = result_type.value[0]
 
+        elif result_type == ResultTypes.BranchMonitoring:
+            labels, columns, y = self.get_monitoring_logic_report()
+            y_label = '(p.u.)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
@@ -751,3 +834,4 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                            xlabel='',
                            units=y_label)
         return mdl
+

@@ -92,8 +92,10 @@ class ResultTypes(Enum):
     LossesPerArea = 'Losses per area', DeviceType.NoDevice
     ActivePowerFlowPerArea = 'Active power flow per area', DeviceType.NoDevice
 
+    # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice
     OpfNtcTsBaseReport = 'Base flow report', DeviceType.NoDevice
+
 
     # Short-circuit
     BusShortCircuitActivePower = 'Short circuit active power', DeviceType.BusDevice
@@ -132,6 +134,7 @@ class ResultTypes(Enum):
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 
+    # NTC
     ContingencyFlowsReport = 'Contingency Report', DeviceType.NoDevice
     ContingencyFlowsBranchReport = 'Contingency Branch Report', DeviceType.NoDevice
     ContingencyFlowsGenerationReport = 'Contingency Generation Report', DeviceType.NoDevice
@@ -184,6 +187,7 @@ class ResultTypes(Enum):
     BranchLoading2 = 'Branch loading (2)', DeviceType.BranchDevice
     BranchActiveLosses2 = 'Branch active losses (2)', DeviceType.BranchDevice
     BranchReactiveLosses2 = 'Branch reactive losses (2)', DeviceType.BranchDevice
+    BranchMonitoring = 'Branch monitoring logic', DeviceType.BranchDevice
 
     ShortCircuitInfo = 'Short-circuit information', DeviceType.NoDevice
 
@@ -193,10 +197,10 @@ class ResultTypes(Enum):
     HvdcResults = 'Hvdc', DeviceType.NoDevice
     AreaResults = 'Area', DeviceType.NoDevice
     InfoResults = 'Information', DeviceType.NoDevice
-    ReportsResults = 'Reports', DeviceType.NoDevice
     SlacksResults = 'Slacks', DeviceType.NoDevice
     DispatchResults = 'Dispatch', DeviceType.NoDevice
-    NTCResults = 'NTC', DeviceType.NoDevice
+    FlowReports = 'Flow Reports', DeviceType.NoDevice
+    Sensibilities = 'Sensibilities', DeviceType.NoDevice
     SeriesResults = 'Series', DeviceType.NoDevice
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
 
