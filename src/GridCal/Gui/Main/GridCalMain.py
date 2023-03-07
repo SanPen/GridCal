@@ -4049,11 +4049,17 @@ class MainGUI(QMainWindow):
                                              )
                 self.update_available_results()
 
+                # print convergence reports on the console
+                for report in drv.convergence_reports:
+                    msg_ = 'Optimal Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
+                    self.console_msg(msg_)
+
             else:
 
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'
-                            'that there is a generator at the slack node.', 'OPF')
+                            'that the generator bounds are ok.\n'
+                            'You may also use the diagnostic tool (F8)', 'OPF')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
