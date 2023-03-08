@@ -273,6 +273,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02, v_low=0.95, v
                                lower="0",
                                val=elm.rate)
 
+                # check R and X
                 if elm.R == 0.0 and elm.X == 0.0:
                     logger.add(object_type=object_type.value,
                                element_name=elm.name,
@@ -312,6 +313,27 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02, v_low=0.95, v
                                    message='The reactance is exactly zero',
                                    val=elm.X)
 
+                # check tap module
+                if elm.tap_module > 1.05:
+                    logger.add(object_type=object_type.value,
+                               element_name=elm.name,
+                               element_index=i,
+                               severity=LogSeverity.Warning,
+                               propty='tap_module',
+                               message='Tap module too high',
+                               upper="1.05",
+                               val=elm.tap_module)
+                elif elm.tap_module < 0.95:
+                    logger.add(object_type=object_type.value,
+                               element_name=elm.name,
+                               element_index=i,
+                               severity=LogSeverity.Warning,
+                               propty='tap_module',
+                               message='Tap module too low',
+                               upper="0.95",
+                               val=elm.tap_module)
+
+                # check virtual taps
                 tap_f, tap_t = elm.get_virtual_taps()
 
                 if tap_min > tap_f or tap_f > tap_max:
