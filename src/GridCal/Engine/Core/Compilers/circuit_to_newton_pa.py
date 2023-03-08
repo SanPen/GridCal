@@ -785,10 +785,16 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
     """
 
     return npa.PowerFlowOptions(solver_type=solver_type,
+                                retry_with_other_methods=opt.retry_with_other_methods,
+                                verbose=opt.verbose,
+                                initialize_with_existing_solution=opt.initialize_with_existing_solution,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
-                                retry_with_other_methods=opt.retry_with_other_methods,
-                                control_q_mode=q_control_dict[opt.control_Q])
+                                control_q_mode=q_control_dict[opt.control_Q],
+                                distributed_slack=opt.distributed_slack,
+                                correction_parameter=opt.backtracking_parameter,
+                                mu0=opt.mu
+                                )
 
 
 def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions"):

@@ -4050,9 +4050,9 @@ class MainGUI(QMainWindow):
                 self.update_available_results()
 
                 # print convergence reports on the console
-                for report in drv.convergence_reports:
-                    msg_ = 'Optimal Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
-                    self.console_msg(msg_)
+                # for report in drv.convergence_reports:
+                #     msg_ = 'Optimal Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
+                #     self.console_msg(msg_)
 
             else:
 
