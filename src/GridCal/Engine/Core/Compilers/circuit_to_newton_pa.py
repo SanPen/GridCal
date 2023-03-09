@@ -116,6 +116,8 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
                                   slack=bus.is_slack,
                                   dc=bus.is_dc,
                                   nominal_voltage=bus.Vnom,
+                                  vmin=bus.Vmin,
+                                  vmax=bus.Vmax,
                                   area=area_dict[bus.area] if bus.area is not None else None)
 
         if time_series and ntime > 1:
@@ -828,7 +830,7 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    mu0=pfopt.mu,
                                    control_q_mode=q_control_dict[pfopt.control_Q],
                                    flow_control=True,
-                                   voltage_control=False,
+                                   voltage_control=True,
                                    solver=solver_dict[opfopt.mip_solver])
 
 
