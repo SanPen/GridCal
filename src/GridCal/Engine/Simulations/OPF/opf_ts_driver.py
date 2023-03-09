@@ -313,7 +313,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                 b = self.end_
                 self.results.voltage[a:b, :] = npa_res.voltage
                 self.results.Sbus[a:b, :] = npa_res.Scalc
-                # self.results.bus_shadow_prices[a:b, :] = npa_res.nodal_shadow_prices
+                self.results.bus_shadow_prices[a:b, :] = npa_res.bus_shadow_prices
                 self.results.load_shedding[a:b, :] = npa_res.load_shedding
                 self.results.battery_power[a:b, :] = npa_res.battery_p
                 # self.results.battery_energy[a:b, :] = npa_res.battery_energy
