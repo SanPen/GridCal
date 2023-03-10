@@ -789,12 +789,12 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
     return npa.PowerFlowOptions(solver_type=solver_type,
                                 retry_with_other_methods=opt.retry_with_other_methods,
                                 verbose=opt.verbose,
-                                initialize_with_existing_solution=opt.initialize_with_existing_solution,
+                                initialize_with_existing_solution=False,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
                                 control_q_mode=q_control_dict[opt.control_Q],
                                 distributed_slack=opt.distributed_slack,
-                                correction_parameter=opt.backtracking_parameter,
+                                correction_parameter=0.5,
                                 mu0=opt.mu
                                 )
 
@@ -919,8 +919,8 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
     :return: Newton Power flow results object
     """
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
-                                                                  time_series=time_series,
-                                                                  tidx=tidx)
+                                                                time_series=time_series,
+                                                                tidx=tidx)
 
     if time_series:
         # it is already sliced to the relevant time indices
