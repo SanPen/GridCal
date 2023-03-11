@@ -647,6 +647,8 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
     get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
 
+    # npa.FileHandler().save(npaCircuit, circuit.name + "_circuit.newton")
+
     return npaCircuit, (bus_dict, area_dict, zone_dict)
 
 
