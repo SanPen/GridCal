@@ -601,7 +601,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :param opf_results: OPF results, to be used if not None
     :param logger: list of events to add to
     :param bus_dict: Dus object to index dictionary
-    :param area_dict: Area to area index dictionary
+    :param areas_dict: Area to area index dictionary
     :return: PowerFlowResults instance
     """
 

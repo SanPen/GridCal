@@ -250,7 +250,8 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
                             Pmax=elm.Pmax,
                             Qmin=elm.Qmin,
                             Qmax=elm.Qmax,
-                            dispatchable_default=BINT(elm.enabled_dispatch))
+                            dispatchable_default=BINT(elm.enabled_dispatch)
+                            )
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
@@ -305,7 +306,9 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
-            gen.setAllCost1(elm.Cost_prof if tidx is None else elm.Cost_prof[tidx])
+            gen.cost_0 = elm.Cost0_prof if tidx is None else elm.Cost0_prof[tidx]
+            gen.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_2 = elm.Cost2_prof if tidx is None else elm.Cost2_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
@@ -1084,8 +1087,6 @@ def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalP
     results.losses = res.Losses[0, :]
 
     return results
-
-
 
 
 def debug_newton_pa_circuit_at(npa_circuit: "npa.HybridCircuit", t: int = None):
