@@ -255,6 +255,11 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
 
         gen.nominal_power = elm.Snom
 
+        if elm.is_controlled:
+            gen.setAllControllable(1)
+        else:
+            gen.setAllControllable(0)
+
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
@@ -301,8 +306,14 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
                           Pmax=elm.Pmax,
                           )
 
+        gen.nominal_power = elm.Snom
         gen.charge_efficiency = elm.charge_efficiency
         gen.discharge_efficiency = elm.discharge_efficiency
+
+        if elm.is_controlled:
+            gen.setAllControllable(1)
+        else:
+            gen.setAllControllable(0)
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
@@ -315,7 +326,9 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
+            gen.setAllCost0(elm.Cost0)
             gen.setAllCost1(elm.Cost)
+            gen.setAllCost2(elm.Cost2)
 
         npa_circuit.addBattery(gen)
 
@@ -400,8 +413,9 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
                                     phase=elm.angle)
         if time_series:
             contingency_rates = elm.rate_prof * elm.contingency_factor
+            active_prof = elm.active_prof.astype(BINT)
 
-            tr2.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            tr2.active = active_prof if tidx is None else active_prof[tidx]
             tr2.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
             tr2.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
             tr2.tap = elm.tap_module_prof if tidx is None else elm.tap_module_prof[tidx]
@@ -411,7 +425,7 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
             tr2.setAllOverloadCost(elm.Cost)
 
         # control vars
-        tr2.setAllControlMode(ctrl_dict[elm.control_mode])
+        tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
         tr2.phase_min = elm.angle_min
         tr2.phase_max = elm.angle_max
         tr2.tap_min = elm.tap_module_min
