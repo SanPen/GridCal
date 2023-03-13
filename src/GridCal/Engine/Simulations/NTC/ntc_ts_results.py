@@ -293,13 +293,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_base_report(self):
 
-        labels, columns, data = list(self.results_dict.values())[0].get_base_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_ntc_base_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
-                l, c, data = self.results_dict[t].get_base_report(
+                l, c, data = self.results_dict[t].get_ntc_base_report(
                     max_report_elements=self.max_report_elements)
 
             # complete the report data with Time info
@@ -321,7 +321,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             print("Sin resultados")
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -332,7 +332,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ttc = np.floor(self.results_dict[t].get_exchange_power())
 
                 if ttc != 0:
-                    l, c, data = self.results_dict[t].get_contingency_report(
+                    l, c, data = self.results_dict[t].get_full_contingency_report(
                         max_report_elements=self.max_report_elements)
                 else:
                     data = np.zeros(shape=(1, len(columns)))
@@ -355,7 +355,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
 
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
@@ -364,7 +364,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
 
-                l, c, data = self.results_dict[t].get_contingency_branch_report(
+                l, c, data = self.results_dict[t].get_ntc_contingency_branch_report(
                     max_report_elements=self.max_report_elements)
 
             else:
@@ -388,7 +388,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -396,7 +396,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
 
-                l, c, data = self.results_dict[t].get_contingency_generation_report(
+                l, c, data = self.results_dict[t].get_ntc_contingency_generation_report(
                     max_report_elements=self.max_report_elements)
 
             else:
@@ -420,7 +420,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -428,7 +428,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
 
-                l, c, data = self.results_dict[t].get_contingency_hvdc_report(
+                l, c, data = self.results_dict[t].get_ntc_contingency_hvdc_report(
                     max_report_elements=self.max_report_elements)
             else:
                 data = np.zeros(shape=(1, len(columns)))
@@ -449,7 +449,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 

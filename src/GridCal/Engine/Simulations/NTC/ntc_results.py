@@ -247,117 +247,111 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return np.array(y).sum()
 
-    def get_contingency_report(self, max_report_elements=0):
+    def get_full_contingency_report(self, loading_threshold=0.98, reverse=True):
 
-        l1, c1, y1 = self.get_contingency_branch_report()
-        l2, c2, y2 = self.get_contingency_generation_report()
-        l3, c3, y3 = self.get_contingency_hvdc_report()
+        # Gel all contingency reports. All they are returned as tuples (y, columns, labels)
+        b = self.get_ntc_contingency_branch_report(loading_threshold=loading_threshold)
+        g = self.get_ntc_contingency_generation_report(loading_threshold=loading_threshold)
+        h = self.get_ntc_contingency_hvdc_report(loading_threshold=loading_threshold)
 
-        # group all contingency reports
-        labels = l1 + l2 + l3
-        columns = c1
-        y = np.concatenate((y1, y2, y3), axis=0)
+        # Group all, but only if they are not empty
+        labels, y_list = list(), list()
+        for i, (l_, c_, y_) in enumerate([b, g, h]):
+            if y_.shape[0] != 0:
+                labels.extend(l_)
+                y_list.extend(y_)
 
-        if len(y.shape) == 2:
-            # sort by column value
-            sort_idx = columns.index('Contingency flow (%)')
-            idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
-            y = y[idx, :]
-            y = np.array(y, dtype=object)
-        else:
-            y = np.zeros((0, len(columns)), dtype=object)
+        columns = b[1]
+        y = np.array(y_list)
+        labels = np.array(labels)
 
-        # curtail report
-        if max_report_elements > 0:
-            y = y[:max_report_elements, :]
-            labels = labels[:max_report_elements]
+        # sort by column value
+        if sorted:
+            y, labels = self.apply_sort(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                reverse=reverse,
+            )
 
         return labels, columns, y
 
-    def get_monitoring_logic_report(self, loading=.98):
-        return self.get_contingency_flow_report(
-            contingency_flow=self.contingency_branch_flows_list,
-            mc_idx=self.contingency_branch_indices_list,
-            load_threshold=loading
-        )
+    def apply_sort(self, y, labels, col, reverse=False):
+        """
+        Sort by column
+        """
+        # sort by column value
+        if y.shape[0] > 0:
+            idx = np.argsort(np.abs(y[:, col].astype(float)))
 
-    def get_flow_report(self, m, load_threshold=0.0, sorted=True):
+            if reverse:
+                idx = np.flip(idx)
+                y = y[idx]
+                labels = labels[idx]
+
+        return y, labels
+
+    def apply_filter(self, y, labels, col, threshold):
+        idx = np.where(np.abs(y[:, col]) >= threshold)
+        return y[idx], labels[idx]
+
+    def get_flow_report(self, m, flow, rates, monitor_names, contingency_names):
         """
         Get flow report
-        :param load_threshold: load threshold to filter results
         :param m: monitor indices
+        :param monitor_names: full monitor element names
+        :param contingency_names: full contingency element names
         returns
         """
         y = np.array([
-            self.branch_names[m],  # Branch name
-            self.alpha[m],  # Alpha: sensibility to exchange power
-            self.Sf.real[m],  # Branch flow
-            np.round(self.Sf[m] / self.rates[m] * 100, 2),  # Branch loading
-            self.rates[m],  # Rates
+            contingency_names[m],  # Contingency names
+            flow[m].real,  # Branch flow
+            np.round(flow[m] / rates[m] * 100, 2),  # Branch loading
+            rates[m],  # Rates
         ], dtype=object).T
 
-        # filter results if required
-        idx = np.where(np.abs(self.Sf) >= load_threshold)
-        y = y[idx]
+        labels = monitor_names[m]
 
-        labels = self.branch_names
         columns = [
             'Branch',
-            'Alpha',
             'Flow',
             'Load %'
             'Rate',
         ]
 
-        # sort by column value
-        if sorted:
-            sort_idx = columns.index('Contingency load %')
-            idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
-            y = y[idx]
-
         return labels, columns, y
 
-    def get_contingency_flow_report(self, contingency_flow, mc_idx, alpha_n1=None, load_threshold=0.0, sorted=True):
+    def get_contingency_flow_report(
+            self, mc_idx, flow, contingency_flow,  monitor_names, contingency_names, rates, contingency_rates
+    ):
         """
         Get flow report
-        :param contingency_flow: Array with contingency flows
         :param mc_idx: Idx tuple (monitor, contingency) for contingency flows
-        :param load_threshold: load threshold to filter results
+        :param flow: Array with flows
+        :param contingency_flow: Array with contingency flows
+        :param monitor_names: Array with full list of monitor element names
+        :param contingency_names: Array with full list of contingency element names
+        :param rates: Rates array
+        :param contingency_rates: Contingency rates array
+
         """
         # unzip monitor and contingency lists
         m, c = list(map(list, zip(*np.array(mc_idx))))
 
-        flow = self.Sf[m]
-        contingency_load = contingency_flow / self.contingency_rates[m]
-
-        if not alpha_n1:
-            alpha_n1 = self.alpha_n1[m, c]
-
         y = np.array([
-            self.branch_names[m],  # Branch name
-            self.branch_names[c],  # Contingency name
-            self.alpha[m],  # Alpha: sensibility to exchange power
-            alpha_n1,  # Alpha n1: sensibility to exchange power under contingency situation
-            np.amax(np.abs(self.alpha_n1[m]), axis=1),  # Worst alpha for monitorized branch
-            flow.real,  # Branch flow
-            np.round(flow / self.rates[m] * 100, 2),  # Branch loading
-            self.rates[m],  # Rates
+            contingency_names[c],  # Contingency name
+            flow[m].real,  # Branch flow
+            np.round(flow[m] / rates[m] * 100, 2),  # Branch loading
+            rates[m],  # Rates
             contingency_flow.real,  # Contingency flow
-            np.round(contingency_flow / self.contingency_rates[m] * 100, 2),  # Contingency loading
-            self.contingency_rates[m],  # Contingency rates
+            np.round(contingency_flow / contingency_rates[m] * 100, 2),  # Contingency loading
+            contingency_rates[m],  # Contingency rates
         ], dtype=object).T
 
-        # filter results if required
-        idx = np.where(np.abs(contingency_load) >= load_threshold)
-        y = y[idx]
+        labels = monitor_names[m]
 
-        labels = self.branch_names[m]
         columns = [
-            'Branch',
             'Contingency',
-            'Alpha',
-            'Alpha n-1',
-            '|Worst alpha| ',
             'Flow',
             'Load %',
             'Rate',
@@ -366,62 +360,251 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             'Contingency rate',
         ]
 
-        # sort by column value
-        if sorted:
-            sort_idx = columns.index('Contingency load %')
-            idx = np.flip(np.argsort(np.abs(y[:, sort_idx].astype(float))))
-            y = y[idx]
-
         return labels, columns, y
 
-    def get_monitor_report(self):
+    def get_monitoring_logic_report(self):
         """
         Get flow report
         :param load_threshold: load threshold to filter results
         """
 
         y = np.array([
-            self.branch_names,  # Branch name
             self.monitor,  # Monitor result
             self.monitor_loading,  # Monitor loading by user
             self.monitor_by_sensitivity,  # Monitor by sensibility
             self.monitor_by_unrealistic_ntc,  # Monitor by unrealistic ntc
             self.monitor_by_zero_exchange,  # Monitor by zero exchange load
-            self.alpha,  # Alpha: sensibility to exchange power
-            np.amax(np.abs(self.alpha_n1), axis=1),  # Worst alpha for monitorized branch
             self.rates,  # Rates
             self.contingency_rates,  # Contingency rates
         ], dtype=object).T
 
         labels = self.branch_names
         columns = [
-            'Branch',
             'Monitor',
             'By model',
             'By exchange sensibility',
             'By unrealistic NTC',
             'By zero exchange',
-            'Alpha',
-            '|Worst alpha| ',
             'Rate',
             'Contingency rate',
         ]
+
+        # Add exchange sensibility
+        y, columns = self.add_exchange_sensibilities(
+            y=y,
+            columns=columns,
+            alpha=self.alpha,
+        )
+
+        y, columns = self.add_maczt(y=y, columns=columns)
+        y, columns = self.add_min_ntc(y=y, columns=columns)
+
         return labels, columns, y
 
-    def get_base_report(self, load_threshold=.98, sorted=True):
+    def get_ntc_base_report(self, loading_threshold=0.0, reverse=True):
+        """
+        Get base report
+        :param loading_threshold: threshold to filter results,
+        :param reverse: Boolean to get ordered results. None to keep original .
+        """
 
         m = np.where(self.monitor)
 
         labels, columns, y = self.get_flow_report(
             m=m,
-            load_threshold=load_threshold,
+            flow=self.Sf,
+            rates=self.rates,
+            monitor_names=self.branch_names,
+            contingency_names=self.branch_names,
         )
 
         # Add NTC, inter area branches, shifter and hvdc data into report
-        y, columns = self.add_ntc_columns(y=y, columns=columns)
+        y, columns = self.add_exchange_sensibilities(y=y, columns=columns)
+        y, columns = self.add_ntc_data(y=y, columns=columns)
         y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
         y, columns = self.add_hvdc_data(y=y, columns=columns)
         y, columns = self.add_shifter_data(y=y, columns=columns)
+
+        # filter results if required
+        if loading_threshold != 0.0:
+            y, labels = self.apply_filter(
+                y=y,
+                labels=labels,
+                col=columns.index('Load %'),
+                threshold=loading_threshold,
+            )
+
+        # sort by column value
+        if reverse is not None:
+            y, labels = self.apply_sort(
+                y=y,
+                labels=labels,
+                col=columns.index('Load %'),
+                reverse=reverse,
+            )
+
+        return labels, columns, y
+
+
+    def get_ntc_contingency_branch_report(self, loading_threshold=0.0, reverse=True):
+        """
+        Get branch contingency report
+        :param loading_threshold: threshold to filter results,
+        :param reverse: Boolean to get ordered results. None to keep original .
+        """
+
+        labels, columns, y = self.get_contingency_flow_report(
+            mc_idx=self.contingency_branch_indices_list,
+            flow=self.Sf,
+            contingency_flow=self.contingency_branch_flows_list,
+            monitor_names=self.branch_names,
+            contingency_names=self.branch_names,
+            rates=self.rates,
+            contingency_rates=self.contingency_rates
+        )
+
+        # Add exchange sensibilities
+        y, columns = self.add_exchange_sensibilities(
+            y=y,
+            columns=columns,
+            mc_idx=self.contingency_branch_indices_list,
+            alpha=self.alpha,
+            alpha_n1=self.alpha_n1,
+        )
+
+        # Add NTC inter area branches, shifter and hvdc data into report
+        y, columns = self.add_ntc_data(y=y, columns=columns)
+        y, columns = self.add_maczt(y=y, columns=columns)
+        y, columns = self.add_min_ntc(y=y, columns=columns)
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
+        # filter results if required
+        if loading_threshold != 0.0:
+            y, labels = self.apply_filter(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                threshold=loading_threshold,
+            )
+
+        # sort by column value
+        if reverse is not None:
+            y, labels = self.apply_sort(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                reverse=reverse,
+            )
+
+        return labels, columns, y
+
+    def get_ntc_contingency_generation_report(self, loading_threshold=0.0, reverse=True):
+        """
+        Get generation contingency report
+        :param loading_threshold: threshold to filter results,
+        :param reverse: Boolean to get ordered results. None to keep original .
+        """
+
+        labels, columns, y = self.get_contingency_flow_report(
+            mc_idx=self.contingency_generation_indices_list,
+            flow=self.Sf,
+            contingency_flow=self.contingency_generation_flows_list,
+            monitor_names=self.branch_names,
+            contingency_names=self.generator_names,
+            rates=self.rates,
+            contingency_rates=self.contingency_rates
+        )
+
+        # Add exchange sensibilities
+        y, columns = self.add_exchange_sensibilities(
+            y=y,
+            columns=columns,
+            mc_idx=self.contingency_generation_indices_list,
+            alpha=self.alpha,
+            alpha_n1=self.alpha_n1,  #todo: check how to do it
+        )
+
+        # Add NTC, inter area branches, shifter and hvdc data into report
+        y, columns = self.add_ntc_data(y=y, columns=columns)
+        y, columns = self.add_maczt(y=y, columns=columns)
+        y, columns = self.add_min_ntc(y=y, columns=columns)
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
+        # filter results if required
+        if loading_threshold != 0.0:
+            y, labels = self.apply_filter(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                threshold=loading_threshold,
+            )
+
+        # sort by column value
+        if reverse is not None:
+            y, labels = self.apply_sort(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                reverse=reverse,
+            )
+
+        return labels, columns, y
+
+    def get_ntc_contingency_hvdc_report(self, loading_threshold=0.0, reverse=True):
+        """
+        Get hvdc contingency report
+        :param loading_threshold: threshold to filter results,
+        :param reverse: Boolean to get ordered results. None to keep original .
+        """
+
+        labels, columns, y = self.get_contingency_flow_report(
+            mc_idx=self.contingency_hvdc_indices_list,
+            flow=self.Sf,
+            contingency_flow=self.contingency_hvdc_flows_list,
+            monitor_names=self.branch_names,
+            contingency_names=self.hvdc_names,
+            rates=self.rates,
+            contingency_rates=self.contingency_rates
+        )
+
+        # Add exchange sensibilities
+        y, columns = self.add_exchange_sensibilities(
+            y=y,
+            columns=columns,
+            mc_idx=self.contingency_hvdc_indices_list,
+            alpha=self.alpha,
+            alpha_n1=self.alpha_n1, #todo: check how to do it
+        )
+
+        # Add NTC, inter area branches, shifter and hvdc data into report
+        y, columns = self.add_ntc_data(y=y, columns=columns)
+        y, columns = self.add_maczt(y=y, columns=columns)
+        y, columns = self.add_min_ntc(y=y, columns=columns)
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
+        # filter results if required
+        if loading_threshold != 0.0:
+            y, labels = self.apply_filter(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                threshold=loading_threshold,
+            )
+
+        # sort by column value
+        if reverse is not None:
+            y, labels = self.apply_sort(
+                y=y,
+                labels=labels,
+                col=columns.index('Contingency load %'),
+                reverse=reverse,
+            )
 
         return labels, columns, y
 
@@ -431,139 +614,180 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return shifter_names, shifter_idx
 
-    def get_contingency_branch_report(self, load_threshold=0.98, sorted=True):
+    def add_exchange_sensibilities(self, y, columns, alpha, mc_idx=None, alpha_n1=None):
+        """
+        :param y: report data matrix
+        :param columns: report column names
+        :param mc_idx: Idx tuple (monitor, contingency) for contingency flows
+        """
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
 
-        labels, columns, y = self.get_contingency_flow_report(
-            contingency_flow=self.contingency_branch_flows_list,
-            mc_idx=self.contingency_branch_indices_list,
-            load_threshold=load_threshold,
-            sorted=sorted
-        )
 
-        # Add NTC inter area branches, shifter and hvdc data into report
-        y, columns = self.add_ntc_data(y=y, columns=columns)
-        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
-        y, columns = self.add_hvdc_data(y=y, columns=columns)
-        y, columns = self.add_shifter_data(y=y, columns=columns)
+        if mc_idx:
+            # unzip monitor and contingency lists
+            m, c = list(map(list, zip(*np.array(mc_idx))))
 
-        return labels, columns, y
+        else:
+            m = np.arange(len(alpha))
 
-    def get_contingency_generation_report(self, load_threshold=0.98, sorted=True):
+        y_ = np.array([
+            alpha[m],  # Alpha: sensibility to exchange power
+        ], dtype=object).T
 
-        labels, columns, y = self.get_contingency_flow_report(
-            contingency_flow=self.contingency_generation_flows_list,
-            mc_idx=self.contingency_generation_indices_list,
-            alpha_n1=self.contingency_generation_alpha_list,
-            load_threshold=load_threshold,
-            sorted=sorted,
-        )
+        y = np.concatenate([y, y_], axis=1)
 
-        # Add NTC, inter area branches, shifter and hvdc data into report
-        y, columns = self.add_ntc_data(y=y, columns=columns)
-        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
-        y, columns = self.add_hvdc_data(y=y, columns=columns)
-        y, columns = self.add_shifter_data(y=y, columns=columns)
+        columns.extend([
+            'Alpha',
+        ])
 
-        return labels, columns, y
+        if alpha_n1 is not None:
+            y_ = np.array([
+                alpha_n1[m, c],  # Alpha: sensibility to exchange power in contingency situation
+                np.amax(np.abs(alpha_n1[m]), axis=1),  # Worst alpha for monitorized branch
+            ], dtype=object).T
 
-    def get_contingency_hvdc_report(self, load_threshold=0.98, sorted=True):
+            y = np.concatenate([y, y_], axis=1)
 
-        labels, columns, y = self.get_contingency_flow_report(
-            contingency_flow=self.contingency_hvdc_flows_list,
-            mc_idx=self.contingency_hvdc_indices_list,
-            alpha_n1=self.contingency_hvdc_alpha_list,
-            load_threshold=load_threshold,
-            sorted=sorted,
-        )
+            columns.extend([
+                'Alpha n-1',
+                '|Worst alpha| ',
+            ])
 
-        # Add NTC, inter area branches, shifter and hvdc data into report
-        y, columns = self.add_ntc_data(y=y, columns=columns)
-        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
-        y, columns = self.add_hvdc_data(y=y, columns=columns)
-        y, columns = self.add_shifter_data(y=y, columns=columns)
+        return y, columns
 
-        return labels, columns, y
+    def add_maczt(self, y, columns):
+        """
+
+        :param y: report data matrix
+        :param columns: report column names
+        """
+
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
+
+        alpha_col = list(map(lambda c: c.lower(), columns)).index('alpha')
+        rate_col = list(map(lambda c: c.lower(), columns)).index('rate')
+
+        trm = np.ones(y.shape[0]) * self.trm
+        ttc = np.ones(y.shape[0]) * np.floor(self.get_exchange_power())
+        ntc = ttc - trm
+
+        maczt = ntc * [np.abs(y[:, alpha_col]) / y[:, rate_col]]
+
+        y = np.concatenate([y, maczt.T], axis=1)
+
+        columns.extend([
+            'MACZT',
+        ])
+
+        return y, columns
+
+    def add_min_ntc(self, y, columns):
+        """
+
+        :param y: report data matrix
+        :param columns: report column names
+        """
+
+        alpha_col = list(map(lambda c: c.lower(), columns)).index('alpha')
+        rate_col = list(map(lambda c: c.lower(), columns)).index('rate')
+
+        # avoid numerical zero
+        alpha = y[:, alpha_col]
+        alpha[alpha == 0] = 1e-20
+
+        min_ntc = np.array([y[:, rate_col] / np.abs(alpha) * self.ntc_load_rule])
+
+        y = np.concatenate([y, min_ntc.T], axis=1)
+
+        columns.extend([
+            'NTC min'
+        ])
+
+        return y, columns
 
     def add_ntc_data(self, y, columns):
         """
         Add ntc info data into y, columns from report
-        :param y: array with report data
-        :param columns: columns name list
+        :param y: report data matrix
+        :param columns: report column names
         :return: new y, columns
         """
 
-        alpha_c = [c.lower() for c in columns].index('alpha')
-        rate_c = [c.lower() for c in columns].index('rate')
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
 
-        # compute extra columns
-        trm = np.ones(len(y.shape[0])) * self.trm
-        ttc = np.ones(len(y.shape[0])) * np.floor(self.get_exchange_power())
+        trm = np.ones(y.shape[0]) * self.trm
+        ttc = np.ones(y.shape[0]) * np.floor(self.get_exchange_power())
         ntc = ttc - trm
-        maczt = ntc * (np.abs(y[alpha_c]) / y[rate_c])
-        min_ntc = (y[rate_c] / np.abs(y[alpha_c]) * self.ntc_load_rule)
+        y_ = np.array([trm, ttc, ntc]).T
+        y = np.concatenate([y, y_], axis=1)
 
-        y = np.concatenate([y, trm, ttc, ntc, maczt, min_ntc], axis=1)
-
-        columns += [
+        columns.extend([
             'TRM',
             'TTC',
             'NTC',
-            'MACZT',
-            'NTC min'
-        ]
+        ])
         return y, columns
 
     def add_inter_area_branches_data(self, y, columns):
         """
         Add inter area branches data into y, columns from report
-        :param y:
-        :param columns:
+        :param y: report data matrix
+        :param columns: report column names
         :return:
         """
-        inter_area_idx = [idx for (idx, name) in self.inter_area_branches]
-        inter_area_names = self.branch_names[inter_area_idx]
-        inter_area_data = np.array([self.Sf[inter_area_idx]] * y.shape[0])
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
 
-        if len(y.shape) == 2:
-            y = np.concatenate((y, inter_area_data), axis=1)
-
-        columns = columns + [name for name in inter_area_names]
-
+        idx = [idx for (idx, name) in self.inter_area_branches]
+        y_ = np.array([self.Sf[idx]] * y.shape[0])
+        y = np.concatenate([y, y_], axis=1)
+        columns.extend(self.branch_names[idx])
         return y, columns
 
     def add_shifter_data(self, y, columns):
         """
         Add shifter data into y, columns from report
-        :param y:
-        :param columns:
+        :param y: report data matrix
+        :param columns: report column names
         :return:
         """
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
 
-        shifter_names, shifter_idx = self.get_controled_shifters_as_pt()
-        shifter_data = np.array([self.phase_shift[shifter_idx]] * y.shape[0])
-
-        if len(y.shape) == 2:
-            y = np.concatenate((y, shifter_data), axis=1)
-
-        columns = columns + [name for name in shifter_names]
-
+        names, idx = self.get_controled_shifters_as_pt()
+        y_ = np.array([self.phase_shift[idx]] * y.shape[0])
+        y = np.concatenate([y, y_], axis=1)
+        columns.extend(names)
         return y, columns
 
     def add_hvdc_data(self, y, columns):
         """
         Add hvdc data into y, columns from report
-        :param y:
-        :param columns:
+        :param y: report data matrix
+        :param columns: report column names
         :return:
         """
+        if y.shape[0] == 0:
+            # empty data, return
+            return y, columns
 
-        hvdc_data = np.array([self.hvdc_Pf] * y.shape[0])
-        hvdc_angles = np.array([self.hvdc_angle_slack] * y.shape[0])
+        # add hvdc power
+        y_ = np.array([self.hvdc_Pf] * y.shape[0])
+        y = np.concatenate((y, y_), axis=1)
+        columns.extend(self.hvdc_names)
 
-        if len(y.shape) == 2:
-            y = np.concatenate((y, hvdc_data, hvdc_angles), axis=1)
-
-        columns = columns + [name for name in self.hvdc_names] + ['Slack angle ' + name for name in self.hvdc_names]
+        # add hvdc slack angles
+        # y_ = np.array([self.hvdc_angle_slack] * y.shape[0])
+        # y = np.concatenate((y, y_), axis=1)
+        # columns.extend(map(lambda name: 'Slack angle ' + name, self.hvdc_names))
 
         return y, columns
 
@@ -576,7 +800,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         print('NTC is', self.get_exchange_power(), 'MW')
 
-        labels, columns, data = self.get_contingency_report()
+        labels, columns, data = self.get_full_contingency_report()
 
         df = pd.DataFrame(data=data, columns=columns, index=labels)
 
@@ -719,22 +943,22 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
-            labels, columns, y = self.get_contingency_report()
+            labels, columns, y = self.get_full_contingency_report()
             y_label = ''
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsBranchReport:
-            labels, columns, y = self.get_contingency_branch_report()
+            labels, columns, y = self.get_ntc_contingency_branch_report()
             y_label = ''
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
-            labels, columns, y = self.get_contingency_generation_report()
+            labels, columns, y = self.get_ntc_contingency_generation_report()
             y_label = ''
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
-            labels, columns, y = self.get_contingency_hvdc_report()
+            labels, columns, y = self.get_ntc_contingency_hvdc_report()
             y_label = ''
             title = result_type.value[0]
 

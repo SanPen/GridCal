@@ -1275,16 +1275,10 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
 
-                # hvdc_angle_slack_pos[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_pos_' + suffix)
-                # hvdc_angle_slack_neg[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_neg_' + suffix)
-                #
-                # solver.Add(
-                #     flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t] + hvdc_angle_slack_pos[i] - hvdc_angle_slack_neg[i]),
-                #     'hvdc_flow_assignment_' + suffix)
-
                 solver.Add(
                     flow_f[i] <= P0 + angle_droop_rad * (angles[_f] - angles[_t]),
-                    'hvdc_flow_assignment_' + suffix)
+                    'hvdc_flow_assignment_' + suffix
+                )
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
@@ -1434,9 +1428,15 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 _t = T[m]
                 suffix = "Branch_{0}@Hvdc_{1}".format(m, i)
 
-                flow_n1 = solver.NumVar(-rates[m], rates[m], 'hvdc_n-1_flow_' + suffix)
-                solver.Add(flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
-                           "hvdc_n-1_flow_assignment_" + suffix)
+                flow_n1 = solver.NumVar(
+                    -rates[m], rates[m],
+                    'hvdc_n-1_flow_' + suffix
+                )
+
+                solver.Add(
+                    flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
+                    "hvdc_n-1_flow_assignment_" + suffix
+                )
 
                 # store vars
                 con_hvdc_idx.append((m, i))
@@ -1489,10 +1489,16 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
                     _t = T[m]
                     suffix = "{0}@{1}_{2}@{3}".format(branch_names[m], generator_names[j], m, j)
 
-                    flow_n1 = solver.NumVar(-rates[m], rates[m], 'gen_n-1_flow_' + suffix)
+                    flow_n1 = solver.NumVar(
+                        -rates[m], rates[m],
+                        'gen_n-1_flow_' + suffix
+                    )
 
-                    solver.Add(flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold_pu,
-                               "gen_n-1_flow_assignment_" + suffix)
+                    solver.Add(
+                        # flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold_pu
+                        flow_n1 == flow_f[m] - PTDF[m, i] * Pgen[j]
+                        , "gen_n-1_flow_assignment_" + suffix
+                    )
 
                     # store vars
                     con_gen_idx.append((m, j))
@@ -1989,6 +1995,7 @@ class OpfNTC(Opf):
                 generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pgen,
+                # Pgen=generation,  # includes market generation + delta generation
                 generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
