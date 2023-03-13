@@ -253,6 +253,8 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
                             dispatchable_default=BINT(elm.enabled_dispatch)
                             )
 
+        gen.nominal_power = elm.Snom
+
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
