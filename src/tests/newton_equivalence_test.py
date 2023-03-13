@@ -7,7 +7,8 @@ from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import to_newton_pa
 npa.findAndActivateLicense()
 from tests.newton_equivalence_utils import compare_inputs, compare_inputs_at
 
-gridcal_file_name = '/Users/santi/Git/Elewit/newton-solver/newton/research/data/gridcal/Spain_France_portugal.gridcal'
+# gridcal_file_name = '/Users/santi/Git/Elewit/newton-solver/newton/research/data/gridcal/Spain_France_portugal.gridcal'
+gridcal_file_name = '/home/santi/Escritorio/Redes/Spain_France_portugal.gridcal'
 # gridcal_file_name = '/Users/santi/Git/GitHub/GridCal/src/tests/data/grids/IEEE39_1W.gridcal'
 
 grid_gc = gce.FileOpen(gridcal_file_name).open()

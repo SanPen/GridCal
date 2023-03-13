@@ -219,6 +219,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     err_count += CheckArr(nc_newton.generator_data.vset, nc_gc.generator_data.v[:, 0][g_idx], tol, 'GenData', 'Vset')
     err_count += CheckArr(nc_newton.generator_data.Qmin, nc_gc.generator_data.qmin[g_idx], tol, 'GenData', 'Qmin')
     err_count += CheckArr(nc_newton.generator_data.Qmax, nc_gc.generator_data.qmax[g_idx], tol, 'GenData', 'Qmax')
+    err_count += CheckArr(nc_newton.generator_data.controllable, nc_gc.generator_data.controllable, tol, 'GenData', 'controllable')
 
     # load data
     l_idx = [list(nc_gc.load_data.names).index(x) for x in nc_newton.load_data.names]
