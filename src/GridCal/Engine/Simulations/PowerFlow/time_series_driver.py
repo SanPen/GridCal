@@ -329,7 +329,10 @@ class TimeSeries(DriverTemplate):
 
     def run_newton_pa(self, time_indices=None):
 
-        res = newton_pa_pf(self.grid, self.options, time_series=True, tidx=time_indices)
+        res = newton_pa_pf(circuit=self.grid,
+                           opt=self.options,
+                           time_series=True,
+                           tidx=time_indices)
 
         results = TimeSeriesResults(n=self.grid.get_bus_number(),
                                     m=self.grid.get_branch_number_wo_hvdc(),

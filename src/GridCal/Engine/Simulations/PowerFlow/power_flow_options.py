@@ -93,7 +93,8 @@ class PowerFlowOptions:
                  ignore_single_node_islands=False,
                  mu=1.0,
                  backtracking_parameter=0.05,
-                 use_stored_guess=False):
+                 use_stored_guess=False,
+                 override_branch_controls=False):
 
         self.solver_type = solver_type
 
@@ -134,6 +135,8 @@ class PowerFlowOptions:
         self.backtracking_parameter = backtracking_parameter
 
         self.use_stored_guess = use_stored_guess
+
+        self.override_branch_controls = override_branch_controls
 
     def __str__(self):
         return "PowerFlowOptions"

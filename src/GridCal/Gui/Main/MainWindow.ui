@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>385</width>
-                        <height>460</height>
+                        <width>361</width>
+                        <height>242</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -3482,12 +3482,12 @@ p, li { white-space: pre-wrap; }
                    </widget>
                   </item>
                   <item>
-                   <widget class="QCheckBox" name="dispatch_storage_checkBox">
+                   <widget class="QCheckBox" name="override_branch_controls_checkBox">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.&lt;/p&gt;&lt;p&gt;When disabled, the storage devices beheave exactly as controlled generators&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>Overrides the branch control mode, setting them to fix values for the power flow simulations</string>
                     </property>
                     <property name="text">
-                     <string>dispatch storage</string>
+                     <string>Override branch controls</string>
                     </property>
                    </widget>
                   </item>

@@ -2543,6 +2543,8 @@ class MainGUI(QMainWindow):
 
         use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
 
+        override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
+
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=verbose,
@@ -2560,7 +2562,8 @@ class MainGUI(QMainWindow):
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
                                    mu=mu,
-                                   use_stored_guess=use_stored_guess)
+                                   use_stored_guess=use_stored_guess,
+                                   override_branch_controls=override_branch_controls)
 
         return ops
 

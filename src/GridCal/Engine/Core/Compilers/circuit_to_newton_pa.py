@@ -373,7 +373,7 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
 
 
 def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
-                         time_series: bool, ntime=1, tidx=None):
+                         time_series: bool, ntime=1, tidx=None, override_controls=False):
     """
 
     :param circuit: GridCal circuit
@@ -381,6 +381,8 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param ntime: number of time steps
+    :param tidx:
+    :param override_controls: If true the controls are set to Fix
     """
 
     ctrl_dict = {
@@ -425,7 +427,11 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
             tr2.setAllOverloadCost(elm.Cost)
 
         # control vars
-        tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
+        if override_controls:
+            tr2.setAllControlMode(npa.BranchControlModes.Fixed)
+        else:
+            tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
+
         tr2.phase_min = elm.angle_min
         tr2.phase_max = elm.angle_max
         tr2.tap_min = elm.tap_module_min
@@ -634,12 +640,13 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         npa_circuit.addHvdcLine(hvdc)
 
 
-def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = None):
+def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = None, override_branch_controls=False):
     """
     Convert GridCal circuit to Newton
     :param circuit: MultiCircuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param tidx: list of time indices
+    :param override_branch_controls: If true the branch controls are set to Fix
     :return: npa.HybridCircuit instance
     """
 
@@ -661,7 +668,7 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
     add_npa_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_line(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx, override_branch_controls)
     get_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
@@ -679,11 +686,13 @@ class FakeAdmittances:
         self.Yt = None
 
 
-def get_snapshots_from_newtonpa(circuit: MultiCircuit):
+def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=False):
 
     from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 
-    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit, time_series=False)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
+                                                                time_series=False,
+                                                                override_branch_controls=override_branch_controls)
 
     npa_data_lst = npa.compileAt(npaCircuit, t=0).splitIntoIslands()
 
@@ -907,9 +916,13 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     :param opt: Power Flow Options
     :param time_series: Compile with GridCal time series?
     :param tidx: Array of time indices
+    :param override_branch_controls: If true, the branch controls are set to fix
     :return: Newton Power flow results object
     """
-    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
+                                                                 time_series=time_series,
+                                                                 tidx=tidx,
+                                                                 override_branch_controls=opt.override_branch_controls)
 
     pf_options = get_newton_pa_pf_options(opt)
 
@@ -941,7 +954,8 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
     """
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
                                                                 time_series=time_series,
-                                                                tidx=tidx)
+                                                                tidx=tidx,
+                                                                override_branch_controls=False)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -973,8 +987,9 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
     :return: Newton Power flow results object
     """
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
-                                                                  time_series=time_series,
-                                                                  tidx=tidx)
+                                                                time_series=time_series,
+                                                                tidx=tidx,
+                                                                override_branch_controls=False)
 
     pf_options = get_newton_pa_nonlinear_opf_options(pfopt, opfopt)
 
@@ -995,14 +1010,16 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
     return pf_res
 
 
-def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
+def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False, override_branch_controls=False):
     """
     Newton linear analysis
     :param circuit: MultiCircuit instance
     :param distributed_slack: distribute the PTDF slack
     :return: Newton LinearAnalysisMatrices object
     """
-    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit, time_series=False)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                 time_series=False,
+                                                                 override_branch_controls=override_branch_controls)
 
     options = npa.LinearAnalysisOptions(distribute_slack=distributed_slack)
     results = npa.runLinearAnalysisAt(t=0, circuit=npa_circuit, options=options)

@@ -1241,7 +1241,7 @@ class Ui_mainWindow(object):
         self.toolBox.addItem(self.contingencyBranchesPage, u"Branches")
         self.contingencyInjectionsPage = QWidget()
         self.contingencyInjectionsPage.setObjectName(u"contingencyInjectionsPage")
-        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 385, 460))
+        self.contingencyInjectionsPage.setGeometry(QRect(0, 0, 361, 242))
         self.verticalLayout_41 = QVBoxLayout(self.contingencyInjectionsPage)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
         self.verticalLayout_41.setContentsMargins(0, 0, 0, 0)
@@ -1909,10 +1909,10 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.apply_impedance_tolerances_checkBox)
 
-        self.dispatch_storage_checkBox = QCheckBox(self.frame_36)
-        self.dispatch_storage_checkBox.setObjectName(u"dispatch_storage_checkBox")
+        self.override_branch_controls_checkBox = QCheckBox(self.frame_36)
+        self.override_branch_controls_checkBox.setObjectName(u"override_branch_controls_checkBox")
 
-        self.verticalLayout_4.addWidget(self.dispatch_storage_checkBox)
+        self.verticalLayout_4.addWidget(self.override_branch_controls_checkBox)
 
         self.verticalSpacer_14 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -4693,9 +4693,9 @@ class Ui_mainWindow(object):
         self.temperature_correction_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply temperature correction", None))
         self.apply_impedance_tolerances_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply impedance tolerances", None))
 #if QT_CONFIG(tooltip)
-        self.dispatch_storage_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.</p><p>When disabled, the storage devices beheave exactly as controlled generators</p></body></html>", None))
+        self.override_branch_controls_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Overrides the branch control mode, setting them to fix values for the power flow simulations", None))
 #endif // QT_CONFIG(tooltip)
-        self.dispatch_storage_checkBox.setText(QCoreApplication.translate("mainWindow", u"dispatch storage", None))
+        self.override_branch_controls_checkBox.setText(QCoreApplication.translate("mainWindow", u"Override branch controls", None))
         self.label_63.setText("")
         self.label_17.setText(QCoreApplication.translate("mainWindow", u"Power flow", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"PF", None))
