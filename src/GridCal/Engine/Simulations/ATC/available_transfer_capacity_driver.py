@@ -99,7 +99,7 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
     return P + dP
 
-@nb.njit()
+# @nb.njit()
 def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0, lodf=None,
                   with_n1=False):
     """
@@ -592,8 +592,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             lodf=linear.LODF,
             P0=nc.Sbus.real,
             Pinstalled=nc.bus_installed_power,
-            Pgen=nc.generator_data.get_injections_per_bus(),
-            Pload=nc.load_data.get_injections_per_bus(),
+            Pgen=nc.generator_data.get_injections_per_bus().real,
+            Pload=nc.load_data.get_injections_per_bus().real,
             idx1=idx1b,
             idx2=idx2b,
             dT=self.options.dT,

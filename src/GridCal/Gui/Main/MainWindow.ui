@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>361</width>
-                        <height>242</height>
+                        <width>385</width>
+                        <height>460</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -5149,8 +5149,11 @@ p, li { white-space: pre-wrap; }
                   </item>
                   <item row="4" column="0">
                    <widget class="QCheckBox" name="n1ConsiderationCheckBox">
+                    <property name="toolTip">
+                     <string>N-1 contingencies will be considered using the LODF matrix</string>
+                    </property>
                     <property name="text">
-                     <string>n-1 sensibility consideration</string>
+                     <string>Include N-1 contingencies</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -5202,6 +5205,12 @@ p, li { white-space: pre-wrap; }
                </property>
                <item row="3" column="0" colspan="2">
                 <widget class="QCheckBox" name="ptdf_correct_nonsense_values_checkBox">
+                 <property name="toolTip">
+                  <string>Out of range values can naturally occurr due to the linear sensitivities formulation, correct those to the appropriate ranges when occurring</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
                  <property name="text">
                   <string>Correct nonsense values</string>
                  </property>
@@ -5389,6 +5398,12 @@ p, li { white-space: pre-wrap; }
                </item>
                <item row="2" column="0" colspan="2">
                 <widget class="QCheckBox" name="ptdf_distributed_slack_checkBox">
+                 <property name="toolTip">
+                  <string>Compute the slack influence distribution</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
                  <property name="text">
                   <string>Distributed slack</string>
                  </property>
