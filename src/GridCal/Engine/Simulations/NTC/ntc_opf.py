@@ -3080,8 +3080,9 @@ if __name__ == '__main__':
         Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
         Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
         idx1=a1,
-        idx2=a2,
-        with_n1=True)
+        idx2=a2
+    )
+
     print('alpha and alpha n-1 computed in {0} scs.'.format(time.time() - tm0))
 
     problem = OpfNTC(

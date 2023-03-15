@@ -67,9 +67,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit: SnapshotOpfData, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
-        alpha, alpha_n1 = compute_alpha(
+        return compute_alpha(
             ptdf=linear.PTDF,
-            lodf=linear.LODF,
+            lodf=linear.LODF if with_n1 else None,
             P0=numerical_circuit.Sbus.real,
             Pinstalled=numerical_circuit.bus_installed_power,
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, 0].real,
@@ -78,9 +78,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
-            with_n1=with_n1)
-
-        return alpha, alpha_n1
+        )
 
     def opf(self):
         """

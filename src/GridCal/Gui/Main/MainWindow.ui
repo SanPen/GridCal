@@ -1783,8 +1783,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>258</width>
-                        <height>210</height>
+                        <width>196</width>
+                        <height>189</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>361</width>
-                        <height>242</height>
+                        <width>269</width>
+                        <height>215</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -2802,15 +2802,6 @@ p, li { white-space: pre-wrap; }
                    </color>
                   </brush>
                  </colorrole>
-                 <colorrole role="PlaceholderText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="128">
-                    <red>0</red>
-                    <green>0</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
                 </active>
                 <inactive>
                  <colorrole role="WindowText">
@@ -2948,15 +2939,6 @@ p, li { white-space: pre-wrap; }
                    </color>
                   </brush>
                  </colorrole>
-                 <colorrole role="PlaceholderText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="128">
-                    <red>0</red>
-                    <green>0</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
                 </inactive>
                 <disabled>
                  <colorrole role="WindowText">
@@ -3088,15 +3070,6 @@ p, li { white-space: pre-wrap; }
                  <colorrole role="ToolTipText">
                   <brush brushstyle="SolidPattern">
                    <color alpha="255">
-                    <red>0</red>
-                    <green>0</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="PlaceholderText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="128">
                     <red>0</red>
                     <green>0</green>
                     <blue>0</blue>
@@ -5052,7 +5025,7 @@ p, li { white-space: pre-wrap; }
                   <item row="3" column="0">
                    <widget class="QLabel" name="label_30">
                     <property name="text">
-                     <string>Number of elements to report</string>
+                     <string>Loading threshold to report</string>
                     </property>
                    </widget>
                   </item>
@@ -5076,22 +5049,6 @@ p, li { white-space: pre-wrap; }
                    <widget class="QLabel" name="label_62">
                     <property name="text">
                      <string>Transfer sensitivity threshold</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QSpinBox" name="ntcReportLimitingElementsSpinBox">
-                    <property name="toolTip">
-                     <string>Top NTC limiting elements. Set to -1 to display all.</string>
-                    </property>
-                    <property name="minimum">
-                     <number>0</number>
-                    </property>
-                    <property name="maximum">
-                     <number>999999999</number>
-                    </property>
-                    <property name="value">
-                     <number>5</number>
                     </property>
                    </widget>
                   </item>
@@ -5135,6 +5092,19 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="checked">
                      <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="ntcReportLoadingThresholdSpinBox">
+                    <property name="suffix">
+                     <string>%</string>
+                    </property>
+                    <property name="maximum">
+                     <number>9999</number>
+                    </property>
+                    <property name="value">
+                     <number>98</number>
                     </property>
                    </widget>
                   </item>
@@ -8438,7 +8408,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

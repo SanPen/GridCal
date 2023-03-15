@@ -25,7 +25,8 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, bus_names, branch_names, generator_names, load_names, rates, contingency_rates, time_array, time_indices,
-                 sampled_probabilities=None, max_report_elements=5, trm=0, ntc_load_rule=100):
+                 sampled_probabilities=None, loading_threshold_to_report=0.98, trm=0, ntc_load_rule=100):
+
         """
 
         :param branch_names:
@@ -55,7 +56,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     ResultTypes.GeneratorPower,
                     ResultTypes.GenerationDelta,
                 ],
-                ResultTypes.BranchMonitoring:[
+                ResultTypes.BranchMonitoring: [
                     ResultTypes.BranchMonitoring,
                 ]
         },
@@ -76,7 +77,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.report = None
         self.report_headers = None
         self.report_indices = None
-        self.max_report_elements = max_report_elements
+        self.loading_threshold_to_report = loading_threshold_to_report
 
         self.sampled_probabilities = sampled_probabilities
 
@@ -217,8 +218,15 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         # sort data by ntc and time index, descending to compute probability factor
+        ntc_idx = list(map(str.lower, columns)).index('ntc')
+        cload_idx = list(map(str.lower, columns)).index('contingency load %')
+        time_idx = list(map(str.lower, columns)).index('time')
         data = data[np.lexsort(
-            (np.abs(data[:, 11].astype(float)), data[:, 0], data[:, 2].astype(float))
+            (
+                data[:, time_idx],
+                np.abs(data[:, cload_idx].astype(float)),
+                np.abs(data[:, ntc_idx].astype(float)),
+            )
         )][::-1]
 
         # add probability info into data
@@ -300,7 +308,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
                 l, c, data = self.results_dict[t].get_ntc_base_report(
-                    max_report_elements=self.max_report_elements)
+                    loading_threshold=self.loading_threshold_to_report,
+                    reverse=True,
+                )
 
             # complete the report data with Time info
             time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
@@ -321,7 +331,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             print("Sin resultados")
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
+            loading_threshold=self.loading_threshold_to_report,
+            reverse=True,
+        )
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -333,7 +346,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
                 if ttc != 0:
                     l, c, data = self.results_dict[t].get_full_contingency_report(
-                        max_report_elements=self.max_report_elements)
+                        loading_threshold=self.loading_threshold_to_report,
+                        reverse=True,
+                    )
                 else:
                     data = np.zeros(shape=(1, len(columns)))
 
@@ -344,7 +359,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(
+            columns=columns_all,
+            data=data_all
+        )
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -355,7 +373,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
+            loading_threshold=self.loading_threshold_to_report,
+            reverse=True,
+        )
 
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
@@ -365,7 +386,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
 
                 l, c, data = self.results_dict[t].get_ntc_contingency_branch_report(
-                    max_report_elements=self.max_report_elements)
+                    loading_threshold=self.loading_threshold_to_report,
+                    reverse=True,
+                )
 
             else:
                 data = np.zeros(shape=(1, len(columns)))
@@ -388,7 +411,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
+            loading_threshold=self.loading_threshold_to_report,
+            reverse=True,
+        )
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -397,7 +423,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
 
                 l, c, data = self.results_dict[t].get_ntc_contingency_generation_report(
-                    max_report_elements=self.max_report_elements)
+                    loading_threshold=self.loading_threshold_to_report,
+                    reverse=True,
+                )
 
             else:
                 data = np.zeros(shape=(1, len(columns)))
@@ -409,7 +437,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(
+            columns=columns_all,
+            data=data_all
+        )
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -420,7 +451,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
+            loading_threshold=self.loading_threshold_to_report,
+            reverse=True,
+        )
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -429,7 +463,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
 
                 l, c, data = self.results_dict[t].get_ntc_contingency_hvdc_report(
-                    max_report_elements=self.max_report_elements)
+                    loading_threshold=self.loading_threshold_to_report,
+                    reverse=True,
+                )
             else:
                 data = np.zeros(shape=(1, len(columns)))
 
@@ -440,7 +476,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(
+            columns=columns_all,
+            data=data_all
+        )
 
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
@@ -449,7 +488,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report()
+        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
+            loading_threshold=self.loading_threshold_to_report,
+            reverse=True,
+        )
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -457,7 +499,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
                 # critical_elements = self.results_dict[t].
-                l, c, data = self.results_dict[t].get_branch_monitoring_report()
+                l, c, data = self.results_dict[t].get_branch_monitoring_report(
+                    loading_threshold=self.loading_threshold_to_report,
+                    reverse=True,
+                )
 
                 # complete the report data with Time info
                 time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
