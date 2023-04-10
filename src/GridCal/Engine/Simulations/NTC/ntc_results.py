@@ -430,7 +430,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         # Add exchange sensibilities
         y, columns = add_exchange_sensibilities(
             y=y,
-            mc_idx=self.contingency_branch_indices_list,
             columns=columns,
             alpha=self.alpha,
         )
@@ -462,7 +461,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         m = np.where(self.monitor)
 
         labels, columns, y = get_flow_report(
-            m=m,
+            m=np.arange(len(self.branch_names)),
             flow=self.Sf,
             rates=self.rates,
             monitor_names=self.branch_names,
@@ -472,7 +471,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         # Add exchange sensibilities
         y, columns = add_exchange_sensibilities(
             y=y,
-            mc_idx=self.contingency_branch_indices_list,
             columns=columns,
             alpha=self.alpha,
         )
@@ -1156,7 +1154,7 @@ def get_flow_report(m, flow, rates, monitor_names, contingency_names):
     columns = [
         'Branch',
         'Flow',
-        'Load %'
+        'Load %',
         'Rate',
     ]
 

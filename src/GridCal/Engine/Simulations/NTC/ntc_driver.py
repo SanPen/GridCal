@@ -77,7 +77,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
-            mode=self.options.sensitivity_mode.value,
+            mode=self.options.transfer_method.value,
         )
 
     def opf(self):
@@ -260,6 +260,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
                 match_gen_load=self.options.match_gen_load,
                 ntc_load_rule=self.options.ntc_load_rule,
+                transfer_method=self.options.transfer_method,
                 logger=self.logger)
 
             # Solve
@@ -447,7 +448,7 @@ if __name__ == '__main__':
         generation_contingency_threshold=1000,
         tolerance=1e-2,
         sensitivity_dT=100.0,
-        sensitivity_mode=AvailableTransferMode.InstalledPower,
+        transfer_mode=AvailableTransferMode.InstalledPower,
         # todo: checkear si queremos el ptdf por potencia generada
         perform_previous_checks=False,
         weight_power_shift=1e5,

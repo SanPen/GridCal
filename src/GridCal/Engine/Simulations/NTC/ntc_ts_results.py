@@ -488,10 +488,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.results_dict.values()) == 0:
             return
 
-        labels, columns, data = list(self.results_dict.values())[0].get_full_contingency_report(
-            loading_threshold=self.loading_threshold_to_report,
-            reverse=True,
-        )
+        labels, columns, data = list(self.results_dict.values())[0].get_monitoring_logic_report()
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
@@ -499,10 +496,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
                 # critical_elements = self.results_dict[t].
-                l, c, data = self.results_dict[t].get_branch_monitoring_report(
-                    loading_threshold=self.loading_threshold_to_report,
-                    reverse=True,
-                )
+                l, c, data = self.results_dict[t].get_monitoring_logic_report()
 
                 # complete the report data with Time info
                 time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])

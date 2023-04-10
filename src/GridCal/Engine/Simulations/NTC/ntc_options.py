@@ -38,7 +38,6 @@ class OptimalNetTransferCapacityOptions:
                  dispatch_all_areas=False,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
-                 sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
                  with_solution_checks=True,
@@ -52,6 +51,7 @@ class OptimalNetTransferCapacityOptions:
                  ntc_load_rule=0,
                  n1_consideration=True,
                  loading_threshold_to_report=0.98,
+                 transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  ):
         """
 
@@ -67,7 +67,6 @@ class OptimalNetTransferCapacityOptions:
         :param consider_contingencies:
         :param tolerance:
         :param sensitivity_dT:
-        :param sensitivity_mode:
         :param weight_power_shift:
         :param weight_generation_cost:
         :param with_solution_checks:
@@ -77,6 +76,7 @@ class OptimalNetTransferCapacityOptions:
         :param trm:
         :param ntc_load_rule:
         :param n1_consideration:
+        :param transfer_method:
         """
         self.verbose = verbose
 
@@ -103,7 +103,7 @@ class OptimalNetTransferCapacityOptions:
 
         self.sensitivity_dT = sensitivity_dT
 
-        self.sensitivity_mode = sensitivity_mode
+        self.transfer_method = transfer_method
 
         self.perform_previous_checks = perform_previous_checks
 

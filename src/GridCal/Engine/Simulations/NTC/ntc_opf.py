@@ -25,6 +25,7 @@ import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import Logger
 import os
@@ -473,7 +474,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
 
 def formulate_proportional_generation(solver: pywraplp.Solver, generator_active, generator_dispatchable,
                                       generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
-                                      Pmin, a1, a2, logger: Logger):
+                                      Pmin, Pref, a1, a2, logger: Logger):
     """
     Formulate the generation increments in a proportional fashion
     :param solver: Solver instance to which add the equations
@@ -487,6 +488,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     :param Pgen: Array of generator active power values in p.u.
     :param Pmax: Array of generator maximum active power values in p.u.
     :param Pmin: Array of generator minimum active power values in p.u.
+    :param Pref: Array of generator reference power values in p.u to compute deltas.
     :param a1: array of bus indices of the area 1
     :param a2: array of bus indices of the area 2
     :param logger: Logger instance
@@ -502,6 +504,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     gen_cost = np.ones(ngen)
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
+
 
     # # Only for debug purpose
     # Pgen = np.array([-102, 500, 1800, 1500, -300, 100])
@@ -522,33 +525,44 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     is_gen_in_a1 = np.isin(range(len(Pgen)), a1_gen_idx, assume_unique=True)
     is_gen_in_a2 = np.isin(range(len(Pgen)), a2_gen_idx, assume_unique=True)
 
-    # mask for valid generators
-    Pgen_a1 = Pgen * is_gen_in_a1 * generator_active * generator_dispatchable * (Pgen < Pmax)
-    Pgen_a2 = Pgen * is_gen_in_a2 * generator_active * generator_dispatchable * (Pgen > Pmin)
-
-    # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
-    gen_pos_a1 = np.where(Pgen_a1 < 0, 0, Pgen_a1)
-    gen_neg_a1 = np.where(Pgen_a1 > 0, 0, Pgen_a1)
-    gen_pos_a2 = np.where(Pgen_a2 < 0, 0, Pgen_a2)
-    gen_neg_a2 = np.where(Pgen_a2 > 0, 0, Pgen_a2)
-
     # get proportions of contribution by sense (gen or pump) and area
     # the idea is both techs contributes to achieve the power shift goal in the same proportion
     # that in base situation
-    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pgen_a1))
-    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pgen_a1))
-    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pgen_a2))
-    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pgen_a2))
+    Pref_a1 = Pref * is_gen_in_a1 * generator_active * generator_dispatchable * (Pref < Pmax)
+    Pref_a2 = Pref * is_gen_in_a2 * generator_active * generator_dispatchable * (Pref > Pmin)
+
+    # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
+    gen_pos_a1 = np.where(Pref_a1 < 0, 0, Pref_a1)
+    gen_neg_a1 = np.where(Pref_a1 > 0, 0, Pref_a1)
+    gen_pos_a2 = np.where(Pref_a2 < 0, 0, Pref_a2)
+    gen_neg_a2 = np.where(Pref_a2 > 0, 0, Pref_a2)
+
+    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pref_a1))
+    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pref_a1))
+    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pref_a2))
+    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pref_a2))
 
     # get proportion by production (ammount of power contributed by generator to his sensed area).
-    prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1)) if np.sum(np.abs(gen_pos_a1)) != 0 else np.zeros_like(
-        gen_pos_a1)
-    prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1)) if np.sum(np.abs(gen_neg_a1)) != 0 else np.zeros_like(
-        gen_neg_a1)
-    prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2)) if np.sum(np.abs(gen_pos_a2)) != 0 else np.zeros_like(
-        gen_pos_a2)
-    prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2)) if np.sum(np.abs(gen_neg_a2)) != 0 else np.zeros_like(
-        gen_neg_a2)
+
+    if np.sum(np.abs(gen_pos_a1)) != 0:
+        prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1))
+    else:
+        prop_up_gen_a1 = np.zeros_like(gen_pos_a1)
+
+    if np.sum(np.abs(gen_neg_a1)) != 0:
+        prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1))
+    else:
+        prop_dw_gen_a1 = np.zeros_like(gen_neg_a1)
+
+    if np.sum(np.abs(gen_pos_a2)) != 0:
+        prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2))
+    else:
+        prop_up_gen_a2 = np.zeros_like(gen_pos_a2)
+
+    if np.sum(np.abs(gen_neg_a2)) != 0:
+        prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2))
+    else:
+        prop_dw_gen_a2 = np.zeros_like(gen_neg_a2)
 
     # delta proportion by generator (considering both proportions: sense and production)
     prop_gen_delta_up_a1 = prop_up_gen_a1 * prop_up_a1
@@ -1599,7 +1613,8 @@ class OpfNTC(Opf):
                  generation_contingency_threshold=1000,
                  match_gen_load=False,
                  force_exchange_sense=False,
-                 logger: Logger = None):
+                 transfer_method=AvailableTransferMode.InstalledPower,
+                 logger: Logger=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit:  NumericalCircuit instance
@@ -1621,6 +1636,7 @@ class OpfNTC(Opf):
         :param weight_power_shift: Power shift maximization weight
         :param weight_generation_cost: Generation cost minimization weight
         :param match_gen_load: Boolean to match generation and load power
+        :param transfer_method:
         :param logger: logger instance
         """
 
@@ -1693,6 +1709,9 @@ class OpfNTC(Opf):
         self.monitor_by_zero_exchange = list()
         self.branch_ntc_load_rule = list()
         self.branch_zero_exchange_load = list()
+
+        self.transfer_method = transfer_method
+
         self.logger = logger
 
         # this builds the formulation right away
@@ -1774,6 +1793,11 @@ class OpfNTC(Opf):
             )
         else:
             Pgen = Pgen_orig
+
+        if self.transfer_method == AvailableTransferMode.InstalledPower:
+            Pg_ref = self.numerical_circuit.generator_pmax / Sbase
+        else:
+            Pg_ref = Pgen
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
@@ -1871,6 +1895,7 @@ class OpfNTC(Opf):
                 Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
+                Pref=Pg_ref,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
                 logger=self.logger)
@@ -2063,7 +2088,6 @@ class OpfNTC(Opf):
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
 
-
         # self.Pb = Pb
         self.Pl = Pload
         self.Pinj = Pinj
@@ -2108,14 +2132,14 @@ class OpfNTC(Opf):
 
         self.base_flows = base_flows
 
-        self.monitor=monitor
-        self.monitor_loading=monitor_loading
-        self.monitor_by_sensitivity=monitor_by_sensitivity
-        self.monitor_by_unrealistic_ntc=monitor_by_unrealistic_ntc
-        self.monitor_by_zero_exchange=monitor_by_zero_exchange
+        self.monitor = monitor
+        self.monitor_loading = monitor_loading
+        self.monitor_by_sensitivity = monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange = monitor_by_zero_exchange
 
-        self.branch_ntc_load_rule=branch_ntc_load_rule
-        self.branch_zero_exchange_load=branch_zero_exchange_load
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+        self.branch_zero_exchange_load = branch_zero_exchange_load
 
         return self.solver
 
@@ -2159,6 +2183,12 @@ class OpfNTC(Opf):
             Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
         else:
             Pgen = Pgen_orig
+
+
+        if self.transfer_method == AvailableTransferMode.InstalledPower:
+            Pg_ref = self.numerical_circuit.generator_pmax / Sbase
+        else:
+            Pg_ref = Pgen
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
@@ -2255,6 +2285,7 @@ class OpfNTC(Opf):
                 Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
+                Pref=Pg_ref,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
                 logger=self.logger)
@@ -2433,7 +2464,6 @@ class OpfNTC(Opf):
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
 
-
         # self.Pb = Pb
         self.Pl = Pload
         self.Pinj = Pinj
@@ -2478,14 +2508,14 @@ class OpfNTC(Opf):
 
         self.base_flows = base_flows
 
-        self.monitor=monitor
-        self.monitor_loading=monitor_loading
-        self.monitor_by_sensitivity=monitor_by_sensitivity
-        self.monitor_by_unrealistic_ntc=monitor_by_unrealistic_ntc
-        self.monitor_by_zero_exchange=monitor_by_zero_exchange
+        self.monitor = monitor
+        self.monitor_loading = monitor_loading
+        self.monitor_by_sensitivity = monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange = monitor_by_zero_exchange
 
-        self.branch_ntc_load_rule=branch_ntc_load_rule
-        self.branch_zero_exchange_load=branch_zero_exchange_load
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+        self.branch_zero_exchange_load = branch_zero_exchange_load
 
         return self.solver
 

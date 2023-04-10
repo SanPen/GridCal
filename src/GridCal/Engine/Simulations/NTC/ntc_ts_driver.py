@@ -101,7 +101,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
-            mode=self.options.sensitivity_mode.value)
+            mode=self.options.transfer_method.value)
 
         # self.logger.add_info('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
         return alpha, alpha_n1
@@ -174,7 +174,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 loading_threshold_to_report=self.options.loading_threshold_to_report,
                 ntc_load_rule=self.options.ntc_load_rule)
 
-        if self.options.sensitivity_mode == AvailableTransferMode.InstalledPower:
+        if self.options.transfer_method == AvailableTransferMode.InstalledPower:
             self.installed_alpha, self.installed_alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=nc,
@@ -196,7 +196,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # sensitivities
             if self.options.monitor_only_sensitive_branches or self.options.monitor_only_ntc_load_rule_branches:
 
-                if self.options.sensitivity_mode == AvailableTransferMode.InstalledPower:
+                if self.options.transfer_method == AvailableTransferMode.InstalledPower:
                     alpha = self.installed_alpha
                     alpha_n1 = self.installed_alpha_n1
 
@@ -237,7 +237,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
                 match_gen_load=self.options.match_gen_load,
                 ntc_load_rule=self.options.ntc_load_rule,
-                logger=self.logger)
+                transfer_method=self.options.transfer_method,
+                logger=self.logger
+            )
 
             # Solve
             time_str = str(nc.time_array[time_indices][t_idx])
@@ -438,7 +440,7 @@ if __name__ == '__main__':
         dispatch_all_areas=False,
         tolerance=1e-2,
         sensitivity_dT=100.0,
-        sensitivity_mode=AvailableTransferMode.InstalledPower,
+        transfer_mode=AvailableTransferMode.InstalledPower,
         # todo: checkear si queremos el ptdf por potencia generada
         perform_previous_checks=False,
         weight_power_shift=1e5,

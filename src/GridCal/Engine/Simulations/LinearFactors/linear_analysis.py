@@ -165,6 +165,8 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
 
     return LODF
 
+def make_lodf_nx(lodf, contingency, flows):
+    pass
 
 @nb.njit(cache=True)
 def make_otdf(ptdf, lodf, j):
