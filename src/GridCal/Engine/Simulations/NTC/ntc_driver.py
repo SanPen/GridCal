@@ -119,7 +119,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=numerical_circuit,
-                with_n1=self.options.n1_consideration)
+                with_n1=self.options.n1_consideration
+            )
         else:
             alpha = np.ones(numerical_circuit.nbr)
             alpha_n1 = np.ones((numerical_circuit.nbr, numerical_circuit.nbr))

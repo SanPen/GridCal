@@ -528,8 +528,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     # get proportions of contribution by sense (gen or pump) and area
     # the idea is both techs contributes to achieve the power shift goal in the same proportion
     # that in base situation
-    Pref_a1 = Pref * is_gen_in_a1 * generator_active * generator_dispatchable * (Pref < Pmax)
-    Pref_a2 = Pref * is_gen_in_a2 * generator_active * generator_dispatchable * (Pref > Pmin)
+    Pref_a1 = Pref * is_gen_in_a1 * generator_active * generator_dispatchable * (Pref <= Pmax)
+    Pref_a2 = Pref * is_gen_in_a2 * generator_active * generator_dispatchable * (Pref >= Pmin)
 
     # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
     gen_pos_a1 = np.where(Pref_a1 < 0, 0, Pref_a1)
@@ -1614,7 +1614,8 @@ class OpfNTC(Opf):
                  match_gen_load=False,
                  force_exchange_sense=False,
                  transfer_method=AvailableTransferMode.InstalledPower,
-                 logger: Logger=None):
+                 logger: Logger=None,
+                 ):
         """
         DC time series linear optimal power flow
         :param numerical_circuit:  NumericalCircuit instance
@@ -2544,6 +2545,7 @@ class OpfNTC(Opf):
         # generator
         Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -3084,7 +3086,8 @@ if __name__ == '__main__':
     numerical_circuit_ = compile_snapshot_opf_circuit(
         circuit=main_circuit,
         apply_temperature=False,
-        branch_tolerance_mode=BranchImpedanceMode.Specified)
+        branch_tolerance_mode=BranchImpedanceMode.Specified
+    )
     print('numerical circuit computed in {0} scs.'.format(time.time() - tm0))
 
     # get the area bus indices
@@ -3095,7 +3098,8 @@ if __name__ == '__main__':
     linear = LinearAnalysis(
         grid=main_circuit,
         distributed_slack=False,
-        correct_values=False)
+        correct_values=False
+    )
 
     tm0 = time.time()
     linear.run()
@@ -3110,7 +3114,8 @@ if __name__ == '__main__':
         Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
         Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
         idx1=a1,
-        idx2=a2
+        idx2=a2,
+        mode=AvailableTransferMode.InstalledPower.value,
     )
 
     print('alpha and alpha n-1 computed in {0} scs.'.format(time.time() - tm0))
@@ -3125,6 +3130,13 @@ if __name__ == '__main__':
         PTDF=linear.PTDF,
         generation_formulation=GenerationNtcFormulation.Proportional,
         ntc_load_rule=0.7,
+        consider_contingencies=True,
+        consider_hvdc_contingencies=True,
+        consider_gen_contingencies=True,
+        generation_contingency_threshold=1000,
+        match_gen_load=False,
+        transfer_method=AvailableTransferMode.InstalledPower,
+        skip_generation_limits=False,
     )
 
     print('Solving...')
