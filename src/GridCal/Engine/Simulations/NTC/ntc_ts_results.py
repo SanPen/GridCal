@@ -219,7 +219,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         # sort data by ntc and time index, descending to compute probability factor
         ntc_idx = list(map(str.lower, columns)).index('ntc')
-        cload_idx = list(map(str.lower, columns)).index('contingency load %')
+        load_col_name = 'contingency load %' if 'contigency load %' in columns else 'load %'
+        cload_idx = list(map(str.lower, columns)).index(load_col_name)
         time_idx = list(map(str.lower, columns)).index('time')
         data = data[np.lexsort(
             (
@@ -500,12 +501,12 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
                 # complete the report data with Time info
                 time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
-                data = np.concatenate((time_data, data), axis=1)
+                data = np.concatenate((np.array([l]).T, time_data, data), axis=1)
 
                 # add to main data set
                 data_all = np.concatenate((data_all, data), axis=0)
 
         # columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
-
+        columns_all = ['Line'] + columns_all
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
