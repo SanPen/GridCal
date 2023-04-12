@@ -28,7 +28,6 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf/reports:&#10; - New reports working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1063,13 +1062,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
-      <created>1656759710081</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1656759710081</updated>
-    </task>
     <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
       <created>1656760923750</created>
       <option name="number" value="00314" />
@@ -1406,7 +1398,14 @@
       <option name="project" value="LOCAL" />
       <updated>1681145242965</updated>
     </task>
-    <option name="localTasksCounter" value="362" />
+    <task id="LOCAL-00362" summary="ntc_opf/reports:&#10; - New reports working">
+      <created>1681284079582</created>
+      <option name="number" value="00362" />
+      <option name="presentableId" value="LOCAL-00362" />
+      <option name="project" value="LOCAL" />
+      <updated>1681284079583</updated>
+    </task>
+    <option name="localTasksCounter" value="363" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1466,21 +1465,5 @@
     <MESSAGE value="ntc_opf/reports:&#10; - New add_ntc_data&#10; - New flow_report&#10; - New contingency_report&#10; - rebased all reports to use the new ones.&#10; - New filter by loading" />
     <MESSAGE value="ntc_opf/reports:&#10; - New reports working" />
     <option name="LAST_COMMIT_MESSAGE" value="ntc_opf/reports:&#10; - New reports working" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py</url>
-          <line>495</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py</url>
-          <line>506</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

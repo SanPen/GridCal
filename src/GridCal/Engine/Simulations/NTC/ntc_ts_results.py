@@ -490,7 +490,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_monitoring_logic_report()
-        columns_all = ['Time index', 'Time'] + columns
+        columns_all = ['Line', 'Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
@@ -506,7 +506,5 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 # add to main data set
                 data_all = np.concatenate((data_all, data), axis=0)
 
-        # columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
-        columns_all = ['Line'] + columns_all
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
