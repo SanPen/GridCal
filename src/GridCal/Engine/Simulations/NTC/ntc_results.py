@@ -336,6 +336,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.plot_bars_limit = 100
 
+        self.reports = dict()
+
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
@@ -919,9 +921,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchMonitoring:
-            labels, columns, y = self.get_monitoring_logic_report()
-            y_label = '(p.u.)'
-            title = result_type.value[0]
+            if not self.reports['monitoring_logic']:
+                self.create_monitoring_logic_report()
+
+            report = self.reports['monitoring_logic']
+            labels = report['labels']
+            columns = report['columns']
+            y = report['y']
+            y_label = report['y_label']
+            title = report['title']
 
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
@@ -986,42 +994,57 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
-            labels, columns, y = self.get_full_contingency_report(
-                loading_threshold=0.0,
-                reverse=True,
-            )
-            y_label = ''
-            title = result_type.value[0]
+            if not self.reports['contingency_full_flows']:
+                self.create_contingency_full_report()
+
+            report = self.reports['contingency_full_flows']
+            labels = report['labels']
+            columns = report['columns']
+            y = report['y']
+            y_label = report['y_label']
+            title = report['title']
 
         elif result_type == ResultTypes.ContingencyFlowsBranchReport:
-            labels, columns, y = self.get_ntc_contingency_branch_report(
-                loading_threshold=0.0,
-                reverse=True,
-            )
-            y_label = ''
-            title = result_type.value[0]
+
+            if not self.reports['continency_branch_flows']:
+                self.create_contingency_hvdc_report()
+
+            report = self.reports['continency_branch_flows']
+            labels = report['labels']
+            columns = report['columns']
+            y = report['y']
+            y_label = report['y_label']
+            title = report['title']
 
         elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
-            labels, columns, y = self.get_ntc_contingency_generation_report(
-                loading_threshold=0.0,
-                reverse=True,
-            )
-            y_label = ''
-            title = result_type.value[0]
+
+            if not self.reports['contingency_generation_flows']:
+                self.create_contingency_generator_report()
+
+            report = self.reports['contingency_generation_flows']
+            labels = report['labels']
+            columns = report['columns']
+            y = report['y']
+            y_label = report['y_label']
+            title = report['title']
 
         elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
-            labels, columns, y = self.get_ntc_contingency_hvdc_report(
-                loading_threshold=0.0,
-                reverse=True,
-            )
-            y_label = ''
-            title = result_type.value[0]
+
+            if not self.reports['contingency_hvdc_flows']:
+                self.create_contingency_hvdc_report()
+
+            report = self.reports['contingency_hvdc_flows']
+            labels = report['labels']
+            columns = report['columns']
+            y = report['y']
+            y_label = report['y_label']
+            title = report['title']
 
         else:
             labels = []
             y = np.zeros(0)
-            y_label = '(MW)'
-            title = 'Battery power'
+            y_label = ''
+            title = ''
 
         mdl = ResultsTable(data=y,
                            index=labels,
@@ -1032,6 +1055,80 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                            units=y_label)
         return mdl
 
+    def create_monitoring_logic_report(self):
+        labels, columns, y = self.get_monitoring_logic_report()
+        y_label = '(p.u.)'
+        title = ResultTypes.BranchMonitoring.value[0]
+        self.reports['monitoring_logic'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'y_label': y_label,
+            'title': title,
+        }
+
+    def create_contingency_full_report(self):
+        labels, columns, y = self.get_full_contingency_report(
+            loading_threshold=0.0,
+            reverse=True,
+        )
+        y_label = ''
+        title = ResultTypes.ContingencyFlowsReport.value[0]
+        self.reports['contingency_full_flows'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'y_label': y_label,
+            'title': title
+        }
+    def create_contingency_branch_report(self):
+        labels, columns, y = self.get_ntc_contingency_branch_report(
+            loading_threshold=0.0,
+            reverse=True,
+        )
+        y_label = ''
+        title = ResultTypes.ContingencyFlowsBranchReport.value[0]
+        self.reports['continency_branch_flows'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'y_label': y_label,
+            'title': title
+        }
+    def create_contingency_generator_report(self):
+        labels, columns, y = self.get_ntc_contingency_generation_report(
+            loading_threshold=0.0,
+            reverse=True,
+        )
+        y_label = ''
+        title = ResultTypes.ContingencyFlowsGenerationReport.value[0]
+        self.reports['contingency_generation_flows'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'y_label': y_label,
+            'title': title
+        }
+    def create_contingency_hvdc_report(self):
+        labels, columns, y = self.get_ntc_contingency_hvdc_report(
+            loading_threshold=0.0,
+            reverse=True,
+        )
+        y_label = ''
+        title = ResultTypes.ContingencyFlowsHvdcReport.value[0]
+        self.reports['contingency_hvdc_flows'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'y_label': y_label,
+            'title': title
+        }
+
+    def create_all_reports(self):
+        self.create_contingency_full_report()
+        self.create_contingency_branch_report()
+        self.create_contingency_generator_report()
+        self.create_contingency_hvdc_report()
 
 def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
     """

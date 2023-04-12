@@ -364,6 +364,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 sbase=numerical_circuit.Sbase,
             )
 
+        self.progress_text.emit('Creating reports...')
+        self.results.create_all_reports()
+
         self.progress_text.emit('Done!')
 
         return self.results

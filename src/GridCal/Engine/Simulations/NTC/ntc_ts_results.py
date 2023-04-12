@@ -100,6 +100,101 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         self.sampled_probabilities = sampled_probabilities
 
+        self.reports = dict()
+
+    def create_base_report(self):
+        labels, columns, y = self.get_base_report()
+        y_label = ''
+        title = ResultTypes.OpfNtcTsBaseReport.value[0]
+        self.reports['base'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_contingency_report(self):
+        labels, columns, y = self.get_contingency_report()
+        y_label = ''
+        title = ResultTypes.OpfNtcTsContingencyReport.value[0]
+        self.reports['contingency'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_alpha_report(self):
+        labels, columns, y = self.get_alpha_report()
+        y_label = ''
+        title = ResultTypes.AvailableTransferCapacityAlpha.value[0]
+        self.reports['alpha'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_alphan1_report(self):
+        labels, columns, y = self.get_alpha_n1_report()
+        y_label = ''
+        title = ResultTypes.AvailableTransferCapacityAlphaN1.value[0]
+        self.reports['alphan1'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_generation_power_report(self):
+        labels, columns, y = self.get_generation_report()
+        y_label = '(MW)'
+        title = ResultTypes.GeneratorPower.value[0]
+        self.reports['generation_power'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_generation_delta_report(self):
+        labels, columns, y = self.get_generation_delta_report()
+        y_label = '(MW)'
+        title = ResultTypes.GenerationDelta.value[0]
+        self.reports['generation_delta'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_branch_monitoring_report(self):
+        labels, columns, y = self.get_branch_monitoring_report()
+        y_label = '(p.u.)'
+        title = ResultTypes.BranchMonitoring.value[0]
+        self.reports['branch_monitoring'] = {
+            'labels': labels,
+            'columns': columns,
+            'y': y,
+            'title': title,
+            'y_label': y_label,
+        }
+
+    def create_all_reports(self):
+        self.create_base_report()
+        self.create_contingency_report()
+        self.create_generation_power_report()
+        self.create_generation_delta_report()
+        self.create_alpha_report()
+        self.create_alphan1_report()
+        self.create_branch_monitoring_report()
+
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
@@ -108,44 +203,50 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.OpfNtcTsBaseReport:
-            labels, columns, y = self.get_base_report()
-            y_label = ''
-            title = result_type.value[0]
+            if not self.reports['base']:
+                self.create_base_report()
+            report = self.reports['base']
+
         elif result_type == ResultTypes.OpfNtcTsContingencyReport:
-            labels, columns, y = self.get_contingency_report()
-            y_label = ''
-            title = result_type.value[0]
+            if not self.reports['contingency']:
+                self.create_contingency_report()
+            report = self.reports['contingency']
+
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
-            labels, columns, y = self.get_alpha_report()
-            y_label = ''
-            title = result_type.value[0]
+            if not self.reports['alpha']:
+                self.create_alpha_report()
+            report = self.reports['alpha']
+
         elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
-            labels, columns, y = self.get_alpha_n1_report()
-            y_label = ''
-            title = result_type.value[0]
+            if not self.reports['alphan1']:
+                self.create_alphan1_report()
+            report = self.reports['alphan1']
+
         elif result_type == ResultTypes.GeneratorPower:
-            labels, columns, y = self.get_generation_report()
-            y_label = '(MW)'
-            title = result_type.value[0]
+            if not self.reports['generation_power']:
+                self.create_generation_power_report()
+            report = self.reports['generation_power']
+
         elif result_type == ResultTypes.GenerationDelta:
-            labels, columns, y = self.get_generation_delta_report()
-            y_label = '(MW)'
-            title = result_type.value[0]
+            if not self.reports['generation_delta']:
+                self.create_generation_delta_report()
+            report = self.reports['generation_delta']
+
         elif result_type == ResultTypes.BranchMonitoring:
-            labels, columns, y = self.get_branch_monitoring_report()
-            y_label = '(p.u.)'
-            title = result_type.value[0]
+            if not self.reports['branch_monitoring']:
+                self.create_branch_monitoring_report()
+            report = self.reports['branch_monitoring']
         else:
             raise Exception('No results available')
 
         mdl = ResultsTable(
-            data=y,
-            index=labels,
-            columns=columns,
-            title=title,
-            ylabel=y_label,
+            data=report['y'],
+            index=report['labels'],
+            columns=report['columns'],
+            title=report['title'],
+            ylabel=report['y_label'],
             xlabel='',
-            units=y_label
+            units=report['y_label']
         )
 
         return mdl

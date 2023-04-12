@@ -345,13 +345,21 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 monitor_by_zero_exchange=problem.monitor_by_zero_exchange,
             )
 
+            self.progress_text.emit('Creating report...['+time_str+']')
+            result.create_all_reports()
             self.results.results_dict[t] = result
+
 
             if self.progress_signal is not None:
                 self.progress_signal.emit((t_idx + 1) / nt * 100)
 
             if self.__cancel__:
                 break
+
+        self.progress_text.emit('Creating final reports...')
+        self.results.create_all_reports()
+
+        self.progress_text.emit('Done!')
 
         self.logger.add_info('Ejecutado en {0:.2f} scs. para {1} casos'.format(
             time.time()-tm0, len(self.results.time_array)))
