@@ -26,12 +26,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf/:&#10; - Fixed Pg_min assignment">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ntc_opf/reports:&#10; - Creating reports within computation to improve user experience">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1066,13 +1063,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00316" summary="Implemented profile sparsity in the ejson v3">
-      <created>1656844513018</created>
-      <option name="number" value="00316" />
-      <option name="presentableId" value="LOCAL-00316" />
-      <option name="project" value="LOCAL" />
-      <updated>1656844513019</updated>
-    </task>
     <task id="LOCAL-00317" summary="added the newtonpa time series error reading">
       <created>1657011725858</created>
       <option name="number" value="00317" />
@@ -1409,7 +1399,14 @@
       <option name="project" value="LOCAL" />
       <updated>1681309423893</updated>
     </task>
-    <option name="localTasksCounter" value="365" />
+    <task id="LOCAL-00365" summary="ntc_opf/reports:&#10; - Creating reports within computation to improve user experience">
+      <created>1681313285824</created>
+      <option name="number" value="00365" />
+      <option name="presentableId" value="LOCAL-00365" />
+      <option name="project" value="LOCAL" />
+      <updated>1681313285824</updated>
+    </task>
+    <option name="localTasksCounter" value="366" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1443,7 +1440,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed issue with no-slack islands" />
     <MESSAGE value="Minor refactor of the newer get admmitance functions in generatorDate and BatteryData" />
     <MESSAGE value="Made the short circuit vastly more efficient by avoiding Y inversions" />
     <MESSAGE value="slight refactor" />
@@ -1468,7 +1464,8 @@
     <MESSAGE value="ntc_opf/reports:&#10; - New reports working" />
     <MESSAGE value="ntc_opf/reports:&#10; - Fixed new reports working" />
     <MESSAGE value="ntc_opf/:&#10; - Fixed Pg_min assignment" />
-    <option name="LAST_COMMIT_MESSAGE" value="ntc_opf/:&#10; - Fixed Pg_min assignment" />
+    <MESSAGE value="ntc_opf/reports:&#10; - Creating reports within computation to improve user experience" />
+    <option name="LAST_COMMIT_MESSAGE" value="ntc_opf/reports:&#10; - Creating reports within computation to improve user experience" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2000,6 +1997,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py</url>
           <line>2552</line>
           <option name="timeStamp" value="1202" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py</url>
+          <line>151</line>
+          <option name="timeStamp" value="1203" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

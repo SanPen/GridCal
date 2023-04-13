@@ -162,6 +162,12 @@ class FileOpen:
                             else:
                                 self.logger.add_error('Recognised as a gridCal compatible Json '
                                                       'but the version is not supported')
+
+                        elif 'json_type' in data.keys():
+                            if data['json_type'] == 'network contingency file':
+                                version = int(float(data['version']))
+                                if version == 0:
+                                    pass
                         else:
                             self.logger.add_error('Unknown json format')
 
