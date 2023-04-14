@@ -30,3 +30,4 @@ from GridCal.Engine.Simulations.ATC import *
 from GridCal.Engine.Simulations.Topology import *
 from GridCal.Engine.Simulations.SigmaAnalysis import *
 from GridCal.Engine.Simulations.InputsAnalysis import *
+from GridCal.Engine.Simulations.NTC import *

@@ -38,3 +38,5 @@ from GridCal.Engine.Devices.measurement import *
 from GridCal.Engine.Devices.groupings import *
 from GridCal.Engine.Devices.templates import *
 from GridCal.Engine.Devices.enumerations import *
+from GridCal.Engine.Devices.contingency import *
+from GridCal.Engine.Devices.contingency_group import *

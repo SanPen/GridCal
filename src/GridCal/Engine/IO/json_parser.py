@@ -21,6 +21,7 @@ import numpy as np
 import numba as nb
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_contingencies
 from GridCal.Engine.Devices import *
 
 
@@ -878,13 +879,18 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 circuit.add_hvdc(elm)
 
-        # fill x, y
-        logger += circuit.fill_xy_from_lat_lon()
-        return circuit
     else:
         logger.add('The Json structure does not have a Circuit inside the devices!')
         return MultiCircuit()
 
+    if 'contingencies' in data.keys():
+        circuit.set_contingencies(
+            contingencies=parse_contingencies(data['contingencies'])
+        )
+
+    # fill x, y
+    logger += circuit.fill_xy_from_lat_lon()
+    return circuit
 
 def parse_json_data_v2(data: dict, logger: Logger):
     """
@@ -1148,7 +1154,6 @@ def parse_json(file_name) -> MultiCircuit:
 
     return parse_json_data(data)
 
-
 class CustomJSONizer(json.JSONEncoder):
     def default(self, obj):
         # this solves the error:
@@ -1269,7 +1274,9 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
             'units': units_dict,
             'devices': elements,
             'profiles': element_profiles,
-            'results': results}
+            'contingencies': get_contingencies_dict(circuit=circuit),
+            'results': results,
+            }
 
     data_str = json.dumps(data, indent=True, cls=CustomJSONizer)
 

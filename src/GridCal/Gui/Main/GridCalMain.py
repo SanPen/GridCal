@@ -40,6 +40,8 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCal.Engine.IO.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
@@ -518,6 +520,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
 
+        self.ui.actionImport_contingencies.triggered.connect(self.import_contingencies)
+
         self.ui.actionApply_new_rates.triggered.connect(self.apply_new_rates)
 
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
@@ -537,6 +541,10 @@ class MainGUI(QMainWindow):
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
 
         self.ui.actionNew_contingency_from_selection.triggered.connect(self.add_contingency_from_selection)
+
+        self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
+
+        self.ui.actionExport_contingencies.triggered.connect(self.export_contingencies)
 
         # Buttons
 
@@ -1928,7 +1936,8 @@ class MainGUI(QMainWindow):
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
                                    DeviceType.ZoneDevice.value: self.circuit.zones,
                                    DeviceType.SubstationDevice.value: self.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.circuit.countries}
+                                   DeviceType.CountryDevice.value: self.circuit.countries,
+                                   DeviceType.ContingencyDevice.value: self.circuit.contingencies}
 
         elif elm_type == DeviceType.BranchDevice.value:
 
@@ -2006,6 +2015,14 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.CountryDevice.value:
             elm = dev.Country()
             elements = self.circuit.countries
+
+        elif elm_type == DeviceType.ContingencyDevice.value:
+            elm = dev.Contingency()
+            elements = self.circuit.contingencies
+
+        elif elm_type == DeviceType.ContingencyGroupDevice.value:
+            elm = dev.ContingencyGroup()
+            elements = self.circuit.contingency_groups
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
@@ -4352,6 +4369,7 @@ class MainGUI(QMainWindow):
 
                 trm = self.ui.trmSpinBox.value()
                 ntc_load_rule = self.ui.ntcLoadRuleSpinBox.value() / 100.0
+                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
                 n1_consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
@@ -4366,7 +4384,7 @@ class MainGUI(QMainWindow):
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
-                    sensitivity_mode=mode,
+                    transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
                     with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
@@ -4375,6 +4393,7 @@ class MainGUI(QMainWindow):
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
+                    loading_threshold_to_report=loading_threshold_to_report,
                     trm=trm,
                     ntc_load_rule=ntc_load_rule,
                     n1_consideration=n1_consideration)
@@ -4508,7 +4527,7 @@ class MainGUI(QMainWindow):
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
                 trm = self.ui.trmSpinBox.value()
-                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
                 ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
                 n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
@@ -4524,7 +4543,7 @@ class MainGUI(QMainWindow):
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
-                    sensitivity_mode=mode,
+                    transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
                     with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
@@ -4534,7 +4553,7 @@ class MainGUI(QMainWindow):
                     consider_gen_contingencies=consider_gen_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
                     trm=trm,
-                    max_report_elements=nTopContingencies,
+                    loading_threshold_to_report=loading_threshold_to_report,
                     ntc_load_rule=ntcLoadRule,
                     n1_consideration=n1Consideration)
 
@@ -6436,27 +6455,31 @@ class MainGUI(QMainWindow):
         if model is not None:
 
             if elm_type == DeviceType.SubstationDevice.value:
-                self.circuit.add_substation(Substation('Default'))
+                self.circuit.add_substation(dev.Substation('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.ZoneDevice.value:
-                self.circuit.add_zone(Zone('Default'))
+                self.circuit.add_zone(dev.Zone('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.AreaDevice.value:
-                self.circuit.add_area(Area('Default'))
+                self.circuit.add_area(dev.Area('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.CountryDevice.value:
-                self.circuit.add_country(Country('Default'))
+                self.circuit.add_country(dev.Country('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
-                self.circuit.add_bus(Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
+                self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
                                          area=self.circuit.areas[0],
                                          zone=self.circuit.zones[0],
                                          substation=self.circuit.substations[0],
                                          country=self.circuit.countries[0]))
+
+            elif elm_type == DeviceType.ContingencyGroupDevice.value:
+                group = dev.ContingencyGroup()
+                self.circuit.add_contingency_group(group)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
@@ -7274,6 +7297,64 @@ class MainGUI(QMainWindow):
                         "that you prefer.\n\n"
                         "Use the 'Create profiles button'.")
 
+
+    def import_contingencies(self):
+        """
+        Open file to import contingencies file
+        """
+
+        files_types = "Formats (*.json)"
+
+        # call dialog to select the file
+
+        options = QFileDialog.Options()
+        if self.use_native_dialogues:
+            options |= QFileDialog.DontUseNativeDialog
+
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
+                                                                          caption='Open file',
+                                                                          dir=self.project_directory,
+                                                                          filter=files_types,
+                                                                          options=options)
+
+        if len(filenames) == 1:
+            contingencies = import_contingencies_from_json(filenames[0])
+            logger = self.circuit.set_contingencies(contingencies=contingencies)
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Contingencies import', logger)
+                dlg.exec_()
+
+    def initialize_contingencies(self):
+        self.circuit.initialize_contingencies(min_branch_voltage=100,
+                                              max_branch_voltage=500)
+
+    def export_contingencies(self):
+
+        if len(self.circuit.contingencies) > 0:
+
+            # declare the allowed file types
+            files_types = "JSON file (*.json)"
+
+            options = QFileDialog.Options()
+            if self.use_native_dialogues:
+                options |= QFileDialog.DontUseNativeDialog
+
+            # call dialog to select the file
+            filename, type_selected = QFileDialog.getSaveFileName(
+                self, 'Save file', '', files_types,
+                options=options
+            )
+
+            if not (filename.endswith('.json')):
+                filename += ".json"
+
+            if filename != "":
+                # save file
+                export_contingencies_json_file(
+                    circuit= self.circuit,
+                    file_path=filename,
+                )
 
 def run(use_native_dialogues=False):
     """

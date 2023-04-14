@@ -604,6 +604,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
+            elif tpe in [DeviceType.ContingencyGroupDevice]:
+                objects = self.dictionary_of_lists[tpe.value]
+                values = [x.name for x in objects]
+                delegate = ComboDelegate(self.parent, objects, values)
+                F(i, delegate)
+
             else:
                 F(i, None)
 
