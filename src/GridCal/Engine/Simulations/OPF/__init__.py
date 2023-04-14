@@ -8,7 +8,5 @@ from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeries, OpfSimpleTimeSeries
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlow, OpfSimple, OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.opf_ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityOptions, OpfNTC
-from GridCal.Engine.Simulations.OPF.opf_ntc_ts_driver import OptimalNetTransferCapacityTimeSeriesDriver, OptimalNetTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeries, OpfSimpleTimeSeries
 
