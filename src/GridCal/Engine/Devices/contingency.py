@@ -58,7 +58,7 @@ class Contingency(EditableDevice):
                 'code': GCProp('', str, 'Some code to further identify the contingency'),
                 'prop': GCProp('', str, 'Name of the object property to change'),
                 'value': GCProp('', float, 'Property value'),
-                'group': GCProp('', ContingencyGroup, 'Contingency group'),
+                'group': GCProp('', DeviceType.ContingencyGroupDevice, 'Contingency group'),
                 'category': GCProp('', str, 'Group category'),
             },
             non_editable_attributes=['idtag', 'category'],
@@ -68,7 +68,7 @@ class Contingency(EditableDevice):
         # Contingency type
         self._prop = prop
         self._value = value
-        self.group: ContingencyGroup = group
+        self._group: ContingencyGroup = group
 
     @property
     def name(self):
@@ -96,6 +96,14 @@ class Contingency(EditableDevice):
     @value.setter
     def value(self, val):
         self._value = val
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, val: ContingencyGroup):
+        self._group = val
 
     @property
     def category(self):

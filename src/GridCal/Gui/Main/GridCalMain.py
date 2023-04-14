@@ -56,11 +56,11 @@ from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.GridEditorWidget.messages import *
-from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan, ContingencyPlan
+
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -68,6 +68,8 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.__version__ import __GridCal_VERSION__
 
 try:
@@ -362,6 +364,7 @@ class MainGUI(QMainWindow):
         self.file_sync_window: SyncDialogueWindow = None
         self.sigma_dialogue: SigmaAnalysisGUI = None
         self.grid_generator_dialogue: GridGeneratorGUI = None
+        self.contingency_planner_dialogue: ContingencyPlannerGUI = None
         self.analysis_dialogue: GridAnalysisGUI = None
         self.profile_input_dialogue: ProfileInputGUI = None
         self.models_input_dialogue: ModelsInputGUI = None
@@ -390,22 +393,7 @@ class MainGUI(QMainWindow):
         # Contingency planner
         ################################################################################################################
 
-        self.contingency_branch_types = [DeviceType.LineDevice,
-                                         DeviceType.DCLineDevice,
-                                         DeviceType.Transformer2WDevice,
-                                         DeviceType.VscDevice,
-                                         DeviceType.UpfcDevice]
 
-        self.contingency_injection_types = [DeviceType.GeneratorDevice,
-                                            DeviceType.BatteryDevice]
-
-        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
-                                                                       checks=True, check_value=True))
-
-        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
-                                                                       checks=True, check_value=True))
-
-        self.contingency_plan: ContingencyPlan = ContingencyPlan()
 
         ################################################################################################################
         # Console
@@ -540,11 +528,11 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
 
-        self.ui.actionNew_contingency_from_selection.triggered.connect(self.add_contingency_from_selection)
-
         self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
 
         self.ui.actionExport_contingencies.triggered.connect(self.export_contingencies)
+
+        self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
 
         # Buttons
 
@@ -656,10 +644,6 @@ class MainGUI(QMainWindow):
 
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
-        self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
-        self.ui.newContingencyPlanButton.clicked.connect(self.new_contingency_plan)
-        self.ui.deleteContingencyButton.clicked.connect(self.delete_contingency_item)
-
         self.ui.structure_analysis_pushButton.clicked.connect(self.structure_analysis_plot)
 
         # node size
@@ -726,7 +710,7 @@ class MainGUI(QMainWindow):
         self.modify_ui_options_according_to_the_engine()
 
         # this is the contingency planner tab, invisible until done
-        self.ui.tabWidget_3.setTabVisible(4, False)
+        self.ui.tabWidget_3.setTabVisible(4, True)
 
         # template
         self.view_templates(False)
@@ -2032,6 +2016,8 @@ class MainGUI(QMainWindow):
                                     parent=self.ui.dataStructureTableView, editable=True,
                                     non_editable_attributes=elm.non_editable_attributes)
         else:
+
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups,}
 
             mdl = ObjectsModel(elements, elm.editable_headers,
                                parent=self.ui.dataStructureTableView, editable=True,
@@ -6646,6 +6632,18 @@ class MainGUI(QMainWindow):
                     lst.append((k, bus))
         return lst
 
+    def get_selected_contingency_devices(self) -> List[object]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[object] = list()
+        for k, elm in enumerate(self.circuit.get_contingency_devices()):
+            if elm.graphic_obj is not None:
+                if elm.graphic_obj.isSelected():
+                    lst.append(elm)
+        return lst
+
     def delete_selected_from_the_schematic(self):
         """
         Prompt to delete the selected buses from the schematic
@@ -7202,53 +7200,6 @@ class MainGUI(QMainWindow):
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
 
-    def auto_generate_contingencies(self):
-        """
-        Automatically generate the contingency plan from the selection
-        :return:
-        """
-
-        # filters
-        branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
-        injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
-
-        branch_types = [self.contingency_branch_types[i] for i in branch_indices]
-        injection_types = [self.contingency_injection_types[i] for i in injection_indices]
-
-        # generate the contingency plan
-        self.contingency_plan = generate_automatic_contingency_plan(grid=self.circuit,
-                                                                    k=self.ui.contingencyNspinBox.value(),
-                                                                    filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
-                                                                    vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
-                                                                    vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
-                                                                    branch_types=branch_types,
-                                                                    filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
-                                                                    contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
-                                                                    pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
-                                                                    pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
-                                                                    injection_types=injection_types)
-
-        model = get_contingency_planner_model(self.circuit, self.contingency_plan)
-
-        self.ui.contingencyPlannerTreeView.setModel(model)
-        self.ui.contingencyPlannerTreeView.expandToDepth(2)
-
-    def new_contingency_plan(self):
-        """
-        New contingency plan routine
-        :return:
-        """
-        ok = yes_no_question("Do you want to clear the contingency plan and create a new one?", "New contingency plan")
-
-        if ok:
-            self.contingency_plan = ContingencyPlan()
-            self.ui.contingencyPlannerTreeView.setModel(None)
-
-    def delete_contingency_item(self):
-        pass
-
-    def add_contingency_from_selection(self):
-        pass
 
     def structure_analysis_plot(self):
 
@@ -7326,8 +7277,45 @@ class MainGUI(QMainWindow):
                 dlg.exec_()
 
     def initialize_contingencies(self):
-        self.circuit.initialize_contingencies(min_branch_voltage=100,
-                                              max_branch_voltage=500)
+
+        self.contingency_planner_dialogue = ContingencyPlannerGUI(parent=self, grid=self.circuit)
+        # self.contingency_planner_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        self.contingency_planner_dialogue.exec_()
+
+
+        # self.circuit.initialize_contingencies(min_branch_voltage=100,
+        #                                       max_branch_voltage=500)
+
+        self.circuit.contingency_groups = self.contingency_planner_dialogue.contingency_groups
+        self.circuit.contingencies = self.contingency_planner_dialogue.contingencies
+
+    def add_selected_to_contingency(self):
+        """
+        Add contingencies from the schematic selection
+        """
+        if len(self.circuit.buses) > 0:
+
+            # get the selected buses
+            selected = self.get_selected_contingency_devices()
+
+            group = dev.ContingencyGroup(idtag=None,
+                                         name="Contingency " + str(len(self.circuit.contingency_groups)),
+                                         category="single" if len(selected) == 1 else "multiple"
+                                         )
+            self.circuit.add_contingency_group(group)
+
+            for elm in selected:
+
+                con = dev.Contingency(idtag=elm.idtag,
+                                      code=elm.code,
+                                      name=elm.name,
+                                      prop="active",
+                                      value=0,
+                                      group=group)
+                self.circuit.add_continency(con)
+
+        else:
+            pass
 
     def export_contingencies(self):
 

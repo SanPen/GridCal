@@ -243,7 +243,7 @@ class DeviceType(Enum):
     TechnologyCategory = 'Technology Category'
 
     ContingencyDevice = 'Contingency'
-    ContingencyGroupDevice = 'ContingencyGroup'
+    ContingencyGroupDevice = 'Contingency Group'
 
     def __str__(self):
         return self.value

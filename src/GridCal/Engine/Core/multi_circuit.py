@@ -2660,7 +2660,6 @@ class MultiCircuit:
             if isinstance(val, list) and any(x in defaults for x in val):
                 setattr(self, att, [v for v in val if v not in defaults])
 
-
     def set_contingencies(self, contingencies: List[Contingency]):
         """
         Set contingencies and contingency groups to circuit
