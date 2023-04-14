@@ -1525,7 +1525,10 @@ class MainGUI(QMainWindow):
                       "CIM (*.xml);;" \
                       "Electrical Json V3 (*.ejson3);;"\
                       "Rawx (*.rawx);;" \
-                      "Sqlite (*.sqlite)"
+                      "Sqlite (*.sqlite);;"
+
+        if NEWTON_PA_AVAILABLE:
+            files_types += "Newton (*.newton);;"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1562,6 +1565,7 @@ class MainGUI(QMainWindow):
                 extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
+                extension['Newton (*.newton)'] = '.newton'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]

@@ -263,6 +263,9 @@ class FileSave:
         elif self.file_name.endswith('.rawx'):
             logger = self.save_rawx()
 
+        elif self.file_name.endswith('.newton'):
+            logger = self.save_newton()
+
         else:
             logger = Logger()
             logger.add_error('File path extension not understood', self.file_name)
@@ -364,3 +367,17 @@ class FileSave:
         logger = rawx_writer(self.file_name, self.circuit)
         return logger
 
+    def save_newton(self):
+        """
+        Save the circuit information in sqlite
+        :return: logger with information
+        """
+        from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import to_newton_pa, npa
+        logger = Logger()
+
+        tidx = list(range(len(self.circuit.time_profile)))
+        newton_grid, dev_dicts = to_newton_pa(self.circuit, time_series=True, tidx=tidx)
+
+        npa.FileHandler().save(newton_grid, self.file_name)
+
+        return logger
