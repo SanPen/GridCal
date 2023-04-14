@@ -72,6 +72,10 @@ def get_objects_dictionary():
                     'vsc': dev.VSC(None, None),
 
                     'upfc': dev.UPFC(None, None),
+
+                    'contingency': dev.Contingency(),
+
+                    'contingency_group': dev.ContingencyGroup()
                     }
 
     return object_types

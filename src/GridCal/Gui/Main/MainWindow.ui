@@ -1783,8 +1783,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>196</width>
-                        <height>189</height>
+                        <width>223</width>
+                        <height>199</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -1879,8 +1879,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>269</width>
-                        <height>215</height>
+                        <width>350</width>
+                        <height>479</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -8422,10 +8422,12 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionAdd_circuit"/>
     <addaction name="actionImport_bus_coordinates"/>
+    <addaction name="actionImport_contingencies"/>
     <addaction name="actiongrid_Generator"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionExport_all_the_device_s_profiles"/>
+    <addaction name="actionExport_contingencies"/>
     <addaction name="actionExport_all_results"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -8453,6 +8455,7 @@ QProgressBar::chunk{
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionApply_new_rates"/>
     <addaction name="actionDrawSchematic"/>
+    <addaction name="actionInitialize_contingencies"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
@@ -9377,6 +9380,33 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionImport_contingencies">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load_add.svg</normaloff>:/Icons/icons/load_add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import contingencies</string>
+   </property>
+  </action>
+  <action name="actionInitialize_contingencies">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/short_circuit.svg</normaloff>:/Icons/icons/short_circuit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Initialize contingencies</string>
+   </property>
+  </action>
+  <action name="actionExport_contingencies">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export contingencies</string>
    </property>
   </action>
  </widget>

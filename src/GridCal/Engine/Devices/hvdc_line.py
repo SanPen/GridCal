@@ -688,6 +688,12 @@ class HvdcLine(EditableDevice):
                 'max_firing_angle_t': 'radians',
                 'overload_cost': '€/MWh'}
 
+    def get_max_bus_nominal_voltage(self):
+        return max(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_min_bus_nominal_voltage(self):
+        return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
         Plot the time series results of this object

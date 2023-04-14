@@ -16,14 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys
+import json
 from typing import List, Dict, Tuple
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
-# from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Devices.editable_device import DeviceType
+
 
 
 def get_system_user():
@@ -192,6 +193,10 @@ class MultiCircuit:
         # master time profile
         self.time_profile = None
 
+        # contingencies
+        self.contingencies: List[Contingency] = list()
+        self.contingency_groups: List[ContingencyGroup] = list()
+
         # objects with profiles
         self.objects_with_profiles = [Bus(),
                                       Load(),
@@ -210,7 +215,10 @@ class MultiCircuit:
                                       Substation(),
                                       Zone(),
                                       Area(),
-                                      Country()]
+                                      Country(),
+                                      ContingencyGroup(),
+                                      Contingency(),
+                                      ]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -228,6 +236,8 @@ class MultiCircuit:
                 profile_types = [dev.editable_headers[attr].tpe for attr in profile_attr]
                 self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
+
+
 
     def __str__(self):
         return str(self.name)
@@ -387,6 +397,8 @@ class MultiCircuit:
 
         self.time_profile = None
 
+        self.contingencies = list()
+
     def get_buses(self):
         return self.buses
 
@@ -409,6 +421,9 @@ class MultiCircuit:
         :return: lines + transformers 2w + hvdc
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
+
+    def get_contingency_devices(self):
+        return self.get_branches() + self.get_generators()
 
     def get_lines(self) -> List[Line]:
         return self.lines
@@ -655,6 +670,9 @@ class MultiCircuit:
         elif element_type == DeviceType.CountryDevice:
             return self.countries
 
+        elif element_type == DeviceType.ContingencyDevice:
+            return self.contingencies
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -718,6 +736,7 @@ class MultiCircuit:
             gen.P_prof -= results.load_shedding[:, i]
 
         # TODO: implement more devices
+
 
     def copy(self):
         """
@@ -1550,6 +1569,14 @@ class MultiCircuit:
         :param obj: Zone object
         """
         self.zones.append(obj)
+
+    def add_contingency_group(self, obj: ContingencyGroup):
+        self.contingency_groups.append(obj)
+
+    def add_continency(self, obj: Contingency):
+        self.contingencies.append(obj)
+
+
 
     def delete_zone(self, i):
         """
@@ -2591,3 +2618,72 @@ class MultiCircuit:
             bus.y = y[i]
             if bus.graphic_obj is not None:
                 bus.graphic_obj.set_position(x[i], y[i])
+
+    def purge_defaults(self):
+        """
+        Remove all default objects, and its references in other list objects
+        :return:
+        """
+        defaults = list()
+        for key in [k for k in self.__dict__.keys() if 'default' in k]:
+            defaults.append(getattr(self, key))
+
+        for att, val in self.__dict__.items():
+
+            if val in defaults:
+               setattr(self, att, None)
+
+            if isinstance(val, list) and any(x in defaults for x in val):
+                setattr(self, att, [v for v in val if v not in defaults])
+
+
+    def set_contingencies(self, contingencies: List[Contingency]):
+        """
+        Set contingencies and contingency groups to circuit
+        :param contingencies: List of contingencies
+        :return:
+        """
+        devices = self.get_contingency_devices()
+        groups = dict()
+
+        devices_code_dict = {d.code: d for d in devices}
+        devices_key_dict = {d.idtag: d for d in devices}
+        devices_dict = {**devices_code_dict, **devices_key_dict}
+
+        logger = Logger()
+
+        for contingency in contingencies:
+            if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():
+                # contingency.element = devices_dict[contingency.code]
+                self.contingencies.append(contingency)
+                if contingency.group.idtag not in groups.keys():
+                    groups[contingency.group.idtag] = contingency.group
+            else:
+                logger.add_info(
+                    msg='Contingency element not found in circuit',
+                    device=contingency.code,
+                )
+
+        for group in groups.values():
+            self.contingency_groups.append(group)
+
+        return logger
+
+    def initialize_contingencies(self, min_branch_voltage, max_branch_voltage):
+        for b in self.get_branches():
+            if min_branch_voltage <= b.get_max_bus_nominal_voltage() <= max_branch_voltage:
+                group = ContingencyGroup(
+                    name=b.name,
+                    category='single',
+                )
+                contingency = Contingency(
+                    idtag=b.idtag,
+                    name=b.name,
+                    code=b.code,
+                    prop='active',
+                    value=0,
+                    group=group
+                )
+                self.contingencies.append(contingency)
+                self.contingency_groups.append(group)
+

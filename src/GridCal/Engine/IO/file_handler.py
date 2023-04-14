@@ -151,23 +151,19 @@ class FileOpen:
                     if isinstance(data, dict):
                         if 'Red' in data.keys():
                             self.circuit = load_iPA(self.file_name)
-                        elif sum([x in data.keys() for x in ['version', 'software', 'units',
-                                                             'devices', 'profiles']]) == 5:
-                            # version 2 of the json parser
+                        elif sum([x in data.keys() for x in ['type', 'version']]) == 2:
                             version = int(float(data['version']))
-                            if version == 2:
-                                self.circuit = parse_json_data_v2(data, self.logger)
-                            elif version == 3:
-                                self.circuit = parse_json_data_v3(data, self.logger)
-                            else:
-                                self.logger.add_error('Recognised as a gridCal compatible Json '
-                                                      'but the version is not supported')
 
-                        elif 'json_type' in data.keys():
-                            if data['json_type'] == 'network contingency file':
-                                version = int(float(data['version']))
-                                if version == 0:
-                                    pass
+                            if data['type'] == 'Grid Exchange Json File' and 'profiles' in data.keys():
+                                if version == 2:
+                                    self.circuit = parse_json_data_v2(data, self.logger)
+
+                                elif version == 3:
+                                    self.circuit = parse_json_data_v3(data, self.logger)
+                                else:
+                                    self.logger.add_error('Recognised as a gridCal compatible Json '
+                                                          'but the version is not supported')
+
                         else:
                             self.logger.add_error('Unknown json format')
 
@@ -215,6 +211,22 @@ class FileOpen:
 
         return self.circuit
 
+    def check_json_type(self, file_name):
+
+        if not os.path.exists(file_name):
+            return 'Not json file'
+
+        name, file_extension = os.path.splitext(file_name)
+
+        if file_extension.lower() == '.json':
+
+            data = json.load(open(self.file_name))
+
+            if 'type' in data.keys():
+                return data['type']
+
+            else:
+                return 'Unknown json file'
 
 class FileSave:
 
