@@ -8065,15 +8065,15 @@ QProgressBar::chunk{
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionApply_new_rates"/>
     <addaction name="actionDrawSchematic"/>
-    <addaction name="actionInitialize_contingencies"/>
-    <addaction name="actionAdd_selected_to_contingency"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
     <addaction name="menuSet_selected_buses"/>
-    <addaction name="actionNew_contingency_from_selection"/>
+    <addaction name="separator"/>
+    <addaction name="actionInitialize_contingencies"/>
+    <addaction name="actionAdd_selected_to_contingency"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -8979,21 +8979,6 @@ QProgressBar::chunk{
     <string>Fix loads active based on the power</string>
    </property>
   </action>
-  <action name="actionNew_contingency_from_selection">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
-   </property>
-   <property name="text">
-    <string>New contingency from selection</string>
-   </property>
-   <property name="toolTip">
-    <string>Add a new contingency from the schematic selection</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+A, Ctrl+C</string>
-   </property>
-  </action>
   <action name="actionImport_contingencies">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -9006,7 +8991,7 @@ QProgressBar::chunk{
   <action name="actionInitialize_contingencies">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/short_circuit.svg</normaloff>:/Icons/icons/short_circuit.svg</iconset>
+     <normaloff>:/Icons/icons/contingency_wizzard.svg</normaloff>:/Icons/icons/contingency_wizzard.svg</iconset>
    </property>
    <property name="text">
     <string>Initialize contingencies</string>
@@ -9031,6 +9016,9 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Add selected as new contingency</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+C</string>
    </property>
   </action>
  </widget>

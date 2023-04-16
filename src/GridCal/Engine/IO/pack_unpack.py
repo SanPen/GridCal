@@ -307,7 +307,10 @@ def data_frames_to_circuit(data: Dict):
                             elif dtype in [DeviceType.SubstationDevice,
                                            DeviceType.AreaDevice,
                                            DeviceType.ZoneDevice,
-                                           DeviceType.CountryDevice]:
+                                           DeviceType.CountryDevice,
+                                           DeviceType.Technology,
+                                           DeviceType.ContingencyGroupDevice,
+                                           ]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -391,6 +394,10 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], object_property_name, True)
                                 else:
                                     setattr(devices[i], object_property_name, bool(val))
+
+                            elif dtype == str:
+                                val = dtype(df[object_property_name].values[i]).replace('nan', '')
+                                setattr(devices[i], object_property_name, val)
 
                             else:
                                 # regular types (int, str, float, etc...)
@@ -489,6 +496,15 @@ def data_frames_to_circuit(data: Dict):
             elif template_elm.device_type == DeviceType.WireDevice:
                 circuit.wire_types = devices
 
+            elif template_elm.device_type == DeviceType.Technology:
+                circuit.technologies = devices
+
+            if template_elm.device_type == DeviceType.ContingencyGroupDevice:
+                circuit.contingency_groups = devices
+
+            if template_elm.device_type == DeviceType.ContingencyDevice:
+                circuit.contingencies = devices
+
         else:
             circuit.logger.add_error('The data does not contain information about the type', str(key))
 
@@ -527,6 +543,15 @@ def data_frames_to_circuit(data: Dict):
 
     if DeviceType.CountryDevice in elements_dict.keys():
         circuit.countries = list(elements_dict[DeviceType.CountryDevice].values())
+
+    # if DeviceType.Technology in elements_dict.keys():
+    #     circuit.technologies = list(elements_dict[DeviceType.Technology].values())
+    #
+    # if DeviceType.ContingencyGroupDevice in elements_dict.keys():
+    #     circuit.contingency_groups = list(elements_dict[DeviceType.ContingencyGroupDevice].values())
+    #
+    # if DeviceType.ContingencyDevice in elements_dict.keys():
+    #     circuit.contingencies = list(elements_dict[DeviceType.ContingencyDevice].values())
 
     return circuit
 

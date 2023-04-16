@@ -703,6 +703,12 @@ class MultiCircuit:
         elif element_type == DeviceType.ContingencyDevice:
             return self.contingencies
 
+        elif element_type == DeviceType.ContingencyGroupDevice:
+            return self.contingency_groups
+
+        elif element_type == DeviceType.Technology:
+            return self.technologies
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -2709,18 +2715,16 @@ class MultiCircuit:
     def initialize_contingencies(self, min_branch_voltage, max_branch_voltage):
         for b in self.get_branches():
             if min_branch_voltage <= b.get_max_bus_nominal_voltage() <= max_branch_voltage:
-                group = ContingencyGroup(
-                    name=b.name,
-                    category='single',
-                )
-                contingency = Contingency(
-                    idtag=b.idtag,
-                    name=b.name,
-                    code=b.code,
-                    prop='active',
-                    value=0,
-                    group=group
-                )
+                group = ContingencyGroup(name=b.name,
+                                         category='single')
+
+                contingency = Contingency(device_idtag=b.idtag,
+                                          name=b.name,
+                                          code=b.code,
+                                          prop='active',
+                                          value=0,
+                                          group=group)
+
                 self.contingencies.append(contingency)
                 self.contingency_groups.append(group)
 

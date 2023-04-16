@@ -25,7 +25,7 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 
 class Technology(EditableDevice):
 
-    def __init__(self, name='', code='', idtag=None, id_technology_group=None):
+    def __init__(self, name='', code='', idtag=None):
         """
 
         :param name:
@@ -40,11 +40,11 @@ class Technology(EditableDevice):
                                 active=True,
                                 device_type=DeviceType.Technology,
                                 editable_headers={'idtag': GCProp('', str, 'Unique ID'),
-                                                  'code': GCProp('deg', str, 'Code.'),
+                                                  'code': GCProp('', str, 'Secondary ID in another system.'),
                                                   'name': GCProp('', str, 'Name of the technology'),
-                                                  'name2': GCProp('', str, 'Name of the technology'),
-                                                  'name3': GCProp('', str, 'Name of the technology'),
-                                                  'name4': GCProp('', str, 'Name of the technology'),
+                                                  'name2': GCProp('', str, 'Name 2 of the technology'),
+                                                  'name3': GCProp('', str, 'Name 3 of the technology'),
+                                                  'name4': GCProp('', str, 'Name 4 of the technology'),
                                                   },
                                 non_editable_attributes=['idtag'],
                                 properties_with_profile={})

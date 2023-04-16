@@ -20,6 +20,7 @@ def parse_contingencies(data):
         for elem in jentry['elements']:
             cnt = Contingency(
                 idtag=elem["key"],
+                device_idtag=elem["device_idtag"],
                 name=str(elem['name']),
                 code=str(elem['code']),
                 prop=str(elem['property']),

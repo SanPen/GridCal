@@ -19,6 +19,7 @@
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.contingency_group import ContingencyGroup
 
+
 class Contingency(EditableDevice):
     """
     The Contingency object is the container of all the
@@ -33,7 +34,7 @@ class Contingency(EditableDevice):
 
     """
 
-    def __init__(self, idtag=None, name="Contingency", code='', prop='active', value=0.0,
+    def __init__(self, idtag=None, device_idtag=None, name="Contingency", code='', prop='active', value=0.0,
                  group: ContingencyGroup=None):
         """
         Contingency
@@ -54,6 +55,7 @@ class Contingency(EditableDevice):
             device_type=DeviceType.ContingencyDevice,
             editable_headers={
                 'idtag': GCProp('', str, 'Unique ID'),
+                'device_idtag': GCProp('', str, 'Unique ID'),
                 'name': GCProp('', str, 'Name of the contingency'),
                 'code': GCProp('', str, 'Some code to further identify the contingency'),
                 'prop': GCProp('', str, 'Name of the object property to change'),
@@ -66,6 +68,7 @@ class Contingency(EditableDevice):
         )
 
         # Contingency type
+        self.device_idtag = device_idtag
         self._prop = prop
         self._value = value
         self._group: ContingencyGroup = group

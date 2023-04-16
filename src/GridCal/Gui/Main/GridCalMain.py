@@ -329,7 +329,7 @@ class MainGUI(QMainWindow):
         # self.grid_editor.setStretchFactor(1, 10)
 
         # 1:4
-        self.ui.dataStructuresSplitter.setStretchFactor(0, 1)
+        self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
         self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
 
         # 4:1
@@ -6642,12 +6642,12 @@ class MainGUI(QMainWindow):
                     lst.append((k, bus))
         return lst
 
-    def get_selected_contingency_devices(self) -> List[object]:
+    def get_selected_contingency_devices(self) -> List[dev.EditableDevice]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[object] = list()
+        lst: List[dev.EditableDevice] = list()
         for k, elm in enumerate(self.circuit.get_contingency_devices()):
             if elm.graphic_obj is not None:
                 if elm.graphic_obj.isSelected():
@@ -7316,7 +7316,7 @@ class MainGUI(QMainWindow):
 
             for elm in selected:
 
-                con = dev.Contingency(idtag=elm.idtag,
+                con = dev.Contingency(device_idtag=elm.idtag,
                                       code=elm.code,
                                       name=elm.name,
                                       prop="active",
@@ -7354,6 +7354,7 @@ class MainGUI(QMainWindow):
                     file_path=filename,
                 )
 
+
 def run(use_native_dialogues=False):
     """
     Main function to run the GUI
@@ -7368,7 +7369,7 @@ def run(use_native_dialogues=False):
     # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
-    h = 710
+    h = 730
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())

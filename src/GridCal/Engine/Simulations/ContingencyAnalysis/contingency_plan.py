@@ -47,7 +47,7 @@ def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                 category='single',
             )
             contingency = Contingency(
-                idtag=b.idtag,
+                device_idtag=b.idtag,
                 name=b.name,
                 code=b.code,
                 prop='active',
@@ -99,7 +99,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                         )
 
                         contingency1 = Contingency(
-                            idtag=branch_i.idtag,
+                            device_idtag=branch_i.idtag,
                             name=branch_i.name,
                             code=branch_i.code,
                             prop='active',
@@ -108,7 +108,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                         )
 
                         contingency2 = Contingency(
-                            idtag=branch_j.idtag,
+                            device_idtag=branch_j.idtag,
                             name=branch_j.name,
                             code=branch_j.code,
                             prop='active',
