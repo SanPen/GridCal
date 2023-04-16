@@ -37,6 +37,8 @@ def get_objects_dictionary():
 
                     'country': dev.Country(),
 
+                    'technology': dev.Technology(),
+
                     'bus': dev.Bus(),
 
                     'load': dev.Load(),
@@ -73,9 +75,9 @@ def get_objects_dictionary():
 
                     'upfc': dev.UPFC(None, None),
 
-                    'contingency': dev.Contingency(),
+                    'contingency_group': dev.ContingencyGroup(),
 
-                    'contingency_group': dev.ContingencyGroup()
+                    'contingency': dev.Contingency(),
                     }
 
     return object_types

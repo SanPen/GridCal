@@ -195,7 +195,12 @@ class MultiCircuit:
 
         # contingencies
         self.contingencies: List[Contingency] = list()
+
+        # contingency group
         self.contingency_groups: List[ContingencyGroup] = list()
+
+        # technologies
+        self.technologies: List[Technology] = list()
 
         # objects with profiles
         self.objects_with_profiles = [Bus(),
@@ -216,6 +221,7 @@ class MultiCircuit:
                                       Zone(),
                                       Area(),
                                       Country(),
+                                      Technology(),
                                       ContingencyGroup(),
                                       Contingency(),
                                       ]
@@ -1597,10 +1603,18 @@ class MultiCircuit:
     def add_contingency_group(self, obj: ContingencyGroup):
         self.contingency_groups.append(obj)
 
-    def add_continency(self, obj: Contingency):
+    def add_contingency(self, obj: Contingency):
         self.contingencies.append(obj)
 
+    def add_technology(self, obj: Technology):
+        self.technologies.append(obj)
 
+    def delete_technology(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.technologies.pop(i)
 
     def delete_zone(self, i):
         """
@@ -1612,7 +1626,7 @@ class MultiCircuit:
     def add_country(self, obj: Country):
         """
         Add country
-        :param obj: Country object
+        :param obj:  object
         """
         self.countries.append(obj)
 

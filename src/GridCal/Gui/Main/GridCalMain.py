@@ -1943,10 +1943,12 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.GeneratorDevice.value:
             elm = dev.Generator()
             elements = self.circuit.get_generators()
+            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.BatteryDevice.value:
             elm = dev.Battery()
             elements = self.circuit.get_batteries()
+            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.ShuntDevice.value:
             elm = dev.Shunt()
@@ -2003,26 +2005,32 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.ContingencyDevice.value:
             elm = dev.Contingency()
             elements = self.circuit.contingencies
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups, }
 
         elif elm_type == DeviceType.ContingencyGroupDevice.value:
             elm = dev.ContingencyGroup()
             elements = self.circuit.contingency_groups
+
+        elif elm_type == DeviceType.Technology.value:
+            elm = dev.Technology()
+            elements = self.circuit.technologies
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
         if elm_type == 'Branches':
             mdl = BranchObjectModel(elements, elm.editable_headers,
-                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    parent=self.ui.dataStructureTableView,
+                                    editable=True,
                                     non_editable_attributes=elm.non_editable_attributes)
         else:
 
-            dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups,}
-
             mdl = ObjectsModel(elements, elm.editable_headers,
-                               parent=self.ui.dataStructureTableView, editable=True,
+                               parent=self.ui.dataStructureTableView,
+                               editable=True,
                                non_editable_attributes=elm.non_editable_attributes,
                                dictionary_of_lists=dictionary_of_lists)
+
         self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
         self.ui.property_comboBox.clear()
@@ -6413,8 +6421,6 @@ class MainGUI(QMainWindow):
 
         return logger
 
-
-
     def correct_branch_monitoring(self, max_loading=1.0):
         """
         The NTC optimization and other algorithms will not work if we have overloaded branches in DC monitored
@@ -6458,14 +6464,18 @@ class MainGUI(QMainWindow):
 
             elif elm_type == DeviceType.BusDevice.value:
                 self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
-                                         area=self.circuit.areas[0],
-                                         zone=self.circuit.zones[0],
-                                         substation=self.circuit.substations[0],
-                                         country=self.circuit.countries[0]))
+                                             area=self.circuit.areas[0],
+                                             zone=self.circuit.zones[0],
+                                             substation=self.circuit.substations[0],
+                                             country=self.circuit.countries[0]))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
                 group = dev.ContingencyGroup()
                 self.circuit.add_contingency_group(group)
+
+            elif elm_type == DeviceType.Technology.value:
+                tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
+                self.circuit.add_technology(tech)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
@@ -7312,7 +7322,7 @@ class MainGUI(QMainWindow):
                                       prop="active",
                                       value=0,
                                       group=group)
-                self.circuit.add_continency(con)
+                self.circuit.add_contingency(con)
 
         else:
             pass

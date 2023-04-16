@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType, BuildStatus
+from GridCal.Engine.Devices.technology import Technology
 
 
 def make_default_q_curve(Snom, Qmin, Qmax, n=3):
@@ -145,7 +146,7 @@ class Generator(EditableDevice):
     def __init__(self, name='gen', idtag=None, code='', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
                  Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
-                 mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle,
+                 mttf=0.0, mttr=0.0, technology: Technology = None,
                  q_points=None, use_reactive_power_curve=False,
                  r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned,
@@ -203,7 +204,8 @@ class Generator(EditableDevice):
                                                   'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'technology': GCProp('', GeneratorTechnologyType, 'Generator technology')},
+                                                  'technology': GCProp('', DeviceType.Technology, 'Generator technology')
+                                                  },
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',

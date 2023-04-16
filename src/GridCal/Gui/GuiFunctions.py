@@ -597,14 +597,13 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
-            elif tpe in [DeviceType.SubstationDevice, DeviceType.AreaDevice,
-                         DeviceType.ZoneDevice, DeviceType.CountryDevice]:
-                objects = self.dictionary_of_lists[tpe.value]
-                values = [x.name for x in objects]
-                delegate = ComboDelegate(self.parent, objects, values)
-                F(i, delegate)
+            elif tpe in [DeviceType.SubstationDevice,
+                         DeviceType.AreaDevice,
+                         DeviceType.ZoneDevice,
+                         DeviceType.CountryDevice,
+                         DeviceType.Technology,
+                         DeviceType.ContingencyGroupDevice]:
 
-            elif tpe in [DeviceType.ContingencyGroupDevice]:
                 objects = self.dictionary_of_lists[tpe.value]
                 values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
