@@ -19,7 +19,7 @@ import json
 
 from GridCal.Engine.basic_structures import Logger
 
-from GridCal.Engine.IO.json_parser import save_json_file_v3, save_json_file_v4
+from GridCal.Engine.IO.json_parser import save_json_file_v3
 from GridCal.Engine.IO.cim.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
@@ -342,15 +342,6 @@ class FileSave:
         """
 
         logger = save_json_file_v3(self.file_name, self.circuit, self.simulation_drivers)
-        return logger
-
-    def save_json_v4(self):
-        """
-        Save the circuit information in json format
-        :return:logger with information
-        """
-
-        logger = save_json_file_v4(self.file_name, self.circuit, self.simulation_drivers)
         return logger
 
     def save_cim(self):

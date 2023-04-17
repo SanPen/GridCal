@@ -197,12 +197,14 @@ class ResultTypes(Enum):
     HvdcResults = 'Hvdc', DeviceType.NoDevice
     AreaResults = 'Area', DeviceType.NoDevice
     InfoResults = 'Information', DeviceType.NoDevice
+    ReportsResults = 'Reports', DeviceType.NoDevice
     SlacksResults = 'Slacks', DeviceType.NoDevice
     DispatchResults = 'Dispatch', DeviceType.NoDevice
     FlowReports = 'Flow Reports', DeviceType.NoDevice
     Sensibilities = 'Sensibilities', DeviceType.NoDevice
     SeriesResults = 'Series', DeviceType.NoDevice
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
+    NTCResults = 'NTC', DeviceType.NoDevice
 
     def __str__(self):
         return self.value[0]

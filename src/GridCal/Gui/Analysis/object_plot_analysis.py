@@ -721,5 +721,18 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             if log_scale_extended[j]:
                 axs[j].set_xscale('log')
 
+        if object_type == DeviceType.LineDevice.value:
+            r = vals[:, 0]
+            x = vals[:, 1]
+
+            # plot
+            axs[j] = fig.add_subplot(k, k + 1, p + 2)
+            axs[j].set_facecolor('white')
+            axs[j].scatter(r, x)
+            axs[j].set_title("R-X")
+            axs[j].set_xlabel("R")
+            axs[j].set_ylabel("X")
+
+
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 

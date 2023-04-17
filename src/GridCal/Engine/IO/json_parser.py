@@ -1154,6 +1154,7 @@ def parse_json(file_name) -> MultiCircuit:
 
     return parse_json_data(data)
 
+
 class CustomJSONizer(json.JSONEncoder):
     def default(self, obj):
         # this solves the error:
@@ -1191,7 +1192,16 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
     element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the areas
-    for cls in [circuit.substations, circuit.zones, circuit.areas, circuit.countries]:
+    for cls in [circuit.substations,
+                circuit.zones,
+                circuit.areas,
+                circuit.countries,
+                circuit.technologies,
+                # circuit.contingency_groups,
+                # circuit.contingencies,
+                circuit.investments_groups,
+                circuit.investments]:
+
         for elm in cls:
             # pack the bus data into a dictionary
             add_to_dict(d=elements, d2=elm.get_properties_dict(), key=elm.device_type.value)
@@ -1287,9 +1297,6 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
 
     return logger
 
-
-def save_json_file_v4(file_path, circuit: MultiCircuit, simulation_drivers=list()):
-    pass
 
 
 if __name__ == '__main__':
