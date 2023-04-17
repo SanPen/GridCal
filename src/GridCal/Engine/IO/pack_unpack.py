@@ -78,6 +78,10 @@ def get_objects_dictionary():
                     'contingency_group': dev.ContingencyGroup(),
 
                     'contingency': dev.Contingency(),
+
+                    'investments_group': dev.InvestmentsGroup(),
+
+                    'investment': dev.Investment(),
                     }
 
     return object_types
@@ -310,6 +314,7 @@ def data_frames_to_circuit(data: Dict):
                                            DeviceType.CountryDevice,
                                            DeviceType.Technology,
                                            DeviceType.ContingencyGroupDevice,
+                                           DeviceType.InvestmentsGroupDevice,
                                            ]:
 
                                 """
@@ -504,6 +509,12 @@ def data_frames_to_circuit(data: Dict):
 
             if template_elm.device_type == DeviceType.ContingencyDevice:
                 circuit.contingencies = devices
+
+            if template_elm.device_type == DeviceType.InvestmentsGroupDevice:
+                circuit.investments_groups = devices
+
+            if template_elm.device_type == DeviceType.InvestmentDevice:
+                circuit.investments = devices
 
         else:
             circuit.logger.add_error('The data does not contain information about the type', str(key))

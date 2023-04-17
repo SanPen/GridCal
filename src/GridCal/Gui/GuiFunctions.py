@@ -602,7 +602,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                          DeviceType.ZoneDevice,
                          DeviceType.CountryDevice,
                          DeviceType.Technology,
-                         DeviceType.ContingencyGroupDevice]:
+                         DeviceType.ContingencyGroupDevice,
+                         DeviceType.InvestmentsGroupDevice]:
 
                 objects = self.dictionary_of_lists[tpe.value]
                 values = [x.name for x in objects]

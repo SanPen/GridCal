@@ -245,6 +245,9 @@ class DeviceType(Enum):
     ContingencyDevice = 'Contingency'
     ContingencyGroupDevice = 'Contingency Group'
 
+    InvestmentDevice = 'Investment'
+    InvestmentsGroupDevice = 'Investments Group'
+
     def __str__(self):
         return self.value
 

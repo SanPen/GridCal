@@ -534,6 +534,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
 
+        self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -706,6 +708,8 @@ class MainGUI(QMainWindow):
         ################################################################################################################
 
         self.ui.grid_colouring_frame.setVisible(False)
+
+        self.ui.actionSync.setVisible(False)
 
         self.modify_ui_options_according_to_the_engine()
 
@@ -2010,6 +2014,15 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.ContingencyGroupDevice.value:
             elm = dev.ContingencyGroup()
             elements = self.circuit.contingency_groups
+
+        elif elm_type == DeviceType.InvestmentDevice.value:
+            elm = dev.Investment()
+            elements = self.circuit.investments
+            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice.value: self.circuit.investments_groups, }
+
+        elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+            elm = dev.InvestmentsGroup()
+            elements = self.circuit.investments_groups
 
         elif elm_type == DeviceType.Technology.value:
             elm = dev.Technology()
@@ -6470,8 +6483,12 @@ class MainGUI(QMainWindow):
                                              country=self.circuit.countries[0]))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup()
+                group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
                 self.circuit.add_contingency_group(group)
+
+            elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+                group = dev.InvestmentsGroup(name="Investments group " + str(len(self.circuit.contingency_groups) + 1))
+                self.circuit.add_investments_group(group)
 
             elif elm_type == DeviceType.Technology.value:
                 tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
@@ -6649,6 +6666,18 @@ class MainGUI(QMainWindow):
         """
         lst: List[dev.EditableDevice] = list()
         for k, elm in enumerate(self.circuit.get_contingency_devices()):
+            if elm.graphic_obj is not None:
+                if elm.graphic_obj.isSelected():
+                    lst.append(elm)
+        return lst
+
+    def get_selected_investment_devices(self) -> List[dev.EditableDevice]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[dev.EditableDevice] = list()
+        for k, elm in enumerate(self.circuit.get_investment_devices()):
             if elm.graphic_obj is not None:
                 if elm.graphic_obj.isSelected():
                     lst.append(elm)
@@ -7210,7 +7239,6 @@ class MainGUI(QMainWindow):
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
 
-
     def structure_analysis_plot(self):
 
         if len(self.ui.dataStructuresListView.selectedIndexes()) > 0:
@@ -7219,7 +7247,7 @@ class MainGUI(QMainWindow):
             object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
             plt.show()
         else:
-            self.msg('Select a data structure')
+            info_msg('Select a data structure')
 
     def import_profiles_from_models(self):
         """
@@ -7324,9 +7352,6 @@ class MainGUI(QMainWindow):
                                       group=group)
                 self.circuit.add_contingency(con)
 
-        else:
-            pass
-
     def export_contingencies(self):
 
         if len(self.circuit.contingencies) > 0:
@@ -7339,20 +7364,38 @@ class MainGUI(QMainWindow):
                 options |= QFileDialog.DontUseNativeDialog
 
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(
-                self, 'Save file', '', files_types,
-                options=options
-            )
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', '', files_types, options=options)
 
             if not (filename.endswith('.json')):
                 filename += ".json"
 
             if filename != "":
                 # save file
-                export_contingencies_json_file(
-                    circuit= self.circuit,
-                    file_path=filename,
-                )
+                export_contingencies_json_file(circuit=self.circuit, file_path=filename)
+
+    def add_selected_to_investment(self):
+        """
+        Add contingencies from the schematic selection
+        """
+        if len(self.circuit.buses) > 0:
+
+            # get the selected buses
+            selected = self.get_selected_investment_devices()
+
+            group = dev.InvestmentsGroup(idtag=None,
+                                         name="Investment " + str(len(self.circuit.contingency_groups)),
+                                         category="single" if len(selected) == 1 else "multiple")
+            self.circuit.add_investments_group(group)
+
+            for elm in selected:
+
+                con = dev.Investment(device_idtag=elm.idtag,
+                                     code=elm.code,
+                                     name=elm.name,
+                                     CAPEX=0.0,
+                                     OPEX=0.0,
+                                     group=group)
+                self.circuit.add_investment(con)
 
 
 def run(use_native_dialogues=False):
@@ -7369,7 +7412,7 @@ def run(use_native_dialogues=False):
     # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
-    h = 730
+    h = 740
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())

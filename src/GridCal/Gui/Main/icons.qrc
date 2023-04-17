@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/investment.svg</file>
+    <file>icons/add_investment.svg</file>
+    <file>icons/histogram.svg</file>
     <file>icons/contingency_wizzard.svg</file>
     <file>icons/add_contingency.svg</file>
     <file>icons/import_models.svg</file>

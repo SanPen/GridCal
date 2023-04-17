@@ -530,20 +530,6 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QPushButton" name="analyze_objects_pushButton">
-                     <property name="toolTip">
-                      <string>Launch the grid analysis interface</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <spacer name="horizontalSpacer_14">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
@@ -551,7 +537,7 @@
                      <property name="sizeHint" stdset="0">
                       <size>
                        <width>40</width>
-                       <height>20</height>
+                       <height>24</height>
                       </size>
                      </property>
                     </spacer>
@@ -746,6 +732,20 @@ p, li { white-space: pre-wrap; }
                      <widget class="QPushButton" name="structure_analysis_pushButton">
                       <property name="toolTip">
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/histogram.svg</normaloff>:/Icons/icons/histogram.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="analyze_objects_pushButton">
+                      <property name="toolTip">
+                       <string>Launch the grid analysis interface</string>
                       </property>
                       <property name="text">
                        <string/>
@@ -8074,6 +8074,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
+    <addaction name="actionAdd_selected_as_new_investment"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -8189,6 +8190,8 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
    <addaction name="actionPTDF_time_series"/>
+   <addaction name="actionAdd_selected_to_contingency"/>
+   <addaction name="actionInitialize_contingencies"/>
    <addaction name="actionContingency_analysis"/>
    <addaction name="actionOTDF_time_series"/>
    <addaction name="actionATC"/>
@@ -8200,9 +8203,7 @@ QProgressBar::chunk{
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
-   <addaction name="actionAdd_selected_to_contingency"/>
    <addaction name="separator"/>
-   <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="actionShow_color_controls"/>
   </widget>
   <action name="actionOpen_file">
@@ -9015,10 +9016,22 @@ QProgressBar::chunk{
     <string>Add selected as new contingency</string>
    </property>
    <property name="toolTip">
-    <string>Add selected as new contingency</string>
+    <string>Add schematic selection as new contingency</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionAdd_selected_as_new_investment">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/add_investment.svg</normaloff>:/Icons/icons/add_investment.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add selected as new investment</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A, Ctrl+I</string>
    </property>
   </action>
  </widget>

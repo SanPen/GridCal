@@ -199,6 +199,12 @@ class MultiCircuit:
         # contingency group
         self.contingency_groups: List[ContingencyGroup] = list()
 
+        # investments
+        self.investments: List[Investment] = list()
+
+        # investments group
+        self.investments_groups: List[InvestmentsGroup] = list()
+
         # technologies
         self.technologies: List[Technology] = list()
 
@@ -224,6 +230,8 @@ class MultiCircuit:
                                       Technology(),
                                       ContingencyGroup(),
                                       Contingency(),
+                                      InvestmentsGroup(),
+                                      Investment()
                                       ]
 
         # dictionary of profile magnitudes per object
@@ -428,8 +436,11 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
-    def get_contingency_devices(self):
+    def get_contingency_devices(self) -> List[EditableDevice]:
         return self.get_branches() + self.get_generators()
+
+    def get_investment_devices(self) -> List[EditableDevice]:
+        return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads()
 
     def get_lines(self) -> List[Line]:
         return self.lines
@@ -1609,8 +1620,42 @@ class MultiCircuit:
     def add_contingency_group(self, obj: ContingencyGroup):
         self.contingency_groups.append(obj)
 
+    def delete_contingency_group(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.contingency_groups.pop(i)
+
     def add_contingency(self, obj: Contingency):
         self.contingencies.append(obj)
+
+    def delete_contingency(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.contingencies.pop(i)
+
+    def add_investments_group(self, obj: InvestmentsGroup):
+        self.investments_groups.append(obj)
+
+    def delete_investment_groups(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.investments_groups.pop(i)
+
+    def add_investment(self, obj: Investment):
+        self.investments.append(obj)
+
+    def delete_investment(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.investments.pop(i)
 
     def add_technology(self, obj: Technology):
         self.technologies.append(obj)
@@ -1949,7 +1994,6 @@ class MultiCircuit:
                 bus.x = x_m.copy()
                 bus.y = y_m.copy()
                 bus.graphic_obj.set_position(x=bus.x, y=bus.y)
-
 
     def get_center_location(self):
         """

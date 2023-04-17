@@ -40,4 +40,6 @@ from GridCal.Engine.Devices.templates import *
 from GridCal.Engine.Devices.enumerations import *
 from GridCal.Engine.Devices.contingency import *
 from GridCal.Engine.Devices.contingency_group import *
+from GridCal.Engine.Devices.investment import *
+from GridCal.Engine.Devices.investments_group import *
 from GridCal.Engine.Devices.technology import *
