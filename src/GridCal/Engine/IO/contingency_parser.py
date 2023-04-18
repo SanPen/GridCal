@@ -8,23 +8,23 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 def parse_contingencies(data):
 
-    contingencies = List[Contingency]
+    contingencies: List[Contingency] = list()
 
     for key, jentry in data.items():
         group = ContingencyGroup(
             idtag=key,
-            name=str(jentry['name']),
-            category=str(jentry['category']),
+            name=str(jentry['name']) if 'name' in jentry.keys() else None,
+            category=str(jentry['category']) if 'category' in jentry.keys() else None,
         )
 
         for elem in jentry['elements']:
             cnt = Contingency(
-                idtag=elem["key"],
-                device_idtag=elem["device_idtag"],
-                name=str(elem['name']),
-                code=str(elem['code']),
-                prop=str(elem['property']),
-                value=str(elem['value']),
+                idtag=elem['key'] if 'name' in elem.keys() else None,
+                device_idtag=elem['device_idtag'] if 'device_idtag' in elem.keys() else '',
+                name=str(elem['name']) if 'key' in elem.keys() else '',
+                code=str(elem['code']) if 'code' in elem.keys() else '',
+                prop=str(elem['property']) if 'property' in elem.keys() else '',
+                value=str(elem['value']) if 'value' in elem.keys() else 0,
                 group=group
             )
 
@@ -41,8 +41,8 @@ def import_contingencies_from_json(file_name:str):
         data = json.load(open(file_name))
 
         if data['type'] == 'Contingency Exchange Json File':
-            version = data['version']
-            if version == 0:
+            version = float(data['version'])
+            if version == 0.0:
                 return parse_contingencies(data=data["contingencies"])
 
     return []

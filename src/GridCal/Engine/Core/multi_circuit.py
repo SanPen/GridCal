@@ -720,6 +720,12 @@ class MultiCircuit:
         elif element_type == DeviceType.Technology:
             return self.technologies
 
+        elif element_type == DeviceType.InvestmentDevice:
+            return self.investments
+
+        elif element_type == DeviceType.InvestmentsGroupDevice:
+            return self.investments_groups
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -2741,8 +2747,13 @@ class MultiCircuit:
 
         for contingency in contingencies:
             if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():
-                # contingency.element = devices_dict[contingency.code]
+                # ensure proper device_idtag and code
+                element = devices_dict[contingency.code]
+                contingency.device_idtag = element.idtag
+                contingency.code = element.code
+
                 self.contingencies.append(contingency)
+
                 if contingency.group.idtag not in groups.keys():
                     groups[contingency.group.idtag] = contingency.group
             else:

@@ -34,7 +34,7 @@ class Contingency(EditableDevice):
 
     """
 
-    def __init__(self, idtag=None, device_idtag=None, name="Contingency", code='', prop='active', value=0.0,
+    def __init__(self, idtag=None, device_idtag='', name="Contingency", code='', prop='active', value=0.0,
                  group: ContingencyGroup=None):
         """
         Contingency
@@ -63,7 +63,12 @@ class Contingency(EditableDevice):
                 'group': GCProp('', DeviceType.ContingencyGroupDevice, 'Contingency group'),
                 'category': GCProp('', str, 'Group category'),
             },
-            non_editable_attributes=['idtag', 'category'],
+            non_editable_attributes=[
+                'idtag',
+                'device_idtag',
+                'category',
+                'code',
+            ],
             properties_with_profile=dict()
         )
 

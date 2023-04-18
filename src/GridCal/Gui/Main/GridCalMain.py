@@ -1909,23 +1909,17 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no branches!')
 
-    def view_objects_data(self):
-        """
-        On click, display the objects properties
-        """
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+    def create_objects_model(self, elements, elm_type):
 
-        self.view_template_controls(False)
         dictionary_of_lists = dict()
 
         if elm_type == DeviceType.BusDevice.value:
             elm = Bus()
-            elements = self.circuit.buses
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
                                    DeviceType.ZoneDevice.value: self.circuit.zones,
                                    DeviceType.SubstationDevice.value: self.circuit.substations,
                                    DeviceType.CountryDevice.value: self.circuit.countries,
-                                   DeviceType.ContingencyDevice.value: self.circuit.contingencies}
+                                   }
 
         elif elm_type == DeviceType.BranchDevice.value:
 
@@ -1938,15 +1932,12 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.LoadDevice.value:
             elm = dev.Load()
-            elements = self.circuit.get_loads()
 
         elif elm_type == DeviceType.StaticGeneratorDevice.value:
             elm = dev.StaticGenerator()
-            elements = self.circuit.get_static_generators()
 
         elif elm_type == DeviceType.GeneratorDevice.value:
             elm = dev.Generator()
-            elements = self.circuit.get_generators()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.BatteryDevice.value:
@@ -1956,31 +1947,24 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.ShuntDevice.value:
             elm = dev.Shunt()
-            elements = self.circuit.get_shunts()
 
         elif elm_type == DeviceType.ExternalGridDevice.value:
             elm = dev.ExternalGrid()
-            elements = self.circuit.get_external_grids()
 
         elif elm_type == DeviceType.LineDevice.value:
             elm = dev.Line(None, None)
-            elements = self.circuit.lines
 
         elif elm_type == DeviceType.Transformer2WDevice.value:
             elm = dev.Transformer2W(None, None)
-            elements = self.circuit.transformers2w
 
         elif elm_type == DeviceType.Transformer3WDevice.value:
             elm = dev.Transformer3W()
-            elements = self.circuit.transformers3w
 
         elif elm_type == DeviceType.HVDCLineDevice.value:
             elm = dev.HvdcLine(None, None)
-            elements = self.circuit.hvdc_lines
 
         elif elm_type == DeviceType.VscDevice.value:
             elm = dev.VSC(None, None)
-            elements = self.circuit.vsc_devices
 
         elif elm_type == DeviceType.UpfcDevice.value:
             elm = dev.UPFC(None, None)
@@ -1988,45 +1972,35 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.DCLineDevice.value:
             elm = dev.DcLine(None, None)
-            elements = self.circuit.dc_lines
 
         elif elm_type == DeviceType.SubstationDevice.value:
             elm = dev.Substation()
-            elements = self.circuit.substations
 
         elif elm_type == DeviceType.ZoneDevice.value:
             elm = dev.Zone()
-            elements = self.circuit.zones
 
         elif elm_type == DeviceType.AreaDevice.value:
             elm = dev.Area()
-            elements = self.circuit.areas
 
         elif elm_type == DeviceType.CountryDevice.value:
             elm = dev.Country()
-            elements = self.circuit.countries
 
         elif elm_type == DeviceType.ContingencyDevice.value:
             elm = dev.Contingency()
-            elements = self.circuit.contingencies
             dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups, }
 
         elif elm_type == DeviceType.ContingencyGroupDevice.value:
             elm = dev.ContingencyGroup()
-            elements = self.circuit.contingency_groups
 
         elif elm_type == DeviceType.InvestmentDevice.value:
             elm = dev.Investment()
-            elements = self.circuit.investments
             dictionary_of_lists = {DeviceType.InvestmentsGroupDevice.value: self.circuit.investments_groups, }
 
         elif elm_type == DeviceType.InvestmentsGroupDevice.value:
             elm = dev.InvestmentsGroup()
-            elements = self.circuit.investments_groups
 
         elif elm_type == DeviceType.Technology.value:
             elm = dev.Technology()
-            elements = self.circuit.technologies
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
@@ -2043,6 +2017,36 @@ class MainGUI(QMainWindow):
                                editable=True,
                                non_editable_attributes=elm.non_editable_attributes,
                                dictionary_of_lists=dictionary_of_lists)
+
+        return mdl
+
+    def display_filter(self, elements):
+        """
+        Display a list of elements that comes from a filter
+        :param elements:
+        """
+        if len(elements) > 0:
+
+            elm = elements[0]
+
+            mdl = self.create_objects_model(elements=elements, elm_type=elm.device_type.value)
+
+            self.ui.dataStructureTableView.setModel(mdl)
+
+        else:
+            self.ui.dataStructureTableView.setModel(None)
+
+    def view_objects_data(self):
+        """
+        On click, display the objects properties
+        """
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+
+        self.view_template_controls(False)
+
+        elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
+
+        mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
 
         self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
@@ -6081,41 +6085,6 @@ class MainGUI(QMainWindow):
             model.redo()
         else:
             pass
-
-    def display_filter(self, elements):
-        """
-        Display a list of elements that comes from a filter
-        :param elements:
-        """
-        if len(elements) > 0:
-
-            elm = elements[0]
-
-            dictionary_of_lists = dict()
-            if elm.device_type == DeviceType.BusDevice:
-                dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
-                                       DeviceType.ZoneDevice.value: self.circuit.zones,
-                                       DeviceType.SubstationDevice.value: self.circuit.substations,
-                                       DeviceType.CountryDevice.value: self.circuit.countries}
-
-            if elm.device_type in [DeviceType.BranchDevice, DeviceType.SequenceLineDevice,
-                                   DeviceType.UnderGroundLineDevice]:
-
-                mdl = BranchObjectModel(elements, elm.editable_headers,
-                                        parent=self.ui.dataStructureTableView, editable=True,
-                                        non_editable_attributes=elm.non_editable_attributes)
-            else:
-
-                mdl = ObjectsModel(elements, elm.editable_headers,
-                                   parent=self.ui.dataStructureTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   dictionary_of_lists=dictionary_of_lists)
-
-            self.ui.dataStructureTableView.setModel(mdl)
-
-        else:
-
-            self.ui.dataStructureTableView.setModel(None)
 
     def smart_search(self):
         """

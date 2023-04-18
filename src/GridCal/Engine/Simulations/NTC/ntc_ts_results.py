@@ -203,37 +203,37 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.OpfNtcTsBaseReport:
-            if not self.reports['base']:
+            if not 'base' in self.reports.keys():
                 self.create_base_report()
             report = self.reports['base']
 
         elif result_type == ResultTypes.OpfNtcTsContingencyReport:
-            if not self.reports['contingency']:
+            if not 'contingency' in self.reports.keys():
                 self.create_contingency_report()
             report = self.reports['contingency']
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
-            if not self.reports['alpha']:
+            if not 'alpha' in self.reports.keys():
                 self.create_alpha_report()
             report = self.reports['alpha']
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
-            if not self.reports['alphan1']:
+            if not 'alphan1' in self.reports.keys():
                 self.create_alphan1_report()
             report = self.reports['alphan1']
 
         elif result_type == ResultTypes.GeneratorPower:
-            if not self.reports['generation_power']:
+            if not 'generation_power' in self.reports.keys():
                 self.create_generation_power_report()
             report = self.reports['generation_power']
 
         elif result_type == ResultTypes.GenerationDelta:
-            if not self.reports['generation_delta']:
+            if not 'generation_delta' in self.reports.keys():
                 self.create_generation_delta_report()
             report = self.reports['generation_delta']
 
         elif result_type == ResultTypes.BranchMonitoring:
-            if not self.reports['branch_monitoring']:
+            if not 'branch_monitoring' in self.reports.keys():
                 self.create_branch_monitoring_report()
             report = self.reports['branch_monitoring']
         else:

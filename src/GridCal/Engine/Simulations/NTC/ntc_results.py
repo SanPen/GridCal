@@ -38,12 +38,19 @@ def add_exchange_sensibilities(y, columns, alpha, mc_idx=None, alpha_n1=None):
     ])
 
     if alpha_n1 is not None:
-        y_ = np.array([
-            # alpha_n1[m, c],  # Alpha: sensibility to exchange power in contingency situation
-            alpha_n1[m],  # Worst alpha for monitorized branch
-        ], dtype=object).T
+        # Worst alpha for monitorized branch
+        idx_c = np.argmax(np.abs(alpha_n1), axis=1)
+        alpha_c = np.take_along_axis(alpha_n1, np.expand_dims(idx_c, axis=1), axis=1)[m]
 
-        y = np.concatenate([y, y_], axis=1)
+        # Alpha for contingency branch
+        # alpna_c = np.array([alpha_n1[m, c]]).T
+
+        # y_ = np.array([
+        #     # alpha_n1[m, c],  # Alpha: sensibility to exchange power in contingency situation
+        #     alpna_max[m, :],  # Worst alpha for monitorized branch
+        # ], dtype=object).T
+
+        y = np.concatenate([y, alpha_c], axis=1)
 
         columns.extend([
             # 'Alpha n-1',
@@ -921,7 +928,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchMonitoring:
-            if not self.reports['monitoring_logic']:
+            if not 'monitoring_logic' in self.reports.keys():
                 self.create_monitoring_logic_report()
 
             report = self.reports['monitoring_logic']
@@ -994,7 +1001,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
-            if not self.reports['contingency_full_flows']:
+            if not 'contingency_full_flows' in self.reports.keys():
                 self.create_contingency_full_report()
 
             report = self.reports['contingency_full_flows']
@@ -1006,7 +1013,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ContingencyFlowsBranchReport:
 
-            if not self.reports['continency_branch_flows']:
+            if not 'continency_branch_flows' in self.reports.keys():
                 self.create_contingency_hvdc_report()
 
             report = self.reports['continency_branch_flows']
@@ -1018,7 +1025,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
 
-            if not self.reports['contingency_generation_flows']:
+            if not 'contingency_generation_flows' in self.reports.keys():
                 self.create_contingency_generator_report()
 
             report = self.reports['contingency_generation_flows']
@@ -1030,7 +1037,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
 
-            if not self.reports['contingency_hvdc_flows']:
+            if not 'contingency_hvdc_flows' in self.reports.keys():
                 self.create_contingency_hvdc_report()
 
             report = self.reports['contingency_hvdc_flows']
@@ -1129,6 +1136,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.create_contingency_branch_report()
         self.create_contingency_generator_report()
         self.create_contingency_hvdc_report()
+        self.create_monitoring_logic_report()
 
 def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
     """
