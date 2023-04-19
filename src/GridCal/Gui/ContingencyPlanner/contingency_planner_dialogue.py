@@ -51,6 +51,8 @@ class ContingencyPlannerGUI(QDialog):
 
         self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
 
+        self.generated_results = False
+
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -94,6 +96,7 @@ class ContingencyPlannerGUI(QDialog):
             injection_types=injection_types
         )
 
+        self.generated_results = True
         self.close()
 
 

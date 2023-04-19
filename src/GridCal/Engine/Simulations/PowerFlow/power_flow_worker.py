@@ -416,7 +416,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.St = Stb  # in MVA already
     results.If = If  # in p.u.
     results.It = It  # in p.u.
-    results.ma = solution.ma
+    results.tap_module = solution.ma
     results.theta = solution.theta
     results.Beq = solution.Beq
     results.Vbranch = Vbranch
@@ -591,57 +591,30 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None, t=None,
-                    logger=bs.Logger(), bus_dict=None, areas_dict=None) -> "PowerFlowResults":
+def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
-    :param multi_circuit: MultiCircuit instance
+    :param nc: SnapshotData instance
     :param options: PowerFlowOptions instance
-    :param t: time step, if None, the snapshot is compiled
-    :param opf_results: OPF results, to be used if not None
-    :param logger: list of events to add to
-    :param bus_dict: Dus object to index dictionary
-    :param areas_dict: Area to area index dictionary
+    :param logger: logger
     :return: PowerFlowResults instance
     """
 
-    if t is None:
-        nc = compile_snapshot_circuit(
-            circuit=multi_circuit,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess
-        )
-    else:
-        nc = compile_snapshot_circuit_at(
-            circuit=multi_circuit,
-            t_idx=t,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess,
-            bus_dict=bus_dict,
-            areas_dict=areas_dict
-        )
+    # declare results
+    results = PowerFlowResults(n=nc.nbus,
+                               m=nc.nbr,
+                               n_tr=nc.ntr,
+                               n_hvdc=nc.nhvdc,
+                               bus_names=nc.bus_data.names,
+                               branch_names=nc.branch_data.names,
+                               transformer_names=nc.transformer_data.names,
+                               hvdc_names=nc.hvdc_data.names,
+                               bus_types=nc.bus_data.bus_types)
 
-    PowerFlowResults(
-        n=nc.nbus,
-        m=nc.nbr,
-        n_tr=nc.ntr,
-        n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.names,
-        branch_names=nc.branch_data.names,
-        transformer_names=nc.transformer_data.names,
-        hvdc_names=nc.hvdc_data.names,
-        bus_types=nc.bus_data.bus_types
-    )
 
     # compose the HVDC power injections
-    bus_dict = multi_circuit.get_bus_index_dict()
-    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                bus_dict,
-                                                                                theta=np.zeros(nc.nbus))
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
+                                                                                        theta=np.zeros(nc.nbus))
 
     # remember the initial hvdc control values
     Losses_hvdc_prev = Losses_hvdc.copy()
@@ -650,19 +623,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     loading_hvdc_prev = loading_hvdc.copy()
     Shvdc_prev = Shvdc.copy()
 
+    # compute islands
     islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
-
-    results = PowerFlowResults(
-        n=nc.nbus,
-        m=nc.nbr,
-        n_tr=nc.ntr,
-        n_hvdc=nc.nhvdc,
-        bus_names=nc.bus_data.names,
-        branch_names=nc.branch_data.names,
-        transformer_names=nc.transformer_data.names,
-        hvdc_names=nc.hvdc_data.names,
-        bus_types=nc.bus_data.bus_types
-    )
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
@@ -670,7 +632,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     max_control_iter = 10
     oscillations_number = 0
     hvdc_error_threshold = 0.01
-    lpf_alpha = 0.2
 
     while not all_controls_ok:
 
@@ -713,9 +674,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         # --------------------------------------------------------------------------------------------------------------
 
         if n_free and control_iter < max_control_iter:
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                        bus_dict,
-                                                                                        theta=np.angle(results.voltage))
+
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
+                                                                                                theta=np.angle(results.voltage))
 
             # hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
             hvdc_control_err = np.max(np.abs(Shvdc - Shvdc_prev))
@@ -770,3 +731,40 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     results.hvdc_losses = Losses_hvdc * nc.Sbase
 
     return results
+
+
+def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None, t=None,
+                    logger=bs.Logger(), bus_dict=None, areas_dict=None) -> "PowerFlowResults":
+    """
+    Multiple islands power flow (this is the most generic power flow function)
+    :param multi_circuit: MultiCircuit instance
+    :param options: PowerFlowOptions instance
+    :param t: time step, if None, the snapshot is compiled
+    :param opf_results: OPF results, to be used if not None
+    :param logger: list of events to add to
+    :param bus_dict: Dus object to index dictionary
+    :param areas_dict: Area to area index dictionary
+    :return: PowerFlowResults instance
+    """
+
+    if t is None:
+        nc = compile_snapshot_circuit(
+            circuit=multi_circuit,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess
+        )
+    else:
+        nc = compile_snapshot_circuit_at(
+            circuit=multi_circuit,
+            t_idx=t,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess,
+            bus_dict=bus_dict,
+            areas_dict=areas_dict
+        )
+
+    return multi_island_pf2(nc=nc, options=options, logger=logger)

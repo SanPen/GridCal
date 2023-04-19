@@ -790,7 +790,6 @@ class MultiCircuit:
 
         # TODO: implement more devices
 
-
     def copy(self):
         """
         Returns a deep (true) copy of this circuit.
@@ -1632,6 +1631,28 @@ class MultiCircuit:
         :param i: index
         """
         self.contingency_groups.pop(i)
+
+    def get_contingency_group_names(self):
+        """
+        Get list of contingency group names
+        :return:
+        """
+        return [e.name for e in self.contingency_groups]
+
+    def get_contingency_group_dict(self) -> Dict[str, List[Contingency]]:
+        """
+        Get a dictionary of group idtags related to list of contingencies
+        :return:
+        """
+        d = dict()
+
+        for cnt in self.contingencies:
+            if cnt.group.idtag not in d:
+                d[cnt.group.idtag] = [cnt]
+            else:
+                d[cnt.group.idtag].append(cnt)
+
+        return d
 
     def add_contingency(self, obj: Contingency):
         self.contingencies.append(obj)

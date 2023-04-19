@@ -973,6 +973,8 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         # hvdc values
         data.names[i] = elm.name
         data.dispatchable[i] = int(elm.dispatchable)
+        data.F[i] = f
+        data.T[i] = t
 
         if time_series:
             data.active[i, :] = elm.active_prof
@@ -987,6 +989,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
 
             data.Vset_f[i, :] = elm.Vset_f_prof
             data.Vset_t[i, :] = elm.Vset_t_prof
+
         else:
             data.active[i] = elm.active
             data.rate[i] = elm.rate
@@ -1004,6 +1007,9 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
             data.Vset_t[i] = elm.Vset_t
 
         data.control_mode[i] = elm.control_mode
+
+        data.Vnf[i] = elm.bus_from.Vnom
+        data.Vnt[i] = elm.bus_to.Vnom
 
         data.Qmin_f[i] = elm.Qmin_f
         data.Qmax_f[i] = elm.Qmax_f

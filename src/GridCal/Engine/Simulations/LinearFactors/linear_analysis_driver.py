@@ -49,7 +49,7 @@ class LinearAnalysisResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='Linear Analysis',
                                  available_results=[ResultTypes.PTDFBranchesSensitivity,
-                                                    ResultTypes.OTDF,
+                                                    ResultTypes.LODF,
                                                     ResultTypes.BranchActivePowerFrom,
                                                     ResultTypes.BranchLoading],
                                  data_variables=['branch_names',
@@ -110,7 +110,7 @@ class LinearAnalysisResults(ResultsTemplate):
             y_label = '(p.u.)'
             title = 'Branches sensitivity'
 
-        elif result_type == ResultTypes.OTDF:
+        elif result_type == ResultTypes.LODF:
             labels = self.branch_names
             y = self.LODF
             y_label = '(p.u.)'

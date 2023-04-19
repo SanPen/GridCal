@@ -2708,7 +2708,7 @@ class MainGUI(QMainWindow):
                                          hvdc_Pf=results.hvdc_Pf,
                                          hvdc_Pt=results.hvdc_Pt,
                                          hvdc_losses=results.hvdc_losses,
-                                         ma=results.ma,
+                                         ma=results.tap_module,
                                          theta=results.theta,
                                          Beq=results.Beq,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
@@ -3028,9 +3028,9 @@ class MainGUI(QMainWindow):
                     if results.S.shape[0] > 0:
                         viz.colour_the_schematic(circuit=self.circuit,
                                                  Sbus=results.S[0, :],  # same injection for all the contingencies
-                                                 Sf=np.abs(results.Sf).max(axis=1),
+                                                 Sf=np.abs(results.Sf).max(axis=0),
                                                  voltages=results.voltage.max(axis=0),
-                                                 loadings=np.abs(results.loading).max(axis=1),
+                                                 loadings=np.abs(results.loading).max(axis=0),
                                                  types=results.bus_types,
                                                  use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                                  min_branch_width=self.ui.min_branch_size_spinBox.value(),
@@ -7284,17 +7284,18 @@ class MainGUI(QMainWindow):
                 dlg.exec_()
 
     def initialize_contingencies(self):
-
+        """
+        Launch the contingency planner to initialize the contingencies
+        :return:
+        """
         self.contingency_planner_dialogue = ContingencyPlannerGUI(parent=self, grid=self.circuit)
         # self.contingency_planner_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
         self.contingency_planner_dialogue.exec_()
 
-
-        # self.circuit.initialize_contingencies(min_branch_voltage=100,
-        #                                       max_branch_voltage=500)
-
-        self.circuit.contingency_groups = self.contingency_planner_dialogue.contingency_groups
-        self.circuit.contingencies = self.contingency_planner_dialogue.contingencies
+        # gather results
+        if self.contingency_planner_dialogue.generated_results:
+            self.circuit.contingency_groups = self.contingency_planner_dialogue.contingency_groups
+            self.circuit.contingencies = self.contingency_planner_dialogue.contingencies
 
     def add_selected_to_contingency(self):
         """

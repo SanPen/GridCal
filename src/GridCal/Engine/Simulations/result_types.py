@@ -105,7 +105,7 @@ class ResultTypes(Enum):
     PTDFBranchesSensitivity = 'Branch Flow sensitivity', DeviceType.BranchDevice
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity', DeviceType.BusDevice
 
-    OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
+    LODF = 'Outage transfer distribution factors', DeviceType.BranchDevice
 
     MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
     ContingencyFlows = 'Contingency flow', DeviceType.BranchDevice

@@ -24,26 +24,30 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class ContingencyAnalysisResults(ResultsTemplate):
 
-    def __init__(self, nbus, nbr, bus_names, branch_names, bus_types):
+    def __init__(self, ncon, nbus, nbr, bus_names, branch_names, bus_types, con_names):
         """
-        TimeSeriesResults constructor
-        @param nbus: number of buses
-        @param nbr: number of branches
+        ContingencyAnalysisResults
+        :param ncon: number of contingencies
+        :param nbus: number of buses
+        :param nbr: number of branches
+        :param bus_names: bus names
+        :param branch_names: branch names
+        :param bus_types: bus types array
+        :param con_names: contingency names
         """
         ResultsTemplate.__init__(self,
                                  name='Contingency Analysis Results',
-                                 available_results=[ResultTypes.OTDF,
-                                                    ResultTypes.BusActivePower,
+                                 available_results=[ResultTypes.BusActivePower,
                                                     ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading],
+                                                    ResultTypes.BranchLoading,
+                                                    ],
                                  data_variables=['bus_types',
                                                  'branch_names',
                                                  'bus_names',
                                                  'voltage',
                                                  'S',
                                                  'Sf',
-                                                 'loading',
-                                                 'otdf'])
+                                                 'loading'])
 
         self.branch_names = branch_names
 
@@ -51,15 +55,17 @@ class ContingencyAnalysisResults(ResultsTemplate):
 
         self.bus_types = bus_types
 
-        self.voltage = np.ones((nbr, nbus), dtype=complex)
+        self.con_names = con_names
 
-        self.S = np.zeros((nbr, nbus), dtype=complex)
+        self.voltage = np.ones((ncon, nbus), dtype=complex)
 
-        self.Sf = np.zeros((nbr, nbr), dtype=complex)
+        self.S = np.zeros((ncon, nbus), dtype=complex)
 
-        self.loading = np.zeros((nbr, nbr), dtype=complex)
+        self.Sf = np.zeros((ncon, nbr), dtype=complex)
 
-        self.otdf = np.zeros((nbr, nbr))
+        self.loading = np.zeros((ncon, nbr), dtype=complex)
+
+        self.lodf = np.zeros((nbr, nbr))
 
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
@@ -89,7 +95,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         :return:
         """
 
-        index = self.branch_names
+        index = ['# ' + x for x in self.con_names]
 
         if result_type == ResultTypes.BusVoltageModule:
             data = np.abs(self.voltage)
@@ -116,22 +122,16 @@ class ContingencyAnalysisResults(ResultsTemplate):
             data = self.Sf.real
             y_label = 'MW'
             title = 'Branch active power '
-            labels = ['# ' + x for x in self.branch_names]
+            labels = self.branch_names
             # index = self.branch_names
 
         elif result_type == ResultTypes.BranchLoading:
             data = self.loading.real * 100
             y_label = '(%)'
             title = 'Branch loading '
-            labels = ['# ' + x for x in self.branch_names]
+            labels = self.branch_names
             # index = self.branch_names
 
-        elif result_type == ResultTypes.OTDF:
-            data = self.otdf
-            y_label = 'Per unit'
-            labels = ['# ' + x for x in self.branch_names]
-
-            title = 'LODF'
         else:
             raise Exception('Result type not understood:' + str(result_type))
 

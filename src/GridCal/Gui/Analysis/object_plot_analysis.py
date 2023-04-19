@@ -694,7 +694,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
 
     if n > 0:
         k = int(np.round(math.sqrt(p)))
-        axs = [None] * p
+        axs = [None] * (p + 1)
 
         for j in range(p):
             x = vals[:, j]
@@ -702,12 +702,6 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             variance = x.var()
             sigma = math.sqrt(variance)
             r = (mu - 6 * sigma, mu + 6 * sigma)
-
-            # print checks
-            l = np.where(x < r[0])[0]
-            u = np.where(x > r[1])[0]
-
-            # print(extended_prop[j], r, '\n\t', l, '\n\t', u)
 
             # plot
             axs[j] = fig.add_subplot(k, k + 1, j + 1)
@@ -732,7 +726,6 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             axs[j].set_title("R-X")
             axs[j].set_xlabel("R")
             axs[j].set_ylabel("X")
-
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 

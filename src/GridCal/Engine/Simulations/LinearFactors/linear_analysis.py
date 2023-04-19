@@ -307,22 +307,20 @@ def make_worst_contingency_transfer_limits(tmc):
     return wtmc
 
 
-class LinearAnalysis:
+class LinearAnalysis2:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True):
+    def __init__(self, numerical_circuit: SnapshotData, distributed_slack=True, correct_values=True):
         """
 
         :param grid:
         :param distributed_slack:
         """
 
-        self.grid = grid
-
         self.distributed_slack = distributed_slack
 
         self.correct_values = correct_values
 
-        self.numerical_circuit: SnapshotData = None
+        self.numerical_circuit: SnapshotData = numerical_circuit
 
         self.PTDF = None
 
@@ -336,7 +334,7 @@ class LinearAnalysis:
         """
         Run the PTDF and LODF
         """
-        self.numerical_circuit = compile_snapshot_circuit(self.grid)
+        # self.numerical_circuit = compile_snapshot_circuit(self.grid)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus
@@ -439,3 +437,18 @@ class LinearAnalysis:
         Pbr = np.dot(self.PTDF, Sbus.real).T * self.grid.Sbase
 
         return Pbr
+
+
+class LinearAnalysis(LinearAnalysis2):
+
+    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True):
+        """
+
+        :param grid:
+        :param distributed_slack:
+        """
+        LinearAnalysis2.__init__(self,
+                                 numerical_circuit=compile_snapshot_circuit(grid),
+                                 distributed_slack=distributed_slack,
+                                 correct_values=correct_values)
+        self.grid = grid

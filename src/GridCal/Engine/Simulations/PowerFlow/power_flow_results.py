@@ -98,7 +98,6 @@ class PowerFlowResults(ResultsTemplate):
                                                                                 ResultTypes.BranchBeq,
 
                                                                                 ResultTypes.BranchLoading,
-                                                                                ResultTypes.Transformer2WTapModule,
                                                                                 ResultTypes.BranchActiveLosses,
                                                                                 ResultTypes.BranchReactiveLosses,
                                                                                 ResultTypes.BranchActiveLossesPercentage,
@@ -124,12 +123,11 @@ class PowerFlowResults(ResultsTemplate):
                                                  'St',
                                                  'If',
                                                  'It',
-                                                 'ma',
+                                                 'tap_module',
                                                  'theta',
                                                  'Beq',
                                                  'Vbranch',
                                                  'loading',
-                                                 'transformer_tap_module',
                                                  'losses',
                                                  'hvdc_losses',
                                                  'hvdc_Pf',
@@ -167,15 +165,13 @@ class PowerFlowResults(ResultsTemplate):
         self.If = np.zeros(m, dtype=complex)
         self.It = np.zeros(m, dtype=complex)
 
-        self.ma = np.zeros(m, dtype=float)
+        self.tap_module = np.zeros(m, dtype=float)
         self.theta = np.zeros(m, dtype=float)
         self.Beq = np.zeros(m, dtype=float)
 
         self.Vbranch = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
-
-        self.transformer_tap_module = np.zeros(n_tr, dtype=float)
 
         self.losses = np.zeros(m, dtype=complex)
 
@@ -265,7 +261,6 @@ class PowerFlowResults(ResultsTemplate):
         val.If = self.If.copy()
         val.Vbranch = self.Vbranch.copy()
         val.loading = self.loading.copy()
-        val.transformer_tap_module = self.transformer_tap_module.copy()
         val.losses = self.losses.copy()
 
         return val
@@ -296,8 +291,6 @@ class PowerFlowResults(ResultsTemplate):
         self.Vbranch[br_idx] = results.Vbranch
 
         self.loading[br_idx] = results.loading
-
-        self.transformer_tap_module[tr_idx] = results.transformer_tap_module
 
         self.losses[br_idx] = results.losses
 
@@ -440,12 +433,6 @@ class PowerFlowResults(ResultsTemplate):
             y_label = '(MVAr)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.Transformer2WTapModule:
-            labels = self.transformer_names
-            y = self.transformer_tap_module
-            y_label = '(p.u.)'
-            title = result_type.value[0]
-
         elif result_type == ResultTypes.BranchCurrent:
             labels = self.branch_names
             y = self.If
@@ -520,7 +507,7 @@ class PowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchTapModule:
             labels = self.branch_names
-            y = self.ma
+            y = self.tap_module
             y_label = '(p.u.)'
             title = result_type.value[0]
 
@@ -624,10 +611,7 @@ class PowerFlowResults(ResultsTemplate):
         la = self.losses.real
         lr = self.losses.imag
         ls = np.abs(self.losses)
-        if self.transformer_tap_module.size == 0:
-            tm = [np.nan] * sr.size
-        else:
-            tm = self.transformer_tap_module
+        tm = np.ans(self.tap_module)
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
         branch_cols = ['Real power (MW)',
