@@ -3373,6 +3373,7 @@ class Ui_mainWindow(object):
         self.tab_10.setObjectName(u"tab_10")
         self.horizontalLayout_18 = QHBoxLayout(self.tab_10)
         self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.horizontalLayout_18.setContentsMargins(0, 0, 0, 0)
         self.frame_46 = QFrame(self.tab_10)
         self.frame_46.setObjectName(u"frame_46")
         self.frame_46.setMinimumSize(QSize(250, 0))
@@ -3380,7 +3381,6 @@ class Ui_mainWindow(object):
         self.frame_46.setFrameShadow(QFrame.Raised)
         self.verticalLayout_31 = QVBoxLayout(self.frame_46)
         self.verticalLayout_31.setObjectName(u"verticalLayout_31")
-        self.verticalLayout_31.setContentsMargins(-1, 0, -1, -1)
         self.frame_57 = QFrame(self.frame_46)
         self.frame_57.setObjectName(u"frame_57")
         self.frame_57.setFrameShape(QFrame.NoFrame)
@@ -3425,33 +3425,31 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_31.addWidget(self.line_9)
 
-        self.frame_58 = QFrame(self.frame_46)
+        self.frame_70 = QFrame(self.frame_46)
+        self.frame_70.setObjectName(u"frame_70")
+        self.frame_70.setFrameShape(QFrame.NoFrame)
+        self.frame_70.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_39 = QHBoxLayout(self.frame_70)
+        self.horizontalLayout_39.setObjectName(u"horizontalLayout_39")
+        self.horizontalLayout_39.setContentsMargins(0, -1, -1, -1)
+        self.frame_58 = QFrame(self.frame_70)
         self.frame_58.setObjectName(u"frame_58")
         self.frame_58.setFrameShape(QFrame.NoFrame)
         self.frame_58.setFrameShadow(QFrame.Raised)
         self.gridLayout = QGridLayout(self.frame_58)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.max_branch_size_spinBox = QSpinBox(self.frame_58)
-        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
-        self.max_branch_size_spinBox.setMinimum(5)
-        self.max_branch_size_spinBox.setMaximum(10000)
-        self.max_branch_size_spinBox.setValue(20)
+        self.min_branch_size_spinBox = QSpinBox(self.frame_58)
+        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
+        self.min_branch_size_spinBox.setMinimum(5)
+        self.min_branch_size_spinBox.setMaximum(10000)
 
-        self.gridLayout.addWidget(self.max_branch_size_spinBox, 10, 1, 1, 1)
+        self.gridLayout.addWidget(self.min_branch_size_spinBox, 10, 1, 1, 1)
 
-        self.label_56 = QLabel(self.frame_58)
-        self.label_56.setObjectName(u"label_56")
-        palette38 = QPalette()
-        palette38.setBrush(QPalette.Active, QPalette.WindowText, brush14)
-        palette38.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
-        palette38.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_56.setPalette(palette38)
-        font4 = QFont()
-        font4.setPointSize(14)
-        self.label_56.setFont(font4)
-        self.label_56.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+        self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
+        self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
+        self.branch_width_based_on_flow_checkBox.setChecked(False)
 
-        self.gridLayout.addWidget(self.label_56, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 12, 0, 1, 2)
 
         self.min_node_size_spinBox = QSpinBox(self.frame_58)
         self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
@@ -3460,20 +3458,42 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.min_node_size_spinBox, 5, 1, 1, 1)
 
+        self.label_15 = QLabel(self.frame_58)
+        self.label_15.setObjectName(u"label_15")
+
+        self.gridLayout.addWidget(self.label_15, 11, 0, 1, 1)
+
+        self.label = QLabel(self.frame_58)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 5, 0, 1, 1)
+
+        self.max_branch_size_spinBox = QSpinBox(self.frame_58)
+        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
+        self.max_branch_size_spinBox.setMinimum(5)
+        self.max_branch_size_spinBox.setMaximum(10000)
+        self.max_branch_size_spinBox.setValue(20)
+
+        self.gridLayout.addWidget(self.max_branch_size_spinBox, 11, 1, 1, 1)
+
+        self.label_54 = QLabel(self.frame_58)
+        self.label_54.setObjectName(u"label_54")
+        palette38 = QPalette()
+        palette38.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette38.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette38.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_54.setPalette(palette38)
+        font4 = QFont()
+        font4.setPointSize(14)
+        self.label_54.setFont(font4)
+        self.label_54.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.gridLayout.addWidget(self.label_54, 8, 0, 1, 1)
+
         self.palette_comboBox = QComboBox(self.frame_58)
         self.palette_comboBox.setObjectName(u"palette_comboBox")
 
         self.gridLayout.addWidget(self.palette_comboBox, 2, 0, 1, 2)
-
-        self.label_15 = QLabel(self.frame_58)
-        self.label_15.setObjectName(u"label_15")
-
-        self.gridLayout.addWidget(self.label_15, 10, 0, 1, 1)
-
-        self.label_14 = QLabel(self.frame_58)
-        self.label_14.setObjectName(u"label_14")
-
-        self.gridLayout.addWidget(self.label_14, 9, 0, 1, 1)
 
         self.label_43 = QLabel(self.frame_58)
         self.label_43.setObjectName(u"label_43")
@@ -3488,56 +3508,174 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.max_node_size_spinBox, 6, 1, 1, 1)
 
-        self.draw_schematic_checkBox = QCheckBox(self.frame_58)
-        self.draw_schematic_checkBox.setObjectName(u"draw_schematic_checkBox")
-        self.draw_schematic_checkBox.setChecked(True)
+        self.label_14 = QLabel(self.frame_58)
+        self.label_14.setObjectName(u"label_14")
 
-        self.gridLayout.addWidget(self.draw_schematic_checkBox, 0, 0, 1, 1)
-
-        self.label = QLabel(self.frame_58)
-        self.label.setObjectName(u"label")
-
-        self.gridLayout.addWidget(self.label, 5, 0, 1, 1)
-
-        self.label_54 = QLabel(self.frame_58)
-        self.label_54.setObjectName(u"label_54")
-        palette39 = QPalette()
-        palette39.setBrush(QPalette.Active, QPalette.WindowText, brush14)
-        palette39.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
-        palette39.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_54.setPalette(palette39)
-        self.label_54.setFont(font4)
-        self.label_54.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
-
-        self.gridLayout.addWidget(self.label_54, 7, 0, 1, 1)
-
-        self.min_branch_size_spinBox = QSpinBox(self.frame_58)
-        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
-        self.min_branch_size_spinBox.setMinimum(5)
-        self.min_branch_size_spinBox.setMaximum(10000)
-
-        self.gridLayout.addWidget(self.min_branch_size_spinBox, 9, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_14, 10, 0, 1, 1)
 
         self.label_9 = QLabel(self.frame_58)
         self.label_9.setObjectName(u"label_9")
 
         self.gridLayout.addWidget(self.label_9, 6, 0, 1, 1)
 
-        self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
-        self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
-        self.branch_width_based_on_flow_checkBox.setChecked(False)
+        self.label_56 = QLabel(self.frame_58)
+        self.label_56.setObjectName(u"label_56")
+        palette39 = QPalette()
+        palette39.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette39.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette39.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_56.setPalette(palette39)
+        self.label_56.setFont(font4)
+        self.label_56.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
-        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 11, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_56, 4, 0, 1, 1)
 
+        self.label_112 = QLabel(self.frame_58)
+        self.label_112.setObjectName(u"label_112")
 
-        self.verticalLayout_31.addWidget(self.frame_58)
+        self.gridLayout.addWidget(self.label_112, 7, 0, 1, 1)
+
+        self.label_113 = QLabel(self.frame_58)
+        self.label_113.setObjectName(u"label_113")
+
+        self.gridLayout.addWidget(self.label_113, 3, 0, 1, 1)
 
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout_31.addItem(self.verticalSpacer_4)
+        self.gridLayout.addItem(self.verticalSpacer_4, 13, 0, 1, 1)
+
+
+        self.horizontalLayout_39.addWidget(self.frame_58)
+
+        self.label_114 = QLabel(self.frame_70)
+        self.label_114.setObjectName(u"label_114")
+
+        self.horizontalLayout_39.addWidget(self.label_114)
+
+        self.frame_73 = QFrame(self.frame_70)
+        self.frame_73.setObjectName(u"frame_73")
+        self.frame_73.setMinimumSize(QSize(250, 0))
+        self.frame_73.setFrameShape(QFrame.NoFrame)
+        self.frame_73.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_38 = QVBoxLayout(self.frame_73)
+        self.verticalLayout_38.setObjectName(u"verticalLayout_38")
+        self.verticalLayout_38.setContentsMargins(0, 0, -1, -1)
+        self.frame_74 = QFrame(self.frame_73)
+        self.frame_74.setObjectName(u"frame_74")
+        self.frame_74.setMinimumSize(QSize(0, 0))
+        self.frame_74.setMaximumSize(QSize(16777215, 26))
+        self.frame_74.setFrameShape(QFrame.NoFrame)
+        self.frame_74.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_38 = QHBoxLayout(self.frame_74)
+        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.horizontalLayout_38.setContentsMargins(0, 0, 0, 0)
+        self.label_110 = QLabel(self.frame_74)
+        self.label_110.setObjectName(u"label_110")
+        self.label_110.setMinimumSize(QSize(24, 24))
+        self.label_110.setMaximumSize(QSize(24, 24))
+        self.label_110.setPixmap(QPixmap(u":/Icons/icons/show_color_controls.svg"))
+        self.label_110.setScaledContents(True)
+
+        self.horizontalLayout_38.addWidget(self.label_110)
+
+        self.label_111 = QLabel(self.frame_74)
+        self.label_111.setObjectName(u"label_111")
+        palette40 = QPalette()
+        palette40.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette40.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette40.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_111.setPalette(palette40)
+        self.label_111.setFont(font1)
+        self.label_111.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.horizontalLayout_38.addWidget(self.label_111)
+
+
+        self.verticalLayout_38.addWidget(self.frame_74)
+
+        self.frame_75 = QFrame(self.frame_73)
+        self.frame_75.setObjectName(u"frame_75")
+        self.frame_75.setFrameShape(QFrame.NoFrame)
+        self.frame_75.setFrameShadow(QFrame.Raised)
+        self.gridLayout_27 = QGridLayout(self.frame_75)
+        self.gridLayout_27.setObjectName(u"gridLayout_27")
+        self.draw_schematic_checkBox = QCheckBox(self.frame_75)
+        self.draw_schematic_checkBox.setObjectName(u"draw_schematic_checkBox")
+        self.draw_schematic_checkBox.setChecked(True)
+
+        self.gridLayout_27.addWidget(self.draw_schematic_checkBox, 2, 0, 1, 1)
+
+
+        self.verticalLayout_38.addWidget(self.frame_75)
+
+        self.frame_72 = QFrame(self.frame_73)
+        self.frame_72.setObjectName(u"frame_72")
+        self.frame_72.setMinimumSize(QSize(0, 30))
+        self.frame_72.setFrameShape(QFrame.NoFrame)
+        self.frame_72.setFrameShadow(QFrame.Raised)
+        self.gridLayout_26 = QGridLayout(self.frame_72)
+        self.gridLayout_26.setObjectName(u"gridLayout_26")
+
+        self.verticalLayout_38.addWidget(self.frame_72)
+
+        self.frame_71 = QFrame(self.frame_73)
+        self.frame_71.setObjectName(u"frame_71")
+        self.frame_71.setMaximumSize(QSize(16777215, 26))
+        self.frame_71.setFrameShape(QFrame.NoFrame)
+        self.frame_71.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_37 = QHBoxLayout(self.frame_71)
+        self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
+        self.horizontalLayout_37.setContentsMargins(0, 0, 0, 0)
+        self.label_99 = QLabel(self.frame_71)
+        self.label_99.setObjectName(u"label_99")
+        self.label_99.setMinimumSize(QSize(24, 24))
+        self.label_99.setMaximumSize(QSize(24, 24))
+        self.label_99.setPixmap(QPixmap(u":/Icons/icons/show_color_controls.svg"))
+        self.label_99.setScaledContents(True)
+
+        self.horizontalLayout_37.addWidget(self.label_99)
+
+        self.label_100 = QLabel(self.frame_71)
+        self.label_100.setObjectName(u"label_100")
+        palette41 = QPalette()
+        palette41.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette41.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette41.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_100.setPalette(palette41)
+        self.label_100.setFont(font1)
+        self.label_100.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.horizontalLayout_37.addWidget(self.label_100)
+
+
+        self.verticalLayout_38.addWidget(self.frame_71)
+
+        self.label_118 = QLabel(self.frame_73)
+        self.label_118.setObjectName(u"label_118")
+
+        self.verticalLayout_38.addWidget(self.label_118)
+
+        self.tile_provider_comboBox = QComboBox(self.frame_73)
+        self.tile_provider_comboBox.setObjectName(u"tile_provider_comboBox")
+
+        self.verticalLayout_38.addWidget(self.tile_provider_comboBox)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_38.addItem(self.verticalSpacer_2)
+
+
+        self.horizontalLayout_39.addWidget(self.frame_73)
+
+
+        self.verticalLayout_31.addWidget(self.frame_70)
 
 
         self.horizontalLayout_18.addWidget(self.frame_46)
+
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
 
         self.frame_3 = QFrame(self.tab_10)
         self.frame_3.setObjectName(u"frame_3")
@@ -3565,11 +3703,11 @@ class Ui_mainWindow(object):
 
         self.label_45 = QLabel(self.frame_37)
         self.label_45.setObjectName(u"label_45")
-        palette40 = QPalette()
-        palette40.setBrush(QPalette.Active, QPalette.WindowText, brush14)
-        palette40.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
-        palette40.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_45.setPalette(palette40)
+        palette42 = QPalette()
+        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_45.setPalette(palette42)
         self.label_45.setFont(font1)
         self.label_45.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -3580,11 +3718,11 @@ class Ui_mainWindow(object):
 
         self.line_6 = QFrame(self.frame_3)
         self.line_6.setObjectName(u"line_6")
-        palette41 = QPalette()
-        palette41.setBrush(QPalette.Active, QPalette.WindowText, brush13)
-        palette41.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
-        palette41.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_6.setPalette(palette41)
+        palette43 = QPalette()
+        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush13)
+        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
+        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_6.setPalette(palette43)
         self.line_6.setFrameShadow(QFrame.Plain)
         self.line_6.setLineWidth(4)
         self.line_6.setFrameShape(QFrame.HLine)
@@ -3630,10 +3768,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_18.addWidget(self.frame_3)
 
-        self.horizontalSpacer_15 = QSpacerItem(427, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
-
         self.settings_tabWidget.addTab(self.tab_10, icon61, "")
 
         self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
@@ -3662,11 +3796,11 @@ class Ui_mainWindow(object):
 
         self.label_69 = QLabel(self.frame_41)
         self.label_69.setObjectName(u"label_69")
-        palette42 = QPalette()
-        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush14)
-        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
-        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_69.setPalette(palette42)
+        palette44 = QPalette()
+        palette44.setBrush(QPalette.Active, QPalette.WindowText, brush14)
+        palette44.setBrush(QPalette.Inactive, QPalette.WindowText, brush14)
+        palette44.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_69.setPalette(palette44)
         self.label_69.setFont(font1)
         self.label_69.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -3677,11 +3811,11 @@ class Ui_mainWindow(object):
 
         self.line_5 = QFrame(self.frame_7)
         self.line_5.setObjectName(u"line_5")
-        palette43 = QPalette()
-        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush13)
-        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
-        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_5.setPalette(palette43)
+        palette45 = QPalette()
+        palette45.setBrush(QPalette.Active, QPalette.WindowText, brush13)
+        palette45.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
+        palette45.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_5.setPalette(palette45)
         self.line_5.setFrameShadow(QFrame.Plain)
         self.line_5.setLineWidth(4)
         self.line_5.setFrameShape(QFrame.HLine)
@@ -3724,11 +3858,11 @@ class Ui_mainWindow(object):
 
         self.line_19 = QFrame(self.frame_25)
         self.line_19.setObjectName(u"line_19")
-        palette44 = QPalette()
-        palette44.setBrush(QPalette.Active, QPalette.WindowText, brush13)
-        palette44.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
-        palette44.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_19.setPalette(palette44)
+        palette46 = QPalette()
+        palette46.setBrush(QPalette.Active, QPalette.WindowText, brush13)
+        palette46.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
+        palette46.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_19.setPalette(palette46)
         self.line_19.setFrameShadow(QFrame.Plain)
         self.line_19.setLineWidth(4)
         self.line_19.setFrameShape(QFrame.HLine)
@@ -3758,11 +3892,11 @@ class Ui_mainWindow(object):
 
         self.line_25 = QFrame(self.frame_25)
         self.line_25.setObjectName(u"line_25")
-        palette45 = QPalette()
-        palette45.setBrush(QPalette.Active, QPalette.WindowText, brush13)
-        palette45.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
-        palette45.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_25.setPalette(palette45)
+        palette47 = QPalette()
+        palette47.setBrush(QPalette.Active, QPalette.WindowText, brush13)
+        palette47.setBrush(QPalette.Inactive, QPalette.WindowText, brush13)
+        palette47.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_25.setPalette(palette47)
         self.line_25.setFrameShadow(QFrame.Plain)
         self.line_25.setLineWidth(4)
         self.line_25.setFrameShape(QFrame.HLine)
@@ -4829,19 +4963,27 @@ class Ui_mainWindow(object):
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Topology related settings", None))
 #endif // QT_CONFIG(tooltip)
         self.label_76.setText("")
-        self.label_49.setText(QCoreApplication.translate("mainWindow", u"Schematic", None))
-        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
+        self.label_49.setText(QCoreApplication.translate("mainWindow", u"Draw", None))
+        self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
         self.label_15.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
-        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
+        self.label.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
+        self.label_54.setText(QCoreApplication.translate("mainWindow", u"Branches", None))
         self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
+        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
+        self.label_9.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
+        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
+        self.label_112.setText("")
+        self.label_113.setText("")
+        self.label_114.setText("")
+        self.label_110.setText("")
+        self.label_111.setText(QCoreApplication.translate("mainWindow", u"Schematic", None))
 #if QT_CONFIG(tooltip)
         self.draw_schematic_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Draw the schematic. You may disable it for very large grids where the drawing takes time.", None))
 #endif // QT_CONFIG(tooltip)
         self.draw_schematic_checkBox.setText(QCoreApplication.translate("mainWindow", u"Draw schematic", None))
-        self.label.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
-        self.label_54.setText(QCoreApplication.translate("mainWindow", u"Branches", None))
-        self.label_9.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
-        self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
+        self.label_99.setText("")
+        self.label_100.setText(QCoreApplication.translate("mainWindow", u"Map", None))
+        self.label_118.setText(QCoreApplication.translate("mainWindow", u"Map tile provider", None))
         self.label_66.setText("")
         self.label_45.setText(QCoreApplication.translate("mainWindow", u"Visualization", None))
         self.label_32.setText(QCoreApplication.translate("mainWindow", u"Export resolution", None))

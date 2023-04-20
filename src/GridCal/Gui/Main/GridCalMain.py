@@ -71,7 +71,8 @@ from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.Gui.pySlipQt.pySlipQt import PySlipQt
-import GridCal.Gui.pySlipQt.blue_marble as blue_marble
+from GridCal.Gui.pySlipQt.blue_marble import BlueMarbleTiles
+from GridCal.Gui.pySlipQt.cartodb import CartoDbTiles
 
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -352,16 +353,25 @@ class MainGUI(QMainWindow):
 
         ################################################################################################################
         # Declare the map
-        self.tile_source = blue_marble.Tiles(tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble'))
-        self.map_widget = PySlipQt(self, tile_src=self.tile_source, start_level=5)
-        self.polyline_layer = self.map_widget.AddPolylineLayer([],
-                                                               map_rel=True,
-                                                               visible=True,
-                                                               delta=40,
-                                                               show_levels=[3, 4],  # levels at which to show the polylines
-                                                               name='<polyline_layer>')
+        self.tile_sources = {
+            'Blue Marble': BlueMarbleTiles(tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble')),
+            'Carto positron': CartoDbTiles(
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_positron'),
+                tile_servers=['http://basemaps.cartocdn.com/light_all/']),
+            'Carto dark matter': CartoDbTiles(
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
+                tile_servers=["http://basemaps.cartocdn.com/dark_all/"])
+        }
 
-        self.ui.map_layout.addWidget(self.map_widget)
+        self.ui.tile_provider_comboBox.setModel(get_list_model(list(self.tile_sources.keys())))
+        self.ui.tile_provider_comboBox.setCurrentIndex(0)
+
+        # These get initialized by create_map()
+        self.tile_source = None
+        self.map_widget: PySlipQt = None
+        self.polyline_layer = None
+
+        self.create_map()
 
         self.ui.map_time_horizontalSlider.setMinimum(0)
         self.ui.map_time_horizontalSlider.setMaximum(0)
@@ -710,6 +720,8 @@ class MainGUI(QMainWindow):
 
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
 
+        self.ui.tile_provider_comboBox.currentTextChanged.connect(self.create_map)
+
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
@@ -910,6 +922,36 @@ class MainGUI(QMainWindow):
                                     "clc": self.clc,
                                     'app': self,
                                     'circuit': self.circuit})
+
+    def create_map(self):
+        """
+        Create the map widget
+        """
+
+        # remove all widgets from the layout
+        for i in reversed(range(self.ui.map_layout.count())):
+            widget_to_remove = self.ui.map_layout.itemAt(i).widget()
+            # remove it from the layout list
+            self.ui.map_layout.removeWidget(widget_to_remove)
+            # remove it from the gui
+            widget_to_remove.setParent(None)
+
+        # select the tile source
+        self.tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+
+        # create the map widget
+        self.map_widget = PySlipQt(self, tile_src=self.tile_source, start_level=5)
+
+        # add lines layer
+        self.polyline_layer = self.map_widget.AddPolylineLayer([],
+                                                               map_rel=True,
+                                                               visible=True,
+                                                               delta=40,
+                                                               show_levels=[3, 4],
+                                                               # levels at which to show the polylines
+                                                               name='<polyline_layer>')
+        # add to the layout
+        self.ui.map_layout.addWidget(self.map_widget)
 
     def clear_stuff_running(self):
         """
@@ -1273,7 +1315,7 @@ class MainGUI(QMainWindow):
         self.clear_results()
         self.add_default_catalogue()
         self.create_console()
-
+        self.create_map()
         self.collect_memory()
 
     def new_project(self):
