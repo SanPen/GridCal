@@ -782,9 +782,9 @@ class Bus(EditableDevice):
 
     def get_coordinates(self):
         """
-        Get tuple of the bus coordinates (latitude, longitude)
+        Get tuple of the bus coordinates (longitude, latitude)
         """
-        return self.latitude, self.longitude
+        return self.longitude, self.latitude
 
     def get_devices_list(self):
         """

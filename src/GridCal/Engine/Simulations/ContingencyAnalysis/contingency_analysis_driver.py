@@ -59,7 +59,7 @@ class ContingencyAnalysisOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
                  use_provided_flows=False, Pf=None, pf_results=None,
-                 nonlinear=False):
+                 nonlinear=False, pf_options=PowerFlowOptions(SolverType.DC)):
 
         self.distributed_slack = distributed_slack
 
@@ -72,6 +72,8 @@ class ContingencyAnalysisOptions:
         self.pf_results = pf_results
 
         self.nonlinear = nonlinear
+
+        self.pf_options = pf_options
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -119,8 +121,11 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # set the numerical circuit
         self.numerical_circuit = compile_snapshot_circuit(self.grid)
 
-        pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
-                                   ignore_single_node_islands=True)
+        if self.options.pf_options is None:
+            pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+                                       ignore_single_node_islands=True)
+        else:
+            pf_opts = self.options.pf_options
 
         # run the linear analysis
         linear_analysis = LinearAnalysis2(numerical_circuit=self.numerical_circuit,

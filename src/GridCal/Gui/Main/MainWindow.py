@@ -485,37 +485,37 @@ class Ui_mainWindow(object):
         self.gridLayout_20 = QGridLayout(self.grid_colouring_frame)
         self.gridLayout_20.setObjectName(u"gridLayout_20")
         self.gridLayout_20.setContentsMargins(1, 1, 1, 1)
-        self.simulation_results_step_comboBox = QComboBox(self.grid_colouring_frame)
-        self.simulation_results_step_comboBox.setObjectName(u"simulation_results_step_comboBox")
-        self.simulation_results_step_comboBox.setMinimumSize(QSize(256, 0))
-
-        self.gridLayout_20.addWidget(self.simulation_results_step_comboBox, 1, 6, 1, 1)
-
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 0, 1, 1)
-
-        self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
-        self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
-        icon59 = QIcon()
-        icon59.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_next_simulation_step_pushButton.setIcon(icon59)
-
-        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 7, 1, 1)
-
         self.available_results_to_color_comboBox = QComboBox(self.grid_colouring_frame)
         self.available_results_to_color_comboBox.setObjectName(u"available_results_to_color_comboBox")
         self.available_results_to_color_comboBox.setMinimumSize(QSize(164, 0))
 
-        self.gridLayout_20.addWidget(self.available_results_to_color_comboBox, 1, 2, 1, 1)
+        self.gridLayout_20.addWidget(self.available_results_to_color_comboBox, 1, 1, 1, 1)
 
         self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
-        icon60 = QIcon()
-        icon60.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_previous_simulation_step_pushButton.setIcon(icon60)
+        icon59 = QIcon()
+        icon59.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_previous_simulation_step_pushButton.setIcon(icon59)
 
-        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 5, 1, 1)
+        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 4, 1, 1)
+
+        self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
+        self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
+        icon60 = QIcon()
+        icon60.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_next_simulation_step_pushButton.setIcon(icon60)
+
+        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 6, 1, 1)
+
+        self.simulation_results_step_comboBox = QComboBox(self.grid_colouring_frame)
+        self.simulation_results_step_comboBox.setObjectName(u"simulation_results_step_comboBox")
+        self.simulation_results_step_comboBox.setMinimumSize(QSize(256, 0))
+
+        self.gridLayout_20.addWidget(self.simulation_results_step_comboBox, 1, 5, 1, 1)
+
+        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 0, 1, 1)
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
@@ -523,15 +523,7 @@ class Ui_mainWindow(object):
         icon61.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.colour_results_pushButton.setIcon(icon61)
 
-        self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 4, 1, 1)
-
-        self.show_map_pushButton = QPushButton(self.grid_colouring_frame)
-        self.show_map_pushButton.setObjectName(u"show_map_pushButton")
-        icon62 = QIcon()
-        icon62.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.show_map_pushButton.setIcon(icon62)
-
-        self.gridLayout_20.addWidget(self.show_map_pushButton, 1, 1, 1, 1)
+        self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 3, 1, 1)
 
 
         self.verticalLayout_34.addWidget(self.grid_colouring_frame)
@@ -555,9 +547,60 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.cascade_grid_splitter)
 
+        icon62 = QIcon()
+        icon62.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_3.addTab(self.GridSectionTab, icon62, "")
+        self.MapTab = QWidget()
+        self.MapTab.setObjectName(u"MapTab")
+        self.verticalLayout_35 = QVBoxLayout(self.MapTab)
+        self.verticalLayout_35.setObjectName(u"verticalLayout_35")
+        self.map_layout = QHBoxLayout()
+        self.map_layout.setObjectName(u"map_layout")
+
+        self.verticalLayout_35.addLayout(self.map_layout)
+
+        self.frame_69 = QFrame(self.MapTab)
+        self.frame_69.setObjectName(u"frame_69")
+        self.frame_69.setMinimumSize(QSize(0, 25))
+        self.frame_69.setMaximumSize(QSize(16777215, 25))
+        self.frame_69.setFrameShape(QFrame.NoFrame)
+        self.frame_69.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
+        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
+        self.horizontalLayout_35.setContentsMargins(0, 0, 0, 0)
+        self.available_results_to_color_map_comboBox = QComboBox(self.frame_69)
+        self.available_results_to_color_map_comboBox.setObjectName(u"available_results_to_color_map_comboBox")
+        self.available_results_to_color_map_comboBox.setMinimumSize(QSize(164, 0))
+
+        self.horizontalLayout_35.addWidget(self.available_results_to_color_map_comboBox)
+
+        self.draw_map_button = QPushButton(self.frame_69)
+        self.draw_map_button.setObjectName(u"draw_map_button")
         icon63 = QIcon()
-        icon63.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.GridSectionTab, icon63, "")
+        icon63.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.draw_map_button.setIcon(icon63)
+
+        self.horizontalLayout_35.addWidget(self.draw_map_button)
+
+        self.horizontalSpacer_25 = QSpacerItem(506, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_35.addItem(self.horizontalSpacer_25)
+
+        self.map_time_label = QLabel(self.frame_69)
+        self.map_time_label.setObjectName(u"map_time_label")
+
+        self.horizontalLayout_35.addWidget(self.map_time_label)
+
+        self.map_time_horizontalSlider = QSlider(self.frame_69)
+        self.map_time_horizontalSlider.setObjectName(u"map_time_horizontalSlider")
+        self.map_time_horizontalSlider.setOrientation(Qt.Horizontal)
+
+        self.horizontalLayout_35.addWidget(self.map_time_horizontalSlider)
+
+
+        self.verticalLayout_35.addWidget(self.frame_69)
+
+        self.tabWidget_3.addTab(self.MapTab, icon30, "")
         self.DataTab = QWidget()
         self.DataTab.setObjectName(u"DataTab")
         self.verticalLayout_8 = QVBoxLayout(self.DataTab)
@@ -741,7 +784,7 @@ class Ui_mainWindow(object):
 
         self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
         self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
-        self.delete_and_reduce_pushButton.setIcon(icon63)
+        self.delete_and_reduce_pushButton.setIcon(icon62)
 
         self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
 
@@ -1264,7 +1307,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
-        self.tabWidget.addTab(self.GridTab, icon63, "")
+        self.tabWidget.addTab(self.GridTab, icon62, "")
         self.ResultsTab = QWidget()
         self.ResultsTab.setObjectName(u"ResultsTab")
         self.verticalLayout_13 = QVBoxLayout(self.ResultsTab)
@@ -3762,6 +3805,13 @@ class Ui_mainWindow(object):
         self.progress_frame.setFrameShadow(QFrame.Raised)
         self.gridLayout_7 = QGridLayout(self.progress_frame)
         self.gridLayout_7.setObjectName(u"gridLayout_7")
+        self.cancelButton = QPushButton(self.progress_frame)
+        self.cancelButton.setObjectName(u"cancelButton")
+        self.cancelButton.setMinimumSize(QSize(0, 24))
+        self.cancelButton.setIcon(icon50)
+
+        self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
+
         self.progressBar = QProgressBar(self.progress_frame)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setStyleSheet(u"QProgressBar {\n"
@@ -3775,19 +3825,12 @@ class Ui_mainWindow(object):
         self.progressBar.setValue(20)
         self.progressBar.setInvertedAppearance(False)
 
-        self.gridLayout_7.addWidget(self.progressBar, 1, 1, 1, 1)
-
-        self.cancelButton = QPushButton(self.progress_frame)
-        self.cancelButton.setObjectName(u"cancelButton")
-        self.cancelButton.setMinimumSize(QSize(0, 24))
-        self.cancelButton.setIcon(icon50)
-
-        self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
+        self.gridLayout_7.addWidget(self.progressBar, 1, 2, 1, 1)
 
         self.progress_label = QLabel(self.progress_frame)
         self.progress_label.setObjectName(u"progress_label")
 
-        self.gridLayout_7.addWidget(self.progress_label, 0, 1, 1, 1)
+        self.gridLayout_7.addWidget(self.progress_label, 0, 2, 1, 1)
 
 
         self.verticalLayout.addWidget(self.progress_frame)
@@ -3847,6 +3890,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionAutoatic_layout)
         self.menuActions.addAction(self.actionApply_new_rates)
         self.menuActions.addAction(self.actionDrawSchematic)
+        self.menuActions.addAction(self.actionShow_color_controls)
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionAdd_default_catalogue)
         self.menuActions.addAction(self.actionClear_stuff_running_right_now)
@@ -3942,7 +3986,6 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)
 
@@ -4095,7 +4138,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionPTDF_time_series.setToolTip(QCoreApplication.translate("mainWindow", u"PTDF based time series power flow", None))
 #endif // QT_CONFIG(tooltip)
-        self.actionShow_color_controls.setText(QCoreApplication.translate("mainWindow", u"Show color controls", None))
+        self.actionShow_color_controls.setText(QCoreApplication.translate("mainWindow", u"Show schematic controls", None))
         self.actionAdd_circuit.setText(QCoreApplication.translate("mainWindow", u"Add circuit", None))
 #if QT_CONFIG(tooltip)
         self.actionAdd_circuit.setToolTip(QCoreApplication.translate("mainWindow", u"Add circuit to the current circuit", None))
@@ -4218,13 +4261,6 @@ class Ui_mainWindow(object):
         self.clear_cascade_pushButton.setText("")
         self.label_27.setText(QCoreApplication.translate("mainWindow", u"Cascading steps", None))
 #if QT_CONFIG(tooltip)
-        self.simulation_results_step_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Steps in the simulation", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.view_next_simulation_step_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Next", None))
-#endif // QT_CONFIG(tooltip)
-        self.view_next_simulation_step_pushButton.setText("")
-#if QT_CONFIG(tooltip)
         self.available_results_to_color_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
@@ -4232,14 +4268,23 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.view_previous_simulation_step_pushButton.setText("")
 #if QT_CONFIG(tooltip)
+        self.view_next_simulation_step_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Next", None))
+#endif // QT_CONFIG(tooltip)
+        self.view_next_simulation_step_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.simulation_results_step_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Steps in the simulation", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         self.colour_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Color the grid with the selected study", None))
 #endif // QT_CONFIG(tooltip)
         self.colour_results_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.show_map_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Show coloured map", None))
-#endif // QT_CONFIG(tooltip)
-        self.show_map_pushButton.setText("")
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Schematic", None))
+#if QT_CONFIG(tooltip)
+        self.available_results_to_color_map_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
+#endif // QT_CONFIG(tooltip)
+        self.draw_map_button.setText("")
+        self.map_time_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.MapTab), QCoreApplication.translate("mainWindow", u"Map", None))
         self.label_3.setText(QCoreApplication.translate("mainWindow", u"Object types", None))
 #if QT_CONFIG(tooltip)
         self.smart_search_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"

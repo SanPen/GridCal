@@ -1,7 +1,5 @@
 import os
 import numpy as np
-import folium
-from folium.plugins import MarkerCluster
 from PySide2 import QtCore, QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -258,7 +256,8 @@ def colour_sub_schematic(Sbase,
                 elm.graphic_obj.set_colour(color, w, style)
 
 
-def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
+def colour_the_schematic(circuit: MultiCircuit,
+                         Sbus, Sf, voltages, loadings,
                          types=None, losses=None, St=None,
                          hvdc_Pf=None, hvdc_Pt=None, hvdc_losses=None, hvdc_loading=None,
                          failed_br_idx=None, loading_label='loading',
@@ -269,8 +268,7 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          min_branch_width=1,
                          max_branch_width=1,
                          min_bus_width=20,
-                         max_bus_width=20,
-                         file_name=None):
+                         max_bus_width=20):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -282,14 +280,19 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
     :param losses: Branches losses
     :param St: power seen from the "to" bus
     :param hvdc_Pf:
+    :param hvdc_Pt:
     :param hvdc_losses:
     :param hvdc_loading:
     :param failed_br_idx: failed branches
     :param loading_label:
-    :param ma
-    :param theta
-    :param Beq
-    :param file_name: Completely ignore this. It exist for interface compatibility
+    :param ma:
+    :param theta:
+    :param Beq:
+    :param use_flow_based_width:
+    :param min_branch_width:
+    :param max_branch_width:
+    :param min_bus_width:
+    :param max_bus_width:
     :return:
     """
 
@@ -319,208 +322,6 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          min_bus_width=min_bus_width,
                          max_bus_width=max_bus_width,
                          )
-
-
-def get_base_map(location, zoom_start=5):
-    """
-    Get map with all the base defined layers
-    :param location: (lat, lon)
-    :param zoom_start: integer
-    :return: map, marker_layer
-    """
-
-    my_map = folium.Map(location=location, zoom_start=zoom_start)
-
-    # add possible tiles
-    folium.TileLayer('cartodbpositron').add_to(my_map)
-    folium.TileLayer('cartodbdark_matter').add_to(my_map)
-    # folium.TileLayer('openstreetmap').add_to(my_map)
-    folium.TileLayer('stamentoner').add_to(my_map)
-    folium.WmsTileLayer(url='https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-                        layers='Esri_WorldGray',
-                        attr='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
-                        ).add_to(my_map)
-
-    # add markers layer
-    marker_cluster = MarkerCluster().add_to(my_map)
-
-    # add the layer control
-    folium.LayerControl().add_to(my_map)
-
-    return my_map, marker_cluster
-
-
-def plot_html_map(circuit: MultiCircuit,
-                  Sbus,
-                  Sf,
-                  voltages,
-                  loadings,
-                  types=None,
-                  losses=None,
-                  St=None,
-                  hvdc_Pf=None,
-                  hvdc_Pt=None,
-                  hvdc_losses=None,
-                  hvdc_loading=None,
-                  failed_br_idx=None,
-                  loading_label='loading',
-                  ma=None,
-                  theta=None,
-                  Beq=None,
-                  use_flow_based_width=False,
-                  min_branch_width=1,
-                  max_branch_width=1,
-                  min_bus_width=20,
-                  max_bus_width=20,
-                  file_name='map.html'):
-    """
-    Color the grid based on the results passed
-    :param circuit:
-    :param Sbus:  Buses power
-    :param Sf: Branches power
-    :param voltages: Buses voltage
-    :param loadings: Branches load
-    :param types: Buses type
-    :param losses: Branches losses
-    :param St:
-    :param failed_br_idx: failed branches
-    :param loading_label:
-    :param use_flow_based_width:
-    :param min_branch_width:
-    :param max_branch_width:
-    :param min_bus_width:
-    :param max_bus_width:
-    :param file_name:
-    :return:
-    """
-
-    voltage_cmap = get_voltage_color_map()
-    loading_cmap = get_loading_color_map()
-    bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
-
-    vmin = 0
-    vmax = 1.2
-    vrng = vmax - vmin
-    vabs = np.abs(voltages)
-    vang = np.angle(voltages, deg=True)
-    vnorm = (vabs - vmin) / vrng
-    Sbase = circuit.Sbase
-
-    n = len(circuit.buses)
-    longitudes = np.zeros(n)
-    latitudes = np.zeros(n)
-    nodes_dict = dict()
-    for i, bus in enumerate(circuit.buses):
-        longitudes[i] = bus.longitude
-        latitudes[i] = bus.latitude
-        nodes_dict[bus.name] = (bus.latitude, bus.longitude)
-
-    # create map at he average location
-    my_map, marker_cluster = get_base_map(location=circuit.get_center_location(), zoom_start=5)
-
-    Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
-
-    # add node positions
-    for i, bus in enumerate(circuit.buses):
-
-        tooltip = str(i) + ': ' + bus.name + '\n' \
-                  + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-                  + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-        if Sbus is not None:
-            tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
-        if types is not None:
-            tooltip += '\nType: ' + bus_types[types[i]]
-
-        # get the line colour
-        r, g, b, a = voltage_cmap(vnorm[i])
-        color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-        html_color = color.name()
-
-        if use_flow_based_width:
-            radius = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-        else:
-            radius = 50
-
-        position = bus.get_coordinates()
-        html = '<i>' + tooltip + '</i>'
-        folium.Circle(position,
-                      popup=html,
-                      radius=radius,
-                      color=html_color,
-                      tooltip=tooltip).add_to(marker_cluster)
-
-    # add lines
-    lnorm = np.abs(loadings)
-    lnorm[lnorm == np.inf] = 0
-    Sfabs = np.abs(Sf)
-    Sfnorm = Sfabs / np.max(Sfabs)
-    for i, branch in enumerate(circuit.get_branches_wo_hvdc()):
-
-        points = branch.get_coordinates()
-
-        if not has_null_coordinates(points):
-            # compose the tooltip
-            tooltip = str(i) + ': ' + branch.name
-            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-            if Sf is not None:
-                tooltip += '\nPower: ' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
-            if losses is not None:
-                tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-
-            # get the line colour
-            r, g, b, a = loading_cmap(lnorm[i])
-            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-            html_color = color.name()
-            if use_flow_based_width:
-                weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-            else:
-                weight = 3
-
-            # draw the line
-            folium.PolyLine(points,
-                            color=html_color,
-                            weight=weight,
-                            opacity=1,
-                            tooltip=tooltip).add_to(marker_cluster)
-
-    if len(circuit.get_hvdc()) > 0:
-        lnorm = np.abs(hvdc_loading)
-        lnorm[lnorm == np.inf] = 0
-        Sfabs = np.abs(hvdc_Pf)
-        Sfnorm = Sfabs / np.max(Sfabs)
-        for i, branch in enumerate(circuit.get_hvdc()):
-
-            points = branch.get_coordinates()
-
-            if not has_null_coordinates(points):
-                # compose the tooltip
-                tooltip = str(i) + ': ' + branch.name
-                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-                if Sf is not None:
-                    tooltip += '\nPower: ' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
-                if losses is not None:
-                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
-
-                # get the line colour
-                r, g, b, a = loading_cmap(lnorm[i])
-                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                html_color = color.name()
-                if use_flow_based_width:
-                    weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-                else:
-                    weight = 3
-
-                # draw the line
-                folium.PolyLine(points,
-                                color=html_color,
-                                weight=weight,
-                                opacity=1,
-                                tooltip=tooltip).add_to(marker_cluster)
-
-    # save the map
-    my_map.save(file_name)
-
-    print('Map saved to:\n' + file_name)
 
 
 def has_null_coordinates(coord):
@@ -560,3 +361,156 @@ def get_n_colours(n, colormap='gist_rainbow'):
     # [cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)]
 
     return [scalarMap.to_rgba(i) for i in range(n)]
+
+
+
+def get_branch_polyline(branch, w=3, c='red'):
+
+    a = (branch.bus_from.longitude, branch.bus_from.latitude)
+    b = (branch.bus_to.longitude, branch.bus_to.latitude)
+
+    return [a, b], {"width": w, "color": c}
+
+
+def get_map_polylines(circuit: MultiCircuit,
+                      Sbus,
+                      Sf,
+                      voltages,
+                      loadings,
+                      types=None,
+                      losses=None,
+                      St=None,
+                      hvdc_Pf=None,
+                      hvdc_Pt=None,
+                      hvdc_losses=None,
+                      hvdc_loading=None,
+                      failed_br_idx=None,
+                      loading_label='loading',
+                      ma=None,
+                      theta=None,
+                      Beq=None,
+                      use_flow_based_width=False,
+                      min_branch_width=1,
+                      max_branch_width=1,
+                      min_bus_width=20,
+                      max_bus_width=20):
+
+    data = list()
+
+    # for elm in grid.lines:
+    #     poly = get_branch_polyline(elm, w=3, c='red')
+    #     data.append(poly)
+
+    voltage_cmap = get_voltage_color_map()
+    loading_cmap = get_loading_color_map()
+    bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
+
+    vmin = 0
+    vmax = 1.2
+    vrng = vmax - vmin
+    vabs = np.abs(voltages)
+    vang = np.angle(voltages, deg=True)
+    vnorm = (vabs - vmin) / vrng
+    Sbase = circuit.Sbase
+
+    n = len(circuit.buses)
+    longitudes = np.zeros(n)
+    latitudes = np.zeros(n)
+    nodes_dict = dict()
+    for i, bus in enumerate(circuit.buses):
+        longitudes[i] = bus.longitude
+        latitudes[i] = bus.latitude
+        nodes_dict[bus.name] = (bus.latitude, bus.longitude)
+
+    Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
+
+    # add node positions
+    # for i, bus in enumerate(circuit.buses):
+    #
+    #     tooltip = str(i) + ': ' + bus.name + '\n' \
+    #               + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
+    #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+    #     if Sbus is not None:
+    #         tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
+    #     if types is not None:
+    #         tooltip += '\nType: ' + bus_types[types[i]]
+    #
+    #     # get the line colour
+    #     r, g, b, a = voltage_cmap(vnorm[i])
+    #     color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+    #     html_color = color.name()
+    #
+    #     if use_flow_based_width:
+    #         radius = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+    #     else:
+    #         radius = 50
+    #
+    #     position = bus.get_coordinates()
+    #     html = '<i>' + tooltip + '</i>'
+    #     folium.Circle(position,
+    #                   popup=html,
+    #                   radius=radius,
+    #                   color=html_color,
+    #                   tooltip=tooltip).add_to(marker_cluster)
+
+    # add lines
+    lnorm = np.abs(loadings)
+    lnorm[lnorm == np.inf] = 0
+    Sfabs = np.abs(Sf)
+    Sfnorm = Sfabs / np.max(Sfabs)
+    for i, branch in enumerate(circuit.get_branches_wo_hvdc()):
+
+        points = branch.get_coordinates()
+
+        if not has_null_coordinates(points):
+            # compose the tooltip
+            tooltip = str(i) + ': ' + branch.name
+            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+            if Sf is not None:
+                tooltip += '\nPower: ' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+            if losses is not None:
+                tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+
+            # get the line colour
+            r, g, b, a = loading_cmap(lnorm[i])
+            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+            html_color = color.name()
+            if use_flow_based_width:
+                weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+            else:
+                weight = 3
+
+            # draw the line
+            data.append((points, {"width": weight, "color": html_color}))
+
+    if len(circuit.get_hvdc()) > 0:
+        lnorm = np.abs(hvdc_loading)
+        lnorm[lnorm == np.inf] = 0
+        Sfabs = np.abs(hvdc_Pf)
+        Sfnorm = Sfabs / np.max(Sfabs)
+        for i, branch in enumerate(circuit.get_hvdc()):
+
+            points = branch.get_coordinates()
+
+            if not has_null_coordinates(points):
+                # compose the tooltip
+                tooltip = str(i) + ': ' + branch.name
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                if Sf is not None:
+                    tooltip += '\nPower: ' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+                if losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+
+                # get the line colour
+                r, g, b, a = loading_cmap(lnorm[i])
+                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                html_color = color.name()
+                if use_flow_based_width:
+                    weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                else:
+                    weight = 3
+
+                # draw the line
+                data.append((points, {"width": weight, "color": html_color}))
+
+    return data

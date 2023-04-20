@@ -6,7 +6,7 @@ from shutil import copyfile
 import webbrowser
 
 try:
-    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
+    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage, QWebEngineSettings
     qt_web_engine_available = True
 except ModuleNotFoundError:
     qt_web_engine_available = False
@@ -33,6 +33,7 @@ class GISWindow(QMainWindow):
             self.file_path = external_file_path
         else:
             self.file_path = self.generate_blank_map_html(lon_avg=40.430, lat_avg=3.56)
+            print('Map generated in:', self.file_path)
 
         # create web browser for the map
         if qt_web_engine_available:
@@ -41,7 +42,8 @@ class GISWindow(QMainWindow):
             self.web_layout.addWidget(self.webView)
             self.ui.webFrame.setContentsMargins(0, 0, 0, 0)
             self.web_layout.setContentsMargins(0, 0, 0, 0)
-            self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
+            # self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
+            self.webView.setUrl(QtCore.QUrl("https://duckduckgo.com"))
         else:
             webbrowser.open('file://' + self.file_path)
 
