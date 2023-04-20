@@ -327,6 +327,8 @@ class MainGUI(QMainWindow):
                                 nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
+        self.schematic_list_steps = list()
+
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
         # self.grid_editor.setStretchFactor(1, 10)
@@ -627,6 +629,10 @@ class MainGUI(QMainWindow):
 
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
 
+        self.ui.view_previous_simulation_step_map_pushButton.clicked.connect(self.colour_previous_simulation_step_map)
+
+        self.ui.view_next_simulation_step_map_pushButton.clicked.connect(self.colour_next_simulation_step_map)
+
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
         self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
@@ -707,6 +713,7 @@ class MainGUI(QMainWindow):
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
+        self.ui.simulation_results_step_slider.valueChanged.connect(self.schematic_time_slider_change)
         self.ui.map_time_horizontalSlider.valueChanged.connect(self.map_time_slider_change)
 
         # doubleSpinBox
@@ -5135,8 +5142,15 @@ class MainGUI(QMainWindow):
         self.available_results_dict = dict()
         self.ui.resultsTableView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
-        self.ui.simulation_results_step_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
+
+        self.ui.schematic_step_label.setText("")
+        self.ui.simulation_results_step_slider.setMinimum(0)
+        self.ui.simulation_results_step_slider.setMaximum(0)
+
+        self.ui.map_time_label.setText("")
+        self.ui.map_time_horizontalSlider.setMinimum(0)
+        self.ui.map_time_horizontalSlider.setMaximum(0)
 
         self.ui.catalogueTableView.setModel(None)
 
@@ -5383,14 +5397,14 @@ class MainGUI(QMainWindow):
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
             self.grid_colour_function(plot_function=viz.colour_the_schematic,
                                       current_study=self.ui.available_results_to_color_comboBox.currentText(),
-                                      current_step=self.ui.simulation_results_step_comboBox.currentIndex())
+                                      current_step=self.ui.simulation_results_step_slider.value())
 
     def colour_next_simulation_step(self):
         """
         Next colour step
         """
-        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
-        count = self.ui.simulation_results_step_comboBox.count()
+        current_step = self.ui.simulation_results_step_slider.value()
+        count = self.ui.simulation_results_step_slider.maximum() + 1
 
         if count > 0:
             nxt = current_step + 1
@@ -5398,7 +5412,7 @@ class MainGUI(QMainWindow):
             if nxt >= count:
                 nxt = count - 1
 
-            self.ui.simulation_results_step_comboBox.setCurrentIndex(nxt)
+            self.ui.simulation_results_step_slider.setValue(nxt)
 
             self.colour_schematic()
 
@@ -5406,8 +5420,8 @@ class MainGUI(QMainWindow):
         """
         Prev colour step
         """
-        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
-        count = self.ui.simulation_results_step_comboBox.count()
+        current_step = self.ui.simulation_results_step_slider.value()
+        count = self.ui.simulation_results_step_slider.maximum() + 1
 
         if count > 0:
             prv = current_step - 1
@@ -5415,9 +5429,43 @@ class MainGUI(QMainWindow):
             if prv < 0:
                 prv = 0
 
-            self.ui.simulation_results_step_comboBox.setCurrentIndex(prv)
+            self.ui.simulation_results_step_slider.setValue(prv)
 
             self.colour_schematic()
+
+    def colour_next_simulation_step_map(self):
+        """
+        Next colour step
+        """
+        current_step = self.ui.map_time_horizontalSlider.value()
+        count = self.ui.map_time_horizontalSlider.maximum() + 1
+
+        if count > 0:
+            nxt = current_step + 1
+
+            if nxt >= count:
+                nxt = count - 1
+
+            self.ui.map_time_horizontalSlider.setValue(nxt)
+
+            self.colour_map()
+
+    def colour_previous_simulation_step_map(self):
+        """
+        Prev colour step
+        """
+        current_step = self.ui.map_time_horizontalSlider.value()
+        count = self.ui.map_time_horizontalSlider.maximum() + 1
+
+        if count > 0:
+            prv = current_step - 1
+
+            if prv < 0:
+                prv = 0
+
+            self.ui.map_time_horizontalSlider.setValue(prv)
+
+            self.colour_map()
 
     def update_available_steps_to_color(self):
         """
@@ -5426,11 +5474,18 @@ class MainGUI(QMainWindow):
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
             current_study = self.ui.available_results_to_color_comboBox.currentText()
 
-            lst = self.available_results_steps_dict[current_study]
+            self.schematic_list_steps = self.available_results_steps_dict[current_study]
 
-            mdl = get_list_model(lst)
-
-            self.ui.simulation_results_step_comboBox.setModel(mdl)
+            if len(self.schematic_list_steps) > 0:
+                self.ui.simulation_results_step_slider.setMinimum(0)
+                self.ui.simulation_results_step_slider.setMaximum(len(self.schematic_list_steps) - 1)
+                self.ui.simulation_results_step_slider.setSliderPosition(0)
+                self.ui.schematic_step_label.setText(self.schematic_list_steps[0])
+            else:
+                self.ui.simulation_results_step_slider.setMinimum(0)
+                self.ui.simulation_results_step_slider.setMaximum(0)
+                self.ui.simulation_results_step_slider.setSliderPosition(0)
+                self.ui.schematic_step_label.setText("No steps")
 
     def update_available_steps_to_color_map(self):
         """
@@ -5460,6 +5515,11 @@ class MainGUI(QMainWindow):
         idx = self.ui.map_time_horizontalSlider.value()
         if idx > -1:
             self.ui.map_time_label.setText(self.map_list_steps[idx])
+
+    def schematic_time_slider_change(self):
+        idx = self.ui.simulation_results_step_slider.value()
+        if idx > -1:
+            self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
 
     def results_tree_view_click(self, index):
         """

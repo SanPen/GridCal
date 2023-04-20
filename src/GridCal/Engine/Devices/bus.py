@@ -792,11 +792,11 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + \
-                self.controlled_generators + \
-                self.batteries + \
-                self.static_generators + \
-                self.shunts + \
-                self.external_grids
+                 self.controlled_generators + \
+                 self.batteries + \
+                 self.static_generators + \
+                 self.shunts + \
+                 self.external_grids
 
     def get_device_number(self):
         """

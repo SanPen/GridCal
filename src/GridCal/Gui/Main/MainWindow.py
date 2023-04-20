@@ -477,6 +477,21 @@ class Ui_mainWindow(object):
         self.frame_6.setFrameShadow(QFrame.Raised)
         self.verticalLayout_34 = QVBoxLayout(self.frame_6)
         self.verticalLayout_34.setObjectName(u"verticalLayout_34")
+        self.frame_33 = QFrame(self.frame_6)
+        self.frame_33.setObjectName(u"frame_33")
+        self.frame_33.setFrameShape(QFrame.NoFrame)
+        self.frame_33.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_30 = QVBoxLayout(self.frame_33)
+        self.verticalLayout_30.setObjectName(u"verticalLayout_30")
+        self.verticalLayout_30.setContentsMargins(0, 0, 0, 0)
+        self.schematic_layout = QHBoxLayout()
+        self.schematic_layout.setObjectName(u"schematic_layout")
+
+        self.verticalLayout_30.addLayout(self.schematic_layout)
+
+
+        self.verticalLayout_34.addWidget(self.frame_33)
+
         self.grid_colouring_frame = QFrame(self.frame_6)
         self.grid_colouring_frame.setObjectName(u"grid_colouring_frame")
         self.grid_colouring_frame.setMaximumSize(QSize(16777215, 34))
@@ -497,7 +512,11 @@ class Ui_mainWindow(object):
         icon59.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.view_previous_simulation_step_pushButton.setIcon(icon59)
 
-        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 4, 1, 1)
+        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 6, 1, 1)
+
+        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 4, 1, 1)
 
         self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
@@ -505,17 +524,13 @@ class Ui_mainWindow(object):
         icon60.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.view_next_simulation_step_pushButton.setIcon(icon60)
 
-        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 6, 1, 1)
+        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 8, 1, 1)
 
-        self.simulation_results_step_comboBox = QComboBox(self.grid_colouring_frame)
-        self.simulation_results_step_comboBox.setObjectName(u"simulation_results_step_comboBox")
-        self.simulation_results_step_comboBox.setMinimumSize(QSize(256, 0))
+        self.simulation_results_step_slider = QSlider(self.grid_colouring_frame)
+        self.simulation_results_step_slider.setObjectName(u"simulation_results_step_slider")
+        self.simulation_results_step_slider.setOrientation(Qt.Horizontal)
 
-        self.gridLayout_20.addWidget(self.simulation_results_step_comboBox, 1, 5, 1, 1)
-
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 0, 1, 1)
+        self.gridLayout_20.addWidget(self.simulation_results_step_slider, 1, 7, 1, 1)
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
@@ -525,23 +540,13 @@ class Ui_mainWindow(object):
 
         self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 3, 1, 1)
 
+        self.schematic_step_label = QLabel(self.grid_colouring_frame)
+        self.schematic_step_label.setObjectName(u"schematic_step_label")
+
+        self.gridLayout_20.addWidget(self.schematic_step_label, 1, 5, 1, 1)
+
 
         self.verticalLayout_34.addWidget(self.grid_colouring_frame)
-
-        self.frame_33 = QFrame(self.frame_6)
-        self.frame_33.setObjectName(u"frame_33")
-        self.frame_33.setFrameShape(QFrame.NoFrame)
-        self.frame_33.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_30 = QVBoxLayout(self.frame_33)
-        self.verticalLayout_30.setObjectName(u"verticalLayout_30")
-        self.verticalLayout_30.setContentsMargins(0, 0, 0, 0)
-        self.schematic_layout = QHBoxLayout()
-        self.schematic_layout.setObjectName(u"schematic_layout")
-
-        self.verticalLayout_30.addLayout(self.schematic_layout)
-
-
-        self.verticalLayout_34.addWidget(self.frame_33)
 
         self.cascade_grid_splitter.addWidget(self.frame_6)
 
@@ -582,7 +587,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_35.addWidget(self.draw_map_button)
 
-        self.horizontalSpacer_25 = QSpacerItem(506, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_25 = QSpacerItem(472, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_35.addItem(self.horizontalSpacer_25)
 
@@ -591,11 +596,23 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_35.addWidget(self.map_time_label)
 
+        self.view_previous_simulation_step_map_pushButton = QPushButton(self.frame_69)
+        self.view_previous_simulation_step_map_pushButton.setObjectName(u"view_previous_simulation_step_map_pushButton")
+        self.view_previous_simulation_step_map_pushButton.setIcon(icon59)
+
+        self.horizontalLayout_35.addWidget(self.view_previous_simulation_step_map_pushButton)
+
         self.map_time_horizontalSlider = QSlider(self.frame_69)
         self.map_time_horizontalSlider.setObjectName(u"map_time_horizontalSlider")
         self.map_time_horizontalSlider.setOrientation(Qt.Horizontal)
 
         self.horizontalLayout_35.addWidget(self.map_time_horizontalSlider)
+
+        self.view_next_simulation_step_map_pushButton = QPushButton(self.frame_69)
+        self.view_next_simulation_step_map_pushButton.setObjectName(u"view_next_simulation_step_map_pushButton")
+        self.view_next_simulation_step_map_pushButton.setIcon(icon60)
+
+        self.horizontalLayout_35.addWidget(self.view_next_simulation_step_map_pushButton)
 
 
         self.verticalLayout_35.addWidget(self.frame_69)
@@ -4272,18 +4289,18 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.view_next_simulation_step_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.simulation_results_step_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Steps in the simulation", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
         self.colour_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Color the grid with the selected study", None))
 #endif // QT_CONFIG(tooltip)
         self.colour_results_pushButton.setText("")
+        self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Schematic", None))
 #if QT_CONFIG(tooltip)
         self.available_results_to_color_map_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
 #endif // QT_CONFIG(tooltip)
         self.draw_map_button.setText("")
         self.map_time_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.view_previous_simulation_step_map_pushButton.setText("")
+        self.view_next_simulation_step_map_pushButton.setText("")
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.MapTab), QCoreApplication.translate("mainWindow", u"Map", None))
         self.label_3.setText(QCoreApplication.translate("mainWindow", u"Object types", None))
 #if QT_CONFIG(tooltip)
