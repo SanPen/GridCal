@@ -591,7 +591,7 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logger()) -> "PowerFlowResults":
+def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -610,7 +610,6 @@ def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logg
                                transformer_names=nc.transformer_data.names,
                                hvdc_names=nc.hvdc_data.names,
                                bus_types=nc.bus_data.bus_types)
-
 
     # compose the HVDC power injections
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
@@ -636,27 +635,27 @@ def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logg
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
-        for i, calculation_input in enumerate(islands):
+        for i, island in enumerate(islands):
 
-            if len(calculation_input.vd) > 0:
+            if len(island.vd) > 0:
 
                 # run circuit power flow
                 res = single_island_pf(
-                    circuit=calculation_input,
-                    Vbus=calculation_input.Vbus,
-                    Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
-                    Ibus=calculation_input.Ibus,
-                    Yloadbus=calculation_input.YLoadBus,
-                    ma=calculation_input.branch_data.m[:, 0],
-                    theta=calculation_input.branch_data.theta[:, 0],
-                    Beq=calculation_input.branch_data.Beq[:, 0],
-                    branch_rates=calculation_input.Rates,
-                    pq=calculation_input.pq,
-                    pv=calculation_input.pv,
-                    vd=calculation_input.vd,
-                    pqpv=calculation_input.pqpv,
-                    Qmin=calculation_input.Qmin_bus[:, 0],
-                    Qmax=calculation_input.Qmax_bus[:, 0],
+                    circuit=island,
+                    Vbus=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
+                    Sbus=island.Sbus + Shvdc[island.original_bus_idx],
+                    Ibus=island.Ibus,
+                    Yloadbus=island.YLoadBus,
+                    ma=island.branch_data.m[:, 0],
+                    theta=island.branch_data.theta[:, 0],
+                    Beq=island.branch_data.Beq[:, 0],
+                    branch_rates=island.Rates,
+                    pq=island.pq,
+                    pv=island.pv,
+                    vd=island.vd,
+                    pqpv=island.pqpv,
+                    Qmin=island.Qmin_bus[:, 0],
+                    Qmax=island.Qmax_bus[:, 0],
                     options=options,
                     logger=logger
                 )
@@ -664,9 +663,9 @@ def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logg
                 # merge the results from this island
                 results.apply_from_island(
                     res,
-                    calculation_input.original_bus_idx,
-                    calculation_input.original_branch_idx,
-                    calculation_input.original_tr_idx
+                    island.original_bus_idx,
+                    island.original_branch_idx,
+                    island.original_tr_idx
                 )
 
             else:

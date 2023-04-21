@@ -27,10 +27,10 @@ Some semantics:
 
 
 import sys
+from typing import List, Dict
 from PySide2.QtCore import Qt, QTimer, QPoint, QPointF, QObject, Signal
 from PySide2.QtWidgets import QLabel, QSizePolicy, QWidget, QMessageBox
-from PySide2.QtGui import (QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics,
-                         QPolygon, QBrush, QCursor)
+from PySide2.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor
 
 try:
     import GridCal.Gui.pySlipQt.log as log
@@ -66,15 +66,18 @@ __version__ = '0.5'
 # A layer class - encapsulates all layer data.
 ######
 
-class _Layer(object):
-    """A Layer object."""
+class MapLayer:
+    """
+    A Layer object.
+    """
 
     DefaultDelta = 50      # default selection delta
 
-    def __init__(self, id=0, painter=None, data=None, map_rel=True,
+    def __init__(self, layer_id=0, painter=None, data=None, map_rel=True,
                  visible=False, show_levels=None, selectable=False,
                  name="<no name given>", ltype=None):
-        """Initialise the Layer object.
+        """
+        Initialise the Layer object.
 
         id           unique layer ID
         painter      render function
@@ -96,11 +99,139 @@ class _Layer(object):
         self.delta = self.DefaultDelta  # minimum distance for selection
         self.name = name                # name of this layer
         self.type = ltype               # type of layer
-        self.id = id                    # ID of this layer
+        self.layer_id = layer_id        # ID of this layer
+
+        self.valid_placements = ['cc', 'nw', 'cn', 'ne', 'ce', 'se', 'cs', 'sw', 'cw']
+
+    @staticmethod
+    def colour_to_internal(colour):
+        """Convert a colour in one of various forms to an internal format.
+
+        colour  either a HEX string ('#RRGGBBAA')
+                or a tuple (r, g, b, a)
+                or a colour name ('red')
+
+        Returns internal form:  (r, g, b, a)
+        """
+
+        if isinstance(colour, str):
+            # expect '#RRGGBBAA' form
+            if len(colour) != 9 or colour[0] != '#':
+                # assume it's a colour *name*
+                # we should do more checking of the name here, though it looks
+                # like PySide2 defaults to a colour if the name isn't recognized
+                c = QColor(colour)
+                result = (c.red(), c.blue(), c.green(), c.alpha())
+            else:
+                # we try for a colour like '#RRGGBBAA'
+                r = int(colour[1:3], 16)
+                g = int(colour[3:5], 16)
+                b = int(colour[5:7], 16)
+                a = int(colour[7:9], 16)
+                result = (r, g, b, a)
+        elif isinstance(colour, QColor):
+            # if it's a QColor, get float RGBA values, convert to ints
+            result = [int(v*255) for v in colour.getRgbF()]
+        else:
+
+            # we assume a list or tuple
+            try:
+                len_colour = len(colour)
+            except TypeError:
+                msg = ("Colour value '%s' is not in the form '(r, g, b, a)'" % str(colour))
+                raise Exception(msg)
+
+            if len_colour != 4:
+                msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
+                        % str(colour))
+                raise Exception(msg)
+            result = []
+            for v in colour:
+                try:
+                    v = int(v)
+                except ValueError:
+                    msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
+                            % str(colour))
+                    raise Exception(msg)
+                if v < 0 or v > 255:
+                    msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
+                            % str(colour))
+                    raise Exception(msg)
+                result.append(v)
+            result = tuple(result)
+
+        return result
+
+    @staticmethod
+    def get_i18n_kw(kwargs, kws, default):
+        """Get alternate international keyword value.
+
+        kwargs   dictionary to look for keyword value
+        kws      iterable of keyword spelling strings
+        default  default value if no keyword found
+
+        Returns the keyword value.
+        """
+
+        result = None
+        for kw_str in kws[:-1]:
+            result = kwargs.get(kw_str, None)
+            if result:
+                break
+        else:
+            result = kwargs.get(kws[-1], default)
+
+        return result
+
+    def setData(self, data,
+                default_placement='cc',
+                default_width=1,
+                default_colour='red',
+                default_offset_x=0,
+                default_offset_y=0,
+                default_data=None):
+
+        # create draw_data iterable
+        self.data = []
+        for data_entry in data:
+
+            if len(data_entry) == 2:
+                polyline_points, attributes = data_entry
+
+            elif len(data_entry) == 1:
+                polyline_points = data_entry
+                attributes = {}
+
+            else:
+                msg = ('Polyline data must be iterable of tuples: (polyline, [attributes])\n'
+                       'Got: %s' % str(data_entry))
+                raise Exception(msg)
+
+            # get polygon attributes
+            placement = attributes.get('placement', default_placement)
+            width = attributes.get('width', default_width)
+            colour = self.get_i18n_kw(attributes, ('colour', 'color'), default_colour)
+            offset_x = attributes.get('offset_x', default_offset_x)
+            offset_y = attributes.get('offset_y', default_offset_y)
+            udata = attributes.get('data', default_data)
+
+            # check values that can be wrong
+            if not placement:
+                placement = default_placement
+            placement = placement.lower()
+
+            if placement not in self.valid_placements:
+                msg = ("Polyline placement value is invalid, got '%s'" % str(placement))
+                raise Exception(msg)
+
+            # convert various colour formats to internal (r, g, b, a)
+            rgba = self.colour_to_internal(colour)
+
+            self.data.append((polyline_points, placement, width, rgba, offset_x, offset_y, udata))
 
     def __str__(self):
         return ('<pySlipQt Layer: id=%d, name=%s, map_rel=%s, visible=%s>'
-                % (self.id, self.name, str(self.map_rel), str(self.visible)))
+                % (self.layer_id, self.name, str(self.map_rel), str(self.visible)))
 
 
 ######
@@ -313,7 +444,7 @@ class PySlipQt(QWidget):
         self.start_drag_y = None
 
         # layer state variables
-        self.layer_mapping = dict()         # maps layer ID to layer data
+        self.layer_mapping: Dict[int, MapLayer] = dict()         # maps layer ID to layer data
         self.layer_z_order = list()         # layer Z order, contains layer IDs
 
         self.map_llon = 0.0
@@ -749,10 +880,10 @@ class PySlipQt(QWidget):
             x_pix += self.tile_width
 
         # now draw the layers
-        for id in self.layer_z_order:
-            l = self.layer_mapping[id]
-            if l.visible and self.level in l.show_levels:
-                l.painter(painter, l.data, map_rel=l.map_rel)
+        for layer_id in self.layer_z_order:
+            layer = self.layer_mapping[layer_id]
+            if layer.visible and self.level in layer.show_levels and len(layer.data) > 0:
+                layer.painter(painter, layer.data, map_rel=layer.map_rel)
 
         # draw selection rectangle, if any
         if self.sbox_1_x:
@@ -1004,9 +1135,9 @@ class PySlipQt(QWidget):
             show_levels = range(self.tiles_min_level, self.tiles_max_level+1)[:]
 
         # create layer, add unique ID to Z order list
-        l = _Layer(id=id, painter=painter, data=data, map_rel=map_rel,
-                   visible=visible, show_levels=show_levels,
-                   selectable=selectable, name=name, ltype=ltype)
+        l = MapLayer(layer_id=id, painter=painter, data=data, map_rel=map_rel,
+                     visible=visible, show_levels=show_levels,
+                     selectable=selectable, name=name, ltype=ltype)
 
         self.layer_mapping[id] = l
         self.layer_z_order.append(id)
@@ -1017,7 +1148,15 @@ class PySlipQt(QWidget):
 
         return id
 
-    def SetLayerSelectable(self, lid, selectable=False):
+    def getLayer(self, lid) -> MapLayer:
+        """
+        Get a layer
+        :param lid:
+        :return:
+        """
+        return self.layer_mapping[lid]
+
+    def setLayerSelectable(self, lid, selectable=False):
         """Update the .selectable attribute for a layer.
 
         lid         ID of the layer we are going to update
@@ -1220,14 +1359,14 @@ class PySlipQt(QWidget):
         # draw polyline(s)
         cache_colour_width = None       # speed up mostly unchanging data
 
-        for (p, place, width, colour, x_off, y_off, udata) in data:
-            (poly, extent) = pex(place, p, x_off, y_off)
+        for points, place, width, colour, x_off, y_off, udata in data:
+            poly, extent = pex(place, points, x_off, y_off)
             if poly:
                 if cache_colour_width != (colour, width):
                     dc.setPen(QPen(QColor(*colour), width, Qt.SolidLine))
                     cache_colour_width = (colour, width)
-                qpoly = [QPoint(*p) for p in poly]
-                dc.drawPolyline(QPolygon(qpoly))
+                obj = QPolygon([QPoint(x, y) for x, y in poly])
+                dc.drawPolyline(obj)
 
 ######
 # Convert between geo and view coordinates
@@ -2445,11 +2584,12 @@ class PySlipQt(QWidget):
                     data.append(udata)
 
         if not selection:
-            return None
-        return (selection, data, None)
+            return None, None, None
+        return selection, data, None
 
     def sel_polyline_in_layer(self, layer, view_pt, map_pt):
-        """Get first polyline object clicked in layer data.
+        """
+        Get first polyline object clicked in layer data.
 
         layer    layer object we are looking in
         view_pt  tuple of click position in view coords
@@ -2603,8 +2743,7 @@ class PySlipQt(QWidget):
         # decide if (ptx,pty) is inside polygon
         return self.point_inside_polygon(view, view_poly)
 
-    def point_near_polyline_geo(self, point, poly, placement,
-                                offset_x, offset_y, delta):
+    def point_near_polyline_geo(self, point, poly, placement, offset_x, offset_y, delta):
         """Decide if a point is near a map-relative polyline.
 
         point      tuple (xgeo, ygeo) of point position
@@ -2623,8 +2762,7 @@ class PySlipQt(QWidget):
 
         return self.point_near_polyline(point, poly, delta=delta)
 
-    def point_near_polyline_view(self, point, polyline, place,
-                                 x_off, y_off, delta):
+    def point_near_polyline_view(self, point, polyline, place, x_off, y_off, delta):
         """Decide if a point is near a view-relative polyline.
 
         point     a tuple (viewx, viewy) of selection point in view coordinates
@@ -2701,8 +2839,11 @@ class PySlipQt(QWidget):
 
         px = s2x - s1x
         py = s2y - s1y
-
-        u = ((ptx - s1x)*px + (pty - s1y)*py) / float(px**2 + py**2)
+        div = float(px**2 + py**2)
+        if div != 0:
+            u = ((ptx - s1x) * px + (pty - s1y) * py) / div
+        else:
+            u = 0
 
         if u > 1:
             u = 1
@@ -3157,9 +3298,9 @@ class PySlipQt(QWidget):
                               filled, fillcolour, offset_x, offset_y, udata))
 
         return self.add_layer(self.draw_polygon_layer, draw_data, map_rel,
-                             visible=visible, show_levels=show_levels,
-                             selectable=selectable, name=name,
-                             ltype=self.TypePolygon)
+                              visible=visible, show_levels=show_levels,
+                              selectable=selectable, name=name,
+                              ltype=self.TypePolygon)
 
     def AddPolylineLayer(self, data, map_rel=True, visible=True,
                          show_levels=None, selectable=False,
@@ -3192,20 +3333,16 @@ class PySlipQt(QWidget):
 
         # merge global and layer defaults
         if map_rel:
-            default_placement = kwargs.get('placement',
-                                           self.DefaultPolygonPlacement)
+            default_placement = kwargs.get('placement', self.DefaultPolygonPlacement)
             default_width = kwargs.get('width', self.DefaultPolygonWidth)
-            default_colour = self.get_i18n_kw(kwargs, ('colour', 'color'),
-                                              self.DefaultPolygonColour)
+            default_colour = self.get_i18n_kw(kwargs, ('colour', 'color'), self.DefaultPolygonColour)
             default_offset_x = kwargs.get('offset_x', self.DefaultPolygonOffsetX)
             default_offset_y = kwargs.get('offset_y', self.DefaultPolygonOffsetY)
             default_data = kwargs.get('data', self.DefaultPolygonData)
         else:
-            default_placement = kwargs.get('placement',
-                                           self.DefaultPolygonViewPlacement)
+            default_placement = kwargs.get('placement', self.DefaultPolygonViewPlacement)
             default_width = kwargs.get('width', self.DefaultPolygonViewWidth)
-            default_colour = self.get_i18n_kw(kwargs, ('colour', 'color'),
-                                              self.DefaultPolygonViewColour)
+            default_colour = self.get_i18n_kw(kwargs, ('colour', 'color'), self.DefaultPolygonViewColour)
             default_offset_x = kwargs.get('offset_x', self.DefaultPolygonViewOffsetX)
             default_offset_y = kwargs.get('offset_y', self.DefaultPolygonViewOffsetY)
             default_data = kwargs.get('data', self.DefaultPolygonViewData)
@@ -3219,16 +3356,14 @@ class PySlipQt(QWidget):
                 p = d
                 attributes = {}
             else:
-                msg = ('Polyline data must be iterable of tuples: '
-                       '(polyline, [attributes])\n'
+                msg = ('Polyline data must be iterable of tuples: (polyline, [attributes])\n'
                        'Got: %s' % str(d))
                 raise Exception(msg)
 
             # get polygon attributes
             placement = attributes.get('placement', default_placement)
             width = attributes.get('width', default_width)
-            colour = self.get_i18n_kw(attributes, ('colour', 'color'),
-                                      default_colour)
+            colour = self.get_i18n_kw(attributes, ('colour', 'color'), default_colour)
             offset_x = attributes.get('offset_x', default_offset_x)
             offset_y = attributes.get('offset_y', default_offset_y)
             udata = attributes.get('data', default_data)
@@ -3238,15 +3373,13 @@ class PySlipQt(QWidget):
                 placement = default_placement
             placement = placement.lower()
             if placement not in self.valid_placements:
-                msg = ("Polyline placement value is invalid, got '%s'"
-                       % str(placement))
+                msg = ("Polyline placement value is invalid, got '%s'" % str(placement))
                 raise Exception(msg)
 
             # convert various colour formats to internal (r, g, b, a)
             colour = self.colour_to_internal(colour)
 
-            draw_data.append((p, placement, width, colour,
-                              offset_x, offset_y, udata))
+            draw_data.append((p, placement, width, colour, offset_x, offset_y, udata))
 
         return self.add_layer(painter=self.draw_polyline_layer,
                               data=draw_data,
@@ -3262,8 +3395,8 @@ class PySlipQt(QWidget):
     ######
 
     def ShowLayer(self, id):
-        """Show a layer.
-
+        """
+        Show a layer.
         id  the layer id
         """
 
@@ -3271,8 +3404,8 @@ class PySlipQt(QWidget):
         self.update()
 
     def HideLayer(self, id):
-        """Hide a layer.
-
+        """
+        Hide a layer.
         id  the layer id
         """
 
@@ -3280,27 +3413,29 @@ class PySlipQt(QWidget):
         self.update()
 
     def DeleteLayer(self, id):
-        """Delete a layer.
-
+        """
+        Delete a layer.
         id  the layer id
         """
 
         # just in case we got None
-        if id:
-            # see if what we are about to remove might be visible
-            layer = self.layer_mapping[id]
-            visible = layer.visible
+        if id is not None:
+            if id in self.layer_mapping:
 
-            del layer
-            self.layer_z_order.remove(id)
+                # see if what we are about to remove might be visible
+                layer = self.layer_mapping[id]
+                visible = layer.visible
 
-            # if layer was visible, refresh display
-            if visible:
-                self.update()
+                del layer
+                self.layer_z_order.remove(id)
+
+                # if layer was visible, refresh display
+                if visible:
+                    self.update()
 
     def PushLayerToBack(self, id):
-        """Make layer specified be drawn at back of Z order.
-
+        """
+        Make layer specified be drawn at back of Z order.
         id  ID of the layer to push to the back
         """
 
@@ -3309,8 +3444,8 @@ class PySlipQt(QWidget):
         self.update()
 
     def PopLayerToFront(self, id):
-        """Make layer specified be drawn at front of Z order.
-
+        """
+        Make layer specified be drawn at front of Z order.
         id  ID of the layer to pop to the front
         """
 
@@ -3319,8 +3454,8 @@ class PySlipQt(QWidget):
         self.update()
 
     def PlaceLayerBelowLayer(self, below, top):
-        """Place a layer so it will be drawn behind another layer.
-
+        """
+        Place a layer so it will be drawn behind another layer.
         below  ID of layer to place underneath 'top'
         top    ID of layer to be drawn *above* 'below'
         """
@@ -3331,7 +3466,8 @@ class PySlipQt(QWidget):
         self.update()
 
     def SetLayerShowLevels(self, id, show_levels=None):
-        """Update the show_levels list for a layer.
+        """
+        Update the show_levels list for a layer.
 
         id           ID of the layer we are going to update
         show_levels  new layer show list
@@ -3359,7 +3495,8 @@ class PySlipQt(QWidget):
     ######
 
     def GotoLevel(self, level):
-        """Use a new tile level.
+        """
+        Use a new tile level.
 
         level  the new tile level to use.
 

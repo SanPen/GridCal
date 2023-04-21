@@ -369,7 +369,7 @@ class MainGUI(QMainWindow):
         # These get initialized by create_map()
         self.tile_source = None
         self.map_widget: PySlipQt = None
-        self.polyline_layer = None
+        self.polyline_layer_id: int = None
 
         self.create_map()
 
@@ -943,15 +943,17 @@ class MainGUI(QMainWindow):
         self.map_widget = PySlipQt(self, tile_src=self.tile_source, start_level=5)
 
         # add lines layer
-        self.polyline_layer = self.map_widget.AddPolylineLayer([],
-                                                               map_rel=True,
-                                                               visible=True,
-                                                               delta=40,
-                                                               show_levels=[3, 4],
-                                                               # levels at which to show the polylines
-                                                               name='<polyline_layer>')
+        self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=[],
+                                                                  map_rel=True,
+                                                                  visible=True,
+                                                                  delta=40,
+                                                                  show_levels=list(range(20)),
+                                                                  # levels at which to show the polylines
+                                                                  name='<polyline_layer>')
         # add to the layout
         self.ui.map_layout.addWidget(self.map_widget)
+
+        self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
     def clear_stuff_running(self):
         """
@@ -5396,9 +5398,9 @@ class MainGUI(QMainWindow):
 
             return plot_function(circuit=self.circuit,
                                  Sbus=results.S[current_step, :],
-                                 Sf=results.Sf[:, current_step],
+                                 Sf=results.Sf[current_step, :],
                                  voltages=results.voltage[current_step, :],
-                                 loadings=np.abs(results.loading[:, current_step]),
+                                 loadings=np.abs(results.loading[current_step, :]),
                                  types=results.bus_types,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -5412,7 +5414,7 @@ class MainGUI(QMainWindow):
             return plot_function(circuit=self.circuit,
                                  Sbus=results.S[current_step, :],
                                  Sf=results.worst_flows[current_step, :],
-                                 voltages=np.ones(len(results.names), dtype=complex),
+                                 voltages=np.ones(results.nbus, dtype=complex),
                                  loadings=np.abs(results.worst_loading[current_step]),
                                  types=results.bus_types,
                                  use_flow_based_width=use_flow_based_width,
@@ -7523,13 +7525,22 @@ class MainGUI(QMainWindow):
                                          current_study=self.ui.available_results_to_color_map_comboBox.currentText(),
                                          current_step=self.ui.map_time_horizontalSlider.value())
 
-        self.polyline_layer = self.map_widget.AddPolylineLayer(data=poly,
-                                                               map_rel=True,
-                                                               visible=True,
-                                                               delta=40,
-                                                               show_levels=list(range(15)),
-                                                               # levels at which to show the polylines
-                                                               name='<polyline_layer>')
+        # # delete the previous layer
+        # self.map_widget.DeleteLayer(self.polyline_layer_id)
+        #
+        # # draw again
+        # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
+        #                                                           map_rel=True,
+        #                                                           visible=True,
+        #                                                           delta=40,
+        #                                                           show_levels=list(range(15)),
+        #                                                           # levels at which to show the polylines
+        #                                                           name='<polyline_layer>')
+
+        self.map_widget.getLayer(self.polyline_layer_id).data = poly
+        self.map_widget.update()
+
+        # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
 
 def run(use_native_dialogues=False):

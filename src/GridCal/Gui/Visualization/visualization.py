@@ -395,11 +395,8 @@ def get_map_polylines(circuit: MultiCircuit,
                       min_bus_width=20,
                       max_bus_width=20):
 
+    # (polyline_points, placement, width, rgba, offset_x, offset_y, udata)
     data = list()
-
-    # for elm in grid.lines:
-    #     poly = get_branch_polyline(elm, w=3, c='red')
-    #     data.append(poly)
 
     voltage_cmap = get_voltage_color_map()
     loading_cmap = get_loading_color_map()
@@ -422,8 +419,8 @@ def get_map_polylines(circuit: MultiCircuit,
         latitudes[i] = bus.latitude
         nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
-    Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
-
+    # Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
+    #
     # add node positions
     # for i, bus in enumerate(circuit.buses):
     #
@@ -473,15 +470,14 @@ def get_map_polylines(circuit: MultiCircuit,
 
             # get the line colour
             r, g, b, a = loading_cmap(lnorm[i])
-            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-            html_color = color.name()
             if use_flow_based_width:
                 weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
             else:
                 weight = 3
 
             # draw the line
-            data.append((points, {"width": weight, "color": html_color}))
+            # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
+            data.append((points, "cc", weight, (r * 255, g * 255, b * 255, a * 255), 0, 0, {}))
 
     if len(circuit.get_hvdc()) > 0:
         lnorm = np.abs(hvdc_loading)
@@ -503,14 +499,13 @@ def get_map_polylines(circuit: MultiCircuit,
 
                 # get the line colour
                 r, g, b, a = loading_cmap(lnorm[i])
-                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                html_color = color.name()
                 if use_flow_based_width:
                     weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                 else:
                     weight = 3
 
                 # draw the line
-                data.append((points, {"width": weight, "color": html_color}))
+                # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
+                data.append((points, "cc", weight, (r * 255, g * 255, b * 255, a * 255), 0, 0, {}))
 
     return data

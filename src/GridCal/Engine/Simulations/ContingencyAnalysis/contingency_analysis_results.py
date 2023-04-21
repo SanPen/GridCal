@@ -65,8 +65,6 @@ class ContingencyAnalysisResults(ResultsTemplate):
 
         self.loading = np.zeros((ncon, nbr), dtype=complex)
 
-        self.lodf = np.zeros((nbr, nbr))
-
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
