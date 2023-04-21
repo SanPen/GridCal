@@ -184,6 +184,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
             numerical_circuit.generator_data.active = original_gen_active.copy()
             numerical_circuit.generator_data.p = original_gen_p.copy()
 
+            if self.__cancel__:
+                return results
+
         return results
 
     def n_minus_k_nl(self):

@@ -178,6 +178,9 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             results.worst_loading[t, :] = np.abs(res_t.loading).max(axis=0)
             results.max_overload = np.maximum(results.max_overload, results.worst_loading[t, :])
 
+            if self.__cancel__:
+                return results
+
         results.overload_count = contingency_count
         results.relative_frequency = contingency_count / len(time_indices)
 

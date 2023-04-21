@@ -73,6 +73,7 @@ from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import Continge
 from GridCal.Gui.pySlipQt.pySlipQt import PySlipQt
 from GridCal.Gui.pySlipQt.blue_marble import BlueMarbleTiles
 from GridCal.Gui.pySlipQt.cartodb import CartoDbTiles
+import GridCal.Gui.Visualization.palettes as palettes
 
 from GridCal.__version__ import __GridCal_VERSION__
 
@@ -362,6 +363,13 @@ class MainGUI(QMainWindow):
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
                 tile_servers=["http://basemaps.cartocdn.com/dark_all/"])
         }
+
+        palettes_list = [palettes.Colormaps.GridCal,
+                         palettes.Colormaps.Green2Red,
+                         palettes.Colormaps.Heatmap,
+                         palettes.Colormaps.TSO]
+        self.cmap_dict = {e.value: e for e in palettes_list}
+        self.ui.palette_comboBox.setModel(get_list_model([e.value for e in palettes_list]))
 
         self.ui.tile_provider_comboBox.setModel(get_list_model(list(self.tile_sources.keys())))
         self.ui.tile_provider_comboBox.setCurrentIndex(0)
@@ -2769,29 +2777,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.PowerFlow_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus,
-                                         Sf=results.Sf,
-                                         St=results.St,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         losses=results.losses,
-                                         hvdc_loading=results.hvdc_loading,
-                                         hvdc_Pf=results.hvdc_Pf,
-                                         hvdc_Pt=results.hvdc_Pt,
-                                         hvdc_losses=results.hvdc_losses,
-                                         ma=results.tap_module,
-                                         theta=results.theta,
-                                         Beq=results.Beq,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
+                self.colour_schematic()
 
             # print convergence reports on the console
             for report in drv.convergence_reports:
@@ -2892,20 +2881,12 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
-            if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus1,
-                                         Sf=results.Sf1,
-                                         voltages=results.voltage1,
-                                         types=results.bus_types,
-                                         loadings=results.loading1,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
+
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
 
@@ -3013,24 +2994,28 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+
                 if self.ui.draw_schematic_checkBox.isChecked():
                     if results.S.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S.max(axis=0),
-                                                 Sf=results.Sf.max(axis=0),
-                                                 voltages=results.voltage.max(axis=0),
-                                                 loadings=np.abs(results.loading).max(axis=0),
-                                                 types=None,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
+                        # viz.colour_the_schematic(circuit=self.circuit,
+                        #                          Sbus=results.S.max(axis=0),
+                        #                          Sf=results.Sf.max(axis=0),
+                        #                          voltages=results.voltage.max(axis=0),
+                        #                          loadings=np.abs(results.loading).max(axis=0),
+                        #                          types=None,
+                        #                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                        #                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                        #                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                        #                          min_bus_width=self.ui.min_node_size_spinBox.value(),
+                        #                          max_bus_width=self.ui.max_node_size_spinBox.value()
+                        #                          )
+                        self.colour_schematic()
                     else:
                         info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
-                self.update_available_results()
+
             else:
                 error_msg('Something went wrong, There are no PTDF Time series results.')
 
@@ -3051,22 +3036,6 @@ class MainGUI(QMainWindow):
                     self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
                     self.LOCK()
-
-                    # if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                    #     pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
-                    #     if pf_results is not None:
-                    #         Pf = pf_results.Sf.real
-                    #         Pf_hvdc = pf_results.hvdc_Pf.real
-                    #         use_provided_flows = True
-                    #     else:
-                    #         warning_msg('There were no power flow values available. Linear flows will be used.')
-                    #         use_provided_flows = False
-                    #         Pf_hvdc = None
-                    #         Pf = None
-                    # else:
-                    #     use_provided_flows = False
-                    #     Pf = None
-                    #     Pf_hvdc = None
 
                     pf_options = self.get_selected_power_flow_options()
 
@@ -3105,25 +3074,11 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
                 QtGui.QGuiApplication.processEvents()
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    if results.S.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
-                                                 Sf=np.abs(results.Sf).max(axis=0),
-                                                 voltages=results.voltage.max(axis=0),
-                                                 loadings=np.abs(results.loading).max(axis=0),
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
-                    else:
-                        info_msg('Cannot colour because there are no branches :/')
 
                 self.update_available_results()
-                self.colour_schematic()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no contingency analysis results.')
 
@@ -3145,22 +3100,6 @@ class MainGUI(QMainWindow):
                         self.add_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
                         self.LOCK()
-
-                        # if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                        #     pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
-                        #     if pf_results is not None:
-                        #         Pf = pf_results.Sf.real
-                        #         Pf_hvdc = pf_results.hvdc_Pf.real
-                        #         use_provided_flows = True
-                        #     else:
-                        #         warning_msg('There were no power flow values available. Linear flows will be used.')
-                        #         use_provided_flows = False
-                        #         Pf_hvdc = None
-                        #         Pf = None
-                        # else:
-                        #     use_provided_flows = False
-                        #     Pf_hvdc = None
-                        #     Pf = None
 
                         pf_options = self.get_selected_power_flow_options()
 
@@ -3203,25 +3142,10 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Colouring LODF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    if results.worst_flows.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
-                                                 Sf=np.abs(results.worst_flows).max(axis=0),
-                                                 voltages=np.ones(len(results.bus_names), dtype=complex),
-                                                 loadings=np.abs(results.worst_loading).max(axis=0),
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
-                    else:
-                        info_msg('Cannot colour because there are no branches :/')
-
                 self.update_available_results()
-                self.colour_schematic()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no LODF results.')
 
@@ -3239,7 +3163,7 @@ class MainGUI(QMainWindow):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
-                max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
+                max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
                 compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
@@ -3353,7 +3277,7 @@ class MainGUI(QMainWindow):
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
                     threshold = self.ui.atcThresholdSpinBox.value()
-                    max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
+                    max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
                     compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
@@ -3639,20 +3563,11 @@ class MainGUI(QMainWindow):
 
             if results.voltages is not None:
                 if results.voltages.shape[0] > 0:
-                    if self.ui.draw_schematic_checkBox.isChecked():
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.Sbus[-1, :],
-                                                 Sf=results.Sf[-1, :],
-                                                 voltages=results.voltages[-1, :],
-                                                 loadings=results.loading[-1, :],
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
+
                     self.update_available_results()
+
+                    if self.ui.draw_schematic_checkBox.isChecked():
+                        self.colour_schematic()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
@@ -3726,26 +3641,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.TimeSeries_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = results.voltage.max(axis=0)
-                loading = np.abs(results.loading).max(axis=0)
-                Sbranch = results.Sf.max(axis=0)
-                Sbus = results.S.max(axis=0)
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=Sbus,
-                                         Sf=Sbranch,
-                                         voltages=voltage,
-                                         loadings=loading,
-                                         types=results.bus_types,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         else:
             warning_msg('No results for the time series simulation.')
@@ -3818,26 +3717,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.ClusteringTimeSeries_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = results.voltage.max(axis=0)
-                loading = np.abs(results.loading).max(axis=0)
-                Sbranch = results.Sf.max(axis=0)
-                Sbus = results.S.max(axis=0)
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=Sbus,
-                                         Sf=Sbranch,
-                                         voltages=voltage,
-                                         loadings=loading,
-                                         types=results.bus_types,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         else:
             warning_msg('No results for the clustering time series simulation.')
@@ -3902,20 +3785,11 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.StochasticPowerFlow)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         Sf=results.sbranch,
-                                         types=results.bus_types,
-                                         Sbus=None,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+
 
         else:
             pass
@@ -4018,27 +3892,15 @@ class MainGUI(QMainWindow):
             # pick the results at the designated cascade step
             results = results.events[idx].pf_results  # StochasticPowerFlowResults object
 
+            # Update results
+            self.update_available_results()
+
             # print grid
             if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         Sf=results.sbranch,
-                                         Sbus=None,
-                                         failed_br_idx=br_idx,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
+                self.colour_schematic()
 
             # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(drv.get_table()))
-
-            # Update results
-            self.update_available_results()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4154,30 +4016,10 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPF_run)
 
             if results.converged:
-
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             voltages=results.voltage,
-                                             loadings=results.loading,
-                                             types=results.bus_types,
-                                             Sf=results.Sf,
-                                             St=results.St,
-                                             Sbus=results.Sbus,
-                                             hvdc_Pf=results.hvdc_Pf,
-                                             hvdc_loading=results.hvdc_loading,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             theta=results.phase_shift,
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
                 self.update_available_results()
 
-                # print convergence reports on the console
-                # for report in drv.convergence_reports:
-                #     msg_ = 'Optimal Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
-                #     self.console_msg(msg_)
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
 
             else:
 
@@ -4310,32 +4152,11 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPFTimeSeries_run)
 
             if results is not None:
-                if self.ui.draw_schematic_checkBox.isChecked():
-
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=results.Sbus[0, :],
-                                             Sf=results.Sf[0, :],
-                                             St=results.St[0, :],
-                                             voltages=results.voltage[0, :],
-                                             loadings=results.loading[0, :],
-                                             types=results.bus_types,
-                                             losses=None,
-                                             hvdc_Pf=results.hvdc_Pf[0, :],
-                                             hvdc_losses=None,
-                                             hvdc_loading=results.hvdc_loading[0, :],
-                                             failed_br_idx=None,
-                                             loading_label='loading',
-                                             ma=None,
-                                             theta=results.phase_shift[0, :],
-                                             Beq=None,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
 
                 self.update_available_results()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
 
                 msg = 'OPF time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -4529,30 +4350,10 @@ class MainGUI(QMainWindow):
         if results is not None:
 
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+            self.update_available_results()
 
             if self.ui.draw_schematic_checkBox.isChecked():
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus,
-                                         Sf=results.Sf,
-                                         St=-results.Sf,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         losses=results.losses,
-                                         hvdc_loading=results.hvdc_loading,
-                                         hvdc_Pf=results.hvdc_Pf,
-                                         hvdc_losses=None,
-                                         ma=None,
-                                         theta=results.phase_shift,
-                                         Beq=None,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-            self.update_available_results()
+                self.colour_schematic()
 
         if drv.logger is not None:
             if len(drv.logger) > 0:
@@ -4703,6 +4504,8 @@ class MainGUI(QMainWindow):
 
             if results is not None:
                 self.update_available_results()
+
+                self.colour_schematic()
 
                 msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -5218,6 +5021,9 @@ class MainGUI(QMainWindow):
         max_branch_width = self.ui.max_branch_size_spinBox.value()
         min_bus_width = self.ui.min_node_size_spinBox.value()
         max_bus_width = self.ui.max_node_size_spinBox.value()
+        cmap_text = self.ui.palette_comboBox.currentText()
+
+        cmap = self.cmap_dict[cmap_text]
 
         if current_study == sim.PowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
@@ -5236,10 +5042,14 @@ class MainGUI(QMainWindow):
                                  hvdc_losses=results.hvdc_losses,
                                  hvdc_loading=results.hvdc_loading,
                                  use_flow_based_width=use_flow_based_width,
+                                 ma=results.tap_module,
+                                 theta=results.theta,
+                                 Beq=results.Beq,
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.TimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
@@ -5261,7 +5071,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.TimeSeriesClustering.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringTimeSeries_run)
@@ -5283,7 +5094,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
@@ -5298,7 +5110,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.StochasticPowerFlow)
@@ -5313,7 +5126,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
@@ -5328,7 +5142,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlow.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
@@ -5343,7 +5158,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
@@ -5358,7 +5174,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
@@ -5376,7 +5193,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.LinearAnalysisTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
@@ -5391,7 +5209,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
@@ -5406,7 +5225,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
@@ -5421,7 +5241,8 @@ class MainGUI(QMainWindow):
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
                                  min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width)
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == 'Transient stability':
             raise Exception('Not implemented :(')
@@ -5562,8 +5383,12 @@ class MainGUI(QMainWindow):
 
     def schematic_time_slider_change(self):
         idx = self.ui.simulation_results_step_slider.value()
-        if idx > -1:
-            self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
+
+        if len(self.schematic_list_steps):
+            if idx > -1:
+                self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
+        else:
+            self.ui.schematic_step_label.setText("No steps")
 
     def results_tree_view_click(self, index):
         """

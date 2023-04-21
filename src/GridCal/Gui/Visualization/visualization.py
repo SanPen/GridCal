@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import numpy as np
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -9,6 +25,7 @@ import matplotlib.colors as colors
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.editable_device import DeviceType
+import GridCal.Gui.Visualization.palettes as palettes
 
 
 def get_voltage_color_map():
@@ -66,7 +83,8 @@ def colour_sub_schematic(Sbase,
                          min_branch_width=5,
                          max_branch_width=5,
                          min_bus_width=20,
-                         max_bus_width=20):
+                         max_bus_width=20,
+                         cmap: palettes.Colormaps = None):
     """
     Color objects based on the results passed
     :param Sbase:
@@ -126,8 +144,24 @@ def colour_sub_schematic(Sbase,
     for i, bus in enumerate(buses):
         if bus.graphic_obj is not None:
             if bus.active:
-                r, g, b, a = voltage_cmap(vnorm[i])
-                bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
+                a = 255
+                if cmap == palettes.Colormaps.Green2Red:
+                    b, g, r = palettes.green_to_red_bgr(vnorm[i])
+
+                elif cmap == palettes.Colormaps.Heatmap:
+                    b, g, r = palettes.heatmap_palette_bgr(vnorm[i])
+
+                elif cmap == palettes.Colormaps.TSO:
+                    b, g, r = palettes.tso_substation_palette_bgr(vnorm[i])
+
+                else:
+                    r, g, b, a = voltage_cmap(vnorm[i])
+                    r *= 255
+                    g *= 255
+                    b *= 255
+                    a *= 255
+
+                bus.graphic_obj.set_tile_color(QtGui.QColor(r, g, b, a))
 
                 tooltip = str(i) + ': ' + bus.name
                 if types is not None:
@@ -177,8 +211,25 @@ def colour_sub_schematic(Sbase,
 
                     if branch.active:
                         style = QtCore.Qt.SolidLine
-                        r, g, b, a = loading_cmap(lnorm[i])
-                        color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+
+                        a = 255
+                        if cmap == palettes.Colormaps.Green2Red:
+                            b, g, r = palettes.green_to_red_bgr(lnorm[i])
+
+                        elif cmap == palettes.Colormaps.Heatmap:
+                            b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+
+                        elif cmap == palettes.Colormaps.TSO:
+                            b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+
+                        else:
+                            r, g, b, a = loading_cmap(lnorm[i])
+                            r *= 255
+                            g *= 255
+                            b *= 255
+                            a *= 255
+
+                        color = QtGui.QColor(r, g, b, a)
                     else:
                         style = QtCore.Qt.DashLine
                         color = QtCore.Qt.gray
@@ -237,8 +288,25 @@ def colour_sub_schematic(Sbase,
 
                 if elm.active:
                     style = QtCore.Qt.SolidLine
-                    r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
-                    color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+
+                    a = 1
+                    if cmap == palettes.Colormaps.Green2Red:
+                        b, g, r = palettes.green_to_red_bgr(abs(hvdc_loading[i]))
+
+                    elif cmap == palettes.Colormaps.Heatmap:
+                        b, g, r = palettes.heatmap_palette_bgr(abs(hvdc_loading[i]))
+
+                    elif cmap == palettes.Colormaps.TSO:
+                        b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(), abs(hvdc_loading[i]))
+
+                    else:
+                        r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
+                        r *= 255
+                        g *= 255
+                        b *= 255
+                        a *= 255
+
+                    color = QtGui.QColor(r, g, b, a)
                 else:
                     style = QtCore.Qt.DashLine
                     color = QtCore.Qt.gray
@@ -268,7 +336,8 @@ def colour_the_schematic(circuit: MultiCircuit,
                          min_branch_width=1,
                          max_branch_width=1,
                          min_bus_width=20,
-                         max_bus_width=20):
+                         max_bus_width=20,
+                         cmap: palettes.Colormaps = None):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -321,6 +390,7 @@ def colour_the_schematic(circuit: MultiCircuit,
                          max_branch_width=max_branch_width,
                          min_bus_width=min_bus_width,
                          max_bus_width=max_bus_width,
+                         cmap=cmap
                          )
 
 
@@ -363,7 +433,6 @@ def get_n_colours(n, colormap='gist_rainbow'):
     return [scalarMap.to_rgba(i) for i in range(n)]
 
 
-
 def get_branch_polyline(branch, w=3, c='red'):
 
     a = (branch.bus_from.longitude, branch.bus_from.latitude)
@@ -393,7 +462,8 @@ def get_map_polylines(circuit: MultiCircuit,
                       min_branch_width=1,
                       max_branch_width=1,
                       min_bus_width=20,
-                      max_bus_width=20):
+                      max_bus_width=20,
+                      cmap: palettes.Colormaps = None):
 
     # (polyline_points, placement, width, rgba, offset_x, offset_y, udata)
     data = list()
@@ -469,7 +539,24 @@ def get_map_polylines(circuit: MultiCircuit,
                 tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
             # get the line colour
-            r, g, b, a = loading_cmap(lnorm[i])
+            a = 255
+            if cmap == palettes.Colormaps.Green2Red:
+                b, g, r = palettes.green_to_red_bgr(lnorm[i])
+
+            elif cmap == palettes.Colormaps.Heatmap:
+                b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+
+            elif cmap == palettes.Colormaps.TSO:
+                b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+
+            else:
+                r, g, b, a = loading_cmap(lnorm[i])
+                r *= 255
+                g *= 255
+                b *= 255
+                a *= 255
+
+
             if use_flow_based_width:
                 weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
             else:
@@ -477,7 +564,7 @@ def get_map_polylines(circuit: MultiCircuit,
 
             # draw the line
             # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
-            data.append((points, "cc", weight, (r * 255, g * 255, b * 255, a * 255), 0, 0, {}))
+            data.append((points, "cc", weight, (r, g, b, a), 0, 0, {}))
 
     if len(circuit.get_hvdc()) > 0:
         lnorm = np.abs(hvdc_loading)
@@ -498,7 +585,23 @@ def get_map_polylines(circuit: MultiCircuit,
                     tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
                 # get the line colour
-                r, g, b, a = loading_cmap(lnorm[i])
+                a = 255
+                if cmap == palettes.Colormaps.Green2Red:
+                    b, g, r = palettes.green_to_red_bgr(lnorm[i])
+
+                elif cmap == palettes.Colormaps.Heatmap:
+                    b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+
+                elif cmap == palettes.Colormaps.TSO:
+                    b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+
+                else:
+                    r, g, b, a = loading_cmap(lnorm[i])
+                    r *= 255
+                    g *= 255
+                    b *= 255
+                    a *= 255
+
                 if use_flow_based_width:
                     weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                 else:
@@ -506,6 +609,6 @@ def get_map_polylines(circuit: MultiCircuit,
 
                 # draw the line
                 # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
-                data.append((points, "cc", weight, (r * 255, g * 255, b * 255, a * 255), 0, 0, {}))
+                data.append((points, "cc", weight, (r, g, b, a), 0, 0, {}))
 
     return data
