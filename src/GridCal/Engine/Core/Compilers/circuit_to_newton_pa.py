@@ -94,6 +94,80 @@ def add_npa_zones(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime
     return d
 
 
+def add_npa_contingency_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, elm in enumerate(circuit.contingency_groups):
+        dev = npa.ContingenciesGroup(uuid=elm.idtag,
+                                     secondary_id=elm.code,
+                                     name=elm.name,
+                                     time_steps=ntime,
+                                     category=elm.category)
+
+        npa_circuit.addContingenciesGroup(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_contingencies(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1,
+                          groups_dict=dict()):
+    d = dict()
+
+    for i, elm in enumerate(circuit.contingencies):
+        dev = npa.Contingency(uuid=elm.idtag,
+                              secondary_id=elm.code,
+                              name=elm.name,
+                              time_steps=ntime,
+                              device_uuid=elm.device_idtag,
+                              prop=elm.prop,
+                              value=elm.value,
+                              group=groups_dict[elm.group])
+
+        npa_circuit.addContingency(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, elm in enumerate(circuit.investments_groups):
+        dev = npa.InvestmentsGroup(uuid=elm.idtag,
+                                   secondary_id=elm.code,
+                                   name=elm.name,
+                                   time_steps=ntime,
+                                   category=elm.category)
+
+        npa_circuit.addInvestmentsGroup(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_investments(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1,
+                        groups_dict=dict()):
+    d = dict()
+
+    for i, elm in enumerate(circuit.investments):
+        elm = npa.Investment(uuid=elm.idtag,
+                             secondary_id=elm.code,
+                             name=elm.name,
+                             time_steps=ntime,
+                             device_uuid=elm.device_idtag,
+                             group=groups_dict[elm.group])
+
+        npa_circuit.addInvestment(elm)
+
+        d[elm] = elm
+
+    return d
+
+
 def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None,
                   area_dict=None):
     """
@@ -661,6 +735,12 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
 
     area_dict = add_npa_areas(circuit, npaCircuit, ntime)
     zone_dict = add_npa_zones(circuit, npaCircuit, ntime)
+
+    con_groups_dict = add_npa_contingency_groups(circuit, npaCircuit, ntime)
+    add_npa_contingencies(circuit, npaCircuit, ntime, con_groups_dict)
+    inv_groups_dict = add_npa_investment_groups(circuit, npaCircuit, ntime)
+    add_npa_investments(circuit, npaCircuit, ntime, inv_groups_dict)
+
     bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx, area_dict)
     add_npa_loads(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
