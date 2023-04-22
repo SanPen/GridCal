@@ -25,7 +25,8 @@ from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -59,7 +60,116 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
-def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None):
+def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int=1):
+
+    d = dict()
+
+    for i, area in enumerate(circuit.areas):
+
+        elm = npa.Area(uuid=area.idtag,
+                       secondary_id=area.code,
+                       name=area.name,
+                       time_steps=ntime)
+
+        npa_circuit.addArea(elm)
+
+        d[area] = elm
+
+    return d
+
+
+def add_npa_zones(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, area in enumerate(circuit.zones):
+        elm = npa.Zone(uuid=area.idtag,
+                       secondary_id=area.code,
+                       name=area.name,
+                       time_steps=ntime)
+
+        npa_circuit.addZone(elm)
+
+        d[area] = elm
+
+    return d
+
+
+def add_npa_contingency_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, elm in enumerate(circuit.contingency_groups):
+        dev = npa.ContingenciesGroup(uuid=elm.idtag,
+                                     secondary_id=elm.code,
+                                     name=elm.name,
+                                     time_steps=ntime,
+                                     category=elm.category)
+
+        npa_circuit.addContingenciesGroup(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_contingencies(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1,
+                          groups_dict=dict()):
+    d = dict()
+
+    for i, elm in enumerate(circuit.contingencies):
+        dev = npa.Contingency(uuid=elm.idtag,
+                              secondary_id=elm.code,
+                              name=elm.name,
+                              time_steps=ntime,
+                              device_uuid=elm.device_idtag,
+                              prop=elm.prop,
+                              value=elm.value,
+                              group=groups_dict[elm.group])
+
+        npa_circuit.addContingency(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
+    d = dict()
+
+    for i, elm in enumerate(circuit.investments_groups):
+        dev = npa.InvestmentsGroup(uuid=elm.idtag,
+                                   secondary_id=elm.code,
+                                   name=elm.name,
+                                   time_steps=ntime,
+                                   category=elm.category)
+
+        npa_circuit.addInvestmentsGroup(dev)
+
+        d[elm] = dev
+
+    return d
+
+
+def add_npa_investments(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1,
+                        groups_dict=dict()):
+    d = dict()
+
+    for i, elm in enumerate(circuit.investments):
+        elm = npa.Investment(uuid=elm.idtag,
+                             secondary_id=elm.code,
+                             name=elm.name,
+                             time_steps=ntime,
+                             device_uuid=elm.device_idtag,
+                             group=groups_dict[elm.group])
+
+        npa_circuit.addInvestment(elm)
+
+        d[elm] = elm
+
+    return d
+
+
+def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None,
+                  area_dict=None):
     """
     Convert the buses to Newton buses
     :param circuit: GridCal circuit
@@ -79,7 +189,10 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
                                   time_steps=ntime,
                                   slack=bus.is_slack,
                                   dc=bus.is_dc,
-                                  nominal_voltage=bus.Vnom)
+                                  nominal_voltage=bus.Vnom,
+                                  vmin=bus.Vmin,
+                                  vmax=bus.Vmax,
+                                  area=area_dict[bus.area] if bus.area is not None else None)
 
         if time_series and ntime > 1:
             elm.active = bus.active_prof.astype(BINT) if tidx is None else bus.active_prof.astype(BINT)[tidx]
@@ -117,10 +230,10 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             load.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             load.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             load.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
-            load.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            load.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
-            load.setAllCostB(elm.Cost)
+            load.setAllCost1(elm.Cost)
 
         npa_circuit.addLoad(load)
 
@@ -150,10 +263,10 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
             pe_inj.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             pe_inj.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             pe_inj.Q = elm.Q_prof if tidx is None else elm.Q_prof[tidx]
-            pe_inj.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            pe_inj.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
         else:
             pe_inj.active = np.ones(ntime, dtype=BINT) * int(elm.active)
-            pe_inj.setAllCostB(elm.Cost)
+            pe_inj.setAllCost1(elm.Cost)
 
         npa_circuit.addPowerElectronicsInjection(pe_inj)
 
@@ -210,18 +323,31 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
                             Pmin=elm.Pmin,
                             Pmax=elm.Pmax,
                             Qmin=elm.Qmin,
-                            Qmax=elm.Qmax)
+                            Qmax=elm.Qmax,
+                            dispatchable_default=BINT(elm.enabled_dispatch)
+                            )
+
+        gen.nominal_power = elm.Snom
+
+        if elm.is_controlled:
+            gen.setAllControllable(1)
+        else:
+            gen.setAllControllable(0)
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
-            gen.cost_b = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_0 = elm.Cost0_prof if tidx is None else elm.Cost0_prof[tidx]
+            gen.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_2 = elm.Cost2_prof if tidx is None else elm.Cost2_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
-            gen.setAllCostB(elm.Cost)
+            gen.setAllCost0(elm.Cost0)
+            gen.setAllCost1(elm.Cost)
+            gen.setAllCost2(elm.Cost2)
 
         npa_circuit.addGenerator(gen)
 
@@ -254,19 +380,29 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
                           Pmax=elm.Pmax,
                           )
 
+        gen.nominal_power = elm.Snom
         gen.charge_efficiency = elm.charge_efficiency
         gen.discharge_efficiency = elm.discharge_efficiency
+
+        if elm.is_controlled:
+            gen.setAllControllable(1)
+        else:
+            gen.setAllControllable(0)
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             gen.P = elm.P_prof if tidx is None else elm.P_prof[tidx]
             gen.Vset = elm.Vset_prof if tidx is None else elm.Vset_prof[tidx]
-            gen.setAllCostB(elm.Cost_prof if tidx is None else elm.Cost_prof[tidx])
+            gen.cost_0 = elm.Cost0_prof if tidx is None else elm.Cost0_prof[tidx]
+            gen.cost_1 = elm.Cost_prof if tidx is None else elm.Cost_prof[tidx]
+            gen.cost_2 = elm.Cost2_prof if tidx is None else elm.Cost2_prof[tidx]
         else:
             gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.Vset = np.ones(ntime, dtype=float) * elm.Vset
-            gen.setAllCostB(elm.Cost)
+            gen.setAllCost0(elm.Cost0)
+            gen.setAllCost1(elm.Cost)
+            gen.setAllCost2(elm.Cost2)
 
         npa_circuit.addBattery(gen)
 
@@ -298,8 +434,6 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
                          monitor_loading_default=elm.monitor_loading,
                          monitor_contingency_default=elm.contingency_enabled)
 
-
-
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
             lne.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
@@ -312,7 +446,8 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         npa_circuit.addAcLine(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
+                         time_series: bool, ntime=1, tidx=None, override_controls=False):
     """
 
     :param circuit: GridCal circuit
@@ -320,7 +455,19 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param ntime: number of time steps
+    :param tidx:
+    :param override_controls: If true the controls are set to Fix
     """
+
+    ctrl_dict = {
+        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
+        TransformerControlType.PtVt: npa.BranchControlModes.BranchPt,
+    }
+
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
                                     secondary_id=elm.code,
@@ -342,8 +489,9 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
                                     phase=elm.angle)
         if time_series:
             contingency_rates = elm.rate_prof * elm.contingency_factor
+            active_prof = elm.active_prof.astype(BINT)
 
-            tr2.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
+            tr2.active = active_prof if tidx is None else active_prof[tidx]
             tr2.rates = elm.rate_prof if tidx is None else elm.rate_prof[tidx]
             tr2.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
             tr2.tap = elm.tap_module_prof if tidx is None else elm.tap_module_prof[tidx]
@@ -352,6 +500,16 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
         else:
             tr2.setAllOverloadCost(elm.Cost)
 
+        # control vars
+        if override_controls:
+            tr2.setAllControlMode(npa.BranchControlModes.Fixed)
+        else:
+            tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
+
+        tr2.phase_min = elm.angle_min
+        tr2.phase_max = elm.angle_max
+        tr2.tap_min = elm.tap_module_min
+        tr2.tap_max = elm.tap_module_max
         npa_circuit.addTransformers2wFul(tr2)
 
 
@@ -365,35 +523,58 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
     :param ntime: number of time steps
     """
     for i, elm in enumerate(circuit.vsc_devices):
+
+        """
+        uuid: str = '', 
+        secondary_id: str = '', 
+        name: str = '', 
+        calc_node_from: newtonpa.CalculationNode = None, 
+        calc_node_to: newtonpa.CalculationNode = None, 
+        cn_from: newtonpa.ConnectivityNode = None, 
+        cn_to: newtonpa.ConnectivityNode = None, 
+        time_steps: int = 1, 
+        active_default: int = 1)
+        
+        uuid='', secondary_id='', name='', calc_node_from=None, calc_node_to=None, cn_from=None, cn_to=None, time_steps=1, active_default=1
+        """
+
         vsc = npa.AcDcConverter(uuid=elm.idtag,
+                                secondary_id=elm.code,
                                 name=elm.name,
-                                node_from=bus_dict[elm.bus_from.idtag],
-                                node_to=bus_dict[elm.bus_to.idtag],
+                                calc_node_from=bus_dict[elm.bus_from.idtag],
+                                calc_node_to=bus_dict[elm.bus_to.idtag],
                                 time_steps=ntime,
-                                rate=elm.rate,
-                                active_default=elm.active,
-                                r1=elm.R1,
-                                x1=elm.X1,
-                                g0=elm.G0sw,
-                                beq=elm.Beq,
-                                beq_max=elm.Beq_max,
-                                beq_min=elm.Beq_min,
-                                k=elm.k,
-                                tap=elm.m,
-                                tap_max=elm.m_max,
-                                tap_min=elm.m_min,
-                                phase=elm.theta,
-                                phase_max=elm.theta_max,
-                                phase_min=elm.theta_min,
-                                Pf_set=elm.Pdc_set,
-                                vac_set=elm.Vac_set,
-                                vdc_set=elm.Vdc_set,
-                                kdp=elm.kdp,
-                                alpha1=elm.alpha1,
-                                alpha2=elm.alpha2,
-                                alpha3=elm.alpha3,
-                                monitor_loading_default=elm.monitor_loading,
-                                monitor_contingency_default=elm.contingency_enabled)
+                                active_default=elm.active)
+
+        vsc.r = elm.R1
+        vsc.x = elm.X1
+        vsc.g0 = elm.G0sw
+
+        vsc.setAllBeq(elm.Beq)
+        vsc.beq_max = elm.Beq_max
+        vsc.beq_min = elm.Beq_min
+
+        vsc.k = elm.k
+
+        vsc.setAllTapModule(elm.m)
+        vsc.tap_max = elm.m_max
+        vsc.tap_min = elm.m_min
+
+        vsc.setAllTapPhase(elm.theta)
+        vsc.phase_max = elm.theta_max
+        vsc.phase_min = elm.theta_min
+
+        vsc.setAllPdcSet(elm.Pdc_set)
+        vsc.setAllVacSet(elm.Vac_set)
+        vsc.setAllVdcSet(elm.Vdc_set)
+        vsc.k_droop = elm.kdp
+
+        vsc.alpha1 = elm.alpha1
+        vsc.alpha2 = elm.alpha2
+        vsc.alpha3 = elm.alpha3
+
+        vsc.setAllMonitorloading(elm.monitor_loading)
+        vsc.setAllContingencyenabled(elm.contingency_enabled)
 
         if time_series:
             vsc.active = elm.active_prof.astype(BINT) if tidx is None else elm.active_prof.astype(BINT)[tidx]
@@ -402,6 +583,7 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
             vsc.contingency_rates = contingency_rates if tidx is None else contingency_rates[tidx]
             vsc.overload_cost = elm.Cost_prof
         else:
+            vsc.setAllRates(elm.rate)
             vsc.setAllOverloadCost(elm.Cost)
 
         npa_circuit.addAcDcConverter(vsc)
@@ -527,16 +709,18 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
             hvdc.setAllOverloadCost(elm.overload_cost)
+            hvdc.setAllControlMode(cmode_dict[elm.control_mode])
 
         npa_circuit.addHvdcLine(hvdc)
 
 
-def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = None):
+def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = None, override_branch_controls=False):
     """
     Convert GridCal circuit to Newton
     :param circuit: MultiCircuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param tidx: list of time indices
+    :param override_branch_controls: If true the branch controls are set to Fix
     :return: npa.HybridCircuit instance
     """
 
@@ -549,19 +733,29 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
 
     npaCircuit = npa.HybridCircuit(uuid=circuit.idtag, name=circuit.name, time_steps=ntime)
 
-    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx)
+    area_dict = add_npa_areas(circuit, npaCircuit, ntime)
+    zone_dict = add_npa_zones(circuit, npaCircuit, ntime)
+
+    con_groups_dict = add_npa_contingency_groups(circuit, npaCircuit, ntime)
+    add_npa_contingencies(circuit, npaCircuit, ntime, con_groups_dict)
+    inv_groups_dict = add_npa_investment_groups(circuit, npaCircuit, ntime)
+    add_npa_investments(circuit, npaCircuit, ntime, inv_groups_dict)
+
+    bus_dict = add_npa_buses(circuit, npaCircuit, time_series, ntime, tidx, area_dict)
     add_npa_loads(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_shunts(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_line(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx, override_branch_controls)
     get_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
 
-    return npaCircuit
+    # npa.FileHandler().save(npaCircuit, circuit.name + "_circuit.newton")
+
+    return npaCircuit, (bus_dict, area_dict, zone_dict)
 
 
 class FakeAdmittances:
@@ -572,11 +766,13 @@ class FakeAdmittances:
         self.Yt = None
 
 
-def get_snapshots_from_newtonpa(circuit: MultiCircuit):
+def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=False):
 
     from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 
-    npaCircuit = to_newton_pa(circuit, time_series=False)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
+                                                                time_series=False,
+                                                                override_branch_controls=override_branch_controls)
 
     npa_data_lst = npa.compileAt(npaCircuit, t=0).splitIntoIslands()
 
@@ -701,13 +897,19 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
     """
 
     return npa.PowerFlowOptions(solver_type=solver_type,
+                                retry_with_other_methods=opt.retry_with_other_methods,
+                                verbose=opt.verbose,
+                                initialize_with_existing_solution=False,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
-                                retry_with_other_methods=opt.retry_with_other_methods,
-                                control_q_mode=q_control_dict[opt.control_Q])
+                                control_q_mode=q_control_dict[opt.control_Q],
+                                distributed_slack=opt.distributed_slack,
+                                correction_parameter=0.5,
+                                mu0=opt.mu
+                                )
 
 
-def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
+def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions"):
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
@@ -724,13 +926,67 @@ def get_newton_pa_opf_options(pfopt: PowerFlowOptions):
     flow_control: bool = True, 
     verbose: bool = False
     """
-    #
-    return npa.OptimalPowerFlowOptions(tolerance=pfopt.tolerance,
-                                       max_iter=pfopt.max_iter,
-                                       mu0=pfopt.mu,
-                                       control_q_mode=q_control_dict[pfopt.control_Q],
-                                       flow_control=True,
-                                       voltage_control=True)
+
+    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+
+    return npa.NonlinearOpfOptions(tolerance=pfopt.tolerance,
+                                   max_iter=pfopt.max_iter,
+                                   mu0=pfopt.mu,
+                                   control_q_mode=q_control_dict[pfopt.control_Q],
+                                   flow_control=True,
+                                   voltage_control=True,
+                                   solver=solver_dict[opfopt.mip_solver])
+
+
+def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
+    """
+    Translate GridCal power flow options to Newton power flow options
+    :param opt:
+    :return:
+    """
+
+    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+
+    grouping_dict = {bs.TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
+                     bs.TimeGrouping.Daily: npa.TimeGrouping.Daily,
+                     bs.TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
+                     bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
+                     bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
+
+    from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
+    opt = npa.LinearOpfOptions()
+    opt.solver = solver_dict[opfopt.mip_solver]
+    opt.grouping = grouping_dict[opfopt.grouping]
+    opt.unit_commitment = False
+    opt.compute_flows = opfopt.zonal_grouping == ZonalGrouping.NoGrouping
+    opt.check_with_power_flow = False
+    opt.add_contingencies = opfopt.consider_contingencies
+    opt.skip_generation_limits = opfopt.skip_generation_limits
+    opt.maximize_area_exchange = opfopt.maximize_flows
+    opt.unit_commitment = opfopt.unit_commitment
+    opt.use_ramp_constraints = False
+    opt.lodf_threshold = opfopt.lodf_tolerance
+    opt.pf_options = get_newton_pa_pf_options(pfopt)
+
+    if opfopt.areas_from is not None:
+        opt.areas_from = [area_dict[e] for e in opfopt.areas_from]
+
+    if opfopt.areas_to is not None:
+        opt.areas_to = [area_dict[e] for e in opfopt.areas_to]
+
+    return opt
 
 
 def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.PowerFlowResults":
@@ -740,9 +996,13 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     :param opt: Power Flow Options
     :param time_series: Compile with GridCal time series?
     :param tidx: Array of time indices
+    :param override_branch_controls: If true, the branch controls are set to fix
     :return: Newton Power flow results object
     """
-    npa_circuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
+                                                                 time_series=time_series,
+                                                                 tidx=tidx,
+                                                                 override_branch_controls=opt.override_branch_controls)
 
     pf_options = get_newton_pa_pf_options(opt)
 
@@ -762,7 +1022,8 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     return pf_res
 
 
-def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=False, tidx=None) -> "npa.OptimalPowerFlowResults":
+def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOptions,
+                         time_series=False, tidx=None) -> "npa.LinearOpfResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -771,9 +1032,10 @@ def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=Fa
     :param tidx: Array of time indices
     :return: Newton Power flow results object
     """
-    npaCircuit = to_newton_pa(circuit, time_series=time_series, tidx=tidx)
-
-    pf_options = get_newton_pa_opf_options(pfopt)
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                time_series=time_series,
+                                                                tidx=tidx,
+                                                                override_branch_controls=False)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -783,22 +1045,61 @@ def newton_pa_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, time_series=Fa
         time_indices = [0]
         n_threads = 1
 
-    pf_res = npa.runOptimalPowerFlow(circuit=npaCircuit,
-                                     pf_options=pf_options,
-                                     time_indices=time_indices,
-                                     n_threads=n_threads)
+    options = get_newton_pa_linear_opf_options(opf_options, pfopt, npaCircuit, area_dict)
+
+    pf_res = npa.runLinearOpf(circuit=npaCircuit,
+                              options=options,
+                              time_indices=time_indices,
+                              n_threads=n_threads,
+                              mute_pg_bar=False)
 
     return pf_res
 
 
-def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
+def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions",
+                            time_series=False, tidx=None) -> "npa.NonlinearOpfResults":
+    """
+    Newton power flow
+    :param circuit: MultiCircuit instance
+    :param pfopt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :param tidx: Array of time indices
+    :return: Newton Power flow results object
+    """
+    npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                time_series=time_series,
+                                                                tidx=tidx,
+                                                                override_branch_controls=False)
+
+    pf_options = get_newton_pa_nonlinear_opf_options(pfopt, opfopt)
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        time_indices = [i for i in range(circuit.get_time_number())]
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    pf_res = npa.runNonlinearOpf(circuit=npaCircuit,
+                                 pf_options=pf_options,
+                                 time_indices=time_indices,
+                                 n_threads=n_threads,
+                                 mute_pg_bar=False)
+
+    return pf_res
+
+
+def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False, override_branch_controls=False):
     """
     Newton linear analysis
     :param circuit: MultiCircuit instance
     :param distributed_slack: distribute the PTDF slack
     :return: Newton LinearAnalysisMatrices object
     """
-    npa_circuit = to_newton_pa(circuit, time_series=False)
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit=circuit,
+                                                                 time_series=False,
+                                                                 override_branch_controls=override_branch_controls)
 
     options = npa.LinearAnalysisOptions(distribute_slack=distributed_slack)
     results = npa.runLinearAnalysisAt(t=0, circuit=npa_circuit, options=options)
@@ -819,7 +1120,7 @@ def convert_bus_types(arr: List["npa.BusType"]):
     return tpe
 
 
-def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResults") -> PowerFlowResults:
+def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResults") -> "PowerFlowResults":
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_tr=grid.get_transformers2w_number(),
@@ -867,8 +1168,9 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     return results
 
 
-def translate_newton_pa_opf_results(res: "npa.OptimalPowerFlowResults") -> OptimalPowerFlowResults:
+def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
 
+    from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
                                       load_names=res.load_names,
@@ -883,11 +1185,11 @@ def translate_newton_pa_opf_results(res: "npa.OptimalPowerFlowResults") -> Optim
                                       phase_shift=res.tap_angle[0, :],
                                       bus_shadow_prices=res.bus_shadow_prices[0, :],
                                       generator_shedding=res.generator_shedding[0, :],
-                                      battery_power=res.PB[0, :],
-                                      controlled_generation_power=res.PG[0, :],
+                                      battery_power=res.battery_p[0, :],
+                                      controlled_generation_power=res.generator_p[0, :],
                                       Sf=res.Sf[0, :],
                                       St=res.St[0, :],
-                                      overloads=res.overload[0, :],
+                                      overloads=res.branch_overload[0, :],
                                       loading=res.Loading[0, :],
                                       rates=res.rates[0, :],
                                       contingency_rates=res.contingency_rates[0, :],

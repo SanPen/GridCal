@@ -17,6 +17,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
 class HvdcData:
@@ -27,6 +28,7 @@ class HvdcData:
         :param nhvdc:
         :param nbus:
         """
+        self.nbus = nbus
         self.nhvdc = nhvdc
         self.ntime = ntime
 
@@ -38,6 +40,9 @@ class HvdcData:
 
         self.dispatchable = np.zeros(nhvdc, dtype=int)
 
+        self.F = np.zeros(nhvdc, dtype=int)
+        self.T = np.zeros(nhvdc, dtype=int)
+
         self.active = np.zeros((nhvdc, ntime), dtype=bool)
         self.rate = np.zeros((nhvdc, ntime))
         self.contingency_rate = np.zeros((nhvdc, ntime))
@@ -47,8 +52,13 @@ class HvdcData:
         self.Pset = np.zeros((nhvdc, ntime))
         self.Pt = np.zeros((nhvdc, ntime))
 
+        # voltage p.u. set points
         self.Vset_f = np.zeros((nhvdc, ntime))
         self.Vset_t = np.zeros((nhvdc, ntime))
+
+        # nominal bus voltages at the from and to ends
+        self.Vnf = np.zeros(nhvdc)
+        self.Vnt = np.zeros(nhvdc)
 
         self.Qmin_f = np.zeros(nhvdc)
         self.Qmax_f = np.zeros(nhvdc)
@@ -154,6 +164,73 @@ class HvdcData:
         :return:
         """
         return self.angle_droop * 57.295779513 / Sbase
+
+    def get_power(self, Sbase, theta):
+        """
+
+        :param nbus:
+        :param Sbase:
+        :param theta:
+        :return:
+        """
+        Pbus = np.zeros(self.nbus)
+        Losses = np.zeros(self.nhvdc)
+        loading = np.zeros(self.nhvdc)
+        Pf = np.zeros(self.nhvdc)
+        Pt = np.zeros(self.nhvdc)
+        nfree = 0
+
+        for i in range(self.nhvdc):
+
+            if self.active[i]:
+
+                if self.control_mode[i] == HvdcControlType.type_1_Pset:
+                    Pcalc = self.Pset[i]
+
+                elif self.control_mode[i] == HvdcControlType.type_0_free:
+                    Pcalc = self.Pset[i] + self.angle_droop[i] * np.rad2deg(theta[self.F[i]] - theta[self.T[i]])
+
+                    nfree += 1
+
+                    if Pcalc > self.rate[i]:
+                        Pcalc = self.rate[i]
+                    if Pcalc < -self.rate[i]:
+                        Pcalc = -self.rate[i]
+
+                else:
+                    Pcalc = 0.0
+
+                # depending on the value of Pcalc, assign the from and to values
+                if Pcalc > 0.0:
+                    I = Pcalc / (self.Vnf[i] * self.Vset_f[i])  # current in kA
+                    Losses[i] = self.r[i] * I * I  # losses in MW
+                    Pf[i] = -Pcalc
+                    Pt[i] = Pcalc - Losses[i]
+
+                elif Pcalc < 0.0:
+                    I = Pcalc / (self.Vnt[i] * self.Vset_t[i])  # current in kA
+                    Losses[i] = self.r[i] * I * I  # losses in MW
+                    Pf[i] = -Pcalc - Losses[i]
+                    Pt[i] = Pcalc
+                else:
+                    Losses[i] = 0
+                    Pf[i] = 0
+                    Pt[0] = 0
+
+                # compute loading
+                loading[i] = Pf[i] / self.rate[i]
+
+                # Pbus
+                Pbus[self.F[i]] += Pf[i] / Sbase
+                Pbus[self.T[i]] += Pt[i] / Sbase
+
+        # to p.u.
+        Pf /= Sbase
+        Pt /= Sbase
+        Losses /= Sbase
+
+        # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
+        return Pbus, Losses, Pf, Pt, loading, nfree
 
     def __len__(self):
         return self.nhvdc

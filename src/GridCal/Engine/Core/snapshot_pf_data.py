@@ -1704,6 +1704,7 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=
 
     nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
                                                         bus_dict=bus_dict,
+                                                        bus_data=nc.bus_data,
                                                         t_idx=t_idx,
                                                         time_series=True,
                                                         Vbus=nc.bus_data.Vbus,
@@ -1713,6 +1714,7 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=
 
     nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
                                                     bus_dict=bus_dict,
+                                                    bus_data=nc.bus_data,
                                                     t_idx=t_idx,
                                                     time_series=True,
                                                     Vbus=nc.bus_data.Vbus,

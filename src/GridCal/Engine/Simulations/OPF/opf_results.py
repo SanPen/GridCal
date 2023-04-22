@@ -50,7 +50,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  Sf=None, St=None, overloads=None, loading=None, losses=None,
                  hvdc_names=None, hvdc_power=None, hvdc_loading=None,
                  phase_shift=None, bus_shadow_prices=None,
-                 contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
+                 contingency_flows_list=None, contingency_indices_list=None,
+                 contingency_flows_slacks_list=None,
                  rates=None, contingency_rates=None,
                  converged=None, bus_types=None):
 

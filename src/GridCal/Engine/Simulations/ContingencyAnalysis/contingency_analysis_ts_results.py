@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types):
+    def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types, con_names):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -50,9 +50,15 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         nt = len(time_array)
 
+        self.nbus = n
+        self.nbranch = ne
+        self.ncon = nc
+
         self.branch_names = branch_names
 
         self.bus_names = bus_names
+
+        self.con_names = con_names
 
         self.bus_types = bus_types
 
@@ -64,11 +70,11 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.worst_loading = np.zeros((nt, ne))
 
-        self.overload_count = np.zeros((ne, nc), dtype=int)
+        self.overload_count = np.zeros(ne, dtype=int)
 
-        self.relative_frequency = np.zeros((ne, nc))
+        self.relative_frequency = np.zeros(ne)
 
-        self.max_overload = np.zeros((ne, nc))
+        self.max_overload = np.zeros(ne)
 
     def apply_new_time_series_rates(self, nc: "TimeCircuit"):
         rates = nc.Rates.T
@@ -95,25 +101,26 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return:
         """
 
-        index = self.branch_names
-
         if result_type == ResultTypes.ContingencyFrequency:
             data = self.overload_count
             y_label = '(#)'
             title = 'Contingency count '
-            labels = ['#' + x for x in self.branch_names]
+            labels = self.branch_names
+            index = ['']
 
         elif result_type == ResultTypes.ContingencyRelativeFrequency:
             data = self.relative_frequency
             y_label = '(p.u.)'
             title = 'Contingency relative frequency '
-            labels = ['#' + x for x in self.branch_names]
+            index = ['']
+            labels = self.branch_names
 
         elif result_type == ResultTypes.MaxOverloads:
             data = self.max_overload
             y_label = '(#)'
-            title = 'Contingency count '
-            labels = ['#' + x for x in self.branch_names]
+            title = 'Maximum overloads '
+            labels = self.branch_names
+            index = ['']
 
         elif result_type == ResultTypes.WorstContingencyFlows:
             data = self.worst_flows

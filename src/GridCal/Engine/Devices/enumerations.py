@@ -242,6 +242,12 @@ class DeviceType(Enum):
     TechnologyGroup = 'Technology Group'
     TechnologyCategory = 'Technology Category'
 
+    ContingencyDevice = 'Contingency'
+    ContingencyGroupDevice = 'Contingency Group'
+
+    InvestmentDevice = 'Investment'
+    InvestmentsGroupDevice = 'Investments Group'
+
     def __str__(self):
         return self.value
 

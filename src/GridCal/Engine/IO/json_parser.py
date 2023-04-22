@@ -21,6 +21,7 @@ import numpy as np
 import numba as nb
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_contingencies
 from GridCal.Engine.Devices import *
 
 
@@ -878,13 +879,18 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 circuit.add_hvdc(elm)
 
-        # fill x, y
-        logger += circuit.fill_xy_from_lat_lon()
-        return circuit
     else:
         logger.add('The Json structure does not have a Circuit inside the devices!')
         return MultiCircuit()
 
+    if 'contingencies' in data.keys():
+        circuit.set_contingencies(
+            contingencies=parse_contingencies(data['contingencies'])
+        )
+
+    # fill x, y
+    logger += circuit.fill_xy_from_lat_lon()
+    return circuit
 
 def parse_json_data_v2(data: dict, logger: Logger):
     """
@@ -1186,7 +1192,16 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
     element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the areas
-    for cls in [circuit.substations, circuit.zones, circuit.areas, circuit.countries]:
+    for cls in [circuit.substations,
+                circuit.zones,
+                circuit.areas,
+                circuit.countries,
+                circuit.technologies,
+                # circuit.contingency_groups,
+                # circuit.contingencies,
+                circuit.investments_groups,
+                circuit.investments]:
+
         for elm in cls:
             # pack the bus data into a dictionary
             add_to_dict(d=elements, d2=elm.get_properties_dict(), key=elm.device_type.value)
@@ -1269,7 +1284,9 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
             'units': units_dict,
             'devices': elements,
             'profiles': element_profiles,
-            'results': results}
+            'contingencies': get_contingencies_dict(circuit=circuit),
+            'results': results,
+            }
 
     data_str = json.dumps(data, indent=True, cls=CustomJSONizer)
 
@@ -1280,9 +1297,6 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
 
     return logger
 
-
-def save_json_file_v4(file_path, circuit: MultiCircuit, simulation_drivers=list()):
-    pass
 
 
 if __name__ == '__main__':

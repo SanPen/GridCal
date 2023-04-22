@@ -273,6 +273,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02, v_low=0.95, v
                                lower="0",
                                val=elm.rate)
 
+                # check R and X
                 if elm.R == 0.0 and elm.X == 0.0:
                     logger.add(object_type=object_type.value,
                                element_name=elm.name,
@@ -312,6 +313,27 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02, v_low=0.95, v
                                    message='The reactance is exactly zero',
                                    val=elm.X)
 
+                # check tap module
+                if elm.tap_module > 1.05:
+                    logger.add(object_type=object_type.value,
+                               element_name=elm.name,
+                               element_index=i,
+                               severity=LogSeverity.Warning,
+                               propty='tap_module',
+                               message='Tap module too high',
+                               upper="1.05",
+                               val=elm.tap_module)
+                elif elm.tap_module < 0.95:
+                    logger.add(object_type=object_type.value,
+                               element_name=elm.name,
+                               element_index=i,
+                               severity=LogSeverity.Warning,
+                               propty='tap_module',
+                               message='Tap module too low',
+                               upper="0.95",
+                               val=elm.tap_module)
+
+                # check virtual taps
                 tap_f, tap_t = elm.get_virtual_taps()
 
                 if tap_min > tap_f or tap_f > tap_max:
@@ -672,7 +694,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
 
     if n > 0:
         k = int(np.round(math.sqrt(p)))
-        axs = [None] * p
+        axs = [None] * (p + 1)
 
         for j in range(p):
             x = vals[:, j]
@@ -680,12 +702,6 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             variance = x.var()
             sigma = math.sqrt(variance)
             r = (mu - 6 * sigma, mu + 6 * sigma)
-
-            # print checks
-            l = np.where(x < r[0])[0]
-            u = np.where(x > r[1])[0]
-
-            # print(extended_prop[j], r, '\n\t', l, '\n\t', u)
 
             # plot
             axs[j] = fig.add_subplot(k, k + 1, j + 1)
@@ -698,6 +714,18 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
 
             if log_scale_extended[j]:
                 axs[j].set_xscale('log')
+
+        if object_type == DeviceType.LineDevice.value:
+            r = vals[:, 0]
+            x = vals[:, 1]
+
+            # plot
+            axs[j] = fig.add_subplot(k, k + 1, p + 2)
+            axs[j].set_facecolor('white')
+            axs[j].scatter(r, x)
+            axs[j].set_title("R-X")
+            axs[j].set_xlabel("R")
+            axs[j].set_ylabel("X")
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 

@@ -409,6 +409,12 @@ class Line(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R * self.R + self.X * self.X)
 
+    def get_max_bus_nominal_voltage(self):
+        return max(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_min_bus_nominal_voltage(self):
+        return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
     def copy(self, bus_dict=None):
         """
         Returns a copy of the line

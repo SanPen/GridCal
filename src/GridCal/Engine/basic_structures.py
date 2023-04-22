@@ -297,7 +297,6 @@ class SyncIssueType(Enum):
 class EngineType(Enum):
     GridCal = 'GridCal'
     Bentayga = 'Bentayga'
-    Newton = 'NewtonNative'
     NewtonPA = 'Newton Power Analytics'
     AllianderPGM = 'Alliander PGM'
 

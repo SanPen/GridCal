@@ -29,7 +29,6 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
-from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
 import GridCal.Engine.basic_structures as bs
@@ -330,7 +329,10 @@ class TimeSeries(DriverTemplate):
 
     def run_newton_pa(self, time_indices=None):
 
-        res = newton_pa_pf(self.grid, self.options, time_series=True, tidx=time_indices)
+        res = newton_pa_pf(circuit=self.grid,
+                           opt=self.options,
+                           time_series=True,
+                           tidx=time_indices)
 
         results = TimeSeriesResults(n=self.grid.get_bus_number(),
                                     m=self.grid.get_branch_number_wo_hvdc(),
@@ -353,7 +355,7 @@ class TimeSeries(DriverTemplate):
         # results.If = res.If
         # results.It = res.It
         results.Beq = res.Beq
-        results.ma = res.tap_module
+        results.tap_module = res.tap_module
         results.theta = res.tap_angle
         results.F = res.F
         results.T = res.T
@@ -381,9 +383,6 @@ class TimeSeries(DriverTemplate):
 
         if self.engine == bs.EngineType.GridCal:
             self.results = self.run_single_thread(time_indices=time_indices)
-
-        elif self.engine == bs.EngineType.Newton:
-            pass
 
         elif self.engine == bs.EngineType.Bentayga:
             self.progress_text.emit('Running Bentayga... ')

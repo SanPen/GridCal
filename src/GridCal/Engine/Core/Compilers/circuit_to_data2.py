@@ -30,7 +30,11 @@ def get_bus_data(circuit: MultiCircuit, areas_dict: Dict[Area, int], t_idx=-1, t
         bus_data.angle_min[i] = bus.angle_min
         bus_data.angle_max[i] = bus.angle_max
 
-        bus_data.bus_types[i] = bus.determine_bus_type().value
+        if bus.is_slack:
+            bus_data.bus_types[i] = 3  # VD
+        else:
+            # bus.determine_bus_type().value
+            bus_data.bus_types[i] = 1  # PQ by default, later it is modified by generators and batteries
 
         bus_data.areas[i] = areas_dict.get(bus.area, 0)
 
@@ -95,8 +99,6 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
 
             if opf:
                 data.load_cost[k] = elm.Cost
-
-
 
         data.C_bus_load[i, k] = 1
 
@@ -174,7 +176,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, t_idx=
     return data
 
 
-def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
+def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bus_data: BusData,
                        opf_results: "OptimalPowerFlowResults" = None, t_idx=-1, time_series=False, opf=False,
                        use_stored_guess=False) -> GeneratorData:
     """
@@ -183,8 +185,9 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     :param bus_dict:
     :param Vbus:
     :param logger:
+    :param bus_data:
     :param opf_results:
-    :param t:
+    :param t_idx:
     :param time_series:
     :param opf:
     :param use_stored_guess:
@@ -232,7 +235,16 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_pmin[k] = elm.Pmin
                 data.generator_cost[k] = elm.Cost_prof[t_idx]
 
+            if elm.active_prof[t_idx] and elm.is_controlled:
 
+                if bus_data.bus_types[i] != 3:  # if it is not Slack
+                    bus_data.bus_types[i] = 2  # set as PV
+
+                    if not use_stored_guess:
+                        if Vbus[i, 0].real == 1.0:
+                            Vbus[i, :] = complex(elm.Vset_prof[t_idx], 0)
+                        elif elm.Vset_prof[t_idx] != Vbus[i, 0]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i, 0])
 
         else:
             if opf_results is not None:
@@ -250,18 +262,22 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_pmin[k] = elm.Pmin
                 data.generator_cost[k] = elm.Cost
 
-        data.C_bus_gen[i, k] = 1
+            if elm.active_prof[t_idx] and elm.is_controlled:
+                if bus_data.bus_types[i] != 3:  # if it is not Slack
+                    bus_data.bus_types[i] = 2  # set as PV
 
-        if not use_stored_guess:
-            if Vbus[i, 0].real == 1.0:
-                Vbus[i, :] = complex(elm.Vset, 0)
-            elif elm.Vset != Vbus[i, 0]:
-                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+                if not use_stored_guess:
+                    if Vbus[i, 0].real == 1.0:
+                        Vbus[i, :] = complex(elm.Vset, 0)
+                    elif elm.Vset != Vbus[i, 0]:
+                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+
+        data.C_bus_gen[i, k] = 1
 
     return data
 
 
-def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
+def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bus_data: BusData,
                      opf_results=None, t_idx=-1, time_series=False, opf=False,
                      use_stored_guess=False) -> BatteryData:
     """
@@ -270,10 +286,12 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     :param bus_dict:
     :param Vbus:
     :param logger:
+    :param bus_data:
     :param opf_results:
+    :param t_idx:
     :param time_series:
     :param opf:
-    :param ntime:
+    :param use_stored_guess:
     :return:
     """
     devices = circuit.get_batteries()
@@ -324,6 +342,16 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost_prof[t_idx]
 
+            if elm.active_prof[t_idx] and elm.is_controlled:
+                if bus_data.bus_types[i] != 3:  # if it is not Slack
+                    bus_data.bus_types[i] = 2  # set as PV
+
+                    if not use_stored_guess:
+                        if Vbus[i, 0].real == 1.0:
+                            Vbus[i, :] = complex(elm.Vset_prof[t_idx], 0)
+                        elif elm.Vset_prof[t_idx] != Vbus[i, 0]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i, 0])
+
         else:
             if opf_results is not None:
                 data.p[k] = opf_results.battery_power[k]
@@ -346,13 +374,17 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost
 
-        data.C_bus_batt[i, k] = 1
+            if elm.active_prof[t_idx] and elm.is_controlled:
+                if bus_data.bus_types[i] != 3:  # if it is not Slack
+                    bus_data.bus_types[i] = 2  # set as PV
 
-        if not use_stored_guess:
-            if Vbus[i, 0].real == 1.0:
-                Vbus[i, :] = complex(elm.Vset, 0)
-            elif elm.Vset != Vbus[i, 0]:
-                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+                if not use_stored_guess:
+                    if Vbus[i, 0].real == 1.0:
+                        Vbus[i, :] = complex(elm.Vset, 0)
+                    elif elm.Vset != Vbus[i, 0]:
+                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+
+        data.C_bus_batt[i, k] = 1
 
     return data
 
@@ -982,6 +1014,8 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, t_idx=-1, time_ser
         # hvdc values
         data.names[i] = elm.name
         data.dispatchable[i] = int(elm.dispatchable)
+        data.F[i] = f
+        data.T[i] = t
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -996,6 +1030,12 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, t_idx=-1, time_ser
 
             data.Vset_f[i] = elm.Vset_f_prof[t_idx]
             data.Vset_t[i] = elm.Vset_t_prof[t_idx]
+
+            # hack the bus types to believe they are PV
+            if elm.active_prof[t_idx]:
+                bus_types[f] = BusMode.PV.value
+                bus_types[t] = BusMode.PV.value
+
         else:
             data.active[i] = elm.active
             data.rate[i] = elm.rate
@@ -1012,17 +1052,20 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, t_idx=-1, time_ser
             data.Vset_f[i] = elm.Vset_f
             data.Vset_t[i] = elm.Vset_t
 
+            # hack the bus types to believe they are PV
+            if elm.active:
+                bus_types[f] = BusMode.PV.value
+                bus_types[t] = BusMode.PV.value
+
         data.control_mode[i] = elm.control_mode
+
+        data.Vnf[i] = elm.bus_from.Vnom
+        data.Vnt[i] = elm.bus_to.Vnom
 
         data.Qmin_f[i] = elm.Qmin_f
         data.Qmax_f[i] = elm.Qmax_f
         data.Qmin_t[i] = elm.Qmin_t
         data.Qmax_t[i] = elm.Qmax_t
-
-        # hack the bus types to believe they are PV
-        if elm.active:
-            bus_types[f] = BusMode.PV.value
-            bus_types[t] = BusMode.PV.value
 
         # the bus-hvdc line connectivity
         data.C_hvdc_bus_f[i, f] = 1

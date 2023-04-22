@@ -26,7 +26,7 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country
+from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import CDF
 
@@ -597,8 +597,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
-            elif tpe in [DeviceType.SubstationDevice, DeviceType.AreaDevice,
-                         DeviceType.ZoneDevice, DeviceType.CountryDevice]:
+            elif tpe in [DeviceType.SubstationDevice,
+                         DeviceType.AreaDevice,
+                         DeviceType.ZoneDevice,
+                         DeviceType.CountryDevice,
+                         DeviceType.Technology,
+                         DeviceType.ContingencyGroupDevice,
+                         DeviceType.InvestmentsGroupDevice]:
+
                 objects = self.dictionary_of_lists[tpe.value]
                 values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
@@ -745,6 +751,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if tpe is BranchType:
                     setattr(self.objects[obj_idx], self.attributes[attr_idx], BranchType(value))
                     self.objects[obj_idx].graphic_obj.update_symbol()
+                elif tpe is ContingencyGroup:
+                    if value != "":
+                        setattr(self.objects[obj_idx], self.attributes[attr_idx], ContingencyGroup(value))
                 else:
                     setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
             else:

@@ -782,9 +782,9 @@ class Bus(EditableDevice):
 
     def get_coordinates(self):
         """
-        Get tuple of the bus coordinates (latitude, longitude)
+        Get tuple of the bus coordinates (longitude, latitude)
         """
-        return self.latitude, self.longitude
+        return self.longitude, self.latitude
 
     def get_devices_list(self):
         """
@@ -792,11 +792,11 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + \
-                self.controlled_generators + \
-                self.batteries + \
-                self.static_generators + \
-                self.shunts + \
-                self.external_grids
+                 self.controlled_generators + \
+                 self.batteries + \
+                 self.static_generators + \
+                 self.shunts + \
+                 self.external_grids
 
     def get_device_number(self):
         """

@@ -247,6 +247,12 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+    def get_max_bus_nominal_voltage(self):
+        return max(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_min_bus_nominal_voltage(self):
+        return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
     @property
     def R(self):
         return self.R1

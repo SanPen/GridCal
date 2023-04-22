@@ -67,7 +67,11 @@ class OptimalPowerFlow(DriverTemplate):
     def newton_pa_ac_opf(self):
         import GridCal.Engine.Core.Compilers.circuit_to_newton_pa as newton_pa
         # pack the results
-        npa_opf_res = newton_pa.newton_pa_opf(circuit=self.grid, pfopt=self.pf_options, time_series=False, tidx=None)
+        npa_opf_res = newton_pa.newton_pa_nonlinear_opf(circuit=self.grid,
+                                                        pfopt=self.pf_options,
+                                                        opfopt=self.options,
+                                                        time_series=False,
+                                                        tidx=None)
         return newton_pa.translate_newton_pa_opf_results(res=npa_opf_res)
 
     def opf(self):

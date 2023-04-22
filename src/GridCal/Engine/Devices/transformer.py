@@ -795,6 +795,12 @@ class Transformer2W(EditableDevice):
         else:
             return bus_t_v, bus_f_v
 
+    def get_max_bus_nominal_voltage(self):
+        return max(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_min_bus_nominal_voltage(self):
+        return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
     def get_from_to_nominal_voltages(self):
 
         bus_f_v = self.bus_from.Vnom

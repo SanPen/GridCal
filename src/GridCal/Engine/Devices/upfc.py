@@ -176,6 +176,12 @@ class UPFC(EditableDevice):
     def get_ysh2(self):
         return 1.0 / complex(self.Rsh2, self.Xsh2)
 
+    def get_max_bus_nominal_voltage(self):
+        return max(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_min_bus_nominal_voltage(self):
+        return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
     def change_base(self, Sbase_old, Sbase_new):
         b = Sbase_new / Sbase_old
 

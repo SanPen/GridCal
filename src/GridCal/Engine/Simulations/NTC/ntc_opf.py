@@ -20,12 +20,13 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from enum import Enum
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
-from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, \
-    GenerationNtcFormulation
+from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import Logger
 import os
 
@@ -35,7 +36,7 @@ except ModuleNotFoundError:
     print('ORTOOLS not found :(')
 
 import pandas as pd
-from scipy.sparse.csc import csc_matrix
+from scipy.sparse import csc_matrix
 
 
 def lpDot(mat, arr):
@@ -185,11 +186,11 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
-def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings):
+def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings):
     '''
 
     :param inter_area_branches:
-    :param inter_area_hvdc:
+    :param inter_area_hvdcs:
     :param branch_ratings:
     :param hvdc_ratings:
     :return:
@@ -197,16 +198,16 @@ def get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvd
     if len(inter_area_branches):
         idx_branch, b = list(zip(*inter_area_branches))
         idx_branch = list(idx_branch)
+        sum_ratings = sum(branch_ratings[idx_branch])
     else:
-        idx_branch = list()
+        sum_ratings = 0.0
 
-    if len(inter_area_hvdc):
-        idx_hvdc, b = list(zip(*inter_area_hvdc))
+    if len(inter_area_hvdcs):
+        idx_hvdc, b = list(zip(*inter_area_hvdcs))
         idx_hvdc = list(idx_hvdc)
-    else:
-        idx_hvdc = list()
+        sum_ratings += sum(hvdc_ratings[idx_hvdc])
 
-    return sum(branch_ratings[idx_branch]) + sum(hvdc_ratings[idx_hvdc])
+    return sum_ratings
 
 
 def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
@@ -329,7 +330,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
         - delta_slack_2: Array of generation delta LP Slack variables down
     """
 
-    #TODO: check this method
+    # TODO: check this method
 
     gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost * Sbase  # pass from $/MWh to $/p.u.h
@@ -374,7 +375,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
     for bus_idx, gen_idx in gens2:
 
         if generator_active[gen_idx] and dispatchable[gen_idx]:
-            name = 'gen_down_{0}_bus{1}'.format( generator_names[gen_idx], bus_idx)
+            name = 'gen_down_{0}_bus{1}'.format(generator_names[gen_idx], bus_idx)
 
             if Pmin[gen_idx] >= Pmax[gen_idx]:
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
@@ -470,9 +471,10 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
     if not res:
         logger.add_divergence('Area equality not met', 'grid', sum_a1, sum_a2)
 
+
 def formulate_proportional_generation(solver: pywraplp.Solver, generator_active, generator_dispatchable,
                                       generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
-                                      Pmin, a1, a2, logger: Logger):
+                                      Pmin, Pref, a1, a2, logger: Logger):
     """
     Formulate the generation increments in a proportional fashion
     :param solver: Solver instance to which add the equations
@@ -486,6 +488,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     :param Pgen: Array of generator active power values in p.u.
     :param Pmax: Array of generator maximum active power values in p.u.
     :param Pmin: Array of generator minimum active power values in p.u.
+    :param Pref: Array of generator reference power values in p.u to compute deltas.
     :param a1: array of bus indices of the area 1
     :param a2: array of bus indices of the area 2
     :param logger: Logger instance
@@ -501,6 +504,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     gen_cost = np.ones(ngen)
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
+
 
     # # Only for debug purpose
     # Pgen = np.array([-102, 500, 1800, 1500, -300, 100])
@@ -521,29 +525,44 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     is_gen_in_a1 = np.isin(range(len(Pgen)), a1_gen_idx, assume_unique=True)
     is_gen_in_a2 = np.isin(range(len(Pgen)), a2_gen_idx, assume_unique=True)
 
-    # mask for valid generators
-    Pgen_a1 = Pgen * is_gen_in_a1 * generator_active * generator_dispatchable * (Pgen < Pmax)
-    Pgen_a2 = Pgen * is_gen_in_a2 * generator_active * generator_dispatchable * (Pgen > Pmin)
-
-    # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
-    gen_pos_a1 = np.where(Pgen_a1 < 0, 0, Pgen_a1)
-    gen_neg_a1 = np.where(Pgen_a1 > 0, 0, Pgen_a1)
-    gen_pos_a2 = np.where(Pgen_a2 < 0, 0, Pgen_a2)
-    gen_neg_a2 = np.where(Pgen_a2 > 0, 0, Pgen_a2)
-
     # get proportions of contribution by sense (gen or pump) and area
     # the idea is both techs contributes to achieve the power shift goal in the same proportion
     # that in base situation
-    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pgen_a1))
-    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pgen_a1))
-    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pgen_a2))
-    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pgen_a2))
+    Pref_a1 = Pref * is_gen_in_a1 * generator_active * generator_dispatchable * (Pref <= Pmax)
+    Pref_a2 = Pref * is_gen_in_a2 * generator_active * generator_dispatchable * (Pref >= Pmin)
+
+    # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
+    gen_pos_a1 = np.where(Pref_a1 < 0, 0, Pref_a1)
+    gen_neg_a1 = np.where(Pref_a1 > 0, 0, Pref_a1)
+    gen_pos_a2 = np.where(Pref_a2 < 0, 0, Pref_a2)
+    gen_neg_a2 = np.where(Pref_a2 > 0, 0, Pref_a2)
+
+    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pref_a1))
+    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pref_a1))
+    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pref_a2))
+    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pref_a2))
 
     # get proportion by production (ammount of power contributed by generator to his sensed area).
-    prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1)) if np.sum(np.abs(gen_pos_a1)) != 0 else np.zeros_like(gen_pos_a1)
-    prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1)) if np.sum(np.abs(gen_neg_a1)) != 0 else np.zeros_like(gen_neg_a1)
-    prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2)) if np.sum(np.abs(gen_pos_a2)) != 0 else np.zeros_like(gen_pos_a2)
-    prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2)) if np.sum(np.abs(gen_neg_a2)) != 0 else np.zeros_like(gen_neg_a2)
+
+    if np.sum(np.abs(gen_pos_a1)) != 0:
+        prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1))
+    else:
+        prop_up_gen_a1 = np.zeros_like(gen_pos_a1)
+
+    if np.sum(np.abs(gen_neg_a1)) != 0:
+        prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1))
+    else:
+        prop_dw_gen_a1 = np.zeros_like(gen_neg_a1)
+
+    if np.sum(np.abs(gen_pos_a2)) != 0:
+        prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2))
+    else:
+        prop_up_gen_a2 = np.zeros_like(gen_pos_a2)
+
+    if np.sum(np.abs(gen_neg_a2)) != 0:
+        prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2))
+    else:
+        prop_dw_gen_a2 = np.zeros_like(gen_neg_a2)
 
     # delta proportion by generator (considering both proportions: sense and production)
     prop_gen_delta_up_a1 = prop_up_gen_a1 * prop_up_a1
@@ -602,8 +621,62 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
         else:
             generation[gen_idx] = Pgen[gen_idx]
 
-
     return generation, delta, a1_gen_idx, a2_gen_idx, power_shift, gen_cost
+
+
+def formulate_monitorization_logic(
+        monitor_only_sensitive_branches, monitor_only_ntc_load_rule_branches, monitor_loading,
+        max_alpha, branch_sensitivity_threshold, base_flows, structural_ntc, ntc_load_rule, rates):
+    """
+    Function to formulate branch monitor status due the given logic
+    :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.
+    :param monitor_only_ntc_load_rule_branches: boolean to apply ntc load rule to the monitorization logic.
+    :param monitor_loading: Array of branch monitor loading status given by user(True/False)
+    :param max_alpha: Array of max absolute branch sensitivity to the exchange in n and n-1 condition
+    :param branch_sensitivity_threshold: branch sensitivity to the exchange threshold
+    :param base_flows: branch base flows
+    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
+    :param ntc_load_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
+    :param rates: array of branch rates
+    return:
+        - monitor: Array of final monitor status per branch after applying the logic
+        - monitor_loading: monitor status per branch set by user interface
+        - monitor_by_sensitivity: monitor status per branch due exchange sensibility
+        - monitor_by_unrealistic_ntc: monitor status per branch due unrealistic minimum ntc
+        - monitor_by_zero_exchange: monitor status per branch due zero exchange loading
+        - branch_ntc_load_rule: branch minimum ntc to be considered as limiting element
+        - branch_zero_exchange_load: branch load for zero exchange situation.
+    """
+
+    # NTC min for considering as limiting element by CEP rule
+    branch_ntc_load_rule = ntc_load_rule * rates / (max_alpha + 1e-20)
+
+    # Branch load without exchange
+    branch_zero_exchange_load = base_flows * (1 - max_alpha) / rates
+
+    # Exclude branches with not enough sensibility to exchange
+    if monitor_only_sensitive_branches:
+        monitor_by_sensitivity = max_alpha > branch_sensitivity_threshold
+    else:
+        monitor_by_sensitivity = np.ones(len(base_flows), dtype=bool)
+
+    # Avoid unrealistic ntc && Exclude branches with 'interchange zero' flows over CEP rule limit
+    if monitor_only_ntc_load_rule_branches:
+        monitor_by_unrealistic_ntc = branch_ntc_load_rule <= structural_ntc
+        monitor_by_zero_exchange = branch_zero_exchange_load >= (1 - ntc_load_rule)
+    else:
+        monitor_by_unrealistic_ntc = np.ones(len(base_flows), dtype=bool)
+        monitor_by_zero_exchange = np.ones(len(base_flows), dtype=bool)
+
+    monitor_loading = np.array(monitor_loading, dtype=bool)
+
+    monitor = monitor_loading * \
+              monitor_by_sensitivity * \
+              monitor_by_unrealistic_ntc * \
+              monitor_by_zero_exchange
+
+    return monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+           branch_ntc_load_rule, branch_zero_exchange_load
 
 
 def check_proportional_generation(generator_active, generator_dispatchable, generator_cost, generator_names,
@@ -648,7 +721,6 @@ def check_proportional_generation(generator_active, generator_dispatchable, gene
 
         if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
             sum_gen_1 += Pgen[gen_idx]
-
 
     nU2 = 0
     nD2 = 0
@@ -873,11 +945,10 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
     return calculated_power
 
 
-def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
-                            branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
-                            branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs, alpha_n1_abs, monitor_only_ntc_load_rule_branches, cep_rule,
-                            structural_ntc, logger):
+def formulate_branches_flow(
+        solver: pywraplp.Solver, nbr, nbus, Rates, Sbase, branch_active, branch_names, branch_dc, R, X, F, T, inf,
+        monitor, angles, tau, logger
+):
     """
 
     :param solver: Solver instance to which add the equations
@@ -892,15 +963,9 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param inf: Value representing the infinite (i.e. 1e20)
-    :param monitor_loading: Array of branch monitor loading status (True/False)
-    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
-    :param monitor_only_sensitive_branches: Flag to monitor only sensitive branches
+    :param monitor: Array of branch monitor loading status (True/False)
     :param angles: array of bus voltage angles (LP variables)
     :param tau: Array branch phase shift angles (mix of values and LP variables)
-    :param alpha_abs: Array of absolute branch sensitivity to the exchange
-    :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
-    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
-    :param cep_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -910,8 +975,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     """
 
     flow_f = np.zeros(nbr, dtype=object)
-    monitor = np.zeros(nbr, dtype=bool)
-    branch_ntc_load_rule = np.zeros(nbr, dtype=float)
     Pinj_tau = np.zeros(nbus, dtype=object)
     rates = Rates / Sbase
 
@@ -920,19 +983,8 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
         if branch_active[m]:
 
-            max_alpha = max(alpha_abs[m], max(alpha_n1_abs[m]))
-
             if rates[m] <= 0:
                 logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
-
-            # determine the monitoring logic
-            monitor[m] = monitor_loading[m]
-
-            if monitor_only_sensitive_branches:
-                monitor[m] = monitor[m] and max_alpha > branch_sensitivity_threshold
-
-            if monitor_only_ntc_load_rule_branches:
-                monitor[m] = monitor[m] and branch_ntc_load_rule[m] <= structural_ntc
 
             # determine branch rate according monitor logic
             if monitor[m]:
@@ -943,9 +995,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(
                     -inf, inf, 'branch_flow_{0}:{1}'.format(branch_names[m], m))
-
-            # NTC min for considering as limiting element by CEP rule
-            branch_ntc_load_rule[m] = cep_rule * rates[m] / (max_alpha + 1e-20)
 
             # compute the flow
             _f = F[m]
@@ -968,12 +1017,12 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
             Pinj_tau[_f] = -Ptau
             Pinj_tau[_t] = Ptau
 
-    return flow_f, monitor, Pinj_tau, branch_ntc_load_rule
+    return flow_f, monitor, Pinj_tau
 
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
                         monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
-                        angles, alpha_abs, alpha_n1_abs, flow_f, tau, logger: Logger,):
+                        angles, alpha_abs, alpha_n1_abs, flow_f, tau, logger: Logger, ):
     """
 
     :param nbr: number of branches
@@ -1065,8 +1114,8 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
 
 
 def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names,
-                          contingency_enabled_indices, LODF, F, T,  branch_sensitivity_threshold,
-                          flow_f, monitor, alpha_n1, logger: Logger,  lodf_replacement_value=0):
+                          contingency_enabled_indices, LODF, F, T, branch_sensitivity_threshold,
+                          flow_f, monitor, alpha_n1, logger: Logger, lodf_replacement_value=0):
     """
     Formulate the contingency flows
     :param solver: Solver instance to which add the equations
@@ -1240,12 +1289,10 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
 
-                hvdc_angle_slack_pos[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_pos_' + suffix)
-                hvdc_angle_slack_neg[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_neg_' + suffix)
-
                 solver.Add(
-                    flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t] + hvdc_angle_slack_pos[i] - hvdc_angle_slack_neg[i]),
-                    'hvdc_flow_assignment_' + suffix)
+                    flow_f[i] <= P0 + angle_droop_rad * (angles[_f] - angles[_t]),
+                    'hvdc_flow_assignment_' + suffix
+                )
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
@@ -1260,14 +1307,12 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
             Pinj[_f] -= flow_f[i]
             Pinj[_t] += flow_f[i]
 
-
     if force_exchange_sense:
 
         # hvdc flow must be in the same exchange sense
         for i, sense in inter_area_hvdc:
 
             if control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
-
                 suffix = "{0}:{1}".format(names[i], i)
 
                 flow_sensed[i] = solver.NumVar(0, inf, 'hvdc_sense_flow_' + suffix)
@@ -1276,9 +1321,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                     flow_sensed[i] == flow_f[i] * sense,
                     'hvdc_sense_restriction_assignment_' + suffix)
 
-
-
-    #todo: ver cómo devolver el peso para el slack de hvdc que sea la diferencia entre el rate-flow (¿puede ser una variable?)
+    # todo: ver cómo devolver el peso para el slack de hvdc que sea la diferencia entre el rate-flow (¿puede ser una variable?)
 
     return flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg
 
@@ -1361,7 +1404,6 @@ def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, co
                 pass
 
 
-
 def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                                hvdc_flow_f, hvdc_active, PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor, alpha,
                                logger: Logger):
@@ -1400,9 +1442,15 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 _t = T[m]
                 suffix = "Branch_{0}@Hvdc_{1}".format(m, i)
 
-                flow_n1 = solver.NumVar(-rates[m], rates[m], 'hvdc_n-1_flow_' + suffix)
-                solver.Add(flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
-                           "hvdc_n-1_flow_assignment_" + suffix)
+                flow_n1 = solver.NumVar(
+                    -rates[m], rates[m],
+                    'hvdc_n-1_flow_' + suffix
+                )
+
+                solver.Add(
+                    flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
+                    "hvdc_n-1_flow_assignment_" + suffix
+                )
 
                 # store vars
                 con_hvdc_idx.append((m, i))
@@ -1455,10 +1503,16 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
                     _t = T[m]
                     suffix = "{0}@{1}_{2}@{3}".format(branch_names[m], generator_names[j], m, j)
 
-                    flow_n1 = solver.NumVar(-rates[m], rates[m], 'gen_n-1_flow_' + suffix)
+                    flow_n1 = solver.NumVar(
+                        -rates[m], rates[m],
+                        'gen_n-1_flow_' + suffix
+                    )
 
-                    solver.Add(flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold_pu,
-                               "gen_n-1_flow_assignment_" + suffix)
+                    solver.Add(
+                        # flow_n1 == flow_f[m] - PTDF[m, i] * generation_contingency_threshold_pu
+                        flow_n1 == flow_f[m] - PTDF[m, i] * Pgen[j]
+                        , "gen_n-1_flow_assignment_" + suffix
+                    )
 
                     # store vars
                     con_gen_idx.append((m, j))
@@ -1467,11 +1521,12 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
 
     return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
-def formulate_objective(solver: pywraplp.Solver,
-                        power_shift, gen_cost, generation_delta,
-                        weight_power_shift, weight_generation_cost,
-                        hvdc_angle_slack_pos, hvdc_angle_slack_neg,
-                        logger: Logger):
+
+def formulate_objective_old(solver: pywraplp.Solver,
+                            power_shift, gen_cost, generation_delta,
+                            weight_power_shift, weight_generation_cost,
+                            hvdc_angle_slack_pos, hvdc_angle_slack_neg,
+                            logger: Logger):
     """
 
     :param solver: Solver instance to which add the equations
@@ -1492,15 +1547,48 @@ def formulate_objective(solver: pywraplp.Solver,
     f += solver.Sum(hvdc_angle_slack_pos)
     f += solver.Sum(hvdc_angle_slack_neg)
 
+    solver.Minimize(f)
+
+
+def formulate_objective(solver: pywraplp.Solver,
+                        flow_f, hvdc_flow_f,
+                        inter_area_branches, inter_area_hvdcs,
+                        logger: Logger):
+    """
+
+    :param solver: Solver instance to which add the equations
+    :param power_shift: Array of branch phase shift angles (mix of values and LP variables)
+    :param gen_cost: Array of generation costs
+    :param generation_delta:  Array of generation delta LP variables
+    :param weight_power_shift: Power shift maximization weight
+    :param weight_generation_cost: Generation cost minimization weight
+    :param logger: logger instance
+    """
+
+    if len(inter_area_branches):
+        # Get power variables and signs from entry
+        branch_idx, branch_sign = map(list, zip(*inter_area_branches))
+        # compute interarea considering the signs
+        interarea_branch_flow_f = solver.Sum(flow_f[branch_idx] * branch_sign)
+
+        # define objective function
+        f = -interarea_branch_flow_f
+
+    if len(inter_area_hvdcs):
+        # Get power variables and signs from entry
+        hvdc_idx, hvdc_sign = map(list, zip(*inter_area_hvdcs))
+        # compute interarea considering the signs
+        interarea_hvdc_flow_f = solver.Sum(hvdc_flow_f[hvdc_idx] * hvdc_sign)
+
+        # add to the objective function
+        f -= interarea_hvdc_flow_f
 
     solver.Minimize(f)
 
 
-
-
 class OpfNTC(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotOpfData,
+    def __init__(self, numerical_circuit: Union[SnapshotOpfData, OpfTimeCircuit],
                  area_from_bus_idx,
                  area_to_bus_idx,
                  alpha,
@@ -1525,7 +1613,9 @@ class OpfNTC(Opf):
                  generation_contingency_threshold=1000,
                  match_gen_load=False,
                  force_exchange_sense=False,
-                 logger: Logger = None):
+                 transfer_method=AvailableTransferMode.InstalledPower,
+                 logger: Logger=None,
+                 ):
         """
         DC time series linear optimal power flow
         :param numerical_circuit:  NumericalCircuit instance
@@ -1547,6 +1637,7 @@ class OpfNTC(Opf):
         :param weight_power_shift: Power shift maximization weight
         :param weight_generation_cost: Generation cost minimization weight
         :param match_gen_load: Boolean to match generation and load power
+        :param transfer_method:
         :param logger: logger instance
         """
 
@@ -1610,6 +1701,17 @@ class OpfNTC(Opf):
         self.contingency_hvdc_indices_list = list()  # [(m, c), ...]
 
         self.structural_ntc = 0
+
+        self.base_flows = list()
+        self.monitor = list()
+        self.monitor_loading = list()
+        self.monitor_by_sensitivity = list()
+        self.monitor_by_unrealistic_ntc = list()
+        self.monitor_by_zero_exchange = list()
+        self.branch_ntc_load_rule = list()
+        self.branch_zero_exchange_load = list()
+
+        self.transfer_method = transfer_method
 
         self.logger = logger
 
@@ -1686,20 +1788,39 @@ class OpfNTC(Opf):
         Pload = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         if self.match_gen_load:
-            Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
+            Pgen = self.scale_to_reference(
+                reference=Pload,
+                scalable=Pgen_orig
+            )
         else:
             Pgen = Pgen_orig
 
+        if self.transfer_method == AvailableTransferMode.InstalledPower:
+            Pg_ref = self.numerical_circuit.generator_pmax / Sbase
+        else:
+            Pg_ref = Pgen
+
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        hvdc_ratings = self.numerical_circuit.hvdc_data.rate / Sbase
+        hvdc_ratings = self.numerical_circuit.hvdc_data.rate[:, t] / Sbase  # TODO: Check dimensions
 
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
+        # Maximum alpha n-1 value for each branch
+        max_alpha_abs_n1 = np.amax(alpha_n1_abs, axis=1)
+
+        # Maximum alpha or alpha n-1 value for each branch
+        max_alpha = np.amax(np.array([alpha_abs, max_alpha_abs_n1]), axis=0)
+
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
+
+        Sbus = self.numerical_circuit.generator_data.get_injections_per_bus()[:, t] - \
+               self.numerical_circuit.load_data.get_injections_per_bus()[:, t]
+
+        base_flows = np.dot(self.PTDF, Sbus.real)
 
         load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 
@@ -1711,14 +1832,32 @@ class OpfNTC(Opf):
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        inter_area_hvdc = get_inter_areas_branches(
+        inter_area_hvdcs = get_inter_areas_branches(
             nbr=self.numerical_circuit.nhvdc,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
             T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
             buses_areas_1=self.area_from_bus_idx,
             buses_areas_2=self.area_to_bus_idx)
 
-        structural_ntc = get_structural_ntc(inter_area_branches, inter_area_hvdc, branch_ratings, hvdc_ratings)
+        structural_ntc = get_structural_ntc(
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdcs,
+            branch_ratings=branch_ratings,
+            hvdc_ratings=hvdc_ratings
+        )
+
+        monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+        branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
+            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
+            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            max_alpha=max_alpha,
+            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
+            base_flows=base_flows,
+            structural_ntc=structural_ntc,
+            ntc_load_rule=self.ntc_load_rule,
+            rates=self.numerical_circuit.Rates,
+        )
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1757,6 +1896,7 @@ class OpfNTC(Opf):
                 Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
+                Pref=Pg_ref,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
                 logger=self.logger)
@@ -1765,7 +1905,6 @@ class OpfNTC(Opf):
 
         else:
             raise Exception('Unknown generation mode')
-
 
         # formulate the power injections
         Pinj = formulate_power_injections(
@@ -1799,7 +1938,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -1815,14 +1954,7 @@ class OpfNTC(Opf):
             angles=theta,
             tau=tau,
             inf=self.inf,
-            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
-            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
-            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
-            alpha_abs=alpha_abs,
-            alpha_n1_abs=alpha_n1_abs,
-            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            cep_rule=self.ntc_load_rule,
-            structural_ntc=structural_ntc,
+            monitor=monitor,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -1842,7 +1974,7 @@ class OpfNTC(Opf):
             Pinj=Pinj,
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
-            inter_area_hvdc=inter_area_hvdc,
+            inter_area_hvdc=inter_area_hvdcs,
             force_exchange_sense=self.force_exchange_sense,
             logger=self.logger)
 
@@ -1889,6 +2021,7 @@ class OpfNTC(Opf):
                 generator_names=self.numerical_circuit.generator_data.names,
                 Cgen=Cgen,
                 Pgen=Pgen,
+                # Pgen=generation,  # includes market generation + delta generation
                 generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
@@ -1925,16 +2058,26 @@ class OpfNTC(Opf):
             con_hvdc_alpha = list()
 
         # formulate the objective
+        # formulate_objective(
+        #     solver=self.solver,
+        #     power_shift=power_shift,
+        #     gen_cost=gen_cost[gen_a1_idx],
+        #     generation_delta=generation_delta[gen_a1_idx],
+        #     weight_power_shift=self.weight_power_shift,
+        #     weight_generation_cost=self.weight_generation_cost,
+        #     hvdc_angle_slack_pos=hvdc_angle_slack_pos,
+        #     hvdc_angle_slack_neg=hvdc_angle_slack_neg,
+        #     logger=self.logger)
+
+        # formulate the objective
         formulate_objective(
             solver=self.solver,
-            power_shift=power_shift,
-            gen_cost=gen_cost[gen_a1_idx],
-            generation_delta=generation_delta[gen_a1_idx],
-            weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost,
-            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
-            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
-            logger=self.logger)
+            flow_f=flow_f,
+            hvdc_flow_f=hvdc_flow_f,
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdcs,
+            logger=self.logger
+        )
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -1945,8 +2088,6 @@ class OpfNTC(Opf):
 
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
-
-        self.monitor = monitor
 
         # self.Pb = Pb
         self.Pl = Pload
@@ -1969,7 +2110,7 @@ class OpfNTC(Opf):
         self.nodal_restrictions = node_balance
 
         self.inter_area_branches = inter_area_branches
-        self.inter_area_hvdc = inter_area_hvdc
+        self.inter_area_hvdc = inter_area_hvdcs
 
         self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
         self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
@@ -1989,6 +2130,17 @@ class OpfNTC(Opf):
         self.contingency_generation_alpha_list = con_gen_alpha
 
         self.structural_ntc = structural_ntc
+
+        self.base_flows = base_flows
+
+        self.monitor = monitor
+        self.monitor_loading = monitor_loading
+        self.monitor_by_sensitivity = monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange = monitor_by_zero_exchange
+
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+        self.branch_zero_exchange_load = branch_zero_exchange_load
 
         return self.solver
 
@@ -2033,15 +2185,32 @@ class OpfNTC(Opf):
         else:
             Pgen = Pgen_orig
 
+
+        if self.transfer_method == AvailableTransferMode.InstalledPower:
+            Pg_ref = self.numerical_circuit.generator_pmax / Sbase
+        else:
+            Pg_ref = Pgen
+
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
         hvdc_ratings = self.numerical_circuit.hvdc_data.rate[:, t] / Sbase
         alpha_abs = np.abs(self.alpha)
         alpha_n1_abs = np.abs(self.alpha_n1)
 
+        # Maximum alpha n-1 value for each branch
+        max_alpha_abs_n1 = np.amax(alpha_n1_abs, axis=1)
+
+        # Maximum alpha or alpha n-1 value for each branch
+        max_alpha = np.amax(np.array([alpha_abs, max_alpha_abs_n1]), axis=0)
+
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
+
+        Sbus_at_t = self.numerical_circuit.generator_data.get_injections_per_bus()[:, t] - \
+                    self.numerical_circuit.load_data.get_injections_per_bus()[:, t]
+
+        base_flows = np.dot(self.PTDF, Sbus_at_t.real)
 
         load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 
@@ -2062,9 +2231,23 @@ class OpfNTC(Opf):
 
         structural_ntc = get_structural_ntc(
             inter_area_branches=inter_area_branches,
-            inter_area_hvdc=inter_area_hvdc,
+            inter_area_hvdcs=inter_area_hvdc,
             branch_ratings=branch_ratings,
             hvdc_ratings=hvdc_ratings)
+
+        # formulate the monitorization
+        monitor, monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange, \
+        branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
+            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
+            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
+            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
+            max_alpha=max_alpha,
+            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
+            base_flows=base_flows,
+            structural_ntc=structural_ntc,
+            ntc_load_rule=self.ntc_load_rule,
+            rates=self.numerical_circuit.Rates[:, t],
+        )
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -2103,6 +2286,7 @@ class OpfNTC(Opf):
                 Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
+                Pref=Pg_ref,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
                 logger=self.logger)
@@ -2120,7 +2304,6 @@ class OpfNTC(Opf):
             Cload=self.numerical_circuit.load_data.C_bus_load,
             load_power=Pload,
             logger=self.logger)
-
 
         # add the angles
         theta = formulate_angles(
@@ -2145,7 +2328,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor, Pinj_tau, branch_ntc_load_rule = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             nbus=self.numerical_circuit.nbus,
@@ -2161,16 +2344,8 @@ class OpfNTC(Opf):
             angles=theta,
             tau=tau,
             inf=self.inf,
-            monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
-            branch_sensitivity_threshold=self.branch_sensitivity_threshold,
-            monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
-            alpha_abs=alpha_abs,
-            alpha_n1_abs=alpha_n1_abs,
-            monitor_only_ntc_load_rule_branches=self.monitor_only_ntc_load_rule_branches,
-            cep_rule=self.ntc_load_rule,
-            structural_ntc=structural_ntc,
+            monitor=monitor,
             logger=self.logger)
-
 
         # formulate the HVDC flows
         hvdc_flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg = formulate_hvdc_flow(
@@ -2193,7 +2368,6 @@ class OpfNTC(Opf):
             force_exchange_sense=self.force_exchange_sense,
             logger=self.logger)
 
-
         # formulate the node power balance
         node_balance = formulate_node_balance(
             solver=self.solver,
@@ -2203,7 +2377,6 @@ class OpfNTC(Opf):
             bus_active=self.numerical_circuit.bus_data.active[:, t],
             bus_names=self.numerical_circuit.bus_data.names,
             logger=self.logger)
-
 
         if self.consider_contingencies:
             # formulate the contingencies
@@ -2226,7 +2399,7 @@ class OpfNTC(Opf):
         else:
             con_br_idx = list()
             n1flow_f = list()
-            alpha_n1_list = list()
+            con_brn_alpha = list()
 
         if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
             # formulate the generator contingencies
@@ -2249,6 +2422,7 @@ class OpfNTC(Opf):
         else:
             n1flow_gen_f = list()
             con_gen_idx = list()
+            con_gen_alpha = list()
 
         if self.consider_hvdc_contingencies:
             # formulate the hvdc contingencies
@@ -2270,17 +2444,15 @@ class OpfNTC(Opf):
         else:
             n1flow_hvdc_f = list()
             con_hvdc_idx = list()
+            con_hvdc_alpha = list()
 
         # formulate the objective
         formulate_objective(
             solver=self.solver,
-            power_shift=power_shift,
-            gen_cost=gen_cost[gen_a1_idx],
-            generation_delta=generation_delta[gen_a1_idx],
-            weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost,
-            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
-            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
+            flow_f=flow_f,
+            hvdc_flow_f=hvdc_flow_f,
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdcs=inter_area_hvdc,
             logger=self.logger)
 
         # Assign variables to keep
@@ -2292,8 +2464,6 @@ class OpfNTC(Opf):
 
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
-
-        self.monitor = monitor
 
         # self.Pb = Pb
         self.Pl = Pload
@@ -2335,6 +2505,19 @@ class OpfNTC(Opf):
         self.contingency_generation_alpha_list = con_gen_alpha
         self.contingency_hvdc_alpha_list = con_hvdc_alpha
 
+        self.structural_ntc = structural_ntc
+
+        self.base_flows = base_flows
+
+        self.monitor = monitor
+        self.monitor_loading = monitor_loading
+        self.monitor_by_sensitivity = monitor_by_sensitivity
+        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
+        self.monitor_by_zero_exchange = monitor_by_zero_exchange
+
+        self.branch_ntc_load_rule = branch_ntc_load_rule
+        self.branch_zero_exchange_load = branch_zero_exchange_load
+
         return self.solver
 
     def check(self):
@@ -2362,6 +2545,7 @@ class OpfNTC(Opf):
         # generator
         Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -2373,6 +2557,7 @@ class OpfNTC(Opf):
 
         # branch
         alpha_abs = np.abs(self.alpha)
+        alpha_n1_abs = np.abs(self.alpha_n1)
 
         # check variables
         for var in self.solver.variables():
@@ -2438,6 +2623,7 @@ class OpfNTC(Opf):
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             angles=self.extract(self.theta),
             alpha_abs=alpha_abs,
+            alpha_n1_abs=alpha_n1_abs,
             logger=self.logger,
             flow_f=self.extract(self.s_from),
             tau=self.extract(self.phase_shift))
@@ -2681,7 +2867,6 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-
         # check the solution
         if not solved and with_check:
             self.save_lp('h{0}_ntc_opf_ts.lp'.format(t))
@@ -2699,7 +2884,6 @@ class OpfNTC(Opf):
             # return self.all_slacks_sum.solution_value()
         else:
             return 99999
-
 
     def solved(self):
         return self.status == pywraplp.Solver.OPTIMAL
@@ -2736,7 +2920,6 @@ class OpfNTC(Opf):
             m, c = self.contingency_indices_list[i]
             x[i] = self.alpha_n1[m, c]
         return x
-
 
     def get_contingency_flows_list(self):
         """
@@ -2878,41 +3061,92 @@ class OpfNTC(Opf):
         """
         return self.extract(self.branch_ntc_load_rule, make_abs=False) * self.numerical_circuit.Sbase
 
+
 if __name__ == '__main__':
+    import time
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+    from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+    from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
-    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
-    fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')
+    folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
+    fname = os.path.join(folder, 'MOU_2022_5GW_v6h-B_pmode1.gridcal')
 
+    tm0 = time.time()
     main_circuit = FileOpen(fname).open()
+    print('circuit opened in {0} scs.'.format(time.time() - tm0))
 
     # compute information about areas ----------------------------------------------------------------------------------
     area_from_idx = 0
     area_to_idx = 1
     areas = main_circuit.get_bus_area_indices()
 
+    tm0 = time.time()
     numerical_circuit_ = compile_snapshot_opf_circuit(
         circuit=main_circuit,
         apply_temperature=False,
-        branch_tolerance_mode=BranchImpedanceMode.Specified)
+        branch_tolerance_mode=BranchImpedanceMode.Specified
+    )
+    print('numerical circuit computed in {0} scs.'.format(time.time() - tm0))
 
     # get the area bus indices
     areas = areas[numerical_circuit_.original_bus_idx]
     a1 = np.where(areas == area_from_idx)[0]
     a2 = np.where(areas == area_to_idx)[0]
 
+    linear = LinearAnalysis(
+        grid=main_circuit,
+        distributed_slack=False,
+        correct_values=False
+    )
+
+    tm0 = time.time()
+    linear.run()
+    print('linear analysis computed in {0} scs.'.format(time.time() - tm0))
+
+    tm0 = time.time()
+    alpha, alpha_n1 = compute_alpha(
+        ptdf=linear.PTDF,
+        lodf=linear.LODF,
+        P0=numerical_circuit_.Sbus.real,
+        Pinstalled=numerical_circuit_.bus_installed_power,
+        Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
+        Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
+        idx1=a1,
+        idx2=a2,
+        mode=AvailableTransferMode.InstalledPower.value,
+    )
+
+    print('alpha and alpha n-1 computed in {0} scs.'.format(time.time() - tm0))
+
     problem = OpfNTC(
         numerical_circuit=numerical_circuit_,
         area_from_bus_idx=a1,
         area_to_bus_idx=a2,
-        generation_formulation=GenerationNtcFormulation.Proportional)
+        alpha=alpha,
+        alpha_n1=alpha_n1,
+        LODF=linear.LODF,
+        PTDF=linear.PTDF,
+        generation_formulation=GenerationNtcFormulation.Proportional,
+        ntc_load_rule=0.7,
+        consider_contingencies=True,
+        consider_hvdc_contingencies=True,
+        consider_gen_contingencies=True,
+        generation_contingency_threshold=1000,
+        match_gen_load=False,
+        transfer_method=AvailableTransferMode.InstalledPower,
+        skip_generation_limits=False,
+    )
 
     print('Solving...')
-    status = problem.solve()
+    tm0 = time.time()
+    problem.formulate()
+    print('optimization formulated in {0} scs.'.format(time.time() - tm0))
 
-    print("Status:", status)
+    tm0 = time.time()
+    solved = problem.solve()
+    print('optimization computed in {0} scs.'.format(time.time() - tm0))
 
     print('Angles\n', np.angle(problem.get_voltage()))
     print('Branch loading\n', problem.get_loading())

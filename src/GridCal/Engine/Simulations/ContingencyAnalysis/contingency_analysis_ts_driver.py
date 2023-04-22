@@ -22,7 +22,7 @@ from numba import jit, prange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, ContingencyAnalysisDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -113,19 +113,20 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                                                             time_array=(),
                                                             bus_names=(),
                                                             branch_names=(),
-                                                            bus_types=())
+                                                            bus_types=(),
+                                                            con_names=())
 
         self.branch_names = list()
 
+        self.start_ = start_
+
+        self.end_ = end_
+
     def get_steps(self):
         """
-        Get variations list of strings
+        Get time steps list of strings
         """
-        if self.results is not None:
-            return [l.strftime('%d-%m-%Y %H:%M') for l in
-                    pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
-        else:
-            return list()
+        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
 
     def n_minus_k(self):
         """
@@ -146,59 +147,42 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                                                        n=ts_numeric_circuit.nbus,
                                                        branch_names=ts_numeric_circuit.branch_names,
                                                        bus_names=ts_numeric_circuit.bus_names,
-                                                       bus_types=ts_numeric_circuit.bus_types)
+                                                       bus_types=ts_numeric_circuit.bus_types,
+                                                       con_names=self.grid.get_contingency_group_names())
 
-        linear_analysis = LinearAnalysis(grid=self.grid,
-                                         distributed_slack=self.options.distributed_slack,
-                                         correct_values=self.options.correct_values)
-        linear_analysis.run()
+        if self.end_ is None:
+            self.end_ = len(self.grid.time_profile)
 
-        # get the contingency branches
-        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+        time_indices = np.arange(self.start_, self.end_)
 
-        self.progress_text.emit('Computing branch base loading...')
-        Pbus = ts_numeric_circuit.Sbus.real
-        rates = ts_numeric_circuit.ContingencyRates.T
+        cdriver = ContingencyAnalysisDriver(self.grid, self.options)
 
-        # get flow
-        if self.options.use_provided_flows:
-            flows = self.options.Pf
+        contingency_count = None
 
-            if self.options.Pf is None:
-                msg = 'The option to use the provided flows is enabled, but no flows are available'
-                self.logger.add_error(msg)
-                raise Exception(msg)
-        else:
-            # compute the base Sf
-            flows = linear_analysis.get_flows_time_series(Pbus)  # will be converted to MW internally
+        for it, t in enumerate(time_indices):
 
-        self.progress_text.emit('Computing N-1 loading...')
+            self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
+            self.progress_signal.emit((it + 1) / len(time_indices) * 100)
 
-        for ie, e in enumerate(br_idx):
+            # run contingency at t
+            res_t = cdriver.n_minus_k(t=t)
 
-            self.progress_text.emit('Computing N-1 loading...' + ts_numeric_circuit.branch_names[e])
+            l_abs = np.abs(res_t.loading)
+            contingency = l_abs > 1
+            if contingency_count is None:
+                contingency_count = contingency.sum(axis=0)
+            else:
+                contingency_count += contingency.sum(axis=0)
 
-            # the results are passed by reference and filled inside
-            compute_flows_numba(e=e,
-                                nt=nt,
-                                contingency_branch_idx=br_idx,
-                                LODF=linear_analysis.LODF,
-                                Flows=flows,
-                                rates=rates,
-                                overload_count=results.overload_count,
-                                max_overload=results.max_overload,
-                                worst_flows=results.worst_flows)
-
-            self.progress_signal.emit((ie + 1) / len(br_idx) * 100)
+            results.worst_flows[t, :] = res_t.Sf.real.max(axis=0)
+            results.worst_loading[t, :] = np.abs(res_t.loading).max(axis=0)
+            results.max_overload = np.maximum(results.max_overload, results.worst_loading[t, :])
 
             if self.__cancel__:
-                results.relative_frequency = results.overload_count / nt
-                results.worst_loading = results.worst_flows / (rates + 1e-9)
                 return results
 
-        results.relative_frequency = results.overload_count / nt
-        results.worst_loading = results.worst_flows / (rates + 1e-9)
-        results.S = Pbus.T
+        results.overload_count = contingency_count
+        results.relative_frequency = contingency_count / len(time_indices)
 
         return results
 

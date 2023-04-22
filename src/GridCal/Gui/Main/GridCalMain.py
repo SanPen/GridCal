@@ -40,7 +40,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
+from GridCal.Engine.IO.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
@@ -55,11 +55,11 @@ from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.GridEditorWidget.messages import *
-from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.Main.MainWindow import *
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Main.contingency_planner_model import get_contingency_planner_model, generate_automatic_contingency_plan, ContingencyPlan
+
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -67,6 +67,13 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
+from GridCal.Gui.pySlipQt.pySlipQt import PySlipQt
+from GridCal.Gui.pySlipQt.blue_marble import BlueMarbleTiles
+from GridCal.Gui.pySlipQt.cartodb import CartoDbTiles
+import GridCal.Gui.Visualization.palettes as palettes
+
 from GridCal.__version__ import __GridCal_VERSION__
 
 try:
@@ -277,8 +284,6 @@ class MainGUI(QMainWindow):
 
         # available engines
         engine_lst = [bs.EngineType.GridCal]
-        if NEWTON_AVAILBALE:
-            engine_lst.append(bs.EngineType.Newton)
         if NEWTON_PA_AVAILABLE:
             engine_lst.append(bs.EngineType.NewtonPA)
         if BENTAYGA_AVAILABLE:
@@ -323,12 +328,14 @@ class MainGUI(QMainWindow):
                                 nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
+        self.schematic_list_steps = list()
+
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
         # self.grid_editor.setStretchFactor(1, 10)
 
         # 1:4
-        self.ui.dataStructuresSplitter.setStretchFactor(0, 1)
+        self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
         self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
 
         # 4:1
@@ -344,9 +351,49 @@ class MainGUI(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
+        ################################################################################################################
+        # Declare the map
+        self.tile_sources = {
+            'Blue Marble': BlueMarbleTiles(tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble')),
+            'Carto positron': CartoDbTiles(
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_positron'),
+                tile_servers=['http://basemaps.cartocdn.com/light_all/']),
+            'Carto dark matter': CartoDbTiles(
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
+                tile_servers=["http://basemaps.cartocdn.com/dark_all/"])
+        }
+
+        palettes_list = [palettes.Colormaps.GridCal,
+                         palettes.Colormaps.Green2Red,
+                         palettes.Colormaps.Heatmap,
+                         palettes.Colormaps.TSO]
+        self.cmap_dict = {e.value: e for e in palettes_list}
+        self.ui.palette_comboBox.setModel(get_list_model([e.value for e in palettes_list]))
+
+        self.ui.tile_provider_comboBox.setModel(get_list_model(list(self.tile_sources.keys())))
+        self.ui.tile_provider_comboBox.setCurrentIndex(0)
+
+        # These get initialized by create_map()
+        self.tile_source = None
+        self.map_widget: PySlipQt = None
+        self.polyline_layer_id: int = None
+
+        self.create_map()
+
+        self.ui.map_time_horizontalSlider.setMinimum(0)
+        self.ui.map_time_horizontalSlider.setMaximum(0)
+        self.ui.map_time_horizontalSlider.setSliderPosition(0)
+        ################################################################################################################
+
+        # set initial view position
+        self.map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+        self.map_list_steps = list()
+
+        ################################################################################################################
         # simulations session ------------------------------------------------------------------------------------------
         self.session: SimulationSession = SimulationSession(name='GUI session')
 
+        ################################################################################################################
         # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
         self.open_file_thread_object = None
@@ -363,6 +410,7 @@ class MainGUI(QMainWindow):
         self.file_sync_window: SyncDialogueWindow = None
         self.sigma_dialogue: SigmaAnalysisGUI = None
         self.grid_generator_dialogue: GridGeneratorGUI = None
+        self.contingency_planner_dialogue: ContingencyPlannerGUI = None
         self.analysis_dialogue: GridAnalysisGUI = None
         self.profile_input_dialogue: ProfileInputGUI = None
         self.models_input_dialogue: ModelsInputGUI = None
@@ -386,27 +434,6 @@ class MainGUI(QMainWindow):
         # dictionaries for available results
         self.available_results_dict = None
         self.available_results_steps_dict = None
-
-        ################################################################################################################
-        # Contingency planner
-        ################################################################################################################
-
-        self.contingency_branch_types = [DeviceType.LineDevice,
-                                         DeviceType.DCLineDevice,
-                                         DeviceType.Transformer2WDevice,
-                                         DeviceType.VscDevice,
-                                         DeviceType.UpfcDevice]
-
-        self.contingency_injection_types = [DeviceType.GeneratorDevice,
-                                            DeviceType.BatteryDevice]
-
-        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
-                                                                       checks=True, check_value=True))
-
-        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
-                                                                       checks=True, check_value=True))
-
-        self.contingency_plan: ContingencyPlan = ContingencyPlan()
 
         ################################################################################################################
         # Console
@@ -521,6 +548,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
 
+        self.ui.actionImport_contingencies.triggered.connect(self.import_contingencies)
+
         self.ui.actionApply_new_rates.triggered.connect(self.apply_new_rates)
 
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
@@ -539,7 +568,13 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
 
-        self.ui.actionNew_contingency_from_selection.triggered.connect(self.add_contingency_from_selection)
+        self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
+
+        self.ui.actionExport_contingencies.triggered.connect(self.export_contingencies)
+
+        self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
+
+        self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
 
         # Buttons
 
@@ -605,13 +640,15 @@ class MainGUI(QMainWindow):
 
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
-        self.ui.colour_results_pushButton.clicked.connect(lambda: self.colour_now(False))
-
-        self.ui.show_map_pushButton.clicked.connect(lambda: self.colour_now(True))
+        self.ui.colour_results_pushButton.clicked.connect(self.colour_schematic)
 
         self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
 
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
+
+        self.ui.view_previous_simulation_step_map_pushButton.clicked.connect(self.colour_previous_simulation_step_map)
+
+        self.ui.view_next_simulation_step_map_pushButton.clicked.connect(self.colour_next_simulation_step_map)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
@@ -651,11 +688,9 @@ class MainGUI(QMainWindow):
 
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
-        self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
-        self.ui.newContingencyPlanButton.clicked.connect(self.new_contingency_plan)
-        self.ui.deleteContingencyButton.clicked.connect(self.delete_contingency_item)
-
         self.ui.structure_analysis_pushButton.clicked.connect(self.structure_analysis_plot)
+
+        self.ui.draw_map_button.clicked.connect(self.colour_map)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -688,10 +723,17 @@ class MainGUI(QMainWindow):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
+        self.ui.available_results_to_color_map_comboBox.currentTextChanged.connect(self.update_available_steps_to_color_map)
+
+        self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
+
+        self.ui.tile_provider_comboBox.currentTextChanged.connect(self.create_map)
 
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
+        self.ui.simulation_results_step_slider.valueChanged.connect(self.schematic_time_slider_change)
+        self.ui.map_time_horizontalSlider.valueChanged.connect(self.map_time_slider_change)
 
         # doubleSpinBox
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
@@ -716,8 +758,12 @@ class MainGUI(QMainWindow):
 
         self.ui.grid_colouring_frame.setVisible(False)
 
+        self.ui.actionSync.setVisible(False)
+
+        self.modify_ui_options_according_to_the_engine()
+
         # this is the contingency planner tab, invisible until done
-        self.ui.tabWidget_3.setTabVisible(4, False)
+        self.ui.tabWidget_3.setTabVisible(4, True)
 
         # template
         self.view_templates(False)
@@ -743,6 +789,31 @@ class MainGUI(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    def modify_ui_options_according_to_the_engine(self):
+        """
+        Change the UI depending on the engine options
+        :return:
+        """
+        eng = self.get_preferred_engine()
+
+        if eng == bs.EngineType.NewtonPA:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(True)
+
+            # add the AC_OPF option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+        else:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+
+            # no AC opf option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
     @staticmethod
     def collect_memory():
@@ -858,6 +929,38 @@ class MainGUI(QMainWindow):
                                     "clc": self.clc,
                                     'app': self,
                                     'circuit': self.circuit})
+
+    def create_map(self):
+        """
+        Create the map widget
+        """
+
+        # remove all widgets from the layout
+        for i in reversed(range(self.ui.map_layout.count())):
+            widget_to_remove = self.ui.map_layout.itemAt(i).widget()
+            # remove it from the layout list
+            self.ui.map_layout.removeWidget(widget_to_remove)
+            # remove it from the gui
+            widget_to_remove.setParent(None)
+
+        # select the tile source
+        self.tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+
+        # create the map widget
+        self.map_widget = PySlipQt(self, tile_src=self.tile_source, start_level=5)
+
+        # add lines layer
+        self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=[],
+                                                                  map_rel=True,
+                                                                  visible=True,
+                                                                  delta=40,
+                                                                  show_levels=list(range(20)),
+                                                                  # levels at which to show the polylines
+                                                                  name='<polyline_layer>')
+        # add to the layout
+        self.ui.map_layout.addWidget(self.map_widget)
+
+        self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
     def clear_stuff_running(self):
         """
@@ -1221,7 +1324,7 @@ class MainGUI(QMainWindow):
         self.clear_results()
         self.add_default_catalogue()
         self.create_console()
-
+        self.create_map()
         self.collect_memory()
 
     def new_project(self):
@@ -1499,7 +1602,10 @@ class MainGUI(QMainWindow):
                       "CIM (*.xml);;" \
                       "Electrical Json V3 (*.ejson3);;"\
                       "Rawx (*.rawx);;" \
-                      "Sqlite (*.sqlite)"
+                      "Sqlite (*.sqlite);;"
+
+        if NEWTON_PA_AVAILABLE:
+            files_types += "Newton (*.newton);;"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1536,6 +1642,7 @@ class MainGUI(QMainWindow):
                 extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
+                extension['Newton (*.newton)'] = '.newton'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]
@@ -1883,22 +1990,17 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no branches!')
 
-    def view_objects_data(self):
-        """
-        On click, display the objects properties
-        """
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+    def create_objects_model(self, elements, elm_type):
 
-        self.view_template_controls(False)
         dictionary_of_lists = dict()
 
         if elm_type == DeviceType.BusDevice.value:
             elm = Bus()
-            elements = self.circuit.buses
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
                                    DeviceType.ZoneDevice.value: self.circuit.zones,
                                    DeviceType.SubstationDevice.value: self.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.circuit.countries}
+                                   DeviceType.CountryDevice.value: self.circuit.countries,
+                                   }
 
         elif elm_type == DeviceType.BranchDevice.value:
 
@@ -1911,47 +2013,39 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.LoadDevice.value:
             elm = dev.Load()
-            elements = self.circuit.get_loads()
 
         elif elm_type == DeviceType.StaticGeneratorDevice.value:
             elm = dev.StaticGenerator()
-            elements = self.circuit.get_static_generators()
 
         elif elm_type == DeviceType.GeneratorDevice.value:
             elm = dev.Generator()
-            elements = self.circuit.get_generators()
+            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.BatteryDevice.value:
             elm = dev.Battery()
             elements = self.circuit.get_batteries()
+            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.ShuntDevice.value:
             elm = dev.Shunt()
-            elements = self.circuit.get_shunts()
 
         elif elm_type == DeviceType.ExternalGridDevice.value:
             elm = dev.ExternalGrid()
-            elements = self.circuit.get_external_grids()
 
         elif elm_type == DeviceType.LineDevice.value:
             elm = dev.Line(None, None)
-            elements = self.circuit.lines
 
         elif elm_type == DeviceType.Transformer2WDevice.value:
             elm = dev.Transformer2W(None, None)
-            elements = self.circuit.transformers2w
 
         elif elm_type == DeviceType.Transformer3WDevice.value:
             elm = dev.Transformer3W()
-            elements = self.circuit.transformers3w
 
         elif elm_type == DeviceType.HVDCLineDevice.value:
             elm = dev.HvdcLine(None, None)
-            elements = self.circuit.hvdc_lines
 
         elif elm_type == DeviceType.VscDevice.value:
             elm = dev.VSC(None, None)
-            elements = self.circuit.vsc_devices
 
         elif elm_type == DeviceType.UpfcDevice.value:
             elm = dev.UPFC(None, None)
@@ -1959,37 +2053,82 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.DCLineDevice.value:
             elm = dev.DcLine(None, None)
-            elements = self.circuit.dc_lines
 
         elif elm_type == DeviceType.SubstationDevice.value:
             elm = dev.Substation()
-            elements = self.circuit.substations
 
         elif elm_type == DeviceType.ZoneDevice.value:
             elm = dev.Zone()
-            elements = self.circuit.zones
 
         elif elm_type == DeviceType.AreaDevice.value:
             elm = dev.Area()
-            elements = self.circuit.areas
 
         elif elm_type == DeviceType.CountryDevice.value:
             elm = dev.Country()
-            elements = self.circuit.countries
+
+        elif elm_type == DeviceType.ContingencyDevice.value:
+            elm = dev.Contingency()
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups, }
+
+        elif elm_type == DeviceType.ContingencyGroupDevice.value:
+            elm = dev.ContingencyGroup()
+
+        elif elm_type == DeviceType.InvestmentDevice.value:
+            elm = dev.Investment()
+            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice.value: self.circuit.investments_groups, }
+
+        elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+            elm = dev.InvestmentsGroup()
+
+        elif elm_type == DeviceType.Technology.value:
+            elm = dev.Technology()
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
         if elm_type == 'Branches':
             mdl = BranchObjectModel(elements, elm.editable_headers,
-                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    parent=self.ui.dataStructureTableView,
+                                    editable=True,
                                     non_editable_attributes=elm.non_editable_attributes)
         else:
 
             mdl = ObjectsModel(elements, elm.editable_headers,
-                               parent=self.ui.dataStructureTableView, editable=True,
+                               parent=self.ui.dataStructureTableView,
+                               editable=True,
                                non_editable_attributes=elm.non_editable_attributes,
                                dictionary_of_lists=dictionary_of_lists)
+
+        return mdl
+
+    def display_filter(self, elements):
+        """
+        Display a list of elements that comes from a filter
+        :param elements:
+        """
+        if len(elements) > 0:
+
+            elm = elements[0]
+
+            mdl = self.create_objects_model(elements=elements, elm_type=elm.device_type.value)
+
+            self.ui.dataStructureTableView.setModel(mdl)
+
+        else:
+            self.ui.dataStructureTableView.setModel(None)
+
+    def view_objects_data(self):
+        """
+        On click, display the objects properties
+        """
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+
+        self.view_template_controls(False)
+
+        elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
+
+        mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
+
         self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
         self.ui.property_comboBox.clear()
@@ -2517,6 +2656,8 @@ class MainGUI(QMainWindow):
 
         use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
 
+        override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
+
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=verbose,
@@ -2534,7 +2675,8 @@ class MainGUI(QMainWindow):
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
                                    mu=mu,
-                                   use_stored_guess=use_stored_guess)
+                                   use_stored_guess=use_stored_guess,
+                                   override_branch_controls=override_branch_controls)
 
         return ops
 
@@ -2634,29 +2776,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.PowerFlow_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus,
-                                         Sf=results.Sf,
-                                         St=results.St,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         losses=results.losses,
-                                         hvdc_loading=results.hvdc_loading,
-                                         hvdc_Pf=results.hvdc_Pf,
-                                         hvdc_Pt=results.hvdc_Pt,
-                                         hvdc_losses=results.hvdc_losses,
-                                         ma=results.ma,
-                                         theta=results.theta,
-                                         Beq=results.Beq,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
+                self.colour_schematic()
 
             # print convergence reports on the console
             for report in drv.convergence_reports:
@@ -2757,20 +2880,12 @@ class MainGUI(QMainWindow):
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
-            if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus1,
-                                         Sf=results.Sf1,
-                                         voltages=results.voltage1,
-                                         types=results.bus_types,
-                                         loadings=results.loading1,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
+
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
 
@@ -2824,7 +2939,7 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
-                self.colour_now()
+                self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no PTDF results.')
 
@@ -2878,24 +2993,28 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+
                 if self.ui.draw_schematic_checkBox.isChecked():
                     if results.S.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S.max(axis=0),
-                                                 Sf=results.Sf.max(axis=0),
-                                                 voltages=results.voltage.max(axis=0),
-                                                 loadings=np.abs(results.loading).max(axis=0),
-                                                 types=None,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
+                        # viz.colour_the_schematic(circuit=self.circuit,
+                        #                          Sbus=results.S.max(axis=0),
+                        #                          Sf=results.Sf.max(axis=0),
+                        #                          voltages=results.voltage.max(axis=0),
+                        #                          loadings=np.abs(results.loading).max(axis=0),
+                        #                          types=None,
+                        #                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                        #                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                        #                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                        #                          min_bus_width=self.ui.min_node_size_spinBox.value(),
+                        #                          max_bus_width=self.ui.max_node_size_spinBox.value()
+                        #                          )
+                        self.colour_schematic()
                     else:
                         info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
-                self.update_available_results()
+
             else:
                 error_msg('Something went wrong, There are no PTDF Time series results.')
 
@@ -2909,42 +3028,33 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysis_run):
+            if len(self.circuit.contingency_groups) > 0:
 
-                self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
+                if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysis_run):
 
-                self.LOCK()
+                    self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
+                    self.LOCK()
 
-                if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
-                    if pf_results is not None:
-                        Pf = pf_results.Sf.real
-                        Pf_hvdc = pf_results.hvdc_Pf.real
-                        use_provided_flows = True
-                    else:
-                        warning_msg('There were no power flow values available. Linear flows will be used.')
-                        use_provided_flows = False
-                        Pf_hvdc = None
-                        Pf = None
+                    pf_options = self.get_selected_power_flow_options()
+
+                    options = sim.ContingencyAnalysisOptions(
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                        use_provided_flows=False,
+                        Pf=None,
+                        pf_options=pf_options)
+
+                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
+
+                    self.session.run(drv,
+                                     post_func=self.post_contingency_analysis,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
-                    use_provided_flows = False
-                    Pf = None
-                    Pf_hvdc = None
+                    warning_msg('Another contingency analysis is being executed now...')
 
-                distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack,
-                                                         use_provided_flows=use_provided_flows,
-                                                         Pf=Pf)
-
-                drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
-
-                self.session.run(drv,
-                                 post_func=self.post_contingency_analysis,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
             else:
-                warning_msg('Another contingency analysis is being executed now...')
+                warning_msg('There are no contingency groups declared...')
         else:
             pass
 
@@ -2963,25 +3073,11 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
                 QtGui.QGuiApplication.processEvents()
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    if results.S.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
-                                                 Sf=np.abs(results.Sf).max(axis=1),
-                                                 voltages=results.voltage.max(axis=0),
-                                                 loadings=np.abs(results.loading).max(axis=1),
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
-                    else:
-                        info_msg('Cannot colour because there are no branches :/')
 
                 self.update_available_results()
-                self.colour_now()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no contingency analysis results.')
 
@@ -2995,44 +3091,37 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if self.valid_time_series():
-                if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysisTS_run):
+            if len(self.circuit.contingency_groups) > 0:
 
-                    self.add_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
+                if self.valid_time_series():
+                    if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysisTS_run):
 
-                    self.LOCK()
+                        self.add_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
-                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
-                        if pf_results is not None:
-                            Pf = pf_results.Sf.real
-                            Pf_hvdc = pf_results.hvdc_Pf.real
-                            use_provided_flows = True
-                        else:
-                            warning_msg('There were no power flow values available. Linear flows will be used.')
-                            use_provided_flows = False
-                            Pf_hvdc = None
-                            Pf = None
+                        self.LOCK()
+
+                        pf_options = self.get_selected_power_flow_options()
+
+                        options = sim.ContingencyAnalysisOptions(
+                            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                            use_provided_flows=False,
+                            Pf=None,
+                            pf_options=pf_options)
+
+                        drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
+
+                        self.session.run(drv,
+                                         post_func=self.post_contingency_analysis_ts,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
                     else:
-                        use_provided_flows = False
-                        Pf_hvdc = None
-                        Pf = None
-
-                    options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
-                        use_provided_flows=use_provided_flows,
-                        Pf=Pf)
-
-                    drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
-
-                    self.session.run(drv,
-                                     post_func=self.post_contingency_analysis_ts,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                        warning_msg('Another LODF is being executed now...')
                 else:
-                    warning_msg('Another LODF is being executed now...')
+                    warning_msg('There are no time series...')
+
             else:
-                warning_msg('There are no time series...')
+                warning_msg('There are no contingency groups declared...')
+
         else:
             pass
 
@@ -3052,25 +3141,10 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Colouring LODF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    if results.worst_flows.shape[0] > 0:
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
-                                                 Sf=np.abs(results.worst_flows).max(axis=0),
-                                                 voltages=np.ones(len(results.bus_names), dtype=complex),
-                                                 loadings=np.abs(results.worst_loading).max(axis=0),
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
-                    else:
-                        info_msg('Cannot colour because there are no branches :/')
-
                 self.update_available_results()
-                self.colour_now()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no LODF results.')
 
@@ -3088,9 +3162,9 @@ class MainGUI(QMainWindow):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
-                max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
+                max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -3182,7 +3256,7 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
-                self.colour_now()
+                self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no ATC results.')
 
@@ -3202,10 +3276,10 @@ class MainGUI(QMainWindow):
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
                     threshold = self.ui.atcThresholdSpinBox.value()
-                    max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
+                    max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                     if not compatible_areas:
                         return
@@ -3311,7 +3385,7 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
-                self.colour_now()
+                self.colour_schematic()
             else:
                 error_msg('Something went wrong, There are no ATC time series results.')
 
@@ -3344,7 +3418,7 @@ class MainGUI(QMainWindow):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                         if compatible_areas:
                             idx_from = [i for i, bus in lst_from]
@@ -3488,20 +3562,11 @@ class MainGUI(QMainWindow):
 
             if results.voltages is not None:
                 if results.voltages.shape[0] > 0:
-                    if self.ui.draw_schematic_checkBox.isChecked():
-                        viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=results.Sbus[-1, :],
-                                                 Sf=results.Sf[-1, :],
-                                                 voltages=results.voltages[-1, :],
-                                                 loadings=results.loading[-1, :],
-                                                 types=results.bus_types,
-                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
-                                                 )
+
                     self.update_available_results()
+
+                    if self.ui.draw_schematic_checkBox.isChecked():
+                        self.colour_schematic()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
@@ -3575,26 +3640,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.TimeSeries_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = results.voltage.max(axis=0)
-                loading = np.abs(results.loading).max(axis=0)
-                Sbranch = results.Sf.max(axis=0)
-                Sbus = results.S.max(axis=0)
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=Sbus,
-                                         Sf=Sbranch,
-                                         voltages=voltage,
-                                         loadings=loading,
-                                         types=results.bus_types,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         else:
             warning_msg('No results for the time series simulation.')
@@ -3667,26 +3716,10 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.ClusteringTimeSeries_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = results.voltage.max(axis=0)
-                loading = np.abs(results.loading).max(axis=0)
-                Sbranch = results.Sf.max(axis=0)
-                Sbus = results.S.max(axis=0)
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=Sbus,
-                                         Sf=Sbranch,
-                                         voltages=voltage,
-                                         loadings=loading,
-                                         types=results.bus_types,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         else:
             warning_msg('No results for the clustering time series simulation.')
@@ -3751,20 +3784,11 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.StochasticPowerFlow)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         Sf=results.sbranch,
-                                         types=results.bus_types,
-                                         Sbus=None,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
             self.update_available_results()
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+
 
         else:
             pass
@@ -3867,27 +3891,15 @@ class MainGUI(QMainWindow):
             # pick the results at the designated cascade step
             results = results.events[idx].pf_results  # StochasticPowerFlowResults object
 
+            # Update results
+            self.update_available_results()
+
             # print grid
             if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         Sf=results.sbranch,
-                                         Sbus=None,
-                                         failed_br_idx=br_idx,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
+                self.colour_schematic()
 
             # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(drv.get_table()))
-
-            # Update results
-            self.update_available_results()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3924,10 +3936,11 @@ class MainGUI(QMainWindow):
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                 maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+                unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
 
                 # available transfer capacity inter areas
                 if maximize_flows:
-                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
 
@@ -3941,6 +3954,8 @@ class MainGUI(QMainWindow):
                 else:
                     idx_from = None
                     idx_to = None
+                    areas_from = None
+                    areas_to = None
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3948,7 +3963,7 @@ class MainGUI(QMainWindow):
                     LODF = linear_results.LODF
                 else:
                     LODF = None
-                    if consider_contingencies:
+                    if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
                         warning_msg("To consider contingencies, the LODF matrix is required.\n"
                                     "Run a linear simulation first", "OPF time series")
                         return
@@ -3965,7 +3980,10 @@ class MainGUI(QMainWindow):
                                                       lodf_tolerance=lodf_tolerance,
                                                       maximize_flows=maximize_flows,
                                                       area_from_bus_idx=idx_from,
-                                                      area_to_bus_idx=idx_to)
+                                                      area_to_bus_idx=idx_to,
+                                                      areas_from=areas_from,
+                                                      areas_to=areas_to,
+                                                      unit_commitment=unit_commitment)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3997,31 +4015,17 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPF_run)
 
             if results.converged:
+                self.update_available_results()
 
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             voltages=results.voltage,
-                                             loadings=results.loading,
-                                             types=results.bus_types,
-                                             Sf=results.Sf,
-                                             St=results.St,
-                                             Sbus=results.Sbus,
-                                             hvdc_Pf=results.hvdc_Pf,
-                                             hvdc_loading=results.hvdc_loading,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             theta=results.phase_shift,
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
-                self.update_available_results()
+                    self.colour_schematic()
 
             else:
 
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'
-                            'that there is a generator at the slack node.', 'OPF')
+                            'that the generator bounds are ok.\n'
+                            'You may also use the diagnostic tool (F8)', 'OPF')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4055,10 +4059,11 @@ class MainGUI(QMainWindow):
                     tolerance = 10**self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                     maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+                    unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
 
                     # available transfer capacity inter areas
                     if maximize_flows:
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
                         idx_from = np.array([i for i, bus in lst_from])
                         idx_to = np.array([i for i, bus in lst_to])
 
@@ -4072,6 +4077,8 @@ class MainGUI(QMainWindow):
                     else:
                         idx_from = None
                         idx_to = None
+                        areas_from = None
+                        areas_to = None
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -4079,7 +4086,7 @@ class MainGUI(QMainWindow):
                         LODF = linear_results.LODF
                     else:
                         LODF = None
-                        if consider_contingencies:
+                        if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
                             warning_msg("To consider contingencies, the LODF matrix is required.\n"
                                         "Run a linear simulation first", "OPF time series")
                             return
@@ -4096,7 +4103,10 @@ class MainGUI(QMainWindow):
                                                           lodf_tolerance=lodf_tolerance,
                                                           maximize_flows=maximize_flows,
                                                           area_from_bus_idx=idx_from,
-                                                          area_to_bus_idx=idx_to
+                                                          area_to_bus_idx=idx_to,
+                                                          areas_from=areas_from,
+                                                          areas_to=areas_to,
+                                                          unit_commitment=unit_commitment
                                                           )
 
                     start = self.ui.profile_start_slider.value()
@@ -4108,6 +4118,7 @@ class MainGUI(QMainWindow):
                                                          options=options,
                                                          start_=start,
                                                          end_=end)
+                    drv.engine = self.get_preferred_engine()
 
                     self.session.run(drv,
                                      post_func=self.post_opf_time_series,
@@ -4140,32 +4151,11 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPFTimeSeries_run)
 
             if results is not None:
-                if self.ui.draw_schematic_checkBox.isChecked():
-
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=results.Sbus[0, :],
-                                             Sf=results.Sf[0, :],
-                                             St=results.St[0, :],
-                                             voltages=results.voltage[0, :],
-                                             loadings=results.loading[0, :],
-                                             types=results.bus_types,
-                                             losses=None,
-                                             hvdc_Pf=results.hvdc_Pf[0, :],
-                                             hvdc_losses=None,
-                                             hvdc_loading=results.hvdc_loading[0, :],
-                                             failed_br_idx=None,
-                                             loading_label='loading',
-                                             ma=None,
-                                             theta=results.phase_shift[0, :],
-                                             Beq=None,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
 
                 self.update_available_results()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    self.colour_schematic()
 
                 msg = 'OPF time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -4245,7 +4235,7 @@ class MainGUI(QMainWindow):
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -4278,8 +4268,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4300,6 +4290,7 @@ class MainGUI(QMainWindow):
 
                 trm = self.ui.trmSpinBox.value()
                 ntc_load_rule = self.ui.ntcLoadRuleSpinBox.value() / 100.0
+                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
                 n1_consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
@@ -4314,7 +4305,7 @@ class MainGUI(QMainWindow):
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
-                    sensitivity_mode=mode,
+                    transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
                     with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
@@ -4323,6 +4314,7 @@ class MainGUI(QMainWindow):
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
+                    loading_threshold_to_report=loading_threshold_to_report,
                     trm=trm,
                     ntc_load_rule=ntc_load_rule,
                     n1_consideration=n1_consideration)
@@ -4357,30 +4349,10 @@ class MainGUI(QMainWindow):
         if results is not None:
 
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+            self.update_available_results()
 
             if self.ui.draw_schematic_checkBox.isChecked():
-
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=results.Sbus,
-                                         Sf=results.Sf,
-                                         St=-results.Sf,
-                                         voltages=results.voltage,
-                                         loadings=results.loading,
-                                         types=results.bus_types,
-                                         losses=results.losses,
-                                         hvdc_loading=results.hvdc_loading,
-                                         hvdc_Pf=results.hvdc_Pf,
-                                         hvdc_losses=None,
-                                         ma=None,
-                                         theta=results.phase_shift,
-                                         Beq=None,
-                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                         max_bus_width=self.ui.max_node_size_spinBox.value()
-                                         )
-            self.update_available_results()
+                self.colour_schematic()
 
         if drv.logger is not None:
             if len(drv.logger) > 0:
@@ -4402,7 +4374,7 @@ class MainGUI(QMainWindow):
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
 
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -4435,8 +4407,8 @@ class MainGUI(QMainWindow):
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityRadioButton.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaRadioButton.isChecked()
+                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
+                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
@@ -4456,7 +4428,7 @@ class MainGUI(QMainWindow):
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
                 trm = self.ui.trmSpinBox.value()
-                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
                 ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
                 n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
 
@@ -4472,7 +4444,7 @@ class MainGUI(QMainWindow):
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
-                    sensitivity_mode=mode,
+                    transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
                     with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
@@ -4482,7 +4454,7 @@ class MainGUI(QMainWindow):
                     consider_gen_contingencies=consider_gen_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
                     trm=trm,
-                    max_report_elements=nTopContingencies,
+                    loading_threshold_to_report=loading_threshold_to_report,
                     ntc_load_rule=ntcLoadRule,
                     n1_consideration=n1Consideration)
 
@@ -4531,6 +4503,8 @@ class MainGUI(QMainWindow):
 
             if results is not None:
                 self.update_available_results()
+
+                self.colour_schematic()
 
                 msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -4984,7 +4958,9 @@ class MainGUI(QMainWindow):
                  SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',}
 
         self.ui.results_treeView.setModel(get_tree_model(d, 'Results', icons=icons))
-        self.ui.available_results_to_color_comboBox.setModel(get_list_model(lst))
+        mdl = get_list_model(lst)
+        self.ui.available_results_to_color_comboBox.setModel(mdl)
+        self.ui.available_results_to_color_map_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
 
         if len(lst) > 1 or max_steps > 0:
@@ -5012,8 +4988,15 @@ class MainGUI(QMainWindow):
         self.available_results_dict = dict()
         self.ui.resultsTableView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
-        self.ui.simulation_results_step_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
+
+        self.ui.schematic_step_label.setText("")
+        self.ui.simulation_results_step_slider.setMinimum(0)
+        self.ui.simulation_results_step_slider.setMaximum(0)
+
+        self.ui.map_time_label.setText("")
+        self.ui.map_time_horizontalSlider.setMinimum(0)
+        self.ui.map_time_horizontalSlider.setMaximum(0)
 
         self.ui.catalogueTableView.setModel(None)
 
@@ -5030,269 +5013,262 @@ class MainGUI(QMainWindow):
 
         self.ui.units_label.setText("")
 
-    def colour_now(self, html=False):
+    def grid_colour_function(self, plot_function, current_study, current_step):
+
+        use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
+        min_branch_width = self.ui.min_branch_size_spinBox.value()
+        max_branch_width = self.ui.max_branch_size_spinBox.value()
+        min_bus_width = self.ui.min_node_size_spinBox.value()
+        max_bus_width = self.ui.max_node_size_spinBox.value()
+        cmap_text = self.ui.palette_comboBox.currentText()
+
+        cmap = self.cmap_dict[cmap_text]
+
+        if current_study == sim.PowerFlowDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.Sbus,
+                                 Sf=results.Sf,
+                                 St=results.St,
+                                 voltages=results.voltage,
+                                 loadings=np.abs(results.loading),
+                                 types=results.bus_types,
+                                 losses=results.losses,
+                                 failed_br_idx=None,
+                                 hvdc_Pf=results.hvdc_Pf,
+                                 hvdc_Pt=results.hvdc_Pt,
+                                 hvdc_losses=results.hvdc_losses,
+                                 hvdc_loading=results.hvdc_loading,
+                                 use_flow_based_width=use_flow_based_width,
+                                 ma=results.tap_module,
+                                 theta=results.theta,
+                                 Beq=results.Beq,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.TimeSeries.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.S[current_step, :],
+                                 Sf=results.Sf[current_step, :],
+                                 St=results.St[current_step, :],
+                                 voltages=results.voltage[current_step, :],
+                                 loadings=np.abs(results.loading[current_step, :]),
+                                 types=results.bus_types,
+                                 losses=results.losses[current_step, :],
+                                 failed_br_idx=None,
+                                 hvdc_Pf=results.hvdc_Pf[current_step, :],
+                                 hvdc_Pt=results.hvdc_Pt[current_step, :],
+                                 hvdc_losses=results.hvdc_losses[current_step, :],
+                                 hvdc_loading=results.hvdc_loading[current_step, :],
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.TimeSeriesClustering.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringTimeSeries_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.S[current_step, :],
+                                 Sf=results.Sf[current_step, :],
+                                 St=results.St[current_step, :],
+                                 voltages=results.voltage[current_step, :],
+                                 loadings=np.abs(results.loading[current_step, :]),
+                                 types=results.bus_types,
+                                 losses=results.losses[current_step, :],
+                                 failed_br_idx=None,
+                                 hvdc_Pf=results.hvdc_Pf[current_step, :],
+                                 hvdc_Pt=results.hvdc_Pt[current_step, :],
+                                 hvdc_losses=results.hvdc_losses[current_step, :],
+                                 hvdc_loading=results.hvdc_loading[current_step, :],
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.Sbus[current_step, :],
+                                 Sf=results.Sf[current_step, :],
+                                 voltages=results.voltages[current_step, :],
+                                 loadings=np.abs(results.loading[current_step, :]),
+                                 types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.StochasticPowerFlow)
+
+            return plot_function(circuit=self.circuit,
+                                 voltages=results.V_points[current_step, :],
+                                 loadings=np.abs(results.loading_points[current_step, :]),
+                                 Sf=results.Sbr_points[current_step, :],
+                                 types=results.bus_types,
+                                 Sbus=results.S_points[current_step, :],
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.ShortCircuitDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.Sbus,
+                                 Sf=results.Sf,
+                                 voltages=results.voltage,
+                                 types=results.bus_types,
+                                 loadings=results.loading,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.OptimalPowerFlow.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+
+            return plot_function(circuit=self.circuit,
+                                 voltages=results.voltage,
+                                 loadings=results.loading,
+                                 types=results.bus_types,
+                                 Sf=results.Sf,
+                                 Sbus=results.Sbus,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.OptimalPowerFlowTimeSeries.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.Sbus[current_step, :],
+                                 Sf=results.Sf[current_step, :],
+                                 voltages=results.voltage[current_step, :],
+                                 loadings=np.abs(results.loading[current_step, :]),
+                                 types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.LinearAnalysisDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
+            voltage = np.ones(self.circuit.get_bus_number())
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.Sbus,
+                                 Sf=results.Sf,
+                                 St=-results.Sf,
+                                 voltages=voltage,
+                                 loadings=results.loading,
+                                 types=results.bus_types,
+                                 loading_label='Loading',
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.LinearAnalysisTimeSeries.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.S[current_step],
+                                 Sf=results.Sf[current_step],
+                                 voltages=results.voltage[current_step],
+                                 loadings=np.abs(results.loading[current_step]),
+                                 types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.S[current_step, :],
+                                 Sf=results.Sf[current_step, :],
+                                 voltages=results.voltage[current_step, :],
+                                 loadings=np.abs(results.loading[current_step, :]),
+                                 types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
+
+            return plot_function(circuit=self.circuit,
+                                 Sbus=results.S[current_step, :],
+                                 Sf=results.worst_flows[current_step, :],
+                                 voltages=np.ones(results.nbus, dtype=complex),
+                                 loadings=np.abs(results.worst_loading[current_step]),
+                                 types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == 'Transient stability':
+            raise Exception('Not implemented :(')
+
+        else:
+           raise Exception('<' + current_study + '> Not implemented :(')
+
+    def colour_schematic(self):
         """
         Color the grid now
         """
 
-        if html:
-            plot_function = viz.plot_html_map
-            k = len(self.files_to_delete_at_exit)
-            file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
-        else:
-
-            if not self.ui.draw_schematic_checkBox.isChecked():
-                # The schematic drawing is disabled
-                return None
-
-            plot_function = viz.colour_the_schematic
-            file_name = ''
+        if not self.ui.draw_schematic_checkBox.isChecked():
+            # The schematic drawing is disabled
+            return None
 
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
-
-            current_study = self.ui.available_results_to_color_comboBox.currentText()
-            current_step = self.ui.simulation_results_step_comboBox.currentIndex()
-            use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
-            min_branch_width = self.ui.min_branch_size_spinBox.value()
-            max_branch_width = self.ui.max_branch_size_spinBox.value()
-            min_bus_width = self.ui.min_node_size_spinBox.value()
-            max_bus_width = self.ui.max_node_size_spinBox.value()
-
-            if current_study == sim.PowerFlowDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.Sbus,
-                              Sf=results.Sf,
-                              St=results.St,
-                              voltages=results.voltage,
-                              loadings=np.abs(results.loading),
-                              types=results.bus_types,
-                              losses=results.losses,
-                              failed_br_idx=None,
-                              hvdc_Pf=results.hvdc_Pf,
-                              hvdc_Pt=results.hvdc_Pt,
-                              hvdc_losses=results.hvdc_losses,
-                              hvdc_loading=results.hvdc_loading,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.TimeSeries.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.S[current_step, :],
-                              Sf=results.Sf[current_step, :],
-                              St=results.St[current_step, :],
-                              voltages=results.voltage[current_step, :],
-                              loadings=np.abs(results.loading[current_step, :]),
-                              types=results.bus_types,
-                              losses=results.losses[current_step, :],
-                              failed_br_idx=None,
-                              hvdc_Pf=results.hvdc_Pf[current_step, :],
-                              hvdc_Pt=results.hvdc_Pt[current_step, :],
-                              hvdc_losses=results.hvdc_losses[current_step, :],
-                              hvdc_loading=results.hvdc_loading[current_step, :],
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.TimeSeriesClustering.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringTimeSeries_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.S[current_step, :],
-                              Sf=results.Sf[current_step, :],
-                              St=results.St[current_step, :],
-                              voltages=results.voltage[current_step, :],
-                              loadings=np.abs(results.loading[current_step, :]),
-                              types=results.bus_types,
-                              losses=results.losses[current_step, :],
-                              failed_br_idx=None,
-                              hvdc_Pf=results.hvdc_Pf[current_step, :],
-                              hvdc_Pt=results.hvdc_Pt[current_step, :],
-                              hvdc_losses=results.hvdc_losses[current_step, :],
-                              hvdc_loading=results.hvdc_loading[current_step, :],
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.ContinuationPowerFlowDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.Sbus[current_step, :],
-                              Sf=results.Sf[current_step, :],
-                              voltages=results.voltages[current_step, :],
-                              loadings=np.abs(results.loading[current_step, :]),
-                              types=results.bus_types,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.StochasticPowerFlowDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.StochasticPowerFlow)
-
-                plot_function(circuit=self.circuit,
-                              voltages=results.V_points[current_step, :],
-                              loadings=np.abs(results.loading_points[current_step, :]),
-                              Sf=results.Sbr_points[current_step, :],
-                              types=results.bus_types,
-                              Sbus=results.S_points[current_step, :],
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.ShortCircuitDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.Sbus,
-                              Sf=results.Sf,
-                              voltages=results.voltage,
-                              types=results.bus_types,
-                              loadings=results.loading,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.OptimalPowerFlow.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
-
-                plot_function(circuit=self.circuit,
-                              voltages=results.voltage,
-                              loadings=results.loading,
-                              types=results.bus_types,
-                              Sf=results.Sf,
-                              Sbus=results.Sbus,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.OptimalPowerFlowTimeSeries.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.Sbus[current_step, :],
-                              Sf=results.Sf[current_step, :],
-                              voltages=results.voltage[current_step, :],
-                              loadings=np.abs(results.loading[current_step, :]),
-                              types=results.bus_types,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.LinearAnalysisDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
-                voltage = np.ones(self.circuit.get_bus_number())
-
-                plot_function(circuit=self.circuit,
-                              Sbus=results.Sbus,
-                              Sf=results.Sf,
-                              St=-results.Sf,
-                              voltages=voltage,
-                              loadings=results.loading,
-                              types=results.bus_types,
-                              loading_label='Loading',
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.LinearAnalysisTimeSeries.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
-                plot_function(circuit=self.circuit,
-                              Sbus=results.S[current_step],
-                              Sf=results.Sf[current_step],
-                              voltages=results.voltage[current_step],
-                              loadings=np.abs(results.loading[current_step]),
-                              types=results.bus_types,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.ContingencyAnalysisDriver.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
-                plot_function(circuit=self.circuit,
-                              Sbus=results.S[current_step, :],
-                              Sf=results.Sf[:, current_step],
-                              voltages=results.voltage[current_step, :],
-                              loadings=np.abs(results.loading[:, current_step]),
-                              types=results.bus_types,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == sim.ContingencyAnalysisTimeSeries.name:
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
-                plot_function(circuit=self.circuit,
-                              Sbus=results.S[current_step, :],
-                              Sf=results.worst_flows[current_step, :],
-                              voltages=np.ones(len(results.names), dtype=complex),
-                              loadings=np.abs(results.worst_loading[current_step]),
-                              types=results.bus_types,
-                              use_flow_based_width=use_flow_based_width,
-                              min_branch_width=min_branch_width,
-                              max_branch_width=max_branch_width,
-                              min_bus_width=min_bus_width,
-                              max_bus_width=max_bus_width,
-                              file_name=file_name)
-
-            elif current_study == 'Transient stability':
-                raise Exception('Not implemented :(')
-
-            if html:
-
-                if qt_web_engine_available:
-
-                    self.files_to_delete_at_exit.append(file_name)
-                    dialogue = GISWindow(external_file_path=file_name)
-                    dialogue.resize(int(1.61 * 600.0), 600)
-                    self.gis_dialogues.append(dialogue)
-                    dialogue.show()
-                else:
-                    # open in the web browser
-                    webbrowser.open('file://' + file_name)
+            self.grid_colour_function(plot_function=viz.colour_the_schematic,
+                                      current_study=self.ui.available_results_to_color_comboBox.currentText(),
+                                      current_step=self.ui.simulation_results_step_slider.value())
 
     def colour_next_simulation_step(self):
         """
         Next colour step
         """
-        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
-        count = self.ui.simulation_results_step_comboBox.count()
+        current_step = self.ui.simulation_results_step_slider.value()
+        count = self.ui.simulation_results_step_slider.maximum() + 1
 
         if count > 0:
             nxt = current_step + 1
@@ -5300,16 +5276,16 @@ class MainGUI(QMainWindow):
             if nxt >= count:
                 nxt = count - 1
 
-            self.ui.simulation_results_step_comboBox.setCurrentIndex(nxt)
+            self.ui.simulation_results_step_slider.setValue(nxt)
 
-            self.colour_now()
+            self.colour_schematic()
 
     def colour_previous_simulation_step(self):
         """
         Prev colour step
         """
-        current_step = self.ui.simulation_results_step_comboBox.currentIndex()
-        count = self.ui.simulation_results_step_comboBox.count()
+        current_step = self.ui.simulation_results_step_slider.value()
+        count = self.ui.simulation_results_step_slider.maximum() + 1
 
         if count > 0:
             prv = current_step - 1
@@ -5317,9 +5293,43 @@ class MainGUI(QMainWindow):
             if prv < 0:
                 prv = 0
 
-            self.ui.simulation_results_step_comboBox.setCurrentIndex(prv)
+            self.ui.simulation_results_step_slider.setValue(prv)
 
-            self.colour_now()
+            self.colour_schematic()
+
+    def colour_next_simulation_step_map(self):
+        """
+        Next colour step
+        """
+        current_step = self.ui.map_time_horizontalSlider.value()
+        count = self.ui.map_time_horizontalSlider.maximum() + 1
+
+        if count > 0:
+            nxt = current_step + 1
+
+            if nxt >= count:
+                nxt = count - 1
+
+            self.ui.map_time_horizontalSlider.setValue(nxt)
+
+            self.colour_map()
+
+    def colour_previous_simulation_step_map(self):
+        """
+        Prev colour step
+        """
+        current_step = self.ui.map_time_horizontalSlider.value()
+        count = self.ui.map_time_horizontalSlider.maximum() + 1
+
+        if count > 0:
+            prv = current_step - 1
+
+            if prv < 0:
+                prv = 0
+
+            self.ui.map_time_horizontalSlider.setValue(prv)
+
+            self.colour_map()
 
     def update_available_steps_to_color(self):
         """
@@ -5328,11 +5338,56 @@ class MainGUI(QMainWindow):
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
             current_study = self.ui.available_results_to_color_comboBox.currentText()
 
-            lst = self.available_results_steps_dict[current_study]
+            self.schematic_list_steps = self.available_results_steps_dict[current_study]
 
-            mdl = get_list_model(lst)
+            if len(self.schematic_list_steps) > 0:
+                self.ui.simulation_results_step_slider.setMinimum(0)
+                self.ui.simulation_results_step_slider.setMaximum(len(self.schematic_list_steps) - 1)
+                self.ui.simulation_results_step_slider.setSliderPosition(0)
+                self.ui.schematic_step_label.setText(self.schematic_list_steps[0])
+            else:
+                self.ui.simulation_results_step_slider.setMinimum(0)
+                self.ui.simulation_results_step_slider.setMaximum(0)
+                self.ui.simulation_results_step_slider.setSliderPosition(0)
+                self.ui.schematic_step_label.setText("No steps")
 
-            self.ui.simulation_results_step_comboBox.setModel(mdl)
+    def update_available_steps_to_color_map(self):
+        """
+        Update the available simulation steps in the combo box
+        """
+        if self.ui.available_results_to_color_map_comboBox.currentIndex() > -1:
+            current_study = self.ui.available_results_to_color_map_comboBox.currentText()
+
+            self.map_list_steps = self.available_results_steps_dict[current_study]
+
+            if len(self.map_list_steps) > 0:
+                self.ui.map_time_horizontalSlider.setMinimum(0)
+                self.ui.map_time_horizontalSlider.setMaximum(len(self.map_list_steps) - 1)
+                self.ui.map_time_horizontalSlider.setSliderPosition(0)
+                self.ui.map_time_label.setText(self.map_list_steps[0])
+            else:
+                self.ui.map_time_horizontalSlider.setMinimum(0)
+                self.ui.map_time_horizontalSlider.setMaximum(0)
+                self.ui.map_time_horizontalSlider.setSliderPosition(0)
+                self.ui.map_time_label.setText("No steps")
+
+    def map_time_slider_change(self):
+        """
+
+        :return:
+        """
+        idx = self.ui.map_time_horizontalSlider.value()
+        if idx > -1:
+            self.ui.map_time_label.setText(self.map_list_steps[idx])
+
+    def schematic_time_slider_change(self):
+        idx = self.ui.simulation_results_step_slider.value()
+
+        if len(self.schematic_list_steps):
+            if idx > -1:
+                self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
+        else:
+            self.ui.schematic_step_label.setText("No steps")
 
     def results_tree_view_click(self, index):
         """
@@ -6004,41 +6059,6 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def display_filter(self, elements):
-        """
-        Display a list of elements that comes from a filter
-        :param elements:
-        """
-        if len(elements) > 0:
-
-            elm = elements[0]
-
-            dictionary_of_lists = dict()
-            if elm.device_type == DeviceType.BusDevice:
-                dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
-                                       DeviceType.ZoneDevice.value: self.circuit.zones,
-                                       DeviceType.SubstationDevice.value: self.circuit.substations,
-                                       DeviceType.CountryDevice.value: self.circuit.countries}
-
-            if elm.device_type in [DeviceType.BranchDevice, DeviceType.SequenceLineDevice,
-                                   DeviceType.UnderGroundLineDevice]:
-
-                mdl = BranchObjectModel(elements, elm.editable_headers,
-                                        parent=self.ui.dataStructureTableView, editable=True,
-                                        non_editable_attributes=elm.non_editable_attributes)
-            else:
-
-                mdl = ObjectsModel(elements, elm.editable_headers,
-                                   parent=self.ui.dataStructureTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   dictionary_of_lists=dictionary_of_lists)
-
-            self.ui.dataStructureTableView.setModel(mdl)
-
-        else:
-
-            self.ui.dataStructureTableView.setModel(None)
-
     def smart_search(self):
         """
         Filter
@@ -6356,8 +6376,6 @@ class MainGUI(QMainWindow):
 
         return logger
 
-
-
     def correct_branch_monitoring(self, max_loading=1.0):
         """
         The NTC optimization and other algorithms will not work if we have overloaded branches in DC monitored
@@ -6384,27 +6402,39 @@ class MainGUI(QMainWindow):
         if model is not None:
 
             if elm_type == DeviceType.SubstationDevice.value:
-                self.circuit.add_substation(Substation('Default'))
+                self.circuit.add_substation(dev.Substation('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.ZoneDevice.value:
-                self.circuit.add_zone(Zone('Default'))
+                self.circuit.add_zone(dev.Zone('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.AreaDevice.value:
-                self.circuit.add_area(Area('Default'))
+                self.circuit.add_area(dev.Area('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.CountryDevice.value:
-                self.circuit.add_country(Country('Default'))
+                self.circuit.add_country(dev.Country('Default'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
-                self.circuit.add_bus(Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
-                                         area=self.circuit.areas[0],
-                                         zone=self.circuit.zones[0],
-                                         substation=self.circuit.substations[0],
-                                         country=self.circuit.countries[0]))
+                self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
+                                             area=self.circuit.areas[0],
+                                             zone=self.circuit.zones[0],
+                                             substation=self.circuit.substations[0],
+                                             country=self.circuit.countries[0]))
+
+            elif elm_type == DeviceType.ContingencyGroupDevice.value:
+                group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
+                self.circuit.add_contingency_group(group)
+
+            elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+                group = dev.InvestmentsGroup(name="Investments group " + str(len(self.circuit.contingency_groups) + 1))
+                self.circuit.add_investments_group(group)
+
+            elif elm_type == DeviceType.Technology.value:
+                tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
+                self.circuit.add_technology(tech)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
@@ -6569,6 +6599,30 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():
                     lst.append((k, bus))
+        return lst
+
+    def get_selected_contingency_devices(self) -> List[dev.EditableDevice]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[dev.EditableDevice] = list()
+        for k, elm in enumerate(self.circuit.get_contingency_devices()):
+            if elm.graphic_obj is not None:
+                if elm.graphic_obj.isSelected():
+                    lst.append(elm)
+        return lst
+
+    def get_selected_investment_devices(self) -> List[dev.EditableDevice]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[dev.EditableDevice] = list()
+        for k, elm in enumerate(self.circuit.get_investment_devices()):
+            if elm.graphic_obj is not None:
+                if elm.graphic_obj.isSelected():
+                    lst.append(elm)
         return lst
 
     def delete_selected_from_the_schematic(self):
@@ -7004,7 +7058,7 @@ class MainGUI(QMainWindow):
         lst_to = self.circuit.get_areas_buses(areas_to)
         lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
-        return True, lst_from, lst_to, lst_br, lst_br_hvdc
+        return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
 
     @property
     def numerical_circuit(self):
@@ -7127,54 +7181,6 @@ class MainGUI(QMainWindow):
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
 
-    def auto_generate_contingencies(self):
-        """
-        Automatically generate the contingency plan from the selection
-        :return:
-        """
-
-        # filters
-        branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
-        injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
-
-        branch_types = [self.contingency_branch_types[i] for i in branch_indices]
-        injection_types = [self.contingency_injection_types[i] for i in injection_indices]
-
-        # generate the contingency plan
-        self.contingency_plan = generate_automatic_contingency_plan(grid=self.circuit,
-                                                                    k=self.ui.contingencyNspinBox.value(),
-                                                                    filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
-                                                                    vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
-                                                                    vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
-                                                                    branch_types=branch_types,
-                                                                    filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
-                                                                    contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
-                                                                    pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),
-                                                                    pmax=self.ui.contingencyFilterInjectionsByPowerMaxSpinBox.value(),
-                                                                    injection_types=injection_types)
-
-        model = get_contingency_planner_model(self.circuit, self.contingency_plan)
-
-        self.ui.contingencyPlannerTreeView.setModel(model)
-        self.ui.contingencyPlannerTreeView.expandToDepth(2)
-
-    def new_contingency_plan(self):
-        """
-        New contingency plan routine
-        :return:
-        """
-        ok = yes_no_question("Do you want to clear the contingency plan and create a new one?", "New contingency plan")
-
-        if ok:
-            self.contingency_plan = ContingencyPlan()
-            self.ui.contingencyPlannerTreeView.setModel(None)
-
-    def delete_contingency_item(self):
-        pass
-
-    def add_contingency_from_selection(self):
-        pass
-
     def structure_analysis_plot(self):
 
         if len(self.ui.dataStructuresListView.selectedIndexes()) > 0:
@@ -7183,7 +7189,7 @@ class MainGUI(QMainWindow):
             object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
             plt.show()
         else:
-            self.msg('Select a data structure')
+            info_msg('Select a data structure')
 
     def import_profiles_from_models(self):
         """
@@ -7222,6 +7228,144 @@ class MainGUI(QMainWindow):
                         "that you prefer.\n\n"
                         "Use the 'Create profiles button'.")
 
+    def import_contingencies(self):
+        """
+        Open file to import contingencies file
+        """
+
+        files_types = "Formats (*.json)"
+
+        # call dialog to select the file
+
+        options = QFileDialog.Options()
+        if self.use_native_dialogues:
+            options |= QFileDialog.DontUseNativeDialog
+
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
+                                                                          caption='Open file',
+                                                                          dir=self.project_directory,
+                                                                          filter=files_types,
+                                                                          options=options)
+
+        if len(filenames) == 1:
+            contingencies = import_contingencies_from_json(filenames[0])
+            logger = self.circuit.set_contingencies(contingencies=contingencies)
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Contingencies import', logger)
+                dlg.exec_()
+
+    def initialize_contingencies(self):
+        """
+        Launch the contingency planner to initialize the contingencies
+        :return:
+        """
+        self.contingency_planner_dialogue = ContingencyPlannerGUI(parent=self, grid=self.circuit)
+        # self.contingency_planner_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        self.contingency_planner_dialogue.exec_()
+
+        # gather results
+        if self.contingency_planner_dialogue.generated_results:
+            self.circuit.contingency_groups = self.contingency_planner_dialogue.contingency_groups
+            self.circuit.contingencies = self.contingency_planner_dialogue.contingencies
+
+    def add_selected_to_contingency(self):
+        """
+        Add contingencies from the schematic selection
+        """
+        if len(self.circuit.buses) > 0:
+
+            # get the selected buses
+            selected = self.get_selected_contingency_devices()
+
+            group = dev.ContingencyGroup(idtag=None,
+                                         name="Contingency " + str(len(self.circuit.contingency_groups)),
+                                         category="single" if len(selected) == 1 else "multiple"
+                                         )
+            self.circuit.add_contingency_group(group)
+
+            for elm in selected:
+
+                con = dev.Contingency(device_idtag=elm.idtag,
+                                      code=elm.code,
+                                      name=elm.name,
+                                      prop="active",
+                                      value=0,
+                                      group=group)
+                self.circuit.add_contingency(con)
+
+    def export_contingencies(self):
+
+        if len(self.circuit.contingencies) > 0:
+
+            # declare the allowed file types
+            files_types = "JSON file (*.json)"
+
+            options = QFileDialog.Options()
+            if self.use_native_dialogues:
+                options |= QFileDialog.DontUseNativeDialog
+
+            # call dialog to select the file
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', '', files_types, options=options)
+
+            if not (filename.endswith('.json')):
+                filename += ".json"
+
+            if filename != "":
+                # save file
+                export_contingencies_json_file(circuit=self.circuit, file_path=filename)
+
+    def add_selected_to_investment(self):
+        """
+        Add contingencies from the schematic selection
+        """
+        if len(self.circuit.buses) > 0:
+
+            # get the selected buses
+            selected = self.get_selected_investment_devices()
+
+            group = dev.InvestmentsGroup(idtag=None,
+                                         name="Investment " + str(len(self.circuit.contingency_groups)),
+                                         category="single" if len(selected) == 1 else "multiple")
+            self.circuit.add_investments_group(group)
+
+            for elm in selected:
+
+                con = dev.Investment(device_idtag=elm.idtag,
+                                     code=elm.code,
+                                     name=elm.name,
+                                     CAPEX=0.0,
+                                     OPEX=0.0,
+                                     group=group)
+                self.circuit.add_investment(con)
+
+    def colour_map(self):
+        """
+        Draw lines
+        :return:
+        """
+
+        poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
+                                         current_study=self.ui.available_results_to_color_map_comboBox.currentText(),
+                                         current_step=self.ui.map_time_horizontalSlider.value())
+
+        # # delete the previous layer
+        # self.map_widget.DeleteLayer(self.polyline_layer_id)
+        #
+        # # draw again
+        # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
+        #                                                           map_rel=True,
+        #                                                           visible=True,
+        #                                                           delta=40,
+        #                                                           show_levels=list(range(15)),
+        #                                                           # levels at which to show the polylines
+        #                                                           name='<polyline_layer>')
+
+        self.map_widget.getLayer(self.polyline_layer_id).data = poly
+        self.map_widget.update()
+
+        # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
+
 
 def run(use_native_dialogues=False):
     """
@@ -7237,7 +7381,7 @@ def run(use_native_dialogues=False):
     # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
-    h = 710
+    h = 740
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())

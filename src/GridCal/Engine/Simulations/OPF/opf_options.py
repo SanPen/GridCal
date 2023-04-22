@@ -54,7 +54,10 @@ class OptimalPowerFlowOptions:
                  lodf_tolerance=0.001,
                  maximize_flows=False,
                  area_from_bus_idx: List = None,
-                 area_to_bus_idx: List = None):
+                 area_to_bus_idx: List = None,
+                 areas_from: List = None,
+                 areas_to: List = None,
+                 unit_commitment=False):
         """
         Optimal power flow options
         :param verbose:
@@ -105,3 +108,9 @@ class OptimalPowerFlowOptions:
         self.area_from_bus_idx = area_from_bus_idx
 
         self.area_to_bus_idx = area_to_bus_idx
+
+        self.areas_from = areas_from
+
+        self.areas_to = areas_to
+
+        self.unit_commitment = unit_commitment
