@@ -6,6 +6,15 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 4.7.0
+^^^^^^^^^^^^^^^
+
+- Massive refactor to accommodate flexible contingencies and investment objects
+- Major refactor in the short circuit study to add sequence components
+- Better integration of other calculation engines
+- Added PSSe 35 raw support
+- Overall bug fixing
+
 Version 4.5.1
 ^^^^^^^^^^^^^^^
 
