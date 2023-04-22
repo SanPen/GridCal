@@ -156,7 +156,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # apply the contingencies
             for cnt in contingencies:
 
-                # search contingency in the branches
+                # search for the contingency in the branches
                 if cnt.device_idtag in branches_dict:
                     br_idx = branches_dict[cnt.device_idtag]
 
