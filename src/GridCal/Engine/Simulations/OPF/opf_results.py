@@ -258,6 +258,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'HVDC power'
 
+        elif result_type == ResultTypes.HvdcLoading:
+            labels = self.hvdc_names
+            y = self.hvdc_loading
+            y_label = '(%)'
+            title = 'HVDC loading'
+
         elif result_type == ResultTypes.ContingencyFlowsReport:
 
             y = list()
