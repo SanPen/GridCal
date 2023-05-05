@@ -2023,7 +2023,6 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.BatteryDevice.value:
             elm = dev.Battery()
-            elements = self.circuit.get_batteries()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.ShuntDevice.value:
@@ -2049,7 +2048,6 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.UpfcDevice.value:
             elm = dev.UPFC(None, None)
-            elements = self.circuit.upfc_devices
 
         elif elm_type == DeviceType.DCLineDevice.value:
             elm = dev.DcLine(None, None)

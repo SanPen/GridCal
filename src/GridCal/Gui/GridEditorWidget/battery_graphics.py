@@ -18,6 +18,7 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
+from GridCal.Engine.Devices.battery import Battery, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import *
@@ -192,6 +193,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
+                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
