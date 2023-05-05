@@ -29,7 +29,7 @@ class CIMCircuit:
         CIM circuit constructor
         """
         self.elements = list()
-        self.elm_dict = dict()
+        self.all_objects_dict = dict()
         self.elements_by_type = dict()
 
         self.logger = logger
@@ -37,53 +37,56 @@ class CIMCircuit:
         self.text_func = text_func
         self.progress_func = progress_func
 
+        self.class_dict = {'GeneralContainer': cimdev.CimContainer,
+                           'Terminal': cimdev.Terminal,
+                           'BaseVoltage': cimdev.BaseVoltage,
+                           'TopologicalNode': cimdev.TopologicalNode,
+                           'BusbarSection': cimdev.BusbarSection,
+                           'Substation': cimdev.Substation,
+                           'ConnectivityNode': cimdev.ConnectivityNode,
+                           'OperationalLimitSet': cimdev.OperationalLimitSet,
+                           'OperationalLimitType': cimdev.OperationalLimitType,
+                           'GeographicalRegion': cimdev.GeographicalRegion,
+                           'SubGeographicalRegion': cimdev.SubGeographicalRegion,
+                           'VoltageLevel': cimdev.VoltageLevel,
+                           'CurrentLimit': cimdev.CurrentLimit,
+                           'VoltageLimit': cimdev.VoltageLimit,
+                           'EquivalentInjection': cimdev.EquivalentInjection,
+                           'EquivalentNetwork': cimdev.EquivalentNetwork,
+                           'ControlArea': cimdev.ControlArea,
+                           'Breaker': cimdev.Breaker,
+                           'Switch': cimdev.Switch,
+                           "LoadBreakSwitch": cimdev.LoadBreakSwitch,
+                           'Line': cimdev.Line,
+                           'ACLineSegment': cimdev.ACLineSegment,
+                           'PowerTransformerEnd': cimdev.PowerTransformerEnd,
+                           'PowerTransformer': cimdev.PowerTransformer,
+                           'Winding': cimdev.Winding,
+                           'EnergyConsumer': cimdev.EnergyConsumer,
+                           'ConformLoad': cimdev.ConformLoad,
+                           'NonConformLoad': cimdev.NonConformLoad,
+                           'LoadResponseCharacteristic': cimdev.LoadResponseCharacteristic,
+                           'LoadGroup': cimdev.LoadGroup,
+                           'RegulatingControl': cimdev.RegulatingControl,
+                           'RatioTapChanger': cimdev.RatioTapChanger,
+                           'GeneratingUnit': cimdev.GeneratingUnit,
+                           'SynchronousMachine': cimdev.SynchronousMachine,
+                           'HydroGenerationUnit': cimdev.HydroGenerationUnit,
+                           'HydroPowerPlant': cimdev.HydroPowerPlant,
+                           'LinearShuntCompensator': cimdev.LinearShuntCompensator,
+                           'NuclearGeneratingUnit': cimdev.NuclearGeneratingUnit,
+                           'RatioTapChangerTable': cimdev.RatioTapChangerTable,
+                           'RatioTapChangerTablePoint': cimdev.RatioTapChangerTablePoint,
+                           'ReactiveCapabilityCurve': cimdev.ReactiveCapabilityCurve,
+                           'StaticVarCompensator': cimdev.StaticVarCompensator,
+                           'TapChangerControl': cimdev.TapChangerControl,
+                           'ThermalGenerationUnit': cimdev.ThermalGenerationUnit,
+                           'WindGenerationUnit': cimdev.WindGenerationUnit,
+                           'FullModel': cimdev.FullModel,
+                           'TieFlow': cimdev.TieFlow}
+
         # classes to read, theo others are ignored
-        self.classes = ["ACLineSegment",
-                        "Analog",
-                        "BaseVoltage",
-                        "Breaker",
-                        "BusbarSection",
-                        "ConformLoad",
-                        "ConformLoadSchedule",
-                        "ConnectivityNode",
-                        "Control",
-                        "CurrentLimit",
-                        "DayType",
-                        "Disconnector",
-                        "Discrete",
-                        "EnergyConsumer",
-                        "EquivalentInjection",
-                        "EquivalentNetwork",
-                        "EquipmentContainer",
-                        "GeneratingUnit",
-                        "GeographicalRegion",
-                        "SubGeographicalRegion",
-                        "IEC61970CIMVersion",
-                        "Line",
-                        "LoadBreakSwitch",
-                        "LoadResponseCharacteristic",
-                        "Location",
-                        "Model",
-                        "OperationalLimitSet",
-                        "PerLengthSequenceImpedance",
-                        "PositionPoint",
-                        "PowerTransformer",
-                        "PowerTransformerEnd",
-                        "PSRType",
-                        "RatioTapChanger",
-                        "RegulatingControl",
-                        "Season",
-                        "SeriesCompensator",
-                        "ShuntCompensator",
-                        "Substation",
-                        "Switch",
-                        "SynchronousMachine",
-                        "Terminal",
-                        "TopologicalNode",
-                        "TransformerWinding",
-                        "VoltageLevel",
-                        "VoltageLimit"
-                        ]
+        self.classes = [key for key, va in self.class_dict.items()]
 
     def emit_text(self, val):
         if self.text_func is not None:
@@ -98,7 +101,7 @@ class CIMCircuit:
         Clear the circuit
         """
         self.elements = list()
-        self.elm_dict = dict()
+        self.all_objects_dict = dict()
         self.elements_by_type = dict()
 
     @staticmethod
@@ -144,7 +147,7 @@ class CIMCircuit:
                         if value[0] == '_':  # the value is an RFID reference
                             if hasattr(element, prop):  # if the object has the property to cross reference
 
-                                ref = self.elm_dict.get(value, None)
+                                ref = self.all_objects_dict.get(value, None)
 
                                 if ref is not None:  # if the reference was found ...
                                     setattr(element, prop, ref)  # set the referenced object in the property
@@ -161,56 +164,11 @@ class CIMCircuit:
         :return:
         """
 
-        class_dict = {'GeneralContainer': cimdev.GeneralContainer,
-                      'Terminal': cimdev.Terminal,
-                      'BaseVoltage': cimdev.BaseVoltage,
-                      'TopologicalNode': cimdev.TopologicalNode,
-                      'BusbarSection': cimdev.BusbarSection,
-                      'Substation': cimdev.Substation,
-                      'ConnectivityNode': cimdev.ConnectivityNode,
-                      'OperationalLimitSet': cimdev.OperationalLimitSet,
-                      'GeographicalRegion': cimdev.GeographicalRegion,
-                      'SubGeographicalRegion': cimdev.SubGeographicalRegion,
-                      'VoltageLevel': cimdev.VoltageLevel,
-                      'CurrentLimit': cimdev.CurrentLimit,
-                      'VoltageLimit': cimdev.VoltageLimit,
-                      'EquivalentInjection': cimdev.EquivalentInjection,
-                      'EquivalentNetwork': cimdev.EquivalentNetwork,
-                      'Breaker': cimdev.Breaker,
-                      'Switch': cimdev.Switch,
-                      "LoadBreakSwitch": cimdev.LoadBreakSwitch,
-                      'Line': cimdev.Line,
-                      'ACLineSegment': cimdev.ACLineSegment,
-                      'PowerTransformerEnd': cimdev.PowerTransformerEnd,
-                      'PowerTransformer': cimdev.PowerTransformer,
-                      'Winding': cimdev.Winding,
-                      'EnergyConsumer': cimdev.EnergyConsumer,
-                      'ConformLoad': cimdev.ConformLoad,
-                      'NonConformLoad': cimdev.NonConformLoad,
-                      'LoadResponseCharacteristic': cimdev.LoadResponseCharacteristic,
-                      'RegulatingControl': cimdev.RegulatingControl,
-                      'RatioTapChanger': cimdev.RatioTapChanger,
-                      'GeneratingUnit': cimdev.GeneratingUnit,
-                      'SynchronousMachine': cimdev.SynchronousMachine,
-                      'HydroGenerationUnit': cimdev.HydroGenerationUnit,
-                      'HydroPowerPlant': cimdev.HydroPowerPlant,
-                      'LinearShuntCompensator': cimdev.LinearShuntCompensator,
-                      'NuclearGeneratingUnit': cimdev.NuclearGeneratingUnit,
-                      'RatioTapChangerTable': cimdev.RatioTapChangerTable,
-                      'RatioTapChangerTablePoint': cimdev.RatioTapChangerTablePoint,
-                      'ReactiveCapabilityCurve': cimdev.ReactiveCapabilityCurve,
-                      'StaticVarCompensator': cimdev.StaticVarCompensator,
-                      'TapChangerControl': cimdev.TapChangerControl,
-                      'ThermalGenerationUnit': cimdev.ThermalGenerationUnit,
-                      'WindGenerationUnit': cimdev.WindGenerationUnit,
-                      'FullModel': cimdev.FullModel,
-                      'TieFlow': cimdev.TieFlow}
-
         classes = self.classes
 
         # add the classes that may be missing from the classes dict
         classes = set(classes)
-        for cls in class_dict.keys():
+        for cls in self.class_dict.keys():
             classes.add(cls)
         classes = list(classes)
 
@@ -234,11 +192,10 @@ class CIMCircuit:
                     # a recognisable object was found
 
                     if start_rec:
-
                         id = cimdev.index_find(xml_line, '"', '">').replace('#', '')
 
                         # start recording object
-                        CLS = class_dict.get(tpe, cimdev.GeneralContainer)
+                        CLS = self.class_dict.get(tpe, cimdev.CimContainer)
                         # if tpe in class_dict.keys():
                         #     CLS = class_dict[tpe]
                         # else:
@@ -251,19 +208,20 @@ class CIMCircuit:
                         # stop recording object
                         if recording:
 
-                            found_element = self.elm_dict.get(element.rfid, None)
+                            found_element = self.all_objects_dict.get(element.rdfid, None)
 
                             if found_element is not None:
                                 found_element.merge(element)
 
                             else:
-                                self.elm_dict[element.rfid] = element
+                                self.all_objects_dict[element.rdfid] = element
                                 self.elements.append(element)
 
-                            if tpe not in self.elements_by_type.keys():
-                                self.elements_by_type[tpe] = list()
+                                if tpe not in self.elements_by_type.keys():
+                                    self.elements_by_type[tpe] = list()
 
-                            self.elements_by_type[tpe].append(element)
+                                self.elements_by_type[tpe].append(element)
+
                             recording = False
 
                 else:

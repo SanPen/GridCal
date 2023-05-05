@@ -19,6 +19,7 @@ import chardet
 import pandas as pd
 from math import sqrt
 from typing import Set, Dict, List, Tuple
+from GridCal.Engine.IO.cim.cim_enums import *
 
 
 def rfid2uuid(val):
@@ -51,35 +52,40 @@ def str2num(val: str):
             return val
 
 
-class GeneralContainer:
+class CimContainer:
 
-    def __init__(self, rfid, tpe, resources=list(), class_replacements=dict()):
+    def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
         """
         General CIM object container
-        :param rfid: RFID
+        :param rdfid: RFID
         :param tpe: type of the object (class)
         """
-
-        # dictionary of properties read from the xml
-        self.properties = dict()
-
-        # dictionary of objects that reference this object
-        self.references_to_me = dict()
 
         # store the object type
         self.tpe = tpe
 
         # pick the object id
-        self.rfid = rfid
-        self.uuid = rfid2uuid(rfid)
+        self.rdfid = rdfid
+        self.uuid = rfid2uuid(rdfid)
 
-        self.class_replacements = class_replacements
-        self.resources = resources
+        self.class_replacements: Dict = class_replacements
+        self.resources: List = resources
+
+        # dictionary of properties read from the xml
+        self.parsed_properties = dict()
+
+        # dictionary of objects that reference this object
+        self.references_to_me = dict()
+
+        self.missing_references = dict()
 
         self.name = ''
+        self.shortName = ''
+        self.description = ''
+        self.energyIdentCodeEic = ''
 
     def __repr__(self):
-        return self.rfid
+        return self.rdfid
 
     def __hash__(self):
         # alternatively, return hash(repr(self))
@@ -89,9 +95,9 @@ class GeneralContainer:
         return self.__hash__() < other.__hash__()
 
     def __eq__(self, other):
-        return self.rfid == other.rfid
+        return self.rdfid == other.rdfid
 
-    def add_reference(self, obj: "GeneralContainer"):
+    def add_reference(self, obj: "CimContainer"):
         """
         Adds a categorized reference to this object
         :param obj:
@@ -129,31 +135,37 @@ class GeneralContainer:
             val = val.replace('\n', '')
 
             if prop != "" and val != "":
-                self.properties[prop] = val
+                self.parsed_properties[prop] = val
 
                 if hasattr(self, prop):
                     setattr(self, prop, str2num(val))
 
-    def merge(self, other):
+    def merge(self, other: "CimContainer", overwrite=True):
         """
         Merge the properties of this object with another
         :param other: GeneralContainer instance
+        :param overwrite: Overwrite existing values with new values
         """
-        self.properties = {**self.properties, **other.properties}
+        for prop, value in other.parsed_properties.items():
+            if overwrite:
+                self.parsed_properties[prop] = value
+            else:
+                if prop not in self.parsed_properties:
+                    self.parsed_properties[prop] = value
 
     def print(self):
         print('Type:' + self.tpe)
-        print('Id:' + self.rfid)
+        print('Id:' + self.rdfid)
 
-        for key, val in self.properties.items():
-            if type(val) == GeneralContainer:
-                for key2, val2 in val.properties.items():
+        for key, val in self.parsed_properties.items():
+            if type(val) == CimContainer:
+                for key2, val2 in val.parsed_properties.items():
                     print(key, '->', key2, ':', val2)
             else:
                 print(key, ':', val)
 
     def __str__(self):
-        return self.tpe + ':' + self.rfid
+        return self.tpe + ':' + self.rdfid
 
     def get_xml(self, level=0):
 
@@ -177,10 +189,10 @@ class GeneralContainer:
         l2 = '  ' * (level + 1)  # middle tabbing
 
         # header
-        xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.rfid + '">\n'
+        xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.rdfid + '">\n'
 
         # properties
-        for prop, value in self.properties.items():
+        for prop, value in self.parsed_properties.items():
             v = str(value).replace(' ', '_')
 
             # eventually replace the class of the property, because CIM is so well designed...
@@ -199,20 +211,63 @@ class GeneralContainer:
 
         return xml
 
-    def get_dict(self):
+    def get_dict(self) -> Dict[str, any]:
         """
         Get dictionary with the data
         :return: Dictionary
         """
-        return {'rfid': self.rfid,
+        return {'rfid': self.rdfid,
                 'uuid': self.uuid,
                 'name': self.name}
 
+    def get_all_properties(self) -> List[str]:
+        """
+        Get the list of properties of this object
+        """
+        res = list()
+        for prop_name, value in vars(self).items():
+            obj = getattr(self, prop_name)
+            T = type(obj)
+            if T not in [list, dict]:
+                res.append(prop_name)
+        return res
 
-class MonoPole(GeneralContainer):
+    def list_not_implemented_properties(self):
+        """
+        This function lists all the properties that have not been implemented for this object
+        This is possible because self.parsed_properties stores whatever it was read for this object
+        while this object may or may not have those properties implemented
+        """
+        lst = list()
+        for prop, rea_value in self.parsed_properties.items():
+            if not hasattr(self, prop):
+                lst.append(prop)
+        return lst
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def detect_circular_references(self, visited_ids=list()):
+
+        visited = [i for i in visited_ids]
+        visited.append(self.rdfid)
+
+        for prop in self.get_all_properties():
+
+            value = getattr(self, prop)
+
+            if hasattr(value, 'rdfid'):
+                if value.rdfid in visited:
+                    return True, visited
+                else:
+                    value.detect_circular_references(visited_ids=visited)
+            else:
+                pass
+
+        return False, visited
+
+
+class MonoPole(CimContainer):
+
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
     def get_topological_node(self):
         """
@@ -256,10 +311,12 @@ class MonoPole(GeneralContainer):
         return d
 
 
-class DiPole(GeneralContainer):
+class DiPole(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
+
+        self.aggregate: bool = False
 
     def get_topological_nodes(self) -> Tuple["TopologicalNode", "TopologicalNode"]:
         """
@@ -306,23 +363,26 @@ class DiPole(GeneralContainer):
         return d
 
 
-class BaseVoltage(GeneralContainer):
+class BaseVoltage(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.nominalVoltage = 0
 
 
-class Terminal(GeneralContainer):
+class Terminal(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
-        self.TopologicalNode = None
+        self.TopologicalNode: TopologicalNode = None
         self.ConductingEquipment = None  # pointer to the Bus
         self.name = ''
-        self.connected = True
+        self.phases = ''
+        self.connected: bool = True
+
+        self.sequenceNumber: int = 0
 
     def get_voltage(self):
         """
@@ -335,10 +395,10 @@ class Terminal(GeneralContainer):
             return None
 
 
-class ConnectivityNode(GeneralContainer):
+class ConnectivityNode(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.TopologicalNode = None
         self.ConnectivityNodeContainer = None
@@ -346,21 +406,33 @@ class ConnectivityNode(GeneralContainer):
         self.shortName = ''
         self.description = ''
         self.fromEndName = ''
-        self.fromEndNameTSO = ''
+        self.fromEndNameTso = ''
         self.fromEndIsoCode = ''
         self.toEndName = ''
-        self.toEndNameTSO = ''
+        self.toEndNameTso = ''
         self.toEndIsoCode = ''
         self.boundaryPoint = ''
 
 
-class TopologicalNode(GeneralContainer):
+class TopologicalNode(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.BaseVoltage = None
         self.ConnectivityNodeContainer = None
+        self.description = ''
+        self.shortName = ''
+        self.boundaryPoint = ''
+        self.fromEndIsoCode = ''
+        self.fromEndName = ''
+        self.fromEndNameTso = ''
+        self.toEndIsoCode = ''
+        self.toEndName = ''
+        self.toEndNameTso = ''
+        self.ConnectivityNodeContainer = ''
+        self.BaseVoltage = None
+        self.ResourceOwner = None
 
     def get_voltage(self):
 
@@ -393,12 +465,13 @@ class TopologicalNode(GeneralContainer):
         return d
 
 
-class BusbarSection(GeneralContainer):
+class BusbarSection(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.EquipmentContainer = None
+        self.BaseVoltage: BaseVoltage = None
 
     def get_topological_nodes(self):
         """
@@ -465,52 +538,55 @@ class BusbarSection(GeneralContainer):
         return d
 
 
-class Substation(GeneralContainer):
+class Substation(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.Region = None
 
 
-class OperationalLimitSet(GeneralContainer):
+class OperationalLimitSet(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
-        self.Terminal = None
+        self.Terminal: Terminal = None
+        self.Equipment = None
 
 
-class OperationalLimitType(GeneralContainer):
+class OperationalLimitType(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.limitType = ''
         self.direction = ''
+        self.acceptableDuration: float = 0
 
 
-class GeographicalRegion(GeneralContainer):
+class GeographicalRegion(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
 
-class SubGeographicalRegion(GeneralContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+class SubGeographicalRegion(CimContainer):
+
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.Region = None
 
 
-class VoltageLevel(GeneralContainer):
+class VoltageLevel(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.Substation = None
         self.BaseVoltage = None
@@ -518,36 +594,46 @@ class VoltageLevel(GeneralContainer):
         self.lowVoltageLimit = 0
 
 
-class VoltageLimit(GeneralContainer):
+class VoltageLimit(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
+
+        self.OperationalLimitType: OperationalLimitType = None
+        self.OperationalLimitSet: OperationalLimitSet = None
+        self.value = 0
+
+
+class CurrentLimit(CimContainer):
+
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.OperationalLimitType = None
         self.OperationalLimitSet = None
         self.value = 0
 
 
-class CurrentLimit(GeneralContainer):
+class EquivalentNetwork(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
-
-        self.OperationalLimitType = None
-        self.OperationalLimitSet = None
-        self.value = 0
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
 
-class EquivalentNetwork(GeneralContainer):
+class ControlArea(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
+
+        self.type: str = ''
+        self.netInterchange: float = 0.0
+        self.pTolerance: float = 0.0
 
 
-class EquivalentInjection(GeneralContainer):
+class EquivalentInjection(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.regulationCapability = False
         self.BaseVoltage = None
@@ -559,8 +645,8 @@ class EquivalentInjection(GeneralContainer):
 
 class Breaker(DiPole):
 
-    def __init__(self, rfid, tpe):
-        DiPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        DiPole.__init__(self, rdfid, tpe)
 
         self.normalOpen = True
         self.retained = True
@@ -588,8 +674,8 @@ class Breaker(DiPole):
 
 class Switch(DiPole):
 
-    def __init__(self, rfid, tpe):
-        DiPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        DiPole.__init__(self, rdfid, tpe)
 
         self.normalOpen = True
         self.retained = True
@@ -620,8 +706,8 @@ class Switch(DiPole):
 
 class LoadBreakSwitch(DiPole):
 
-    def __init__(self, rfid, tpe):
-        DiPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        DiPole.__init__(self, rdfid, tpe)
 
         self.normalOpen = True
         self.retained = True
@@ -672,23 +758,27 @@ class LoadBreakSwitch(DiPole):
             return None, None
 
 
-class Line(GeneralContainer):
+class Line(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
+        self.description = ''
+        self.shortName = ''
+        self.Region = None
 
 
 class ACLineSegment(DiPole):
 
-    def __init__(self, rfid, tpe):
-        DiPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        DiPole.__init__(self, rdfid, tpe)
 
-        self.BaseVoltage = None
+        self.BaseVoltage: BaseVoltage = None
         self.current_limit = None
         self.bch = 0
         self.gch = 0
         self.r = 0
         self.x = 0
+        self.aggregate: str = ''
 
     def get_voltage(self):
 
@@ -758,10 +848,10 @@ class ACLineSegment(DiPole):
         return d
 
 
-class PowerTransformerEnd(GeneralContainer):
+class PowerTransformerEnd(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.BaseVoltage = None
         self.b = 0
@@ -774,6 +864,7 @@ class PowerTransformerEnd(GeneralContainer):
         self.endNumber = 0
         self.connectionKind = ""
         self.Terminal = None
+        self.phaseAngleClock = ''
 
     def get_voltage(self):
 
@@ -827,8 +918,8 @@ class PowerTransformerEnd(GeneralContainer):
 
 class PowerTransformer(DiPole):
 
-    def __init__(self, rfid, tpe):
-        DiPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        DiPole.__init__(self, rdfid, tpe)
 
         self.EquipmentContainer = None
 
@@ -908,18 +999,18 @@ class PowerTransformer(DiPole):
         return d
 
 
-class Winding(GeneralContainer):
+class Winding(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.tap_changers = list()
 
 
-class EnergyConsumer(GeneralContainer):
+class EnergyConsumer(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.LoadResponse = None
         self.EquipmentContainer = None
@@ -930,14 +1021,16 @@ class EnergyConsumer(GeneralContainer):
 
 class ConformLoad(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
-        self.LoadGroup = None
-        self.LoadResponse = None
+        self.LoadGroup: LoadGroup = None
+        self.LoadResponse: LoadResponseCharacteristic = None
         self.EquipmentContainer = None
         self.p = 0
         self.q = 0
+
+        self.BaseVoltage: BaseVoltage = None
 
     def get_dict(self):
 
@@ -953,42 +1046,62 @@ class ConformLoad(MonoPole):
 
 class NonConformLoad(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.EquipmentContainer = None
         self.LoadResponse = None
         self.LoadGroup = None
 
+        self.BaseVoltage: BaseVoltage = None
+
+        self.p: float = 0
+        self.q: float = 0
+
     def get_pq(self):
         return 0, 0
 
 
-class NonConformLoadGroup(GeneralContainer):
+class NonConformLoadGroup(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
 
 
-class LoadResponseCharacteristic(GeneralContainer):
+class LoadGroup(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
-        self.exponentModel = True
-        self.pVoltageExponent = 0
-        self.qVoltageExponent = 0
+        self.name = ''
 
 
-class RegulatingControl(GeneralContainer):
+class LoadResponseCharacteristic(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
-        self.mode = ''
+        self.exponentModel: bool = True
+        self.pVoltageExponent: float = 0
+        self.qVoltageExponent: float = 0
+
+        self.pConstantCurrent: float = 0
+        self.pConstantImpedance: float = 0
+        self.pConstantPower: float = 0
+        self.qConstantCurrent: float = 0
+        self.qConstantImpedance: float = 0
+        self.qConstantPower: float = 0
+
+
+class RegulatingControl(CimContainer):
+
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
+
+        self.mode: RegulatingControlModeKind = RegulatingControlModeKind.voltage
         self.Terminal = None
         self.discrete = False
         self.enabled = True
@@ -997,10 +1110,10 @@ class RegulatingControl(GeneralContainer):
         self.targetValueUnitMultiplier = ''
 
 
-class RatioTapChanger(GeneralContainer):
+class RatioTapChanger(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.stepVoltageIncrement = 0
         self.tculControlMode = ''
@@ -1012,16 +1125,16 @@ class RatioTapChanger(GeneralContainer):
         self.neutralStep = 0
         self.neutralU = 0
         self.normalStep = 0
-        self.TapChangerControl = None
+        self.TapChangerControl: TapChangerControl = None
         self.name = ''
         self.controlEnabled = True
         self.step = 0
 
 
-class GeneratingUnit(GeneralContainer):
+class GeneratingUnit(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.initialP = 0
         self.longPF = 0
@@ -1036,13 +1149,15 @@ class GeneratingUnit(GeneralContainer):
 
 class SynchronousMachine(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
-        self.qPercent = 0
+        self.aggregate: str = ''
+        self.qPercent: float = 0
         self.type = ''
         self.InitialReactiveCapabilityCurve = None
-        self.ratedS = 0
+        self.ratedS: float = 0
+        self.ratedPowerFactor: float = 1
         self.GeneratingUnit = None
         self.RegulatingControl = None
         self.EquipmentContainer = None
@@ -1050,7 +1165,10 @@ class SynchronousMachine(MonoPole):
         self.referencePriority = ''
         self.p = 0
         self.q = 0
+        self.r = 0
         self.controlEnabled = True
+        self.maxQ: float = 0
+        self.minQ: float = 0
 
     def get_dict(self):
         """
@@ -1072,10 +1190,10 @@ class SynchronousMachine(MonoPole):
         return d
 
 
-class HydroGenerationUnit(GeneralContainer):
+class HydroGenerationUnit(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -1105,10 +1223,10 @@ class HydroGenerationUnit(GeneralContainer):
         return d
 
 
-class HydroPowerPlant(GeneralContainer):
+class HydroPowerPlant(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.hydroPlantStorageType = ''
@@ -1127,16 +1245,19 @@ class HydroPowerPlant(GeneralContainer):
 
 class LinearShuntCompensator(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.EquipmentContainer = None
-        self.bPerSection = 0
-        self.gPerSection = 0
-        self.maximumSections = 0
-        self.nomU = 0
-        self.normalSections = 0
+        self.bPerSection: float = 0
+        self.gPerSection: float = 0
+        self.maximumSections: int = 0
+        self.nomU: float = 0
+        self.normalSections: int = 0
+        self.controlEnabled: bool = False
+        self.RegulatingControl = None
+        self.sections: int = 0
 
     def get_dict(self):
         """
@@ -1158,8 +1279,8 @@ class LinearShuntCompensator(MonoPole):
 
 class NuclearGeneratingUnit(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -1171,6 +1292,7 @@ class NuclearGeneratingUnit(MonoPole):
         self.shortPF = 0
         self.nominalP = 0
         self.variableCost = 0
+        self.normalPF = 0
 
     def get_dict(self):
         """
@@ -1191,18 +1313,18 @@ class NuclearGeneratingUnit(MonoPole):
         return d
 
 
-class RatioTapChangerTable(GeneralContainer):
+class RatioTapChangerTable(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
 
 
-class RatioTapChangerTablePoint(GeneralContainer):
+class RatioTapChangerTablePoint(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.ratio = 0
         self.step = 0
@@ -1222,10 +1344,10 @@ class RatioTapChangerTablePoint(GeneralContainer):
         return d
 
 
-class ReactiveCapabilityCurve(GeneralContainer):
+class ReactiveCapabilityCurve(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.curveStyle = ''
@@ -1236,8 +1358,8 @@ class ReactiveCapabilityCurve(GeneralContainer):
 
 class StaticVarCompensator(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.EquipmentContainer = None
@@ -1266,20 +1388,27 @@ class StaticVarCompensator(MonoPole):
         return d
 
 
-class TapChangerControl(GeneralContainer):
+class TapChangerControl(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.Terminal = None
         self.mode = ''
 
+        self.discrete: bool = True
+        self.enabled: bool = True
+
+        self.targetDeadband: float = 0
+        self.targetValue: float = 0
+        self.targetValueUnitMultiplier = ''
+
 
 class ThermalGenerationUnit(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -1311,8 +1440,8 @@ class ThermalGenerationUnit(MonoPole):
 
 class WindGenerationUnit(MonoPole):
 
-    def __init__(self, rfid, tpe):
-        MonoPole.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        MonoPole.__init__(self, rdfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -1347,10 +1476,10 @@ class WindGenerationUnit(MonoPole):
         return d
 
 
-class FullModel(GeneralContainer):
+class FullModel(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.scenarioTime = ''
         self.created = ''
@@ -1358,6 +1487,7 @@ class FullModel(GeneralContainer):
         self.profile = ''
         self.modelingAuthoritySet = ''
         self.DependentOn = ''
+        self.longDependentOnPF = ''
 
     def get_dict(self):
         """
@@ -1376,10 +1506,10 @@ class FullModel(GeneralContainer):
         return d
 
 
-class TieFlow(GeneralContainer):
+class TieFlow(CimContainer):
 
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+    def __init__(self, rdfid, tpe):
+        CimContainer.__init__(self, rdfid, tpe)
 
         self.ControlArea = None
         self.Terminal = None
