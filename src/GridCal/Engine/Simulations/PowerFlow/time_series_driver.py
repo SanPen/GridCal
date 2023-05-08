@@ -394,7 +394,7 @@ class TimeSeries(DriverTemplate):
             self.results = self.run_newton_pa(time_indices=time_indices)
 
         elif self.engine == bs.EngineType.PGM:
-            self.progress_text.emit('Running Power Grid Models... ')
+            self.progress_text.emit('Running Power Grid Model... ')
             self.results = alliander_pgm_pf(self.grid, self.options, logger=self.logger, time_series=True)
             self.results.area_names = [a.name for a in self.grid.areas]
 

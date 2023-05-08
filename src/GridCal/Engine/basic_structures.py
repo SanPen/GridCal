@@ -301,7 +301,7 @@ class EngineType(Enum):
     GridCal = 'GridCal'
     Bentayga = 'Bentayga'
     NewtonPA = 'Newton Power Analytics'
-    PGM = 'Power Grid Models'
+    PGM = 'Power Grid Model'
 
     def __str__(self):
         return self.value
