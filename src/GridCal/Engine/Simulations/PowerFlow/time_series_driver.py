@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
+from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import PGM_AVAILABLE, alliander_pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 
@@ -392,8 +393,13 @@ class TimeSeries(DriverTemplate):
             self.progress_text.emit('Running Newton power analytics... ')
             self.results = self.run_newton_pa(time_indices=time_indices)
 
+        elif self.engine == bs.EngineType.PGM:
+            self.progress_text.emit('Running Power Grid Models... ')
+            self.results = alliander_pgm_pf(self.grid, self.options, logger=self.logger, time_series=True)
+            self.results.area_names = [a.name for a in self.grid.areas]
+
         else:
-            raise Exception('Unknown engine :/')
+            raise Exception('Engine not implemented for Time Series:' + self.engine.value)
 
         # fill F, T, Areas, etc...
         self.results.fill_circuit_info(self.grid)

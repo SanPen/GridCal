@@ -45,6 +45,7 @@ class Shunt(EditableDevice):
     def __init__(self, name='shunt', idtag=None, code='',
                  G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
                  controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0,
+                 G0=0, B0=0, G0_prof=None, B0_prof=None,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
@@ -61,6 +62,8 @@ class Shunt(EditableDevice):
                                                   'is_controlled': GCProp('', bool, 'Is the shunt controllable?'),
                                                   'G': GCProp('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
                                                   'B': GCProp('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                  'G0': GCProp('MW', float, 'Zero sequence active power of the impedance component at V=1.0 p.u.'),
+                                                  'B0': GCProp('MVAr', float, 'Zero sequence reactive power of the impedance component at V=1.0 p.u.'),
                                                   'Bmin': GCProp('MVAr', float, 'Reactive power min control value at V=1.0 p.u.'),
                                                   'Bmax': GCProp('MVAr', float, 'Reactive power max control value at V=1.0 p.u.'),
                                                   'Vset': GCProp('p.u.', float,
@@ -94,6 +97,8 @@ class Shunt(EditableDevice):
         # Impedance (MVA)
         self.G = G
         self.B = B
+        self.G0 = G0
+        self.B0 = B0
         self.Bmin = Bmin
         self.Bmax = Bmax
         self.Vset = vset
@@ -101,6 +106,8 @@ class Shunt(EditableDevice):
         # admittance profile
         self.G_prof = G_prof
         self.B_prof = B_prof
+        self.G0_prof = G0_prof
+        self.B0_prof = B0_prof
 
         self.capex = capex
 
@@ -118,6 +125,10 @@ class Shunt(EditableDevice):
                     B=self.B,
                     G_prof=self.G_prof,
                     B_prof=self.B_prof,
+                    G0=self.G0,
+                    B0=self.B0,
+                    G0_prof=self.G0_prof,
+                    B0_prof=self.B0_prof,
                     active=self.active,
                     active_prof=self.active_prof,
                     Bmax=self.Bmax,
@@ -158,6 +169,8 @@ class Shunt(EditableDevice):
                     'controlled': self.is_controlled,
                     'g': self.G,
                     'b': self.B,
+                    'g0': self.G0,
+                    'b0': self.B0,
                     'bmax': self.Bmax,
                     'bmin': self.Bmin,
                     'capex': self.capex,
