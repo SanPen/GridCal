@@ -18,4 +18,4 @@
 import GridCal.Engine.Core.Compilers.circuit_to_data
 import GridCal.Engine.Core.Compilers.circuit_to_bentayga
 # import GridCal.Engine.Core.Compilers.circuit_to_newton_pa
-import GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm
+import GridCal.Engine.Core.Compilers.circuit_to_pgm

@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
-from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import PGM_AVAILABLE, alliander_pgm_pf
+from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, alliander_pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 

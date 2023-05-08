@@ -33,14 +33,16 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_results import TimeSeriesR
 try:
     import power_grid_model as pgm
     from power_grid_model import CalculationMethod, CalculationType
-    from power_grid_model.validation import validate_input_data, assert_valid_input_data, assert_valid_batch_data, ValidationError, ValidationException
-
+    from power_grid_model.validation import validate_input_data, assert_valid_input_data, assert_valid_batch_data, \
+        ValidationError, ValidationException
+    from power_grid_model.errors import PowerGridError
     PGM_AVAILABLE = True
     print("Power Grid Model available")
 
 except ImportError:
     PGM_AVAILABLE = False
     print("power grid model is not available, try pip install power-grid-model")
+
 
 '''
 hierarchy
@@ -563,8 +565,8 @@ def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logge
     :param opt: Power Flow Options
     :param logger: Logger object
     :param symmetric: Symmetric (3-phase balanced calculation? / asymmetric)
-    :param time_series: Time_series
-    :return: LFE'sPGM Power flow results object
+    :param time_series: Time_series?
+    :return: LFE's PGM Power flow results object
     """
     model, time_series_mutation = to_pgm(circuit, logger=logger, time_series=time_series)
 
@@ -580,9 +582,13 @@ def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logge
         try:
             pf_res = model.calculate_power_flow(symmetric=symmetric,
                                                 update_data=time_series_mutation,
+                                                error_tolerance=opt.tolerance,
+                                                max_iterations=opt.max_iter,
+                                                threading=0,  # -1: one thread, 0: all threads, any other: custom
+                                                continue_on_batch_error=True,
                                                 calculation_method=calculation_method)
 
-        except RuntimeError as e:
+        except PowerGridError as e:
             logger.add_error('Power flow failed\n' + str(e))
             pf_res = None
 
@@ -590,12 +596,11 @@ def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logge
 
     else:
         # 1D
-
         try:
             pf_res = model.calculate_power_flow(symmetric=symmetric,
                                                 calculation_method=calculation_method)
 
-        except RuntimeError as e:
+        except PowerGridError as e:
             logger.add_error('Power flow failed\n' + str(e))
             pf_res = None
 
@@ -734,6 +739,6 @@ if __name__ == "__main__":
 
     pf_opt = PowerFlowOptions()
     lgr = Logger()
-    pf_res = alliander_pgm_pf(circ, pf_opt, lgr, time_series=True)
+    pf_res_ = alliander_pgm_pf(circ, pf_opt, lgr, time_series=True)
 
-    print(pf_res.voltage)
+    print(pf_res_.voltage)
