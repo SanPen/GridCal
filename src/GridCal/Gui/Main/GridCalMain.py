@@ -4073,18 +4073,15 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-            if results.converged:
-                self.update_available_results()
-
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    self.colour_schematic()
-
-            else:
-
+            if not results.converged:
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'
                             'that the generator bounds are ok.\n'
                             'You may also use the diagnostic tool (F8)', 'OPF')
+
+            self.update_available_results()
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -5073,6 +5070,8 @@ class MainGUI(QMainWindow):
         self.ui.units_label.setText("")
 
     def grid_colour_function(self, plot_function, current_study, current_step):
+
+
 
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -7409,27 +7408,29 @@ class MainGUI(QMainWindow):
         Draw lines
         :return:
         """
+        current_study = self.ui.available_results_to_color_map_comboBox.currentText()
 
-        poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
-                                         current_study=self.ui.available_results_to_color_map_comboBox.currentText(),
-                                         current_step=self.ui.map_time_horizontalSlider.value())
+        if current_study != '':
+            poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
+                                             current_study=current_study,
+                                             current_step=self.ui.map_time_horizontalSlider.value())
 
-        # # delete the previous layer
-        # self.map_widget.DeleteLayer(self.polyline_layer_id)
-        #
-        # # draw again
-        # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
-        #                                                           map_rel=True,
-        #                                                           visible=True,
-        #                                                           delta=40,
-        #                                                           show_levels=list(range(15)),
-        #                                                           # levels at which to show the polylines
-        #                                                           name='<polyline_layer>')
+            # # delete the previous layer
+            # self.map_widget.DeleteLayer(self.polyline_layer_id)
+            #
+            # # draw again
+            # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
+            #                                                           map_rel=True,
+            #                                                           visible=True,
+            #                                                           delta=40,
+            #                                                           show_levels=list(range(15)),
+            #                                                           # levels at which to show the polylines
+            #                                                           name='<polyline_layer>')
 
-        self.map_widget.getLayer(self.polyline_layer_id).data = poly
-        self.map_widget.update()
+            self.map_widget.getLayer(self.polyline_layer_id).data = poly
+            self.map_widget.update()
 
-        # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
+            # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
 
 def run(use_native_dialogues=False):

@@ -67,7 +67,7 @@ def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime
     for i, area in enumerate(circuit.areas):
 
         elm = npa.Area(uuid=area.idtag,
-                       secondary_id=area.code,
+                       secondary_id=str(area.code),
                        name=area.name,
                        time_steps=ntime)
 
@@ -83,7 +83,7 @@ def add_npa_zones(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime
 
     for i, area in enumerate(circuit.zones):
         elm = npa.Zone(uuid=area.idtag,
-                       secondary_id=area.code,
+                       secondary_id=str(area.code),
                        name=area.name,
                        time_steps=ntime)
 
@@ -99,7 +99,7 @@ def add_npa_contingency_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCi
 
     for i, elm in enumerate(circuit.contingency_groups):
         dev = npa.ContingenciesGroup(uuid=elm.idtag,
-                                     secondary_id=elm.code,
+                                     secondary_id=str(elm.code),
                                      name=elm.name,
                                      time_steps=ntime,
                                      category=elm.category)
@@ -117,7 +117,7 @@ def add_npa_contingencies(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit
 
     for i, elm in enumerate(circuit.contingencies):
         dev = npa.Contingency(uuid=elm.idtag,
-                              secondary_id=elm.code,
+                              secondary_id=str(elm.code),
                               name=elm.name,
                               time_steps=ntime,
                               device_uuid=elm.device_idtag,
@@ -137,7 +137,7 @@ def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
 
     for i, elm in enumerate(circuit.investments_groups):
         dev = npa.InvestmentsGroup(uuid=elm.idtag,
-                                   secondary_id=elm.code,
+                                   secondary_id=str(elm.code),
                                    name=elm.name,
                                    time_steps=ntime,
                                    category=elm.category)
@@ -155,7 +155,7 @@ def add_npa_investments(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit",
 
     for i, elm in enumerate(circuit.investments):
         elm = npa.Investment(uuid=elm.idtag,
-                             secondary_id=elm.code,
+                             secondary_id=str(elm.code),
                              name=elm.name,
                              time_steps=ntime,
                              device_uuid=elm.device_idtag,
@@ -219,7 +219,7 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
     for k, elm in enumerate(devices):
 
         load = npa.Load(uuid=elm.idtag,
-                        secondary_id=elm.code,
+                        secondary_id=str(elm.code),
                         name=elm.name,
                         calc_node=bus_dict[elm.bus.idtag],
                         time_steps=ntime,
@@ -252,7 +252,7 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
     for k, elm in enumerate(devices):
 
         pe_inj = npa.PowerElectronicsInjection(uuid=elm.idtag,
-                                               secondary_id=elm.code,
+                                               secondary_id=str(elm.code),
                                                name=elm.name,
                                                calc_node=bus_dict[elm.bus.idtag],
                                                time_steps=ntime,
@@ -284,7 +284,7 @@ def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_
     for k, elm in enumerate(devices):
 
         sh = npa.Capacitor(uuid=elm.idtag,
-                           secondary_id=elm.code,
+                           secondary_id=str(elm.code),
                            name=elm.name,
                            calc_node=bus_dict[elm.bus.idtag],
                            time_steps=ntime,
@@ -420,7 +420,7 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
         lne = npa.AcLine(uuid=elm.idtag,
-                         secondary_id=elm.code,
+                         secondary_id=str(elm.code),
                          name=elm.name,
                          calc_node_from=bus_dict[elm.bus_from.idtag],
                          calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -470,7 +470,7 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
 
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
-                                    secondary_id=elm.code,
+                                    secondary_id=str(elm.code),
                                     name=elm.name,
                                     calc_node_from=bus_dict[elm.bus_from.idtag],
                                     calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -539,7 +539,7 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         """
 
         vsc = npa.AcDcConverter(uuid=elm.idtag,
-                                secondary_id=elm.code,
+                                secondary_id=str(elm.code),
                                 name=elm.name,
                                 calc_node_from=bus_dict[elm.bus_from.idtag],
                                 calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -667,7 +667,7 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         control_mode: newtonpa.HvdcControlMode = <HvdcControlMode.HvdcControlPfix: 1>)
         """
         hvdc = npa.HvdcLine(uuid=elm.idtag,
-                            secondary_id=elm.code,
+                            secondary_id=str(elm.code),
                             name=elm.name,
                             calc_node_from=bus_dict[elm.bus_from.idtag],
                             calc_node_to=bus_dict[elm.bus_to.idtag],
