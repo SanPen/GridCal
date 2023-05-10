@@ -5190,11 +5190,11 @@ class MainGUI(QMainWindow):
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
 
             return plot_function(circuit=self.circuit,
-                                 Sbus=results.Sbus,
-                                 Sf=results.Sf,
-                                 voltages=results.voltage,
+                                 Sbus=results.Sbus1,
+                                 Sf=results.Sf1,
+                                 voltages=results.voltage1,
                                  types=results.bus_types,
-                                 loadings=results.loading,
+                                 loadings=results.loading1,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,

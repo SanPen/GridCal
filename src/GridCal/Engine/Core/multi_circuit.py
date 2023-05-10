@@ -329,6 +329,14 @@ class MultiCircuit:
             m += len(branch_list)
         return m
 
+    def get_branch_names(self):
+
+        names = list()
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                names.append(elm.name)
+        return names
+
     def get_branch_number_wo_hvdc(self):
         """
         return the number of branches (of all types)

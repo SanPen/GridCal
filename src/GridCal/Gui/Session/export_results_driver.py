@@ -63,11 +63,11 @@ class ExportAllThread(QThread):
 
         self.logger = Logger()
 
-        names_dict = {DeviceType.BusDevice: self.circuit.names,
-                      DeviceType.BranchDevice: self.circuit.names,
-                      DeviceType.BusDevice.LoadDevice: self.circuit.get_load_names(),
-                      DeviceType.BusDevice.GeneratorDevice: self.circuit.get_controlled_generator_names(),
-                      DeviceType.BusDevice.BatteryDevice: self.circuit.get_battery_names()}
+        # names_dict = {DeviceType.BusDevice: self.circuit.get_bus_names(),
+        #               DeviceType.BranchDevice: self.circuit.get_branch_names(),
+        #               DeviceType.BusDevice.LoadDevice: self.circuit.get_load_names(),
+        #               DeviceType.BusDevice.GeneratorDevice: self.circuit.get_controlled_generator_names(),
+        #               DeviceType.BusDevice.BatteryDevice: self.circuit.get_battery_names()}
 
         # open zip file for writing
         try:
@@ -79,7 +79,12 @@ class ExportAllThread(QThread):
 
                     self.progress_signal.emit((k + 1) / n * 100.0)
 
-                    for available_result in driver.results.available_results:
+                    if isinstance(driver.results.available_results, dict):
+                        available_res = [e for tpe, lst in driver.results.available_results.items() for e in lst]
+                    else:
+                        available_res = driver.results.available_results
+
+                    for available_result in available_res:
 
                         # ge the result type definition
                         result_name, device_type = available_result.value
