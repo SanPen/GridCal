@@ -218,7 +218,7 @@ class HvdcData:
                     Pt[0] = 0
 
                 # compute loading
-                loading[i] = Pf[i] / self.rate[i]
+                loading[i] = Pf[i] / (self.rate[i] + 1e-20)
 
                 # Pbus
                 Pbus[self.F[i]] += Pf[i] / Sbase

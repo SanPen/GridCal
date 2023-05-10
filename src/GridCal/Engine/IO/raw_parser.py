@@ -1513,6 +1513,11 @@ class PSSeTransformer(PSSeObject):
                 # 2-windings
                 self.windings = 2
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
+            elif len(data[1]) == 2:
+                # 2-windings
+                self.windings = 2
+                self.R1_2, self.X1_2 = data[1]
+                self.SBASE1_2 = 100  # MVA (the system base by default)
             else:
                 # 3-windings
                 self.windings = 3
