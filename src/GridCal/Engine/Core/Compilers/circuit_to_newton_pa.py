@@ -842,16 +842,18 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Qmax_bus_ = qlim.qmax_bus
         data.Qmin_bus_ = qlim.qmin_bus
 
-        data.iPfsh = npa_data.control_indices.iPfsh
-        data.iQfma = npa_data.control_indices.iQfma
-        data.iBeqz = npa_data.control_indices.iBeqz
-        data.iBeqv = npa_data.control_indices.iBeqv
-        data.iVtma = npa_data.control_indices.iVtma
-        data.iQtma = npa_data.control_indices.iQtma
-        data.iPfdp = npa_data.control_indices.iPfdp
-        data.iVscL = npa_data.control_indices.iVscL
-        # data.VfBeqbus = npa_data.control_indices.iVfBeqBus
-        # data.Vtmabus = npa_data.control_indices.iVtmaBus
+        control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_)
+
+        data.iPfsh = control_indices.iPfsh
+        data.iQfma = control_indices.iQfma
+        data.iBeqz = control_indices.iBeqz
+        data.iBeqv = control_indices.iBeqv
+        data.iVtma = control_indices.iVtma
+        data.iQtma = control_indices.iQtma
+        data.iPfdp = control_indices.iPfdp
+        data.iVscL = control_indices.iVscL
+        # data.VfBeqbus = control_indices.iVfBeqBus
+        # data.Vtmabus = control_indices.iVtmaBus
 
         data_lst.append(data)
 

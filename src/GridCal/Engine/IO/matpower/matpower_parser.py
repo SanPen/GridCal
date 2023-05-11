@@ -175,17 +175,15 @@ def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: Logger)
                   vmax=table[i, matpower_buses.VMAX],
                   vmin=table[i, matpower_buses.VMIN],
                   area=area,
-                  is_slack=is_slack)
+                  is_slack=is_slack,
+                  Vm0=table[i, matpower_buses.VM],
+                  Va0=table[i, matpower_buses.VA])
 
         # store the given bus index in relation to its real index in the table for later
         bus_idx_dict[table[i, matpower_buses.BUS_I]] = i
 
         # determine if the bus is set as slack manually
-        tpe = table[i, matpower_buses.BUS_TYPE]
-        if tpe == matpower_buses.REF:
-            bus.is_slack = True
-        else:
-            bus.is_slack = False
+        bus.is_slack = table[i, matpower_buses.BUS_TYPE] == matpower_buses.REF
 
         # Add the load
         if table[i, matpower_buses.PD] != 0 or table[i, matpower_buses.QD] != 0:
