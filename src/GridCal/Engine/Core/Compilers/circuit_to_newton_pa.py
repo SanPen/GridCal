@@ -901,7 +901,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
     return npa.PowerFlowOptions(solver_type=solver_type,
                                 retry_with_other_methods=opt.retry_with_other_methods,
                                 verbose=opt.verbose,
-                                initialize_with_existing_solution=False,
+                                initialize_with_existing_solution=opt.initialize_with_existing_solution,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
                                 control_q_mode=q_control_dict[opt.control_Q],
@@ -943,7 +943,8 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    control_q_mode=q_control_dict[pfopt.control_Q],
                                    flow_control=True,
                                    voltage_control=True,
-                                   solver=solver_dict[opfopt.mip_solver])
+                                   solver=solver_dict[opfopt.mip_solver],
+                                   initialize_with_existing_solution=pfopt.initialize_with_existing_solution)
 
 
 def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
@@ -1019,7 +1020,8 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     pf_res = npa.runPowerFlow(circuit=npa_circuit,
                               pf_options=pf_options,
                               time_indices=time_indices,
-                              n_threads=n_threads)
+                              n_threads=n_threads,
+                              V0=circuit.get_voltage_guess() if opt.initialize_with_existing_solution else None)
 
     return pf_res
 
@@ -1087,7 +1089,8 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
                                  pf_options=pf_options,
                                  time_indices=time_indices,
                                  n_threads=n_threads,
-                                 mute_pg_bar=False)
+                                 mute_pg_bar=False,
+                                 V0=circuit.get_voltage_guess() if pfopt.initialize_with_existing_solution else None)
 
     return pf_res
 

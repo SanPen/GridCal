@@ -2810,3 +2810,13 @@ class MultiCircuit:
                 self.contingencies.append(contingency)
                 self.contingency_groups.append(group)
 
+    def get_voltage_guess(self):
+        v = np.zeros(len(self.buses), dtype=complex)
+
+        for i, bus in enumerate(self.buses):
+            if bus.active:
+                x = bus.Vm0 * np.cos(bus.Va0)
+                y = bus.Vm0 * np.sin(bus.Va0)
+                v[i] = complex(x, y)
+
+        return v
