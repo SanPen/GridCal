@@ -1668,6 +1668,9 @@ class MainGUI(QMainWindow):
         if NEWTON_PA_AVAILABLE:
             files_types += "Newton (*.newton);;"
 
+        if PGM_AVAILABLE:
+            files_types += "PGM Json (*.pgm);;"
+
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -1704,6 +1707,7 @@ class MainGUI(QMainWindow):
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
                 extension['Newton (*.newton)'] = '.newton'
+                extension['PGM Json (*.pgm)'] = '.pgm'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]

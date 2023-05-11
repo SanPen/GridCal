@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
-from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, alliander_pgm_pf
+from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 
@@ -131,7 +131,7 @@ class PowerFlowDriver(DriverTemplate):
 
         elif self.engine == bs.EngineType.PGM:
 
-            self.results = alliander_pgm_pf(self.grid, self.options, logger=self.logger)
+            self.results = pgm_pf(self.grid, self.options, logger=self.logger)
             self.results.area_names = [a.name for a in self.grid.areas]
 
         else:

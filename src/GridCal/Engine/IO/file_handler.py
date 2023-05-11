@@ -284,6 +284,9 @@ class FileSave:
         elif self.file_name.endswith('.newton'):
             logger = self.save_newton()
 
+        elif self.file_name.endswith('.pgm'):
+            logger = self.save_pgm()
+
         else:
             logger = Logger()
             logger.add_error('File path extension not understood', self.file_name)
@@ -388,5 +391,17 @@ class FileSave:
         newton_grid, dev_dicts = to_newton_pa(self.circuit, time_series=True, tidx=tidx)
 
         npa.FileHandler().save(newton_grid, self.file_name)
+
+        return logger
+
+    def save_pgm(self):
+        """
+        Save to Power Grid Model format
+        :return: logger with information
+        """
+        from GridCal.Engine.Core.Compilers.circuit_to_pgm import save_pgm
+        logger = Logger()
+
+        save_pgm(filename=self.file_name, circuit=self.circuit, logger=logger, time_series=self.circuit.has_time_series)
 
         return logger

@@ -19,6 +19,7 @@ import os.path
 
 import numpy as np
 from typing import Tuple, Dict, List
+from pathlib import Path
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -35,6 +36,7 @@ try:
     from power_grid_model import CalculationMethod, CalculationType
     from power_grid_model.validation import validate_input_data, assert_valid_input_data, assert_valid_batch_data, \
         ValidationError, ValidationException
+    from power_grid_model.utils import export_json_data
     from power_grid_model.errors import PowerGridError
     PGM_AVAILABLE = True
     print("Power Grid Model available")
@@ -490,16 +492,7 @@ def get_pgm_hvdc_data(circuit: MultiCircuit, bus_dict, idx0):
     return hvdc, idx
 
 
-def to_pgm(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False) -> Tuple["pgm.PowerGridModel", Dict]:
-    """
-    Convert GridCal circuit to LFE'sPGM model
-    See https://github.com/alliander-opensource/power-grid-model/blob/main/docs/graph-data-model.md
-    :param circuit: MultiCircuit
-    :param logger: Logger instance
-    :param time_series: use time series?
-    :return: pgm.PowerGridModel instance
-    """
-
+def get_pgm_input_data(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False):
     if time_series:
         n_time = circuit.get_time_number()
     else:
@@ -538,6 +531,21 @@ def to_pgm(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False) 
     else:
         time_series_mutation = dict()
 
+    return input_data, time_series_mutation
+
+
+def to_pgm(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False) -> Tuple["pgm.PowerGridModel", Dict]:
+    """
+    Convert GridCal circuit to LFE'sPGM model
+    See https://github.com/alliander-opensource/power-grid-model/blob/main/docs/graph-data-model.md
+    :param circuit: MultiCircuit
+    :param logger: Logger instance
+    :param time_series: use time series?
+    :return: pgm.PowerGridModel instance
+    """
+
+    input_data, time_series_mutation = get_pgm_input_data(circuit=circuit, logger=logger, time_series=time_series)
+
     try:
         # this asserts the validity for batches if time_series_mutation is not empty, otherwise this
         # function is the same as assert_valid_input_data
@@ -558,7 +566,7 @@ def to_pgm(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False) 
     return model, time_series_mutation
 
 
-def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logger, symmetric=True, time_series=False):
+def pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logger, symmetric=True, time_series=False):
     """
     LFE'sPGM power flow
     :param circuit: MultiCircuit instance
@@ -592,7 +600,7 @@ def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logge
             logger.add_error('Power flow failed\n' + str(e))
             pf_res = None
 
-        gc_res = translate_pgm_results2d(circuit, pf_res)
+        gc_res = translate_pgm_pf_results2d(circuit, pf_res)
 
     else:
         # 1D
@@ -609,7 +617,27 @@ def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logge
     return gc_res
 
 
+def save_pgm(filename: str, circuit: MultiCircuit, logger: Logger = Logger(), time_series=False):
+    """
+    Save to Power Grid Model format
+    :param filename:
+    :param circuit:
+    :param logger:
+    :param time_series:
+    :return:
+    """
+    input_data, time_series_mutation = get_pgm_input_data(circuit=circuit, logger=logger, time_series=time_series)
+
+    export_json_data(Path(filename), input_data)
+
+
 def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
+    """
+    Translate the PGM results to SnapShot power flow results
+    :param grid:
+    :param pf_res:
+    :return: PowerFlowResults
+    """
     from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
     nc = compile_snapshot_circuit(grid)
@@ -669,7 +697,13 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
     return results
 
 
-def translate_pgm_results2d(grid: MultiCircuit, pf_res) -> PowerFlowResults:
+def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
+    """
+    Translate the time series power flow results
+    :param grid:
+    :param pf_res:
+    :return: TimeSeriesResults
+    """
     from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
     nc = compile_snapshot_circuit(grid)
@@ -739,6 +773,6 @@ if __name__ == "__main__":
 
     pf_opt = PowerFlowOptions()
     lgr = Logger()
-    pf_res_ = alliander_pgm_pf(circ, pf_opt, lgr, time_series=True)
+    pf_res_ = pgm_pf(circ, pf_opt, lgr, time_series=True)
 
     print(pf_res_.voltage)
