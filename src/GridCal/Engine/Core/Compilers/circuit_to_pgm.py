@@ -19,6 +19,7 @@ import os.path
 
 import numpy as np
 from typing import Tuple, Dict, List
+import json
 from pathlib import Path
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -617,6 +618,13 @@ def pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions, logger: Logger, symmetr
     return gc_res
 
 
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
 def save_pgm(filename: str, circuit: MultiCircuit, logger: Logger = Logger(), time_series=False):
     """
     Save to Power Grid Model format
@@ -628,7 +636,16 @@ def save_pgm(filename: str, circuit: MultiCircuit, logger: Logger = Logger(), ti
     """
     input_data, time_series_mutation = get_pgm_input_data(circuit=circuit, logger=logger, time_series=time_series)
 
-    export_json_data(Path(filename), input_data)
+    data = {'input_data': input_data,
+            'mutation': time_series_mutation}
+
+    data_str = json.dumps(data, indent=True, cls=NumpyEncoder)
+
+    # Save json to a text file
+    text_file = open(filename, "w")
+    text_file.write(data_str)
+    text_file.close()
+    # export_json_data(Path(filename), input_data)
 
 
 def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
