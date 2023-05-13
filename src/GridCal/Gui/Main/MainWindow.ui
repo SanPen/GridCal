@@ -1008,20 +1008,6 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="analyze_objects_pushButton">
-                      <property name="toolTip">
-                       <string>Launch the grid analysis interface</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
                      <spacer name="horizontalSpacer_6">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -2628,7 +2614,7 @@ p, li { white-space: pre-wrap; }
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_7">
            <attribute name="icon">
@@ -7694,7 +7680,7 @@ p, li { white-space: pre-wrap; }
                   <item>
                    <widget class="QLabel" name="label_114">
                     <property name="text">
-                     <string> </string>
+                     <string/>
                     </property>
                    </widget>
                   </item>
@@ -8769,7 +8755,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1267</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8880,7 +8866,6 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="separator"/>
-    <addaction name="actionCorrect_inconsistencies"/>
     <addaction name="actionDelete_inconsistencies"/>
    </widget>
    <addaction name="menuProject"/>
@@ -8956,6 +8941,7 @@ QProgressBar::chunk{
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
+   <addaction name="actionLaunch_data_analysis_tool"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
@@ -9651,18 +9637,6 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Fuse devices into a single device of each category per node</string>
-   </property>
-  </action>
-  <action name="actionCorrect_inconsistencies">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Correct inconsistencies</string>
-   </property>
-   <property name="toolTip">
-    <string>Correct inconsistencies</string>
    </property>
   </action>
   <action name="actionDelete_inconsistencies">

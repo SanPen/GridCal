@@ -20,7 +20,7 @@ import string
 import sys
 from enum import Enum
 import PySide2
-
+from typing import List
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -30,15 +30,16 @@ from PySide2.QtWidgets import *
 from PySide2 import QtWidgets, QtGui
 
 from GridCal.Gui.Analysis.gui import *
-from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog
+from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
+from GridCal.Gui.GeneralDialogues import LogsDialogue
 
 
 class GridAnalysisGUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit=None, use_native_dialogues=False):
+    def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit = None, use_native_dialogues=False):
         """
         Constructor
         Args:
@@ -59,9 +60,13 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # declare logs
         self.log = GridErrorLog()
 
+        self.fixable_errors: List[FixableErrorOutOfRange] = list()
+
         self.object_types = object_types
 
         self.ui.actionSave_diagnostic.triggered.connect(self.save_diagnostic)
+        self.ui.actionAnalyze.triggered.connect(self.analyze_all)
+        self.ui.actionFix_issues.triggered.connect(self.fix_all)
 
         self.analyze_all()
 
@@ -80,22 +85,46 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
 
-    def analyze_all(self, imbalance_threshold=0.02, v_low=0.95, v_high=1.05):
+    def analyze_all(self):
         """
         Analyze the model data
-        :param imbalance_threshold: Allowed percentage of imbalance
-        :param v_low: lower voltage setting
-        :param v_high: higher voltage setting
         :return:
         """
+        self.log = GridErrorLog()
 
         print('Analyzing...')
         # declare logs
-        self.log = grid_analysis(circuit=self.circuit, imbalance_threshold=imbalance_threshold,
-                                 v_low=v_low, v_high=v_high)
+        self.fixable_errors = grid_analysis(circuit=self.circuit,
+                                            imbalance_threshold=self.ui.activePowerImbalanceSpinBox.value() / 100.0,
+                                            v_low=self.ui.genVsetMinSpinBox.value(),
+                                            v_high=self.ui.genVsetMaxSpinBox.value(),
+                                            tap_min=self.ui.transformerTapModuleMinSpinBox.value(),
+                                            tap_max=self.ui.transformerTapModuleMaxSpinBox.value(),
+                                            transformer_virtual_tap_tolerance=self.ui.virtualTapToleranceSpinBox.value() / 100.0,
+                                            branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
+                                            logger=self.log)
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
+
+    def fix_all(self):
+        """
+        Fix all detected fixable errors
+        :return:
+        """
+        print('Fixing issues...')
+        logger = Logger()
+        for fixable_err in self.fixable_errors:
+            fixable_err.fix(logger=logger,
+                            fix_ts=self.ui.fixTimeSeriesCheckBox.isChecked())
+
+        if len(logger) > 0:
+            dlg = LogsDialogue("Fixed issues", logger)
+            dlg.setModal(True)
+            dlg.exec_()
+
+        # re-analyze
+        self.analyze_all()
 
     def save_diagnostic(self):
 
@@ -114,10 +143,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = GridAnalysisGUI()
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

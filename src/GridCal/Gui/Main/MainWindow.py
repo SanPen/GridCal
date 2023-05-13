@@ -309,35 +309,32 @@ class Ui_mainWindow(object):
         icon48 = QIcon()
         icon48.addFile(u":/Icons/icons/fusion.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionFuse_devices.setIcon(icon48)
-        self.actionCorrect_inconsistencies = QAction(mainWindow)
-        self.actionCorrect_inconsistencies.setObjectName(u"actionCorrect_inconsistencies")
-        icon49 = QIcon()
-        icon49.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionCorrect_inconsistencies.setIcon(icon49)
         self.actionDelete_inconsistencies = QAction(mainWindow)
         self.actionDelete_inconsistencies.setObjectName(u"actionDelete_inconsistencies")
-        icon50 = QIcon()
-        icon50.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionDelete_inconsistencies.setIcon(icon50)
+        icon49 = QIcon()
+        icon49.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionDelete_inconsistencies.setIcon(icon49)
         self.actionOptimal_Net_Transfer_Capacity_Time_Series = QAction(mainWindow)
         self.actionOptimal_Net_Transfer_Capacity_Time_Series.setObjectName(u"actionOptimal_Net_Transfer_Capacity_Time_Series")
-        icon51 = QIcon()
-        icon51.addFile(u":/Icons/icons/ntc_opf_ts.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionOptimal_Net_Transfer_Capacity_Time_Series.setIcon(icon51)
+        icon50 = QIcon()
+        icon50.addFile(u":/Icons/icons/ntc_opf_ts.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionOptimal_Net_Transfer_Capacity_Time_Series.setIcon(icon50)
         self.actionOptimal_NTC_time_series_clustering = QAction(mainWindow)
         self.actionOptimal_NTC_time_series_clustering.setObjectName(u"actionOptimal_NTC_time_series_clustering")
-        icon52 = QIcon()
-        icon52.addFile(u":/Icons/icons/ntc_opf_ts_clustering.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionOptimal_NTC_time_series_clustering.setIcon(icon52)
+        icon51 = QIcon()
+        icon51.addFile(u":/Icons/icons/ntc_opf_ts_clustering.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionOptimal_NTC_time_series_clustering.setIcon(icon51)
         self.actionre_index_time = QAction(mainWindow)
         self.actionre_index_time.setObjectName(u"actionre_index_time")
         self.actionre_index_time.setIcon(icon44)
         self.actionFix_generators_active_based_on_the_power = QAction(mainWindow)
         self.actionFix_generators_active_based_on_the_power.setObjectName(u"actionFix_generators_active_based_on_the_power")
-        self.actionFix_generators_active_based_on_the_power.setIcon(icon49)
+        icon52 = QIcon()
+        icon52.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionFix_generators_active_based_on_the_power.setIcon(icon52)
         self.actionFix_loads_active_based_on_the_power = QAction(mainWindow)
         self.actionFix_loads_active_based_on_the_power.setObjectName(u"actionFix_loads_active_based_on_the_power")
-        self.actionFix_loads_active_based_on_the_power.setIcon(icon49)
+        self.actionFix_loads_active_based_on_the_power.setIcon(icon52)
         self.actionImport_contingencies = QAction(mainWindow)
         self.actionImport_contingencies.setObjectName(u"actionImport_contingencies")
         self.actionImport_contingencies.setIcon(icon31)
@@ -438,7 +435,7 @@ class Ui_mainWindow(object):
 
         self.clear_cascade_pushButton = QPushButton(self.frame_11)
         self.clear_cascade_pushButton.setObjectName(u"clear_cascade_pushButton")
-        self.clear_cascade_pushButton.setIcon(icon50)
+        self.clear_cascade_pushButton.setIcon(icon49)
 
         self.horizontalLayout_3.addWidget(self.clear_cascade_pushButton)
 
@@ -789,12 +786,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
 
-        self.analyze_objects_pushButton = QPushButton(self.frame_54)
-        self.analyze_objects_pushButton.setObjectName(u"analyze_objects_pushButton")
-        self.analyze_objects_pushButton.setIcon(icon21)
-
-        self.horizontalLayout_28.addWidget(self.analyze_objects_pushButton)
-
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
@@ -830,7 +821,7 @@ class Ui_mainWindow(object):
 
         self.delete_selected_objects_pushButton = QPushButton(self.frame_9)
         self.delete_selected_objects_pushButton.setObjectName(u"delete_selected_objects_pushButton")
-        self.delete_selected_objects_pushButton.setIcon(icon50)
+        self.delete_selected_objects_pushButton.setIcon(icon49)
 
         self.horizontalLayout_25.addWidget(self.delete_selected_objects_pushButton)
 
@@ -1039,7 +1030,7 @@ class Ui_mainWindow(object):
 
         self.delete_profiles_structure_pushButton = QPushButton(self.frame)
         self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        self.delete_profiles_structure_pushButton.setIcon(icon50)
+        self.delete_profiles_structure_pushButton.setIcon(icon49)
 
         self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
@@ -3946,7 +3937,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_8.addWidget(self.frame_7, 0, 0, 1, 1)
 
-        self.tabWidget.addTab(self.SettingsTab, icon49, "")
+        self.tabWidget.addTab(self.SettingsTab, icon52, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -3959,7 +3950,7 @@ class Ui_mainWindow(object):
         self.cancelButton = QPushButton(self.progress_frame)
         self.cancelButton.setObjectName(u"cancelButton")
         self.cancelButton.setMinimumSize(QSize(0, 24))
-        self.cancelButton.setIcon(icon50)
+        self.cancelButton.setIcon(icon49)
 
         self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
 
@@ -3989,7 +3980,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1267, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1267, 21))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuAbout = QMenu(self.menuBar)
@@ -4098,7 +4089,6 @@ class Ui_mainWindow(object):
         self.menuModel.addSeparator()
         self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
         self.menuModel.addSeparator()
-        self.menuModel.addAction(self.actionCorrect_inconsistencies)
         self.menuModel.addAction(self.actionDelete_inconsistencies)
         self.toolBar.addAction(self.actionNew_project)
         self.toolBar.addAction(self.actionOpen_file)
@@ -4137,12 +4127,13 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
 
         self.retranslateUi(mainWindow)
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(1)
+        self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
 
 
@@ -4361,10 +4352,6 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionFuse_devices.setToolTip(QCoreApplication.translate("mainWindow", u"Fuse devices into a single device of each category per node", None))
 #endif // QT_CONFIG(tooltip)
-        self.actionCorrect_inconsistencies.setText(QCoreApplication.translate("mainWindow", u"Correct inconsistencies", None))
-#if QT_CONFIG(tooltip)
-        self.actionCorrect_inconsistencies.setToolTip(QCoreApplication.translate("mainWindow", u"Correct inconsistencies", None))
-#endif // QT_CONFIG(tooltip)
         self.actionDelete_inconsistencies.setText(QCoreApplication.translate("mainWindow", u"Delete inconsistencies", None))
 #if QT_CONFIG(tooltip)
         self.actionDelete_inconsistencies.setToolTip(QCoreApplication.translate("mainWindow", u"Delete inconsistencies", None))
@@ -4482,10 +4469,6 @@ class Ui_mainWindow(object):
         self.structure_analysis_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Run the histogram analysis of the selected data structure</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.structure_analysis_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.analyze_objects_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Launch the grid analysis interface", None))
-#endif // QT_CONFIG(tooltip)
-        self.analyze_objects_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

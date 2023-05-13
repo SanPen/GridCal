@@ -542,8 +542,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
-
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
@@ -603,8 +601,6 @@ class MainGUI(QMainWindow):
         self.ui.set_linear_combination_profile_pushButton.clicked.connect(self.set_profile_as_linear_combination)
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
-
-        self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
 
         self.ui.catalogue_add_pushButton.clicked.connect(self.add_to_catalogue)
 
@@ -7149,27 +7145,27 @@ class MainGUI(QMainWindow):
             self.circuit.fuse_devices()
             self.create_schematic_from_api()
 
-    def correct_inconsistencies(self):
-        """
-        Call correct inconsistencies
-        :return:
-        """
-        dlg = CorrectInconsistenciesDialogue()
-        dlg.setModal(True)
-        dlg.exec_()
-
-        if dlg.accepted:
-            logger = Logger()
-
-            self.circuit.correct_inconsistencies(logger=logger,
-                                                 maximum_difference=dlg.max_virtual_tap.value(),
-                                                 min_vset=dlg.min_voltage.value(),
-                                                 max_vset=dlg.max_voltage.value())
-
-            if len(logger) > 0:
-                dlg = LogsDialogue("correct inconsistencies", logger)
-                dlg.setModal(True)
-                dlg.exec_()
+    # def correct_inconsistencies(self):
+    #     """
+    #     Call correct inconsistencies
+    #     :return:
+    #     """
+    #     dlg = CorrectInconsistenciesDialogue()
+    #     dlg.setModal(True)
+    #     dlg.exec_()
+    #
+    #     if dlg.accepted:
+    #         logger = Logger()
+    #
+    #         self.circuit.correct_inconsistencies(logger=logger,
+    #                                              maximum_difference=dlg.max_virtual_tap.value(),
+    #                                              min_vset=dlg.min_voltage.value(),
+    #                                              max_vset=dlg.max_voltage.value())
+    #
+    #         if len(logger) > 0:
+    #             dlg = LogsDialogue("correct inconsistencies", logger)
+    #             dlg.setModal(True)
+    #             dlg.exec_()
 
     def delete_inconsistencies(self):
         """
