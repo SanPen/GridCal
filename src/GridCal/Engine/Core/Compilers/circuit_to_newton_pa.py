@@ -67,7 +67,7 @@ def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime
     for i, area in enumerate(circuit.areas):
 
         elm = npa.Area(uuid=area.idtag,
-                       secondary_id=area.code,
+                       secondary_id=str(area.code),
                        name=area.name,
                        time_steps=ntime)
 
@@ -83,7 +83,7 @@ def add_npa_zones(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime
 
     for i, area in enumerate(circuit.zones):
         elm = npa.Zone(uuid=area.idtag,
-                       secondary_id=area.code,
+                       secondary_id=str(area.code),
                        name=area.name,
                        time_steps=ntime)
 
@@ -99,7 +99,7 @@ def add_npa_contingency_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCi
 
     for i, elm in enumerate(circuit.contingency_groups):
         dev = npa.ContingenciesGroup(uuid=elm.idtag,
-                                     secondary_id=elm.code,
+                                     secondary_id=str(elm.code),
                                      name=elm.name,
                                      time_steps=ntime,
                                      category=elm.category)
@@ -117,7 +117,7 @@ def add_npa_contingencies(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit
 
     for i, elm in enumerate(circuit.contingencies):
         dev = npa.Contingency(uuid=elm.idtag,
-                              secondary_id=elm.code,
+                              secondary_id=str(elm.code),
                               name=elm.name,
                               time_steps=ntime,
                               device_uuid=elm.device_idtag,
@@ -137,7 +137,7 @@ def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
 
     for i, elm in enumerate(circuit.investments_groups):
         dev = npa.InvestmentsGroup(uuid=elm.idtag,
-                                   secondary_id=elm.code,
+                                   secondary_id=str(elm.code),
                                    name=elm.name,
                                    time_steps=ntime,
                                    category=elm.category)
@@ -155,7 +155,7 @@ def add_npa_investments(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit",
 
     for i, elm in enumerate(circuit.investments):
         elm = npa.Investment(uuid=elm.idtag,
-                             secondary_id=elm.code,
+                             secondary_id=str(elm.code),
                              name=elm.name,
                              time_steps=ntime,
                              device_uuid=elm.device_idtag,
@@ -219,7 +219,7 @@ def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
     for k, elm in enumerate(devices):
 
         load = npa.Load(uuid=elm.idtag,
-                        secondary_id=elm.code,
+                        secondary_id=str(elm.code),
                         name=elm.name,
                         calc_node=bus_dict[elm.bus.idtag],
                         time_steps=ntime,
@@ -252,7 +252,7 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
     for k, elm in enumerate(devices):
 
         pe_inj = npa.PowerElectronicsInjection(uuid=elm.idtag,
-                                               secondary_id=elm.code,
+                                               secondary_id=str(elm.code),
                                                name=elm.name,
                                                calc_node=bus_dict[elm.bus.idtag],
                                                time_steps=ntime,
@@ -284,7 +284,7 @@ def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_
     for k, elm in enumerate(devices):
 
         sh = npa.Capacitor(uuid=elm.idtag,
-                           secondary_id=elm.code,
+                           secondary_id=str(elm.code),
                            name=elm.name,
                            calc_node=bus_dict[elm.bus.idtag],
                            time_steps=ntime,
@@ -420,7 +420,7 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
         lne = npa.AcLine(uuid=elm.idtag,
-                         secondary_id=elm.code,
+                         secondary_id=str(elm.code),
                          name=elm.name,
                          calc_node_from=bus_dict[elm.bus_from.idtag],
                          calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -470,7 +470,7 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
 
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
-                                    secondary_id=elm.code,
+                                    secondary_id=str(elm.code),
                                     name=elm.name,
                                     calc_node_from=bus_dict[elm.bus_from.idtag],
                                     calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -539,7 +539,7 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         """
 
         vsc = npa.AcDcConverter(uuid=elm.idtag,
-                                secondary_id=elm.code,
+                                secondary_id=str(elm.code),
                                 name=elm.name,
                                 calc_node_from=bus_dict[elm.bus_from.idtag],
                                 calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -667,7 +667,7 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         control_mode: newtonpa.HvdcControlMode = <HvdcControlMode.HvdcControlPfix: 1>)
         """
         hvdc = npa.HvdcLine(uuid=elm.idtag,
-                            secondary_id=elm.code,
+                            secondary_id=str(elm.code),
                             name=elm.name,
                             calc_node_from=bus_dict[elm.bus_from.idtag],
                             calc_node_to=bus_dict[elm.bus_to.idtag],
@@ -842,16 +842,18 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Qmax_bus_ = qlim.qmax_bus
         data.Qmin_bus_ = qlim.qmin_bus
 
-        data.iPfsh = npa_data.control_indices.iPfsh
-        data.iQfma = npa_data.control_indices.iQfma
-        data.iBeqz = npa_data.control_indices.iBeqz
-        data.iBeqv = npa_data.control_indices.iBeqv
-        data.iVtma = npa_data.control_indices.iVtma
-        data.iQtma = npa_data.control_indices.iQtma
-        data.iPfdp = npa_data.control_indices.iPfdp
-        data.iVscL = npa_data.control_indices.iVscL
-        # data.VfBeqbus = npa_data.control_indices.iVfBeqBus
-        # data.Vtmabus = npa_data.control_indices.iVtmaBus
+        control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_)
+
+        data.iPfsh = control_indices.iPfsh
+        data.iQfma = control_indices.iQfma
+        data.iBeqz = control_indices.iBeqz
+        data.iBeqv = control_indices.iBeqv
+        data.iVtma = control_indices.iVtma
+        data.iQtma = control_indices.iQtma
+        data.iPfdp = control_indices.iPfdp
+        data.iVscL = control_indices.iVscL
+        # data.VfBeqbus = control_indices.iVfBeqBus
+        # data.Vtmabus = control_indices.iVtmaBus
 
         data_lst.append(data)
 
@@ -899,7 +901,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
     return npa.PowerFlowOptions(solver_type=solver_type,
                                 retry_with_other_methods=opt.retry_with_other_methods,
                                 verbose=opt.verbose,
-                                initialize_with_existing_solution=False,
+                                initialize_with_existing_solution=opt.initialize_with_existing_solution,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
                                 control_q_mode=q_control_dict[opt.control_Q],
@@ -941,7 +943,8 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    control_q_mode=q_control_dict[pfopt.control_Q],
                                    flow_control=True,
                                    voltage_control=True,
-                                   solver=solver_dict[opfopt.mip_solver])
+                                   solver=solver_dict[opfopt.mip_solver],
+                                   initialize_with_existing_solution=pfopt.initialize_with_existing_solution)
 
 
 def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
@@ -1017,7 +1020,8 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     pf_res = npa.runPowerFlow(circuit=npa_circuit,
                               pf_options=pf_options,
                               time_indices=time_indices,
-                              n_threads=n_threads)
+                              n_threads=n_threads,
+                              V0=circuit.get_voltage_guess() if opt.initialize_with_existing_solution else None)
 
     return pf_res
 
@@ -1085,7 +1089,8 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
                                  pf_options=pf_options,
                                  time_indices=time_indices,
                                  n_threads=n_threads,
-                                 mute_pg_bar=False)
+                                 mute_pg_bar=False,
+                                 V0=circuit.get_voltage_guess() if pfopt.initialize_with_existing_solution else None)
 
     return pf_res
 

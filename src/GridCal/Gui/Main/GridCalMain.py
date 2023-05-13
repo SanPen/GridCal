@@ -43,7 +43,7 @@ from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.IO.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
+from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
@@ -156,23 +156,7 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-        self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-        self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
-        self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
-        self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
-        self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
-        self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
-        self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
-        self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
-        self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
-        lst = list(self.solvers_dict.keys())
-        mdl = get_list_model(lst)
-        self.ui.solver_comboBox.setModel(mdl)
-        # self.ui.retry_solver_comboBox.setModel(mdl)
-
-        self.ui.solver_comboBox.setCurrentIndex(0)
-        # self.ui.retry_solver_comboBox.setCurrentIndex(3)
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
@@ -288,8 +272,8 @@ class MainGUI(QMainWindow):
             engine_lst.append(bs.EngineType.NewtonPA)
         if BENTAYGA_AVAILABLE:
             engine_lst.append(bs.EngineType.Bentayga)
-        if ALLIANDER_PGM_AVAILABLE:
-            engine_lst.append(bs.EngineType.AllianderPGM)
+        if PGM_AVAILABLE:
+            engine_lst.append(bs.EngineType.PGM)
 
         self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
         self.ui.engineComboBox.setCurrentIndex(0)
@@ -558,8 +542,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
-
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
@@ -619,8 +601,6 @@ class MainGUI(QMainWindow):
         self.ui.set_linear_combination_profile_pushButton.clicked.connect(self.set_profile_as_linear_combination)
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
-
-        self.ui.analyze_objects_pushButton.clicked.connect(self.display_grid_analysis)
 
         self.ui.catalogue_add_pushButton.clicked.connect(self.add_to_catalogue)
 
@@ -806,7 +786,22 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
-        else:
+
+            # Power Flow Methods
+            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
+            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
+            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
+            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
+            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
+            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
+            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
+            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
+            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+
+            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+        elif eng == bs.EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
 
             # no AC opf option
@@ -814,6 +809,67 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+            # Power Flow Methods
+            self.solvers_dict = OrderedDict()
+            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
+            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
+            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
+            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
+            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
+            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
+            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
+            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
+            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+
+            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+        elif eng == bs.EngineType.Bentayga:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+
+            # no AC opf option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+            # Power Flow Methods
+            self.solvers_dict = OrderedDict()
+            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
+            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
+            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
+            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
+            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
+            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
+            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
+            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
+            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+
+            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+        elif eng == bs.EngineType.PGM:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+
+            # no AC opf option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+
+            # Power Flow Methods
+            self.solvers_dict = OrderedDict()
+            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
+            self.solvers_dict[bs.SolverType.BFS.value] = bs.SolverType.BFS
+            self.solvers_dict[bs.SolverType.BFS_linear.value] = bs.SolverType.BFS_linear
+            self.solvers_dict[bs.SolverType.Constant_Impedance_linear.value] = bs.SolverType.Constant_Impedance_linear
+
+            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+        else:
+            raise Exception('Unsupported engine' + eng.value)
 
     @staticmethod
     def collect_memory():
@@ -827,6 +883,7 @@ class MainGUI(QMainWindow):
         """
         val = self.ui.engineComboBox.currentText()
         return self.engine_dict[val]
+
 
     def get_simulation_threads(self):
         """
@@ -1607,6 +1664,9 @@ class MainGUI(QMainWindow):
         if NEWTON_PA_AVAILABLE:
             files_types += "Newton (*.newton);;"
 
+        if PGM_AVAILABLE:
+            files_types += "PGM Json (*.pgm);;"
+
         # call dialog to select the file
         if self.project_directory is None:
             self.project_directory = ''
@@ -1643,6 +1703,7 @@ class MainGUI(QMainWindow):
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
                 extension['Newton (*.newton)'] = '.newton'
+                extension['PGM Json (*.pgm)'] = '.pgm'
 
                 if file_extension == '':
                     filename = name + extension[type_selected]
@@ -2023,7 +2084,6 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.BatteryDevice.value:
             elm = dev.Battery()
-            elements = self.circuit.get_batteries()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == DeviceType.ShuntDevice.value:
@@ -2049,7 +2109,6 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.UpfcDevice.value:
             elm = dev.UPFC(None, None)
-            elements = self.circuit.upfc_devices
 
         elif elm_type == DeviceType.DCLineDevice.value:
             elm = dev.DcLine(None, None)
@@ -4014,18 +4073,15 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-            if results.converged:
-                self.update_available_results()
-
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    self.colour_schematic()
-
-            else:
-
+            if not results.converged:
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'
                             'that the generator bounds are ok.\n'
                             'You may also use the diagnostic tool (F8)', 'OPF')
+
+            self.update_available_results()
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -5015,6 +5071,8 @@ class MainGUI(QMainWindow):
 
     def grid_colour_function(self, plot_function, current_study, current_step):
 
+
+
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
         max_branch_width = self.ui.max_branch_size_spinBox.value()
@@ -5132,11 +5190,11 @@ class MainGUI(QMainWindow):
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
 
             return plot_function(circuit=self.circuit,
-                                 Sbus=results.Sbus,
-                                 Sf=results.Sf,
-                                 voltages=results.voltage,
+                                 Sbus=results.Sbus1,
+                                 Sf=results.Sf1,
+                                 voltages=results.voltage1,
                                  types=results.bus_types,
-                                 loadings=results.loading,
+                                 loadings=results.loading1,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
@@ -7087,27 +7145,27 @@ class MainGUI(QMainWindow):
             self.circuit.fuse_devices()
             self.create_schematic_from_api()
 
-    def correct_inconsistencies(self):
-        """
-        Call correct inconsistencies
-        :return:
-        """
-        dlg = CorrectInconsistenciesDialogue()
-        dlg.setModal(True)
-        dlg.exec_()
-
-        if dlg.accepted:
-            logger = Logger()
-
-            self.circuit.correct_inconsistencies(logger=logger,
-                                                 maximum_difference=dlg.max_virtual_tap.value(),
-                                                 min_vset=dlg.min_voltage.value(),
-                                                 max_vset=dlg.max_voltage.value())
-
-            if len(logger) > 0:
-                dlg = LogsDialogue("correct inconsistencies", logger)
-                dlg.setModal(True)
-                dlg.exec_()
+    # def correct_inconsistencies(self):
+    #     """
+    #     Call correct inconsistencies
+    #     :return:
+    #     """
+    #     dlg = CorrectInconsistenciesDialogue()
+    #     dlg.setModal(True)
+    #     dlg.exec_()
+    #
+    #     if dlg.accepted:
+    #         logger = Logger()
+    #
+    #         self.circuit.correct_inconsistencies(logger=logger,
+    #                                              maximum_difference=dlg.max_virtual_tap.value(),
+    #                                              min_vset=dlg.min_voltage.value(),
+    #                                              max_vset=dlg.max_voltage.value())
+    #
+    #         if len(logger) > 0:
+    #             dlg = LogsDialogue("correct inconsistencies", logger)
+    #             dlg.setModal(True)
+    #             dlg.exec_()
 
     def delete_inconsistencies(self):
         """
@@ -7350,27 +7408,29 @@ class MainGUI(QMainWindow):
         Draw lines
         :return:
         """
+        current_study = self.ui.available_results_to_color_map_comboBox.currentText()
 
-        poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
-                                         current_study=self.ui.available_results_to_color_map_comboBox.currentText(),
-                                         current_step=self.ui.map_time_horizontalSlider.value())
+        if current_study != '':
+            poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
+                                             current_study=current_study,
+                                             current_step=self.ui.map_time_horizontalSlider.value())
 
-        # # delete the previous layer
-        # self.map_widget.DeleteLayer(self.polyline_layer_id)
-        #
-        # # draw again
-        # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
-        #                                                           map_rel=True,
-        #                                                           visible=True,
-        #                                                           delta=40,
-        #                                                           show_levels=list(range(15)),
-        #                                                           # levels at which to show the polylines
-        #                                                           name='<polyline_layer>')
+            # # delete the previous layer
+            # self.map_widget.DeleteLayer(self.polyline_layer_id)
+            #
+            # # draw again
+            # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
+            #                                                           map_rel=True,
+            #                                                           visible=True,
+            #                                                           delta=40,
+            #                                                           show_levels=list(range(15)),
+            #                                                           # levels at which to show the polylines
+            #                                                           name='<polyline_layer>')
 
-        self.map_widget.getLayer(self.polyline_layer_id).data = poly
-        self.map_widget.update()
+            self.map_widget.getLayer(self.polyline_layer_id).data = poly
+            self.map_widget.update()
 
-        # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
+            # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
 
 def run(use_native_dialogues=False):

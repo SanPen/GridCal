@@ -18,7 +18,7 @@ import numpy as np
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
-from GridCal.Engine.Devices.generator import Generator
+from GridCal.Engine.Devices.generator import Generator, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel, PandasModel
 from GridCal.Gui.GridEditorWidget.messages import *
@@ -251,8 +251,12 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        mdl = ObjectsModel([self.api_object],
+                           self.api_object.editable_headers,
+                           parent=self.diagramScene.parent().object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):

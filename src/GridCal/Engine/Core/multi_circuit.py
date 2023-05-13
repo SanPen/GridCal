@@ -251,8 +251,6 @@ class MultiCircuit:
                 self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
                 self.device_type_name_dict[dev.device_type.value] = dev.device_type
 
-
-
     def __str__(self):
         return str(self.name)
 
@@ -328,6 +326,14 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             m += len(branch_list)
         return m
+
+    def get_branch_names(self):
+
+        names = list()
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                names.append(elm.name)
+        return names
 
     def get_branch_number_wo_hvdc(self):
         """
@@ -2804,3 +2810,13 @@ class MultiCircuit:
                 self.contingencies.append(contingency)
                 self.contingency_groups.append(group)
 
+    def get_voltage_guess(self):
+        v = np.zeros(len(self.buses), dtype=complex)
+
+        for i, bus in enumerate(self.buses):
+            if bus.active:
+                x = bus.Vm0 * np.cos(bus.Va0)
+                y = bus.Vm0 * np.sin(bus.Va0)
+                v[i] = complex(x, y)
+
+        return v

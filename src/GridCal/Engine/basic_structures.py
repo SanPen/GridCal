@@ -111,6 +111,9 @@ class SolverType(Enum):
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'
     NELDER_MEAD_OPF = 'Nelder Mead OPF'
+    BFS = 'Backwards-Forward substitution'
+    BFS_linear = 'Backwards-Forward substitution (linear)'
+    Constant_Impedance_linear = 'Constant impedance linear'
     NoSolver = 'No Solver'
 
     def __str__(self):
@@ -298,7 +301,7 @@ class EngineType(Enum):
     GridCal = 'GridCal'
     Bentayga = 'Bentayga'
     NewtonPA = 'Newton Power Analytics'
-    AllianderPGM = 'Alliander PGM'
+    PGM = 'Power Grid Model'
 
     def __str__(self):
         return self.value
