@@ -306,7 +306,7 @@ def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-@nb.jit(cache=True)
+@nb.jit(cache=True, nopython=True)
 def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     """
 
@@ -332,7 +332,7 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     return idx_f, idx_t
 
 
-@nb.jit(cache=True)
+@nb.jit(cache=True, nopython=True)
 def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
     """
 
@@ -368,7 +368,7 @@ def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
     return dSf_dVm, dSf_dVa
 
 
-@nb.jit(cache=True)
+@nb.jit(cache=True, nopython=True)
 def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
     """
 

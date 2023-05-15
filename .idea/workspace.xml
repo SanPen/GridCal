@@ -26,25 +26,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Several pylint errors detected and fixed">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed more pylint errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/.pylintrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/.pylintrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generic_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generic_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/load_designer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/load_designer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/models_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/models_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/pySlipQt/pySlipQt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/pySlipQt/pySlipQt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/coin.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/coin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tutorials/defining_a_grid_from_scratch_with_profiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tutorials/defining_a_grid_from_scratch_with_profiles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tutorials/time_series.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tutorials/time_series.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/windows_post_install.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1151,14 +1139,8 @@
       <workItem from="1683995580519" duration="3723000" />
       <workItem from="1684138731449" duration="2790000" />
       <workItem from="1684157673733" duration="2429000" />
-      <workItem from="1684160491390" duration="2504000" />
-    </task>
-    <task id="LOCAL-00342" summary="Fixed short circuit indexing bug in islands">
-      <created>1661863735026</created>
-      <option name="number" value="00342" />
-      <option name="presentableId" value="LOCAL-00342" />
-      <option name="project" value="LOCAL" />
-      <updated>1661863735027</updated>
+      <workItem from="1684160491390" duration="2609000" />
+      <workItem from="1684168978139" duration="1258000" />
     </task>
     <task id="LOCAL-00343" summary="Merged devel with devel_REE (successfully)">
       <created>1662028943800</created>
@@ -1496,7 +1478,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684142477756</updated>
     </task>
-    <option name="localTasksCounter" value="391" />
+    <task id="LOCAL-00391" summary="Fixed more pylint errors">
+      <created>1684164546863</created>
+      <option name="number" value="00391" />
+      <option name="presentableId" value="LOCAL-00391" />
+      <option name="project" value="LOCAL" />
+      <updated>1684164546863</updated>
+    </task>
+    <option name="localTasksCounter" value="392" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1538,7 +1527,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added override_branch_controls options, removing the storage dispatch options" />
     <MESSAGE value="Fixed issue with linear transfer capacity calculation" />
     <MESSAGE value="Added newton save" />
     <MESSAGE value="Merged the changes from ramferan" />
@@ -1563,7 +1551,8 @@
     <MESSAGE value="Now the analysis tool can also fix most detected errors" />
     <MESSAGE value="4.7.6" />
     <MESSAGE value="Several pylint errors detected and fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="Several pylint errors detected and fixed" />
+    <MESSAGE value="Fixed more pylint errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed more pylint errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

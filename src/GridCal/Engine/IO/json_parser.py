@@ -25,7 +25,7 @@ from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_c
 from GridCal.Engine.Devices import *
 
 
-@nb.jit()
+@nb.njit()
 def compress_array_numba(value, base):
     data = list()
     indptr = list()

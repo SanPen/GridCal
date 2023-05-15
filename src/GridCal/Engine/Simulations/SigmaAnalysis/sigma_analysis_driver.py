@@ -316,7 +316,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     return results
 
 
-@nb.jit(cache=True)
+@nb.jit(cache=True, nopython=True)
 def sigma_distance(sigma_real, sigma_imag):
     """
     Distance to the collapse in the sigma space
