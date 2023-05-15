@@ -398,13 +398,10 @@ class StochasticPowerFlowDriver(DriverTemplate):
         # print('LHS run')
         self.__cancel__ = False
 
-        if self.options.multi_thread:
-            self.results = self.run_multi_thread()
-        else:
-            if self.simulation_type == StochasticPowerFlowType.MonteCarlo:
-                self.results = self.run_single_thread_mc()
-            elif self.simulation_type == StochasticPowerFlowType.LatinHypercube:
-                self.results = self.run_single_thread_lhs()
+        if self.simulation_type == StochasticPowerFlowType.MonteCarlo:
+            self.results = self.run_single_thread_mc()
+        elif self.simulation_type == StochasticPowerFlowType.LatinHypercube:
+            self.results = self.run_single_thread_lhs()
 
     def cancel(self):
         """

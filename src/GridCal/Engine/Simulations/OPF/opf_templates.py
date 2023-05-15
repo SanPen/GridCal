@@ -17,6 +17,8 @@
 
 import platform
 
+import numpy as np
+
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
@@ -41,24 +43,24 @@ class Opf:
 
         self.logger = Logger()
 
-        self.theta = None
-        self.Pg = None
-        self.Pb = None
-        self.Pl = None
+        self.theta = np.ndarray(0)
+        self.Pg = np.ndarray(0)
+        self.Pb = np.ndarray(0)
+        self.Pl = np.ndarray(0)
 
-        self.Pinj = None
-        self.hvdc_flow = None
+        self.Pinj = np.ndarray(0)
+        self.hvdc_flow = np.ndarray(0)
 
-        self.phase_shift = None
+        self.phase_shift = np.ndarray(0)
 
-        self.E = None
-        self.s_from = None
+        self.E = np.ndarray(0)
+        self.s_from = np.ndarray(0)
 
-        self.s_to = None
-        self.overloads = None
-        self.rating = None
-        self.load_shedding = None
-        self.nodal_restrictions = list()
+        self.s_to = np.ndarray(0)
+        self.overloads = np.ndarray(0)
+        self.rating = np.ndarray(0)
+        self.load_shedding = np.ndarray(0)
+        self.nodal_restrictions = np.ndarray(0)
 
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(m, c), ...]

@@ -1914,16 +1914,15 @@ class MainGUI(QMainWindow):
             numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
             calculation_inputs = numerical_circuit.split_into_islands()
 
-            writer = pd.ExcelWriter(filename)
+            with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
 
-            for c, calc_input in enumerate(calculation_inputs):
+                for c, calc_input in enumerate(calculation_inputs):
 
-                for elm_type in calc_input.available_structures:
-                    name = elm_type + '_' + str(c)
-                    df = calc_input.get_structure(elm_type).astype(str)
-                    df.to_excel(writer, name)
+                    for elm_type in calc_input.available_structures:
+                        name = elm_type + '_' + str(c)
+                        df = calc_input.get_structure(elm_type).astype(str)
+                        df.to_excel(writer, name)
 
-            writer.save()
 
     def export_diagram(self):
         """

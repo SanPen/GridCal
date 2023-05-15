@@ -2294,8 +2294,8 @@ class PySlipQt(QWidget):
         (brx, bty) = ur
         if layer.map_rel:
             pex = self.pex_point
-            (blx, bby) = self.geo_to_view(ll)
-            (brx, bty) = self.geo_to_view(ur)
+            (blx, bby) = self.geo_to_view(blx, bby)
+            (brx, bty) = self.geo_to_view(brx, bty)
 
         # get points selection
         for (x, y, place, radius, colour, x_off, y_off, udata) in layer.data:
@@ -2380,23 +2380,21 @@ class PySlipQt(QWidget):
 
         # get correct pex function and box limits in view coords
         pex = self.pex_extent_view
-        if layer.map_rel:
-            pex = self.pex_extent
-            ll = self.geo_to_view(ll)
-            ur = self.geo_to_view(ur)
         (vboxlx, vboxby) = ll
         (vboxrx, vboxty) = ur
+        if layer.map_rel:
+            pex = self.pex_extent
+            vboxlx, vboxby = self.geo_to_view(vboxlx, vboxby)
+            vboxrx, vboxty = self.geo_to_view(vboxrx, vboxty)
 
         # select images in map/view
         selection = []
         data = []
-        for (x, y, bmp, w, h, place,
-                x_off, y_off, radius, colour, udata) in layer.data:
+        for (x, y, bmp, w, h, place, x_off, y_off, radius, colour, udata) in layer.data:
             (_, e) = pex(place, x, y, x_off, y_off, w, h)
             if e:
                 (li, ri, ti, bi) = e    # image extents (view coords)
-                if (vboxlx <= li and ri <= vboxrx
-                        and vboxty <= ti and bi <= vboxby):
+                if (vboxlx <= li and ri <= vboxrx and vboxty <= ti and bi <= vboxby):
                     selection.append((x, y, {'placement': place,
                                              'radius': radius,
                                              'colour': colour,
@@ -2406,7 +2404,7 @@ class PySlipQt(QWidget):
 
         if not selection:
             return None
-        return (selection, data, None)
+        return selection, data, None
 
     def sel_text_in_layer(self, layer, view_point, geo_point):
         """Determine if clicked location selects a text object in layer data.

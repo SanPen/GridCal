@@ -1849,10 +1849,10 @@ class MultiCircuit:
             df_bus.index = self.bus_names
             df_branch.index = self.branch_names
 
-            writer = pd.ExcelWriter(file_name)
-            df_bus.to_excel(writer, 'Bus results')
-            df_branch.to_excel(writer, 'Branch results')
-            writer.save()
+            with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
+                df_bus.to_excel(writer, 'Bus results')
+                df_branch.to_excel(writer, 'Branch results')
+
         else:
             raise Exception('There are no power flow results!')
 
@@ -1919,21 +1919,21 @@ class MultiCircuit:
             V_gen = pd.DataFrame(data=np.array(V_gen).transpose(), index=self.time_profile, columns=gen_names)
             E_batt = pd.DataFrame(data=np.array(E_batt).transpose(), index=self.time_profile, columns=bat_names)
 
-            writer = pd.ExcelWriter(file_name)
-            P.to_excel(writer, 'P loads')
-            Q.to_excel(writer, 'Q loads')
+            with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
+                P.to_excel(writer, 'P loads')
+                Q.to_excel(writer, 'Q loads')
 
-            Ir.to_excel(writer, 'Ir loads')
-            Ii.to_excel(writer, 'Ii loads')
+                Ir.to_excel(writer, 'Ir loads')
+                Ii.to_excel(writer, 'Ii loads')
 
-            G.to_excel(writer, 'G loads')
-            B.to_excel(writer, 'B loads')
+                G.to_excel(writer, 'G loads')
+                B.to_excel(writer, 'B loads')
 
-            P_gen.to_excel(writer, 'P generators')
-            V_gen.to_excel(writer, 'V generators')
+                P_gen.to_excel(writer, 'P generators')
+                V_gen.to_excel(writer, 'V generators')
 
-            E_batt.to_excel(writer, 'Energy batteries')
-            writer.save()
+                E_batt.to_excel(writer, 'Energy batteries')
+
         else:
             raise Exception('There are no time series!')
 

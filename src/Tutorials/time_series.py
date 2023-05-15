@@ -154,7 +154,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
 pf = PowerFlowDriver(grid, pf_options)
 pf.run()
 
-writer = pd.ExcelWriter('Results.xlsx')
+writer = pd.ExcelWriter('Results.xlsx')  # pylint: disable=abstract-class-instantiated
 # now, let's compose a nice DataFrame with the voltage results
 headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
 Vm = np.abs(pf.results.voltage)

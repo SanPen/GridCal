@@ -285,7 +285,7 @@ if __name__ == '__main__':
     # save the result
     br_names = [b.name for b in main_circuit.branches]
     br_names2 = ['#' + b.name for b in main_circuit.branches]
-    w = pd.ExcelWriter('LODF IEEE30.xlsx')
+    w = pd.ExcelWriter('LODF IEEE30.xlsx')  # pylint: disable=abstract-class-instantiated
     pd.DataFrame(data=simulation.results.Sf.real,
                  columns=br_names,
                  index=['base'] + br_names2).to_excel(w, sheet_name='branch power')

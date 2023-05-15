@@ -382,7 +382,7 @@ class COINMP_DLL(LpSolver):
         def copy(self):
             """Make a copy of self"""
 
-            cpy = LpSolver.copy()
+            cpy = LpSolver.copy(self)
             cpy.cuts = self.cuts
             cpy.presolve = self.presolve
             cpy.dual = self.dual

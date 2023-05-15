@@ -7,9 +7,7 @@ from enum import Enum
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
-# from PySide2.QtCore import *
-# from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+from PySide2.QtWidgets import QWidget, QApplication
 
 from GridCal.Gui.LoadDesigner.gui import *
 
@@ -72,14 +70,14 @@ class LoadPointsModel(QtCore.QAbstractTableModel):
         return None
 
 
-class LoadDesigner(QtWidgets.QDialog):
+class LoadDesigner(QDialog):
 
     def __init__(self, parent=None):
         """
 
         :param parent:
         """
-        QtWidgets.QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Load designer')
@@ -138,7 +136,7 @@ class LoadDesigner(QtWidgets.QDialog):
 
 if __name__ == "__main__":
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = LoadDesigner()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

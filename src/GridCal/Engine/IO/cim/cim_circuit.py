@@ -282,12 +282,10 @@ class CIMCircuit:
         keys = list(dfs.keys())
         keys.sort()
 
-        writer = pd.ExcelWriter(fname)
-        for class_name in keys:
-            df = dfs[class_name]
-            try:
-                df.to_excel(writer, sheet_name=class_name, index=False)
-            except:
-                print('Error exporting', class_name)
-        writer.save()
-
+        with pd.ExcelWriter(fname) as writer:  # pylint: disable=abstract-class-instantiated
+            for class_name in keys:
+                df = dfs[class_name]
+                try:
+                    df.to_excel(writer, sheet_name=class_name, index=False)
+                except:
+                    print('Error exporting', class_name)

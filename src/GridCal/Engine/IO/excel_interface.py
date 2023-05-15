@@ -577,7 +577,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 for i in range(vals.shape[0]):
                     wire = Wire()
                     set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.editable_headers):])
-                    obj.wires_in_tower.append(wire)
+                    tower.wires_in_tower.append(wire)
 
                 circuit.add_overhead_line(tower)
                 branch_types[str(tower)] = tower

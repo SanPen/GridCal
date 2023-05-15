@@ -820,7 +820,7 @@ class CIMImport:
                     else:
                         lv = 1
                         hv = 1
-                        self.logger.add_error('Could not parse transformer nominal voltages', self.name)
+                        self.logger.add_error('Could not parse transformer nominal voltages', elm.name)
 
                     line = gcdev.Transformer2W(idtag=cimdev.rfid2uuid(elm.rfid),
                                                bus_from=B1,

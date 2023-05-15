@@ -269,10 +269,9 @@ class ModelsInputGUI(QtWidgets.QDialog):
                         arr_a[t] = bus.Va0 * float(bus.active)
 
         if write_report:
-            w = pd.ExcelWriter(report_name)
-            pd.DataFrame(data=data_m, index=index).to_excel(w, sheet_name="Vm")
-            pd.DataFrame(data=data_a, index=index).to_excel(w, sheet_name="Va")
-            w.close()
+            with pd.ExcelWriter(report_name) as w:  # pylint: disable=abstract-class-instantiated
+                pd.DataFrame(data=data_m, index=index).to_excel(w, sheet_name="Vm")
+                pd.DataFrame(data=data_a, index=index).to_excel(w, sheet_name="Va")
 
 
 if __name__ == "__main__":

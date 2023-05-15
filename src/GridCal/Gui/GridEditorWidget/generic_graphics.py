@@ -51,8 +51,8 @@ class Circle(LineUpdateMixin, QGraphicsEllipseItem):
     pass
 
 
-class QLine(LineUpdateMixin, QGraphicsLineItem):
-    pass
+# class QLine(LineUpdateMixin, QGraphicsLineItem):
+#     pass
 
 
 class ParameterDialog(QDialog):
