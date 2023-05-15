@@ -32,7 +32,8 @@ from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_
 from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.power_world_parser import PowerWorldParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree, load_session_driver_objects
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree, \
+    load_session_driver_objects
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.IO.rawx_parser import rawx_parse, rawx_writer
@@ -65,7 +66,7 @@ class FileOpen:
         if isinstance(self.file_name, list):
 
             for f in self.file_name:
-                name, file_extension = os.path.splitext(f)
+                _, file_extension = os.path.splitext(f)
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM)')
 
@@ -83,7 +84,7 @@ class FileOpen:
                     data_dictionary = load_from_xls(self.file_name)
 
                     # Pass the table-like data dictionary to objects in this circuit
-                    if 'version' not in data_dictionary.keys():
+                    if 'version' not in data_dictionary:
                         interpret_data_v1(self.circuit, data_dictionary, self.logger)
 
                     elif data_dictionary['version'] == 2.0:
@@ -146,43 +147,43 @@ class FileOpen:
                 elif file_extension.lower() == '.json':
 
                     # the json file can be the GridCal one or the iPA one...
-                    data = json.load(open(self.file_name))
+                    with open(self.file_name, encoding="utf-8") as f:
+                        data = json.load(f)
 
-                    if isinstance(data, dict):
-                        if 'Red' in data.keys():
-                            self.circuit = load_iPA(self.file_name)
-                        elif sum([x in data.keys() for x in ['type', 'version']]) == 2:
-                            version = int(float(data['version']))
+                        if isinstance(data, dict):
+                            if 'Red' in data.keys():
+                                self.circuit = load_iPA(self.file_name)
+                            elif sum([x in data.keys() for x in ['type', 'version']]) == 2:
+                                version = int(float(data['version']))
 
-                            if data['type'] == 'Grid Exchange Json File' and 'profiles' in data.keys():
-                                if version == 2:
-                                    self.circuit = parse_json_data_v2(data, self.logger)
+                                if data['type'] == 'Grid Exchange Json File' and 'profiles' in data.keys():
+                                    if version == 2:
+                                        self.circuit = parse_json_data_v2(data, self.logger)
 
-                                elif version == 3:
-                                    self.circuit = parse_json_data_v3(data, self.logger)
-                                else:
-                                    self.logger.add_error('Recognised as a gridCal compatible Json '
-                                                          'but the version is not supported')
+                                    elif version == 3:
+                                        self.circuit = parse_json_data_v3(data, self.logger)
+                                    else:
+                                        self.logger.add_error('Recognised as a gridCal compatible Json '
+                                                              'but the version is not supported')
+
+                            else:
+                                self.logger.add_error('Unknown json format')
+
+                        elif isinstance(data, list):
+                            self.circuit = parse_json(self.file_name)
 
                         else:
                             self.logger.add_error('Unknown json format')
 
-                    elif type(data) == list():
-                        self.circuit = parse_json(self.file_name)
-
-                    else:
-                        self.logger.add_error('Unknown json format')
-
                 elif file_extension.lower() == '.ejson3':
-                    data = json.load(open(self.file_name))
-                    self.circuit = parse_json_data_v3(data, self.logger)
-
-                elif file_extension.lower() == '.ejson4':
-                    data = json.load(open(self.file_name))
-                    # self.circuit = parse_json_data_v4(data, self.logger)
+                    with open(self.file_name, encoding="utf-8") as f:
+                        data = json.load(f)
+                        self.circuit = parse_json_data_v3(data, self.logger)
 
                 elif file_extension.lower() == '.raw':
-                    parser = PSSeParser(self.file_name, text_func=text_func,  progress_func=progress_func)
+                    parser = PSSeParser(self.file_name,
+                                        text_func=text_func,
+                                        progress_func=progress_func)
                     self.circuit = parser.circuit
                     self.logger += parser.logger
 
@@ -197,11 +198,13 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    parser = CIMImport(text_func=text_func,  progress_func=progress_func)
+                    parser = CIMImport(text_func=text_func, progress_func=progress_func)
                     self.circuit = parser.load_cim_file(self.file_name)  # file_name might be a list of files
                     self.logger += parser.logger
+
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_hdf5(self.file_name, self.logger)
+
                 elif file_extension.lower() == '.nc':
                     self.circuit = parse_netcdf(self.file_name, self.logger)
 
@@ -212,23 +215,29 @@ class FileOpen:
         return self.circuit
 
     def check_json_type(self, file_name):
+        """
+        Check the json file type from its internal data
+        :param file_name: file path
+        :return: data['type'] | 'Not json file' | 'Unknown json file'
+        """
 
         if not os.path.exists(file_name):
             return 'Not json file'
 
-        name, file_extension = os.path.splitext(file_name)
+        _, file_extension = os.path.splitext(file_name)
 
         if file_extension.lower() == '.json':
+            with open(self.file_name, encoding="utf-8") as f:
+                data = json.load(f)
+                return data['type'] if 'type' in data else 'Unknown json file'
+        else:
+            return 'Not json file'
 
-            data = json.load(open(self.file_name))
-
-            if 'type' in data.keys():
-                return data['type']
-
-            else:
-                return 'Unknown json file'
 
 class FileSave:
+    """
+    FileSave
+    """
 
     def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None,
                  simulation_drivers=list(), sessions=list()):
