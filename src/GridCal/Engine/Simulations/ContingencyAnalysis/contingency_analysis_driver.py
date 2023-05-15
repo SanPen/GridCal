@@ -206,11 +206,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
         numerical_circuit = nonlinear_analysis.numerical_circuit
 
         # declare the results
-        results = ContingencyAnalysisResults(nbr=numerical_circuit.nbr,
+        results = ContingencyAnalysisResults(ncon=len(self.grid.contingency_groups),
+                                             nbr=numerical_circuit.nbr,
                                              nbus=numerical_circuit.nbus,
                                              branch_names=numerical_circuit.branch_names,
                                              bus_names=numerical_circuit.bus_names,
-                                             bus_types=numerical_circuit.bus_types)
+                                             bus_types=numerical_circuit.bus_types,
+                                             con_names=self.grid.get_contingency_group_names())
 
         # get the contingency branch indices
         br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()

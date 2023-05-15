@@ -58,7 +58,7 @@ class Opf:
         self.overloads = None
         self.rating = None
         self.load_shedding = None
-        self.nodal_restrictions = None
+        self.nodal_restrictions = list()
 
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(m, c), ...]

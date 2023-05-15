@@ -31,6 +31,9 @@ class DummySignal:
     def emit(self, val=''):
         pass
 
+    def connect(self, val):
+        pass
+
 
 class DriverTemplate:
 

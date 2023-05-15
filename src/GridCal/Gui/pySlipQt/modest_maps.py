@@ -77,10 +77,11 @@ class Tiles(tiles_net.Tiles):
         xtile = (xgeo + 180.0) / 360.0 * n
         ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
 
-        return (xtile, ytile)
+        return xtile, ytile
 
     def Tile2Geo(self, xtile, ytile):
-        """Convert tile fractional coordinates to geo for level in use.
+        """
+        Convert tile fractional coordinates to geo for level in use.
 
         tile  a tupl;e (xtile,ytile) of tile fractional coordinates
 
@@ -89,10 +90,9 @@ class Tiles(tiles_net.Tiles):
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
 
-        (xtile, ytile) = tile
         n = 2.0 ** self.level
         xgeo = xtile / n * 360.0 - 180.0
         yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
         ygeo = math.degrees(yrad)
 
-        return (xgeo, ygeo)
+        return xgeo, ygeo

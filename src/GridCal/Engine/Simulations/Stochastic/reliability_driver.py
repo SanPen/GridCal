@@ -19,7 +19,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit
 from GridCal.Engine.Devices import DeviceType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -159,7 +159,7 @@ def run_events(nc: SnapshotData, events_list: list):
             pass
 
         # compile the grid information
-        calculation_islands = split_into_islands(nc)
+        calculation_islands = nc.split_into_islands()
 
 
 class ReliabilityStudy(DriverTemplate):

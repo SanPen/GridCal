@@ -90,13 +90,13 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
                     f = file
                     if not f.endswith('.xlsx'):
                         f += '.xlsx'
-                    self.mdl.save_to_excel(f, mode='real')
+                    self.mdl.save_to_excel(f)
                     print('Saved!')
                 if 'csv' in filter:
                     f = file
                     if not f.endswith('.csv'):
                         f += '.csv'
-                    self.mdl.save_to_csv(f, mode='real')
+                    self.mdl.save_to_csv(f)
                     print('Saved!')
 
 

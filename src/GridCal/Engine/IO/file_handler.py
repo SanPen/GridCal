@@ -269,9 +269,6 @@ class FileSave:
         elif self.file_name.endswith('.ejson3'):
             logger = self.save_json_v3()
 
-        elif self.file_name.endswith('.ejson4'):
-            logger = self.save_json_v4()
-
         elif self.file_name.endswith('.xml'):
             logger = self.save_cim()
 

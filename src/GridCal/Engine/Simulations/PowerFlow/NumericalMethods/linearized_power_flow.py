@@ -139,7 +139,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
             V = Vset
             # Calculate the error and check the convergence
             Scalc = compute_power(Ybus, V)
-            mismatch = compute_fx(Scalc, S0)
+            mismatch = compute_fx(Scalc=Scalc, Sbus=S0, pvpq=pvpq, pq=pq)
             norm_f = compute_fx_error(mismatch)
 
             # check for convergence

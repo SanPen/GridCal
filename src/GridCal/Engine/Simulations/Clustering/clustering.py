@@ -76,7 +76,7 @@ def spectral_approximate_sampling(X, n_points=10):
     """
 
     # declare the model
-    model = SpectralClustering(n_points=n_points)
+    model = SpectralClustering(n_clusters=n_points)
 
     # model fitting
     model.fit(X)

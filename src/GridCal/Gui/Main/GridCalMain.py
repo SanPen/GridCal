@@ -6304,8 +6304,7 @@ class MainGUI(QMainWindow):
                             self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
                             self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
                             self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
-                            self.delete_and_reduce_driver.done_signal.connect(
-                                self.post_delete_and_reduce_selected_objects)
+                            self.delete_and_reduce_driver.done_signal.connect(self.post_delete_and_reduce_selected_objects)
 
                             self.delete_and_reduce_driver.start()
 

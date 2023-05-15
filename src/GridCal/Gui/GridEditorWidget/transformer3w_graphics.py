@@ -195,10 +195,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def merge(self, other_bus_graphic):
-
-        self.shunt_children += other_bus_graphic.shunt_children
-
     def update(self):
         """
         Update the object

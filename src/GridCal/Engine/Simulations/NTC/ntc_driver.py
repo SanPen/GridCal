@@ -193,7 +193,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 buses_areas_1=self.options.area_from_bus_idx,
                 buses_areas_2=self.options.area_to_bus_idx)
 
-            # pack the results
+            # pack the results  # TODO: check all missing errors
             self.results = OptimalNetTransferCapacityResults(
                 bus_names=numerical_circuit.bus_data.names,
                 branch_names=numerical_circuit.branch_data.names,

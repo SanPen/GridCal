@@ -145,14 +145,15 @@ class FixableErrorOutOfRange:
         arr_name = self.property_name + '_prof'
         if fix_ts and hasattr(self.grid_element, arr_name):
             arr = getattr(self.grid_element, arr_name)
-            for i, value in enumerate(arr):
-                if value < self.lower_limit:
-                    getattr(self.grid_element, arr_name)[i] = self.lower_limit
-                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+            if arr is not None:
+                for i, value in enumerate(arr):
+                    if value < self.lower_limit:
+                        getattr(self.grid_element, arr_name)[i] = self.lower_limit
+                        logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
 
-                elif value > self.upper_limit:
-                    getattr(self.grid_element, arr_name)[i] = self.upper_limit
-                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+                    elif value > self.upper_limit:
+                        getattr(self.grid_element, arr_name)[i] = self.upper_limit
+                        logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
 
 
 class FixableErrorRangeFlip:

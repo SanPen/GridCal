@@ -15,31 +15,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
-import string
 import sys
-from enum import Enum
-import PySide2
 from typing import List
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import math
 
-from PySide2.QtWidgets import *
-from PySide2 import QtWidgets, QtGui
-
-from GridCal.Gui.Analysis.gui import *
+from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow
+from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
-from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.GeneralDialogues import LogsDialogue, Logger
 
 
-class GridAnalysisGUI(QtWidgets.QMainWindow):
+class GridAnalysisGUI(QMainWindow):
+    """
 
-    def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit = None, use_native_dialogues=False):
+    """
+    def __init__(self, parent=None, object_types=None, circuit: MultiCircuit = None, use_native_dialogues=False):
         """
         Constructor
         Args:
@@ -47,7 +37,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             object_types:
             circuit:
         """
-        QtWidgets.QMainWindow.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid analysis')
@@ -60,9 +50,9 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # declare logs
         self.log = GridErrorLog()
 
-        self.fixable_errors: List[FixableErrorOutOfRange] = list()
+        self.fixable_errors: List[FixableErrorOutOfRange] = []
 
-        self.object_types = object_types
+        self.object_types = object_types if object_types is not None else []
 
         self.ui.actionSave_diagnostic.triggered.connect(self.save_diagnostic)
         self.ui.actionAnalyze.triggered.connect(self.analyze_all)
@@ -94,15 +84,16 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
         print('Analyzing...')
         # declare logs
-        self.fixable_errors = grid_analysis(circuit=self.circuit,
-                                            imbalance_threshold=self.ui.activePowerImbalanceSpinBox.value() / 100.0,
-                                            v_low=self.ui.genVsetMinSpinBox.value(),
-                                            v_high=self.ui.genVsetMaxSpinBox.value(),
-                                            tap_min=self.ui.transformerTapModuleMinSpinBox.value(),
-                                            tap_max=self.ui.transformerTapModuleMaxSpinBox.value(),
-                                            transformer_virtual_tap_tolerance=self.ui.virtualTapToleranceSpinBox.value() / 100.0,
-                                            branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
-                                            logger=self.log)
+        self.fixable_errors = grid_analysis(
+            circuit=self.circuit,
+            imbalance_threshold=self.ui.activePowerImbalanceSpinBox.value() / 100.0,
+            v_low=self.ui.genVsetMinSpinBox.value(),
+            v_high=self.ui.genVsetMaxSpinBox.value(),
+            tap_min=self.ui.transformerTapModuleMinSpinBox.value(),
+            tap_max=self.ui.transformerTapModuleMaxSpinBox.value(),
+            transformer_virtual_tap_tolerance=self.ui.virtualTapToleranceSpinBox.value() / 100.0,
+            branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
+            logger=self.log)
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
@@ -127,7 +118,10 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         self.analyze_all()
 
     def save_diagnostic(self):
-
+        """
+        save_diagnostic
+        :return:
+        """
         files_types = "Excel (*.xlsx)"
 
         options = QFileDialog.Options()
@@ -136,13 +130,14 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
         fname = 'Grid error analysis.xlsx'
 
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
 
         if filename != '':
             self.log.save(filename)
 
 
 if __name__ == "__main__":
+    from PySide2 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
     window = GridAnalysisGUI()
     window.resize(1.61 * 700.0, 700.0)  # golden ratio

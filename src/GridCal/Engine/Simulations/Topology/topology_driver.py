@@ -338,11 +338,14 @@ class DeleteAndReduce(DriverTemplate):
 
         self.__cancel__ = False
 
+        self._is_running = True
+
     def run(self):
         """
         Run the monte carlo simulation
         @return:
         """
+        self._is_running = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Detecting which branches to remove...')
 
@@ -359,6 +362,7 @@ class DeleteAndReduce(DriverTemplate):
         self.progress_text.emit('Done')
         self.progress_signal.emit(0.0)
         self.done_signal.emit()
+        self._is_running = False
 
     def cancel(self):
         """
@@ -369,6 +373,12 @@ class DeleteAndReduce(DriverTemplate):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
+
+    def isRunning(self):
+        return self._is_running
+
+    def start(self):
+        self.run()
 
 
 class NodeGroupsDriver(DriverTemplate):

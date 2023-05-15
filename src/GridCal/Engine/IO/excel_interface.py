@@ -567,20 +567,20 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         lst = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
             for tower_name in lst['tower_name'].unique():
-                obj = Tower()
+                tower = Tower()
                 vals = lst[lst['tower_name'] == tower_name].values
 
                 # set the tower values
-                set_object_attributes(obj, obj.editable_headers.keys(), vals[0, :])
+                set_object_attributes(tower, tower.editable_headers.keys(), vals[0, :])
 
                 # add the wires
                 for i in range(vals.shape[0]):
                     wire = Wire()
-                    set_object_attributes(wire, obj.get_wire_properties(), vals[i, len(obj.editable_headers):])
+                    set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.editable_headers):])
                     obj.wires_in_tower.append(wire)
 
-                circuit.add_overhead_line(obj)
-                branch_types[str(obj)] = obj
+                circuit.add_overhead_line(tower)
+                branch_types[str(tower)] = tower
         else:
             pass
     else:

@@ -251,10 +251,12 @@ class PowerFlowResults(ResultsTemplate):
         Return a copy of this
         @return:
         """
-        val = PowerFlowResults(n=self.n, m=self.m, n_tr=self.n_tr,
+        val = PowerFlowResults(n=self.n, m=self.m, n_tr=self.n_tr, n_hvdc=self.n_hvdc,
                                bus_names=self.bus_names,
                                branch_names=self.branch_names,
-                               transformer_names=self.transformer_names)
+                               transformer_names=self.transformer_names,
+                               hvdc_names=self.hvdc_names,
+                               bus_types=self.bus_types)
         val.Sbus = self.Sbus.copy()
         val.voltage = self.voltage.copy()
         val.Sf = self.Sf.copy()

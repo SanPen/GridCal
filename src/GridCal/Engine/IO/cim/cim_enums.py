@@ -22,7 +22,7 @@ class RegulatingControlModeKind(Enum):
     @staticmethod
     def argparse(s):
         try:
-            return TransformerControlType[s]
+            return RegulatingControlModeKind[s]
         except KeyError:
             return s
 

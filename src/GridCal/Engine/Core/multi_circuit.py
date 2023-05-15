@@ -1805,9 +1805,9 @@ class MultiCircuit:
                     name='UPFC',
                     active=line.active,
                     rate=line.rate,
-                    rl=line.R,
-                    xl=line.X,
-                    bl=line.B,
+                    rs=line.R,
+                    xs=line.X,
+                    # bl=line.B,
                     active_prof=line.active_prof,
                     rate_prof=line.rate_prof)
 
@@ -2258,7 +2258,7 @@ class MultiCircuit:
             logger.add_error("pyproj is not installed")
             return logger
 
-        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)
+        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)  # TODO: check the return types
         x *= factor
         y *= factor
 

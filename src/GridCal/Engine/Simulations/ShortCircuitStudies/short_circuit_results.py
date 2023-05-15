@@ -148,7 +148,7 @@ class ShortCircuitResults(ResultsTemplate):
         self.T = None
         self.hvdc_F = None
         self.hvdc_T = None
-        self.bus_area_indices = None
+        self.bus_area_indices = list()
         self.area_names = area_names
 
         self.Sbus1 = np.zeros(n, dtype=complex)

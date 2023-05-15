@@ -64,8 +64,9 @@ class Tiles(tiles_net.Tiles):
                          max_lru=MaxLRU, tiles_dir=tiles_dir,
                          http_proxy=http_proxy)
 
-    def Geo2Tile(self, xtile, ytile):
-        """Convert geo to tile fractional coordinates for level in use.
+    def Geo2Tile(self, xgeo, ygeo):
+        """
+        Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
 
@@ -79,7 +80,7 @@ class Tiles(tiles_net.Tiles):
         xtile = (xgeo + 180.0) / 360.0 * n
         ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
 
-        return (xtile, ytile)
+        return xtile, ytile
 
     def Tile2Geo(self, xtile, ytile):
         """Convert tile fractional coordinates to geo for level in use.

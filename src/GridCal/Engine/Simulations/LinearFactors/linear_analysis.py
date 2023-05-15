@@ -422,7 +422,7 @@ class LinearAnalysis2:
         """
 
         # option 2: call the power directly
-        Pbr = np.dot(self.PTDF, Sbus.real) * self.grid.Sbase
+        Pbr = np.dot(self.PTDF, Sbus.real) * self.numerical_circuit.Sbase
 
         return Pbr
 
@@ -434,7 +434,7 @@ class LinearAnalysis2:
         """
 
         # option 2: call the power directly
-        Pbr = np.dot(self.PTDF, Sbus.real).T * self.grid.Sbase
+        Pbr = np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
 
         return Pbr
 

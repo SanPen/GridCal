@@ -47,8 +47,8 @@ def get_results_object_dictionary():
     """
     lst = [(AvailableTransferCapacityResults([], [], [], []), SimulationTypes.NetTransferCapacity_run),
            (AvailableTransferCapacityTimeSeriesResults([], [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
-           (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysis_run),
-           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
+           (ContingencyAnalysisResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysis_run),
+           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
            (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
            (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), ()), SimulationTypes.LinearAnalysis_TS_run),
@@ -56,7 +56,7 @@ def get_results_object_dictionary():
            (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
            (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
            (TimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
-           (ShortCircuitResults(0, 0, 0, (), (), (), ()), SimulationTypes.ShortCircuit_run),
+           (ShortCircuitResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.ShortCircuit_run),
            (StochasticPowerFlowResults(0, 0, 0, (), (), ()), SimulationTypes.StochasticPowerFlow)
            ]
 

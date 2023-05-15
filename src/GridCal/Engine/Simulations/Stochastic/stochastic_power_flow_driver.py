@@ -195,6 +195,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                        pv=numerical_island.pv,
                                        vd=numerical_island.vd,
                                        pqpv=numerical_island.pqpv,
+                                       Qmin=numerical_island.Qmin_bus,
+                                       Qmax=numerical_island.Qmax_bus,
                                        options=self.options,
                                        logger=self.logger)
 
