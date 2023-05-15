@@ -384,8 +384,14 @@ class FileSave:
         from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import to_newton_pa, npa
         logger = Logger()
 
-        tidx = list(range(len(self.circuit.time_profile)))
-        newton_grid, dev_dicts = to_newton_pa(self.circuit, time_series=True, tidx=tidx)
+        time_series = self.circuit.time_profile is not None
+
+        if time_series:
+            tidx = list(range(len(self.circuit.time_profile)))
+        else:
+            tidx = None
+
+        newton_grid, _ = to_newton_pa(self.circuit, time_series=time_series, tidx=tidx)
 
         npa.FileHandler().save(newton_grid, self.file_name)
 
