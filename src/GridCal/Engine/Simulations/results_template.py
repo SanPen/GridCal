@@ -95,5 +95,60 @@ class ResultsTemplate:
     def apply_new_time_series_rates(self, rates):
         pass
 
+    def get_inter_area_flows(self, area_names, F, T, Sf, hvdc_F, hvdc_T, hvdc_Pf, bus_area_indices):
+
+        na = len(area_names)
+        x = np.zeros((na, na), dtype=complex)
+
+        for f, t, flow in zip(F, T, Sf):
+            a1 = bus_area_indices[f]
+            a2 = bus_area_indices[t]
+            if a1 != a2:
+                x[a1, a2] += flow
+                x[a2, a1] -= flow
+
+        for f, t, flow in zip(hvdc_F, hvdc_T, hvdc_Pf):
+            a1 = bus_area_indices[f]
+            a2 = bus_area_indices[t]
+            if a1 != a2:
+                x[a1, a2] += flow
+                x[a2, a1] -= flow
+
+        return x
+
+    def get_bus_values_per_area(self, bus_values: np.ndarray, area_names, bus_area_indices):
+
+        na = len(area_names)
+        x = np.zeros(na, dtype=bus_values.dtype)
+
+        for a, val in zip(bus_area_indices, bus_values):
+            x[a] += val
+
+        return x
+
+    def get_branch_values_per_area(self, branch_values: np.ndarray, area_names, bus_area_indices, F, T):
+
+        na = len(area_names)
+        x = np.zeros((na, na), dtype=branch_values.dtype)
+
+        for f, t, val in zip(F, T, branch_values):
+            a1 = bus_area_indices[f]
+            a2 = bus_area_indices[t]
+            x[a1, a2] += val
+
+        return x
+
+    def get_hvdc_values_per_area(self, hvdc_values: np.ndarray, area_names, bus_area_indices, hvdc_F, hvdc_T):
+
+        na = len(area_names)
+        x = np.zeros((na, na), dtype=hvdc_values.dtype)
+
+        for f, t, val in zip(hvdc_F, hvdc_T, hvdc_values):
+            a1 = bus_area_indices[f]
+            a2 = bus_area_indices[t]
+            x[a1, a2] += val
+
+        return x
+
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         pass

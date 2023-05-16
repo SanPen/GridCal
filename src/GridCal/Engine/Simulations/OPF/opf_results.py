@@ -53,7 +53,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  contingency_flows_list=None, contingency_indices_list=None,
                  contingency_flows_slacks_list=None,
                  rates=None, contingency_rates=None,
-                 converged=None, bus_types=None):
+                 converged=None, bus_types=None, area_names=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -79,6 +79,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                                                   ResultTypes.BatteryPower],
 
                                                     ResultTypes.ReportsResults: [ResultTypes.ContingencyFlowsReport],
+
+                                                    ResultTypes.AreaResults: [ResultTypes.InterAreaExchange,
+                                                                              ResultTypes.ActivePowerFlowPerArea,
+                                                                              ResultTypes.LossesPerArea,
+                                                                              ResultTypes.LossesPercentPerArea,
+                                                                              ResultTypes.LossesPerGenPerArea]
                                                     },
                                  data_variables=['bus_names',
                                                  'branch_names',
@@ -128,6 +134,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
         self.hvdc_Pf = hvdc_power
         self.hvdc_loading = hvdc_loading
+        self.hvdc_losses = np.zeros_like(self.hvdc_Pf)
 
         self.phase_shift = phase_shift
 
@@ -148,11 +155,41 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.converged = converged
 
+        # vars for the inter-area computation
+        self.F = None
+        self.T = None
+        self.hvdc_F = None
+        self.hvdc_T = None
+        self.bus_area_indices = None
+        self.area_names = area_names
+
         self.plot_bars_limit = 100
 
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
+
+    def fill_circuit_info(self, grid: "MultiCircuit"):
+
+        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
+        bus_dict = grid.get_bus_index_dict()
+
+        self.area_names = [a.name for a in grid.get_areas()]
+        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.buses])
+
+        branches = grid.get_branches_wo_hvdc()
+        self.F = np.zeros(len(branches), dtype=int)
+        self.T = np.zeros(len(branches), dtype=int)
+        for k, elm in enumerate(branches):
+            self.F[k] = bus_dict[elm.bus_from]
+            self.T[k] = bus_dict[elm.bus_to]
+
+        hvdc = grid.get_hvdc()
+        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
+        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
+        for k, elm in enumerate(hvdc):
+            self.hvdc_F[k] = bus_dict[elm.bus_from]
+            self.hvdc_T[k] = bus_dict[elm.bus_to]
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -284,6 +321,66 @@ class OptimalPowerFlowResults(ResultsTemplate):
                        'ContingencyFlow (%)', 'Base flow (%)']
             y = np.array(y, dtype=object)
             y_label = ''
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.InterAreaExchange:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            y = self.get_inter_area_flows(area_names=self.area_names,
+                                          F=self.F,
+                                          T=self.T,
+                                          Sf=self.Sf,
+                                          hvdc_F=self.hvdc_F,
+                                          hvdc_T=self.hvdc_T,
+                                          hvdc_Pf=self.hvdc_Pf,
+                                          bus_area_indices=self.bus_area_indices).real
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPercentPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            # Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+
+            y = Pl / (Pf + 1e-20) * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPerGenPerArea:
+            labels = [a for a in self.area_names]
+            columns = [result_type.value[0]]
+            gen_bus = self.Sbus.copy().real
+            gen_bus[gen_bus < 0] = 0
+            Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+
+            y = np.zeros(len(self.area_names))
+            for i in range(len(self.area_names)):
+                y[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
+
+            y_label = '(%)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ActivePowerFlowPerArea:
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
+            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+
+            y_label = '(MW)'
             title = result_type.value[0]
 
         else:

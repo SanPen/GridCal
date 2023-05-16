@@ -72,7 +72,7 @@ class OptimalPowerFlow(DriverTemplate):
                                                         opfopt=self.options,
                                                         time_series=False,
                                                         tidx=None)
-        return newton_pa.translate_newton_pa_opf_results(res=npa_opf_res)
+        return newton_pa.translate_newton_pa_opf_results(grid=self.grid, res=npa_opf_res)
 
     def opf(self):
         """
@@ -102,6 +102,7 @@ class OptimalPowerFlow(DriverTemplate):
             # AC optimal power flow
             # problem = OpfAc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
             self.results = self.newton_pa_ac_opf()
+            self.results.fill_circuit_info(self.grid)
             return self.results
 
         elif self.options.solver == SolverType.Simple_OPF:
@@ -154,6 +155,8 @@ class OptimalPowerFlow(DriverTemplate):
                                                contingency_rates=numerical_circuit.contingency_rates,
                                                converged=bool(problem.converged()),
                                                bus_types=numerical_circuit.bus_types)
+
+        self.results.fill_circuit_info(self.grid)
 
         return self.results
 

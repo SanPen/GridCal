@@ -322,60 +322,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return df
 
-    def get_inter_area_flows(self):
 
-        na = len(self.area_names)
-        x = np.zeros((na, na), dtype=complex)
-
-        for f, t, flow in zip(self.F, self.T, self.Sf):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
-
-        for f, t, flow in zip(self.hvdc_F, self.hvdc_T, self.hvdc_Pf):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
-
-        return x
-
-    def get_bus_values_per_area(self, bus_values: np.ndarray):
-
-        na = len(self.area_names)
-        x = np.zeros(na, dtype=bus_values.dtype)
-
-        for a, val in zip(self.bus_area_indices, bus_values):
-            x[a] += val
-
-        return x
-
-    def get_branch_values_per_area(self, branch_values: np.ndarray):
-
-        na = len(self.area_names)
-        x = np.zeros((na, na), dtype=branch_values.dtype)
-
-        for f, t, val in zip(self.F, self.T, branch_values):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            x[a1, a2] += val
-
-        return x
-
-    def get_hvdc_values_per_area(self, hvdc_values: np.ndarray):
-
-        na = len(self.area_names)
-        x = np.zeros((na, na), dtype=hvdc_values.dtype)
-
-        for f, t, val in zip(self.hvdc_F, self.hvdc_T, hvdc_values):
-            a1 = self.bus_area_indices[f]
-            a2 = self.bus_area_indices[t]
-            x[a1, a2] += val
-
-        return x
 
     def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
@@ -557,15 +504,24 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.InterAreaExchange:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_inter_area_flows().real
+            y = self.get_inter_area_flows(area_names=self.area_names,
+                                          F=self.F,
+                                          T=self.T,
+                                          Sf=self.Sf,
+                                          hvdc_F=self.hvdc_F,
+                                          hvdc_T=self.hvdc_T,
+                                          hvdc_Pf=self.hvdc_Pf,
+                                          bus_area_indices=self.bus_area_indices).real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.LossesPercentPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y = Pl / (Pf + 1e-20) * 100.0
             y_label = '(%)'
@@ -573,12 +529,12 @@ class PowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.LossesPerGenPerArea:
             labels = [a for a in self.area_names]
-            columns = [result_type.value]
+            columns = [result_type.value[0]]
             gen_bus = self.Sbus.copy().real
             gen_bus[gen_bus < 0] = 0
-            Gf = self.get_bus_values_per_area(gen_bus)
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + \
-                 self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+            Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y = np.zeros(len(self.area_names))
             for i in range(len(self.area_names)):
@@ -590,7 +546,8 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.LossesPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+            y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -598,7 +555,8 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
+            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]

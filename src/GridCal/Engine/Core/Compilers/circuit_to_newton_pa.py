@@ -1173,7 +1173,7 @@ def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResu
     return results
 
 
-def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
+def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
 
     from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
@@ -1203,6 +1203,15 @@ def translate_newton_pa_opf_results(res: "npa.NonlinearOpfResults") -> "OptimalP
 
     results.contingency_flows_list = list()
     results.losses = res.Losses[0, :]
+
+    results.F = res.F
+    results.T = res.T
+    results.hvdc_F = res.hvdc_F
+    results.hvdc_T = res.hvdc_T
+    # results.hvdc_losses = res.hvdc_losses[0, :]
+    results.bus_area_indices = grid.get_bus_area_indices()
+    results.area_names = [a.name for a in grid.areas]
+    results.bus_types = convert_bus_types(res.bus_types[0])
 
     return results
 
