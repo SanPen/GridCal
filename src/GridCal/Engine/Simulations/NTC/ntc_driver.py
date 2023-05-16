@@ -144,6 +144,70 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                     self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
                     base_problems = True
 
+            if base_problems:
+                # get the inter-area branches and their sign
+                inter_area_branches = get_inter_areas_branches(
+                    nbr=numerical_circuit.nbr,
+                    F=numerical_circuit.branch_data.F,
+                    T=numerical_circuit.branch_data.T,
+                    buses_areas_1=self.options.area_from_bus_idx,
+                    buses_areas_2=self.options.area_to_bus_idx)
+
+                inter_area_hvdc = get_inter_areas_branches(
+                    nbr=numerical_circuit.nhvdc,
+                    F=numerical_circuit.hvdc_data.get_bus_indices_f(),
+                    T=numerical_circuit.hvdc_data.get_bus_indices_t(),
+                    buses_areas_1=self.options.area_from_bus_idx,
+                    buses_areas_2=self.options.area_to_bus_idx)
+
+                # pack the results
+                self.results = OptimalNetTransferCapacityResults(
+                    bus_names=numerical_circuit.bus_data.names,
+                    branch_names=numerical_circuit.branch_data.names,
+                    load_names=numerical_circuit.load_data.names,
+                    generator_names=numerical_circuit.generator_data.names,
+                    battery_names=numerical_circuit.battery_data.names,
+                    hvdc_names=numerical_circuit.hvdc_data.names,
+                    trm=self.options.trm,
+                    ntc_load_rule=self.options.ntc_load_rule,
+                    Sbus=numerical_circuit.Sbus.real,
+                    voltage=pf_drv.results.voltage,
+                    battery_power=np.zeros((numerical_circuit.nbatt, 1)),
+                    controlled_generation_power=numerical_circuit.generator_data.p,
+                    Sf=pf_drv.results.Sf.real,
+                    loading=pf_drv.results.loading.real,
+                    solved=False,
+                    bus_types=numerical_circuit.bus_types,
+                    hvdc_flow=pf_drv.results.hvdc_Pt,
+                    hvdc_loading=pf_drv.results.hvdc_loading,
+                    phase_shift=pf_drv.results.theta,
+                    generation_delta=np.zeros(numerical_circuit.ngen),
+                    inter_area_branches=inter_area_branches,
+                    inter_area_hvdc=inter_area_hvdc,
+                    alpha=alpha,
+                    alpha_n1=alpha_n1,
+                    contingency_branch_flows_list=contingency_flows_list,
+                    contingency_branch_indices_list=contingency_indices_list,
+                    contingency_branch_alpha_list=contingency_branch_alpha_list,
+                    contingency_generation_flows_list=contingency_gen_flows_list,
+                    contingency_generation_indices_list=contingency_gen_indices_list,
+                    contingency_generation_alpha_list=list(),
+                    contingency_hvdc_flows_list=contingency_hvdc_flows_list,
+                    contingency_hvdc_indices_list=contingency_hvdc_indices_list,
+                    contingency_hvdc_alpha_list=list(),
+                    rates=numerical_circuit.branch_data.rates[:, 0],
+                    contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
+                    area_from_bus_idx=self.options.area_from_bus_idx,
+                    area_to_bus_idx=self.options.area_to_bus_idx,
+                )
+
+                self.progress_text.emit('Creating reports...')
+                self.results.create_all_reports()
+
+                self.progress_text.emit('Done!')
+
+                return self.results
+
             # run contingency analysis ---------------------------------------------------------------------------------
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
@@ -173,196 +237,136 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                         contingency_indices_list.append((m, c))
                         contingency_branch_alpha_list.append(alpha_n1[m, c])
                         base_problems = True
-        else:
-            pass
 
-        if base_problems:
+        self.progress_text.emit('Formulating NTC OPF...')
 
-            # get the inter-area branches and their sign
-            inter_area_branches = get_inter_areas_branches(
-                nbr=numerical_circuit.nbr,
-                F=numerical_circuit.branch_data.F,
-                T=numerical_circuit.branch_data.T,
-                buses_areas_1=self.options.area_from_bus_idx,
-                buses_areas_2=self.options.area_to_bus_idx)
+        # Define the problem
+        problem = OpfNTC(
+            numerical_circuit=numerical_circuit,
+            area_from_bus_idx=self.options.area_from_bus_idx,
+            area_to_bus_idx=self.options.area_to_bus_idx,
+            alpha=alpha,
+            alpha_n1=alpha_n1,
+            LODF=linear.LODF,
+            PTDF=linear.PTDF,
+            solver_type=self.options.mip_solver,
+            generation_formulation=self.options.generation_formulation,
+            monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+            monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
+            branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
+            skip_generation_limits=self.options.skip_generation_limits,
+            dispatch_all_areas=self.options.dispatch_all_areas,
+            tolerance=self.options.tolerance,
+            weight_power_shift=self.options.weight_power_shift,
+            weight_generation_cost=self.options.weight_generation_cost,
+            consider_contingencies=self.options.consider_contingencies,
+            consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
+            consider_gen_contingencies=self.options.consider_gen_contingencies,
+            generation_contingency_threshold=self.options.generation_contingency_threshold,
+            match_gen_load=self.options.match_gen_load,
+            ntc_load_rule=self.options.ntc_load_rule,
+            transfer_method=self.options.transfer_method,
+            logger=self.logger)
 
-            inter_area_hvdc = get_inter_areas_branches(
-                nbr=numerical_circuit.nhvdc,
-                F=numerical_circuit.hvdc_data.get_bus_indices_f(),
-                T=numerical_circuit.hvdc_data.get_bus_indices_t(),
-                buses_areas_1=self.options.area_from_bus_idx,
-                buses_areas_2=self.options.area_to_bus_idx)
+        # Solve
+        self.progress_text.emit('Solving NTC OPF...')
+        problem.formulate()
+        solved = problem.solve(
+            with_solution_checks=self.options.with_solution_checks,
+            time_limit_ms=self.options.time_limit_ms)
 
-            # pack the results  # TODO: check all missing errors
-            self.results = OptimalNetTransferCapacityResults(
-                bus_names=numerical_circuit.bus_data.names,
-                branch_names=numerical_circuit.branch_data.names,
-                load_names=numerical_circuit.load_data.names,
-                generator_names=numerical_circuit.generator_data.names,
-                battery_names=numerical_circuit.battery_data.names,
-                hvdc_names=numerical_circuit.hvdc_data.names,
-                trm=self.trm,
-                ntc_load_rule=self.ntc_load_rule,
-                Sbus=numerical_circuit.Sbus.real,
-                voltage=pf_drv.results.voltage,
-                battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-                controlled_generation_power=numerical_circuit.generator_data.p,
-                Sf=pf_drv.results.Sf.real,
-                loading=pf_drv.results.loading.real,
-                solved=False,
-                bus_types=numerical_circuit.bus_types,
-                hvdc_flow=pf_drv.results.hvdc_Pt,
-                hvdc_loading=pf_drv.results.hvdc_loading,
-                phase_shift=pf_drv.results.theta,
-                generation_delta=np.zeros(numerical_circuit.ngen),
-                inter_area_branches=inter_area_branches,
-                inter_area_hvdc=inter_area_hvdc,
-                alpha=alpha,
-                alpha_n1=alpha_n1,
-                contingency_branch_flows_list=contingency_flows_list,
-                contingency_branch_indices_list=contingency_indices_list,
-                contingency_branch_alpha_list=contingency_branch_alpha_list,
-                contingency_generation_flows_list=contingency_gen_flows_list,
-                contingency_generation_indices_list=contingency_gen_indices_list,
-                contingency_generation_alpha_list=list(),
-                contingency_hvdc_flows_list=contingency_hvdc_flows_list,
-                contingency_hvdc_indices_list=contingency_hvdc_indices_list,
-                contingency_hvdc_alpha_list=list(),
-                rates=numerical_circuit.branch_data.rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
-                area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx,
-            )
-        else:
-            self.progress_text.emit('Formulating NTC OPF...')
+        err = problem.error()
 
-            # Define the problem
-            problem = OpfNTC(
-                numerical_circuit=numerical_circuit,
-                area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx,
-                alpha=alpha,
-                alpha_n1=alpha_n1,
-                LODF=linear.LODF,
-                PTDF=linear.PTDF,
-                solver_type=self.options.mip_solver,
-                generation_formulation=self.options.generation_formulation,
-                monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
-                monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
-                branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
-                skip_generation_limits=self.options.skip_generation_limits,
-                dispatch_all_areas=self.options.dispatch_all_areas,
-                tolerance=self.options.tolerance,
-                weight_power_shift=self.options.weight_power_shift,
-                weight_generation_cost=self.options.weight_generation_cost,
-                consider_contingencies=self.options.consider_contingencies,
-                consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
-                consider_gen_contingencies=self.options.consider_gen_contingencies,
-                generation_contingency_threshold=self.options.generation_contingency_threshold,
-                match_gen_load=self.options.match_gen_load,
-                ntc_load_rule=self.options.ntc_load_rule,
-                transfer_method=self.options.transfer_method,
-                logger=self.logger)
+        if not solved:
 
-            # Solve
-            self.progress_text.emit('Solving NTC OPF...')
-            problem.formulate()
-            solved = problem.solve(
-                with_solution_checks=self.options.with_solution_checks,
-                time_limit_ms=self.options.time_limit_ms)
+            if problem.status == pywraplp.Solver.FEASIBLE:
+                self.logger.add_error(
+                    'Feasible solution, not optimal',
+                    'NTC OPF',
+                    str(err),
+                    self.options.tolerance)
 
-            err = problem.error()
+            if problem.status == pywraplp.Solver.INFEASIBLE:
+                self.logger.add_error(
+                    'Unfeasible solution',
+                    'NTC OPF',
+                    str(err),
+                    self.options.tolerance)
 
-            if not solved:
+            if problem.status == pywraplp.Solver.UNBOUNDED:
+                self.logger.add_error(
+                    'Proved unbounded',
+                    'NTC OPF',
+                    str(err),
+                    self.options.tolerance)
 
-                if problem.status == pywraplp.Solver.FEASIBLE:
-                    self.logger.add_error(
-                        'Feasible solution, not optimal',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
+            if problem.status == pywraplp.Solver.ABNORMAL:
+                self.logger.add_error(
+                    'Abnormal solution, some error happens',
+                    'NTC OPF',
+                    str(err),
+                    self.options.tolerance)
 
-                if problem.status == pywraplp.Solver.INFEASIBLE:
-                    self.logger.add_error(
-                        'Unfeasible solution',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
+            if problem.status == pywraplp.Solver.NOT_SOLVED:
+                self.logger.add_error(
+                    'Not solved, maybe timeout occurs',
+                    'NTC OPF',
+                    str(err),
+                    self.options.tolerance)
 
-                if problem.status == pywraplp.Solver.UNBOUNDED:
-                    self.logger.add_error(
-                        'Proved unbounded',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
+        self.logger += problem.logger
 
-                if problem.status == pywraplp.Solver.ABNORMAL:
-                    self.logger.add_error(
-                        'Abnormal solution, some error happens',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-                if problem.status == pywraplp.Solver.NOT_SOLVED:
-                    self.logger.add_error(
-                        'Not solved, maybe timeout occurs',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-            self.logger += problem.logger
-
-            # pack the results
-            self.results = OptimalNetTransferCapacityResults(
-                bus_names=numerical_circuit.bus_data.names,
-                branch_names=numerical_circuit.branch_data.names,
-                load_names=numerical_circuit.load_data.names,
-                generator_names=numerical_circuit.generator_data.names,
-                battery_names=numerical_circuit.battery_data.names,
-                hvdc_names=numerical_circuit.hvdc_data.names,
-                trm=self.options.trm,
-                ntc_load_rule=self.options.ntc_load_rule,
-                branch_control_modes=numerical_circuit.branch_data.control_mode,
-                hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
-                Sbus=problem.get_power_injections(),
-                voltage=problem.get_voltage(),
-                battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-                controlled_generation_power=problem.get_generator_power(),
-                Sf=problem.get_branch_power_from(),
-                loading=problem.get_loading(),
-                solved=bool(solved),
-                bus_types=numerical_circuit.bus_types,
-                hvdc_flow=problem.get_hvdc_flow(),
-                hvdc_loading=problem.get_hvdc_loading(),
-                phase_shift=problem.get_phase_angles(),
-                generation_delta=problem.get_generator_delta(),
-                hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
-                inter_area_branches=problem.inter_area_branches,
-                inter_area_hvdc=problem.inter_area_hvdc,
-                alpha=alpha,
-                alpha_n1=alpha_n1,
-                monitor=problem.monitor,
-                monitor_loading=problem.monitor_loading,
-                monitor_by_sensitivity=problem.monitor_by_sensitivity,
-                monitor_by_unrealistic_ntc=problem.monitor_by_unrealistic_ntc,
-                monitor_by_zero_exchange=problem.monitor_by_zero_exchange,
-                contingency_branch_flows_list=problem.get_contingency_flows_list(),
-                contingency_branch_indices_list=problem.contingency_indices_list,
-                contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
-                contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
-                contingency_generation_indices_list=problem.contingency_gen_indices_list,
-                contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
-                contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
-                contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
-                contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
-                branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
-                rates=numerical_circuit.branch_data.rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
-                area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx,
-                structural_ntc=problem.structural_ntc,
-                sbase=numerical_circuit.Sbase,
-            )
+        # pack the results
+        self.results = OptimalNetTransferCapacityResults(
+            bus_names=numerical_circuit.bus_data.names,
+            branch_names=numerical_circuit.branch_data.names,
+            load_names=numerical_circuit.load_data.names,
+            generator_names=numerical_circuit.generator_data.names,
+            battery_names=numerical_circuit.battery_data.names,
+            hvdc_names=numerical_circuit.hvdc_data.names,
+            trm=self.options.trm,
+            ntc_load_rule=self.options.ntc_load_rule,
+            branch_control_modes=numerical_circuit.branch_data.control_mode,
+            hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
+            Sbus=problem.get_power_injections(),
+            voltage=problem.get_voltage(),
+            battery_power=np.zeros((numerical_circuit.nbatt, 1)),
+            controlled_generation_power=problem.get_generator_power(),
+            Sf=problem.get_branch_power_from(),
+            loading=problem.get_loading(),
+            solved=bool(solved),
+            bus_types=numerical_circuit.bus_types,
+            hvdc_flow=problem.get_hvdc_flow(),
+            hvdc_loading=problem.get_hvdc_loading(),
+            phase_shift=problem.get_phase_angles(),
+            generation_delta=problem.get_generator_delta(),
+            hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
+            inter_area_branches=problem.inter_area_branches,
+            inter_area_hvdc=problem.inter_area_hvdc,
+            alpha=alpha,
+            alpha_n1=alpha_n1,
+            monitor=problem.monitor,
+            monitor_loading=problem.monitor_loading,
+            monitor_by_sensitivity=problem.monitor_by_sensitivity,
+            monitor_by_unrealistic_ntc=problem.monitor_by_unrealistic_ntc,
+            monitor_by_zero_exchange=problem.monitor_by_zero_exchange,
+            contingency_branch_flows_list=problem.get_contingency_flows_list(),
+            contingency_branch_indices_list=problem.contingency_indices_list,
+            contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
+            contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
+            contingency_generation_indices_list=problem.contingency_gen_indices_list,
+            contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
+            contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+            contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
+            contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
+            branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
+            rates=numerical_circuit.branch_data.rates[:, 0],
+            contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
+            area_from_bus_idx=self.options.area_from_bus_idx,
+            area_to_bus_idx=self.options.area_to_bus_idx,
+            structural_ntc=problem.structural_ntc,
+            sbase=numerical_circuit.Sbase,
+        )
 
         self.progress_text.emit('Creating reports...')
         self.results.create_all_reports()

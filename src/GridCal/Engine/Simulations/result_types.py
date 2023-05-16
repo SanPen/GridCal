@@ -91,6 +91,7 @@ class ResultTypes(Enum):
     LossesPercentPerArea = 'Losses % per area', DeviceType.NoDevice
     LossesPerArea = 'Losses per area', DeviceType.NoDevice
     ActivePowerFlowPerArea = 'Active power flow per area', DeviceType.NoDevice
+    LossesPerGenPerArea = 'Losses per generation unit in area', DeviceType.NoDevice
 
     # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice

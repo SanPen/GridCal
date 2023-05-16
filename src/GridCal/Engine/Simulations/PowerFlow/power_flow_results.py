@@ -111,7 +111,8 @@ class PowerFlowResults(ResultsTemplate):
                                                     ResultTypes.AreaResults: [ResultTypes.InterAreaExchange,
                                                                               ResultTypes.ActivePowerFlowPerArea,
                                                                               ResultTypes.LossesPerArea,
-                                                                              ResultTypes.LossesPercentPerArea]},
+                                                                              ResultTypes.LossesPercentPerArea,
+                                                                              ResultTypes.LossesPerGenPerArea]},
                                  data_variables=['bus_types',
                                                  'bus_names',
                                                  'branch_names',
@@ -342,6 +343,16 @@ class PowerFlowResults(ResultsTemplate):
 
         return x
 
+    def get_bus_values_per_area(self, bus_values: np.ndarray):
+
+        na = len(self.area_names)
+        x = np.zeros(na, dtype=bus_values.dtype)
+
+        for a, val in zip(self.bus_area_indices, bus_values):
+            x[a] += val
+
+        return x
+
     def get_branch_values_per_area(self, branch_values: np.ndarray):
 
         na = len(self.area_names)
@@ -557,6 +568,22 @@ class PowerFlowResults(ResultsTemplate):
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
 
             y = Pl / (Pf + 1e-20) * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LossesPerGenPerArea:
+            labels = [a for a in self.area_names]
+            columns = [result_type.value]
+            gen_bus = self.Sbus.copy().real
+            gen_bus[gen_bus < 0] = 0
+            Gf = self.get_bus_values_per_area(gen_bus)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + \
+                 self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+
+            y = np.zeros(len(self.area_names))
+            for i in range(len(self.area_names)):
+                y[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
+
             y_label = '(%)'
             title = result_type.value[0]
 
