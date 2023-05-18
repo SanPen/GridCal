@@ -16,9 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from PySide2 import QtWidgets
-from PySide2.QtCore import QPointF, QLineF
-from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
+from PySide2.QtCore import QPointF, QLineF, QLine
+from PySide2.QtGui import QPen, QIcon, QPixmap
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import *
 
@@ -75,7 +75,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         self.lines.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
         self.lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
         for l in self.lines:
-            l1 = QLine(self)
+            l1 = Line(self)
             l1.setLine(l)
             l1.setPen(pen)
             self.addToGroup(l1)
