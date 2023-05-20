@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from enum import Enum, EnumMeta
 import chardet
 import pandas as pd
 from typing import Set, Dict, List, Tuple
@@ -37,11 +37,12 @@ class CIMCircuit:
         self.text_func = text_func
         self.progress_func = progress_func
 
-        self.class_dict = {'GeneralContainer': cimdev.CimContainer,
+        self.class_dict = {'GeneralContainer': cimdev.IdentifiedObject,
                            'Terminal': cimdev.Terminal,
                            'BaseVoltage': cimdev.BaseVoltage,
                            'TopologicalNode': cimdev.TopologicalNode,
                            'BusbarSection': cimdev.BusbarSection,
+                           'BusNameMarker': cimdev.BusNameMarker,
                            'Substation': cimdev.Substation,
                            'ConnectivityNode': cimdev.ConnectivityNode,
                            'OperationalLimitSet': cimdev.OperationalLimitSet,
@@ -61,8 +62,9 @@ class CIMCircuit:
                            'ACLineSegment': cimdev.ACLineSegment,
                            'PowerTransformerEnd': cimdev.PowerTransformerEnd,
                            'PowerTransformer': cimdev.PowerTransformer,
-                           'Winding': cimdev.Winding,
+                           # 'Winding': cimdev.Winding,
                            'EnergyConsumer': cimdev.EnergyConsumer,
+                           'EnergyArea': cimdev.EnergyArea,
                            'ConformLoad': cimdev.ConformLoad,
                            'NonConformLoad': cimdev.NonConformLoad,
                            'LoadResponseCharacteristic': cimdev.LoadResponseCharacteristic,
@@ -71,7 +73,10 @@ class CIMCircuit:
                            'RatioTapChanger': cimdev.RatioTapChanger,
                            'GeneratingUnit': cimdev.GeneratingUnit,
                            'SynchronousMachine': cimdev.SynchronousMachine,
-                           'HydroGenerationUnit': cimdev.HydroGenerationUnit,
+                           'HydroPump': cimdev.HydroPump,
+                           'RotatingMachine': cimdev.RotatingMachine,
+                           'HydroGenerationUnit': cimdev.HydroGeneratingUnit,  # todo: should this exist?
+                           'HydroGeneratingUnit': cimdev.HydroGeneratingUnit,
                            'HydroPowerPlant': cimdev.HydroPowerPlant,
                            'LinearShuntCompensator': cimdev.LinearShuntCompensator,
                            'NuclearGeneratingUnit': cimdev.NuclearGeneratingUnit,
@@ -80,8 +85,10 @@ class CIMCircuit:
                            'ReactiveCapabilityCurve': cimdev.ReactiveCapabilityCurve,
                            'StaticVarCompensator': cimdev.StaticVarCompensator,
                            'TapChangerControl': cimdev.TapChangerControl,
-                           'ThermalGenerationUnit': cimdev.ThermalGenerationUnit,
-                           'WindGenerationUnit': cimdev.WindGenerationUnit,
+                           'ThermalGenerationUnit': cimdev.ThermalGeneratingUnit,  # todo: should this exist?
+                           'ThermalGeneratingUnit': cimdev.ThermalGeneratingUnit,
+                           'WindGenerationUnit': cimdev.WindGeneratingUnit,  # todo: should this exist?
+                           'WindGeneratingUnit': cimdev.WindGeneratingUnit,
                            'FullModel': cimdev.FullModel,
                            'TieFlow': cimdev.TieFlow}
 
@@ -139,23 +146,113 @@ class CIMCircuit:
         :return: Nothing, it is done in place
         """
 
-        # find cross references
+        found_classes = list(self.elements_by_type.keys())
+
+        # find cross-references
         for class_name, elements in self.elements_by_type.items():
             for element in elements:  # for every element of the type
-                for prop, value in element.properties.items():  # for every registered property
-                    if len(value) > 0:  # if the property value is something
-                        if value[0] == '_':  # the value is an RFID reference
-                            if hasattr(element, prop):  # if the object has the property to cross reference
 
-                                ref = self.all_objects_dict.get(value, None)
+                # check the declared properties
+                for property_name, cim_prop in element.declared_properties.items():
 
-                                if ref is not None:  # if the reference was found ...
-                                    setattr(element, prop, ref)  # set the referenced object in the property
-                                    ref.add_reference(element)  # register the inverse reference
+                    # try to get the property value, else, fill with None
+                    # at this point val is always the string that came in the XML
+                    value = element.parsed_properties.get(property_name, None)
+
+                    if value is not None:
+
+                        if cim_prop.class_type in [str, float, int, bool]:
+                            # set the referenced object in the property
+                            setattr(element, property_name, cim_prop.class_type(value))
+
+                        elif isinstance(cim_prop.class_type, Enum) or isinstance(cim_prop.class_type, EnumMeta):
+
+                            chunks = value.split('.')
+                            value2 = chunks[-1]
+                            try:
+                                enum_val = cim_prop.class_type(value2)
+                                setattr(element, property_name, enum_val)
+                            except TypeError as e:
+                                self.logger.add_error(msg='Could not convert Enum',
+                                                      device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                      value=value2 + " (value)",
+                                                      expected_value=str(cim_prop.class_type))
+
+                        else:
+                            # search for the reference, if not found -> return None
+                            referenced_object = self.all_objects_dict.get(value, None)
+
+                            if referenced_object is not None:  # if the reference was found ...
+
+                                # set the referenced object in the property
+                                setattr(element, property_name, referenced_object)
+
+                                # register the inverse reference
+                                referenced_object.add_reference(element)
+
+                                # check that the type matches the expected type
+                                if cim_prop.class_type in [cimdev.ConnectivityNodeContainer, cimdev.IdentifiedObject]:
+                                    # the container class is too generic...
+                                    pass
                                 else:
-                                    setattr(element, prop, None)  # I want to know that it was not found
-                                    self.logger.add_error(prop + ' reference not found for ' + class_name,
-                                                          element.rfid, '', value)
+                                    if not isinstance(referenced_object, cim_prop.class_type) and \
+                                            cim_prop.class_type != cimdev.EquipmentContainer:
+                                        # if the class specification does not match but the
+                                        # required type is also not a generic polymorphic object ...
+                                        cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
+                                        self.logger.add_error(msg='Object type different from expected',
+                                                              device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                              value=referenced_object.tpe,
+                                                              expected_value=cls)
+                            else:
+
+                                # I want to know that it was not found
+                                element.missing_references[property_name] = value
+
+                                if hasattr(element, 'rdfid'):
+                                    self.logger.add_error(msg='Reference not found',
+                                                          device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                          value='Not found',
+                                                          expected_value=value)
+                                else:
+                                    self.logger.add_error(msg='Reference not found for (debugger error)',
+                                                          device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                          value='Not found',
+                                                          expected_value=value)
+
+                        if cim_prop.out_of_the_standard:
+                            self.logger.add_warning(msg='Property supported but out of the standard',
+                                                    device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                    value=value,
+                                                    expected_value="")
+
+                    else:
+                        if cim_prop.mandatory:
+                            self.logger.add_error(msg='Required property not provided',
+                                                  device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                  value='not provided',
+                                                  expected_value=property_name)
+                        else:
+                            pass
+                            # if not cim_prop.out_of_the_standard:
+                            #     self.logger.add_warning(msg='Optional property not provided',
+                            #                             device=element.rdfid,
+                            #                             device_class=class_name,
+                            #                             device_property=property_name,
+                            #                             value='not provided',
+                            #                             expected_value=property_name)
+
+                # check those properties that were parsed but are not recognised
+                for property_name, value in element.parsed_properties.items():
+
+                    if property_name not in element.declared_properties:
+                        self.logger.add_warning(msg='Unsupported property provided',
+                                                device="{0}.{1}.{2}".format(element.rdfid, class_name, property_name),
+                                                value=value,
+                                                expected_value="")
+
+                # check the object rules
+                element.check(logger=self.logger)
 
     def parse_xml_text(self, text_lines):
         """
@@ -195,7 +292,7 @@ class CIMCircuit:
                         id = cimdev.index_find(xml_line, '"', '">').replace('#', '')
 
                         # start recording object
-                        CLS = self.class_dict.get(tpe, cimdev.CimContainer)
+                        CLS = self.class_dict.get(tpe, cimdev.IdentifiedObject)
                         # if tpe in class_dict.keys():
                         #     CLS = class_dict[tpe]
                         # else:

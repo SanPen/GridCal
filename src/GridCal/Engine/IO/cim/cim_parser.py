@@ -793,7 +793,7 @@ class CIMImport:
 
                     circuit.add_line(line)
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
@@ -822,7 +822,7 @@ class CIMImport:
                         hv = 1
                         self.logger.add_error('Could not parse transformer nominal voltages', elm.name)
 
-                    line = gcdev.Transformer2W(idtag=cimdev.rfid2uuid(elm.rfid),
+                    line = gcdev.Transformer2W(idtag=cimdev.rfid2uuid(elm.rdfid),
                                                bus_from=B1,
                                                bus_to=B2,
                                                name=str(elm.name),
@@ -839,7 +839,7 @@ class CIMImport:
 
                     circuit.add_branch(line)
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def parse_switches(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
@@ -869,7 +869,7 @@ class CIMImport:
 
                     circuit.add_switch(line)
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def parse_loads(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
@@ -900,7 +900,7 @@ class CIMImport:
                                       Q=q if q is not None else 0)
                     circuit.add_load(B1, load)
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def parse_shunts(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
@@ -924,7 +924,7 @@ class CIMImport:
                                      B=b)
                     circuit.add_shunt(B1, sh)
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def parse_generators(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
@@ -948,7 +948,7 @@ class CIMImport:
                     circuit.add_generator(B1, gen)
 
                 else:
-                    self.logger.add_error('Bus not found', elm.rfid)
+                    self.logger.add_error('Bus not found', elm.rdfid)
 
     def load_cim_file(self, cim_files):
         """

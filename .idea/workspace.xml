@@ -26,11 +26,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed strange issue with graphics">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_devices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_devices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +59,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -1146,13 +1147,7 @@
       <workItem from="1684418475564" duration="2530000" />
       <workItem from="1684432994201" duration="5659000" />
       <workItem from="1684487640196" duration="616000" />
-    </task>
-    <task id="LOCAL-00348" summary="removed newton1 engine&#10;Fixed issue with PSSe shunts not generating a proper UUID">
-      <created>1675240999588</created>
-      <option name="number" value="00348" />
-      <option name="presentableId" value="LOCAL-00348" />
-      <option name="project" value="LOCAL" />
-      <updated>1675240999588</updated>
+      <workItem from="1684586024027" duration="2596000" />
     </task>
     <task id="LOCAL-00349" summary="Better integration of newton linear OPF">
       <created>1676298162487</created>
@@ -1490,7 +1485,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684433853475</updated>
     </task>
-    <option name="localTasksCounter" value="397" />
+    <task id="LOCAL-00397" summary="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton">
+      <created>1684586135435</created>
+      <option name="number" value="00397" />
+      <option name="presentableId" value="LOCAL-00397" />
+      <option name="project" value="LOCAL" />
+      <updated>1684586135435</updated>
+    </task>
+    <option name="localTasksCounter" value="398" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1532,7 +1534,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issues with the merge" />
     <MESSAGE value="early colouring the slippy map" />
     <MESSAGE value="early colouring the slippy map (working)" />
     <MESSAGE value="Added map providers options" />
@@ -1557,7 +1558,8 @@
     <MESSAGE value="more pylint stuff" />
     <MESSAGE value="Added area reports to the OPF" />
     <MESSAGE value="Fixed strange issue with graphics" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed strange issue with graphics" />
+    <MESSAGE value="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1906,11 +1908,6 @@
           <option name="timeStamp" value="1115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py</url>
-          <line>855</line>
-          <option name="timeStamp" value="1116" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>200</line>
           <option name="timeStamp" value="1133" />
@@ -2180,7 +2177,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1681979679516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GIS" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1684438257543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1684588020335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
