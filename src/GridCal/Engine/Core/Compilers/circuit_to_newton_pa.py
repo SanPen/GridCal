@@ -1209,10 +1209,12 @@ def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpf
     results.T = res.T
     results.hvdc_F = res.hvdc_F
     results.hvdc_T = res.hvdc_T
+    results.hvdc_loading = res.hvdc_loading[0, :]
     # results.hvdc_losses = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
     results.bus_types = convert_bus_types(res.bus_types[0])
+    results.converged = res.stats[0][0].converged[0]
 
     print(res.stats[0][0].getTable())
 

@@ -2121,7 +2121,22 @@ class MultiCircuit:
         self.add_devices_list(self.transformers2w, circuit.transformers2w)
         self.add_devices_list(self.hvdc_lines, circuit.hvdc_lines)
         self.add_devices_list(self.vsc_devices, circuit.vsc_devices)
+        self.add_devices_list(self.upfc_devices, circuit.upfc_devices)
         self.add_devices_list(self.dc_lines, circuit.dc_lines)
+
+        self.add_devices_list(self.switch_devices, circuit.switch_devices)
+        self.add_devices_list(self.areas, circuit.areas)
+        self.add_devices_list(self.zones, circuit.zones)
+        self.add_devices_list(self.substations, circuit.substations)
+        self.add_devices_list(self.countries, circuit.countries)
+
+        self.add_devices_list(self.technologies, circuit.technologies)
+
+        self.add_devices_list(self.overhead_line_types, circuit.overhead_line_types)
+        self.add_devices_list(self.wire_types, circuit.wire_types)
+        self.add_devices_list(self.underground_cable_types, circuit.underground_cable_types)
+        self.add_devices_list(self.sequence_line_types, circuit.sequence_line_types)
+        self.add_devices_list(self.transformer_types, circuit.transformer_types)
 
         return circuit.buses
 
