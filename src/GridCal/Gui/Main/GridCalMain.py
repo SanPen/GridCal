@@ -4078,6 +4078,11 @@ class MainGUI(QMainWindow):
                             'that the generator bounds are ok.\n'
                             'You may also use the diagnostic tool (F8)', 'OPF')
 
+            # print convergence reports on the console
+            # for report in drv.convergence_reports:
+            #     msg_ = 'Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
+            #     self.console_msg(msg_)
+
             self.update_available_results()
             if self.ui.draw_schematic_checkBox.isChecked():
                 self.colour_schematic()

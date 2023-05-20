@@ -281,7 +281,7 @@ class PSSeBus(PSSeObject):
 
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=self.NVLO, vmax=self.NVHI, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version in [29, 30]:

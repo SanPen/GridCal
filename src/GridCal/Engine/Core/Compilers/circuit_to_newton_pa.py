@@ -944,7 +944,8 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    flow_control=True,
                                    voltage_control=True,
                                    solver=solver_dict[opfopt.mip_solver],
-                                   initialize_with_existing_solution=pfopt.initialize_with_existing_solution)
+                                   initialize_with_existing_solution=pfopt.initialize_with_existing_solution,
+                                   verbose=pfopt.verbose)
 
 
 def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
@@ -1186,7 +1187,7 @@ def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpf
                                       load_shedding=res.load_shedding[0, :],
                                       hvdc_names=res.hvdc_names,
                                       hvdc_power=res.hvdc_Pf[0, :],
-                                      hvdc_loading=res.hvdc_loading[0, :],
+                                      hvdc_loading=res.hvdc_loading[0, :] * 100.0,
                                       phase_shift=res.tap_angle[0, :],
                                       bus_shadow_prices=res.bus_shadow_prices[0, :],
                                       generator_shedding=res.generator_shedding[0, :],
@@ -1212,6 +1213,8 @@ def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpf
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
     results.bus_types = convert_bus_types(res.bus_types[0])
+
+    print(res.stats[0][0].getTable())
 
     return results
 
