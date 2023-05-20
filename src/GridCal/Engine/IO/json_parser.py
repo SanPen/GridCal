@@ -469,7 +469,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                 active=bool(jentry['active']),
                                 p_min=float(jentry['pmin']),
                                 p_max=float(jentry['pmax']),
-                                op_cost=float(jentry['cost']),
+                                op_cost=float(jentry['cost'] if "cost" in jentry else 1.0),
                                 )
 
                 if has_profiles:
