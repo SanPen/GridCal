@@ -943,7 +943,7 @@ class CIMImport:
 
                     gen = gcdev.Generator(idtag=elm.uuid,
                                           name=str(elm.name),
-                                          active_power=elm.p,
+                                          active_power=-elm.p,  # CGMES defines the generator P as negative to indicate a positive injection
                                           voltage_module=1.0)
                     circuit.add_generator(B1, gen)
 

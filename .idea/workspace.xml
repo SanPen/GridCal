@@ -26,9 +26,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the add_circuit function&#10;Improved the ACOPF integration">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="minimal fix in the json parser">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1144,14 +1145,9 @@
       <workItem from="1684418475564" duration="2530000" />
       <workItem from="1684432994201" duration="5659000" />
       <workItem from="1684487640196" duration="616000" />
-      <workItem from="1684586024027" duration="8079000" />
-    </task>
-    <task id="LOCAL-00351" summary="Added more properties to the json export">
-      <created>1676370367154</created>
-      <option name="number" value="00351" />
-      <option name="presentableId" value="LOCAL-00351" />
-      <option name="project" value="LOCAL" />
-      <updated>1676370367155</updated>
+      <workItem from="1684586024027" duration="8130000" />
+      <workItem from="1684743463959" duration="12000" />
+      <workItem from="1684750899520" duration="4465000" />
     </task>
     <task id="LOCAL-00352" summary="Better integration of Newton linear and nonlinear OPF modules">
       <created>1676377982972</created>
@@ -1489,7 +1485,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684602376201</updated>
     </task>
-    <option name="localTasksCounter" value="400" />
+    <task id="LOCAL-00400" summary="minimal fix in the json parser">
+      <created>1684605320687</created>
+      <option name="number" value="00400" />
+      <option name="presentableId" value="LOCAL-00400" />
+      <option name="project" value="LOCAL" />
+      <updated>1684605320687</updated>
+    </task>
+    <option name="localTasksCounter" value="401" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1531,7 +1534,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added map providers options" />
     <MESSAGE value="Improved map colouring" />
     <MESSAGE value="Integrated contingencies and investments with Newton" />
     <MESSAGE value="Added new grid examples" />
@@ -1556,7 +1558,8 @@
     <MESSAGE value="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton" />
     <MESSAGE value="Improved CIM objects" />
     <MESSAGE value="Improved the add_circuit function&#10;Improved the ACOPF integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the add_circuit function&#10;Improved the ACOPF integration" />
+    <MESSAGE value="minimal fix in the json parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="minimal fix in the json parser" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
