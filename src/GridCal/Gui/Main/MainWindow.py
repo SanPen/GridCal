@@ -2120,73 +2120,15 @@ class Ui_mainWindow(object):
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.gridLayout_3 = QGridLayout(self.frame_2)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.opfContingencyToleranceSpinBox = QDoubleSpinBox(self.frame_2)
-        self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
-        self.opfContingencyToleranceSpinBox.setDecimals(4)
-        self.opfContingencyToleranceSpinBox.setValue(0.050000000000000)
-
-        self.gridLayout_3.addWidget(self.opfContingencyToleranceSpinBox, 5, 1, 1, 1)
-
-        self.label_10 = QLabel(self.frame_2)
-        self.label_10.setObjectName(u"label_10")
-
-        self.gridLayout_3.addWidget(self.label_10, 3, 0, 1, 1)
-
-        self.lpf_solver_comboBox = QComboBox(self.frame_2)
-        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
-
         self.label_44 = QLabel(self.frame_2)
         self.label_44.setObjectName(u"label_44")
 
         self.gridLayout_3.addWidget(self.label_44, 4, 0, 1, 1)
 
-        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
-        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+        self.lpf_solver_comboBox = QComboBox(self.frame_2)
+        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
 
-        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 7, 0, 1, 2)
-
-        self.label_104 = QLabel(self.frame_2)
-        self.label_104.setObjectName(u"label_104")
-
-        self.gridLayout_3.addWidget(self.label_104, 5, 0, 1, 1)
-
-        self.mip_solver_comboBox = QComboBox(self.frame_2)
-        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 3, 1, 1, 1)
-
-        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
-        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
-
-        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
-
-        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
-        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
-
-        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
-
-        self.opfTolSpinBox = QSpinBox(self.frame_2)
-        self.opfTolSpinBox.setObjectName(u"opfTolSpinBox")
-        self.opfTolSpinBox.setMinimum(-99)
-
-        self.gridLayout_3.addWidget(self.opfTolSpinBox, 4, 1, 1, 1)
-
-        self.label_42 = QLabel(self.frame_2)
-        self.label_42.setObjectName(u"label_42")
-
-        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
-
-        self.label_4 = QLabel(self.frame_2)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
-
-        self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
-        self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
-
-        self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 6, 0, 1, 2)
+        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
 
         self.opfMaximizeExcahngeCheckBox = QCheckBox(self.frame_2)
         self.opfMaximizeExcahngeCheckBox.setObjectName(u"opfMaximizeExcahngeCheckBox")
@@ -2202,6 +2144,90 @@ class Ui_mainWindow(object):
         self.opfUnitCommitmentCheckBox.setObjectName(u"opfUnitCommitmentCheckBox")
 
         self.gridLayout_3.addWidget(self.opfUnitCommitmentCheckBox, 9, 0, 1, 1)
+
+        self.maxVoltageModuleStepLabel = QLabel(self.frame_2)
+        self.maxVoltageModuleStepLabel.setObjectName(u"maxVoltageModuleStepLabel")
+
+        self.gridLayout_3.addWidget(self.maxVoltageModuleStepLabel, 10, 0, 1, 1)
+
+        self.maxVoltageModuleStepSpinBox = QDoubleSpinBox(self.frame_2)
+        self.maxVoltageModuleStepSpinBox.setObjectName(u"maxVoltageModuleStepSpinBox")
+        self.maxVoltageModuleStepSpinBox.setDecimals(6)
+        self.maxVoltageModuleStepSpinBox.setSingleStep(0.010000000000000)
+        self.maxVoltageModuleStepSpinBox.setValue(0.100000000000000)
+
+        self.gridLayout_3.addWidget(self.maxVoltageModuleStepSpinBox, 10, 1, 1, 1)
+
+        self.opfTolSpinBox = QSpinBox(self.frame_2)
+        self.opfTolSpinBox.setObjectName(u"opfTolSpinBox")
+        self.opfTolSpinBox.setMinimum(-99)
+
+        self.gridLayout_3.addWidget(self.opfTolSpinBox, 4, 1, 1, 1)
+
+        self.label_104 = QLabel(self.frame_2)
+        self.label_104.setObjectName(u"label_104")
+
+        self.gridLayout_3.addWidget(self.label_104, 5, 0, 1, 1)
+
+        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
+        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
+
+        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
+
+        self.mip_solver_comboBox = QComboBox(self.frame_2)
+        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 3, 1, 1, 1)
+
+        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
+        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
+
+        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
+
+        self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
+        self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
+
+        self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 6, 0, 1, 2)
+
+        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
+        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+
+        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 7, 0, 1, 2)
+
+        self.opfContingencyToleranceSpinBox = QDoubleSpinBox(self.frame_2)
+        self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
+        self.opfContingencyToleranceSpinBox.setDecimals(4)
+        self.opfContingencyToleranceSpinBox.setValue(0.050000000000000)
+
+        self.gridLayout_3.addWidget(self.opfContingencyToleranceSpinBox, 5, 1, 1, 1)
+
+        self.label_42 = QLabel(self.frame_2)
+        self.label_42.setObjectName(u"label_42")
+
+        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
+
+        self.label_10 = QLabel(self.frame_2)
+        self.label_10.setObjectName(u"label_10")
+
+        self.gridLayout_3.addWidget(self.label_10, 3, 0, 1, 1)
+
+        self.maxVoltageAngleStepLabel = QLabel(self.frame_2)
+        self.maxVoltageAngleStepLabel.setObjectName(u"maxVoltageAngleStepLabel")
+
+        self.gridLayout_3.addWidget(self.maxVoltageAngleStepLabel, 11, 0, 1, 1)
+
+        self.maxVoltageAngleStepSpinBox = QDoubleSpinBox(self.frame_2)
+        self.maxVoltageAngleStepSpinBox.setObjectName(u"maxVoltageAngleStepSpinBox")
+        self.maxVoltageAngleStepSpinBox.setDecimals(6)
+        self.maxVoltageAngleStepSpinBox.setSingleStep(0.010000000000000)
+        self.maxVoltageAngleStepSpinBox.setValue(0.500000000000000)
+
+        self.gridLayout_3.addWidget(self.maxVoltageAngleStepSpinBox, 11, 1, 1, 1)
 
 
         self.verticalLayout_20.addWidget(self.frame_2)
@@ -3980,7 +4006,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1267, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1267, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuAbout = QMenu(self.menuBar)
@@ -4740,29 +4766,33 @@ class Ui_mainWindow(object):
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"CPF", None))
         self.label_72.setText("")
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
-#if QT_CONFIG(tooltip)
-        self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
+        self.label_44.setText(QCoreApplication.translate("mainWindow", u"Convergence tolerance", None))
 #if QT_CONFIG(tooltip)
         self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_44.setText(QCoreApplication.translate("mainWindow", u"Convergence tolerance", None))
-        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
+        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
+        self.opfUnitCommitmentCheckBox.setText(QCoreApplication.translate("mainWindow", u"Unit commitment", None))
+        self.maxVoltageModuleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max module step", None))
+        self.maxVoltageModuleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" p.u.", None))
+        self.opfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
 #if QT_CONFIG(tooltip)
         self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.opfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
-        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
         self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
-        self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
-        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
-        self.opfUnitCommitmentCheckBox.setText(QCoreApplication.translate("mainWindow", u"Unit commitment", None))
+        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+#if QT_CONFIG(tooltip)
+        self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
+        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
+        self.maxVoltageAngleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max angle step", None))
+        self.maxVoltageAngleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" rad", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))

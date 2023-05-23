@@ -779,6 +779,10 @@ class MainGUI(QMainWindow):
 
         if eng == bs.EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
+            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
+            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
+            self.ui.maxVoltageModuleStepLabel.setVisible(True)
+            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
@@ -803,6 +807,10 @@ class MainGUI(QMainWindow):
 
         elif eng == bs.EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageModuleStepLabel.setVisible(False)
+            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -827,6 +835,10 @@ class MainGUI(QMainWindow):
 
         elif eng == bs.EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageModuleStepLabel.setVisible(False)
+            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -851,6 +863,10 @@ class MainGUI(QMainWindow):
 
         elif eng == bs.EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
+            self.ui.maxVoltageModuleStepLabel.setVisible(False)
+            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -869,7 +885,7 @@ class MainGUI(QMainWindow):
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         else:
-            raise Exception('Unsupported engine' + eng.value)
+            raise Exception('Unsupported engine' + str(eng.value))
 
     @staticmethod
     def collect_memory():
@@ -4042,6 +4058,9 @@ class MainGUI(QMainWindow):
                                                       areas_from=areas_from,
                                                       areas_to=areas_to,
                                                       unit_commitment=unit_commitment)
+
+                options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
+                options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()

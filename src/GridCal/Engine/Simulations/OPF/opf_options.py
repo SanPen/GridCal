@@ -114,3 +114,7 @@ class OptimalPowerFlowOptions:
         self.areas_to = areas_to
 
         self.unit_commitment = unit_commitment
+
+        self.max_va = 6.28
+
+        self.max_vm = 1.0

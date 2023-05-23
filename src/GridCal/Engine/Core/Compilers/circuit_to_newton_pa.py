@@ -945,7 +945,9 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    voltage_control=True,
                                    solver=solver_dict[opfopt.mip_solver],
                                    initialize_with_existing_solution=pfopt.initialize_with_existing_solution,
-                                   verbose=pfopt.verbose)
+                                   verbose=pfopt.verbose,
+                                   max_vm=opfopt.max_vm,
+                                   max_va=opfopt.max_va)
 
 
 def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
