@@ -1091,7 +1091,7 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit, pfopt: PowerFlowOptions, opfo
                                  time_indices=time_indices,
                                  n_threads=n_threads,
                                  mute_pg_bar=False,
-                                 V0=circuit.get_voltage_guess() if pfopt.initialize_with_existing_solution else None)
+                                 V0=circuit.get_voltage_guess() if pfopt.use_stored_guess else None)
 
     return pf_res
 

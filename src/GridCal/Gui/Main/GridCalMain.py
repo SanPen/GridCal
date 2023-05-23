@@ -2719,7 +2719,7 @@ class MainGUI(QMainWindow):
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=verbose,
-                                   initialize_with_existing_solution=True,
+                                   initialize_with_existing_solution=use_stored_guess,
                                    tolerance=tolerance,
                                    max_iter=max_iter,
                                    max_outer_loop_iter=max_outer_iter,

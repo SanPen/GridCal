@@ -587,7 +587,7 @@ class Bus(EditableDevice):
                     'name': self.name,
                     'name_code': self.code,
                     'active': self.active,
-                    'is_slack': self.is_slack,
+                    'is_slack': bool(self.is_slack),
                     'vnom': self.Vnom,
                     'vmin': self.Vmin,
                     'vmax': self.Vmax,

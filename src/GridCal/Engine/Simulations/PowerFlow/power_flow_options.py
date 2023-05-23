@@ -77,7 +77,7 @@ class PowerFlowOptions:
                  solver_type: SolverType = SolverType.NR,
                  retry_with_other_methods=True,
                  verbose=0,
-                 initialize_with_existing_solution=True,
+                 initialize_with_existing_solution=False,
                  tolerance=1e-6,
                  max_iter=25,
                  max_outer_loop_iter=100,
