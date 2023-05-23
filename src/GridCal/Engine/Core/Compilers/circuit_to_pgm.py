@@ -298,8 +298,15 @@ def get_pgm_source(circuit: MultiCircuit, bus_dict, idx0):
     idx = idx0
     k = 0
     if len(gen_devices) > 0:
-        # TODO: pick the one with the largest P
-        elm = gen_devices[0]
+        # pick the one with the largest P
+        Pmax = 0.0
+        i_max = 0
+        for i, gen in enumerate(gen_devices):
+            if gen.P > Pmax:
+                Pmax = gen.P
+                i_max = i
+
+        elm = gen_devices[i_max]
         sym_gen['id'][k] = idx
         sym_gen['node'][k] = bus_dict[elm.bus.idtag]
         sym_gen['status'][k] = int(elm.active)
@@ -739,8 +746,10 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
     if pf_res is None:
         return results
 
+    P = pf_res['node']['p'] * 1e-6
+    Q = pf_res['node']['q'] * 1e-6
     Vm = pf_res['node']['u_pu']
-    Va = pf_res['node']['u_angle']  # np.zeros_like(Vm)  # TODO: what about this?
+    Va = pf_res['node']['u_angle']
     Pf = pf_res['line']['p_from'] * 1e-6
     Pt = pf_res['line']['p_to'] * 1e-6
     Qf = pf_res['line']['q_from'] * 1e-6
@@ -755,7 +764,7 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
     losses = (Pf + Pt) + 1j * (Qf + Qt)
 
     results.voltage = Vm * np.exp(1j * Va)
-    # results.Sbus = res.S[0, :]
+    results.Sbus = P + 1j * Q
     results.Sf = Pf + 1j * Qf
     results.St = Pt + 1j * Qt
     results.loading = Pf / (nc.branch_rates + 1e-20)

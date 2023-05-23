@@ -121,11 +121,11 @@ class TransformerType(EditableDevice):
         :return: Zseries and Yshunt in system per unit
         """
 
-        Sn = self.rating
-        Pcu = self.Pcu
-        Pfe = self.Pfe
-        I0 = self.I0
-        Vsc = self.Vsc
+        Sn = self.rating  # Nominal power (MVA)
+        Pcu = self.Pcu    # Copper losses, AKA resistive losses (kW)
+        Pfe = self.Pfe    # Iron losses, AKA magnetic losses (kW)
+        I0 = self.I0      # No-load current (%)
+        Vsc = self.Vsc    # Short circuit voltage(%)
 
         # Series impedance
         zsc = Vsc / 100.0

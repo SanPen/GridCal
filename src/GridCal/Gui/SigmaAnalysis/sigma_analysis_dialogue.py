@@ -16,7 +16,8 @@ from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import Sigma
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None, use_native_dialogues=True):
+    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None, use_native_dialogues=True,
+                 good_coefficients=True):
         """
 
         :param parent:

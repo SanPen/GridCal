@@ -520,7 +520,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
 
-        self.ui.actionSigma_analysis.triggered.connect(self.sigma_analysis)
+        self.ui.actionSigma_analysis.triggered.connect(self.run_sigma_analysis)
 
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
 
@@ -4831,7 +4831,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def sigma_analysis(self):
+    def run_sigma_analysis(self):
         """
         Run the sigma analysis
         """
@@ -4841,10 +4841,14 @@ class MainGUI(QMainWindow):
             sigma_driver = sim.SigmaAnalysisDriver(grid=self.circuit, options=options)
             sigma_driver.run()
 
+            if not sigma_driver.results.converged:
+                error_msg("Sigma coefficients did not converge :(")
+
             self.sigma_dialogue = SigmaAnalysisGUI(parent=self,
                                                    results=sigma_driver.results,
                                                    bus_names=bus_names,
-                                                   use_native_dialogues=self.use_native_dialogues)
+                                                   use_native_dialogues=self.use_native_dialogues,
+                                                   good_coefficients=sigma_driver.results.converged)
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
 

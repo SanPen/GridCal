@@ -24,7 +24,8 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, sigma_function
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
+    sigma_function
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
@@ -56,6 +57,8 @@ class SigmaAnalysisResults:
 
         self.elapsed = 0
 
+        self.converged = True
+
         self.convergence_reports = list()
 
     def apply_from_island(self, results: "SigmaAnalysisResults", b_idx):
@@ -78,6 +81,8 @@ class SigmaAnalysisResults:
         self.sigma_re[b_idx] = results.sigma_re
 
         self.sigma_im[b_idx] = results.sigma_im
+
+        self.converged = self.converged & results.converged
 
     def plot(self, fig, ax, n_points=1000):
         """
@@ -102,7 +107,12 @@ class SigmaAnalysisResults:
         colors = (d / d.max())
         area = 100.0 * np.power(1.0 + d, 2)
 
-        sc = ax.scatter(self.sigma_re, self.sigma_im, c=colors, s=area, cmap='winter', alpha=0.75)
+        if self.converged:
+            cmap = 'winter'
+        else:
+            cmap = 'autumn'
+
+        sc = ax.scatter(self.sigma_re, self.sigma_im, c=colors, s=area, cmap=cmap, alpha=0.75)
 
         annot = ax.annotate("", xy=(0, 0), xytext=(20, 20),
                             textcoords="offset points",
@@ -190,7 +200,8 @@ class SigmaAnalysisResults:
             return None
 
 
-def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, logger=Logger()) -> "SigmaAnalysisResults":
+def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions,
+                       logger=Logger()) -> "SigmaAnalysisResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
@@ -218,19 +229,19 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
 
             if len(calculation_input.vd) > 0:
                 # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-                U, X, Q, V, iter_ = helm_coefficients_josep(Ybus=calculation_input.Ybus,
-                                                            Yseries=calculation_input.Yseries,
-                                                            V0=calculation_input.Vbus,
-                                                            S0=calculation_input.Sbus,
-                                                            Ysh0=calculation_input.Yshunt,
-                                                            pq=calculation_input.pq,
-                                                            pv=calculation_input.pv,
-                                                            sl=calculation_input.vd,
-                                                            pqpv=calculation_input.pqpv,
-                                                            tolerance=options.tolerance,
-                                                            max_coeff=options.max_iter,
-                                                            verbose=False,
-                                                            logger=logger)
+                U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
+                                                                       Yseries=calculation_input.Yseries,
+                                                                       V0=calculation_input.Vbus,
+                                                                       S0=calculation_input.Sbus,
+                                                                       Ysh0=calculation_input.Yshunt,
+                                                                       pq=calculation_input.pq,
+                                                                       pv=calculation_input.pv,
+                                                                       sl=calculation_input.vd,
+                                                                       pqpv=calculation_input.pqpv,
+                                                                       tolerance=options.tolerance,
+                                                                       max_coeff=options.max_iter,
+                                                                       verbose=False,
+                                                                       logger=logger)
 
                 # compute the sigma values
                 n = calculation_input.nbus
@@ -256,6 +267,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 island_results.sigma_re = Sig_re
                 island_results.sigma_im = Sig_im
                 island_results.distances = sigma_distances
+                island_results.converged = converged
 
                 bus_original_idx = calculation_input.original_bus_idx
 
@@ -270,19 +282,19 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             # only one island
             calculation_input = calculation_inputs[0]
 
-            U, X, Q, V, iter_ = helm_coefficients_josep(Ybus=calculation_input.Ybus,
-                                                        Yseries=calculation_input.Yseries,
-                                                        V0=calculation_input.Vbus,
-                                                        S0=calculation_input.Sbus,
-                                                        Ysh0=calculation_input.Yshunt,
-                                                        pq=calculation_input.pq,
-                                                        pv=calculation_input.pv,
-                                                        sl=calculation_input.vd,
-                                                        pqpv=calculation_input.pqpv,
-                                                        tolerance=options.tolerance,
-                                                        max_coeff=options.max_iter,
-                                                        verbose=False,
-                                                        logger=logger)
+            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
+                                                                   Yseries=calculation_input.Yseries,
+                                                                   V0=calculation_input.Vbus,
+                                                                   S0=calculation_input.Sbus,
+                                                                   Ysh0=calculation_input.Yshunt,
+                                                                   pq=calculation_input.pq,
+                                                                   pv=calculation_input.pv,
+                                                                   sl=calculation_input.vd,
+                                                                   pqpv=calculation_input.pqpv,
+                                                                   tolerance=options.tolerance,
+                                                                   max_coeff=options.max_iter,
+                                                                   verbose=False,
+                                                                   logger=logger)
 
             # compute the sigma values
             n = calculation_input.nbus
@@ -308,7 +320,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             island_results.sigma_re = Sig_re
             island_results.sigma_im = Sig_im
             island_results.distances = sigma_distances
-
+            island_results.converged = converged
             results.apply_from_island(island_results, calculation_input.original_bus_idx)
         else:
             logger.add_error('There are no slack nodes')
@@ -361,13 +373,13 @@ def sigma_distance(sigma_real, sigma_imag):
 
         if t0 > 0:
 
-            t1 = (-64 * a**3
-                  + 48 * a**2
+            t1 = (-64 * a ** 3
+                  + 48 * a ** 2
                   + 12 * sq3 * np.sqrt(t0)
-                  - 12 * a + 216 * b**2 + 1)**(1 / 3)
+                  - 12 * a + 216 * b ** 2 + 1) ** (1 / 3)
 
             # the value is within limits
-            x1[i] = 1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+            x1[i] = 1 / 12 * t1 - (-256 * a ** 2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
         else:
             t1 = (-64 * a ** 3
                   + 48 * a ** 2
@@ -375,7 +387,7 @@ def sigma_distance(sigma_real, sigma_imag):
                   - 12 * a + 216 * b ** 2 + 1) ** (1 / 3)
 
             # here I set the value negative to indicate that it is off-limits
-            x1[i] = -(1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5))
+            x1[i] = -(1 / 12 * t1 - (-256 * a ** 2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5))
 
         i += 1
 
@@ -397,7 +409,7 @@ class SigmaAnalysisDriver(DriverTemplate):
         # Options to use
         self.options = options
 
-        self.results = None
+        self.results: SigmaAnalysisResults = None
 
         self.logger = Logger()
 
@@ -424,4 +436,3 @@ class SigmaAnalysisDriver(DriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
-
