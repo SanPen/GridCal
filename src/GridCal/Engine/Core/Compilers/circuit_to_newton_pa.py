@@ -950,10 +950,16 @@ def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "Optima
                                    max_va=opfopt.max_va)
 
 
-def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions", pfopt: PowerFlowOptions, npa_circuit: "npa.HybridCircuit", area_dict):
+def get_newton_pa_linear_opf_options(opfopt: "OptimalPowerFlowOptions",
+                                     pfopt: PowerFlowOptions,
+                                     npa_circuit: "npa.HybridCircuit",
+                                     area_dict):
     """
     Translate GridCal power flow options to Newton power flow options
-    :param opt:
+    :param opfopt:
+    :param pfopt:
+    :param npa_circuit:
+    :param area_dict:
     :return:
     """
 

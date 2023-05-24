@@ -2154,7 +2154,7 @@ class Ui_mainWindow(object):
         self.maxVoltageModuleStepSpinBox.setObjectName(u"maxVoltageModuleStepSpinBox")
         self.maxVoltageModuleStepSpinBox.setDecimals(6)
         self.maxVoltageModuleStepSpinBox.setSingleStep(0.010000000000000)
-        self.maxVoltageModuleStepSpinBox.setValue(0.100000000000000)
+        self.maxVoltageModuleStepSpinBox.setValue(0.010000000000000)
 
         self.gridLayout_3.addWidget(self.maxVoltageModuleStepSpinBox, 10, 1, 1, 1)
 
@@ -2225,7 +2225,7 @@ class Ui_mainWindow(object):
         self.maxVoltageAngleStepSpinBox.setObjectName(u"maxVoltageAngleStepSpinBox")
         self.maxVoltageAngleStepSpinBox.setDecimals(6)
         self.maxVoltageAngleStepSpinBox.setSingleStep(0.010000000000000)
-        self.maxVoltageAngleStepSpinBox.setValue(0.500000000000000)
+        self.maxVoltageAngleStepSpinBox.setValue(0.020000000000000)
 
         self.gridLayout_3.addWidget(self.maxVoltageAngleStepSpinBox, 11, 1, 1, 1)
 

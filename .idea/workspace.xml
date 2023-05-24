@@ -26,14 +26,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Now the sigma analysis displays the &quot;balls&quot; in red colours if the coefficients did not converge">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added vm_max and va_max for the ACOPF">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_options.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_options.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1155,14 +1150,9 @@
       <workItem from="1684758456001" duration="1572000" />
       <workItem from="1684776741512" duration="748000" />
       <workItem from="1684837695561" duration="9474000" />
-      <workItem from="1684870968805" duration="1683000" />
-    </task>
-    <task id="LOCAL-00354" summary="fixed bugs with newtonpa opf integration">
-      <created>1676494451464</created>
-      <option name="number" value="00354" />
-      <option name="presentableId" value="LOCAL-00354" />
-      <option name="project" value="LOCAL" />
-      <updated>1676494451464</updated>
+      <workItem from="1684870968805" duration="1716000" />
+      <workItem from="1684914173287" duration="4622000" />
+      <workItem from="1684931785426" duration="599000" />
     </task>
     <task id="LOCAL-00355" summary="Improvements coupling Newton">
       <created>1676922446185</created>
@@ -1500,7 +1490,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684865551344</updated>
     </task>
-    <option name="localTasksCounter" value="403" />
+    <task id="LOCAL-00403" summary="added vm_max and va_max for the ACOPF">
+      <created>1684874653984</created>
+      <option name="number" value="00403" />
+      <option name="presentableId" value="LOCAL-00403" />
+      <option name="project" value="LOCAL" />
+      <updated>1684874653984</updated>
+    </task>
+    <option name="localTasksCounter" value="404" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1542,7 +1539,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added new grid examples" />
     <MESSAGE value="4.7.0" />
     <MESSAGE value="4.7.2" />
     <MESSAGE value="4.7.3&#10;- minor raw parsing bug" />
@@ -1567,7 +1563,8 @@
     <MESSAGE value="minimal fix in the json parser" />
     <MESSAGE value="initialize_with_existing_solution was true by default, now it is false" />
     <MESSAGE value="Now the sigma analysis displays the &quot;balls&quot; in red colours if the coefficients did not converge" />
-    <option name="LAST_COMMIT_MESSAGE" value="Now the sigma analysis displays the &quot;balls&quot; in red colours if the coefficients did not converge" />
+    <MESSAGE value="added vm_max and va_max for the ACOPF" />
+    <option name="LAST_COMMIT_MESSAGE" value="added vm_max and va_max for the ACOPF" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2002,7 +1999,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py</url>
-          <line>1090</line>
+          <line>1096</line>
           <option name="timeStamp" value="1190" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
