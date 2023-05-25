@@ -632,15 +632,15 @@ class SnapshotData:
         #  (Converters and Transformers)
         self.Vtmabus = self.T[self.iVtma]
 
-        self.iPfsh = np.array(self.iPfsh, dtype=np.int)
-        self.iQfma = np.array(self.iQfma, dtype=np.int)
-        self.iBeqz = np.array(self.iBeqz, dtype=np.int)
-        self.iBeqv = np.array(self.iBeqv, dtype=np.int)
-        self.iVtma = np.array(self.iVtma, dtype=np.int)
-        self.iQtma = np.array(self.iQtma, dtype=np.int)
-        self.iPfdp = np.array(self.iPfdp, dtype=np.int)
-        self.iPfdp_va = np.array(self.iPfdp_va, dtype=np.int)
-        self.iVscL = np.array(self.iVscL, dtype=np.int)
+        self.iPfsh = np.array(self.iPfsh, dtype=int)
+        self.iQfma = np.array(self.iQfma, dtype=int)
+        self.iBeqz = np.array(self.iBeqz, dtype=int)
+        self.iBeqv = np.array(self.iBeqv, dtype=int)
+        self.iVtma = np.array(self.iVtma, dtype=int)
+        self.iQtma = np.array(self.iQtma, dtype=int)
+        self.iPfdp = np.array(self.iPfdp, dtype=int)
+        self.iPfdp_va = np.array(self.iPfdp_va, dtype=int)
+        self.iVscL = np.array(self.iVscL, dtype=int)
 
     def get_branch_df(self, t=0):
         return self.branch_data.to_df(t)
