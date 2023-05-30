@@ -736,7 +736,7 @@ class MainGUI(QMainWindow):
         # Other actions
         ################################################################################################################
 
-        self.ui.grid_colouring_frame.setVisible(False)
+        self.ui.grid_colouring_frame.setVisible(True)
 
         self.ui.actionSync.setVisible(False)
 

@@ -486,11 +486,11 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
         Vbranch = theta_f - theta_t
         Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
         Sfb = Sf * calculation_inputs.Sbase
-        Stb = Sf * calculation_inputs.Sbase
+        Stb = -Sf * calculation_inputs.Sbase
         If = Sf / (Vf + 1e-20)
         It = -If
         # losses are not considered in the power flow computation
-        losses = If * If * calculation_inputs.branch_data.R * calculation_inputs.Sbase
+        losses = np.zeros(Sf.shape)  # If * If * calculation_inputs.branch_data.R * calculation_inputs.Sbase
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)

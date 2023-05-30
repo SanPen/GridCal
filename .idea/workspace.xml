@@ -26,8 +26,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Modified initial vm_max and va_max values">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="4.7.9">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -148,7 +150,6 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/Visualization&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -258,7 +259,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="object_plot_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="circuit_to_newton_pa" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -266,12 +267,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Analysis" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Analysis/object_plot_analysis.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -280,7 +281,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="update_gui_all" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -288,56 +289,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/update_gui_all.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Analysis" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Analysis/update_gui_file.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -405,6 +362,38 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests for tests.test_short_circuit.test_short_circuit" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;tests.test_short_circuit.test_short_circuit&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -458,19 +447,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.object_plot_analysis" />
-      <item itemvalue="Python.update_gui_all" />
-      <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.update_gui_file (1)" />
+      <item itemvalue="Python.circuit_to_newton_pa" />
+      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.Nosetests for tests.test_short_circuit.test_short_circuit" />
+      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file (1)" />
-        <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.update_gui_all" />
-        <item itemvalue="Python.object_plot_analysis" />
+        <item itemvalue="Python tests.Nosetests in tests" />
+        <item itemvalue="Python tests.Nosetests for tests.test_short_circuit.test_short_circuit" />
+        <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python.circuit_to_newton_pa" />
       </list>
     </recent_temporary>
   </component>
@@ -1120,41 +1109,187 @@
       <workItem from="1682321926846" duration="437000" />
       <workItem from="1682333643813" duration="2700000" />
       <workItem from="1682493624347" duration="1555000" />
-      <workItem from="1683041906565" duration="7000" />
-      <workItem from="1683042034287" duration="1286000" />
-      <workItem from="1683569075517" duration="2308000" />
-      <workItem from="1683700935505" duration="3678000" />
-      <workItem from="1683732598655" duration="3204000" />
-      <workItem from="1683742706952" duration="1832000" />
-      <workItem from="1683790672652" duration="4274000" />
-      <workItem from="1683822681847" duration="2492000" />
-      <workItem from="1683875494418" duration="1970000" />
-      <workItem from="1683968733976" duration="12706000" />
-      <workItem from="1683995450757" duration="123000" />
-      <workItem from="1683995580519" duration="3723000" />
-      <workItem from="1684138731449" duration="2790000" />
-      <workItem from="1684157673733" duration="2429000" />
-      <workItem from="1684160491390" duration="2609000" />
-      <workItem from="1684168978139" duration="1321000" />
-      <workItem from="1684185487445" duration="1182000" />
-      <workItem from="1684220510101" duration="20000" />
-      <workItem from="1684220799271" duration="6090000" />
-      <workItem from="1684309633637" duration="275000" />
-      <workItem from="1684418475564" duration="2530000" />
-      <workItem from="1684432994201" duration="5659000" />
-      <workItem from="1684487640196" duration="616000" />
-      <workItem from="1684586024027" duration="8130000" />
-      <workItem from="1684743463959" duration="12000" />
-      <workItem from="1684750899520" duration="4465000" />
-      <workItem from="1684758456001" duration="1572000" />
-      <workItem from="1684776741512" duration="748000" />
-      <workItem from="1684837695561" duration="9474000" />
-      <workItem from="1684870968805" duration="1716000" />
-      <workItem from="1684914173287" duration="4622000" />
-      <workItem from="1684931785426" duration="599000" />
-      <workItem from="1684946690944" duration="296000" />
-      <workItem from="1685001482591" duration="829000" />
-      <workItem from="1685027286755" duration="599000" />
+      <workItem from="1685084988554" duration="605000" />
+      <workItem from="1685104406894" duration="1215000" />
+      <workItem from="1685109895023" duration="5000" />
+      <workItem from="1685346167351" duration="1291000" />
+      <workItem from="1685362772070" duration="1209000" />
+      <workItem from="1685456839441" duration="373000" />
+    </task>
+    <task id="LOCAL-00331" summary="added docstrings and deleted commented code">
+      <created>1660328109870</created>
+      <option name="number" value="00331" />
+      <option name="presentableId" value="LOCAL-00331" />
+      <option name="project" value="LOCAL" />
+      <updated>1660328109870</updated>
+    </task>
+    <task id="LOCAL-00332" summary="completely refactored the ShortCircuitResults object to properly represent the sequence results">
+      <created>1660568962484</created>
+      <option name="number" value="00332" />
+      <option name="presentableId" value="LOCAL-00332" />
+      <option name="project" value="LOCAL" />
+      <updated>1660568962485</updated>
+    </task>
+    <task id="LOCAL-00333" summary="Added icons to the results tree view">
+      <created>1660571615657</created>
+      <option name="number" value="00333" />
+      <option name="presentableId" value="LOCAL-00333" />
+      <option name="project" value="LOCAL" />
+      <updated>1660571615657</updated>
+    </task>
+    <task id="LOCAL-00334" summary="major refactor in the short circuit study">
+      <created>1660636533200</created>
+      <option name="number" value="00334" />
+      <option name="presentableId" value="LOCAL-00334" />
+      <option name="project" value="LOCAL" />
+      <updated>1660636533201</updated>
+    </task>
+    <task id="LOCAL-00335" summary="Set the SC loading values to display in %">
+      <created>1660640003161</created>
+      <option name="number" value="00335" />
+      <option name="presentableId" value="LOCAL-00335" />
+      <option name="project" value="LOCAL" />
+      <updated>1660640003162</updated>
+    </task>
+    <task id="LOCAL-00336" summary="fixed issue with no-slack islands">
+      <created>1660895719767</created>
+      <option name="number" value="00336" />
+      <option name="presentableId" value="LOCAL-00336" />
+      <option name="project" value="LOCAL" />
+      <updated>1660895719768</updated>
+    </task>
+    <task id="LOCAL-00337" summary="Minor refactor of the newer get admmitance functions in generatorDate and BatteryData">
+      <created>1660908328753</created>
+      <option name="number" value="00337" />
+      <option name="presentableId" value="LOCAL-00337" />
+      <option name="project" value="LOCAL" />
+      <updated>1660908328753</updated>
+    </task>
+    <task id="LOCAL-00338" summary="Made the short circuit vastly more efficient by avoiding Y inversions">
+      <created>1660923842529</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
+      <option name="project" value="LOCAL" />
+      <updated>1660923842529</updated>
+    </task>
+    <task id="LOCAL-00339" summary="slight refactor">
+      <created>1660924026298</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
+      <option name="project" value="LOCAL" />
+      <updated>1660924026298</updated>
+    </task>
+    <task id="LOCAL-00340" summary="slight refactor">
+      <created>1661166574525</created>
+      <option name="number" value="00340" />
+      <option name="presentableId" value="LOCAL-00340" />
+      <option name="project" value="LOCAL" />
+      <updated>1661166574526</updated>
+    </task>
+    <task id="LOCAL-00341" summary="Modified the text of some results' naming">
+      <created>1661846548882</created>
+      <option name="number" value="00341" />
+      <option name="presentableId" value="LOCAL-00341" />
+      <option name="project" value="LOCAL" />
+      <updated>1661846548883</updated>
+    </task>
+    <task id="LOCAL-00342" summary="Fixed short circuit indexing bug in islands">
+      <created>1661863735026</created>
+      <option name="number" value="00342" />
+      <option name="presentableId" value="LOCAL-00342" />
+      <option name="project" value="LOCAL" />
+      <updated>1661863735027</updated>
+    </task>
+    <task id="LOCAL-00343" summary="Merged devel with devel_REE (successfully)">
+      <created>1662028943800</created>
+      <option name="number" value="00343" />
+      <option name="presentableId" value="LOCAL-00343" />
+      <option name="project" value="LOCAL" />
+      <updated>1662028943800</updated>
+    </task>
+    <task id="LOCAL-00344" summary="updated version">
+      <created>1662028986050</created>
+      <option name="number" value="00344" />
+      <option name="presentableId" value="LOCAL-00344" />
+      <option name="project" value="LOCAL" />
+      <updated>1662028986050</updated>
+    </task>
+    <task id="LOCAL-00345" summary="Updated the version file">
+      <created>1662029493419</created>
+      <option name="number" value="00345" />
+      <option name="presentableId" value="LOCAL-00345" />
+      <option name="project" value="LOCAL" />
+      <updated>1662029493419</updated>
+    </task>
+    <task id="LOCAL-00346" summary="Added losses % to the power flow time series&#10;Minor refactors of the GUI">
+      <created>1662042947521</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1662042947521</updated>
+    </task>
+    <task id="LOCAL-00347" summary="csc sparse branch derivatives">
+      <created>1662061867029</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
+      <option name="project" value="LOCAL" />
+      <updated>1662061867029</updated>
+    </task>
+    <task id="LOCAL-00348" summary="removed newton1 engine&#10;Fixed issue with PSSe shunts not generating a proper UUID">
+      <created>1675240999588</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
+      <option name="project" value="LOCAL" />
+      <updated>1675240999588</updated>
+    </task>
+    <task id="LOCAL-00349" summary="Better integration of newton linear OPF">
+      <created>1676298162487</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
+      <option name="project" value="LOCAL" />
+      <updated>1676298162487</updated>
+    </task>
+    <task id="LOCAL-00350" summary="Added more unit commitment properties to the generator">
+      <created>1676315186353</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
+      <option name="project" value="LOCAL" />
+      <updated>1676315186353</updated>
+    </task>
+    <task id="LOCAL-00351" summary="Added more properties to the json export">
+      <created>1676370367154</created>
+      <option name="number" value="00351" />
+      <option name="presentableId" value="LOCAL-00351" />
+      <option name="project" value="LOCAL" />
+      <updated>1676370367155</updated>
+    </task>
+    <task id="LOCAL-00352" summary="Better integration of Newton linear and nonlinear OPF modules">
+      <created>1676377982972</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
+      <option name="project" value="LOCAL" />
+      <updated>1676377982972</updated>
+    </task>
+    <task id="LOCAL-00353" summary="Fixed bugs when creating AcDcConverter from newtonpa">
+      <created>1676493675330</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
+      <option name="project" value="LOCAL" />
+      <updated>1676493675330</updated>
+    </task>
+    <task id="LOCAL-00354" summary="fixed bugs with newtonpa opf integration">
+      <created>1676494451464</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1676494451464</updated>
+    </task>
+    <task id="LOCAL-00355" summary="Improvements coupling Newton">
+      <created>1676922446185</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
+      <option name="project" value="LOCAL" />
+      <updated>1676922446185</updated>
     </task>
     <task id="LOCAL-00356" summary="Improvements coupling Newton (unit commitment checkbox)">
       <created>1677520363892</created>
@@ -1324,182 +1459,7 @@
       <option name="project" value="LOCAL" />
       <updated>1682180026691</updated>
     </task>
-    <task id="LOCAL-00380" summary="4.7.2">
-      <created>1683712765751</created>
-      <option name="number" value="00380" />
-      <option name="presentableId" value="LOCAL-00380" />
-      <option name="project" value="LOCAL" />
-      <updated>1683712765751</updated>
-    </task>
-    <task id="LOCAL-00381" summary="4.7.3&#10;- minor raw parsing bug">
-      <created>1683736972339</created>
-      <option name="number" value="00381" />
-      <option name="presentableId" value="LOCAL-00381" />
-      <option name="project" value="LOCAL" />
-      <updated>1683736972340</updated>
-    </task>
-    <task id="LOCAL-00382" summary="fixed export of the results&#10;Fixed short circuit representation">
-      <created>1683743817369</created>
-      <option name="number" value="00382" />
-      <option name="presentableId" value="LOCAL-00382" />
-      <option name="project" value="LOCAL" />
-      <updated>1683743817369</updated>
-    </task>
-    <task id="LOCAL-00383" summary="4.7.4">
-      <created>1683743985094</created>
-      <option name="number" value="00383" />
-      <option name="presentableId" value="LOCAL-00383" />
-      <option name="project" value="LOCAL" />
-      <updated>1683743985094</updated>
-    </task>
-    <task id="LOCAL-00384" summary="implemented PGM save">
-      <created>1683791524059</created>
-      <option name="number" value="00384" />
-      <option name="presentableId" value="LOCAL-00384" />
-      <option name="project" value="LOCAL" />
-      <updated>1683791524059</updated>
-    </task>
-    <task id="LOCAL-00385" summary="Fixed bug with newton integration&#10;Not the matpower voltage solution is included as voltage guess">
-      <created>1683797255728</created>
-      <option name="number" value="00385" />
-      <option name="presentableId" value="LOCAL-00385" />
-      <option name="project" value="LOCAL" />
-      <updated>1683797255728</updated>
-    </task>
-    <task id="LOCAL-00386" summary="Improved Newton integration by adding voltage guess for pf and acopf">
-      <created>1683825137014</created>
-      <option name="number" value="00386" />
-      <option name="presentableId" value="LOCAL-00386" />
-      <option name="project" value="LOCAL" />
-      <updated>1683825137014</updated>
-    </task>
-    <task id="LOCAL-00387" summary="Improved save_pgm with time series">
-      <created>1683877159802</created>
-      <option name="number" value="00387" />
-      <option name="presentableId" value="LOCAL-00387" />
-      <option name="project" value="LOCAL" />
-      <updated>1683877159802</updated>
-    </task>
-    <task id="LOCAL-00388" summary="Now the analysis tool can also fix most detected errors">
-      <created>1683984806074</created>
-      <option name="number" value="00388" />
-      <option name="presentableId" value="LOCAL-00388" />
-      <option name="project" value="LOCAL" />
-      <updated>1683984806075</updated>
-    </task>
-    <task id="LOCAL-00389" summary="4.7.6">
-      <created>1683985103660</created>
-      <option name="number" value="00389" />
-      <option name="presentableId" value="LOCAL-00389" />
-      <option name="project" value="LOCAL" />
-      <updated>1683985103660</updated>
-    </task>
-    <task id="LOCAL-00390" summary="Several pylint errors detected and fixed">
-      <created>1684142477756</created>
-      <option name="number" value="00390" />
-      <option name="presentableId" value="LOCAL-00390" />
-      <option name="project" value="LOCAL" />
-      <updated>1684142477756</updated>
-    </task>
-    <task id="LOCAL-00391" summary="Fixed more pylint errors">
-      <created>1684164546863</created>
-      <option name="number" value="00391" />
-      <option name="presentableId" value="LOCAL-00391" />
-      <option name="project" value="LOCAL" />
-      <updated>1684164546863</updated>
-    </task>
-    <task id="LOCAL-00392" summary="fixed numba deprecations">
-      <created>1684170286866</created>
-      <option name="number" value="00392" />
-      <option name="presentableId" value="LOCAL-00392" />
-      <option name="project" value="LOCAL" />
-      <updated>1684170286866</updated>
-    </task>
-    <task id="LOCAL-00393" summary="Fixed newton export bug">
-      <created>1684185808700</created>
-      <option name="number" value="00393" />
-      <option name="presentableId" value="LOCAL-00393" />
-      <option name="project" value="LOCAL" />
-      <updated>1684185808700</updated>
-    </task>
-    <task id="LOCAL-00394" summary="more pylint stuff">
-      <created>1684186628312</created>
-      <option name="number" value="00394" />
-      <option name="presentableId" value="LOCAL-00394" />
-      <option name="project" value="LOCAL" />
-      <updated>1684186628312</updated>
-    </task>
-    <task id="LOCAL-00395" summary="Added area reports to the OPF">
-      <created>1684255293647</created>
-      <option name="number" value="00395" />
-      <option name="presentableId" value="LOCAL-00395" />
-      <option name="project" value="LOCAL" />
-      <updated>1684255293647</updated>
-    </task>
-    <task id="LOCAL-00396" summary="Fixed strange issue with graphics">
-      <created>1684433853475</created>
-      <option name="number" value="00396" />
-      <option name="presentableId" value="LOCAL-00396" />
-      <option name="project" value="LOCAL" />
-      <updated>1684433853475</updated>
-    </task>
-    <task id="LOCAL-00397" summary="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton">
-      <created>1684586135435</created>
-      <option name="number" value="00397" />
-      <option name="presentableId" value="LOCAL-00397" />
-      <option name="project" value="LOCAL" />
-      <updated>1684586135435</updated>
-    </task>
-    <task id="LOCAL-00398" summary="Improved CIM objects">
-      <created>1684590945626</created>
-      <option name="number" value="00398" />
-      <option name="presentableId" value="LOCAL-00398" />
-      <option name="project" value="LOCAL" />
-      <updated>1684590945626</updated>
-    </task>
-    <task id="LOCAL-00399" summary="Improved the add_circuit function&#10;Improved the ACOPF integration">
-      <created>1684602376201</created>
-      <option name="number" value="00399" />
-      <option name="presentableId" value="LOCAL-00399" />
-      <option name="project" value="LOCAL" />
-      <updated>1684602376201</updated>
-    </task>
-    <task id="LOCAL-00400" summary="minimal fix in the json parser">
-      <created>1684605320687</created>
-      <option name="number" value="00400" />
-      <option name="presentableId" value="LOCAL-00400" />
-      <option name="project" value="LOCAL" />
-      <updated>1684605320687</updated>
-    </task>
-    <task id="LOCAL-00401" summary="initialize_with_existing_solution was true by default, now it is false">
-      <created>1684848227601</created>
-      <option name="number" value="00401" />
-      <option name="presentableId" value="LOCAL-00401" />
-      <option name="project" value="LOCAL" />
-      <updated>1684848227601</updated>
-    </task>
-    <task id="LOCAL-00402" summary="Now the sigma analysis displays the &quot;balls&quot; in red colours if the coefficients did not converge">
-      <created>1684865551344</created>
-      <option name="number" value="00402" />
-      <option name="presentableId" value="LOCAL-00402" />
-      <option name="project" value="LOCAL" />
-      <updated>1684865551344</updated>
-    </task>
-    <task id="LOCAL-00403" summary="added vm_max and va_max for the ACOPF">
-      <created>1684874653984</created>
-      <option name="number" value="00403" />
-      <option name="presentableId" value="LOCAL-00403" />
-      <option name="project" value="LOCAL" />
-      <updated>1684874653984</updated>
-    </task>
-    <task id="LOCAL-00404" summary="Modified initial vm_max and va_max values">
-      <created>1684946978184</created>
-      <option name="number" value="00404" />
-      <option name="presentableId" value="LOCAL-00404" />
-      <option name="project" value="LOCAL" />
-      <updated>1684946978185</updated>
-    </task>
-    <option name="localTasksCounter" value="405" />
+    <option name="localTasksCounter" value="380" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1541,32 +1501,32 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="4.7.2" />
-    <MESSAGE value="4.7.3&#10;- minor raw parsing bug" />
-    <MESSAGE value="fixed export of the results&#10;Fixed short circuit representation" />
-    <MESSAGE value="4.7.4" />
-    <MESSAGE value="implemented PGM save" />
-    <MESSAGE value="Fixed bug with newton integration&#10;Not the matpower voltage solution is included as voltage guess" />
-    <MESSAGE value="Improved Newton integration by adding voltage guess for pf and acopf" />
-    <MESSAGE value="Improved save_pgm with time series" />
-    <MESSAGE value="Now the analysis tool can also fix most detected errors" />
-    <MESSAGE value="4.7.6" />
-    <MESSAGE value="Several pylint errors detected and fixed" />
-    <MESSAGE value="Fixed more pylint errors" />
-    <MESSAGE value="fixed numba deprecations" />
-    <MESSAGE value="Fixed newton export bug" />
-    <MESSAGE value="more pylint stuff" />
-    <MESSAGE value="Added area reports to the OPF" />
-    <MESSAGE value="Fixed strange issue with graphics" />
-    <MESSAGE value="Added raw voltage limits where missing when converting to GridCal&#10;Added verbosity for newton" />
-    <MESSAGE value="Improved CIM objects" />
-    <MESSAGE value="Improved the add_circuit function&#10;Improved the ACOPF integration" />
-    <MESSAGE value="minimal fix in the json parser" />
-    <MESSAGE value="initialize_with_existing_solution was true by default, now it is false" />
-    <MESSAGE value="Now the sigma analysis displays the &quot;balls&quot; in red colours if the coefficients did not converge" />
-    <MESSAGE value="added vm_max and va_max for the ACOPF" />
-    <MESSAGE value="Modified initial vm_max and va_max values" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modified initial vm_max and va_max values" />
+    <MESSAGE value="Improvements coupling Newton" />
+    <MESSAGE value="Improvements coupling Newton (unit commitment checkbox)" />
+    <MESSAGE value="Updated to match the Newton interface and naming changes" />
+    <MESSAGE value="integration of area_exchange" />
+    <MESSAGE value="Improved illinois200" />
+    <MESSAGE value="Improved newton pf options integration" />
+    <MESSAGE value="Added tap module check to the analysis" />
+    <MESSAGE value="Added voltage limits passing to newton" />
+    <MESSAGE value="Added nonlinear opf shadow prices" />
+    <MESSAGE value="added optional newton file saver when converting to Newton" />
+    <MESSAGE value="Improved circuit_to_data2.py compilation" />
+    <MESSAGE value="Added override_branch_controls options, removing the storage dispatch options" />
+    <MESSAGE value="Fixed issue with linear transfer capacity calculation" />
+    <MESSAGE value="Added newton save" />
+    <MESSAGE value="Merged the changes from ramferan" />
+    <MESSAGE value="Added contingency planner" />
+    <MESSAGE value="Added investment classes" />
+    <MESSAGE value="Fixed issues with the merge" />
+    <MESSAGE value="early colouring the slippy map" />
+    <MESSAGE value="early colouring the slippy map (working)" />
+    <MESSAGE value="Added map providers options" />
+    <MESSAGE value="Improved map colouring" />
+    <MESSAGE value="Integrated contingencies and investments with Newton" />
+    <MESSAGE value="Added new grid examples" />
+    <MESSAGE value="4.7.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="4.7.0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1915,6 +1875,11 @@
           <option name="timeStamp" value="1115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py</url>
+          <line>855</line>
+          <option name="timeStamp" value="1116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>200</line>
           <option name="timeStamp" value="1133" />
@@ -1975,55 +1940,9 @@
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py</url>
-          <line>846</line>
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
+          <line>5114</line>
           <option name="timeStamp" value="1180" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2275</line>
-          <option name="timeStamp" value="1183" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2319</line>
-          <option name="timeStamp" value="1184" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py</url>
-          <line>360</line>
-          <option name="timeStamp" value="1188" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py</url>
-          <line>364</line>
-          <option name="timeStamp" value="1189" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py</url>
-          <line>1096</line>
-          <option name="timeStamp" value="1190" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4068</line>
-          <option name="timeStamp" value="1191" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4865</line>
-          <option name="timeStamp" value="1192" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="abs(xfo['uk'][i]) &lt; 1e-10 " language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_pgm.py</url>
-          <line>428</line>
-          <option name="timeStamp" value="1193" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_pgm.py</url>
-          <line>789</line>
-          <option name="timeStamp" value="1194" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2062,7 +1981,7 @@
     <SUITE FILE_PATH="coverage/GridCal$raw_parser.coverage" NAME="raw_parser Coverage Results" MODIFIED="1619379740833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_tutorials_test_define_grid_from_scratch_without_profiles.coverage" NAME="Nosetests for tests.test_tutorials.test_define_grid_from_scratch_without_profiles Coverage Results" MODIFIED="1630416815736" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1682176478455" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1685036437102" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$derivatives_research0.coverage" NAME="derivatives_research0 Coverage Results" MODIFIED="1608643216312" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc/fubm" />
     <SUITE FILE_PATH="coverage/GridCal$admittance_variations.coverage" NAME="admittance_variations Coverage Results" MODIFIED="1603050030453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/admittance" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1682020351597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
@@ -2205,7 +2124,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1681979679516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GIS" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1684946716031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1685457208679" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
