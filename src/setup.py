@@ -78,7 +78,7 @@ package_data = {'GridCal': ['*.md',
                 }
 
 dependencies = ['setuptools>=41.0.1',
-                'wheel>=0.33.4',
+                'wheel>=0.37.2',
                 "PySide2>=5.15",  # 5.14 breaks the UI generation for development
                 "numpy>=1.19.0",
                 "scipy>=1.0.0",
