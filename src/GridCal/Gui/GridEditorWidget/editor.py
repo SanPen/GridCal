@@ -167,11 +167,17 @@ class EditorGraphicsView(QGraphicsView):
         # print(event.angleDelta().x(), event.angleDelta().y(), event.angleDelta().manhattanLength() )
         if event.angleDelta().y() > 0:
             # Zoom in
-            self.scale(scale_factor, scale_factor)
+            self.zoom_in(scale_factor)
 
         else:
             # Zooming out
-            self.scale(1.0 / scale_factor, 1.0 / scale_factor)
+            self.zoom_out(scale_factor)
+
+    def zoom_in(self, scale_factor=1.15):
+        self.scale(scale_factor, scale_factor)
+
+    def zoom_out(self, scale_factor=1.15):
+        self.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
     def add_bus(self, bus: Bus, explode_factor=1.0):
         """
@@ -599,11 +605,11 @@ class GridEditor(QSplitter):
         self.libItems.append(item)
 
         # add transformer3w to the drag&drop
-        # t3w_icon = QIcon()
-        # t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
-        # item = QStandardItem(t3w_icon, "3W-Transformer")
-        # item.setToolTip("Drag & drop this into the schematic")
-        # self.libItems.append(item)
+        t3w_icon = QIcon()
+        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
+        item = QStandardItem(t3w_icon, "3W-Transformer")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.libItems.append(item)
 
         for i in self.libItems:
             self.libraryModel.appendRow(i)
@@ -768,37 +774,47 @@ class GridEditor(QSplitter):
 
                             obj = self.started_branch.bus_from.api_object
 
-                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                              toPort=self.started_branch.toPort,
-                                                              diagramScene=self.diagramScene,
-                                                              branch=None)
+                            if isinstance(self.started_branch.bus_to.api_object, Bus):
+                                # if the bus "from" is the TR3W, the "to" is the bus
+                                bus = self.started_branch.bus_to.api_object
+                            else:
+                                raise Exception('Nor the from or to connection points are a bus!')
 
-                            # update the connection placement
-                            obj.graphic_obj.fromPort.update()
-                            obj.graphic_obj.toPort.update()
+                            i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
+                                                                       self.started_branch.toPort)
 
-                            # set the connection placement
-                            obj.graphic_obj.setZValue(-1)
+                            if obj.graphic_obj.connections[i] is None:
+                                conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                       toPort=self.started_branch.toPort,
+                                                       diagramScene=self.diagramScene)
 
-                            print('Hosted tr3w connection FROM')
+                                obj.graphic_obj.set_connection(i, bus, conn)
+                                self.started_branch.fromPort.update()
+                                self.started_branch.toPort.update()
+                                obj.graphic_obj.update_conn()
 
                         elif isinstance(self.started_branch.bus_to.api_object, Transformer3W):
 
                             obj = self.started_branch.bus_to.api_object
 
-                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                              toPort=self.started_branch.toPort,
-                                                              diagramScene=self.diagramScene,
-                                                              branch=None)
+                            if isinstance(self.started_branch.bus_from.api_object, Bus):
+                                # if the bus "to" is the TR3W, the "from" is the bus
+                                bus = self.started_branch.bus_from.api_object
+                            else:
+                                raise Exception('Nor the from or to connection points are a bus!')
 
-                            # update the connection placement
-                            obj.graphic_obj.fromPort.update()
-                            obj.graphic_obj.toPort.update()
+                            i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
+                                                                       self.started_branch.toPort)
 
-                            # set the connection placement
-                            obj.graphic_obj.setZValue(-1)
+                            if obj.graphic_obj.connections[i] is None:
+                                conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                       toPort=self.started_branch.toPort,
+                                                       diagramScene=self.diagramScene)
 
-                            print('Hosted tr3w connection TO')
+                                obj.graphic_obj.set_connection(i, bus, conn)
+                                self.started_branch.fromPort.update()
+                                self.started_branch.toPort.update()
+                                obj.graphic_obj.update_conn()
 
                         else:
                             print('unknown connection')
@@ -809,10 +825,9 @@ class GridEditor(QSplitter):
         # release this pointer
         self.started_branch = None
 
-    def bigger_nodes(self):
+    def expand_node_distances(self):
         """
         Expand the grid
-        @return:
         """
         min_x = sys.maxsize
         min_y = sys.maxsize
@@ -860,10 +875,9 @@ class GridEditor(QSplitter):
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
 
-    def smaller_nodes(self):
+    def shrink_node_distances(self):
         """
-        Contract the grid
-        @return:
+        Shrink node distances
         """
         min_x = sys.maxsize
         min_y = sys.maxsize
@@ -925,7 +939,7 @@ class GridEditor(QSplitter):
         my = margin_factor * dy
         h = dy + 2 * my + 80
         w = dx + 2 * mx + 80
-        self.diagramScene.setSceneRect(min_x - mx, min_y - my, w, h)
+        self.diagramScene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
     def center_nodes(self):
         """
@@ -1036,7 +1050,7 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
         branch.graphic_obj = graphic_obj
 
-    def add_api_bus(self, bus: Bus, explode_factor=1):
+    def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
         """
         Add API bus to the diagram
         :param bus: Bus instance
@@ -1354,10 +1368,10 @@ class GridEditor(QSplitter):
                                        prog_func=prog_func,
                                        text_func=text_func)
 
-
-    def align_schematic(self, buses: List[Bus] = []):
+    def align_schematic(self, buses: List[Bus] = ()):
         """
         Align the scene view to the content
+        :param buses: list of buses to use for alignment
         """
         # figure limits
         min_x = sys.maxsize
@@ -1398,6 +1412,9 @@ class GridEditor(QSplitter):
         self.center_nodes()
 
     def clear(self):
+        """
+        Clear the schematic
+        """
         self.diagramView.scene_.clear()
         self.name_label.setText("")
 
@@ -1407,7 +1424,6 @@ class GridEditor(QSplitter):
         :param explode_factor: factor to separate the nodes
         :param prog_func: progress report function
         :param text_func: Text report function
-        :return: Nothing
         """
         # clear all
         self.clear()
@@ -1424,11 +1440,12 @@ class GridEditor(QSplitter):
         self.align_schematic()
 
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
     circuit = MultiCircuit()
     window = GridEditor(circuit)
+    h = 600
+    window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())

@@ -359,8 +359,8 @@ class MainGUI(QMainWindow):
 
         # These get initialized by create_map()
         self.tile_source = None
-        self.map_widget: PySlipQt = None
-        self.polyline_layer_id: int = None
+        self.map_widget: PySlipQt | None = None
+        self.polyline_layer_id: int | None = None
 
         self.create_map()
 
@@ -386,22 +386,22 @@ class MainGUI(QMainWindow):
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
         self.topology_reduction = None
-        self.find_node_groups_driver: sim.NodeGroupsDriver = None
+        self.find_node_groups_driver: sim.NodeGroupsDriver | None = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
         self.stuff_running_now = list()
 
         # window pointers ----------------------------------------------------------------------------------------------
-        self.file_sync_window: SyncDialogueWindow = None
-        self.sigma_dialogue: SigmaAnalysisGUI = None
-        self.grid_generator_dialogue: GridGeneratorGUI = None
-        self.contingency_planner_dialogue: ContingencyPlannerGUI = None
-        self.analysis_dialogue: GridAnalysisGUI = None
-        self.profile_input_dialogue: ProfileInputGUI = None
-        self.models_input_dialogue: ModelsInputGUI = None
-        self.object_select_window: ObjectSelectWindow = None
-        self.coordinates_window: CoordinatesInputGUI = None
-        self.about_msg_window: AboutDialogueGuiGUI = None
-        self.tower_builder_window: TowerBuilderGUI = None
+        self.file_sync_window: SyncDialogueWindow | None = None
+        self.sigma_dialogue: SigmaAnalysisGUI | None = None
+        self.grid_generator_dialogue: GridGeneratorGUI | None = None
+        self.contingency_planner_dialogue: ContingencyPlannerGUI | None = None
+        self.analysis_dialogue: GridAnalysisGUI | None = None
+        self.profile_input_dialogue: ProfileInputGUI | None = None
+        self.models_input_dialogue: ModelsInputGUI | None = None
+        self.object_select_window: ObjectSelectWindow | None = None
+        self.coordinates_window: CoordinatesInputGUI | None = None
+        self.about_msg_window: AboutDialogueGuiGUI | None = None
+        self.tower_builder_window: TowerBuilderGUI | None = None
 
         self.file_name = ''
 
@@ -413,17 +413,17 @@ class MainGUI(QMainWindow):
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
 
-        self.buses_for_storage = None
+        self.buses_for_storage: List[Bus] | None = None
 
         # dictionaries for available results
-        self.available_results_dict = None
+        self.available_results_dict: Dict[str, List[ResultTypes]] | None = None
         self.available_results_steps_dict = None
 
         ################################################################################################################
         # Console
         ################################################################################################################
 
-        self.console = None
+        self.console: ConsoleWidget | None = None
         try:
             self.create_console()
         except TypeError:
@@ -557,6 +557,10 @@ class MainGUI(QMainWindow):
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
 
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
+
+        self.ui.actionZoom_in.triggered.connect(self.zoom_in)
+
+        self.ui.actionZoom_out.triggered.connect(self.zoom_out)
 
         # Buttons
 
@@ -1336,14 +1340,14 @@ class MainGUI(QMainWindow):
         Move the nodes more separated
         """
         if self.grid_editor is not None:
-            self.grid_editor.bigger_nodes()
+            self.grid_editor.expand_node_distances()
 
     def smaller_nodes(self):
         """
         Move the nodes closer
         """
         if self.grid_editor is not None:
-            self.grid_editor.smaller_nodes()
+            self.grid_editor.shrink_node_distances()
 
     def center_nodes(self):
         """
@@ -5721,6 +5725,20 @@ class MainGUI(QMainWindow):
         if self.grid_editor is not None:
             self.grid_editor.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
+    def zoom_in(self):
+        """
+        Zoom the diagram in
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.diagramView.zoom_in()
+
+    def zoom_out(self):
+        """
+        Zoom the diagram out
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.diagramView.zoom_out()
+
     def profile_sliders_changed(self):
         """
         Correct sliders if they change
@@ -7457,6 +7475,8 @@ class MainGUI(QMainWindow):
             self.map_widget.update()
 
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
+
+
 
 
 def run(use_native_dialogues=False):

@@ -8842,9 +8842,11 @@ QProgressBar::chunk{
      <addaction name="actionSetSelectedBusZone"/>
      <addaction name="actionSetSelectedBusArea"/>
     </widget>
+    <addaction name="actionZoom_in"/>
+    <addaction name="actionZoom_out"/>
+    <addaction name="actionCenter_view"/>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
-    <addaction name="actionCenter_view"/>
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionApply_new_rates"/>
     <addaction name="actionDrawSchematic"/>
@@ -9139,7 +9141,7 @@ QProgressBar::chunk{
     <string>Center view</string>
    </property>
    <property name="shortcut">
-    <string>F4</string>
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="actionShort_Circuit">
@@ -9803,6 +9805,30 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionZoom_in">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/zoom_in.svg</normaloff>:/Icons/icons/zoom_in.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoom_out">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/zoom_out.svg</normaloff>:/Icons/icons/zoom_out.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
  </widget>

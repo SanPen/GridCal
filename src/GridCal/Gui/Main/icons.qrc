@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/zoom_out.svg</file>
+    <file>icons/zoom_in.svg</file>
     <file>icons/investment.svg</file>
     <file>icons/add_investment.svg</file>
     <file>icons/histogram.svg</file>

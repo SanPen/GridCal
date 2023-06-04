@@ -73,14 +73,14 @@ class BusViewerGUI(QMainWindow):
         Move the nodes more separated
         """
         if self.grid_editor is not None:
-            self.grid_editor.bigger_nodes()
+            self.grid_editor.expand_node_distances()
 
     def smaller_nodes(self):
         """
         Move the nodes closer
         """
         if self.grid_editor is not None:
-            self.grid_editor.smaller_nodes()
+            self.grid_editor.shrink_node_distances()
 
     def center_nodes(self):
         """

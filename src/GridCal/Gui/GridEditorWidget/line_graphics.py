@@ -252,7 +252,7 @@ class LineEditor(QDialog):
 
 class LineGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Line = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem | None, diagramScene, width=5, branch: Line = None):
         """
 
         :param fromPort:
@@ -282,8 +282,8 @@ class LineGraphicItem(QGraphicsLineItem):
 
         self.pos1 = None
         self.pos2 = None
-        self.fromPort = None
-        self.toPort = None
+        self.fromPort: TerminalItem | None = None
+        self.toPort: TerminalItem | None = None
         self.diagramScene = diagramScene
 
         if fromPort:
