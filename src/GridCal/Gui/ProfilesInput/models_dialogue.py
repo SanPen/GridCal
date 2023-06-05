@@ -18,7 +18,7 @@
 import os
 import numpy as np
 import pandas as pd
-from PySide2.QtWidgets import *
+from PySide6.QtWidgets import *
 from typing import List, Dict
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
@@ -53,10 +53,10 @@ class GridsModelItem:
             return ''
 
 
-class GridsModel(QAbstractTableModel):
+class GridsModel(QtCore.QAbstractTableModel):
 
     def __init__(self):
-        QAbstractTableModel.__init__(self)
+        QtCore.QAbstractTableModel.__init__(self)
 
         self._values_: List[GridsModelItem] = list()
 
@@ -97,7 +97,7 @@ class GridsModel(QAbstractTableModel):
                 return p_int
         return None
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+    def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlags:
         return Qt.ItemIsDropEnabled | Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
 
     def supportedDropActions(self) -> bool:

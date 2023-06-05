@@ -6,8 +6,8 @@ from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 if __name__ == '__main__':
 
-    rcc_cmd = 'pyside2-rcc'
-    uic_cmd = 'pyside2-uic'
+    rcc_cmd = 'PySide6-rcc'
+    uic_cmd = 'PySide6-uic'
 
     if os.name == 'nt':
         rcc_cmd += '.exe'

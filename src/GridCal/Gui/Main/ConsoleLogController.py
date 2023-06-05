@@ -17,7 +17,7 @@
 
 import sys
 
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 from GridCal.Gui.Main.ConsoleLog import *
 

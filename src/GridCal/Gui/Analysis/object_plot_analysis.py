@@ -20,7 +20,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from typing import List
 import math
-from PySide2 import QtWidgets, QtGui
+from PySide6 import QtWidgets, QtGui
 
 from GridCal.Engine.basic_structures import LogSeverity
 from GridCal.Engine.Core.multi_circuit import MultiCircuit

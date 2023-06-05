@@ -1,5 +1,5 @@
 """
-A "slip map" widget for PySide2.
+A "slip map" widget for PySide6.
 
 So why is this widget called 'pySlip'?
 
@@ -28,9 +28,9 @@ Some semantics:
 
 import sys
 from typing import List, Dict
-from PySide2.QtCore import Qt, QTimer, QPoint, QPointF, QObject, Signal
-from PySide2.QtWidgets import QLabel, QSizePolicy, QWidget, QMessageBox
-from PySide2.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor
+from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QObject, Signal
+from PySide6.QtWidgets import QLabel, QSizePolicy, QWidget, QMessageBox
+from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor
 
 try:
     import GridCal.Gui.pySlipQt.log as log
@@ -119,7 +119,7 @@ class MapLayer:
             if len(colour) != 9 or colour[0] != '#':
                 # assume it's a colour *name*
                 # we should do more checking of the name here, though it looks
-                # like PySide2 defaults to a colour if the name isn't recognized
+                # like PySide6 defaults to a colour if the name isn't recognized
                 c = QColor(colour)
                 result = (c.red(), c.blue(), c.green(), c.alpha())
             else:
@@ -548,7 +548,7 @@ class PySlipQt(QWidget):
         self.pyslipqt_event_dict[etype](event)
 
     ######
-    # Overide the PySide2 mouse/keyboard/etc events
+    # Overide the PySide6 mouse/keyboard/etc events
     ######
 
     def mousePressEvent(self, event):
@@ -2121,7 +2121,7 @@ class PySlipQt(QWidget):
             if len(colour) != 9 or colour[0] != '#':
                 # assume it's a colour *name*
                 # we should do more checking of the name here, though it looks
-                # like PySide2 defaults to a colour if the name isn't recognized
+                # like PySide6 defaults to a colour if the name isn't recognized
                 c = QColor(colour) 
                 result = (c.red(), c.blue(), c.green(), c.alpha())
             else:

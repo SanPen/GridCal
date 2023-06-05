@@ -8,7 +8,7 @@ For example, see gmt_local.py (local tiles) and osm_tiles.py
 
 import os
 import math
-from PySide2.QtGui import QPixmap
+from PySide6.QtGui import QPixmap
 import GridCal.Gui.pySlipQt.pycacheback as pycacheback
 import GridCal.Gui.pySlipQt.log as log
 

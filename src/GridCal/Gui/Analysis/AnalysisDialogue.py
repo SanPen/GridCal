@@ -18,7 +18,7 @@
 import sys
 from typing import List
 
-from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow
+from PySide6.QtWidgets import QMessageBox, QFileDialog, QMainWindow
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -137,7 +137,7 @@ class GridAnalysisGUI(QMainWindow):
 
 
 if __name__ == "__main__":
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
     window = GridAnalysisGUI()
     window.resize(1.61 * 700.0, 700.0)  # golden ratio

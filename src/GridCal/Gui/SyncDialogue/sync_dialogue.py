@@ -1,8 +1,8 @@
 
 import sys
-from PySide2.QtWidgets import *
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import *
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtCore import Qt
 from GridCal.Gui.SyncDialogue.gui import *
 from GridCal.Gui.Session.synchronization_driver import get_issues_tree_view_model, FileSyncThread
 

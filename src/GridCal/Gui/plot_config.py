@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import PySide2  # this line is necessary so that Matplotlib recognises that PySide is the Qt Backend
+import PySide6  # this line is necessary so that Matplotlib recognises that PySide is the Qt Backend
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib import pyplot as plt  # leave here

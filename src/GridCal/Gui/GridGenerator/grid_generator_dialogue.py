@@ -6,7 +6,7 @@ from enum import Enum
 import numpy as np
 from numpy.random import default_rng
 import networkx as nx
-from PySide2.QtWidgets import *
+from PySide6.QtWidgets import *
 
 from GridCal.Gui.GridGenerator.gui import *
 from GridCal.Engine.Devices import *

@@ -19,9 +19,9 @@ import numpy as np
 import numba as nb
 import pandas as pd
 from typing import Dict
-from PySide2.QtWidgets import *
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtGui import *
+from PySide6.QtWidgets import *
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtGui import *
 from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict

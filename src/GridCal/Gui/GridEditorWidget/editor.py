@@ -23,10 +23,10 @@ import networkx as nx
 from warnings import warn
 
 
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtSvg import QSvgGenerator
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtSvg import QSvgGenerator
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.line import Line
@@ -621,8 +621,8 @@ class GridEditor(QSplitter):
 
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)
-        self.libraryBrowserView.setViewMode(self.libraryBrowserView.ListMode)
-        self.libraryBrowserView.setDragDropMode(self.libraryBrowserView.DragOnly)
+        self.libraryBrowserView.setViewMode(self.libraryBrowserView.ViewMode.ListMode)
+        self.libraryBrowserView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
         self.diagramScene = DiagramScene(self, circuit)  # scene to add to the QGraphicsView

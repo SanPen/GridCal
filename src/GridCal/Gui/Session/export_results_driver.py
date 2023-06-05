@@ -17,7 +17,7 @@
 import os
 from io import StringIO
 import zipfile
-from PySide2.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal
 
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip
 from GridCal.Engine.basic_structures import Logger

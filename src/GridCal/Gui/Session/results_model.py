@@ -19,8 +19,8 @@ import io
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from PySide2.QtWidgets import *
-from PySide2 import QtCore
+from PySide6.QtWidgets import *
+from PySide6 import QtCore
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 

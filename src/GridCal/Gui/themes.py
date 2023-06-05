@@ -1,4 +1,4 @@
-from PySide2.QtGui import QPalette, QColor
+from PySide6.QtGui import QPalette, QColor
 
 
 

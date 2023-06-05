@@ -17,7 +17,7 @@
 
 import sys
 
-from PySide2.QtWidgets import *
+from PySide6.QtWidgets import *
 
 from GridCal.Gui.TowerBuilder.gui import *
 from GridCal.Engine.Devices import *

@@ -6,7 +6,7 @@ from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
-from PySide2.QtWidgets import *
+from PySide6.QtWidgets import *
 from typing import List, Dict
 from GridCal.Gui.CoordinatesInput.gui import *
 from GridCal.Gui.ProfilesInput.excel_dialog import *
@@ -67,7 +67,7 @@ class Association:
             return ''
 
 
-class Associations(QAbstractTableModel):
+class Associations(QtCore.QAbstractTableModel):
 
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)

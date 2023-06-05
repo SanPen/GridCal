@@ -2,7 +2,7 @@ import os
 import sys
 import chardet
 import subprocess
-from PySide2.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog
 from typing import List, Dict
 from GridCal.Gui.AboutDialogue.gui import *
 from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg

@@ -12,8 +12,8 @@ import traceback
 import urllib
 from urllib import request
 import queue
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import QThread
+from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QThread
 import GridCal.Gui.pySlipQt.tiles as tiles
 import GridCal.Gui.pySlipQt.sys_tile_data as std
 import GridCal.Gui.pySlipQt.log as log

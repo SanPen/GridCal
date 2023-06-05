@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 from GridCal.Engine.Devices.wire import Wire
 from GridCal.Engine.Devices.tower import Tower, WireInTower
 

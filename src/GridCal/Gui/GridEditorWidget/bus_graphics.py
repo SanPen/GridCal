@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
 
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
@@ -113,7 +113,7 @@ class BusGraphicItem(QGraphicsRectItem):
         self.sizer = HandleItem(self.terminal)
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
-        self.sizer.setFlag(self.ItemIsMovable)
+        self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         self.adapt()
 
         self.big_marker = None
@@ -122,7 +122,7 @@ class BusGraphicItem(QGraphicsRectItem):
 
         self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.setBrush(Qt.transparent)
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Update size:

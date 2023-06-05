@@ -19,8 +19,8 @@ import os
 import time
 from math import isclose
 from typing import List, Dict
-from PySide2.QtCore import QThread, Signal
-from PySide2 import QtGui
+from PySide6.QtCore import QThread, Signal
+from PySide6 import QtGui
 
 from GridCal.Engine.basic_structures import Logger, SyncIssueType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -28,8 +28,8 @@ from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType
 
 
-from PySide2.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
-from PySide2.QtWidgets import QApplication, QTreeView
+from PySide6.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
+from PySide6.QtWidgets import QApplication, QTreeView
 
 
 class SyncIssue:

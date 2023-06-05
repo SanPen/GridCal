@@ -3,15 +3,27 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
+    QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QListView, QMainWindow, QMenu, QMenuBar,
+    QPlainTextEdit, QProgressBar, QPushButton, QRadioButton,
+    QSizePolicy, QSlider, QSpacerItem, QSpinBox,
+    QSplitter, QTabWidget, QTableView, QTextEdit,
+    QToolBar, QTreeView, QVBoxLayout, QWidget)
 from .icons_rc import *
 
 class Ui_mainWindow(object):
@@ -1619,7 +1631,7 @@ class Ui_mainWindow(object):
 #endif
         self.outputTextEdit.setPalette(palette6)
         font = QFont()
-        font.setFamily(u"Cousine")
+        font.setFamilies([u"Cousine"])
         font.setPointSize(9)
         self.outputTextEdit.setFont(font)
         self.outputTextEdit.setFrameShape(QFrame.NoFrame)
@@ -2346,7 +2358,6 @@ class Ui_mainWindow(object):
         self.label_64.setObjectName(u"label_64")
         font3 = QFont()
         font3.setBold(True)
-        font3.setWeight(75)
         self.label_64.setFont(font3)
 
         self.gridLayout_25.addWidget(self.label_64, 0, 0, 1, 1)

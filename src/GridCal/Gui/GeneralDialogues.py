@@ -17,7 +17,7 @@
 import io
 from enum import Enum
 from datetime import datetime
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model
@@ -479,7 +479,7 @@ def clear_qt_layout(layout):
 
 if __name__ == "__main__":
     import sys
-    from PySide2.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication
     app = QApplication(sys.argv)
     window = LogsDialogue(name='', logger=Logger())
     window.show()

@@ -51,7 +51,6 @@ from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.GridEditorWidget.messages import *
@@ -83,11 +82,12 @@ except ModuleNotFoundError:
     print('No qtconsole available')
     qt_console_available = False
 
-try:
-    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
-    qt_web_engine_available = True
-except ModuleNotFoundError:
-    qt_web_engine_available = False
+# try:
+#     from PySide6.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
+#     qt_web_engine_available = True
+# except ModuleNotFoundError:
+
+qt_web_engine_available = False
 
 from matplotlib import pyplot as plt
 

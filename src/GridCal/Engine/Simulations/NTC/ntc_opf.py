@@ -148,7 +148,7 @@ def extract(arr, make_abs=False):  # override this method to call ORTools instea
     return val
 
 
-def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
+def save_lp(solver: "pywraplp.Solver", file_name="ntc_opf_problem.lp"):
     """
     Save problem in LP format
     :param solver: Solver instance
@@ -296,7 +296,7 @@ def validate_generator_to_decrease(gen_idx, generator_active, generator_dispatch
     return c1 and c2 and c3  # and c4
 
 
-def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, dispatchable, generator_cost,
+def formulate_optimal_generation(solver: "pywraplp.Solver", generator_active, dispatchable, generator_cost,
                                  generator_names, Sbase, inf, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2,
                                  logger: Logger, dispatch_all_areas=False):
     """
@@ -472,7 +472,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
         logger.add_divergence('Area equality not met', 'grid', sum_a1, sum_a2)
 
 
-def formulate_proportional_generation(solver: pywraplp.Solver, generator_active, generator_dispatchable,
+def formulate_proportional_generation(solver: "pywraplp.Solver", generator_active, generator_dispatchable,
                                       generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
                                       Pmin, Pref, a1, a2, logger: Logger):
     """
@@ -789,7 +789,7 @@ def check_proportional_generation(generator_active, generator_dispatchable, gene
         logger.add_divergence('Area equality not met', 'grid', sum_a1, sum_a2)
 
 
-def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, angle_max,
+def formulate_angles(solver: "pywraplp.Solver", nbus, vd, bus_names, angle_min, angle_max,
                      logger: Logger, set_ref_to_zero=True):
     """
     Formulate the angles
@@ -821,7 +821,7 @@ def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, an
     return theta
 
 
-def formulate_angles_shifters(solver: pywraplp.Solver, nbr, branch_active, branch_names, branch_theta,
+def formulate_angles_shifters(solver: "pywraplp.Solver", nbr, branch_active, branch_names, branch_theta,
                               branch_theta_min, branch_theta_max, control_mode, logger):
     """
 
@@ -858,7 +858,7 @@ def formulate_angles_shifters(solver: pywraplp.Solver, nbr, branch_active, branc
     return tau
 
 
-def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation, Cload, load_power,
+def formulate_power_injections(solver: "pywraplp.Solver", Cgen, generation, Cload, load_power,
                                logger: Logger):
     """
     Formulate the power injections
@@ -892,7 +892,7 @@ def check_power_injections(load_power, Cgen, generation, Cload):
     return gen_injections - load_fixed_injections
 
 
-def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_active, bus_names,
+def formulate_node_balance(solver: "pywraplp.Solver", Bbus, angles, Pinj, bus_active, bus_names,
                            logger: Logger):
     """
     Formulate the nodal power balance
@@ -946,7 +946,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 
 
 def formulate_branches_flow(
-        solver: pywraplp.Solver, nbr, nbus, Rates, Sbase, branch_active, branch_names, branch_dc, R, X, F, T, inf,
+        solver: "pywraplp.Solver", nbr, nbus, Rates, Sbase, branch_active, branch_names, branch_dc, R, X, F, T, inf,
         monitor, angles, tau, logger
 ):
     """
@@ -1113,7 +1113,7 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
     return monitor
 
 
-def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names,
+def formulate_contingency(solver: "pywraplp.Solver", ContingencyRates, Sbase, branch_names,
                           contingency_enabled_indices, LODF, F, T, branch_sensitivity_threshold,
                           flow_f, monitor, alpha_n1, logger: Logger, lodf_replacement_value=0):
     """
@@ -1235,7 +1235,7 @@ def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled
                                           branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
 
 
-def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, control_mode,
+def formulate_hvdc_flow(solver: "pywraplp.Solver", nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, control_mode,
                         dispatchable, F, T, Pinj, Sbase, inf, inter_area_hvdc,
                         logger: Logger, force_exchange_sense=False):
     """
@@ -1404,7 +1404,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, co
                 pass
 
 
-def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
+def formulate_hvdc_contingency(solver: "pywraplp.Solver", ContingencyRates, Sbase,
                                hvdc_flow_f, hvdc_active, PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor, alpha,
                                logger: Logger):
     """
@@ -1460,7 +1460,7 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
     return flow_hvdc_n1f, con_alpha, con_hvdc_idx
 
 
-def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, generator_names,
+def formulate_generator_contingency(solver: "pywraplp.Solver", ContingencyRates, Sbase, branch_names, generator_names,
                                     Cgen, Pgen, generation_contingency_threshold, PTDF, F, T, flow_f, monitor, alpha,
                                     logger: Logger):
     """
@@ -1522,7 +1522,7 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
     return flow_gen_n1f, alpha_n1_list, con_gen_idx
 
 
-def formulate_objective_old(solver: pywraplp.Solver,
+def formulate_objective_old(solver: "pywraplp.Solver",
                             power_shift, gen_cost, generation_delta,
                             weight_power_shift, weight_generation_cost,
                             hvdc_angle_slack_pos, hvdc_angle_slack_neg,
@@ -1550,7 +1550,7 @@ def formulate_objective_old(solver: pywraplp.Solver,
     solver.Minimize(f)
 
 
-def formulate_objective(solver: pywraplp.Solver,
+def formulate_objective(solver: "pywraplp.Solver",
                         flow_f, hvdc_flow_f,
                         inter_area_branches, inter_area_hvdcs,
                         logger: Logger):

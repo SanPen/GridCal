@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from uuid import uuid4
-from PySide2.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal
 from typing import List, Dict
 import numpy as np
 

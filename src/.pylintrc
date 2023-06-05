@@ -1,6 +1,6 @@
 [MASTER]
 init-hook='import sys; sys.path.append("GridCal")'
-extension-pkg-whitelist=PyQt5, PySide2
+extension-pkg-whitelist=PyQt5, PySide6
 
 [BASIC]
 

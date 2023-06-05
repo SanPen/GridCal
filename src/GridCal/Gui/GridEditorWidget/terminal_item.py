@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
 
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 # from GridCal.Gui.GridEditorWidget.editor import GridEditor
@@ -56,7 +56,7 @@ class TerminalItem(QGraphicsRectItem):
         # Name:
         self.name = name
         self.posCallbacks = list()
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
+        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
 
     @property
     def w(self):
@@ -106,7 +106,7 @@ class TerminalItem(QGraphicsRectItem):
         @param value: This is a QPointF object with the coordinates of the upper left corner of the TerminalItem
         @return:
         """
-        if change == self.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
 
             self.process_callbacks(value)
 
@@ -154,8 +154,8 @@ class HandleItem(QGraphicsEllipseItem):
 
         self.posChangeCallbacks = list()
         self.setBrush(Qt.red)
-        self.setFlag(self.ItemIsMovable, True)
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
+        self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
         self.setCursor(QCursor(Qt.SizeFDiagCursor))
 
     def itemChange(self, change, value):
@@ -165,7 +165,7 @@ class HandleItem(QGraphicsEllipseItem):
         @param value:
         @return:
         """
-        if change == self.ItemPositionChange:
+        if change == self.GraphicsItemChange.ItemPositionChange:
             x, y = value.x(), value.y()
 
             # This cannot be a signal because this is not a QObject

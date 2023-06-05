@@ -194,7 +194,7 @@ class VscGraphicItem(QGraphicsLineItem):
         self.width = width
         self.pen_width = width
         self.setPen(QPen(self.color, self.width, self.style))
-        self.setFlag(self.ItemIsSelectable, True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.pos1 = None

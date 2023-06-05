@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from PySide2 import QtWidgets
-from PySide2.QtCore import QPointF, QLineF, QLine
-from PySide2.QtGui import QPen, QIcon, QPixmap
+from PySide6 import QtWidgets
+from PySide6.QtCore import QPointF, QLineF, QLine
+from PySide6.QtGui import QPen, QIcon, QPixmap
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import *
@@ -58,7 +58,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         pen = QPen(self.color, self.width, self.style)
 
         # Properties of the container:
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         # self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # line to tie this object with the original bus (the parent)
