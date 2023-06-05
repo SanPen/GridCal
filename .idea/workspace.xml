@@ -27,8 +27,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Migration to PySide6">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -777,14 +776,7 @@
       <workItem from="1682841949337" duration="35000" />
       <workItem from="1685821290850" duration="1338000" />
       <workItem from="1685823928907" duration="9000" />
-      <workItem from="1685991578639" duration="4881000" />
-    </task>
-    <task id="LOCAL-00239" summary="Fixed critical bug with NR when many islands">
-      <created>1641247352350</created>
-      <option name="number" value="00239" />
-      <option name="presentableId" value="LOCAL-00239" />
-      <option name="project" value="LOCAL" />
-      <updated>1641247352350</updated>
+      <workItem from="1685991578639" duration="4942000" />
     </task>
     <task id="LOCAL-00240" summary="Fixed HVDC &quot;free&quot; control for OPF">
       <created>1642008809064</created>
@@ -1122,7 +1114,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685997356837</updated>
     </task>
-    <option name="localTasksCounter" value="288" />
+    <task id="LOCAL-00288" summary="Migration to PySide6">
+      <created>1686000489982</created>
+      <option name="number" value="00288" />
+      <option name="presentableId" value="LOCAL-00288" />
+      <option name="project" value="LOCAL" />
+      <updated>1686000489982</updated>
+    </task>
+    <option name="localTasksCounter" value="289" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

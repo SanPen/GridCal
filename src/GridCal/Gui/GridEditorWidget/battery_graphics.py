@@ -44,7 +44,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.h = 40
 
         # Properties of the container:
-        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.ItemIsMovable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.width = 4
