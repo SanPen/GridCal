@@ -239,6 +239,8 @@ class Tiles(tiles.BaseTiles):
                 msg = "There is a firewall but you didn't give me an HTTP proxy to get through it?"
                 print(msg)
                 # raise Exception(msg) from None
+        except urllib.error.URLError as e:
+            print(e)
 
         # set up the request queue and worker threads
         self.request_queue = queue.Queue()  # entries are (level, x, y)

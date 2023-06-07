@@ -65,6 +65,10 @@ def get_objects_dictionary():
 
                     'transformer2w': dev.Transformer2W(),
 
+                    'windings': dev.Winding(),
+
+                    'transformer3w': dev.Transformer3W(),
+
                     'line': dev.Line(),
 
                     'dc_line': dev.DcLine(None, None),

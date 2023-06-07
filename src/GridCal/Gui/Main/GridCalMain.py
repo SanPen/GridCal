@@ -2117,6 +2117,9 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.Transformer2WDevice.value:
             elm = dev.Transformer2W(None, None)
 
+        elif elm_type == DeviceType.WindingDevice.value:
+            elm = dev.Winding(None, None)
+
         elif elm_type == DeviceType.Transformer3WDevice.value:
             elm = dev.Transformer3W()
 

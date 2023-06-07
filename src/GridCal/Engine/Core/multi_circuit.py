@@ -126,6 +126,8 @@ class MultiCircuit:
 
         self.transformers3w: List[Transformer3W] = list()
 
+        self.windings: List[Winding] = list()
+
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
 
@@ -219,6 +221,7 @@ class MultiCircuit:
                                       Line(None, None),
                                       DcLine(None, None),
                                       Transformer2W(None, None),
+                                      Winding(None, None),
                                       Transformer3W(),
                                       HvdcLine(None, None),
                                       VSC(None, None),
@@ -300,7 +303,7 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w,  self.vsc_devices, self.dc_lines, self.upfc_devices]
+        return [self.lines, self.transformers2w, self.windings,  self.vsc_devices, self.dc_lines, self.upfc_devices]
 
     def get_branch_names_wo_hvdc(self):
 
@@ -370,9 +373,19 @@ class MultiCircuit:
         self.lines = list()
         self.dc_lines = list()
         self.transformers2w = list()
+        self.transformers3w = list()
+        self.windings = list()
         self.hvdc_lines = list()
         self.vsc_devices = list()
         self.upfc_devices = list()
+
+        self.substations = list()
+        self.areas = list()
+        self.technologies = list()
+        self.contingencies = list()
+        self.contingency_groups = list()
+        self.investments = list()
+        self.investments_groups = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -459,6 +472,24 @@ class MultiCircuit:
 
     def get_transformers2w_names(self) -> List[str]:
         return [elm.name for elm in self.transformers2w]
+
+    def get_windings(self) -> List[Winding]:
+        return self.windings
+
+    def get_windings_number(self) -> int:
+        return len(self.windings)
+
+    def get_windings_names(self) -> List[str]:
+        return [elm.name for elm in self.windings]
+
+    def get_transformers3w(self) -> List[Transformer3W]:
+        return self.transformers3w
+
+    def get_transformers3w_number(self) -> int:
+        return len(self.transformers3w)
+
+    def get_transformers3w_names(self) -> List[str]:
+        return [elm.name for elm in self.transformers3w]
 
     def get_vsc(self) -> List[VSC]:
         return self.vsc_devices
@@ -674,6 +705,9 @@ class MultiCircuit:
 
         elif element_type == DeviceType.Transformer3WDevice:
             return self.transformers3w
+
+        elif element_type == DeviceType.WindingDevice:
+            return self.windings
 
         elif element_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
@@ -1176,6 +1210,16 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.transformers2w.append(obj)
 
+    def add_winding(self, obj: Winding):
+        """
+        Add a winding object
+        :param obj: Winding instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.windings.append(obj)
+
     def add_transformer3w(self, obj: Transformer3W):
         """
         Add a transformer object
@@ -1185,6 +1229,10 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self.transformers3w.append(obj)
+        self.add_bus(obj.bus0)  # add the middle transformer
+        self.add_winding(obj.winding1)
+        self.add_winding(obj.winding2)
+        self.add_winding(obj.winding3)
 
     def add_hvdc(self, obj: HvdcLine):
         """
@@ -1253,6 +1301,9 @@ class MultiCircuit:
         elif obj.device_type == DeviceType.UpfcDevice:
             self.add_upfc(obj)
 
+        elif obj.device_type == DeviceType.WindingDevice:
+            self.add_winding(obj)
+
         elif obj.device_type == DeviceType.SwitchDevice:
             self.add_switch(obj)
 
@@ -1300,6 +1351,24 @@ class MultiCircuit:
         :param obj: Transformer2W instance
         """
         self.transformers2w.remove(obj)
+
+    def delete_winding(self, obj: Winding):
+        """
+        Delete winding
+        :param obj: Winding instance
+        """
+        self.windings.remove(obj)
+
+    def delete_transformer3w(self, obj: Transformer3W):
+        """
+        Delete transformer
+        :param obj: Transformer2W instance
+        """
+        self.transformers3w.remove(obj)
+        self.delete_winding(obj.winding1)
+        self.delete_winding(obj.winding2)
+        self.delete_winding(obj.winding3)
+        self.delete_bus(obj.bus0)  # also remove the middle bus
 
     def delete_hvdc_line(self, obj: HvdcLine):
         """
@@ -2119,6 +2188,8 @@ class MultiCircuit:
         self.add_devices_list(self.buses, circuit.buses)
         self.add_devices_list(self.lines, circuit.lines)
         self.add_devices_list(self.transformers2w, circuit.transformers2w)
+        self.add_devices_list(self.windings, circuit.windings)
+        self.add_devices_list(self.transformers3w, circuit.transformers3w)
         self.add_devices_list(self.hvdc_lines, circuit.hvdc_lines)
         self.add_devices_list(self.vsc_devices, circuit.vsc_devices)
         self.add_devices_list(self.upfc_devices, circuit.upfc_devices)

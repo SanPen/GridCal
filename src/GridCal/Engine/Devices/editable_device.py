@@ -78,13 +78,21 @@ class EditableDevice:
         self.device_type = device_type
 
         # associated graphic object
-        self.graphic_obj = None
+        self._graphic_obj = None
 
         self.editable_headers = editable_headers
 
         self.non_editable_attributes = non_editable_attributes
 
         self.properties_with_profile = properties_with_profile
+
+    @property
+    def graphic_obj(self):
+        return self._graphic_obj
+
+    @graphic_obj.setter
+    def graphic_obj(self, obj):
+        self._graphic_obj = obj
 
     def generate_uuid(self):
         self.idtag = uuid.uuid4().hex

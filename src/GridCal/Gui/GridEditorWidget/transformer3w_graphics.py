@@ -154,6 +154,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
+        self.api_object.retrieve_graphic_position()
+
         self.update_conn()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
@@ -208,7 +210,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Update the object
         :return:
         """
-        self.api_object.retrieve_graphic_position()
 
         # Arrange line positions
         for terminal in self.terminals:
@@ -251,3 +252,78 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         # to_port.update()
         self.update_conn()
         self.mousePressEvent(None)
+
+    def arrange_children(self):
+        # this function is necessary because this graphic item behaves like a bus
+        pass
+
+    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+        """
+        Add a big marker to the bus
+        :param color: Qt Color ot the marker
+        :param tool_tip_text: tool tip text to display
+        :return:
+        """
+        if self.big_marker is None:
+            self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+            self.big_marker.setBrush(color)
+            self.big_marker.setOpacity(0.5)
+            self.big_marker.setToolTip(tool_tip_text)
+
+    def delete_big_marker(self):
+        """
+        Delete the big marker
+        """
+        if self.big_marker is not None:
+            self.diagramScene.removeItem(self.big_marker)
+            self.big_marker = None
+
+    def set_position(self, x, y):
+        """
+        Set the bus x, y position
+        :param x: x in pixels
+        :param y: y in pixels
+        """
+        if np.isnan(x):
+            x = 0
+        if np.isnan(y):
+            y = 0
+        self.setPos(QPoint(int(x), int(y)))
+
+    def set_tile_color(self, brush):
+        """
+        Set the color of the title
+        Args:
+            brush:  Qt Color
+        """
+        for w in self.windings:
+            w.setBrush(brush)
+        for t in self.terminals:
+            t.setBrush(brush)
+
+    def delete_all_connections(self):
+        """
+        Delete all bus connections
+        """
+        for t in self.terminals:
+            t.remove_all_connections()
+
+        for c in self.connections:
+            self.diagramScene.removeItem(c)
+
+    def remove(self, ask=True):
+        """
+        Remove this element
+        @return:
+        """
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+        else:
+            ok = True
+
+        if ok:
+            self.delete_all_connections()
+
+            self.diagramScene.removeItem(self)
+            self.diagramScene.circuit.delete_transformer3w(self.api_object)
+

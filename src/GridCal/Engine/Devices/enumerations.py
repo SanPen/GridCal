@@ -215,6 +215,7 @@ class DeviceType(Enum):
     LineTypeDevice = 'Line Template'
     Transformer2WDevice = 'Transformer'
     Transformer3WDevice = 'Transformer3W'
+    WindingDevice = 'Winding'
     HVDCLineDevice = 'HVDC Line'
     DCLineDevice = 'DC line'
     VscDevice = 'VSC'

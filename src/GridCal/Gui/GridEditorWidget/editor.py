@@ -1386,24 +1386,26 @@ class GridEditor(QSplitter):
 
         # Align lines
         for bus in lst:
-            bus.graphic_obj.arrange_children()
-            # get the item position
-            x = bus.graphic_obj.pos().x()
-            y = bus.graphic_obj.pos().y()
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.arrange_children()
+                # get the item position
+                x = bus.graphic_obj.pos().x()
+                y = bus.graphic_obj.pos().y()
 
-            # compute the boundaries of the grid
-            max_x = max(max_x, x)
-            min_x = min(min_x, x)
-            max_y = max(max_y, y)
-            min_y = min(min_y, y)
+                # compute the boundaries of the grid
+                max_x = max(max_x, x)
+                min_x = min(min_x, x)
+                max_y = max(max_y, y)
+                min_y = min(min_y, y)
 
         # Fix boundaries
         for bus in lst:
-            bus.graphic_obj.arrange_children()
-            # get the item position
-            x = bus.graphic_obj.pos().x()
-            y = bus.graphic_obj.pos().y()
-            bus.graphic_obj.set_position(x - min_x, y - max_y)
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.arrange_children()
+                # get the item position
+                x = bus.graphic_obj.pos().x()
+                y = bus.graphic_obj.pos().y()
+                bus.graphic_obj.set_position(x - min_x, y - max_y)
 
         # set the figure limits
         self.set_limits(0, max_x - min_x, min_y - max_y, 0)
