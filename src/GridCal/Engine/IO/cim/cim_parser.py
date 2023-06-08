@@ -166,7 +166,7 @@ class CIMExport:
             '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2009/CIM-schema-cim14#">\n')
 
         # Model
-        model = cimdev.CimContainer(rdfid=self.circuit.idtag, tpe='Model')
+        model = cimdev.IdentifiedObject(rdfid=self.circuit.idtag, tpe='Model')
         model.parsed_properties['name'] = self.circuit.name
         model.parsed_properties['version'] = 1
         model.parsed_properties['description'] = self.circuit.comments
@@ -203,7 +203,7 @@ class CIMExport:
 
             base_voltages_dict[V] = conn_node_id
 
-            model = cimdev.CimContainer(rdfid=conn_node_id, tpe='BaseVoltage')
+            model = cimdev.IdentifiedObject(rdfid=conn_node_id, tpe='BaseVoltage')
             model.parsed_properties['name'] = conn_node_id
             model.parsed_properties['nominalVoltage'] = V
             text_file.write(model.get_xml(1))
@@ -219,8 +219,8 @@ class CIMExport:
             substation_id = substation.idtag
             substation_idx += 1
 
-            model = cimdev.CimContainer(rdfid=substation_id, tpe='Substation',
-                                        resources=['Location', 'SubGeographicalRegion'])
+            model = cimdev.IdentifiedObject(rdfid=substation_id, tpe='Substation',
+                                            resources=['Location', 'SubGeographicalRegion'])
             model.parsed_properties['name'] = substation
             model.parsed_properties['aliasName'] = substation
             model.parsed_properties['PSRType'] = ''
@@ -235,9 +235,9 @@ class CIMExport:
 
                 base_voltage = base_voltages_dict[voltage_level]
 
-                model = cimdev.CimContainer(rdfid=voltage_level_id,
-                                            tpe='VoltageLevel',
-                                            resources=['BaseVoltage', 'Substation'])
+                model = cimdev.IdentifiedObject(rdfid=voltage_level_id,
+                                                tpe='VoltageLevel',
+                                                resources=['BaseVoltage', 'Substation'])
                 model.parsed_properties['name'] = substation
                 model.parsed_properties['aliasName'] = substation
                 model.parsed_properties['BaseVoltage'] = base_voltage
@@ -261,13 +261,13 @@ class CIMExport:
                         self.logger.add_error('Zero nominal voltage', bus.name)
 
                     # generate model
-                    model = cimdev.CimContainer(rdfid=conn_node_id, tpe='ConnectivityNode',
-                                                resources=['BaseVoltage',
-                                                           'VoltageLevel',
-                                                           'ConnectivityNodeContainer'],
-                                                class_replacements={'name': 'IdentifiedObject',
-                                                                    'aliasName': 'IdentifiedObject'}
-                                                )
+                    model = cimdev.IdentifiedObject(rdfid=conn_node_id, tpe='ConnectivityNode',
+                                                    resources=['BaseVoltage',
+                                                               'VoltageLevel',
+                                                               'ConnectivityNodeContainer'],
+                                                    class_replacements={'name': 'IdentifiedObject',
+                                                                        'aliasName': 'IdentifiedObject'}
+                                                    )
                     model.parsed_properties['name'] = bus.name
                     model.parsed_properties['aliasName'] = bus.name
                     model.parsed_properties['BaseVoltage'] = base_voltage
@@ -279,13 +279,13 @@ class CIMExport:
                         id2 = elm.idtag + '_LOAD_' + str(il)
                         id3 = id2 + '_LRC'
 
-                        model = cimdev.CimContainer(rdfid=id2, tpe='ConformLoad',
-                                                    resources=['BaseVoltage',
-                                                               'LoadResponse',
-                                                               'VoltageLevel'],
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject',
-                                                                        'EquipmentContainer': 'Equipment'})
+                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
+                                                        resources=['BaseVoltage',
+                                                                   'LoadResponse',
+                                                                   'VoltageLevel'],
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject',
+                                                                            'EquipmentContainer': 'Equipment'})
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['aliasName'] = elm.name
                         model.parsed_properties['BaseVoltage'] = base_voltage
@@ -296,7 +296,7 @@ class CIMExport:
                         model.parsed_properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
-                        model = cimdev.CimContainer(rdfid=id3, tpe='LoadResponseCharacteristic', resources=[])
+                        model = cimdev.IdentifiedObject(rdfid=id3, tpe='LoadResponseCharacteristic', resources=[])
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['exponentModel'] = 'false'
                         model.parsed_properties['pConstantCurrent'] = elm.Ir
@@ -312,10 +312,10 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = cimdev.CimContainer(rdfid=id2 + '_T', tpe='Terminal',
-                                                    resources=terminal_resources,
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'})
+                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                                        resources=terminal_resources,
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'})
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
                         model.parsed_properties['ConductingEquipment'] = id2
@@ -326,12 +326,12 @@ class CIMExport:
                     for il, elm in enumerate(bus.static_generators):
                         id2 = elm.idtag + '_StatGen_' + str(il)
 
-                        model = cimdev.CimContainer(rdfid=id2, tpe='ConformLoad',
-                                                    resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject',
-                                                                        'EquipmentContainer': 'Equipment'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
+                                                        resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject',
+                                                                            'EquipmentContainer': 'Equipment'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['aliasName'] = elm.name
                         model.parsed_properties['BaseVoltage'] = base_voltage
@@ -342,11 +342,11 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = cimdev.CimContainer(rdfid=id2 + '_T', tpe='Terminal',
-                                                    resources=terminal_resources,
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                                        resources=terminal_resources,
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
                         model.parsed_properties['ConductingEquipment'] = id2
@@ -359,13 +359,13 @@ class CIMExport:
                         id3 = id2 + '_GU'
                         id4 = id2 + '_RC'
 
-                        model = cimdev.CimContainer(rdfid=id2, tpe='SynchronousMachine',
-                                                    resources=['BaseVoltage', 'RegulatingControl',
-                                                               'GeneratingUnit', 'VoltageLevel'],
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject',
-                                                                        'EquipmentContainer': 'Equipment'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='SynchronousMachine',
+                                                        resources=['BaseVoltage', 'RegulatingControl',
+                                                                   'GeneratingUnit', 'VoltageLevel'],
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject',
+                                                                            'EquipmentContainer': 'Equipment'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['aliasName'] = elm.name
                         model.parsed_properties['BaseVoltage'] = base_voltage
@@ -378,22 +378,22 @@ class CIMExport:
                         model.parsed_properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
-                        model = cimdev.CimContainer(rdfid=id3, tpe='RegulatingControl', resources=[])
+                        model = cimdev.IdentifiedObject(rdfid=id3, tpe='RegulatingControl', resources=[])
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['targetValue'] = elm.Vset * bus.Vnom
                         text_file.write(model.get_xml(1))
 
-                        model = cimdev.CimContainer(rdfid=id4, tpe='GeneratingUnit', resources=[])
+                        model = cimdev.IdentifiedObject(rdfid=id4, tpe='GeneratingUnit', resources=[])
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['initialP'] = elm.P
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = cimdev.CimContainer(rdfid=id2 + '_T', tpe='Terminal',
-                                                    resources=terminal_resources,
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                                        resources=terminal_resources,
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
                         model.parsed_properties['ConductingEquipment'] = id2
@@ -404,12 +404,12 @@ class CIMExport:
                     for il, elm in enumerate(bus.shunts):
                         id2 = elm.idtag + '_Shunt_' + str(il)
 
-                        model = cimdev.CimContainer(rdfid=id2, tpe='ShuntCompensator',
-                                                    resources=['BaseVoltage', 'VoltageLevel'],
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject',
-                                                                        'EquipmentContainer': 'Equipment'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ShuntCompensator',
+                                                        resources=['BaseVoltage', 'VoltageLevel'],
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject',
+                                                                            'EquipmentContainer': 'Equipment'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['aliasName'] = elm.name
                         model.parsed_properties['BaseVoltage'] = base_voltage
@@ -422,11 +422,11 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = cimdev.CimContainer(rdfid=id2 + '_T', tpe='Terminal',
-                                                    resources=terminal_resources,
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                                        resources=terminal_resources,
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'}
+                                                        )
                         model.parsed_properties['name'] = elm.name
                         model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
                         model.parsed_properties['ConductingEquipment'] = id2
@@ -437,10 +437,10 @@ class CIMExport:
                     if bus.is_slack:
                         equivalent_network_id = conn_node_id + '_EqNetwork'
 
-                        model = cimdev.CimContainer(rdfid=equivalent_network_id, tpe='EquivalentNetwork',
-                                                    resources=['BaseVoltage', 'VoltageLevel'],
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'})
+                        model = cimdev.IdentifiedObject(rdfid=equivalent_network_id, tpe='EquivalentNetwork',
+                                                        resources=['BaseVoltage', 'VoltageLevel'],
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'})
                         model.parsed_properties['name'] = bus.name + '_Slack'
                         model.parsed_properties['aliasName'] = bus.name + '_Slack'
                         model.parsed_properties['BaseVoltage'] = base_voltage
@@ -448,11 +448,11 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = cimdev.CimContainer(rdfid=equivalent_network_id + '_T', tpe='Terminal',
-                                                    resources=terminal_resources,
-                                                    class_replacements={'name': 'IdentifiedObject',
-                                                                        'aliasName': 'IdentifiedObject'}
-                                                    )
+                        model = cimdev.IdentifiedObject(rdfid=equivalent_network_id + '_T', tpe='Terminal',
+                                                        resources=terminal_resources,
+                                                        class_replacements={'name': 'IdentifiedObject',
+                                                                            'aliasName': 'IdentifiedObject'}
+                                                        )
                         model.parsed_properties['name'] = equivalent_network_id + '_T'
                         model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
                         model.parsed_properties['ConductingEquipment'] = equivalent_network_id
@@ -468,12 +468,12 @@ class CIMExport:
         tap_changer_resources = ['TransformerWinding']
         for i, branch in enumerate(self.circuit.transformers2w):
 
-            model = cimdev.CimContainer(rdfid=branch.idtag, tpe='PowerTransformer',
-                                        resources=[],
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject',
-                                                            'EquipmentContainer': 'Equipment'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag, tpe='PowerTransformer',
+                                            resources=[],
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'EquipmentContainer': 'Equipment'}
+                                            )
             model.parsed_properties['name'] = branch.name
             model.parsed_properties['aliasName'] = branch.name
             text_file.write(model.get_xml(1))
@@ -495,12 +495,12 @@ class CIMExport:
             winding_power_rate = branch.rate / 2
             z_base = (branch.bus_from.Vnom ** 2) / winding_power_rate
             y_base = 1 / z_base
-            model = cimdev.CimContainer(rdfid=branch.idtag + "_W1", tpe='PowerTransformerEnd',
-                                        resources=winding_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject',
-                                                            'BaseVoltage': 'ConductingEquipment'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + "_W1", tpe='PowerTransformerEnd',
+                                            resources=winding_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'BaseVoltage': 'ConductingEquipment'}
+                                            )
             model.parsed_properties['name'] = branch.name
             model.parsed_properties['PowerTransformer'] = branch.idtag
             model.parsed_properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -523,11 +523,11 @@ class CIMExport:
             # W2 (To)
             z_base = (branch.bus_to.Vnom ** 2) / winding_power_rate
             y_base = 1 / z_base
-            model = cimdev.CimContainer(rdfid=branch.idtag + "_W2", tpe='PowerTransformerEnd',
-                                        resources=winding_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject',
-                                                            'BaseVoltage': 'ConductingEquipment'})
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + "_W2", tpe='PowerTransformerEnd',
+                                            resources=winding_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'BaseVoltage': 'ConductingEquipment'})
             model.parsed_properties['name'] = branch.name
             model.parsed_properties['PowerTransformer'] = branch.idtag
             model.parsed_properties['BaseVoltage'] = base_voltages_dict[branch.bus_to.Vnom]
@@ -552,8 +552,8 @@ class CIMExport:
                 Vnom = branch.bus_to.Vnom
                 SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
 
-                model = cimdev.CimContainer(rdfid=branch.idtag + 'Tap_2', tpe='RatioTapChanger',
-                                            resources=tap_changer_resources)
+                model = cimdev.IdentifiedObject(rdfid=branch.idtag + 'Tap_2', tpe='RatioTapChanger',
+                                                resources=tap_changer_resources)
                 model.parsed_properties['TransformerWinding'] = branch.idtag + "_W2"
                 model.parsed_properties['name'] = branch.name + 'tap changer'
                 model.parsed_properties['neutralU'] = Vnom
@@ -565,11 +565,11 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
-            model = cimdev.CimContainer(rdfid=branch.idtag + '_T1', tpe='Terminal',
-                                        resources=terminal_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + '_T1', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
             model.parsed_properties['name'] = branch.name + '_T1'
             model.parsed_properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
             model.parsed_properties['ConductingEquipment'] = branch.idtag
@@ -578,11 +578,11 @@ class CIMExport:
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = cimdev.CimContainer(rdfid=branch.idtag + '_T2', tpe='Terminal',
-                                        resources=terminal_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + '_T2', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
             model.parsed_properties['name'] = branch.name + '_T2'
             model.parsed_properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
             model.parsed_properties['ConductingEquipment'] = branch.idtag
@@ -601,13 +601,13 @@ class CIMExport:
                 else:
                     y_base = 1 / z_base
 
-                model = cimdev.CimContainer(rdfid=branch.idtag, tpe='ACLineSegment',
-                                            resources=['BaseVoltage'],
-                                            class_replacements={'name': 'IdentifiedObject',
-                                                                'aliasName': 'IdentifiedObject',
-                                                                'BaseVoltage': 'ConductingEquipment',
-                                                                'value': 'CurrentLimit'}
-                                            )
+                model = cimdev.IdentifiedObject(rdfid=branch.idtag, tpe='ACLineSegment',
+                                                resources=['BaseVoltage'],
+                                                class_replacements={'name': 'IdentifiedObject',
+                                                                    'aliasName': 'IdentifiedObject',
+                                                                    'BaseVoltage': 'ConductingEquipment',
+                                                                    'value': 'CurrentLimit'}
+                                                )
                 model.parsed_properties['name'] = branch.name
                 model.parsed_properties['aliasName'] = branch.name
                 model.parsed_properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -625,7 +625,7 @@ class CIMExport:
 
             elif branch.branch_type == gcdev.BranchType.Switch:
 
-                model = cimdev.CimContainer(rdfid=branch.idtag, tpe='Switch', resources=['BaseVoltage'])
+                model = cimdev.IdentifiedObject(rdfid=branch.idtag, tpe='Switch', resources=['BaseVoltage'])
                 model.parsed_properties['name'] = branch.name
                 model.parsed_properties['aliasName'] = branch.name
                 model.parsed_properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -644,7 +644,7 @@ class CIMExport:
                 else:
                     y_base = 1 / z_base
 
-                model = cimdev.CimContainer(rdfid=branch.idtag, tpe='ACLineSegment', resources=['BaseVoltage'])
+                model = cimdev.IdentifiedObject(rdfid=branch.idtag, tpe='ACLineSegment', resources=['BaseVoltage'])
                 model.parsed_properties['name'] = branch.name
                 model.parsed_properties['aliasName'] = branch.name
                 model.parsed_properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -660,11 +660,11 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
-            model = cimdev.CimContainer(rdfid=branch.idtag + '_T1', tpe='Terminal',
-                                        resources=terminal_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + '_T1', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
             model.parsed_properties['name'] = bus.name + '_' + branch.name + '_T1'
             model.parsed_properties['TopologicalNode'] = bus_id_dict[branch.bus_from]
             model.parsed_properties['ConductingEquipment'] = branch.idtag
@@ -673,11 +673,11 @@ class CIMExport:
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = cimdev.CimContainer(rdfid=branch.idtag + '_T2', tpe='Terminal',
-                                        resources=terminal_resources,
-                                        class_replacements={'name': 'IdentifiedObject',
-                                                            'aliasName': 'IdentifiedObject'}
-                                        )
+            model = cimdev.IdentifiedObject(rdfid=branch.idtag + '_T2', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
             model.parsed_properties['name'] = bus.name + '_' + branch.name + '_T2'
             model.parsed_properties['TopologicalNode'] = bus_id_dict[branch.bus_to]
             model.parsed_properties['ConductingEquipment'] = branch.idtag
@@ -943,7 +943,8 @@ class CIMImport:
 
                     gen = gcdev.Generator(idtag=elm.uuid,
                                           name=str(elm.name),
-                                          active_power=-elm.p,  # CGMES defines the generator P as negative to indicate a positive injection
+                                          active_power=-elm.p,
+                                          # CGMES defines the generator P as negative to indicate a positive injection
                                           voltage_module=1.0)
                     circuit.add_generator(B1, gen)
 
