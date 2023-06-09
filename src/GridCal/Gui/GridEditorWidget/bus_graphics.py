@@ -97,7 +97,7 @@ class BusGraphicItem(QGraphicsRectItem):
         # Label:
         self.label = QGraphicsTextItem(bus.name, self)
         # self.label.setDefaultTextColor(QtCore.Qt.white)
-        self.label.setDefaultTextColor(Qt.black)
+        self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
         # square

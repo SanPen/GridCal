@@ -15,12 +15,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+try:
+    import darkdetect
+    is_dark = darkdetect.theme() == "Dark"
+except ImportError:
+    is_dark = False
+
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 
 # Declare colors
-ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+ACTIVE = {'style': Qt.SolidLine,
+          'color': Qt.white if is_dark else Qt.black,
+          'text': Qt.white if is_dark else Qt.black}
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
 OTHER = ACTIVE
