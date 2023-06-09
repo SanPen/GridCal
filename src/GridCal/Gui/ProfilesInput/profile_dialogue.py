@@ -174,7 +174,7 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
 
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=None, magnitudes=[''], use_native_dialogues=True):
+    def __init__(self, parent=None, list_of_objects=None, magnitudes=['']):
         """
 
         Args:
@@ -194,8 +194,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.project_directory = None
 
         self.magnitudes = magnitudes
-
-        self.use_native_dialogues = use_native_dialogues
 
         # results
         self.data = None
@@ -310,13 +308,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # call dialog to select the file
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              filter=files_types,
-                                                              options=options)
+        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
 
         if len(filename) > 0:
             # get the filename extension

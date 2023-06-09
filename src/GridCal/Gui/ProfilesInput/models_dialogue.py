@@ -162,7 +162,7 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
 
 class ModelsInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, use_native_dialogues=True, time_array=[]):
+    def __init__(self, parent=None, time_array=[]):
         """
 
         :param parent:
@@ -183,8 +183,6 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.setWindowTitle('Models import dialogue')
 
         self.ui.deleteModelsButton.setVisible(False)
-
-        self.use_native_dialogues = use_native_dialogues
 
         self.grids_model: GridsModel = GridsModel()
 
@@ -211,14 +209,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
         # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
-        filenames, type_selected = QFileDialog.getOpenFileNames(self, 'Add files',
-                                                                filter=files_types,
-                                                                options=options)
+        filenames, type_selected = QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
 
         if len(filenames):
             for i, file_path in enumerate(filenames):

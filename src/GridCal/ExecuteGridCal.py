@@ -60,5 +60,5 @@ if __name__ == "__main__":
     # splash = Splash()
     # splash.show()
 
-    run(use_native_dialogues=False)
+    run()
     # sys.exit(app.exec_())

@@ -35,6 +35,18 @@ OTHER = ACTIVE
 FONT_SCALE = 1.9
 
 
+def set_dark_mode():
+    is_dark = True
+    ACTIVE['color'] = Qt.white
+    ACTIVE['text'] = Qt.white
+
+
+def set_light_mode():
+    is_dark = False
+    ACTIVE['color'] = Qt.black
+    ACTIVE['text'] = Qt.black
+
+
 class LineUpdateMixin(object):
 
     def __init__(self, parent):

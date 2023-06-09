@@ -26,6 +26,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtSvg import QSvgGenerator
+
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.line import Line
@@ -35,6 +36,8 @@ from GridCal.Engine.Devices.vsc import VSC
 from GridCal.Engine.Devices.upfc import UPFC
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Engine.Devices.transformer3w import Transformer3W
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
+
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
@@ -44,7 +47,7 @@ from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
 from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer3w_graphics import Transformer3WGraphicItem
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 from matplotlib import pyplot as plt
 
 '''
@@ -1515,6 +1518,24 @@ class GridEditor(QSplitter):
             text_func('Aligning schematic...')
 
         self.align_schematic()
+
+    def recolour_mode(self):
+        for bus in self.circuit.buses:
+
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.recolour_mode()
+
+    def set_dark_mode(self):
+        is_dark = True
+        ACTIVE['color'] = Qt.white
+        ACTIVE['text'] = Qt.white
+        self.recolour_mode()
+
+    def set_light_mode(self):
+        is_dark = False
+        ACTIVE['color'] = Qt.black
+        ACTIVE['text'] = Qt.black
+        self.recolour_mode()
 
 
 if __name__ == '__main__':

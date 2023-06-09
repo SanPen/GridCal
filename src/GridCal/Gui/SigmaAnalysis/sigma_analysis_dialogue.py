@@ -16,7 +16,7 @@ from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import Sigma
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None, use_native_dialogues=True,
+    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
                  good_coefficients=True):
         """
 
@@ -27,8 +27,6 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('HELM-Sigma analysis dialogue')
-
-        self.use_native_dialogues = use_native_dialogues
 
         self.results = results
 
@@ -78,13 +76,8 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         :return:
         """
         if self.mdl is not None:
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
             file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
-                                                       filter="CSV (*.csv);;Excel files (*.xlsx)",
-                                                       options=options)
+                                                       filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
                 if 'xlsx' in filter:

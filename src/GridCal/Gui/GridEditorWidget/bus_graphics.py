@@ -128,6 +128,21 @@ class BusGraphicItem(QGraphicsRectItem):
         # Update size:
         self.change_size(self.w, self.h)
 
+    def recolour_mode(self):
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        self.label.setDefaultTextColor(ACTIVE['text'])
+
     def set_label(self, val: str):
         """
         Set the label content

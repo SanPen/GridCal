@@ -130,7 +130,7 @@ def traverse_objects(name, obj, lst: list, i=0):
 
 class MainGUI(QMainWindow):
 
-    def __init__(self, parent=None, use_native_dialogues=False):
+    def __init__(self, parent=None):
         """
 
         @param parent:
@@ -145,8 +145,6 @@ class MainGUI(QMainWindow):
 
         # configure matplotlib for pandas time series
         register_matplotlib_converters()
-
-        self.use_native_dialogues = use_native_dialogues
 
         # Declare circuit
         self.circuit = core.MultiCircuit()
@@ -278,10 +276,6 @@ class MainGUI(QMainWindow):
         self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
         self.ui.engineComboBox.setCurrentIndex(0)
         self.engine_dict = {x.value: x for x in engine_lst}
-
-        # do not allow MP under windows because it crashes
-        if platform.system() == 'Windows':
-            self.ui.use_multiprocessing_checkBox.setEnabled(False)
 
         # array modes
         self.ui.arrayModeComboBox.addItem('real')
@@ -733,6 +727,7 @@ class MainGUI(QMainWindow):
 
         # check boxes
         self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
+        self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
 
         # Radio Button
         self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
@@ -1047,6 +1042,23 @@ class MainGUI(QMainWindow):
         Cleaning is useful if a particular thread crashes and you want to retry.
         """
         self.stuff_running_now.clear()
+
+    def change_theme_mode(self):
+        """
+        Change the GUI theme
+        :return:
+        """
+        custom_colors = {"primary": "#00aa88ff",
+                         "primary>list.selectionBackground": "#00aa88be"}
+
+        if self.ui.dark_mode_checkBox.isChecked():
+            qdarktheme.setup_theme(theme='dark',
+                                   custom_colors=custom_colors)
+            self.grid_editor.set_dark_mode()
+        else:
+            qdarktheme.setup_theme(theme='light',
+                                   custom_colors=custom_colors)
+            self.grid_editor.set_light_mode()
 
     def dragEnterEvent(self, event):
         """
@@ -1451,8 +1463,7 @@ class MainGUI(QMainWindow):
         # call dialog to select the file
 
         options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
+        options |= QFileDialog.DontUseNativeDialog
 
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
                                                                           caption='Open file',
@@ -1470,15 +1481,10 @@ class MainGUI(QMainWindow):
         """
         files_types = "CSV (*.csv)"
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
                                                                         caption=caption,
                                                                         dir=self.project_directory,
-                                                                        filter=files_types,
-                                                                        options=options)
+                                                                        filter=files_types)
 
         if len(filename) > 0:
             return filename
@@ -1568,7 +1574,7 @@ class MainGUI(QMainWindow):
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
                 self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
-                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
 
                 # set circuit comments
                 try:
@@ -1703,12 +1709,7 @@ class MainGUI(QMainWindow):
             # if the global file_name is empty, ask where to save
             fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                                  options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != '':
 
@@ -1840,12 +1841,7 @@ class MainGUI(QMainWindow):
 
             fname = os.path.join(self.project_directory, 'profiles of ' + self.grid_editor.name_label.text())
 
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                                  options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != "":
                 if not filename.endswith('.xlsx'):
@@ -1870,12 +1866,8 @@ class MainGUI(QMainWindow):
 
             files_types = "Zip file (*.zip)"
             fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
 
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                                  options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != "":
                 self.LOCK()
@@ -1922,12 +1914,7 @@ class MainGUI(QMainWindow):
 
         fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                              options=options)
+        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
         if filename != "":
             if not filename.endswith('.xlsx'):
@@ -1957,13 +1944,8 @@ class MainGUI(QMainWindow):
 
             fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                                  options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if not (filename.endswith('.svg') or filename.endswith('.png')):
                 filename += ".svg"
@@ -2375,8 +2357,8 @@ class MainGUI(QMainWindow):
         if len(objects) > 0:
             self.profile_input_dialogue = ProfileInputGUI(parent=self,
                                                           list_of_objects=objects,
-                                                          magnitudes=[magnitude],
-                                                          use_native_dialogues=self.use_native_dialogues)
+                                                          magnitudes=[magnitude])
+
             self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.profile_input_dialogue.exec_()  # exec leaves the parent on hold
 
@@ -2728,8 +2710,6 @@ class MainGUI(QMainWindow):
         else:
             branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Specified
 
-        mp = self.ui.use_multiprocessing_checkBox.isChecked()
-
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
 
         distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
@@ -2748,7 +2728,7 @@ class MainGUI(QMainWindow):
                                    max_iter=max_iter,
                                    max_outer_loop_iter=max_outer_iter,
                                    control_q=q_control_mode,
-                                   multi_core=mp,
+                                   multi_core=False,
                                    dispatch_storage=dispatch_storage,
                                    control_taps=taps_control_mode,
                                    apply_temperature_correction=temp_correction,
@@ -4875,7 +4855,6 @@ class MainGUI(QMainWindow):
             self.sigma_dialogue = SigmaAnalysisGUI(parent=self,
                                                    results=sigma_driver.results,
                                                    bus_names=bus_names,
-                                                   use_native_dialogues=self.use_native_dialogues,
                                                    good_coefficients=sigma_driver.results.converged)
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
@@ -5102,6 +5081,8 @@ class MainGUI(QMainWindow):
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
         self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
+        if self.open_file_thread_object is not None:
+            self.ui.file_information_label.setText(self.open_file_thread_object.file_name)
 
         self.ui.units_label.setText("")
 
@@ -5585,14 +5566,8 @@ class MainGUI(QMainWindow):
         mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
-
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
             file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
-                                                       filter="CSV (*.csv);;Excel files (*.xlsx)",
-                                                       options=options)
+                                                       filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
                 if 'xlsx' in filter:
@@ -5681,8 +5656,8 @@ class MainGUI(QMainWindow):
 
         self.analysis_dialogue = GridAnalysisGUI(parent=self,
                                                  object_types=self.grid_editor.object_types,
-                                                 circuit=self.circuit,
-                                                 use_native_dialogues=self.use_native_dialogues)
+                                                 circuit=self.circuit)
+
         self.analysis_dialogue.resize(int(1.61 * 600.0), 600)
         self.analysis_dialogue.show()
 
@@ -7319,7 +7294,6 @@ class MainGUI(QMainWindow):
         # if there are no profiles:
         if self.circuit.time_profile is not None:
             self.models_input_dialogue = ModelsInputGUI(parent=self,
-                                                        use_native_dialogues=self.use_native_dialogues,
                                                         time_array=self.circuit.time_profile)
 
             self.models_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
@@ -7349,15 +7323,10 @@ class MainGUI(QMainWindow):
 
         # call dialog to select the file
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
                                                                           caption='Open file',
                                                                           dir=self.project_directory,
-                                                                          filter=files_types,
-                                                                          options=options)
+                                                                          filter=files_types)
 
         if len(filenames) == 1:
             contingencies = import_contingencies_from_json(filenames[0])
@@ -7412,12 +7381,8 @@ class MainGUI(QMainWindow):
             # declare the allowed file types
             files_types = "JSON file (*.json)"
 
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', '', files_types, options=options)
+            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', '', files_types)
 
             if not (filename.endswith('.json')):
                 filename += ".json"
@@ -7479,7 +7444,7 @@ class MainGUI(QMainWindow):
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
 
-def run(use_native_dialogues=False):
+def run():
     """
     Main function to run the GUI
     :return:
@@ -7493,7 +7458,7 @@ def run(use_native_dialogues=False):
                            custom_colors={"primary": "#00aa88ff",
                                           "primary>list.selectionBackground": "#00aa88be"})
 
-    window_ = MainGUI(use_native_dialogues=use_native_dialogues)
+    window_ = MainGUI()
 
     h_ = 780
     window_.resize(int(1.61 * h_), h_)  # golden ratio :)
