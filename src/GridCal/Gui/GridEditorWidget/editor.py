@@ -22,7 +22,6 @@ from typing import List
 import networkx as nx
 from warnings import warn
 
-
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
@@ -65,6 +64,7 @@ GridEditor
 The graphic objects need to call the API objects and functions inside the MultiCircuit instance.
 To do this the graphic objects call "parent.circuit.<function or object>"
 '''
+
 
 def toQBytesArray(val: str):
     data = QByteArray()
@@ -147,7 +147,8 @@ class EditorGraphicsView(QGraphicsView):
                 obj = Transformer3W(name=name)
                 elm = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=obj)
                 obj.graphic_obj = elm
-                self.scene_.circuit.add_transformer3w(obj)  # weird but it's the only way to have graphical-API communication
+                self.scene_.circuit.add_transformer3w(
+                    obj)  # weird but it's the only way to have graphical-API communication
                 print('3w transformer dropped')
 
             if elm is not None:
@@ -193,6 +194,23 @@ class EditorGraphicsView(QGraphicsView):
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
         return elm
+
+    def add_transformer_3w(self, elm: Transformer3W, explode_factor=1.0):
+        """
+
+        :param elm:
+        :param explode_factor:
+        :return:
+        """
+        graphic = Transformer3WGraphicItem(diagramScene=self.scene(),
+                                           editor=self.editor,
+                                           elm=elm)
+        x = int(elm.x * explode_factor)
+        y = int(elm.y * explode_factor)
+
+        graphic.setPos(self.mapToScene(QPoint(x, y)))
+        self.scene_.addItem(graphic)
+        return graphic
 
 
 class LibraryModel(QStandardItemModel):
@@ -347,7 +365,8 @@ class DiagramScene(QGraphicsScene):
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
                                 power_data[key.value] = driver.results.worst_flows.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                                loading_data[key.value] = np.sort(
+                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.OPFTimeSeries_run:
                                 power_data[key.value] = driver.results.Sf.real[:, i]
@@ -705,7 +724,7 @@ class GridEditor(QSplitter):
                         self.started_branch.bus_to = item.parent
 
                         if isinstance(self.started_branch.bus_from.api_object, Bus) and \
-                           isinstance(self.started_branch.bus_to.api_object, Bus):
+                                isinstance(self.started_branch.bus_to.api_object, Bus):
 
                             if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
                                 # different DC status -> VSC
@@ -783,7 +802,7 @@ class GridEditor(QSplitter):
                             i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
                                                                        self.started_branch.toPort)
 
-                            if obj.graphic_obj.connections[i] is None:
+                            if obj.graphic_obj.connection_lines[i] is None:
                                 conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
                                                        toPort=self.started_branch.toPort,
                                                        diagramScene=self.diagramScene)
@@ -806,7 +825,7 @@ class GridEditor(QSplitter):
                             i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
                                                                        self.started_branch.toPort)
 
-                            if obj.graphic_obj.connections[i] is None:
+                            if obj.graphic_obj.connection_lines[i] is None:
                                 conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
                                                        toPort=self.started_branch.toPort,
                                                        diagramScene=self.diagramScene)
@@ -1172,6 +1191,37 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
+    def add_api_transformer_3w(self, elm: Transformer3W, explode_factor=1.0):
+        """
+        add API branch to the Scene
+        :param elm: Branch instance
+        :param explode_factor: explode factor
+        """
+
+        graphic_obj = self.diagramView.add_transformer_3w(elm=elm, explode_factor=explode_factor)
+
+        # add circuit pointer to the bus graphic element
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+
+        conn1 = LineGraphicItem(fromPort=graphic_obj.terminals[0],
+                                toPort=elm.bus1.graphic_obj.terminal,
+                                diagramScene=self.diagramScene)
+        graphic_obj.set_connection(i=0, bus=elm.bus1, conn=conn1)
+
+        conn2 = LineGraphicItem(fromPort=graphic_obj.terminals[1],
+                                toPort=elm.bus2.graphic_obj.terminal,
+                                diagramScene=self.diagramScene)
+        graphic_obj.set_connection(i=1, bus=elm.bus2, conn=conn2)
+
+        conn3 = LineGraphicItem(fromPort=graphic_obj.terminals[2],
+                                toPort=elm.bus3.graphic_obj.terminal,
+                                diagramScene=self.diagramScene)
+        graphic_obj.set_connection(i=2, bus=elm.bus3, conn=conn3)
+
+        graphic_obj.update_conn()
+
+        return graphic_obj
+
     def convert_line_to_hvdc(self, line: Line):
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
@@ -1244,14 +1294,25 @@ class GridEditor(QSplitter):
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
 
-    def add_elements_to_schematic(self, buses, lines, dc_lines, transformers2w, hvdc_lines, vsc_devices,
-                                  upfc_devices, explode_factor=1.0, prog_func=None, text_func=None):
+    def add_elements_to_schematic(self,
+                                  buses: List[Bus],
+                                  lines: List[Line],
+                                  dc_lines: List[DcLine],
+                                  transformers2w: List[Transformer2W],
+                                  transformers3w: List[Transformer3W],
+                                  hvdc_lines: List[HvdcLine],
+                                  vsc_devices: List[VSC],
+                                  upfc_devices: List[UPFC],
+                                  explode_factor=1.0,
+                                  prog_func=None,
+                                  text_func=None):
         """
         Add a elements to the schematic scene
         :param buses: list of Bus objects
         :param lines: list of Line objects
         :param dc_lines: list of DcLine objects
         :param transformers2w: list of Transformer Objects
+        :param transformers3w: list of Transformer3W Objects
         :param hvdc_lines: list of HvdcLine objects
         :param vsc_devices: list Vsc objects
         :param upfc_devices: List of UPFC devices
@@ -1267,10 +1328,12 @@ class GridEditor(QSplitter):
         nn = len(buses)
         for i, bus in enumerate(buses):
 
-            if prog_func is not None:
-                prog_func((i+1) / nn * 100.0)
+            if not bus.is_tr_bus:  # 3w transformer buses are not represented
 
-            bus.graphic_obj = self.add_api_bus(bus, explode_factor)
+                if prog_func is not None:
+                    prog_func((i + 1) / nn * 100.0)
+
+                bus.graphic_obj = self.add_api_bus(bus, explode_factor)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1280,7 +1343,7 @@ class GridEditor(QSplitter):
         for i, branch in enumerate(lines):
 
             if prog_func is not None:
-                prog_func((i+1) / nn * 100.0)
+                prog_func((i + 1) / nn * 100.0)
 
             branch.graphic_obj = self.add_api_line(branch)
 
@@ -1307,6 +1370,18 @@ class GridEditor(QSplitter):
                 prog_func((i + 1) / nn * 100.0)
 
             branch.graphic_obj = self.add_api_transformer(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic transformer3w devices')
+
+        nn = len(transformers3w)
+        for i, elm in enumerate(transformers3w):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            elm.graphic_obj = self.add_api_transformer_3w(elm, explode_factor)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1344,7 +1419,6 @@ class GridEditor(QSplitter):
 
             branch.graphic_obj = self.add_api_upfc(branch)
 
-
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a complete circuit to the schematic scene
@@ -1361,6 +1435,7 @@ class GridEditor(QSplitter):
                                        lines=circuit.lines,
                                        dc_lines=circuit.dc_lines,
                                        transformers2w=circuit.transformers2w,
+                                       transformers3w=circuit.transformers3w,
                                        hvdc_lines=circuit.hvdc_lines,
                                        vsc_devices=circuit.vsc_devices,
                                        upfc_devices=circuit.upfc_devices,

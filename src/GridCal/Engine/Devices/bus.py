@@ -84,7 +84,8 @@ class Bus(EditableDevice):
 
     def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1,
                  angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
-                 xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
+                 xpos=0, ypos=0, height=0, width=0, active=True,
+                 is_slack=False, is_dc=False, is_tr_bus=False,
                  area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0,
                  Vm0=1, Va0=0):
 
@@ -101,6 +102,7 @@ class Bus(EditableDevice):
                                                                    'Is the bus active? used to disable the bus.'),
                                                   'is_slack': GCProp('', bool, 'Force the bus to be of slack type.'),
                                                   'is_dc': GCProp('', bool, 'Is this bus of DC type?.'),
+                                                  'is_tr_bus': GCProp('', bool, 'Is this bus part of a composite transformer, such as  a 3-winding transformer?.'),
                                                   'Vnom': GCProp('kV', float,
                                                                  'Nominal line voltage of the bus.'),
                                                   'Vm0': GCProp('p.u.', float, 'Voltage module guess.'),
@@ -200,6 +202,9 @@ class Bus(EditableDevice):
 
         # determined if this bus is an AC or DC bus
         self.is_dc = is_dc
+
+        # determine if this bus is part of a composite transformer such as a 3-winding transformer
+        self.is_tr_bus = is_tr_bus
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed

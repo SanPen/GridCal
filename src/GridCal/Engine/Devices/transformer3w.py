@@ -28,6 +28,13 @@ from GridCal.Engine.Devices.winding import Winding
 
 
 def delta_to_star(z12, z23, z31):
+    """
+    Perform the delta->star transformation
+    :param z12:
+    :param z23:
+    :param z31:
+    :return:
+    """
     zt = z12 + z23 + z31
     if zt > 0:
         z1 = (z12 * z31) / zt
@@ -82,7 +89,7 @@ class Transformer3W(EditableDevice):
                                                          'winding1', 'winding2', 'winding3'],
                                 properties_with_profile={'active': 'active_prof'})
 
-        self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y)
+        self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y, is_tr_bus=True)
 
         self._bus1 = bus1
         self._bus2 = bus2

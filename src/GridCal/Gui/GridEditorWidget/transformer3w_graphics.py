@@ -41,20 +41,23 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, diagramScene: "DiagramScene", parent=None, index=0, editor: "GridEditor" = None,
-                 elm: Transformer3W = None, pos: QPoint = None, n_windings=3):
+    def __init__(self, diagramScene: "DiagramScene",
+                 editor: "GridEditor",
+                 elm: Transformer3W,
+                 pos: QPoint = None,
+                 parent=None,
+                 index=0):
         """
 
-        :param diagramScene:
+        :param diagramScene: DiagramScene object
+        :param editor: GridEditor object
+        :param elm: Transformer3W object
+        :param pos: position
         :param parent:
         :param index:
-        :param editor:
-        :param elm:
-        :param pos:
-        :param n_windings:
         """
         QGraphicsRectItem.__init__(self, parent=parent)
-
+        self.n_windings = 3
         self.min_w = 180.0
         self.min_h = 20.0
         self.offset = 10
@@ -95,35 +98,38 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         diameter = self.w * 0.5
         r = diameter / 2
         angle_0 = -90
-        d_angle = 360 / n_windings
-        angles_deg = [angle_0 + d_angle * i for i in range(n_windings)]
+        d_angle = 360 / self.n_windings
+        angles_deg = [angle_0 + d_angle * i for i in range(self.n_windings)]
         angles = np.deg2rad(angles_deg)
         x = r * np.cos(angles) + self.w / 4
         y = r * np.sin(angles) + self.w / 4
         xt = diameter * np.cos(angles) + diameter
         yt = diameter * np.sin(angles) + diameter
 
-        self.windings = list()
+        self.winding_circles: List[QGraphicsEllipseItem] = list()
         self.terminals: List[TerminalItem] = list()
-        self.connections: List[LineGraphicItem | None] = list()
+        self.connection_lines: List[LineGraphicItem | None] = list()
 
-        for i in range(n_windings):
+        for i in range(self.n_windings):
             # create objects
-            winding = QGraphicsEllipseItem(parent=self)
-            winding.setRect(0.0, 0.0, diameter, diameter)
-            winding.setPos(x[i], y[i])
+            winding_circle = QGraphicsEllipseItem(parent=self)
+            winding_circle.setRect(0.0, 0.0, diameter, diameter)
+            winding_circle.setPos(x[i], y[i])
 
             terminal = TerminalItem("t", parent=self, editor=self.editor)
             terminal.setPos(xt[i], yt[i])
             terminal.setRotation(angles_deg[i])
 
             # set objects style
-            winding.setPen(QPen(self.color, self.pen_width, self.style))
+            winding_circle.setPen(QPen(self.color, self.pen_width, self.style))
             terminal.setPen(QPen(self.color, self.pen_width, self.style))
 
-            self.windings.append(winding)
+            self.winding_circles.append(winding_circle)
             self.terminals.append(terminal)
-            self.connections.append(None)
+            self.connection_lines.append(None)
+
+        # set the graphical objects appropriately
+        self.api_object.winding1.graphic_obj = self.winding_circles[0]
 
         self.big_marker = None
 
@@ -131,11 +137,14 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.set_winding_tool_tips()
 
     def set_winding_tool_tips(self):
-
+        """
+        Set
+        :return:
+        """
         if self.api_object is not None:
-            self.windings[0].setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
-            self.windings[1].setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
-            self.windings[2].setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
+            self.winding_circles[0].setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
+            self.winding_circles[1].setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
+            self.winding_circles[2].setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
         pass
 
     def set_label(self, val: str):
@@ -144,7 +153,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param val:
         :return:
         """
-        self.label.setPlainText(val)
+        # this function is just for compatibility
+        pass
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
         """
@@ -199,25 +209,28 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param x: x in pixels
         :param y: y in pixels
         """
-        if np.isnan(x):
-            x = 0
-        if np.isnan(y):
-            y = 0
+        x = 0 if np.isnan(x) else int(x)
+        y = 0 if np.isnan(y) else int(y)
         self.setPos(QPoint(int(x), int(y)))
 
     def update_conn(self):
         """
         Update the object
-        :return:
         """
 
         # Arrange line positions
         for terminal in self.terminals:
-            m = QPointF(2 * terminal.w / 3, 2 * terminal.h / 3)
+            x = int(2 * terminal.w / 3)
+            y = int(2 * terminal.h / 3)
+            m = QPointF(x, y)
             terminal.process_callbacks(self.pos() + terminal.pos() - m)
 
     def get_connection_winding(self, from_port: TerminalItem, to_port: TerminalItem):
-
+        """
+        Find the winding between the terminals
+        :param from_port: "from" terminal [TerminalItem]
+        :param to_port: "to" terminal [TerminalItem]
+        """
         for i, t in enumerate(self.terminals):
             if t in [from_port, to_port]:
                 return i
@@ -225,27 +238,35 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         raise Exception("Unknown winding")
 
     def set_connection(self, i: int, bus, conn: LineGraphicItem):
-
+        """
+        Create the connection with a bus
+        :param i: winding index 0-2
+        :param bus: Bus object to connect to
+        :param conn: Connection graphical object [LineGraphicItem]
+        """
         if i == 0:
             self.api_object.bus1 = bus
             self.api_object.V1 = bus.Vnom
-            self.connections[0] = conn
+            self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            print('Hosted tr3w connection Bus1', bus)
+            self.api_object.winding1.graphic_obj = conn
+            conn.api_object = self.api_object.winding1
 
         elif i == 1:
             self.api_object.bus2 = bus
             self.api_object.V2 = bus.Vnom
-            self.connections[1] = conn
+            self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            print('Hosted tr3w connection Bus2', bus)
+            self.api_object.winding2.graphic_obj = conn
+            conn.api_object = self.api_object.winding2
 
         elif i == 2:
             self.api_object.bus3 = bus
             self.api_object.V3 = bus.Vnom
-            self.connections[2] = conn
+            self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            print('Hosted tr3w connection Bus3', bus)
+            self.api_object.winding3.graphic_obj = conn
+            conn.api_object = self.api_object.winding3
 
         # update the connection placement
         # from_port.update()
@@ -290,16 +311,22 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def set_tile_color(self, brush):
+    def set_tile_color(self, brush: QColor):
         """
-        Set the color of the title
-        Args:
-            brush:  Qt Color
+        Set the voltage colour
+        :param brush: QColor object
         """
-        for w in self.windings:
-            w.setBrush(brush)
-        for t in self.terminals:
-            t.setBrush(brush)
+        for w in self.winding_circles:
+            w.setPen(QPen(brush, self.pen_width, self.style))
+
+    def set_winding_color(self, i, color: QColor):
+        """
+        Set a winding (loading) colour
+        :param i: winding index 0-2
+        :param color: QColor
+        """
+        self.winding_circles[i].setPen(QPen(color, self.pen_width, self.style))
+        self.terminals[i].setPen(QPen(color, self.pen_width, self.style))
 
     def delete_all_connections(self):
         """
@@ -308,7 +335,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         for t in self.terminals:
             t.remove_all_connections()
 
-        for c in self.connections:
+        for c in self.connection_lines:
             self.diagramScene.removeItem(c)
 
     def remove(self, ask=True):
@@ -317,7 +344,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to remove this bus',
+                                 'Remove bus')
         else:
             ok = True
 

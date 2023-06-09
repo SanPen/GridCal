@@ -712,20 +712,21 @@ class LineGraphicItem(QGraphicsLineItem):
 
                     # if the branch has a moveable symbol, move it
                     try:
-                        h = self.pos2.y() - self.pos1.y()
-                        b = self.pos2.x() - self.pos1.x()
-                        ang = np.arctan2(h, b)
-                        h2 = self.symbol.rect().height() / 2.0
-                        w2 = self.symbol.rect().width() / 2.0
-                        a = h2 * np.cos(ang) - w2 * np.sin(ang)
-                        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+                        if self.symbol is not None:
+                            h = self.pos2.y() - self.pos1.y()
+                            b = self.pos2.x() - self.pos1.x()
+                            ang = np.arctan2(h, b)
+                            h2 = self.symbol.rect().height() / 2.0
+                            w2 = self.symbol.rect().width() / 2.0
+                            a = h2 * np.cos(ang) - w2 * np.sin(ang)
+                            b = w2 * np.sin(ang) + h2 * np.cos(ang)
 
-                        center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
+                            center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
 
-                        transform = QTransform()
-                        transform.translate(center.x(), center.y())
-                        transform.rotate(np.rad2deg(ang))
-                        self.symbol.setTransform(transform)
+                            transform = QTransform()
+                            transform.translate(center.x(), center.y())
+                            transform.rotate(np.rad2deg(ang))
+                            self.symbol.setTransform(transform)
 
                     except Exception as ex:
                         print(ex)

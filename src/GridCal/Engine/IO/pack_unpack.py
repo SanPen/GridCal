@@ -382,7 +382,8 @@ def data_frames_to_circuit(data: Dict):
 
                             elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
                                            DeviceType.SequenceLineDevice,
-                                           DeviceType.TowerDevice]:
+                                           DeviceType.TowerDevice,
+                                           DeviceType.WindingDevice]:
 
                                 if df[object_property_name].values[i] in elements_dict[dtype].keys():
 
@@ -478,6 +479,12 @@ def data_frames_to_circuit(data: Dict):
 
             elif template_elm.device_type == DeviceType.Transformer2WDevice:
                 circuit.transformers2w = devices
+
+            elif template_elm.device_type == DeviceType.WindingDevice:
+                circuit.windings = devices
+
+            elif template_elm.device_type == DeviceType.Transformer3WDevice:
+                circuit.transformers3w = devices
 
             elif template_elm.device_type == DeviceType.HVDCLineDevice:
                 circuit.hvdc_lines = devices
