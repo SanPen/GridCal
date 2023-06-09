@@ -78,6 +78,7 @@ from GridCal.__version__ import __GridCal_VERSION__
 
 try:
     from GridCal.Gui.ConsoleWidget import ConsoleWidget
+
     qt_console_available = True
 except ModuleNotFoundError:
     print('No qtconsole available')
@@ -100,7 +101,6 @@ This class is the handler of the main gui of GridCal.
 
 
 def traverse_objects(name, obj, lst: list, i=0):
-
     lst.append((name, sys.getsizeof(obj)))
     if i < 10:
         if hasattr(obj, '__dict__'):
@@ -121,7 +121,7 @@ def traverse_objects(name, obj, lst: list, i=0):
                     else:
                         # normal obj
                         if obj2 != obj:
-                            traverse_objects(name=name + "/" + name2, obj=obj2, lst=lst, i=i+1)
+                            traverse_objects(name=name + "/" + name2, obj=obj2, lst=lst, i=i + 1)
 
 
 ########################################################################################################################
@@ -157,7 +157,6 @@ class MainGUI(QMainWindow):
 
         # solvers dictionary
         self.solvers_dict = OrderedDict()
-
 
         mdl = get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
@@ -545,7 +544,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
-        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(
+            self.fix_generators_active_based_on_the_power)
 
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
@@ -708,7 +708,8 @@ class MainGUI(QMainWindow):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
-        self.ui.available_results_to_color_map_comboBox.currentTextChanged.connect(self.update_available_steps_to_color_map)
+        self.ui.available_results_to_color_map_comboBox.currentTextChanged.connect(
+            self.update_available_steps_to_color_map)
 
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
 
@@ -904,7 +905,6 @@ class MainGUI(QMainWindow):
         """
         val = self.ui.engineComboBox.currentText()
         return self.engine_dict[val]
-
 
     def get_simulation_threads(self):
         """
@@ -1502,7 +1502,8 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
+            self.open_file_thread_object = filedrv.FileOpenThread(
+                file_name=filenames if len(filenames) > 1 else filenames[0])
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1678,7 +1679,7 @@ class MainGUI(QMainWindow):
                       "GridCal HDF5 (*.gch5);;" \
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
-                      "Electrical Json V3 (*.ejson3);;"\
+                      "Electrical Json V3 (*.ejson3);;" \
                       "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite);;"
 
@@ -1943,7 +1944,6 @@ class MainGUI(QMainWindow):
                         name = elm_type + '_' + str(c)
                         df = calc_input.get_structure(elm_type).astype(str)
                         df.to_excel(writer, name)
-
 
     def export_diagram(self):
         """
@@ -3676,7 +3676,8 @@ class MainGUI(QMainWindow):
 
                     if use_opf_vals:
 
-                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+                        drv, opf_time_series_results = self.session.get_driver_results(
+                            SimulationTypes.OPFTimeSeries_run)
 
                         if opf_time_series_results is None:
                             if use_opf_vals:
@@ -3752,7 +3753,8 @@ class MainGUI(QMainWindow):
 
                     if use_opf_vals:
 
-                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+                        drv, opf_time_series_results = self.session.get_driver_results(
+                            SimulationTypes.OPFTimeSeries_run)
 
                         if opf_time_series_results is None:
                             if use_opf_vals:
@@ -4143,7 +4145,7 @@ class MainGUI(QMainWindow):
                     pf_options = self.get_selected_power_flow_options()
                     consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
-                    tolerance = 10**self.ui.opfTolSpinBox.value()
+                    tolerance = 10 ** self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                     maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
                     unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
@@ -4778,7 +4780,6 @@ class MainGUI(QMainWindow):
         drv, results = self.session.get_driver_results(sim.SimulationTypes.InputsAnalysis_run)
 
         if results is not None:
-
             self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
             self.update_available_results()
 
@@ -5046,7 +5047,7 @@ class MainGUI(QMainWindow):
                  SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
                  SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
                  SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
-                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',}
+                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg', }
 
         self.ui.results_treeView.setModel(get_tree_model(d, 'Results', icons=icons))
         mdl = get_list_model(lst)
@@ -5105,8 +5106,6 @@ class MainGUI(QMainWindow):
         self.ui.units_label.setText("")
 
     def grid_colour_function(self, plot_function, current_study, current_step):
-
-
 
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -5346,7 +5345,7 @@ class MainGUI(QMainWindow):
             raise Exception('Not implemented :(')
 
         else:
-           raise Exception('<' + current_study + '> Not implemented :(')
+            raise Exception('<' + current_study + '> Not implemented :(')
 
     def colour_schematic(self):
         """
@@ -6353,7 +6352,8 @@ class MainGUI(QMainWindow):
                             self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
                             self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
                             self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
-                            self.delete_and_reduce_driver.done_signal.connect(self.post_delete_and_reduce_selected_objects)
+                            self.delete_and_reduce_driver.done_signal.connect(
+                                self.post_delete_and_reduce_selected_objects)
 
                             self.delete_and_reduce_driver.start()
 
@@ -6440,7 +6440,7 @@ class MainGUI(QMainWindow):
         """
         Delete small islands, disconnected stuff and other garbage
         """
-        numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
+        numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False, )
         islands = numerical_circuit_.split_into_islands()
         logger = Logger()
         buses_to_delete = list()
@@ -7397,7 +7397,6 @@ class MainGUI(QMainWindow):
             self.circuit.add_contingency_group(group)
 
             for elm in selected:
-
                 con = dev.Contingency(device_idtag=elm.idtag,
                                       code=elm.code,
                                       name=elm.name,
@@ -7442,7 +7441,6 @@ class MainGUI(QMainWindow):
             self.circuit.add_investments_group(group)
 
             for elm in selected:
-
                 con = dev.Investment(device_idtag=elm.idtag,
                                      code=elm.code,
                                      name=elm.name,
@@ -7491,7 +7489,9 @@ def run(use_native_dialogues=False):
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
     # Apply the complete dark theme to your Qt App.
-    qdarktheme.setup_theme(theme='light')
+    qdarktheme.setup_theme(theme='auto',
+                           custom_colors={"primary": "#00aa88ff",
+                                          "primary>list.selectionBackground": "#00aa88be"})
 
     window_ = MainGUI(use_native_dialogues=use_native_dialogues)
 
