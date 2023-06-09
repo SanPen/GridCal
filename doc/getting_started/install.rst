@@ -86,6 +86,19 @@ After some test, I can tell you that if GridCal does not work and you installed 
 Anaconda distribution, go to your anaconda main folder and remove the file `qt.conf`. No other real solution out
 is there really.
 
+Issues with PySide6 in ubuntu
+-------------------------------------
+
+Under Ubuntu 22.04, you may encounter the following issue:
+
+```
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+```
+
+```
+sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+```
+
 Installing python and GridCal from scratch
 --------------------------------------------------
 

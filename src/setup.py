@@ -92,7 +92,6 @@ dependencies = ['setuptools>=41.0.1',
                 "pyDOE>=0.3.8",
                 "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
-                "smopy>=0.0.6",  # to render tiles
                 "chardet>=3.0.4",  # for the psse files character detection
                 "scikit-learn>=0.18",
                 "geopy>=1.16",

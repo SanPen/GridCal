@@ -10,7 +10,6 @@ qtconsole>=4.3.1
 pyDOE>=0.3.8
 pySOT>=0.2.1
 openpyxl>=2.4.9
-smopy>=0.0.6
 chardet>=3.0.4
 scikit-learn>=0.18
 geopy>=1.16
@@ -20,6 +19,5 @@ numba>=0.46
 PySide6 >= 6.5.0
 Cython
 pyproj
-folium
 pyarrow
 fastparquet
