@@ -7480,8 +7480,6 @@ class MainGUI(QMainWindow):
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
 
-
-
 def run(use_native_dialogues=False):
     """
     Main function to run the GUI
@@ -7490,7 +7488,8 @@ def run(use_native_dialogues=False):
     # from GridCal.Gui.themes import QDarkPalette
 
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    # app.setStyle('QtCurve')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    # QGuiApplication.setStyle("Basic")
 
     # dark = QDarkPalette(None)
     # dark.set_app(app)

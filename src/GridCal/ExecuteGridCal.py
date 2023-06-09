@@ -50,6 +50,10 @@ class Splash(QMainWindow):
 if __name__ == "__main__":
     print(about_msg)
 
+    # Set the application style to the clear theme
+    os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
+    os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"
+
     # app = QApplication(sys.argv)
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
     #
