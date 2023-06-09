@@ -100,7 +100,8 @@ dependencies = ['setuptools>=41.0.1',
                 "numba>=0.46",  # to compile routines natively
                 'pyproj',
                 'pyarrow',
-                'ortools'
+                'ortools',
+                "pyqtdarktheme"
                 ]
 
 extras_require = {

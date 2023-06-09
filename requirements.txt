@@ -21,3 +21,4 @@ Cython
 pyproj
 pyarrow
 fastparquet
+pyqtdarktheme

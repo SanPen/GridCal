@@ -28,6 +28,7 @@ import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
 from warnings import warn
+import qdarktheme
 
 # Engine imports
 import GridCal.Engine.Core as core
@@ -7485,36 +7486,16 @@ def run(use_native_dialogues=False):
     Main function to run the GUI
     :return:
     """
-
+    qdarktheme.enable_hi_dpi()
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+
+    # Apply the complete dark theme to your Qt App.
+    qdarktheme.setup_theme(theme='light')
 
     window_ = MainGUI(use_native_dialogues=use_native_dialogues)
 
-    stylesheet = """
-        * {
-            color: #000000;
-            background-color: #FFFFFF; 
-        }
-        QLabel {
-            color: #000000;
-            background-color: #FFFFFF; 
-            # text-color: #484848;
-        }
-        QPushButton {
-            color: #000000;
-            background-color: #FFFFFF; 
-        }
-        QLine {
-            color: #484848;
-            background-color: #484848; 
-        }
-      etc.
-
-    """
-    # window_.setStyleSheet(stylesheet)
-
-    h_ = 740
+    h_ = 780
     window_.resize(int(1.61 * h_), h_)  # golden ratio :)
     window_.show()
     sys.exit(app.exec_())

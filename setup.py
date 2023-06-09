@@ -68,6 +68,7 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "numba>=0.54",
                 "pyarrow",
                 "fastparquet",
+                "pyqtdarktheme",
                 "pytest>=3.8"]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
