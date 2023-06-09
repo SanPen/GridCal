@@ -27,7 +27,7 @@ def correct_file_imports(filename):
         file.write(file_data)
 
 
-def convert_resource_file(source, rcc_cmd='PySide6-rcc'):
+def convert_resource_file(source, rcc_cmd='pyside6-rcc'):
 
     folder = os.path.dirname(sys.executable)
     f1 = folder.split(os.sep)[-1]
@@ -59,7 +59,7 @@ def convert_resource_file(source, rcc_cmd='PySide6-rcc'):
             print('Failed with', rcc_cmd)
 
 
-def convert_ui_file(source, uic_cmd='PySide6-uic'):
+def convert_ui_file(source, uic_cmd='pyside6-uic'):
     """
     Convert UI file to .py with qtpy agnostic imports
     :param source:

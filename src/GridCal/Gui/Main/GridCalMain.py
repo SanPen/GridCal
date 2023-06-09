@@ -7485,19 +7485,38 @@ def run(use_native_dialogues=False):
     Main function to run the GUI
     :return:
     """
-    # from GridCal.Gui.themes import QDarkPalette
 
     app = QApplication(sys.argv)
-    # app.setStyle('QtCurve')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
-    # QGuiApplication.setStyle("Basic")
+    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
-    # dark = QDarkPalette(None)
-    # dark.set_app(app)
+    window_ = MainGUI(use_native_dialogues=use_native_dialogues)
 
-    window = MainGUI(use_native_dialogues=use_native_dialogues)
-    h = 740
-    window.resize(int(1.61 * h), h)  # golden ratio :)
-    window.show()
+    stylesheet = """
+        * {
+            color: #000000;
+            background-color: #FFFFFF; 
+        }
+        QLabel {
+            color: #000000;
+            background-color: #FFFFFF; 
+            # text-color: #484848;
+        }
+        QPushButton {
+            color: #000000;
+            background-color: #FFFFFF; 
+        }
+        QLine {
+            color: #484848;
+            background-color: #484848; 
+        }
+      etc.
+
+    """
+    # window_.setStyleSheet(stylesheet)
+
+    h_ = 740
+    window_.resize(int(1.61 * h_), h_)  # golden ratio :)
+    window_.show()
     sys.exit(app.exec_())
 
 
