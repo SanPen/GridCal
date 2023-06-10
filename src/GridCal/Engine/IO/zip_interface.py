@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import json
 from io import StringIO, TextIOWrapper, BytesIO
 import os
 import numpy as np
@@ -29,7 +29,8 @@ from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip",
                             text_func=None, progress_func=None,
-                            sessions: List[Any] = []):
+                            sessions: List[Any] = [],
+                            json_files: Dict[str, dict] = {}):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
@@ -37,12 +38,18 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
     :param text_func: pointer to function that prints the names
     :param progress_func: pointer to function that prints the progress 0~100
     :param sessions: SimulationSession instance
+    :param json_files: List of configuration json files to save Dict[file_name, dictionary to save]
     """
 
     n = len(dfs)
     n_failed = 0
     # open zip file for writing
     with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+
+        # save the config files
+        for name, value in json_files.items():
+            filename = name + ".json"
+            f_zip_ptr.writestr(filename, json.dumps(value))  # save the buffer to the zip file
 
         # for each DataFrame and name...
         i = 0
@@ -187,7 +194,7 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logge
 
     n = len(names)
     data = dict()
-
+    json_files = dict()
     # for each file in the zip file...
     for i, file_name in enumerate(names):
 
@@ -206,15 +213,19 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logge
         if name.lower() == "config":
             df = read_data_frame_from_zip(file_pointer, extension, index_col=0, logger=logger)
             data = parse_config_df(df, data)
+
+        elif extension == '.json':
+            json_files[name] = json.load(file_pointer)
+
         else:
             # make pandas read the file
             df = read_data_frame_from_zip(file_pointer, extension, logger=logger)
 
-        # append the DataFrame to the list
-        if df is not None:
-            data[name] = df
+            # append the DataFrame to the list
+            if df is not None:
+                data[name] = df
 
-    return data
+    return data, json_files
 
 
 def get_session_tree(file_name_zip: str):

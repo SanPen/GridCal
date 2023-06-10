@@ -52,6 +52,8 @@ class FileOpen:
 
         self.circuit = MultiCircuit()
 
+        self.json_files = dict()
+
         self.logger = Logger()
 
     def open(self, text_func=None, progress_func=None):
@@ -106,10 +108,10 @@ class FileOpen:
                 elif file_extension.lower() == '.gridcal':
 
                     # open file content
-                    data_dictionary = get_frames_from_zip(self.file_name,
-                                                          text_func=text_func,
-                                                          progress_func=progress_func,
-                                                          logger=self.logger)
+                    data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
+                                                                           text_func=text_func,
+                                                                           progress_func=progress_func,
+                                                                           logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
                         self.circuit = data_frames_to_circuit(data_dictionary)
@@ -240,7 +242,7 @@ class FileSave:
     """
 
     def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None,
-                 simulation_drivers=list(), sessions=list()):
+                 simulation_drivers=list(), sessions=list(), json_files=dict()):
         """
         File saver
         :param circuit: MultiCircuit
@@ -248,6 +250,8 @@ class FileSave:
         :param text_func: Pointer to the text function
         :param progress_func: Pointer to the progress function
         :param simulation_drivers: List of Simulation Drivers
+        :param sessions: List of sessions
+        :param json_files: Dictionary of json files
         """
         self.circuit = circuit
 
@@ -256,6 +260,8 @@ class FileSave:
         self.simulation_drivers = simulation_drivers
 
         self.sessions = sessions
+
+        self.json_files = json_files
 
         self.text_func = text_func
 
@@ -322,6 +328,7 @@ class FileSave:
         save_data_frames_to_zip(dfs=dfs,
                                 filename_zip=self.file_name,
                                 sessions=self.sessions,
+                                json_files=self.json_files,
                                 text_func=self.text_func,
                                 progress_func=self.progress_func)
 

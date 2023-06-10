@@ -41,7 +41,9 @@ class FileOpenThread(QThread):
 
         self.logger = Logger()
 
-        self.circuit = None
+        self.circuit: MultiCircuit | None = None
+
+        self.json_files = dict()
 
         self.__cancel__ = False
 
@@ -93,6 +95,8 @@ class FileOpenThread(QThread):
         self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                          progress_func=self.progress_signal.emit)
 
+        self.json_files = file_handler.json_files
+
         self.logger += file_handler.logger
         self.valid = True
 
@@ -110,7 +114,7 @@ class FileSaveThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list()):
+    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list(), json_files=dict()):
         """
         Constructor
         :param circuit: MultiCircuit instance
@@ -128,6 +132,8 @@ class FileSaveThread(QThread):
         self.simulation_drivers = simulation_drivers
 
         self.sessions = sessions
+
+        self.json_files = json_files
 
         self.logger = Logger()
 
@@ -180,7 +186,8 @@ class FileSaveThread(QThread):
                                 text_func=self.progress_text.emit,
                                 progress_func=self.progress_signal.emit,
                                 simulation_drivers=self.simulation_drivers,
-                                sessions=self.sessions)
+                                sessions=self.sessions,
+                                json_files=self.json_files)
         try:
             self.logger = file_handler.save()
         except PermissionError:

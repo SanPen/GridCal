@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime as dtelib
 import gc
+import json
 import sys
 import os.path
 import platform
@@ -759,6 +760,8 @@ class MainGUI(QMainWindow):
 
         self.clear_results()
 
+        self.load_gui_config()
+
     def LOCK(self, val=True):
         """
         Lock the interface to prevent new simulation launches
@@ -951,6 +954,14 @@ class MainGUI(QMainWindow):
         all_threads = self.get_simulation_threads() + self.get_process_threads()
         return all_threads
 
+    def stop_all_threads(self):
+        """
+        Stop all running threads
+        """
+        for thr in self.get_all_threads():
+            if thr is not None:
+                thr.quit()
+
     def any_thread_running(self):
         """
         Checks if any thread is running
@@ -1060,10 +1071,12 @@ class MainGUI(QMainWindow):
             qdarktheme.setup_theme(theme='dark',
                                    custom_colors=custom_colors)
             self.grid_editor.set_dark_mode()
+            self.colour_schematic()
         else:
             qdarktheme.setup_theme(theme='light',
                                    custom_colors=custom_colors)
             self.grid_editor.set_light_mode()
+            self.colour_schematic()
 
     def dragEnterEvent(self, event):
         """
@@ -1513,8 +1526,7 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = filedrv.FileOpenThread(
-                file_name=filenames if len(filenames) > 1 else filenames[0])
+            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1580,7 +1592,6 @@ class MainGUI(QMainWindow):
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
                 self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
 
-
                 # set circuit comments
                 try:
                     self.ui.comments_textEdit.setText(str(self.circuit.comments))
@@ -1595,6 +1606,10 @@ class MainGUI(QMainWindow):
                 session_data_dict = self.open_file_thread_object.get_session_tree()
                 mdl = get_tree_model(session_data_dict, 'Sessions')
                 self.ui.diskSessionsTreeView.setModel(mdl)
+
+                # apply the GUI settings if found:
+                if 'gui_config' in self.open_file_thread_object.json_files:
+                    self.apply_gui_config(data=self.open_file_thread_object.json_files['gui_config'])
 
                 # clear the results
                 self.clear_results()
@@ -1767,10 +1782,14 @@ class MainGUI(QMainWindow):
             else:
                 sessions = []
 
+            # get json files to store
+            json_files = {"gui_config": self.get_gui_config_data()}
+
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
                                                                   simulation_drivers=simulation_drivers,
-                                                                  sessions=sessions)
+                                                                  sessions=sessions,
+                                                                  json_files=json_files)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1821,12 +1840,20 @@ class MainGUI(QMainWindow):
 
             if reply == QMessageBox.Yes:
                 self.delete_created_files()
+                # save config regardless
+                self.save_gui_config()
+                self.stop_all_threads()
                 event.accept()
             else:
+                # save config regardless
+                self.save_gui_config()
                 event.ignore()
         else:
             # no buses so exit
             self.delete_created_files()
+            # save config regardless
+            self.save_gui_config()
+            self.stop_all_threads()
             event.accept()
 
     def export_object_profiles(self):
@@ -2575,8 +2602,8 @@ class MainGUI(QMainWindow):
                 session_name = path[0]
                 study_name = path[1]
                 if self.last_file_driver is not None:
-                    data_dict = self.last_file_driver.load_session_objects(session_name=session_name,
-                                                                           study_name=study_name)
+                    data_dict, json_files = self.last_file_driver.load_session_objects(session_name=session_name,
+                                                                                       study_name=study_name)
 
                     self.session.register_driver_from_disk_data(self.circuit, study_name, data_dict)
 
@@ -7466,6 +7493,216 @@ class MainGUI(QMainWindow):
             self.map_widget.update()
 
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
+
+    def config_file_path(self):
+        return os.path.join(get_create_gridcal_folder(), 'gui_config.json')
+
+    def config_file_exists(self):
+        return os.path.exists(self.config_file_path())
+
+    def get_config_structure(self):
+        """
+
+        :return:
+        """
+        return {"graphics": {
+            "dark_mode": self.ui.dark_mode_checkBox,
+            "palette": self.ui.palette_comboBox,
+            "min_node_size": self.ui.min_node_size_spinBox,
+            "max_node_size": self.ui.max_node_size_spinBox,
+            "min_branch_size": self.ui.min_branch_size_spinBox,
+            "max_branch_size": self.ui.max_branch_size_spinBox,
+            "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
+            "map_tile_provider": self.ui.tile_provider_comboBox,
+            "plotting_style": self.ui.plt_style_comboBox
+        },
+            "machine_learning": {
+                "clustering": {
+                    "cluster_number": self.ui.cluster_number_spinBox,
+                },
+                "node_grouping": {
+                    "sigma": self.ui.node_distances_sigma_doubleSpinBox,
+                    "n_elements": self.ui.node_distances_elements_spinBox,
+                }
+            },
+            "linear": {
+                "perturbance_power": self.ui.atcPerturbanceSpinBox,
+                "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
+                "transfer_method": self.ui.transferMethodComboBox,
+                "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
+                "consider_contingencies": self.ui.n1ConsiderationCheckBox
+            },
+            "stochastic": {
+                "method": self.ui.stochastic_pf_method_comboBox,
+                "voltage_variance": self.ui.tolerance_stochastic_spinBox,
+                "number_of_samples": self.ui.max_iterations_stochastic_spinBox
+            },
+            "cascading": {
+                "additional_islands": self.ui.cascading_islands_spinBox
+            },
+            "power_flow": {
+                "solver": self.ui.solver_comboBox,
+                "retry": self.ui.helm_retry_checkBox,
+                "distributed_slack": self.ui.distributed_slack_checkBox,
+                "ignore_single_node_islands": self.ui.ignore_single_node_islands_checkBox,
+                "automatic_precision": self.ui.auto_precision_checkBox,
+                "use_voltage_guess": self.ui.use_voltage_guess_checkBox,
+                "precision": self.ui.tolerance_spinBox,
+                "acceleration": self.ui.muSpinBox,
+                "max_iterations": self.ui.max_iterations_spinBox,
+                "verbosity": self.ui.verbositySpinBox,
+                "reactive_power_control_mode": self.ui.reactive_power_control_mode_comboBox,
+                "transformer_taps_control_mode": self.ui.taps_control_mode_comboBox,
+                "apply_temperature_correction": self.ui.temperature_correction_checkBox,
+                "apply_impedance_tolerances": self.ui.apply_impedance_tolerances_checkBox,
+                "override_branch_controls": self.ui.override_branch_controls_checkBox,
+            },
+            "optimal_power_flow": {
+                "method": self.ui.lpf_solver_comboBox,
+                "time_grouping": self.ui.opf_time_grouping_comboBox,
+                "zone_grouping": self.ui.opfZonalGroupByComboBox,
+                "mip_solver": self.ui.mip_solver_comboBox,
+                "convergence_tolerance": self.ui.opfTolSpinBox,
+                "contingency_tolerance": self.ui.opfContingencyToleranceSpinBox,
+                "max_module_step": self.ui.maxVoltageModuleStepSpinBox,
+                "max_angle_step": self.ui.maxVoltageAngleStepSpinBox,
+                "skip_generation_limits": self.ui.skipOpfGenerationLimitsCheckBox,
+                "consider_contingencies": self.ui.considerContingenciesOpfCheckBox,
+                "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
+                "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
+            },
+            "continuation_power_flow": {
+                "max_iterations": self.ui.vs_max_iterations_spinBox,
+                "stop_at": self.ui.vc_stop_at_comboBox,
+                "increase_system_loading": self.ui.start_vs_from_default_radioButton,
+                "lambda_factor": self.ui.alpha_doubleSpinBox,
+                "points_from_time_series": self.ui.start_vs_from_selected_radioButton,
+                "now": self.ui.vs_departure_comboBox,
+                "target": self.ui.vs_target_comboBox,
+                "available_transfer_capacity": self.ui.atcRadioButton,
+            },
+            "net_transfer_capacity": {
+                "proportional_redispatch": self.ui.proportionalRedispatchRadioButton,
+                "optimal_redispatch": self.ui.optimalRedispatchRadioButton,
+                "skip_generation_limits": self.ui.skipNtcGenerationLimitsCheckBox,
+                "dispatch_all_areas": self.ui.ntcDispatchAllAreasCheckBox,
+                "check_feasibility": self.ui.ntcFeasibilityCheckCheckBox,
+
+                "slack_variables_tolerance": self.ui.ntcOpfTolSpinBox,
+                "transmission_reliability_margin": self.ui.trmSpinBox,
+
+                "branch_exchange_sensitivity": self.ui.ntcAlphaSpinBox,
+                "branch_rating_contribution": self.ui.ntcLoadRuleSpinBox,
+
+                "consider_branch_contingencies": self.ui.considerContingenciesNtcOpfCheckBox,
+                "consider_hvdc_contingencies": self.ui.considerContingenciesHvdcOpfCheckBox,
+                "consider_generator_contingencies": self.ui.considerContingenciesGeneratorOpfCheckBox,
+                "generator_contingency_power": self.ui.contingencyGenerationThresholdDoubleSpinBox,
+
+                "power_shift_weight": self.ui.weightPowerShiftSpinBox,
+                "generation_cost_weight": self.ui.weightGenCostSpinBox,
+                "branch_overload_weight": self.ui.weightsOverloadsSpinBox,
+            },
+            "general": {
+                "base_power": self.ui.sbase_doubleSpinBox,
+                "frequency": self.ui.fbase_doubleSpinBox,
+                "engine": self.ui.engineComboBox
+            },
+            "file": {
+                "store_results_in_file": self.ui.saveResultsCheckBox
+            }
+        }
+
+    def get_gui_config_data(self):
+        """
+        Get a dictionary with the GUI configuration data
+        :return:
+        """
+
+        def struct_to_data(data_, struct_):
+            """
+            Recursive function to get the config dictionary from the GUI values
+            :param data_: Dictionary to fill
+            :param struct_: result of self.get_config_structure()
+            """
+            for key, value in struct_.items():
+                if isinstance(value, dict):
+                    data_[key] = dict()
+                    struct_to_data(data_[key], value)
+                elif isinstance(value, QtWidgets.QComboBox):
+                    data_[key] = value.currentText()
+                elif isinstance(value, QtWidgets.QDoubleSpinBox):
+                    data_[key] = value.value()
+                elif isinstance(value, QtWidgets.QSpinBox):
+                    data_[key] = value.value()
+                elif isinstance(value, QtWidgets.QCheckBox):
+                    data_[key] = value.isChecked()
+                elif isinstance(value, QtWidgets.QRadioButton):
+                    data_[key] = value.isChecked()
+                else:
+                    raise Exception('unknown structure')
+
+        struct = self.get_config_structure()
+        data = dict()
+        struct_to_data(data, struct)
+
+        return data
+
+    def save_gui_config(self):
+        """
+        Save the GUI configuration
+        :return:
+        """
+        data = self.get_gui_config_data()
+        with open(self.config_file_path(), "w") as f:
+            f.write(json.dumps(data, indent=4))
+
+    def apply_gui_config(self, data: dict):
+        """
+        Apply GUI configuration dictionary
+        :param data: GUI configuration dictionary
+        """
+
+        def data_to_struct(data_, struct_):
+            """
+            Recursive function to set the GUI values from the config dictionary
+            :param data_: config dictionary with values from the file
+            :param struct_: result of self.get_config_structure()
+            """
+            for key, instance in struct_.items():
+                if key in data_:
+                    if isinstance(instance, dict):
+                        data_to_struct(data_[key], instance)
+                    elif isinstance(instance, QtWidgets.QComboBox):
+                        val = data_[key]
+                        index = instance.findText(val)
+                        if -1 < index < instance.count():
+                            instance.setCurrentIndex(index)
+                    elif isinstance(instance, QtWidgets.QDoubleSpinBox):
+                        instance.setValue(float(data_[key]))
+                    elif isinstance(instance, QtWidgets.QSpinBox):
+                        instance.setValue(int(data_[key]))
+                    elif isinstance(instance, QtWidgets.QCheckBox):
+                        instance.setChecked(bool(data_[key]))
+                    elif isinstance(instance, QtWidgets.QRadioButton):
+                        instance.setChecked(bool(data_[key]))
+                    else:
+                        raise Exception('unknown structure')
+                else:
+                    print(key)
+
+        struct = self.get_config_structure()
+        data_to_struct(data_=data, struct_=struct)
+
+    def load_gui_config(self):
+        """
+        Load GUI configuration from the local user folder
+        """
+        if self.config_file_exists():
+            with open(self.config_file_path(), "r") as f:
+                data = json.load(f)
+                self.apply_gui_config(data=data)
+                self.change_theme_mode()
 
 
 def run():
