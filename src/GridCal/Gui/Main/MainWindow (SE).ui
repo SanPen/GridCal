@@ -1139,7 +1139,7 @@
                <item>
                 <widget class="QPushButton" name="plot_time_series_pushButton">
                  <property name="toolTip">
-                  <string>PLot the selected object's profile</string>
+                  <string>Plot the selected object's profile</string>
                  </property>
                  <property name="text">
                   <string/>

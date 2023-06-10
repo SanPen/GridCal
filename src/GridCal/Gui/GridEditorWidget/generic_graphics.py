@@ -47,7 +47,7 @@ def set_light_mode():
     ACTIVE['text'] = Qt.black
 
 
-class LineUpdateMixin(object):
+class LineUpdateMixin:
 
     def __init__(self, parent):
         super(LineUpdateMixin, self).__init__(parent)

@@ -110,6 +110,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.terminals: List[TerminalItem] = list()
         self.connection_lines: List[LineGraphicItem | None] = list()
 
+        pen = QPen(self.color, self.pen_width, self.style)
+
         for i in range(self.n_windings):
             # create objects
             winding_circle = QGraphicsEllipseItem(parent=self)
@@ -121,8 +123,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             terminal.setRotation(angles_deg[i])
 
             # set objects style
-            winding_circle.setPen(QPen(self.color, self.pen_width, self.style))
-            terminal.setPen(QPen(self.color, self.pen_width, self.style))
+            winding_circle.setPen(pen)
+            terminal.setPen(pen)
 
             self.winding_circles.append(winding_circle)
             self.terminals.append(terminal)
@@ -135,6 +137,25 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         # other actions
         self.set_winding_tool_tips()
+
+    def recolour_mode(self):
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        pen = QPen(self.color, self.pen_width, self.style)
+        for i in range(self.n_windings):
+            self.winding_circles[i].setPen(pen)
+            self.terminals[i].setPen(pen)
+            self.connection_lines[i].recolour_mode()
 
     def set_winding_tool_tips(self):
         """

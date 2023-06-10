@@ -74,6 +74,23 @@ class LoadGraphicItem(QGraphicsItemGroup):
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
 
+    def recolour_mode(self):
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        pen = QPen(self.color, self.width, self.style)
+        self.nexus.setPen(pen)
+        self.glyph.setPen(pen)
+
     def update_line(self, pos):
         """
         Update the line that joins the parent and this object

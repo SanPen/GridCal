@@ -102,7 +102,8 @@ class Bus(EditableDevice):
                                                                    'Is the bus active? used to disable the bus.'),
                                                   'is_slack': GCProp('', bool, 'Force the bus to be of slack type.'),
                                                   'is_dc': GCProp('', bool, 'Is this bus of DC type?.'),
-                                                  'is_tr_bus': GCProp('', bool, 'Is this bus part of a composite transformer, such as  a 3-winding transformer?.'),
+                                                  'is_tr_bus': GCProp('', bool,
+                                                                      'Is this bus part of a composite transformer, such as  a 3-winding transformer?.'),
                                                   'Vnom': GCProp('kV', float,
                                                                  'Nominal line voltage of the bus.'),
                                                   'Vm0': GCProp('p.u.', float, 'Voltage module guess.'),
@@ -119,7 +120,7 @@ class Bus(EditableDevice):
                                                                     'Resistance of the fault.\n'
                                                                     'This is used for short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the fault.\n'
-                                                                    'This is used for short circuit studies.'),
+                                                                                   'This is used for short circuit studies.'),
                                                   'x': GCProp('px', float, 'x position in pixels.'),
                                                   'y': GCProp('px', float, 'y position in pixels.'),
                                                   'h': GCProp('px', float, 'height of the bus in pixels.'),
@@ -127,7 +128,8 @@ class Bus(EditableDevice):
                                                   'country': GCProp('', DeviceType.CountryDevice, 'Country of the bus'),
                                                   'area': GCProp('', DeviceType.AreaDevice, 'Area of the bus'),
                                                   'zone': GCProp('', DeviceType.ZoneDevice, 'Zone of the bus'),
-                                                  'substation': GCProp('', DeviceType.SubstationDevice, 'Substation of the bus.'),
+                                                  'substation': GCProp('', DeviceType.SubstationDevice,
+                                                                       'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},
                                 non_editable_attributes=['idtag'],
@@ -428,7 +430,8 @@ class Bus(EditableDevice):
                         vm = elm.Vset
                     elif elm.Vset != vm:
                         if logger is not None:
-                            logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
+                            logger.append(
+                                'Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
 
             return v
 
@@ -797,11 +800,11 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + \
-                 self.controlled_generators + \
-                 self.batteries + \
-                 self.static_generators + \
-                 self.shunts + \
-                 self.external_grids
+            self.controlled_generators + \
+            self.batteries + \
+            self.static_generators + \
+            self.shunts + \
+            self.external_grids
 
     def get_device_number(self):
         """
@@ -809,11 +812,11 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return len(self.loads) + \
-               len(self.controlled_generators) + \
-               len(self.batteries) + \
-               len(self.static_generators) + \
-               len(self.shunts) + \
-               len(self.external_grids)
+            len(self.controlled_generators) + \
+            len(self.batteries) + \
+            len(self.static_generators) + \
+            len(self.shunts) + \
+            len(self.external_grids)
 
     def ensure_area_objects(self, circuit: "MultiCircuit"):
         """

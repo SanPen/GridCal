@@ -4689,7 +4689,7 @@ class Ui_mainWindow(object):
         self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.plot_time_series_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"PLot the selected object's profile", None))
+        self.plot_time_series_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot the selected object's profile", None))
 #endif // QT_CONFIG(tooltip)
         self.plot_time_series_pushButton.setText("")
 #if QT_CONFIG(tooltip)

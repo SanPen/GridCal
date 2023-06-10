@@ -101,6 +101,7 @@ dependencies = ['setuptools>=41.0.1',
                 'pyproj',
                 'pyarrow',
                 'ortools',
+                "darkdetect",
                 "pyqtdarktheme"
                 ]
 

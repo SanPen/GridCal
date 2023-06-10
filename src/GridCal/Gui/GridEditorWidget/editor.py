@@ -1520,10 +1520,21 @@ class GridEditor(QSplitter):
         self.align_schematic()
 
     def recolour_mode(self):
-        for bus in self.circuit.buses:
+        """
+        Change the colour according to the system theme
+        :return:
+        """
+        for elm in self.circuit.buses:
+            if elm.graphic_obj is not None:
+                elm.graphic_obj.recolour_mode()
 
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.recolour_mode()
+        for elm in self.circuit.get_branches():
+            if elm.graphic_obj is not None:
+                elm.graphic_obj.recolour_mode()
+
+        for elm in self.circuit.transformers3w:
+            if elm.graphic_obj is not None:
+                elm.graphic_obj.recolour_mode()
 
     def set_dark_mode(self):
         is_dark = True

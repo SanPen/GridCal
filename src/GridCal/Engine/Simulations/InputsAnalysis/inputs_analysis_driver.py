@@ -10,6 +10,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class InputsAnalysisResults(ResultsTemplate):
+    tpe = 'Inputs Analysis'
 
     def __init__(self, grid: MultiCircuit):
         """

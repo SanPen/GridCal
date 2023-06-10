@@ -28,6 +28,7 @@ import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
 from warnings import warn
+import darkdetect
 import qdarktheme
 
 # Engine imports
@@ -222,6 +223,10 @@ class MainGUI(QMainWindow):
 
         if 'fivethirtyeight' in plt_styles:
             self.ui.plt_style_comboBox.setCurrentText('fivethirtyeight')
+
+        # dark mode detection
+        is_dark = darkdetect.theme() == "Dark"
+        self.ui.dark_mode_checkBox.setChecked(is_dark)
 
         # branch types for reduction
         mdl = get_list_model(BranchType.list(), checks=True)
@@ -4762,6 +4767,7 @@ class MainGUI(QMainWindow):
         if results is not None:
             self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
             self.update_available_results()
+            self.colour_schematic()
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue(drv.name, drv.logger)
@@ -5000,7 +5006,6 @@ class MainGUI(QMainWindow):
         lst = list()
         for driver in available_results:
             name = driver.tpe.value
-            # name = driver.name
             lst.append(name)
             d[name] = driver.results.get_name_tree()
             self.available_results_dict[name] = driver.results.get_name_to_results_type_dict()
@@ -5029,6 +5034,7 @@ class MainGUI(QMainWindow):
                  SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg', }
 
         self.ui.results_treeView.setModel(get_tree_model(d, 'Results', icons=icons))
+        lst.reverse()  # this is to show the latest simulation first
         mdl = get_list_model(lst)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.available_results_to_color_map_comboBox.setModel(mdl)
@@ -5315,6 +5321,24 @@ class MainGUI(QMainWindow):
                                  voltages=np.ones(results.nbus, dtype=complex),
                                  loadings=np.abs(results.worst_loading[current_step]),
                                  types=results.bus_types,
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
+
+        elif current_study == sim.InputsAnalysisDriver.tpe.value:
+
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.InputsAnalysis_run)
+            nbus = self.circuit.get_bus_number()
+            nbr = self.circuit.get_branch_number()
+            # empty
+            return plot_function(circuit=self.circuit,
+                                 Sbus=np.zeros(nbus, dtype=complex),
+                                 Sf=np.zeros(nbr, dtype=complex),
+                                 loadings=np.zeros(nbr, dtype=complex),
+                                 voltages=np.ones(nbus, dtype=complex),
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,

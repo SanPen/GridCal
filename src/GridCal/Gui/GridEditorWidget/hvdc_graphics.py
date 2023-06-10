@@ -82,6 +82,21 @@ class HvdcGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
+    def recolour_mode(self):
+
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        self.set_colour(self.color, self.width, self.style)
+
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
         Set color and style
