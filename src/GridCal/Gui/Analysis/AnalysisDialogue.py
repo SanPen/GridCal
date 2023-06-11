@@ -29,7 +29,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
 
     """
-    def __init__(self, parent=None, object_types=None, circuit: MultiCircuit = None, use_native_dialogues=False):
+    def __init__(self, parent=None, object_types=None, circuit: MultiCircuit = None):
         """
         Constructor
         Args:
@@ -44,8 +44,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
         # set the circuit
         self.circuit = circuit
-
-        self.use_native_dialogues = use_native_dialogues
 
         # declare logs
         self.log = GridErrorLog()
@@ -124,13 +122,9 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         """
         files_types = "Excel (*.xlsx)"
 
-        options = QtWidgets.QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QtWidgets.QFileDialog.DontUseNativeDialog
-
         fname = 'Grid error analysis.xlsx'
 
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
         if filename != '':
             self.log.save(filename)

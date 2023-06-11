@@ -166,16 +166,9 @@ class ModelsInputGUI(QtWidgets.QDialog):
         """
 
         :param parent:
-        :param use_native_dialogues: use the native file selection dialogues?
         :param time_array: time array
         """
 
-        """
-
-        Args:
-            parent:
-            use_native_dialogues: 
-        """
         QtWidgets.QDialog.__init__(self, parent)
 
         self.ui = Ui_Dialog()

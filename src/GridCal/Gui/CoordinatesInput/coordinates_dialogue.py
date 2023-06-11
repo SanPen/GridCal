@@ -139,14 +139,13 @@ class Associations(QtCore.QAbstractTableModel):
 
 class CoordinatesInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects: List[Bus] = list(), use_native_dialogues=True):
+    def __init__(self, parent=None, list_of_objects: List[Bus] = list()):
         """
 
         Args:
             parent:
             list_of_objects: List of objects to which set a profile to
             list_of_objects: list ob object to modify
-            use_native_dialogues: use the native file selection dialogues?
         """
         QtWidgets.QDialog.__init__(self, parent)
         if list_of_objects is None:
@@ -157,8 +156,6 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         self.setAcceptDrops(True)
 
         self.project_directory = None
-
-        self.use_native_dialogues = use_native_dialogues
 
         # dataFrame
         self.original_data_frame: pd.DataFrame = None
@@ -324,14 +321,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-
-        options = QtWidgets.QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QtWidgets.QFileDialog.DontUseNativeDialog
-
-        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file',
-                                                                        filter=files_types,
-                                                                        options=options)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
         self.open_file_now(filename)
 
     def open_file_now(self, filename):
