@@ -16,8 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import uuid
 from typing import List, Tuple
-from GridCal.Engine.Core.multi_circuit import MultiCircuit, DeviceType
+
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.contingency import Contingency, ContingencyGroup
+from GridCal.Engine.Devices.editable_device import DeviceType
 
 
 def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types):

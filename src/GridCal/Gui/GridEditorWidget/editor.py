@@ -22,9 +22,10 @@ from typing import List
 import networkx as nx
 from warnings import warn
 
-from PySide6.QtWidgets import *
-from PySide6.QtCore import *
-from PySide6.QtGui import *
+from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtCore import Qt, QPoint, QLineF, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, QDataStream
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QImage, QPainter, QStandardItemModel, QStandardItem
+from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit

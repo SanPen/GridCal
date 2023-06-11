@@ -16,13 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import json
-
+from warnings import warn
 import numpy as np
 import numba as nb
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_contingencies
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 
 
 @nb.njit()
@@ -159,18 +159,18 @@ def parse_json_data(data) -> MultiCircuit:
             elif element["type"] == "bus":
 
                 # create the bus and add some properties
-                elm = Bus(name=element["name"],
-                          vnom=element["Vnom"],
-                          vmin=0.9,
-                          vmax=1.1,
-                          xpos=element['x'],
-                          ypos=element['y'],
-                          height=element['h'],
-                          width=element['w'],
-                          active=True)
+                elm = dev.Bus(name=element["name"],
+                              vnom=element["Vnom"],
+                              vmin=0.9,
+                              vmax=1.1,
+                              xpos=element['x'],
+                              ypos=element['y'],
+                              height=element['h'],
+                              width=element['w'],
+                              active=True)
 
                 if element["is_slack"]:
-                    elm.type = BusMode.Slack
+                    elm.type = dev.BusMode.Slack
                 if element["vmax"] > 0:
                     elm.Vmax = element["vmax"]
                 if element["vmin"] > 0:
@@ -189,14 +189,14 @@ def parse_json_data(data) -> MultiCircuit:
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = Load(name=element['name'],
-                           G=element["G"],
-                           B=element["B"],
-                           Ir=element["Ir"],
-                           Ii=element["Ii"],
-                           P=element["P"],
-                           Q=element["Q"],
-                           active=element['active'])
+                elm = dev.Load(name=element['name'],
+                               G=element["G"],
+                               B=element["B"],
+                               Ir=element["Ir"],
+                               Ii=element["Ii"],
+                               P=element["P"],
+                               Q=element["Q"],
+                               active=element['active'])
                 bus.loads.append(elm)
 
             elif element["type"] == "controlled_gen":
@@ -205,18 +205,18 @@ def parse_json_data(data) -> MultiCircuit:
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = Generator(name=element['name'],
-                                active_power=element["P"],
-                                voltage_module=element["vset"],
-                                Qmin=element['qmin'],
-                                Qmax=element['qmax'],
-                                Snom=element['Snom'],
-                                power_prof=None,
-                                vset_prof=None,
-                                active=element['active'],
-                                p_min=0.0,
-                                p_max=element['Snom'],
-                                op_cost=1.0)
+                elm = dev.Generator(name=element['name'],
+                                    active_power=element["P"],
+                                    voltage_module=element["vset"],
+                                    Qmin=element['qmin'],
+                                    Qmax=element['qmax'],
+                                    Snom=element['Snom'],
+                                    power_prof=None,
+                                    vset_prof=None,
+                                    active=element['active'],
+                                    p_min=0.0,
+                                    p_max=element['Snom'],
+                                    op_cost=1.0)
                 bus.controlled_generators.append(elm)
 
             elif element["type"] == "static_gen":
@@ -225,9 +225,9 @@ def parse_json_data(data) -> MultiCircuit:
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = StaticGenerator(name=element['name'],
-                                      P=element['P'], Q=element['Q'],
-                                      active=element['active'])
+                elm = dev.StaticGenerator(name=element['name'],
+                                          P=element['P'], Q=element['Q'],
+                                          active=element['active'])
                 bus.static_generators.append(elm)
 
             elif element["type"] == "battery":
@@ -236,16 +236,16 @@ def parse_json_data(data) -> MultiCircuit:
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = Battery(name=element['name'],
-                              active_power=element["P"],
-                              voltage_module=element["vset"],
-                              Qmin=element['qmin'],
-                              Qmax=element['qmax'],
-                              Snom=element['Snom'],
-                              Enom=element['Enom'],
-                              power_prof=None,
-                              vset_prof=None,
-                              active=element['active'])
+                elm = dev.Battery(name=element['name'],
+                                  active_power=element["P"],
+                                  voltage_module=element["vset"],
+                                  Qmin=element['qmin'],
+                                  Qmax=element['qmax'],
+                                  Snom=element['Snom'],
+                                  Enom=element['Enom'],
+                                  power_prof=None,
+                                  vset_prof=None,
+                                  active=element['active'])
                 bus.batteries.append(elm)
 
             elif element["type"] == "shunt":
@@ -254,9 +254,9 @@ def parse_json_data(data) -> MultiCircuit:
                 bus = bus_id[element["bus"]]
 
                 # create a load in the bus
-                elm = Shunt(name=element['name'],
-                            G=element["g"], B=element["b"],
-                            active=element['active'])
+                elm = dev.Shunt(name=element['name'],
+                                G=element["g"], B=element["b"],
+                                active=element['active'])
                 bus.shunts.append(elm)
 
             elif element["type"] == "branch":
@@ -266,20 +266,20 @@ def parse_json_data(data) -> MultiCircuit:
                 bus2 = bus_id[element["to"]]
 
                 # create a load in the  bus
-                elm = Branch(bus_from=bus1,
-                             bus_to=bus2,
-                             name=element["name"],
-                             r=element["r"],
-                             x=element["x"],
-                             g=element["g"],
-                             b=element["b"],
-                             rate=element["rate"],
-                             tap=element["tap_module"],
-                             shift_angle=element["tap_angle"],
-                             active=element["active"],
-                             mttf=0,
-                             mttr=0,
-                             branch_type=element["branch_type"])
+                elm = dev.Branch(bus_from=bus1,
+                                 bus_to=bus2,
+                                 name=element["name"],
+                                 r=element["r"],
+                                 x=element["x"],
+                                 g=element["g"],
+                                 b=element["b"],
+                                 rate=element["rate"],
+                                 tap=element["tap_module"],
+                                 shift_angle=element["tap_angle"],
+                                 active=element["active"],
+                                 mttf=0,
+                                 mttr=0,
+                                 branch_type=element["branch_type"])
                 circuit.add_branch(elm)
 
         else:
@@ -305,9 +305,9 @@ def parse_json_data_v3(data: dict, logger: Logger):
     profiles = data['profiles']
 
     # parse devices
-    if DeviceType.CircuitDevice.value in devices.keys():
+    if dev.DeviceType.CircuitDevice.value in devices.keys():
 
-        dta = devices[DeviceType.CircuitDevice.value]
+        dta = devices[dev.DeviceType.CircuitDevice.value]
 
         circuit = MultiCircuit(name=str(dta['name']),
                                Sbase=float(dta['sbase']),
@@ -318,23 +318,23 @@ def parse_json_data_v3(data: dict, logger: Logger):
         circuit.Sbase = jcircuit["sbase"]
 
         # parse time series
-        if DeviceType.CircuitDevice.value in profiles.keys():
-            circuit.set_time_profile(profiles[DeviceType.CircuitDevice.value]['time'])
+        if dev.DeviceType.CircuitDevice.value in profiles.keys():
+            circuit.set_time_profile(profiles[dev.DeviceType.CircuitDevice.value]['time'])
 
         # Countries
         country_dict = dict()
         if 'Country' in devices.keys():
             elms = devices["Country"]
             for jentry in elms:
-                elm = Country(idtag=str(jentry['id']),
-                              code=str(jentry['code']),
-                              name=str(jentry['name']))
+                elm = dev.Country(idtag=str(jentry['id']),
+                                  code=str(jentry['code']),
+                                  name=str(jentry['name']))
 
                 circuit.countries.append(elm)
                 country_dict[elm.idtag] = elm
 
         else:
-            elm = Country(idtag=None, code='Default', name='Default')
+            elm = dev.Country(idtag=None, code='Default', name='Default')
             circuit.countries.append(elm)
 
         # Areas
@@ -342,13 +342,13 @@ def parse_json_data_v3(data: dict, logger: Logger):
         if 'Area' in devices.keys():
             elms = devices["Area"]
             for jentry in elms:
-                elm = Area(idtag=str(jentry['id']),
-                           code=str(jentry['code']),
-                           name=str(jentry['name']))
+                elm = dev.Area(idtag=str(jentry['id']),
+                               code=str(jentry['code']),
+                               name=str(jentry['name']))
                 circuit.areas.append(elm)
                 areas_dict[elm.idtag] = elm
         else:
-            elm = Area(idtag=None, code='Default', name='Default')
+            elm = dev.Area(idtag=None, code='Default', name='Default')
             circuit.areas.append(elm)
 
         # Zones
@@ -356,13 +356,13 @@ def parse_json_data_v3(data: dict, logger: Logger):
         if 'Zone' in devices.keys():
             elms = devices["Zone"]
             for jentry in elms:
-                elm = Zone(idtag=str(jentry['id']),
-                           code=str(jentry['code']),
-                           name=str(jentry['name']))
+                elm = dev.Zone(idtag=str(jentry['id']),
+                               code=str(jentry['code']),
+                               name=str(jentry['name']))
                 circuit.zones.append(elm)
                 zones_dict[elm.idtag] = elm
         else:
-            elm = Zone(idtag=None, code='Default', name='Default')
+            elm = dev.Zone(idtag=None, code='Default', name='Default')
             circuit.zones.append(elm)
 
         # Substations
@@ -370,13 +370,13 @@ def parse_json_data_v3(data: dict, logger: Logger):
         if 'Substation' in devices.keys():
             elms = devices["Substation"]
             for jentry in elms:
-                elm = Substation(idtag=str(jentry['id']),
-                                 code=str(jentry['code']),
-                                 name=str(jentry['name']))
+                elm = dev.Substation(idtag=str(jentry['id']),
+                                     code=str(jentry['code']),
+                                     name=str(jentry['name']))
                 circuit.substations.append(elm)
                 substations_dict[elm.idtag] = elm
         else:
-            elm = Substation(idtag=None, code='Default', name='Default')
+            elm = dev.Substation(idtag=None, code='Default', name='Default')
             circuit.substations.append(elm)
 
         # buses
@@ -418,26 +418,26 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 else:
                     country = circuit.countries[0]
 
-                bus = Bus(name=str(jentry['name']),
-                          idtag=str(jentry['id']),
-                          code=str(jentry['name_code']),
-                          vnom=float(jentry['vnom']),
-                          vmin=float(jentry['vmin']),
-                          vmax=float(jentry['vmax']),
-                          r_fault=float(jentry['rf']),
-                          x_fault=float(jentry['xf']),
-                          xpos=float(jentry['x']),
-                          ypos=float(jentry['y']),
-                          height=float(jentry['h']),
-                          width=float(jentry['w']),
-                          active=bool(jentry['active']),
-                          is_slack=bool(jentry['is_slack']),
-                          area=area,
-                          zone=zone,
-                          substation=substation,
-                          country=country,
-                          longitude=float(jentry['lon']),
-                          latitude=float(jentry['lat']))
+                bus = dev.Bus(name=str(jentry['name']),
+                              idtag=str(jentry['id']),
+                              code=str(jentry['name_code']),
+                              vnom=float(jentry['vnom']),
+                              vmin=float(jentry['vmin']),
+                              vmax=float(jentry['vmax']),
+                              r_fault=float(jentry['rf']),
+                              x_fault=float(jentry['xf']),
+                              xpos=float(jentry['x']),
+                              ypos=float(jentry['y']),
+                              height=float(jentry['h']),
+                              width=float(jentry['w']),
+                              active=bool(jentry['active']),
+                              is_slack=bool(jentry['is_slack']),
+                              area=area,
+                              zone=zone,
+                              substation=substation,
+                              country=country,
+                              longitude=float(jentry['lon']),
+                              latitude=float(jentry['lat']))
 
                 bus_dict[jentry['id']] = bus
 
@@ -457,20 +457,20 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for jentry in generators:
-                elm = Generator(name=str(jentry['name']),
-                                idtag=str(jentry['id']),
-                                active_power=float(jentry['p']),
-                                power_factor=float(jentry['pf']),
-                                voltage_module=float(jentry['vset']),
-                                is_controlled=bool(jentry['is_controlled']),
-                                Qmin=float(jentry['qmin']),
-                                Qmax=float(jentry['qmax']),
-                                Snom=float(jentry['snom']),
-                                active=bool(jentry['active']),
-                                p_min=float(jentry['pmin']),
-                                p_max=float(jentry['pmax']),
-                                op_cost=float(jentry['cost'] if "cost" in jentry else 1.0),
-                                )
+                elm = dev.Generator(name=str(jentry['name']),
+                                    idtag=str(jentry['id']),
+                                    active_power=float(jentry['p']),
+                                    power_factor=float(jentry['pf']),
+                                    voltage_module=float(jentry['vset']),
+                                    is_controlled=bool(jentry['is_controlled']),
+                                    Qmin=float(jentry['qmin']),
+                                    Qmax=float(jentry['qmax']),
+                                    Snom=float(jentry['snom']),
+                                    active=bool(jentry['active']),
+                                    p_min=float(jentry['pmin']),
+                                    p_max=float(jentry['pmax']),
+                                    op_cost=float(jentry['cost'] if "cost" in jentry else 1.0),
+                                    )
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -493,20 +493,20 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for jentry in batteries:
-                elm = Battery(name=str(jentry['name']),
-                              idtag=str(jentry['id']),
-                              active_power=float(jentry['p']),
-                              power_factor=float(jentry['pf']),
-                              voltage_module=float(jentry['vset']),
-                              is_controlled=bool(jentry['is_controlled']),
-                              Qmin=float(jentry['qmin']),
-                              Qmax=float(jentry['qmax']),
-                              Snom=float(jentry['snom']),
-                              active=bool(jentry['active']),
-                              p_min=float(jentry['pmin']),
-                              p_max=float(jentry['pmax']),
-                              op_cost=float(jentry['cost']),
-                              )
+                elm = dev.Battery(name=str(jentry['name']),
+                                  idtag=str(jentry['id']),
+                                  active_power=float(jentry['p']),
+                                  power_factor=float(jentry['pf']),
+                                  voltage_module=float(jentry['vset']),
+                                  is_controlled=bool(jentry['is_controlled']),
+                                  Qmin=float(jentry['qmin']),
+                                  Qmax=float(jentry['qmax']),
+                                  Snom=float(jentry['snom']),
+                                  active=bool(jentry['active']),
+                                  p_min=float(jentry['pmin']),
+                                  p_max=float(jentry['pmax']),
+                                  op_cost=float(jentry['cost']),
+                                  )
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -529,15 +529,15 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for jentry in loads:
-                elm = Load(name=str(jentry['name']),
-                           idtag=str(jentry['id']),
-                           P=float(jentry['p']),
-                           Q=float(jentry['q']),
-                           Ir=float(jentry['ir']),
-                           Ii=float(jentry['ii']),
-                           G=float(jentry['g']),
-                           B=float(jentry['b']),
-                           active=bool(jentry['active']))
+                elm = dev.Load(name=str(jentry['name']),
+                               idtag=str(jentry['id']),
+                               P=float(jentry['p']),
+                               Q=float(jentry['q']),
+                               Ir=float(jentry['ir']),
+                               Ii=float(jentry['ii']),
+                               G=float(jentry['g']),
+                               B=float(jentry['b']),
+                               active=bool(jentry['active']))
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -568,24 +568,24 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elif 'bmax' in jentry:
                     Bmax = float(jentry['bmax'])
                 else:
-                    Bmax = 9999
+                    Bmax = 9999.0
 
                 if 'b_min' in jentry:
                     Bmin = float(jentry['b_min'])
                 elif 'bmax' in jentry:
                     Bmin = float(jentry['bmin'])
                 else:
-                    Bmin = 9999
+                    Bmin = 9999.0
 
-                elm = Shunt(name=str(jentry['name']),
-                            idtag=str(jentry['id']),
-                            G=float(jentry['g']),
-                            B=float(jentry['b']),
-                            Bmax=Bmax,
-                            Bmin=Bmin,
-                            active=bool(jentry['active']),
-                            controlled=bool(jentry['controlled'])
-                            )
+                elm = dev.Shunt(name=str(jentry['name']),
+                                idtag=str(jentry['id']),
+                                G=float(jentry['g']),
+                                B=float(jentry['b']),
+                                Bmax=Bmax,
+                                Bmin=Bmin,
+                                active=bool(jentry['active']),
+                                controlled=bool(jentry['controlled'])
+                                )
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -606,21 +606,21 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for entry in devices["Line"]:
-                elm = Line(bus_from=bus_dict[entry['bus_from']],
-                           bus_to=bus_dict[entry['bus_to']],
-                           name=str(entry['name']),
-                           idtag=str(entry['id']),
-                           code=str(entry['name_code']),
-                           r=float(entry['r']),
-                           x=float(entry['x']),
-                           b=float(entry['b']),
-                           rate=float(entry['rate']),
-                           active=entry['active'],
-                           length=float(entry['length']),
-                           temp_base=float(entry['base_temperature']),
-                           temp_oper=float(entry['operational_temperature']),
-                           alpha=float(entry['alpha'])
-                           )
+                elm = dev.Line(bus_from=bus_dict[entry['bus_from']],
+                               bus_to=bus_dict[entry['bus_to']],
+                               name=str(entry['name']),
+                               idtag=str(entry['id']),
+                               code=str(entry['name_code']),
+                               r=float(entry['r']),
+                               x=float(entry['x']),
+                               b=float(entry['b']),
+                               rate=float(entry['rate']),
+                               active=entry['active'],
+                               length=float(entry['length']),
+                               temp_base=float(entry['base_temperature']),
+                               temp_oper=float(entry['operational_temperature']),
+                               alpha=float(entry['alpha'])
+                               )
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -639,18 +639,18 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for entry in devices["DC line"]:
-                elm = DcLine(bus_from=bus_dict[entry['bus_from']],
-                             bus_to=bus_dict[entry['bus_to']],
-                             name=str(entry['name']),
-                             idtag=str(entry['id']),
-                             code=str(entry['name_code']),
-                             r=float(entry['r']),
-                             rate=float(entry['rate']),
-                             active=entry['active'],
-                             length=float(entry['length']),
-                             temp_base=float(entry['base_temperature']),
-                             temp_oper=float(entry['operational_temperature']),
-                             alpha=float(entry['alpha']))
+                elm = dev.DcLine(bus_from=bus_dict[entry['bus_from']],
+                                 bus_to=bus_dict[entry['bus_to']],
+                                 name=str(entry['name']),
+                                 idtag=str(entry['id']),
+                                 code=str(entry['name_code']),
+                                 r=float(entry['r']),
+                                 rate=float(entry['rate']),
+                                 active=entry['active'],
+                                 length=float(entry['length']),
+                                 temp_base=float(entry['base_temperature']),
+                                 temp_oper=float(entry['operational_temperature']),
+                                 alpha=float(entry['alpha']))
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -699,27 +699,28 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     HV = v2
                     LV = v1
 
-                elm = Transformer2W(bus_from=bus_from,
-                                    bus_to=bus_to,
-                                    name=str(entry['name']),
-                                    idtag=str(entry['id']),
-                                    code=str(entry['name_code']),
-                                    r=float(entry['r']),
-                                    x=float(entry['x']),
-                                    g=float(entry['g']),
-                                    b=float(entry['b']),
-                                    rate=float(entry['rate']),
-                                    HV=HV,
-                                    LV=LV,
-                                    active=bool(entry['active']),
-                                    tap=float(entry['tap_module']),
-                                    shift_angle=float(entry['tap_angle']),
-                                    bus_to_regulated=bool(entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
-                                    vset=float(entry['vset']),
-                                    temp_base=float(entry['base_temperature']),
-                                    temp_oper=float(entry['operational_temperature']),
-                                    alpha=float(entry['alpha'])
-                                    )
+                elm = dev.Transformer2W(bus_from=bus_from,
+                                        bus_to=bus_to,
+                                        name=str(entry['name']),
+                                        idtag=str(entry['id']),
+                                        code=str(entry['name_code']),
+                                        r=float(entry['r']),
+                                        x=float(entry['x']),
+                                        g=float(entry['g']),
+                                        b=float(entry['b']),
+                                        rate=float(entry['rate']),
+                                        HV=HV,
+                                        LV=LV,
+                                        active=bool(entry['active']),
+                                        tap=float(entry['tap_module']),
+                                        shift_angle=float(entry['tap_angle']),
+                                        bus_to_regulated=bool(
+                                            entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
+                                        vset=float(entry['vset']),
+                                        temp_base=float(entry['base_temperature']),
+                                        temp_oper=float(entry['operational_temperature']),
+                                        alpha=float(entry['alpha'])
+                                        )
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -742,20 +743,20 @@ def parse_json_data_v3(data: dict, logger: Logger):
                         HV = v2
                         LV = v1
 
-                    elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
-                                        bus_to=bus_dict[entry['bus_to']],
-                                        name=str(tr_entry['name']),
-                                        idtag=str(entry['id']),
-                                        code=str(entry['name_code']),
-                                        active=bool(tr_entry['active']),
-                                        r=float(entry['r']),
-                                        x=float(entry['x']),
-                                        g=float(entry['g']),
-                                        b=float(entry['b']),
-                                        rate=float(entry['rate']),
-                                        HV=HV,
-                                        LV=LV
-                                        )
+                    elm = dev.Transformer2W(bus_from=bus_dict[entry['bus_from']],
+                                            bus_to=bus_dict[entry['bus_to']],
+                                            name=str(tr_entry['name']),
+                                            idtag=str(entry['id']),
+                                            code=str(entry['name_code']),
+                                            active=bool(tr_entry['active']),
+                                            r=float(entry['r']),
+                                            x=float(entry['x']),
+                                            g=float(entry['g']),
+                                            b=float(entry['b']),
+                                            rate=float(entry['rate']),
+                                            HV=HV,
+                                            LV=LV
+                                            )
                     circuit.add_transformer2w(elm)
 
         if "VSC" in devices.keys():
@@ -797,20 +798,20 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     ('vdc_set', 'Vdc_set'),
                     ]
 
-            modes = {0: ConverterControlType.type_0_free,
-                     1: ConverterControlType.type_I_1,
-                     2: ConverterControlType.type_I_2,
-                     3: ConverterControlType.type_I_3,
-                     4: ConverterControlType.type_II_4,
-                     5: ConverterControlType.type_II_5,
-                     6: ConverterControlType.type_III_6,
-                     7: ConverterControlType.type_III_7,
-                     8: ConverterControlType.type_IV_I,
-                     9: ConverterControlType.type_IV_II}
+            modes = {0: dev.ConverterControlType.type_0_free,
+                     1: dev.ConverterControlType.type_I_1,
+                     2: dev.ConverterControlType.type_I_2,
+                     3: dev.ConverterControlType.type_I_3,
+                     4: dev.ConverterControlType.type_II_4,
+                     5: dev.ConverterControlType.type_II_5,
+                     6: dev.ConverterControlType.type_III_6,
+                     7: dev.ConverterControlType.type_III_7,
+                     8: dev.ConverterControlType.type_IV_I,
+                     9: dev.ConverterControlType.type_IV_II}
 
             for entry in devices["VSC"]:
 
-                elm = VSC()
+                elm = dev.VSC()
                 elm.bus_from = bus_dict[entry['bus_from']]
                 elm.bus_to = bus_dict[entry['bus_to']]
                 set_object_properties(elm, prop, entry)
@@ -837,8 +838,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             hvdc_ctrl_dict = dict()
-            hvdc_ctrl_dict[HvdcControlType.type_1_Pset.value] = HvdcControlType.type_1_Pset
-            hvdc_ctrl_dict[HvdcControlType.type_0_free.value] = HvdcControlType.type_0_free
+            hvdc_ctrl_dict[dev.HvdcControlType.type_1_Pset.value] = dev.HvdcControlType.type_1_Pset
+            hvdc_ctrl_dict[dev.HvdcControlType.type_0_free.value] = dev.HvdcControlType.type_0_free
 
             prop = [('id', 'idtag'),
                     ('name', 'name'),
@@ -860,7 +861,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
             for entry in devices["HVDC Line"]:
 
-                elm = HvdcLine()
+                elm = dev.HvdcLine()
                 elm.bus_from = bus_dict[entry['bus_from']]
                 elm.bus_to = bus_dict[entry['bus_to']]
                 set_object_properties(elm, prop, entry)
@@ -892,6 +893,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
     logger += circuit.fill_xy_from_lat_lon()
     return circuit
 
+
 def parse_json_data_v2(data: dict, logger: Logger):
     """
     New Json parser
@@ -902,9 +904,9 @@ def parse_json_data_v2(data: dict, logger: Logger):
     devices = data['devices']
     profiles = data['profiles']
 
-    if DeviceType.CircuitDevice.value in devices.keys():
+    if dev.DeviceType.CircuitDevice.value in devices.keys():
 
-        dta = devices[DeviceType.CircuitDevice.value]
+        dta = devices[dev.DeviceType.CircuitDevice.value]
         circuit = MultiCircuit(name=str(dta['name']),
                                Sbase=float(dta['sbase']),
                                fbase=float(dta['fbase']),
@@ -918,13 +920,13 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Country' in devices.keys():
             elms = devices["Country"]
             for jentry in elms:
-                elm = Country(idtag=str(jentry['id']),
-                              code=str(jentry['code']),
-                              name=str(jentry['name']))
+                elm = dev.Country(idtag=str(jentry['id']),
+                                  code=str(jentry['code']),
+                                  name=str(jentry['name']))
                 circuit.countries.append(elm)
                 country_dict[elm.idtag] = elm
         else:
-            elm = Country(idtag=None, code='Default', name='Default')
+            elm = dev.Country(idtag=None, code='Default', name='Default')
             circuit.countries.append(elm)
 
         # Areas
@@ -932,13 +934,13 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Area' in devices.keys():
             elms = devices["Area"]
             for jentry in elms:
-                elm = Area(idtag=str(jentry['id']),
-                           code=str(jentry['code']),
-                           name=str(jentry['name']))
+                elm = dev.Area(idtag=str(jentry['id']),
+                               code=str(jentry['code']),
+                               name=str(jentry['name']))
                 circuit.areas.append(elm)
                 areas_dict[elm.idtag] = elm
         else:
-            elm = Area(idtag=None, code='Default', name='Default')
+            elm = dev.Area(idtag=None, code='Default', name='Default')
             circuit.areas.append(elm)
 
         # Zones
@@ -946,13 +948,13 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Zone' in devices.keys():
             elms = devices["Zone"]
             for jentry in elms:
-                elm = Zone(idtag=str(jentry['id']),
-                           code=str(jentry['code']),
-                           name=str(jentry['name']))
+                elm = dev.Zone(idtag=str(jentry['id']),
+                               code=str(jentry['code']),
+                               name=str(jentry['name']))
                 circuit.zones.append(elm)
                 zones_dict[elm.idtag] = elm
         else:
-            elm = Zone(idtag=None, code='Default', name='Default')
+            elm = dev.Zone(idtag=None, code='Default', name='Default')
             circuit.zones.append(elm)
 
         # Substations
@@ -960,13 +962,13 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Substation' in devices.keys():
             elms = devices["Substation"]
             for jentry in elms:
-                elm = Substation(idtag=str(jentry['id']),
-                                 code=str(jentry['code']),
-                                 name=str(jentry['name']))
+                elm = dev.Substation(idtag=str(jentry['id']),
+                                     code=str(jentry['code']),
+                                     name=str(jentry['name']))
                 circuit.substations.append(elm)
                 substations_dict[elm.idtag] = elm
         else:
-            elm = Substation(idtag=None, code='Default', name='Default')
+            elm = dev.Substation(idtag=None, code='Default', name='Default')
             circuit.substations.append(elm)
 
         # buses
@@ -1000,25 +1002,25 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 else:
                     country = circuit.countries[0]
 
-                bus = Bus(name=str(jentry['name']),
-                          idtag=str(jentry['id']),
-                          vnom=float(jentry['vnom']),
-                          vmin=float(jentry['vmin']),
-                          vmax=float(jentry['vmax']),
-                          r_fault=float(jentry['rf']),
-                          x_fault=float(jentry['xf']),
-                          xpos=float(jentry['x']),
-                          ypos=float(jentry['y']),
-                          height=float(jentry['h']),
-                          width=float(jentry['w']),
-                          active=bool(jentry['active']),
-                          is_slack=bool(jentry['is_slack']),
-                          area=area,
-                          zone=zone,
-                          substation=substation,
-                          country=country,
-                          longitude=float(jentry['lon']),
-                          latitude=float(jentry['lat']))
+                bus = dev.Bus(name=str(jentry['name']),
+                              idtag=str(jentry['id']),
+                              vnom=float(jentry['vnom']),
+                              vmin=float(jentry['vmin']),
+                              vmax=float(jentry['vmax']),
+                              r_fault=float(jentry['rf']),
+                              x_fault=float(jentry['xf']),
+                              xpos=float(jentry['x']),
+                              ypos=float(jentry['y']),
+                              height=float(jentry['h']),
+                              width=float(jentry['w']),
+                              active=bool(jentry['active']),
+                              is_slack=bool(jentry['is_slack']),
+                              area=area,
+                              zone=zone,
+                              substation=substation,
+                              country=country,
+                              longitude=float(jentry['lon']),
+                              latitude=float(jentry['lat']))
 
                 bus_dict[jentry['id']] = bus
                 circuit.add_bus(bus)
@@ -1026,79 +1028,79 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Generator' in devices.keys():
             generators = devices["Generator"]
             for jentry in generators:
-                gen = Generator(name=str(jentry['name']),
-                                idtag=str(jentry['id']),
-                                active_power=float(jentry['p']),
-                                power_factor=float(jentry['pf']),
-                                voltage_module=float(jentry['vset']),
-                                is_controlled=bool(jentry['is_controlled']),
-                                Qmin=float(jentry['qmin']),
-                                Qmax=float(jentry['qmax']),
-                                Snom=float(jentry['snom']),
-                                active=bool(jentry['active']),
-                                p_min=float(jentry['pmin']),
-                                p_max=float(jentry['pmax']),
-                                op_cost=float(jentry['cost']),
-                                )
+                gen = dev.Generator(name=str(jentry['name']),
+                                    idtag=str(jentry['id']),
+                                    active_power=float(jentry['p']),
+                                    power_factor=float(jentry['pf']),
+                                    voltage_module=float(jentry['vset']),
+                                    is_controlled=bool(jentry['is_controlled']),
+                                    Qmin=float(jentry['qmin']),
+                                    Qmax=float(jentry['qmax']),
+                                    Snom=float(jentry['snom']),
+                                    active=bool(jentry['active']),
+                                    p_min=float(jentry['pmin']),
+                                    p_max=float(jentry['pmax']),
+                                    op_cost=float(jentry['cost']),
+                                    )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_generator(gen.bus, gen)
 
         if 'Battery' in devices.keys():
             batteries = devices["Battery"]
             for jentry in batteries:
-                gen = Battery(name=str(jentry['name']),
-                              idtag=str(jentry['id']),
-                              active_power=float(jentry['p']),
-                              power_factor=float(jentry['pf']),
-                              voltage_module=float(jentry['vset']),
-                              is_controlled=bool(jentry['is_controlled']),
-                              Qmin=float(jentry['qmin']),
-                              Qmax=float(jentry['qmax']),
-                              Snom=float(jentry['snom']),
-                              active=bool(jentry['active']),
-                              p_min=float(jentry['pmin']),
-                              p_max=float(jentry['pmax']),
-                              op_cost=float(jentry['cost']),
-                              )
+                gen = dev.Battery(name=str(jentry['name']),
+                                  idtag=str(jentry['id']),
+                                  active_power=float(jentry['p']),
+                                  power_factor=float(jentry['pf']),
+                                  voltage_module=float(jentry['vset']),
+                                  is_controlled=bool(jentry['is_controlled']),
+                                  Qmin=float(jentry['qmin']),
+                                  Qmax=float(jentry['qmax']),
+                                  Snom=float(jentry['snom']),
+                                  active=bool(jentry['active']),
+                                  p_min=float(jentry['pmin']),
+                                  p_max=float(jentry['pmax']),
+                                  op_cost=float(jentry['cost']),
+                                  )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_battery(gen.bus, gen)
 
         if 'Load' in devices.keys():
             loads = devices["Load"]
             for jentry in loads:
-                elm = Load(name=str(jentry['name']),
-                           idtag=str(jentry['id']),
-                           P=float(jentry['p']),
-                           Q=float(jentry['q']),
-                           active=bool(jentry['active']))
+                elm = dev.Load(name=str(jentry['name']),
+                               idtag=str(jentry['id']),
+                               P=float(jentry['p']),
+                               Q=float(jentry['q']),
+                               active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)
 
         if "Shunt" in devices.keys():
             shunts = devices["Shunt"]
             for jentry in shunts:
-                elm = Shunt(name=str(jentry['name']),
-                            idtag=str(jentry['id']),
-                            G=float(jentry['g']),
-                            B=float(jentry['b']),
-                            active=bool(jentry['active']))
+                elm = dev.Shunt(name=str(jentry['name']),
+                                idtag=str(jentry['id']),
+                                G=float(jentry['g']),
+                                B=float(jentry['b']),
+                                active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_shunt(elm.bus, elm)
 
         if "Line" in devices.keys():
             lines = devices["Line"]
             for entry in lines:
-                elm = Line(bus_from=bus_dict[entry['bus_from']],
-                           bus_to=bus_dict[entry['bus_to']],
-                           name=str(entry['name']),
-                           idtag=str(entry['id']),
-                           r=float(entry['r']),
-                           x=float(entry['x']),
-                           b=float(entry['b']),
-                           rate=float(entry['rate']),
-                           active=entry['active'],
-                           length=float(entry['length']),
-                           )
+                elm = dev.Line(bus_from=bus_dict[entry['bus_from']],
+                               bus_to=bus_dict[entry['bus_to']],
+                               name=str(entry['name']),
+                               idtag=str(entry['id']),
+                               r=float(entry['r']),
+                               x=float(entry['x']),
+                               b=float(entry['b']),
+                               rate=float(entry['rate']),
+                               active=entry['active'],
+                               length=float(entry['length']),
+                               )
                 circuit.add_line(elm)
 
         if "Transformer" in devices.keys() or "Transformer2w" in devices.keys():
@@ -1111,19 +1113,19 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 raise Exception('Transformer key not found')
 
             for entry in transformers:
-                elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
-                                    bus_to=bus_dict[entry['bus_to']],
-                                    name=str(entry['name']),
-                                    idtag=str(entry['id']),
-                                    r=float(entry['r']),
-                                    x=float(entry['x']),
-                                    g=float(entry['g']),
-                                    b=float(entry['b']),
-                                    rate=float(entry['rate']),
-                                    active=bool(entry['active']),
-                                    tap=float(entry['tap_module']),
-                                    shift_angle=float(entry['tap_angle']),
-                                    )
+                elm = dev.Transformer2W(bus_from=bus_dict[entry['bus_from']],
+                                        bus_to=bus_dict[entry['bus_to']],
+                                        name=str(entry['name']),
+                                        idtag=str(entry['id']),
+                                        r=float(entry['r']),
+                                        x=float(entry['x']),
+                                        g=float(entry['g']),
+                                        b=float(entry['b']),
+                                        rate=float(entry['rate']),
+                                        active=bool(entry['active']),
+                                        tap=float(entry['tap_module']),
+                                        shift_angle=float(entry['tap_angle']),
+                                        )
                 circuit.add_transformer2w(elm)
 
         if "VSC" in devices.keys():
@@ -1187,9 +1189,9 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
             d[key] = d2
 
     # add the circuit
-    elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
-    units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
-    element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
+    elements[dev.DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
+    units_dict[dev.DeviceType.CircuitDevice.value] = circuit.get_units_dict()
+    element_profiles[dev.DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the areas
     for cls in [circuit.substations,
@@ -1220,7 +1222,8 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
         devices = elm.loads + elm.controlled_generators + elm.static_generators + elm.batteries + elm.shunts
         for device in devices:
             add_to_dict(d=elements, d2=device.get_properties_dict(), key=device.device_type.value)
-            add_to_dict(d=element_profiles, d2=convert_to_sparse(device.get_profiles_dict()), key=device.device_type.value)
+            add_to_dict(d=element_profiles, d2=convert_to_sparse(device.get_profiles_dict()),
+                        key=device.device_type.value)
             add_to_dict2(d=units_dict, d2=device.get_units_dict(), key=device.device_type.value)
 
     # branches
@@ -1298,9 +1301,7 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
     return logger
 
 
-
 if __name__ == '__main__':
-
     import GridCal.Engine as gce
 
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 39+HVDC line.gridcal'

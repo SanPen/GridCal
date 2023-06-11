@@ -15,31 +15,33 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Devices.battery import *
-from GridCal.Engine.Devices.branch import *
-from GridCal.Engine.Devices.dc_line import *
-from GridCal.Engine.Devices.vsc import *
-from GridCal.Engine.Devices.bus import *
-from GridCal.Engine.Devices.generator import *
-from GridCal.Engine.Devices.load import *
-from GridCal.Engine.Devices.external_grid import *
-from GridCal.Engine.Devices.line import *
-from GridCal.Engine.Devices.switch import *
-from GridCal.Engine.Devices.hvdc_line import *
-from GridCal.Engine.Devices.upfc import *
-from GridCal.Engine.Devices.shunt import *
-from GridCal.Engine.Devices.static_generator import *
-from GridCal.Engine.Devices.tower import *
-from GridCal.Engine.Devices.transformer import *
-from GridCal.Engine.Devices.transformer3w import *
-from GridCal.Engine.Devices.underground_line import *
-from GridCal.Engine.Devices.wire import *
-from GridCal.Engine.Devices.measurement import *
-from GridCal.Engine.Devices.groupings import *
-from GridCal.Engine.Devices.templates import *
-from GridCal.Engine.Devices.enumerations import *
-from GridCal.Engine.Devices.contingency import *
-from GridCal.Engine.Devices.contingency_group import *
-from GridCal.Engine.Devices.investment import *
-from GridCal.Engine.Devices.investments_group import *
-from GridCal.Engine.Devices.technology import *
+from GridCal.Engine.Devices.editable_device import EditableDevice
+from GridCal.Engine.Devices.bus import Bus, BusMode
+from GridCal.Engine.Devices.battery import Battery
+from GridCal.Engine.Devices.branch import Branch, BranchTemplate, BranchType, convert_branch
+from GridCal.Engine.Devices.dc_line import DcLine
+from GridCal.Engine.Devices.vsc import VSC, ConverterControlType
+from GridCal.Engine.Devices.generator import Generator
+from GridCal.Engine.Devices.load import Load
+from GridCal.Engine.Devices.external_grid import ExternalGrid, ExternalGridMode
+from GridCal.Engine.Devices.line import Line, LineTemplate
+from GridCal.Engine.Devices.switch import Switch
+from GridCal.Engine.Devices.hvdc_line import HvdcLine, HvdcControlType
+from GridCal.Engine.Devices.upfc import UPFC
+from GridCal.Engine.Devices.shunt import Shunt
+from GridCal.Engine.Devices.static_generator import StaticGenerator
+from GridCal.Engine.Devices.tower import Tower
+from GridCal.Engine.Devices.transformer import Transformer2W, TransformerType, TransformerControlType
+from GridCal.Engine.Devices.winding import Winding
+from GridCal.Engine.Devices.transformer3w import Transformer3W
+from GridCal.Engine.Devices.underground_line import UndergroundLineType
+from GridCal.Engine.Devices.wire import Wire
+from GridCal.Engine.Devices.measurement import Measurement, MeasurementType
+from GridCal.Engine.Devices.templates import Wire, TransformerType, SequenceLineType, get_transformer_catalogue, get_wires_catalogue, get_cables_catalogue
+from GridCal.Engine.Devices.enumerations import DeviceType
+from GridCal.Engine.Devices.contingency import Contingency
+from GridCal.Engine.Devices.contingency_group import ContingencyGroup
+from GridCal.Engine.Devices.investment import Investment
+from GridCal.Engine.Devices.investments_group import InvestmentsGroup
+from GridCal.Engine.Devices.technology import Technology
+from GridCal.Engine.Devices.groupings import Area, Substation, Zone, Country

@@ -1,9 +1,8 @@
 
 import sys
-from PySide6.QtWidgets import *
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt
-from GridCal.Gui.SyncDialogue.gui import *
+from GridCal.Gui.SyncDialogue.gui import Ui_Dialog
 from GridCal.Gui.Session.synchronization_driver import get_issues_tree_view_model, FileSyncThread
 
 
@@ -37,13 +36,13 @@ class SyncDialogueWindow(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def closeEvent(self, event):

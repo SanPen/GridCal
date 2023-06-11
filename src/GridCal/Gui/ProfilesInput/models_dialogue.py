@@ -18,13 +18,13 @@
 import os
 import numpy as np
 import pandas as pd
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets, QtCore
 from typing import List, Dict
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
-from GridCal.Gui.ProfilesInput.profiles_from_models_gui import *
-from GridCal.Gui.ProfilesInput.excel_dialog import *
+from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
+from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 
 
 class GridsModelItem:
@@ -97,16 +97,16 @@ class GridsModel(QtCore.QAbstractTableModel):
                 return p_int
         return None
 
-    def flags(self, index: QtCore.QModelIndex) -> Qt.ItemFlags:
-        return Qt.ItemIsDropEnabled | Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        return QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
 
     def supportedDropActions(self) -> bool:
-        return Qt.MoveAction | Qt.CopyAction
+        return QtCore.Qt.MoveAction | QtCore.Qt.CopyAction
 
     def dropEvent(self, event):
         if (event.source() is not self or
-                (event.dropAction() != Qt.MoveAction and
-                 self.dragDropMode() != QAbstractItemView.InternalMove)):
+                (event.dropAction() != QtCore.Qt.MoveAction and
+                 self.dragDropMode() != QtWidgets.QAbstractItemView.InternalMove)):
             super().dropEvent(event)
         selection = self.selectedIndexes()
         from_index = selection[0].row() if selection else -1
@@ -122,7 +122,7 @@ class GridsModel(QtCore.QAbstractTableModel):
             to_index = header.visualIndex(to_index)
             header.moveSection(from_index, to_index)
             event.accept()
-            event.setDropAction(Qt.IgnoreAction)
+            event.setDropAction(QtCore.Qt.IgnoreAction)
         super().dropEvent(event)
 
 
@@ -209,7 +209,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
         # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-        filenames, type_selected = QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
 
         if len(filenames):
             for i, file_path in enumerate(filenames):
@@ -266,7 +266,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-
+    import sys
     app = QtWidgets.QApplication(sys.argv)
     window = ModelsInputGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio

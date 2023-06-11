@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets
 import matplotlib
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -49,7 +49,7 @@ class MplCanvas(FigureCanvas):
             self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
         scale = 1.2
@@ -167,16 +167,16 @@ class MplCanvas(FigureCanvas):
         return onMotion
 
 
-class MatplotlibWidget(QWidget):
+class MatplotlibWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
 
-        self.frame = QWidget()
+        self.frame = QtWidgets.QWidget()
         self.canvas = MplCanvas()
         self.canvas.setParent(self.frame)
         self.mpltoolbar = Navigationtoolbar(self.canvas, self.frame)
-        self.vbl = QVBoxLayout()
+        self.vbl = QtWidgets.QVBoxLayout()
         self.vbl.addWidget(self.canvas)
         self.vbl.addWidget(self.mpltoolbar)
         self.setLayout(self.vbl)

@@ -6,12 +6,12 @@ from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
-from PySide6.QtWidgets import *
+from PySide6 import QtGui, QtCore, QtWidgets
 from typing import List, Dict
-from GridCal.Gui.CoordinatesInput.gui import *
-from GridCal.Gui.ProfilesInput.excel_dialog import *
+from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
+from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import error_msg
 
 
 def get_list_model(iterable):
@@ -188,13 +188,13 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def dropEvent(self, event):
@@ -325,13 +325,13 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
         # call dialog to select the file
 
-        options = QFileDialog.Options()
+        options = QtWidgets.QFileDialog.Options()
         if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
+            options |= QtWidgets.QFileDialog.DontUseNativeDialog
 
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              filter=files_types,
-                                                              options=options)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file',
+                                                                        filter=files_types,
+                                                                        options=options)
         self.open_file_now(filename)
 
     def open_file_now(self, filename):
@@ -399,10 +399,8 @@ class TestObj:
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = CoordinatesInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

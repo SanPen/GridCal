@@ -18,14 +18,14 @@
 import sys
 from typing import List
 
-from PySide6.QtWidgets import QMessageBox, QFileDialog, QMainWindow
+from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Gui.GeneralDialogues import LogsDialogue, Logger
 
 
-class GridAnalysisGUI(QMainWindow):
+class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
 
     """
@@ -37,7 +37,7 @@ class GridAnalysisGUI(QMainWindow):
             object_types:
             circuit:
         """
-        QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid analysis')
@@ -66,13 +66,13 @@ class GridAnalysisGUI(QMainWindow):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def analyze_all(self):
@@ -124,13 +124,13 @@ class GridAnalysisGUI(QMainWindow):
         """
         files_types = "Excel (*.xlsx)"
 
-        options = QFileDialog.Options()
+        options = QtWidgets.QFileDialog.Options()
         if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
+            options |= QtWidgets.QFileDialog.DontUseNativeDialog
 
         fname = 'Grid error analysis.xlsx'
 
-        filename, _ = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
 
         if filename != '':
             self.log.save(filename)

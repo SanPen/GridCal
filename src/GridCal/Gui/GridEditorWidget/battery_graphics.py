@@ -15,16 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6.QtWidgets import *
-from PySide6.QtCore import *
-from PySide6.QtGui import *
+from PySide6 import QtWidgets, QtGui, QtCore
 from GridCal.Engine.Devices.battery import Battery, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 
-class BatteryGraphicItem(QGraphicsItemGroup):
+class BatteryGraphicItem(QtWidgets.QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -45,7 +43,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         # Properties of the container:
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
         self.width = 4
         if self.api_object is not None:
@@ -60,18 +58,18 @@ class BatteryGraphicItem(QGraphicsItemGroup):
             self.color = OTHER['color']
 
         # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        self.nexus.setPen(QPen(self.color, self.width, self.style))
+        self.nexus = QtWidgets.QGraphicsLineItem()
+        self.nexus.setPen(QtGui.QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
-        pen = QPen(self.color, self.width, self.style)
+        pen = QtGui.QPen(self.color, self.width, self.style)
 
         self.glyph = Square(self)
         self.glyph.setRect(0, 0, self.h, self.w)
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QGraphicsTextItem('B', parent=self.glyph)
+        self.label = QtWidgets.QGraphicsTextItem('B', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
         self.label.setPos(self.h / 4, self.w / 5)
 
@@ -91,7 +89,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        pen = QPen(self.color, self.width, self.style)
+        pen = QtGui.QPen(self.color, self.width, self.style)
         self.glyph.setPen(pen)
         self.nexus.setPen(pen)
         self.label.setDefaultTextColor(self.color)
@@ -118,7 +116,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         @param event:
         @return:
         """
-        menu = QMenu()
+        menu = QtWidgets.QMenu()
         menu.addSection("Battery")
 
         pe = menu.addAction('Active')
@@ -127,14 +125,14 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        plot_icon = QtGui.QIcon()
+        plot_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/plot.svg"))
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
 
         da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        del_icon = QtGui.QIcon()
+        del_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/delete3.svg"))
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
@@ -191,7 +189,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.glyph.setPen(QtGui.QPen(self.color, self.width, self.style))
         self.label.setDefaultTextColor(self.color)
 
     def plot(self):

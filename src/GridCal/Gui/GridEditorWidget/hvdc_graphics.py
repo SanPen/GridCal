@@ -16,13 +16,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QPolygonF, QTransform
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 
 class HvdcGraphicItem(QGraphicsLineItem):

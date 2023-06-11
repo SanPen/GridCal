@@ -22,12 +22,11 @@ from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets, QtCore
 from typing import List, Dict
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
-from GridCal.Gui.ProfilesInput.profiles_from_data_gui import *
-from GridCal.Gui.ProfilesInput.excel_dialog import *
-
+from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
+from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 
 
 class MultiplierType(Enum):
@@ -171,7 +170,6 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
         return None
 
 
-
 class ProfileInputGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None, list_of_objects=None, magnitudes=['']):
@@ -245,15 +243,15 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # set name transformations
         self.transformations = {
-                                StringSubstitutions.PSSeBranchName.value: StringSubstitutions.PSSeBranchName,
-                                StringSubstitutions.PSSeBusGenerator.value: StringSubstitutions.PSSeBusGenerator,
-                                StringSubstitutions.PSSeBusLoad.value: StringSubstitutions.PSSeBusLoad
-                                }
+            StringSubstitutions.PSSeBranchName.value: StringSubstitutions.PSSeBranchName,
+            StringSubstitutions.PSSeBusGenerator.value: StringSubstitutions.PSSeBusGenerator,
+            StringSubstitutions.PSSeBusLoad.value: StringSubstitutions.PSSeBusLoad
+        }
         self.ui.nameTransformationComboBox.setModel(get_list_model(list(self.transformations.keys())))
 
         self.original_data_frame = None
 
-        self.ui.autolink_slider.setValue(100) # Set slider to max value
+        self.ui.autolink_slider.setValue(100)  # Set slider to max value
 
         self.profile_names = list()
 
@@ -279,13 +277,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def get_multiplier(self):
@@ -308,7 +306,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # call dialog to select the file
 
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
 
         if len(filename) > 0:
             # get the filename extension
@@ -359,7 +357,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
             self.original_data_frame.columns = cols
 
             # set the profile names list
-            self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)
+            self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values],
+                                          dtype=object)
             self.display_profiles()
 
     def sources_list_double_click(self):
@@ -492,12 +491,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
                 # while there are elements in the destination indices
                 while len(destination_indices) > 0:
-
                     # pick a random source
-                    rnd_idx_s = randint(0, len(source_indices)-1)
+                    rnd_idx_s = randint(0, len(source_indices) - 1)
 
                     # pick and delete a random destination
-                    rnd_idx_o = randint(0, len(destination_indices)-1)
+                    rnd_idx_o = randint(0, len(destination_indices) - 1)
 
                     # get the actual index
                     idx_s = source_indices[rnd_idx_s]
@@ -661,8 +659,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.close()
 
 
-
-
 class TestObj:
     def __init__(self, name, code):
         self.name = name
@@ -670,10 +666,8 @@ class TestObj:
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

@@ -6,48 +6,48 @@ from enum import Enum
 import numpy as np
 from numpy.random import default_rng
 import networkx as nx
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets
 from typing import List
 
-from GridCal.Gui.ContingencyPlanner.gui import *
-from GridCal.Engine.Devices import *
+from GridCal.Gui.ContingencyPlanner.gui import Ui_MainWindow
+import GridCal.Engine.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Gui.GuiFunctions import *
+import GridCal.Gui.GuiFunctions as gf
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_plan import generate_automatic_contingency_plan
 
 
-class ContingencyPlannerGUI(QDialog):
+class ContingencyPlannerGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None, grid: MultiCircuit = None):
         """
 
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Contingency planner')
 
         self.circuit = grid
 
-        self.contingency_branch_types = [DeviceType.LineDevice,
-                                         DeviceType.DCLineDevice,
-                                         DeviceType.Transformer2WDevice,
-                                         DeviceType.VscDevice,
-                                         DeviceType.UpfcDevice]
+        self.contingency_branch_types = [dev.DeviceType.LineDevice,
+                                         dev.DeviceType.DCLineDevice,
+                                         dev.DeviceType.Transformer2WDevice,
+                                         dev.DeviceType.VscDevice,
+                                         dev.DeviceType.UpfcDevice]
 
-        self.contingency_injection_types = [DeviceType.GeneratorDevice,
-                                            DeviceType.BatteryDevice]
+        self.contingency_injection_types = [dev.DeviceType.GeneratorDevice,
+                                            dev.DeviceType.BatteryDevice]
 
-        self.ui.contingencyBranchTypesListView.setModel(get_list_model(self.contingency_branch_types,
+        self.ui.contingencyBranchTypesListView.setModel(gf.get_list_model(self.contingency_branch_types,
                                                                        checks=True, check_value=True))
 
-        self.ui.contingenctyInjectionsListView.setModel(get_list_model(self.contingency_injection_types,
+        self.ui.contingenctyInjectionsListView.setModel(gf.get_list_model(self.contingency_injection_types,
                                                                        checks=True, check_value=True))
 
         # contingencies
-        self.contingencies: List[Contingency] = list()
-        self.contingency_groups: List[ContingencyGroup] = list()
+        self.contingencies: List[dev.Contingency] = list()
+        self.contingency_groups: List[dev.ContingencyGroup] = list()
 
         self.ui.autoNminusXButton.clicked.connect(self.auto_generate_contingencies)
 
@@ -59,13 +59,13 @@ class ContingencyPlannerGUI(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def auto_generate_contingencies(self):
@@ -75,8 +75,8 @@ class ContingencyPlannerGUI(QDialog):
         """
 
         # filters
-        branch_indices = get_checked_indices(self.ui.contingencyBranchTypesListView.model())
-        injection_indices = get_checked_indices(self.ui.contingenctyInjectionsListView.model())
+        branch_indices = gf.get_checked_indices(self.ui.contingencyBranchTypesListView.model())
+        injection_indices = gf.get_checked_indices(self.ui.contingenctyInjectionsListView.model())
 
         branch_types = [self.contingency_branch_types[i] for i in branch_indices]
         injection_types = [self.contingency_injection_types[i] for i in injection_indices]
@@ -102,7 +102,7 @@ class ContingencyPlannerGUI(QDialog):
 
 if __name__ == "__main__":
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = ContingencyPlannerGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

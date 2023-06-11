@@ -15,11 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Replacements import *
+# from GridCal.Engine.Replacements import *
 from GridCal.Engine.basic_structures import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.grid_analysis import *
-from GridCal.Engine.Devices.editable_device import *
 from GridCal.Engine.Simulations import *
 from GridCal.Engine.IO import *
 from GridCal.Engine.Core import *

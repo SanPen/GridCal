@@ -16,26 +16,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys
+import pandas as pd
+from PySide6 import QtWidgets
 
-from PySide6.QtWidgets import *
-
-from GridCal.Gui.TowerBuilder.gui import *
-from GridCal.Engine.Devices import *
-from GridCal.Gui.TowerBuilder.table_models import *
+from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
+import GridCal.Engine.Devices as dev
+from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Engine.basic_structures import Logger
 
 
-class TowerBuilderGUI(QDialog):
+class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower: Tower = None, wires_catalogue=list()):
+    def __init__(self, parent=None, tower: dev.Tower = None, wires_catalogue=list()):
         """
 
         :param parent:
         :param tower:
         :param wires_catalogue:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
@@ -81,13 +82,13 @@ class TowerBuilderGUI(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def name_changed(self):
@@ -103,7 +104,7 @@ class TowerBuilderGUI(QDialog):
         :return:
         """
         name = 'Wire_' + str(len(self.wires_table.wires) + 1)
-        wire = Wire(name=name, gmr=0.01, r=0.01, x=0)
+        wire = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
         self.wires_table.add(wire)
 
     def delete_wire_from_collection(self):
@@ -203,13 +204,13 @@ class TowerBuilderGUI(QDialog):
                 self.ui.y_tableView_seq.setModel(PandasModel(z_df))
 
                 # set auto adjust headers
-                self.ui.z_tableView_abcn.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-                self.ui.z_tableView_abc.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-                self.ui.z_tableView_seq.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.z_tableView_abcn.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+                self.ui.z_tableView_abc.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+                self.ui.z_tableView_seq.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
-                self.ui.y_tableView_abcn.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-                self.ui.y_tableView_abc.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-                self.ui.y_tableView_seq.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.y_tableView_abcn.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+                self.ui.y_tableView_abc.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+                self.ui.y_tableView_seq.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
                 # plot
                 self.plot()
@@ -237,7 +238,7 @@ class TowerBuilderGUI(QDialog):
         x = 0  # ohm / km
         gmr = 0.002481072  # m
 
-        wire = Wire(name=name, gmr=gmr, r=r, x=x)
+        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
 
         self.tower_driver.add(WireInTower(wire=wire, xpos=0, ypos=8.8392, phase=0))
         self.tower_driver.add(WireInTower(wire=wire, xpos=0.762, ypos=8.8392, phase=1))
@@ -255,7 +256,7 @@ class TowerBuilderGUI(QDialog):
         incx = 0.1
         incy = 0.1
 
-        wire = Wire(name=name, gmr=gmr, r=r, x=x)
+        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
 
         self.tower_driver.add(WireInTower(wire, xpos=0, ypos=8.8392, phase=1))
         self.tower_driver.add(WireInTower(wire, xpos=0.762, ypos=8.8392, phase=2))
@@ -277,7 +278,7 @@ class TowerBuilderGUI(QDialog):
 
 if __name__ == "__main__":
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = TowerBuilderGUI()
 
     window.example_2()

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets
 import sys
 
 
@@ -27,16 +27,16 @@ class SampleObject:
         return self.name
 
 
-class ObjectSelectWindow(QDialog):
+class ObjectSelectWindow(QtWidgets.QDialog):
     def __init__(self, title, object_list, parent=None):
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
 
         self.setWindowTitle(title)
 
-        layout = QGridLayout()
+        layout = QtWidgets.QGridLayout()
         self.setLayout(layout)
         self.object_list = object_list
-        self.list_widget = QListWidget()
+        self.list_widget = QtWidgets.QListWidget()
 
         self.selected_object = None
 
@@ -61,7 +61,7 @@ class ObjectSelectWindow(QDialog):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     lst = [SampleObject(name='Object {}'.format(i)) for i in range(5)]
     screen = ObjectSelectWindow('Cosas', lst)
     screen.show()

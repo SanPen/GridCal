@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from PySide6.QtWidgets import *
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-
+from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtWidgets import QMenu
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -29,11 +29,11 @@ from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Engine.Devices.enumerations import DeviceType, FaultType
 
 
-class BusGraphicItem(QGraphicsRectItem):
+class BusGraphicItem(QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -45,7 +45,7 @@ class BusGraphicItem(QGraphicsRectItem):
     """
 
     def __init__(self, diagramScene, name='Untitled', parent=None, index=0, editor=None,
-                 bus: Bus = None, pos: QPoint = None):
+                 bus: Bus = None, pos: QtCore.QPoint = None):
         """
 
         @param diagramScene:
@@ -95,13 +95,13 @@ class BusGraphicItem(QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         # Label:
-        self.label = QGraphicsTextItem(bus.name, self)
+        self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
         # self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
         # square
-        self.tile = QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
@@ -172,7 +172,7 @@ class BusGraphicItem(QGraphicsRectItem):
         :return:
         """
         if self.big_marker is None:
-            self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+            self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
             self.big_marker.setBrush(color)
             self.big_marker.setOpacity(0.5)
             self.big_marker.setToolTip(tool_tip_text)

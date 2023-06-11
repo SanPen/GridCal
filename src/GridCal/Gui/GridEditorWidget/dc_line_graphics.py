@@ -16,10 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
+from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtCore import Qt, QPoint, QLineF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QGraphicsLineItem, QPushButton, QVBoxLayout, QComboBox, QDialog
 from GridCal.Gui.GuiFunctions import get_list_model
-from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
 from GridCal.Engine.Devices.dc_line import DcLine

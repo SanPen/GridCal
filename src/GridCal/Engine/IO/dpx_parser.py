@@ -18,22 +18,21 @@
 
 import chardet
 
+import numpy as np
+import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-
 __headers__ = dict()
-
 
 ########################################################################################################################
 # CatalogBranch block
 __headers__['CatalogBranch'] = dict()
-
 
 __headers__['CatalogBranch']['CAP'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'REAC']
 
@@ -53,10 +52,11 @@ __headers__['CatalogBranch']['LINE'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'TYPE', '
 
 __headers__['CatalogBranch']['SECC'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RAT', 'FRATSH', 'FRATME', 'RATOFF', 'RATON']
 
-__headers__['CatalogBranch']['TI'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'TOR']  # fuck the rest, having variable number of properties is bad design
+__headers__['CatalogBranch']['TI'] = ['CLASS', 'EQ', 'DESC', 'VNOM',
+                                      'TOR']  # fuck the rest, having variable number of properties is bad design
 
 __headers__['CatalogBranch']['XFORM1'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
-                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'SNOMTYP1', 'SNOMSUM1', 'SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1', 'RD1', 'XD1',
                                           'RH1', 'XH1',
                                           'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
                                           'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
@@ -66,7 +66,7 @@ __headers__['CatalogBranch']['XFORM1'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2
                                           'PYEAR', 'TYPE']
 
 __headers__['CatalogBranch']['XFORM2'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
-                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'SNOMTYP1', 'SNOMSUM1', 'SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1', 'RD1', 'XD1',
                                           'RH1', 'XH1',
                                           'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
                                           'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
@@ -76,7 +76,7 @@ __headers__['CatalogBranch']['XFORM2'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2
                                           'PYEAR', 'TYPE']
 
 __headers__['CatalogBranch']['XFORM3'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2', 'VNOM3',
-                                          'SNOMTYP1', 'SNOMSUM1','SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1',  'RD1', 'XD1',
+                                          'SNOMTYP1', 'SNOMSUM1', 'SNOMWIN1', 'NATAP1', 'MAX1', 'MIN1', 'RD1', 'XD1',
                                           'RH1', 'XH1',
                                           'SNOMTYP2', 'SNOMSUM2', 'SNOMWIN2', 'NATAP2', 'MAX2', 'MIN2', 'RD2', 'XD2',
                                           'RH2', 'XH2', 'RDC', 'XDC', 'RHC', 'XHC',
@@ -87,20 +87,19 @@ __headers__['CatalogBranch']['XFORM3'] = ['CLASS', 'EQ', 'DESC', 'VNOM1', 'VNOM2
 
 __headers__['CatalogBranch']['ZN'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RZN', 'RXN', 'COST']
 
-
 ########################################################################################################################
 # nodes block
 __headers__['Nodes'] = dict()
 
 # Airline support post
 __headers__['Nodes']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
-            
+
 # Cabinet (only for low voltage)
 __headers__['Nodes']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
-            
+
 # Connection
 __headers__['Nodes']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
-            
+
 # Neutral connection
 __headers__['Nodes']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
 
@@ -116,88 +115,89 @@ __headers__['Nodes']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX',
 
 # Charging (only for low voltage)
 __headers__['Nodes']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
-                                'NCMPLAN']   # fill to fit...
-            
+                                'NCMPLAN']  # fill to fit...
+
 # Transformation station
 __headers__['Nodes']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
-                          'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
-                          'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3', 'MCOST3',
-                          'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
-            
+                              'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
+                              'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3',
+                              'MCOST3',
+                              'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
+
 # Customer transformation office
 __headers__['Nodes']['PTC'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
-                          'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
-                          'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3', 'MCOST3',
-                          'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
-            
+                               'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13',
+                               'NOGRW',
+                               'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3',
+                               'MCOST3',
+                               'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
+
 # Reference node
 __headers__['Nodes']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
                                'COST', 'TGEN', 'YEAR']
-            
+
 # Voltage Transformer
 __headers__['Nodes']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
                               'DISABLE', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'EQEXIST', 'TAP', 'YEAR', 'ID_AUX']
-    
 
 ########################################################################################################################
 # Branches block
 __headers__['Branches'] = dict()
 
-
 # Condenser series or shunt
 __headers__['Branches']['CAP'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'EQ', 'YEAR']
-            
+
 # Breaker
 __headers__['Branches']['DISJ'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
-                               'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'CONTROL']
-            
+                                   'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'CONTROL']
+
 # Estimator
 __headers__['Branches']['ESTIM'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT']
 
 # Fuse
 __headers__['Branches']['FUS'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
                                   'TRECONF', 'TREPAIR', 'EQ', 'YEAR']
-            
+
 # Inductance series or shunt
 __headers__['Branches']['IND'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'EQ', 'YEAR']
-            
+
 # Switch
 __headers__['Branches']['INTR'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
                                    'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
-            
+
 # Lines, cables and bars
 # fill until it fits or truncate the data
 __headers__['Branches']['LINE'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'COLOR', 'GEOLEN', 'LEN', 'STAT',
                                    'PERM', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'EQEXIST', 'NPOSS',
                                    'CHOOSEQ', 'INSRTCOST', 'EQPOSS1', 'MATCOST1', 'EQPOSS2', 'MATCOST2', 'EQPOSS3',
                                    'MATCOST3', 'NCOOG', 'GX1', 'GY1', 'GX2', 'GY2']
-            
+
 # Disconnector
 __headers__['Branches']['SECC'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
-                               'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
-            
+                                   'TRECONF', 'TREPAIR', 'EQ', 'YEAR', 'DRIVE', 'CONTROL']
+
 # Intensity Transformer
 __headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT', 'PERM',
-                             'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'TAP1', 'TAP2', 'YEAR']
-            
+                                 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'EQ', 'TAP1', 'TAP2', 'YEAR']
+
 # Self-transformer
 __headers__['Branches']['XFORM1'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-            
+
 # 2-winding transformer
 __headers__['Branches']['XFORM2'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-            
+
 # 3-winding transformer
 __headers__['Branches']['XFORM3'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N', 'EXIST',
                                      'STAT', 'FAILRT', 'TISOL', 'TRECONF', 'TREPAIR', 'RERAT', 'CON1', 'RE1', 'XE1',
                                      'CON2', 'RE2', 'XE2', 'CON3', 'RE3', 'XE3', 'LOSS', 'TPERM', 'SETVSEL', 'SETV',
                                      'EQ', 'TAP1', 'TAP2', 'TAP3', 'YEAR', 'NUM']
-            
+
 # Neutral impedance
 __headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT', 'TISOL',
                                  'TRECONF', 'TREPAIR', 'EQ', 'YEAR']
@@ -350,7 +350,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
                 data_structures[current_block][tpe] = df
 
                 if verbose:
-                    print('\n', current_block, ' -> ',  tpe)
+                    print('\n', current_block, ' -> ', tpe)
                     print(df)
 
         elif current_block in ['DrawObjs', 'Panels']:
@@ -399,12 +399,12 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
             df = data_structures['Nodes'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses)+1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
@@ -423,14 +423,14 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
 
                 name = 'LD' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
-                load = Load(name=name, P=p, Q=q)
+                load = dev.Load(name=name, P=p, Q=q)
 
                 circuit.add_load(bus, load)
 
@@ -449,7 +449,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
 
@@ -459,15 +459,15 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                     name = 'GEN' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
-                    v = float(df['V'].values[i])   # p.u.
-                    gen = Generator(name=name, active_power=p, voltage_module=v)
+                    v = float(df['V'].values[i])  # p.u.
+                    gen = dev.Generator(name=name, active_power=p, voltage_module=v)
 
                     circuit.add_generator(bus, gen)
                 else:
                     name = 'GENSTAT' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
-                    gen = StaticGenerator(name=name, P=p, Q=q)
+                    gen = dev.StaticGenerator(name=name, P=p, Q=q)
                     circuit.add_static_generator(bus, gen)
 
         # Transformation station
@@ -483,18 +483,17 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
             df = data_structures['Nodes'][tpe]
 
             for i in range(df.shape[0]):
-
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 name = 'LD' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
-                load = Load(name=name, P=p, Q=q)
+                load = dev.Load(name=name, P=p, Q=q)
 
                 circuit.add_bus(bus)
                 circuit.add_load(bus, load)
@@ -512,7 +511,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
@@ -530,7 +529,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
@@ -564,7 +563,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 except:
                     x = 1e-20
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, x=x,  branch_type=BranchType.Branch)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, x=x, branch_type=dev.BranchType.Branch)
                 circuit.add_branch(br)
 
         # Estimator
@@ -578,7 +577,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 id2 = df['ID2'].values[i]
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Branch)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, branch_type=dev.BranchType.Branch)
                 circuit.add_branch(br)
 
         # Breaker
@@ -606,7 +605,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 state = bool(int(df['STAT'].values[i]))
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = Branch(bus_from=b1, bus_to=b2, name=name, active=state, branch_type=BranchType.Switch)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, active=state, branch_type=dev.BranchType.Switch)
                 circuit.add_branch(br)
 
         # Lines, cables and bars
@@ -655,8 +654,8 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x = x if x > 0.0 else 1e-20
                 b = b if b > 0.0 else 1e-20
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length,
-                            branch_type=BranchType.Line)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length,
+                                branch_type=dev.BranchType.Line)
                 circuit.add_branch(br)
 
         # Intensity Transformer
@@ -677,7 +676,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 df_cat = data_structures['CatalogBranch'][tpe]
                 cat_elm = df_cat[df_cat['EQ'] == eq_id]
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Transformer)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, branch_type=dev.BranchType.Transformer)
                 circuit.add_branch(br)
 
         # Self-transformer
@@ -726,7 +725,8 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                     s = 1e-20
                     logger.add_error('Not found.', tpe + ':' + eq_id)
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s, branch_type=BranchType.Transformer)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s,
+                                branch_type=dev.BranchType.Transformer)
                 circuit.add_branch(br)
 
         # 3-winding transformer
@@ -789,16 +789,16 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 x23 = x23 if x23 > 0.0 else 1e-20
                 s23 = s23 if s23 > 0.0 else 1e-20
 
-                br = Branch(bus_from=b1, bus_to=b2, name=name, r=r12, x=x12, rate=s12,
-                            branch_type=BranchType.Transformer)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r12, x=x12, rate=s12,
+                                branch_type=dev.BranchType.Transformer)
                 circuit.add_branch(br)
 
-                br = Branch(bus_from=b1, bus_to=b3, name=name, r=r13, x=x13, rate=s13,
-                            branch_type=BranchType.Transformer)
+                br = dev.Branch(bus_from=b1, bus_to=b3, name=name, r=r13, x=x13, rate=s13,
+                                branch_type=dev.BranchType.Transformer)
                 circuit.add_branch(br)
 
-                br = Branch(bus_from=b2, bus_to=b3, name=name, r=r23, x=x23, rate=s23,
-                            branch_type=BranchType.Transformer)
+                br = dev.Branch(bus_from=b2, bus_to=b3, name=name, r=r23, x=x23, rate=s23,
+                                branch_type=dev.BranchType.Transformer)
                 circuit.add_branch(br)
 
         # Neutral impedance
@@ -813,7 +813,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                 id2 = df['ID2'].values[i]
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = Branch(bus_from=b1, bus_to=b2, name=name, branch_type=BranchType.Branch)
+                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, branch_type=dev.BranchType.Branch)
                 circuit.add_branch(br)
 
     # return the circuit and the logs

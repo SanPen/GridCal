@@ -1,6 +1,5 @@
 
 import sys
-from PySide6.QtWidgets import *
 from PySide6 import QtCore, QtGui, QtWidgets
 
 
@@ -92,11 +91,11 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         # GUI objects
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.layout = QVBoxLayout(self)
-        self.wires_tableView = QTableView()
-        self.add_wire_pushButton = QPushButton()
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.wires_tableView = QtWidgets.QTableView()
+        self.add_wire_pushButton = QtWidgets.QPushButton()
         self.add_wire_pushButton.setText('Add')
-        self.delete_wire_pushButton = QPushButton()
+        self.delete_wire_pushButton = QtWidgets.QPushButton()
         self.delete_wire_pushButton.setText('Delete')
 
         self.layout.addWidget(self.wires_tableView)
@@ -121,13 +120,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def add_wire_to_collection(self):

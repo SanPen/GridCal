@@ -19,9 +19,8 @@ import numpy as np
 import numba as nb
 import pandas as pd
 from typing import Dict
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets
 from PySide6 import QtCore, QtWidgets, QtGui
-from PySide6.QtGui import *
 from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
@@ -31,7 +30,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import CDF
 
 
-class TreeDelegate(QItemDelegate):
+class TreeDelegate(QtWidgets.QItemDelegate):
     commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
@@ -43,7 +42,7 @@ class TreeDelegate(QItemDelegate):
         :param parent: QTableView parent object
         :param data: dictionary of lists
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
         # dictionary of lists
         self.data = data
@@ -54,18 +53,18 @@ class TreeDelegate(QItemDelegate):
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        tree = QTreeView(parent)
+        tree = QtWidgets.QTreeView(parent)
 
-        model = QStandardItemModel()
+        model = QtGui.QStandardItemModel()
         model.setHorizontalHeaderLabels(['Template'])
 
         for key in self.data.keys():
             # add parent node
-            parent1 = QStandardItem(str(key))
+            parent1 = QtGui.QStandardItem(str(key))
 
             # add children to parent
             for elm in self.data[key]:
-                child1 = QStandardItem(str(elm))
+                child1 = QtGui.QStandardItem(str(elm))
                 parent1.appendRow([child1])
 
             model.appendRow(parent1)
@@ -88,7 +87,7 @@ class TreeDelegate(QItemDelegate):
         # model.setData(index, self.object_names[editor.currentIndex()])
 
 
-class ComboDelegate(QItemDelegate):
+class ComboDelegate(QtWidgets.QItemDelegate):
     commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
@@ -101,7 +100,7 @@ class ComboDelegate(QItemDelegate):
         :param objects: List of objects to set. i.e. [True, False]
         :param object_names: List of Object names to display. i.e. ['True', 'False']
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
         # objects to sent to the model associated to the combobox. i.e. [True, False]
         self.objects = objects
@@ -114,7 +113,7 @@ class ComboDelegate(QItemDelegate):
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
+        combo = QtWidgets.QComboBox(parent)
         combo.addItems(self.object_names)
         combo.currentIndexChanged.connect(self.currentIndexChanged)
         return combo
@@ -130,7 +129,7 @@ class ComboDelegate(QItemDelegate):
         model.setData(index, self.objects[editor.currentIndex()])
 
 
-class TextDelegate(QItemDelegate):
+class TextDelegate(QtWidgets.QItemDelegate):
     commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QLineEdit in every
@@ -141,14 +140,14 @@ class TextDelegate(QItemDelegate):
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
     @QtCore.Slot()
     def returnPressed(self):
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        editor = QLineEdit(parent)
+        editor = QtWidgets.QLineEdit(parent)
         editor.returnPressed.connect(self.returnPressed)
         return editor
 
@@ -162,7 +161,7 @@ class TextDelegate(QItemDelegate):
         model.setData(index, editor.text())
 
 
-class FloatDelegate(QItemDelegate):
+class FloatDelegate(QtWidgets.QItemDelegate):
     commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QDoubleSpinBox in every
@@ -173,7 +172,7 @@ class FloatDelegate(QItemDelegate):
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
         self.min = min_
         self.max = max_
 
@@ -182,7 +181,7 @@ class FloatDelegate(QItemDelegate):
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        editor = QDoubleSpinBox(parent)
+        editor = QtWidgets.QDoubleSpinBox(parent)
         editor.setMaximum(self.max)
         editor.setMinimum(self.min)
         editor.setDecimals(8)
@@ -199,7 +198,7 @@ class FloatDelegate(QItemDelegate):
         model.setData(index, editor.value())
 
 
-class ComplexDelegate(QItemDelegate):
+class ComplexDelegate(QtWidgets.QItemDelegate):
     commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning Complex Editor in every
@@ -210,7 +209,7 @@ class ComplexDelegate(QItemDelegate):
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
     @QtCore.Slot()
     def returnPressed(self):
@@ -228,16 +227,16 @@ class ComplexDelegate(QItemDelegate):
         :param index:
         :return:
         """
-        editor = QFrame(parent)
-        main_layout = QHBoxLayout(editor)
+        editor = QtWidgets.QFrame(parent)
+        main_layout = QtWidgets.QHBoxLayout(editor)
         main_layout.layout().setContentsMargins(0, 0, 0, 0)
 
-        real = QDoubleSpinBox()
+        real = QtWidgets.QDoubleSpinBox()
         real.setMaximum(9999)
         real.setMinimum(-9999)
         real.setDecimals(8)
 
-        imag = QDoubleSpinBox()
+        imag = QtWidgets.QDoubleSpinBox()
         imag.setMaximum(9999)
         imag.setMinimum(-9999)
         imag.setDecimals(8)
@@ -499,7 +498,7 @@ class PandasModel(QtCore.QAbstractTableModel):
                     txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(txt, mode=cb.Clipboard)
 
@@ -876,7 +875,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(txt, mode=cb.Clipboard)
 
@@ -1355,8 +1354,8 @@ def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None
             if icons is not None:
                 if name in icons.keys():
                     icon_path = icons[name]
-                    _icon = QIcon()
-                    _icon.addPixmap(QPixmap(icon_path))
+                    _icon = QtGui.QIcon()
+                    _icon.addPixmap(QtGui.QPixmap(icon_path))
                     child.setIcon(_icon)
 
             parent.appendRow(child)
@@ -1370,8 +1369,8 @@ def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None
         if icons is not None:
             if name in icons.keys():
                 icon_path = icons[name]
-                _icon = QIcon()
-                _icon.addPixmap(QPixmap(icon_path))
+                _icon = QtGui.QIcon()
+                _icon.addPixmap(QtGui.QPixmap(icon_path))
                 item.setIcon(_icon)
         item.setEditable(editable)
         parent.appendRow(item)

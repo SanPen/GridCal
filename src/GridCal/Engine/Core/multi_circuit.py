@@ -15,16 +15,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import os
 import sys
-import json
+import numpy as np
+import pandas as pd
 from typing import List, Dict, Tuple
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
+from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
-from GridCal.Engine.Devices import *
-from GridCal.Engine.Devices.editable_device import DeviceType
 
+import GridCal.Engine.Devices as dev
+import GridCal.Engine.basic_structures as bs
 
 
 def get_system_user():
@@ -110,69 +113,69 @@ class MultiCircuit:
         # Should be able to accept Branches, Lines and Transformers alike
         # self.branches = list()
 
-        self.lines: List[Line] = list()
+        self.lines: List[dev.Line] = list()
 
-        self.dc_lines: List[DcLine] = list()
+        self.dc_lines: List[dev.DcLine] = list()
 
-        self.transformers2w: List[Transformer2W] = list()
+        self.transformers2w: List[dev.Transformer2W] = list()
 
-        self.hvdc_lines: List[HvdcLine] = list()
+        self.hvdc_lines: List[dev.HvdcLine] = list()
 
-        self.vsc_devices: List[VSC] = list()
+        self.vsc_devices: List[dev.VSC] = list()
 
-        self.upfc_devices: List[UPFC] = list()
+        self.upfc_devices: List[dev.UPFC] = list()
 
-        self.switch_devices: List[Switch] = list()
+        self.switch_devices: List[dev.Switch] = list()
 
-        self.transformers3w: List[Transformer3W] = list()
+        self.transformers3w: List[dev.Transformer3W] = list()
 
-        self.windings: List[Winding] = list()
+        self.windings: List[dev.Winding] = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
 
         # Should accept buses
-        self.buses: List[Bus] = list()
+        self.buses: List[dev.Bus] = list()
 
         # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
         # Dictionary relating the bus object to its index. Updated upon compilation
-        self.buses_dict: Dict[Bus, int] = dict()
+        self.buses_dict: Dict[dev.Bus, int] = dict()
 
         # List of overhead line objects
-        self.overhead_line_types: List[Tower] = list()
+        self.overhead_line_types: List[dev.Tower] = list()
 
         # list of wire types
-        self.wire_types: List[Wire] = list()
+        self.wire_types: List[dev.Wire] = list()
 
         # underground cable lines
-        self.underground_cable_types: List[UndergroundLineType] = list()
+        self.underground_cable_types: List[dev.UndergroundLineType] = list()
 
         # sequence modelled lines
-        self.sequence_line_types: List[SequenceLineType] = list()
+        self.sequence_line_types: List[dev.SequenceLineType] = list()
 
         # List of transformer types
-        self.transformer_types: List[TransformerType] = list()
+        self.transformer_types: List[dev.TransformerType] = list()
 
         # list of substations
-        self.default_substation = Substation('Default substation')
-        self.substations: List[Substation] = [self.default_substation]
+        self.default_substation = dev.Substation('Default substation')
+        self.substations: List[dev.Substation] = [self.default_substation]
 
         # list of areas
-        self.default_area = Area('Default area')
-        self.areas: List[Area] = [self.default_area]
+        self.default_area = dev.Area('Default area')
+        self.areas: List[dev.Area] = [self.default_area]
 
         # list of zones
-        self.default_zone = Zone('Default zone')
-        self.zones: List[Zone] = [self.default_zone]
+        self.default_zone = dev.Zone('Default zone')
+        self.zones: List[dev.Zone] = [self.default_zone]
 
         # list of countries
-        self.default_country = Country('Default country')
-        self.countries: List[Country] = [self.default_country]
+        self.default_country = dev.Country('Default country')
+        self.countries: List[dev.Country] = [self.default_country]
 
         # logger of events
-        self.logger = Logger()
+        self.logger = bs.Logger()
 
         # Object with the necessary inputs for a power flow study
         self.numerical_circuit = None
@@ -196,63 +199,63 @@ class MultiCircuit:
         self.time_profile = None
 
         # contingencies
-        self.contingencies: List[Contingency] = list()
+        self.contingencies: List[dev.Contingency] = list()
 
         # contingency group
-        self.contingency_groups: List[ContingencyGroup] = list()
+        self.contingency_groups: List[dev.ContingencyGroup] = list()
 
         # investments
-        self.investments: List[Investment] = list()
+        self.investments: List[dev.Investment] = list()
 
         # investments group
-        self.investments_groups: List[InvestmentsGroup] = list()
+        self.investments_groups: List[dev.InvestmentsGroup] = list()
 
         # technologies
-        self.technologies: List[Technology] = list()
+        self.technologies: List[dev.Technology] = list()
 
         # objects with profiles
-        self.objects_with_profiles = [Bus(),
-                                      Load(),
-                                      StaticGenerator(),
-                                      ExternalGrid(),
-                                      Generator(),
-                                      Battery(),
-                                      Shunt(),
-                                      Line(None, None),
-                                      DcLine(None, None),
-                                      Transformer2W(None, None),
-                                      Winding(None, None),
-                                      Transformer3W(),
-                                      HvdcLine(None, None),
-                                      VSC(None, None),
-                                      UPFC(None, None),
-                                      Substation(),
-                                      Zone(),
-                                      Area(),
-                                      Country(),
-                                      Technology(),
-                                      ContingencyGroup(),
-                                      Contingency(),
-                                      InvestmentsGroup(),
-                                      Investment()
+        self.objects_with_profiles = [dev.Bus(),
+                                      dev.Load(),
+                                      dev.StaticGenerator(),
+                                      dev.ExternalGrid(),
+                                      dev.Generator(),
+                                      dev.Battery(),
+                                      dev.Shunt(),
+                                      dev.Line(None, None),
+                                      dev.DcLine(None, None),
+                                      dev.Transformer2W(None, None),
+                                      dev.Winding(None, None),
+                                      dev.Transformer3W(),
+                                      dev.HvdcLine(None, None),
+                                      dev.VSC(None, None),
+                                      dev.UPFC(None, None),
+                                      dev.Substation(),
+                                      dev.Zone(),
+                                      dev.Area(),
+                                      dev.Country(),
+                                      dev.Technology(),
+                                      dev.ContingencyGroup(),
+                                      dev.Contingency(),
+                                      dev.InvestmentsGroup(),
+                                      dev.Investment()
                                       ]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
 
-        self.device_type_name_dict: Dict[str, DeviceType] = dict()
+        self.device_type_name_dict: Dict[str, dev.DeviceType] = dict()
 
         '''
         self.type_name = 'Shunt'
 
         self.properties_with_profile = ['Y']
         '''
-        for dev in self.objects_with_profiles:
-            if dev.properties_with_profile is not None:
-                profile_attr = list(dev.properties_with_profile.keys())
-                profile_types = [dev.editable_headers[attr].tpe for attr in profile_attr]
-                self.profile_magnitudes[dev.device_type.value] = (profile_attr, profile_types)
-                self.device_type_name_dict[dev.device_type.value] = dev.device_type
+        for elm in self.objects_with_profiles:
+            if elm.properties_with_profile is not None:
+                profile_attr = list(elm.properties_with_profile.keys())
+                profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
+                self.profile_magnitudes[elm.device_type.value] = (profile_attr, profile_types)
+                self.device_type_name_dict[elm.device_type.value] = elm.device_type
 
     def __str__(self):
         return str(self.name)
@@ -303,7 +306,7 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.windings,  self.vsc_devices, self.dc_lines, self.upfc_devices]
+        return [self.lines, self.transformers2w, self.windings, self.vsc_devices, self.dc_lines, self.upfc_devices]
 
     def get_branch_names_wo_hvdc(self):
 
@@ -455,16 +458,16 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
-    def get_contingency_devices(self) -> List[EditableDevice]:
+    def get_contingency_devices(self) -> List[dev.EditableDevice]:
         return self.get_branches() + self.get_generators()
 
-    def get_investment_devices(self) -> List[EditableDevice]:
+    def get_investment_devices(self) -> List[dev.EditableDevice]:
         return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads()
 
-    def get_lines(self) -> List[Line]:
+    def get_lines(self) -> List[dev.Line]:
         return self.lines
 
-    def get_transformers2w(self) -> List[Transformer2W]:
+    def get_transformers2w(self) -> List[dev.Transformer2W]:
         return self.transformers2w
 
     def get_transformers2w_number(self) -> int:
@@ -473,7 +476,7 @@ class MultiCircuit:
     def get_transformers2w_names(self) -> List[str]:
         return [elm.name for elm in self.transformers2w]
 
-    def get_windings(self) -> List[Winding]:
+    def get_windings(self) -> List[dev.Winding]:
         return self.windings
 
     def get_windings_number(self) -> int:
@@ -482,7 +485,7 @@ class MultiCircuit:
     def get_windings_names(self) -> List[str]:
         return [elm.name for elm in self.windings]
 
-    def get_transformers3w(self) -> List[Transformer3W]:
+    def get_transformers3w(self) -> List[dev.Transformer3W]:
         return self.transformers3w
 
     def get_transformers3w_number(self) -> int:
@@ -491,19 +494,19 @@ class MultiCircuit:
     def get_transformers3w_names(self) -> List[str]:
         return [elm.name for elm in self.transformers3w]
 
-    def get_vsc(self) -> List[VSC]:
+    def get_vsc(self) -> List[dev.VSC]:
         return self.vsc_devices
 
-    def get_dc_lines(self) -> List[DcLine]:
+    def get_dc_lines(self) -> List[dev.DcLine]:
         return self.dc_lines
 
-    def get_upfc(self) -> List[UPFC]:
+    def get_upfc(self) -> List[dev.UPFC]:
         return self.upfc_devices
 
-    def get_switches(self) -> List[Switch]:
+    def get_switches(self) -> List[dev.Switch]:
         return self.switch_devices
 
-    def get_hvdc(self) -> List[HvdcLine]:
+    def get_hvdc(self) -> List[dev.HvdcLine]:
         return self.hvdc_lines
 
     def get_hvdc_number(self) -> int:
@@ -512,7 +515,7 @@ class MultiCircuit:
     def get_hvdc_names(self) -> List[str]:
         return [elm.name for elm in self.hvdc_lines]
 
-    def get_loads(self) -> List[Load]:
+    def get_loads(self) -> List[dev.Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -523,7 +526,7 @@ class MultiCircuit:
             lst = lst + bus.loads
         return lst
 
-    def get_loads_number(self) -> List[Load]:
+    def get_loads_number(self) -> List[dev.Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -542,7 +545,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_external_grids(self) -> List[ExternalGrid]:
+    def get_external_grids(self) -> List[dev.ExternalGrid]:
         """
         Returns a list of :ref:`ExternalGrid<external_grid>` objects in the grid.
         """
@@ -563,7 +566,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_static_generators(self) -> List[StaticGenerator]:
+    def get_static_generators(self) -> List[dev.StaticGenerator]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
         """
@@ -584,7 +587,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_shunts(self) -> List[Shunt]:
+    def get_shunts(self) -> List[dev.Shunt]:
         """
         Returns a list of :ref:`Shunt<shunt>` objects in the grid.
         """
@@ -605,7 +608,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_generators(self) -> List[Generator]:
+    def get_generators(self) -> List[dev.Generator]:
         """
         Returns a list of :ref:`Generator<generator>` objects in the grid.
         """
@@ -632,7 +635,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_batteries(self) -> List[Battery]:
+    def get_batteries(self) -> List[dev.Battery]:
         """
         Returns a list of :ref:`Battery<battery>` objects in the grid.
         """
@@ -643,7 +646,7 @@ class MultiCircuit:
             lst = lst + bus.batteries
         return lst
 
-    def get_batteries_number(self) -> List[Battery]:
+    def get_batteries_number(self) -> List[dev.Battery]:
         """
         Returns a list of :ref:`Battery<battery>` objects in the grid.
         """
@@ -672,145 +675,145 @@ class MultiCircuit:
                 lst.append(elm.Enom)
         return np.array(lst)
 
-    def get_elements_by_type(self, element_type: DeviceType):
+    def get_elements_by_type(self, element_type: dev.DeviceType):
         """
         Get set of elements and their parent nodes
         :param element_type: DeviceTYpe instance
         :return: List of elements, it raises an exception if the elements are unknown
         """
 
-        if element_type == DeviceType.LoadDevice:
+        if element_type == dev.DeviceType.LoadDevice:
             return self.get_loads()
 
-        elif element_type == DeviceType.StaticGeneratorDevice:
+        elif element_type == dev.DeviceType.StaticGeneratorDevice:
             return self.get_static_generators()
 
-        elif element_type == DeviceType.GeneratorDevice:
+        elif element_type == dev.DeviceType.GeneratorDevice:
             return self.get_generators()
 
-        elif element_type == DeviceType.BatteryDevice:
+        elif element_type == dev.DeviceType.BatteryDevice:
             return self.get_batteries()
 
-        elif element_type == DeviceType.ShuntDevice:
+        elif element_type == dev.DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == DeviceType.ExternalGridDevice:
+        elif element_type == dev.DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
-        elif element_type == DeviceType.LineDevice:
+        elif element_type == dev.DeviceType.LineDevice:
             return self.lines
 
-        elif element_type == DeviceType.Transformer2WDevice:
+        elif element_type == dev.DeviceType.Transformer2WDevice:
             return self.transformers2w
 
-        elif element_type == DeviceType.Transformer3WDevice:
+        elif element_type == dev.DeviceType.Transformer3WDevice:
             return self.transformers3w
 
-        elif element_type == DeviceType.WindingDevice:
+        elif element_type == dev.DeviceType.WindingDevice:
             return self.windings
 
-        elif element_type == DeviceType.HVDCLineDevice:
+        elif element_type == dev.DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
-        elif element_type == DeviceType.UpfcDevice:
+        elif element_type == dev.DeviceType.UpfcDevice:
             return self.upfc_devices
 
-        elif element_type == DeviceType.VscDevice:
+        elif element_type == dev.DeviceType.VscDevice:
             return self.vsc_devices
 
-        elif element_type == DeviceType.BusDevice:
+        elif element_type == dev.DeviceType.BusDevice:
             return self.buses
 
-        elif element_type == DeviceType.TowerDevice:
+        elif element_type == dev.DeviceType.TowerDevice:
             return self.overhead_line_types
 
-        elif element_type == DeviceType.TransformerTypeDevice:
+        elif element_type == dev.DeviceType.TransformerTypeDevice:
             return self.transformer_types
 
-        elif element_type == DeviceType.UnderGroundLineDevice:
+        elif element_type == dev.DeviceType.UnderGroundLineDevice:
             return self.underground_cable_types
 
-        elif element_type == DeviceType.SequenceLineDevice:
+        elif element_type == dev.DeviceType.SequenceLineDevice:
             return self.sequence_line_types
 
-        elif element_type == DeviceType.WireDevice:
+        elif element_type == dev.DeviceType.WireDevice:
             return self.wire_types
 
-        elif element_type == DeviceType.DCLineDevice:
+        elif element_type == dev.DeviceType.DCLineDevice:
             return self.dc_lines
 
-        elif element_type == DeviceType.SubstationDevice:
+        elif element_type == dev.DeviceType.SubstationDevice:
             return self.substations
 
-        elif element_type == DeviceType.AreaDevice:
+        elif element_type == dev.DeviceType.AreaDevice:
             return self.areas
 
-        elif element_type == DeviceType.ZoneDevice:
+        elif element_type == dev.DeviceType.ZoneDevice:
             return self.zones
 
-        elif element_type == DeviceType.CountryDevice:
+        elif element_type == dev.DeviceType.CountryDevice:
             return self.countries
 
-        elif element_type == DeviceType.ContingencyDevice:
+        elif element_type == dev.DeviceType.ContingencyDevice:
             return self.contingencies
 
-        elif element_type == DeviceType.ContingencyGroupDevice:
+        elif element_type == dev.DeviceType.ContingencyGroupDevice:
             return self.contingency_groups
 
-        elif element_type == DeviceType.Technology:
+        elif element_type == dev.DeviceType.Technology:
             return self.technologies
 
-        elif element_type == DeviceType.InvestmentDevice:
+        elif element_type == dev.DeviceType.InvestmentDevice:
             return self.investments
 
-        elif element_type == DeviceType.InvestmentsGroupDevice:
+        elif element_type == dev.DeviceType.InvestmentsGroupDevice:
             return self.investments_groups
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_elements_dict_by_type(self, element_type: DeviceType, use_secondary_key=False):
+    def get_elements_dict_by_type(self, element_type: dev.DeviceType, use_secondary_key=False):
 
         if use_secondary_key:
             return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
-    def get_node_elements_by_type2(self, element_type: DeviceType):
+    def get_node_elements_by_type2(self, element_type: dev.DeviceType):
         """
         Get set of elements and their parent nodes
         :param element_type: DeviceTYpe instance
         :return: List of elements, it raises an exception if the elements are unknown
         """
 
-        if element_type == DeviceType.LoadDevice:
+        if element_type == dev.DeviceType.LoadDevice:
             return self.get_loads()
 
-        elif element_type == DeviceType.StaticGeneratorDevice:
+        elif element_type == dev.DeviceType.StaticGeneratorDevice:
             return self.get_static_generators()
 
-        elif element_type == DeviceType.GeneratorDevice:
+        elif element_type == dev.DeviceType.GeneratorDevice:
             return self.get_generators()
 
-        elif element_type == DeviceType.BatteryDevice:
+        elif element_type == dev.DeviceType.BatteryDevice:
             return self.get_batteries()
 
-        elif element_type == DeviceType.ShuntDevice:
+        elif element_type == dev.DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == DeviceType.ExternalGridDevice:
+        elif element_type == dev.DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
-        elif element_type == DeviceType.SubstationDevice:
+        elif element_type == dev.DeviceType.SubstationDevice:
             return [x.substation for x in self.buses]
 
-        elif element_type == DeviceType.AreaDevice:
+        elif element_type == dev.DeviceType.AreaDevice:
             return [x.area for x in self.buses]
 
-        elif element_type == DeviceType.ZoneDevice:
+        elif element_type == dev.DeviceType.ZoneDevice:
             return [x.zone for x in self.buses]
 
-        elif element_type == DeviceType.CountryDevice:
+        elif element_type == dev.DeviceType.CountryDevice:
             return [x.country for x in self.buses]
 
         else:
@@ -1132,7 +1135,7 @@ class MultiCircuit:
         """
         return {b: i for i, b in enumerate(self.buses)}
 
-    def add_bus(self, obj: Bus):
+    def add_bus(self, obj: dev.Bus):
         """
         Add a :ref:`Bus<bus>` object to the grid.
 
@@ -1157,7 +1160,7 @@ class MultiCircuit:
 
         self.buses.append(obj)
 
-    def delete_bus(self, obj: Bus, ask=True):
+    def delete_bus(self, obj: dev.Bus, ask=True):
         """
         Delete a :ref:`Bus<bus>` object from the grid.
 
@@ -1180,7 +1183,7 @@ class MultiCircuit:
             print('Deleted', obj.name)
             self.buses.remove(obj)
 
-    def add_line(self, obj: Line):
+    def add_line(self, obj: dev.Line):
         """
         Add a line object
         :param obj: Line instance
@@ -1190,7 +1193,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.lines.append(obj)
 
-    def add_dc_line(self, obj: DcLine):
+    def add_dc_line(self, obj: dev.DcLine):
         """
         Add a line object
         :param obj: Line instance
@@ -1200,7 +1203,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.dc_lines.append(obj)
 
-    def add_transformer2w(self, obj: Transformer2W):
+    def add_transformer2w(self, obj: dev.Transformer2W):
         """
         Add a transformer object
         :param obj: Transformer2W instance
@@ -1210,7 +1213,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.transformers2w.append(obj)
 
-    def add_winding(self, obj: Winding):
+    def add_winding(self, obj: dev.Winding):
         """
         Add a winding object
         :param obj: Winding instance
@@ -1220,7 +1223,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.windings.append(obj)
 
-    def add_transformer3w(self, obj: Transformer3W):
+    def add_transformer3w(self, obj: dev.Transformer3W):
         """
         Add a transformer object
         :param obj: Transformer3W instance
@@ -1234,7 +1237,7 @@ class MultiCircuit:
         self.add_winding(obj.winding2)
         self.add_winding(obj.winding3)
 
-    def add_hvdc(self, obj: HvdcLine):
+    def add_hvdc(self, obj: dev.HvdcLine):
         """
         Add a hvdc line object
         :param obj: HvdcLine instance
@@ -1244,7 +1247,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.hvdc_lines.append(obj)
 
-    def add_vsc(self, obj: VSC):
+    def add_vsc(self, obj: dev.VSC):
         """
         Add a hvdc line object
         :param obj: HvdcLine instance
@@ -1254,7 +1257,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.vsc_devices.append(obj)
 
-    def add_upfc(self, obj: UPFC):
+    def add_upfc(self, obj: dev.UPFC):
         """
         Add a UPFC object
         :param obj: UPFC instance
@@ -1264,7 +1267,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.upfc_devices.append(obj)
 
-    def add_switch(self, obj: Switch):
+    def add_switch(self, obj: dev.Switch):
         """
         Add a Switch object
         :param obj: Switch instance
@@ -1283,41 +1286,41 @@ class MultiCircuit:
             **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
         """
 
-        if obj.device_type == DeviceType.LineDevice:
+        if obj.device_type == dev.DeviceType.LineDevice:
             self.add_line(obj)
 
-        elif obj.device_type == DeviceType.DCLineDevice:
+        elif obj.device_type == dev.DeviceType.DCLineDevice:
             self.add_dc_line(obj)
 
-        elif obj.device_type == DeviceType.Transformer2WDevice:
+        elif obj.device_type == dev.DeviceType.Transformer2WDevice:
             self.add_transformer2w(obj)
 
-        elif obj.device_type == DeviceType.HVDCLineDevice:
+        elif obj.device_type == dev.DeviceType.HVDCLineDevice:
             self.add_hvdc(obj)
 
-        elif obj.device_type == DeviceType.VscDevice:
+        elif obj.device_type == dev.DeviceType.VscDevice:
             self.add_vsc(obj)
 
-        elif obj.device_type == DeviceType.UpfcDevice:
+        elif obj.device_type == dev.DeviceType.UpfcDevice:
             self.add_upfc(obj)
 
-        elif obj.device_type == DeviceType.WindingDevice:
+        elif obj.device_type == dev.DeviceType.WindingDevice:
             self.add_winding(obj)
 
-        elif obj.device_type == DeviceType.SwitchDevice:
+        elif obj.device_type == dev.DeviceType.SwitchDevice:
             self.add_switch(obj)
 
-        elif obj.device_type == DeviceType.BranchDevice:
+        elif obj.device_type == dev.DeviceType.BranchDevice:
             # we need to convert it :D
-            if obj.branch_type == BranchType.Line or obj.branch_type == BranchType.Transformer:
-                obj2 = convert_branch(obj)
+            if obj.branch_type == dev.BranchType.Line or obj.branch_type == dev.BranchType.Transformer:
+                obj2 = dev.convert_branch(obj)
                 self.add_branch(obj2)  # call this again, but this time it is not a Branch object
             else:
                 print('Omitting branch ' + obj.name)
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
-    def delete_branch(self, obj: Branch):
+    def delete_branch(self, obj: dev.Branch):
         """
         Delete a :ref:`Branch<branch>` object from the grid.
 
@@ -1331,35 +1334,35 @@ class MultiCircuit:
             except:
                 pass
 
-    def delete_line(self, obj: Line):
+    def delete_line(self, obj: dev.Line):
         """
         Delete line
         :param obj: Line instance
         """
         self.lines.remove(obj)
 
-    def delete_dc_line(self, obj: DcLine):
+    def delete_dc_line(self, obj: dev.DcLine):
         """
         Delete line
         :param obj: Line instance
         """
         self.dc_lines.remove(obj)
 
-    def delete_transformer2w(self, obj: Transformer2W):
+    def delete_transformer2w(self, obj: dev.Transformer2W):
         """
         Delete transformer
         :param obj: Transformer2W instance
         """
         self.transformers2w.remove(obj)
 
-    def delete_winding(self, obj: Winding):
+    def delete_winding(self, obj: dev.Winding):
         """
         Delete winding
         :param obj: Winding instance
         """
         self.windings.remove(obj)
 
-    def delete_transformer3w(self, obj: Transformer3W):
+    def delete_transformer3w(self, obj: dev.Transformer3W):
         """
         Delete transformer
         :param obj: Transformer2W instance
@@ -1370,28 +1373,28 @@ class MultiCircuit:
         self.delete_winding(obj.winding3)
         self.delete_bus(obj.bus0)  # also remove the middle bus
 
-    def delete_hvdc_line(self, obj: HvdcLine):
+    def delete_hvdc_line(self, obj: dev.HvdcLine):
         """
         Delete HVDC line
         :param obj:
         """
         self.hvdc_lines.remove(obj)
 
-    def delete_vsc_converter(self, obj: VSC):
+    def delete_vsc_converter(self, obj: dev.VSC):
         """
         Delete VSC
         :param obj: VSC Instance
         """
         self.vsc_devices.remove(obj)
 
-    def delete_upfc_converter(self, obj: UPFC):
+    def delete_upfc_converter(self, obj: dev.UPFC):
         """
         Delete VSC
         :param obj: VSC Instance
         """
         self.upfc_devices.remove(obj)
 
-    def add_load(self, bus: Bus, api_obj=None):
+    def add_load(self, bus: dev.Bus, api_obj=None):
         """
         Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
 
@@ -1402,7 +1405,7 @@ class MultiCircuit:
             **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
         if api_obj is None:
-            api_obj = Load()
+            api_obj = dev.Load()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1415,7 +1418,7 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_generator(self, bus: Bus, api_obj=None):
+    def add_generator(self, bus: dev.Bus, api_obj=None):
         """
         Add a (controlled) :ref:`Generator<generator>` object to a :ref:`Bus<bus>`.
 
@@ -1427,7 +1430,7 @@ class MultiCircuit:
             object
         """
         if api_obj is None:
-            api_obj = Generator()
+            api_obj = dev.Generator()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1437,7 +1440,7 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_static_generator(self, bus: Bus, api_obj=None):
+    def add_static_generator(self, bus: dev.Bus, api_obj=None):
         """
         Add a :ref:`StaticGenerator<static_generator>` object to a :ref:`Bus<bus>`.
 
@@ -1449,7 +1452,7 @@ class MultiCircuit:
             :ref:`StaticGenerator<static_generator>` object
         """
         if api_obj is None:
-            api_obj = StaticGenerator()
+            api_obj = dev.StaticGenerator()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1459,7 +1462,7 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_external_grid(self, bus: Bus, api_obj=None):
+    def add_external_grid(self, bus: dev.Bus, api_obj=None):
         """
         Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
 
@@ -1470,7 +1473,7 @@ class MultiCircuit:
             **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
         if api_obj is None:
-            api_obj = ExternalGrid()
+            api_obj = dev.ExternalGrid()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1483,7 +1486,7 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_battery(self, bus: Bus, api_obj=None):
+    def add_battery(self, bus: dev.Bus, api_obj=None):
         """
         Add a :ref:`Battery<battery>` object to a :ref:`Bus<bus>`.
 
@@ -1494,7 +1497,7 @@ class MultiCircuit:
             **api_obj** (:ref:`Battery<battery>`): :ref:`Battery<battery>` object
         """
         if api_obj is None:
-            api_obj = Battery()
+            api_obj = dev.Battery()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1504,7 +1507,7 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_shunt(self, bus: Bus, api_obj=None):
+    def add_shunt(self, bus: dev.Bus, api_obj=None):
         """
         Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
 
@@ -1515,7 +1518,7 @@ class MultiCircuit:
             **api_obj** (:ref:`Shunt<shunt>`): :ref:`Shunt<shunt>` object
         """
         if api_obj is None:
-            api_obj = Shunt()
+            api_obj = dev.Shunt()
         api_obj.bus = bus
 
         if self.time_profile is not None:
@@ -1525,13 +1528,13 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_wire(self, obj: Wire):
+    def add_wire(self, obj: dev.Wire):
         """
         Add Wire to the collection
         :param obj: Wire instance
         """
         if obj is not None:
-            if type(obj) == Wire:
+            if type(obj) == dev.Wire:
                 self.wire_types.append(obj)
             else:
                 print('The template is not a wire!')
@@ -1550,13 +1553,13 @@ class MultiCircuit:
         self.wire_types.pop(i)
         return True
 
-    def add_overhead_line(self, obj: Tower):
+    def add_overhead_line(self, obj: dev.Tower):
         """
         Add overhead line (tower) template to the collection
         :param obj: Tower instance
         """
         if obj is not None:
-            if type(obj) == Tower:
+            if type(obj) == dev.Tower:
                 self.overhead_line_types.append(obj)
             else:
                 print('The template is not an overhead line!')
@@ -1575,13 +1578,13 @@ class MultiCircuit:
         self.overhead_line_types.pop(i)
         return True
 
-    def add_underground_line(self, obj: UndergroundLineType):
+    def add_underground_line(self, obj: dev.UndergroundLineType):
         """
         Add underground line
         :param obj: UndergroundLineType instance
         """
         if obj is not None:
-            if type(obj) == UndergroundLineType:
+            if type(obj) == dev.UndergroundLineType:
                 self.underground_cable_types.append(obj)
             else:
                 print('The template is not an underground line!')
@@ -1599,13 +1602,13 @@ class MultiCircuit:
         self.underground_cable_types.pop(i)
         return True
 
-    def add_sequence_line(self, obj: SequenceLineType):
+    def add_sequence_line(self, obj: dev.SequenceLineType):
         """
         Add sequence line to the collection
         :param obj: SequenceLineType instance
         """
         if obj is not None:
-            if type(obj) == SequenceLineType:
+            if type(obj) == dev.SequenceLineType:
                 self.sequence_line_types.append(obj)
             else:
                 print('The template is not a sequence line!')
@@ -1623,13 +1626,13 @@ class MultiCircuit:
         self.sequence_line_types.pop(i)
         return True
 
-    def add_transformer_type(self, obj: TransformerType):
+    def add_transformer_type(self, obj: dev.TransformerType):
         """
         Add transformer template
         :param obj: TransformerType instance
         """
         if obj is not None:
-            if type(obj) == TransformerType:
+            if type(obj) == dev.TransformerType:
                 self.transformer_types.append(obj)
             else:
                 print('The template is not a transformer!')
@@ -1651,7 +1654,7 @@ class MultiCircuit:
         """
         Apply all the branch types
         """
-        logger = Logger()
+        logger = bs.Logger()
         for branch in self.lines:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
@@ -1662,7 +1665,7 @@ class MultiCircuit:
 
         return logger
 
-    def add_substation(self, obj: Substation):
+    def add_substation(self, obj: dev.Substation):
         """
         Add substation
         :param obj: Substation object
@@ -1676,7 +1679,7 @@ class MultiCircuit:
         """
         self.substations.pop(i)
 
-    def add_area(self, obj: Area):
+    def add_area(self, obj: dev.Area):
         """
         Add area
         :param obj: Area object
@@ -1690,14 +1693,14 @@ class MultiCircuit:
         """
         self.areas.pop(i)
 
-    def add_zone(self, obj: Zone):
+    def add_zone(self, obj: dev.Zone):
         """
         Add zone
         :param obj: Zone object
         """
         self.zones.append(obj)
 
-    def add_contingency_group(self, obj: ContingencyGroup):
+    def add_contingency_group(self, obj: dev.ContingencyGroup):
         self.contingency_groups.append(obj)
 
     def delete_contingency_group(self, i):
@@ -1714,7 +1717,7 @@ class MultiCircuit:
         """
         return [e.name for e in self.contingency_groups]
 
-    def get_contingency_group_dict(self) -> Dict[str, List[Contingency]]:
+    def get_contingency_group_dict(self) -> Dict[str, List[dev.Contingency]]:
         """
         Get a dictionary of group idtags related to list of contingencies
         :return:
@@ -1729,7 +1732,7 @@ class MultiCircuit:
 
         return d
 
-    def add_contingency(self, obj: Contingency):
+    def add_contingency(self, obj: dev.Contingency):
         self.contingencies.append(obj)
 
     def delete_contingency(self, i):
@@ -1739,7 +1742,11 @@ class MultiCircuit:
         """
         self.contingencies.pop(i)
 
-    def add_investments_group(self, obj: InvestmentsGroup):
+    def add_investments_group(self, obj: dev.InvestmentsGroup):
+        """
+        Add investments group
+        :param obj: InvestmentsGroup
+        """
         self.investments_groups.append(obj)
 
     def delete_investment_groups(self, i):
@@ -1749,7 +1756,11 @@ class MultiCircuit:
         """
         self.investments_groups.pop(i)
 
-    def add_investment(self, obj: Investment):
+    def add_investment(self, obj: dev.Investment):
+        """
+        Add investment
+        :param obj: Investment
+        """
         self.investments.append(obj)
 
     def delete_investment(self, i):
@@ -1759,7 +1770,11 @@ class MultiCircuit:
         """
         self.investments.pop(i)
 
-    def add_technology(self, obj: Technology):
+    def add_technology(self, obj: dev.Technology):
+        """
+        Add technology
+        :param obj: Technology
+        """
         self.technologies.append(obj)
 
     def delete_technology(self, i):
@@ -1776,7 +1791,7 @@ class MultiCircuit:
         """
         self.zones.pop(i)
 
-    def add_country(self, obj: Country):
+    def add_country(self, obj: dev.Country):
         """
         Add country
         :param obj:  object
@@ -1790,19 +1805,19 @@ class MultiCircuit:
         """
         self.countries.pop(i)
 
-    def convert_line_to_hvdc(self, line: Line) -> HvdcLine:
+    def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
         :param line: Line instance
         :return: HvdcLine
         """
-        hvdc = HvdcLine(bus_from=line.bus_from,
-                        bus_to=line.bus_to,
-                        name='HVDC Line',
-                        active=line.active,
-                        rate=line.rate,
-                        active_prof=line.active_prof,
-                        rate_prof=line.rate_prof)
+        hvdc = dev.HvdcLine(bus_from=line.bus_from,
+                            bus_to=line.bus_to,
+                            name='HVDC Line',
+                            active=line.active,
+                            rate=line.rate,
+                            active_prof=line.active_prof,
+                            rate_prof=line.rate_prof)
 
         # add device to the circuit
         self.add_hvdc(hvdc)
@@ -1812,22 +1827,22 @@ class MultiCircuit:
 
         return hvdc
 
-    def convert_line_to_transformer(self, line: Line) -> Transformer2W:
+    def convert_line_to_transformer(self, line: dev.Line) -> dev.Transformer2W:
         """
         Convert a line to Transformer
         :param line: Line instance
         :return: Transformer2W
         """
-        transformer = Transformer2W(bus_from=line.bus_from,
-                                    bus_to=line.bus_to,
-                                    name='Transformer',
-                                    active=line.active,
-                                    rate=line.rate,
-                                    r=line.R,
-                                    x=line.X,
-                                    b=line.B,
-                                    active_prof=line.active_prof,
-                                    rate_prof=line.rate_prof)
+        transformer = dev.Transformer2W(bus_from=line.bus_from,
+                                        bus_to=line.bus_to,
+                                        name='Transformer',
+                                        active=line.active,
+                                        rate=line.rate,
+                                        r=line.R,
+                                        x=line.X,
+                                        b=line.B,
+                                        active_prof=line.active_prof,
+                                        rate_prof=line.rate_prof)
 
         # add device to the circuit
         self.add_transformer2w(transformer)
@@ -1837,23 +1852,23 @@ class MultiCircuit:
 
         return transformer
 
-    def convert_line_to_vsc(self, line: Line) -> VSC:
+    def convert_line_to_vsc(self, line: dev.Line) -> dev.VSC:
         """
         Convert a line to voltage source converter
         :param line: Line instance
         :return: Nothing
         """
-        vsc = VSC(bus_from=line.bus_from,
-                  bus_to=line.bus_to,
-                  name='VSC',
-                  active=line.active,
-                  rate=line.rate,
-                  r1=line.R,
-                  x1=line.X,
-                  Beq=line.B,
-                  m=1.0,
-                  active_prof=line.active_prof,
-                  rate_prof=line.rate_prof)
+        vsc = dev.VSC(bus_from=line.bus_from,
+                      bus_to=line.bus_to,
+                      name='VSC',
+                      active=line.active,
+                      rate=line.rate,
+                      r1=line.R,
+                      x1=line.X,
+                      Beq=line.B,
+                      m=1.0,
+                      active_prof=line.active_prof,
+                      rate_prof=line.rate_prof)
 
         # add device to the circuit
         self.add_vsc(vsc)
@@ -1863,22 +1878,22 @@ class MultiCircuit:
 
         return vsc
 
-    def convert_line_to_upfc(self, line: Line) -> UPFC:
+    def convert_line_to_upfc(self, line: dev.Line) -> dev.UPFC:
         """
         Convert a line to voltage source converter
         :param line: Line instance
         :return: Nothing
         """
-        upfc = UPFC(bus_from=line.bus_from,
-                    bus_to=line.bus_to,
-                    name='UPFC',
-                    active=line.active,
-                    rate=line.rate,
-                    rs=line.R,
-                    xs=line.X,
-                    # bl=line.B,
-                    active_prof=line.active_prof,
-                    rate_prof=line.rate_prof)
+        upfc = dev.UPFC(bus_from=line.bus_from,
+                        bus_to=line.bus_to,
+                        name='UPFC',
+                        active=line.active,
+                        rate=line.rate,
+                        rs=line.R,
+                        xs=line.X,
+                        # bl=line.B,
+                        active_prof=line.active_prof,
+                        rate_prof=line.rate_prof)
 
         # add device to the circuit
         self.add_upfc(upfc)
@@ -2088,7 +2103,7 @@ class MultiCircuit:
                 x_m = np.mean(x_arr)
                 y_m = np.mean(y_arr)
 
-                delta_i = np.sqrt((bus.x - x_m)**2 + (bus.y - y_m)**2)
+                delta_i = np.sqrt((bus.x - x_m) ** 2 + (bus.y - y_m) ** 2)
 
                 if delta_i < delta:
                     delta = delta_i
@@ -2138,7 +2153,7 @@ class MultiCircuit:
         n = 0
         for branch_lst in branch_lists:
             for branch in branch_lst:
-                s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
+                s = np.sqrt((branch.bus_from.x - branch.bus_to.x) ** 2 + (branch.bus_from.y - branch.bus_to.y) ** 2)
                 separation += s
                 n += 1
         return separation / n
@@ -2160,7 +2175,7 @@ class MultiCircuit:
         ym = (max_y + min_y) / 2
 
         # compute the radius
-        r = np.sqrt((max_x-xm)**2 + (max_y-ym)**2)
+        r = np.sqrt((max_x - xm) ** 2 + (max_y - ym) ** 2)
         a = np.deg2rad(angle)
 
         # compute the zero point at which to insert the circuit
@@ -2222,7 +2237,7 @@ class MultiCircuit:
 
         for elm in new_list:
             if elm.idtag in existing_uuids:
-                print(elm.name , 'uuid is repeated..generating new one')
+                print(elm.name, 'uuid is repeated..generating new one')
                 elm.generate_uuid()
             original_list.append(elm)
 
@@ -2295,7 +2310,7 @@ class MultiCircuit:
                 val.add(obj)
 
                 # if it is a tower, add the wire templates too
-                if obj.device_type == DeviceType.TowerDevice:
+                if obj.device_type == dev.DeviceType.TowerDevice:
                     for wire in obj.wires_in_tower:
                         val.add(wire)
 
@@ -2337,14 +2352,15 @@ class MultiCircuit:
             lat[i] = bus.latitude
 
         # perform the coordinate transformation
-        logger = Logger()
+        logger = bs.Logger()
         try:
             import pyproj
         except ImportError:
             logger.add_error("pyproj is not installed")
             return logger
 
-        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)  # TODO: check the return types
+        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon,
+                                                                                  lat)  # TODO: check the return types
         x *= factor
         y *= factor
 
@@ -2379,7 +2395,7 @@ class MultiCircuit:
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
-        logger = Logger()
+        logger = bs.Logger()
         try:
             import pyproj
         except ImportError:
@@ -2410,7 +2426,7 @@ class MultiCircuit:
         :param lon_col: longitude column name
         :return:
         """
-        logger = Logger()
+        logger = bs.Logger()
         lats = df[lat_col].values
         lons = df[lon_col].values
         names = df[bus_col].values
@@ -2440,7 +2456,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = Logger()
+        logger = bs.Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -2470,7 +2486,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = Logger()
+        logger = bs.Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -2495,7 +2511,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = Logger()
+        logger = bs.Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -2541,40 +2557,40 @@ class MultiCircuit:
                 lst[k] = 0
         return lst
 
-    def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
+    def get_area_buses(self, area: dev.Area) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus]] = list()
+        lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self.buses):
             if bus.area == area:
                 lst.append((k, bus))
         return lst
 
-    def get_areas_buses(self, areas: List[Area]) -> List[Tuple[int, Bus]]:
+    def get_areas_buses(self, areas: List[dev.Area]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus]] = list()
+        lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self.buses):
             if bus.area in areas:
                 lst.append((k, bus))
         return lst
 
-    def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
+    def get_zone_buses(self, zone: dev.Zone) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus]] = list()
+        lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self.buses):
             if bus.zone == zone:
                 lst.append((k, bus))
         return lst
 
-    def get_inter_area_branches(self, a1: Area, a2: Area):
+    def get_inter_area_branches(self, a1: dev.Area, a2: dev.Area):
         """
         Get the inter-area branches
         :param a1: Area from
@@ -2589,7 +2605,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_areas_branches(self, a1: List[Area], a2: List[Area]):
+    def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]):
         """
         Get the inter-area branches. HVDC branches are not considered
         :param a1: Area from
@@ -2604,7 +2620,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_areas_hvdc_branches(self, a1: List[Area], a2: List[Area]):
+    def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]):
         """
         Get the inter-area branches
         :param a1: Area from
@@ -2619,7 +2635,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_zone_branches(self, z1: Zone, z2: Zone):
+    def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone):
         """
         Get the inter-area branches
         :param z1: Zone from
@@ -2634,7 +2650,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_branch_area_connectivity_matrix(self, a1: List[Area], a2: List[Area]):
+    def get_branch_area_connectivity_matrix(self, a1: List[dev.Area], a2: List[dev.Area]):
         """
         Get the inter area connectivity matrix
         :param a1: list of sending areas
@@ -2774,7 +2790,7 @@ class MultiCircuit:
     #         bus.x = x - min_x
     #         bus.y = y - max_y
 
-    def correct_inconsistencies(self, logger: Logger, maximum_difference=0.1, min_vset=0.98, max_vset=1.02):
+    def correct_inconsistencies(self, logger: bs.Logger, maximum_difference=0.1, min_vset=0.98, max_vset=1.02):
         """
         Correct devices' inconsistencies
         :param logger: logger to store the events
@@ -2838,12 +2854,12 @@ class MultiCircuit:
         for att, val in self.__dict__.items():
 
             if val in defaults:
-               setattr(self, att, None)
+                setattr(self, att, None)
 
             if isinstance(val, list) and any(x in defaults for x in val):
                 setattr(self, att, [v for v in val if v not in defaults])
 
-    def set_contingencies(self, contingencies: List[Contingency]):
+    def set_contingencies(self, contingencies: List[dev.Contingency]):
         """
         Set contingencies and contingency groups to circuit
         :param contingencies: List of contingencies
@@ -2856,7 +2872,7 @@ class MultiCircuit:
         devices_key_dict = {d.idtag: d for d in devices}
         devices_dict = {**devices_code_dict, **devices_key_dict}
 
-        logger = Logger()
+        logger = bs.Logger()
 
         for contingency in contingencies:
             if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():
@@ -2883,15 +2899,15 @@ class MultiCircuit:
     def initialize_contingencies(self, min_branch_voltage, max_branch_voltage):
         for b in self.get_branches():
             if min_branch_voltage <= b.get_max_bus_nominal_voltage() <= max_branch_voltage:
-                group = ContingencyGroup(name=b.name,
-                                         category='single')
+                group = dev.ContingencyGroup(name=b.name,
+                                             category='single')
 
-                contingency = Contingency(device_idtag=b.idtag,
-                                          name=b.name,
-                                          code=b.code,
-                                          prop='active',
-                                          value=0,
-                                          group=group)
+                contingency = dev.Contingency(device_idtag=b.idtag,
+                                              name=b.name,
+                                              code=b.code,
+                                              prop='active',
+                                              value=0,
+                                              group=group)
 
                 self.contingencies.append(contingency)
                 self.contingency_groups.append(group)

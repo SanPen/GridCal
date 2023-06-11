@@ -5,10 +5,9 @@ from random import randint
 from enum import Enum
 import numpy as np
 import pandas as pd
-from PySide6.QtWidgets import *
 from PySide6 import QtWidgets, QtGui
 
-from GridCal.Gui.SigmaAnalysis.gui import *
+from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
 from GridCal.Gui.Session.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
@@ -54,13 +53,13 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def copy_to_clipboard(self):
@@ -76,8 +75,8 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         :return:
         """
         if self.mdl is not None:
-            file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
-                                                       filter="CSV (*.csv);;Excel files (*.xlsx)")
+            file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                                 filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
                 if 'xlsx' in filter:
@@ -94,12 +93,9 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
                     print('Saved!')
 
 
-
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = SigmaAnalysisGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

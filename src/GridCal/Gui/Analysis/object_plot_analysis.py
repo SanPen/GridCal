@@ -24,7 +24,8 @@ from PySide6 import QtWidgets, QtGui
 
 from GridCal.Engine.basic_structures import LogSeverity
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
+import GridCal.Engine.basic_structures as bs
 
 
 class GridErrorLog:
@@ -131,7 +132,7 @@ class FixableErrorOutOfRange:
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
 
-    def fix(self, logger: Logger = Logger(), fix_ts=False):
+    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
 
         if self.value < self.lower_limit:
             setattr(self.grid_element, self.property_name, self.lower_limit)
@@ -165,7 +166,7 @@ class FixableErrorRangeFlip:
         self.value_low = value_low
         self.value_high = value_high
 
-    def fix(self, logger: Logger = Logger(), fix_ts=False):
+    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
         if self.value_high < self.value_low:
             # flip the values
             setattr(self.grid_element, self.property_name_low, self.value_high)
@@ -179,7 +180,7 @@ class FixableErrorNegative:
         self.property_name = property_name
         self.value = value
 
-    def fix(self, logger: Logger = Logger(), fix_ts=False):
+    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
         # set the same value but positive
         if self.value < 0:
             setattr(self.grid_element, self.property_name, -self.value)
@@ -191,7 +192,7 @@ class FixableTransformerVtaps:
         self.grid_element = grid_element
         self.maximum_difference = maximum_difference
 
-    def fix(self, logger: Logger = Logger(), fix_ts=False):
+    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
         # set the same value but positive
         self.grid_element.fix_inconsistencies(logger,
                                               maximum_difference=self.maximum_difference)
@@ -245,7 +246,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
         # get the device type of the prototype object
         object_type = dev.device_type
 
-        if object_type == DeviceType.LineDevice:
+        if object_type == dev.DeviceType.LineDevice:
             elements = circuit.lines
 
             for i, elm in enumerate(elements):
@@ -360,7 +361,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                                                  lower_limit=1e-20,
                                                                  upper_limit=1e20))
 
-        elif object_type == DeviceType.Transformer2WDevice:
+        elif object_type == dev.DeviceType.Transformer2WDevice:
             elements = circuit.transformers2w
 
             for i, elm in enumerate(elements):
@@ -519,13 +520,13 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                severity=LogSeverity.Error,
                                propty='HV or LV',
                                message='Large nominal voltage mismatch at the "to" bus',
-                               lower=1.0 - transformer_virtual_tap_tolerance,
+                               lower=str(1.0 - transformer_virtual_tap_tolerance),
                                val=tap_t,
-                               upper=1.0 + transformer_virtual_tap_tolerance)
+                               upper=str(1.0 + transformer_virtual_tap_tolerance))
                     fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
                                                                   maximum_difference=transformer_virtual_tap_tolerance))
 
-        elif object_type == DeviceType.BusDevice:
+        elif object_type == dev.DeviceType.BusDevice:
             elements = circuit.buses
             names = set()
 
@@ -569,7 +570,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                 # add the name to a set
                 names.add(elm.name)
 
-        elif object_type == DeviceType.GeneratorDevice:
+        elif object_type == dev.DeviceType.GeneratorDevice:
 
             elements = circuit.get_generators()
 
@@ -639,7 +640,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                                                     value_low=obj.Pmin,
                                                                     value_high=obj.Pmax))
 
-                    elif object_type == DeviceType.BatteryDevice:
+                    elif object_type == dev.DeviceType.BatteryDevice:
                         elements = circuit.get_batteries()
 
                     for k, obj in enumerate(elements):
@@ -733,7 +734,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                    lower="0",
                                    val=obj.Enom)
 
-                    elif object_type == DeviceType.StaticGeneratorDevice:
+                    elif object_type == dev.DeviceType.StaticGeneratorDevice:
                         elements = circuit.get_static_generators()
 
                     for k, obj in enumerate(elements):
@@ -744,10 +745,10 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                         Pg_prof += obj.P_prof * obj.active_prof
                         Qg_prof += obj.Q_prof * obj.active_prof
 
-                    elif object_type == DeviceType.ShuntDevice:
+                    elif object_type == dev.DeviceType.ShuntDevice:
                         elements = circuit.get_shunts()
 
-                    elif object_type == DeviceType.LoadDevice:
+                    elif object_type == dev.DeviceType.LoadDevice:
                         elements = circuit.get_loads()
 
                     for obj in elements:
@@ -807,14 +808,14 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                        severity=LogSeverity.Error,
                                        propty="Reactive power out of bounds",
                                        message='There is too much reactive power imbalance',
-                                       lower=Qmin,
+                                       lower=str(Qmin),
                                        val=Ql_prof[t],
-                                       upper=Qmax)
+                                       upper=str(Qmax))
 
     return fixable_errors
 
 
-def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fig=None):
+def object_histogram_analysis(circuit: MultiCircuit, object_type: dev.DeviceType, fig=None):
     """
     Draw the histogram analysis of the provided object type
     :param circuit: Circuit
@@ -822,49 +823,49 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
     :param fig: matplotlib figure (if None, a new one is created)
     """
 
-    if object_type == DeviceType.LineDevice.value:
+    if object_type == dev.DeviceType.LineDevice.value:
         properties = ['R', 'X', 'B', 'rate']
         types = [float, float, float, float, float]
         log_scale = [False, False, False, False, False]
         objects = circuit.lines
 
-    elif object_type == DeviceType.Transformer2WDevice.value:
+    elif object_type == dev.DeviceType.Transformer2WDevice.value:
         properties = ['R', 'X', 'G', 'B', 'tap_module', 'angle', 'rate']
         types = [float, float, float, float, float, float, float]
         log_scale = [False, False, False, False, False, False, False]
         objects = circuit.transformers2w
 
-    elif object_type == DeviceType.BusDevice.value:
+    elif object_type == dev.DeviceType.BusDevice.value:
         properties = ['Vnom']
         types = [float]
         log_scale = [False]
         objects = circuit.buses
 
-    elif object_type == DeviceType.GeneratorDevice.value:
+    elif object_type == dev.DeviceType.GeneratorDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']
         log_scale = [False, False, False, False]
         types = [float, float, float, float]
         objects = circuit.get_generators()
 
-    elif object_type == DeviceType.BatteryDevice.value:
+    elif object_type == dev.DeviceType.BatteryDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']
         log_scale = [False, False, False, False]
         types = [float, float, float, float]
         objects = circuit.get_batteries()
 
-    elif object_type == DeviceType.StaticGeneratorDevice.value:
+    elif object_type == dev.DeviceType.StaticGeneratorDevice.value:
         properties = ['P', 'Q']
         log_scale = [False, False]
         types = [float, float]
         objects = circuit.get_static_generators()
 
-    elif object_type == DeviceType.ShuntDevice.value:
+    elif object_type == dev.DeviceType.ShuntDevice.value:
         properties = ['G', 'B']
         log_scale = [False, False]
         types = [float, float]
         objects = circuit.get_shunts()
 
-    elif object_type == DeviceType.LoadDevice.value:
+    elif object_type == dev.DeviceType.LoadDevice.value:
         properties = ['P', 'Q', 'Ir', 'Ii', 'G', 'B']
         log_scale = [False, False, False, False, False, False]
         types = [float, float, float, float, float, float]
@@ -906,7 +907,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
     # create figure if needed
     if fig is None:
         fig = plt.figure(figsize=(12, 6))
-    fig.suptitle('Analysis of the ' + object_type, fontsize=16)
+    fig.suptitle('Analysis of the ' + str(object_type), fontsize=16)
     fig.set_facecolor('white')
 
     if n > 0:
@@ -932,7 +933,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             if log_scale_extended[j]:
                 axs[j].set_xscale('log')
 
-        if object_type == DeviceType.LineDevice.value:
+        if object_type == dev.DeviceType.LineDevice.value:
             r = vals[:, 0]
             x = vals[:, 1]
 

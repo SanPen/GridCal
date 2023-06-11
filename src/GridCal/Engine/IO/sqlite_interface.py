@@ -82,7 +82,7 @@ def open_data_frames_from_sqlite(file_path, text_func=None, progress_func=None):
 
 if __name__ == '__main__':
     import time
-    from GridCal.Engine.IO.file_handler import *
+    from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'

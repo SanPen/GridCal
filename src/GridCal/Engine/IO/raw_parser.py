@@ -14,19 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import os
+import numpy as np
 import chardet
 import re
 from typing import List, AnyStr, Dict
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
+import GridCal.Engine.basic_structures as bs
 
 
 class PSSeObject:
 
     def __init__(self):
-
         self.REV = 33
 
 
@@ -78,7 +79,7 @@ class PSSeGrid:
         self.areas = list()
         self.zones = list()
 
-    def get_circuit(self, logger: Logger):
+    def get_circuit(self, logger: bs.Logger):
         """
         Return Newton circuit
         Returns:
@@ -88,8 +89,8 @@ class PSSeGrid:
         circuit = MultiCircuit(Sbase=self.SBASE)
         circuit.comments = 'Converted from a PSS/e .raw file'
 
-        circuit.areas = [Area(name=x.ARNAME) for x in self.areas]
-        circuit.zones = [Zone(name=x.ZONAME) for x in self.zones]
+        circuit.areas = [dev.Area(name=x.ARNAME) for x in self.areas]
+        circuit.zones = [dev.Zone(name=x.ZONAME) for x in self.zones]
 
         area_dict = {val.I: elm for val, elm in zip(self.areas, circuit.areas)}
         zones_dict = {val.I: elm for val, elm in zip(self.zones, circuit.zones)}
@@ -101,11 +102,11 @@ class PSSeGrid:
 
             # replace area idx by area name if available
             if abs(psse_bus.bus.area) not in area_dict.keys():
-                area_dict[abs(psse_bus.bus.area)] = Area(name='A' + str(abs(psse_bus.bus.area)))
+                area_dict[abs(psse_bus.bus.area)] = dev.Area(name='A' + str(abs(psse_bus.bus.area)))
                 missing_areas = True
 
             if abs(psse_bus.bus.zone) not in zones_dict.keys():
-                zones_dict[abs(psse_bus.bus.zone)] = Zone(name='Z' + str(abs(psse_bus.bus.zone)))
+                zones_dict[abs(psse_bus.bus.zone)] = dev.Zone(name='Z' + str(abs(psse_bus.bus.zone)))
                 missing_zones = True
 
         if missing_areas:
@@ -251,7 +252,7 @@ class PSSeBus(PSSeObject):
         self.EVHI = 0
         self.EVLO = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -259,7 +260,7 @@ class PSSeBus(PSSeObject):
         :param logger:
         """
 
-        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.Slack, 4: BusMode.PQ}
+        bustype = {1: dev.BusMode.PQ, 2: dev.BusMode.PV, 3: dev.BusMode.Slack, 4: dev.BusMode.PQ}
 
         if version >= 33:
             n = len(data[0])
@@ -267,13 +268,14 @@ class PSSeBus(PSSeObject):
             dta[0:n] = data[0]
 
             self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
-            self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = dta
+                self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = dta
 
             # create bus
             name = self.NAME.replace("'", "")
-            self.bus = Bus(name=name,
-                           vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
-                           area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
+            self.bus = dev.Bus(name=name,
+                               vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0,
+                               active=True,
+                               area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version == 32:
 
@@ -281,23 +283,24 @@ class PSSeBus(PSSeObject):
 
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=self.NVLO, vmax=self.NVHI, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
+            self.bus = dev.Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=self.NVLO, vmax=self.NVHI, xpos=0,
+                               ypos=0,
+                               active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version in [29, 30]:
             # I, 'NAME', BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
-            self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
+                self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
+            self.bus = dev.Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+                               active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
             if self.GL > 0 or self.BL > 0:
-                sh = Shunt(name='Shunt_' + str(self.I),
-                           G=self.GL, B=self.BL,
-                           active=True)
+                sh = dev.Shunt(name='Shunt_' + str(self.I),
+                               G=self.GL, B=self.BL,
+                               active=True)
 
                 self.bus.shunts.append(sh)
 
@@ -308,12 +311,12 @@ class PSSeBus(PSSeObject):
         if self.IDE in bustype.keys():
             self.bus.type = bustype[self.IDE]
         else:
-            self.bus.type = BusMode.PQ
+            self.bus.type = dev.BusMode.PQ
 
         if int(self.IDE) == 4:
             self.bus.active = False
 
-        if self.bus.type == BusMode.Slack:
+        if self.bus.type == dev.BusMode.Slack:
             self.bus.is_slack = True
 
         # Ensures unique name
@@ -350,7 +353,7 @@ class PSSeLoad(PSSeObject):
         self.DGENM = 0
         self.LOADTYPE = ''
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
 
         """
 
@@ -362,8 +365,8 @@ class PSSeLoad(PSSeObject):
         if version >= 35:
 
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT, \
-            self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE = data[0]
+                self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT, \
+                self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE = data[0]
 
         elif version in [33, 34]:
 
@@ -372,24 +375,24 @@ class PSSeLoad(PSSeObject):
             dta[0:n] = data[0]
 
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = dta
+                self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = dta
 
         elif version == 32:
 
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE = data[0]
+                self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE = data[0]
 
         elif version in [29, 30]:
             # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
-            self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+                self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
             self.SCALE = 1.0
 
         else:
             logger.add_warning('Load not implemented for version', str(version))
 
-    def get_object(self, bus: Bus, logger: Logger):
+    def get_object(self, bus: dev.Bus, logger: bs.Logger):
         """
         Return Newton Load object
         Returns:
@@ -412,7 +415,7 @@ class PSSeLoad(PSSeObject):
         p = self.PL
         q = self.QL
 
-        elm = Load(name=name,
+        elm = dev.Load(name=name,
                    idtag=None,
                    code=name,
                    active=bool(self.STATUS),
@@ -454,7 +457,7 @@ class PSSeSwitchedShunt(PSSeObject):
         self.RMIDNT = 0
         self.BINIT = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -474,11 +477,11 @@ class PSSeSwitchedShunt(PSSeObject):
                    self.N8, self.B8, ]
 
             self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-            self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
+                self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: Bus, logger: Logger):
+    def get_object(self, bus: dev.Bus, logger: bs.Logger):
         """
         Return Newton Load object
         Returns:
@@ -500,7 +503,7 @@ class PSSeSwitchedShunt(PSSeObject):
         else:
             b = self.BINIT
 
-        elm = Shunt(name='Switched shunt ' + name,
+        elm = dev.Shunt(name='Switched shunt ' + name,
                     G=g, B=b,
                     active=bool(self.STAT),
                     code=name)
@@ -519,7 +522,7 @@ class PSSeShunt(PSSeObject):
         self.GL = 0
         self.BL = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -531,7 +534,7 @@ class PSSeShunt(PSSeObject):
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: Bus, logger: Logger):
+    def get_object(self, bus: dev.Bus, logger: bs.Logger):
         """
         Return Newton Load object
         Returns:
@@ -550,7 +553,7 @@ class PSSeShunt(PSSeObject):
         g = self.GL
         b = self.BL
 
-        elm = Shunt(name=name,
+        elm = dev.Shunt(name=name,
                     idtag=None,
                     G=g, B=b,
                     active=bool(self.STATUS),
@@ -593,7 +596,7 @@ class PSSeGenerator(PSSeObject):
         self.WMOD = 0
         self.WPF = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -612,8 +615,8 @@ class PSSeGenerator(PSSeObject):
             # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
             # WMOD,  WPF
             self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-            self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var, \
-            self.WMOD, self.WPF = data[0]
+                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var, \
+                self.WMOD, self.WPF = data[0]
 
         elif version in [29]:
             """
@@ -623,7 +626,7 @@ class PSSeGenerator(PSSeObject):
             """
 
             self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-            self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var = data[0]
+                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var = data[0]
 
         else:
             logger.add_warning('Generator not implemented for version', str(version))
@@ -635,7 +638,7 @@ class PSSeGenerator(PSSeObject):
             Newton Load object
         """
         name = str(self.I) + '_' + str(self.ID).replace("'", "")
-        elm = Generator(name=name,
+        elm = dev.Generator(name=name,
                         idtag=None,
                         code=name,
                         active_power=self.PG,
@@ -690,7 +693,7 @@ class PSSeInductionMachine(PSSeObject):
         self.IA2 = 0
         self.XAMULT = 1.0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -705,10 +708,10 @@ class PSSeInductionMachine(PSSeObject):
             XAMULT
             '''
             self.I, self.ID, self.STAT, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER, \
-            self.TCODE, self.BCODE, self.MBASE, self.RATEKV = data[0]
+                self.TCODE, self.BCODE, self.MBASE, self.RATEKV = data[0]
 
             self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA, self.XA, self.XM, self.R1, \
-            self.X1, self.R2, self.X2, self.X3, self.E1, self.SE1, self.E2, self.SE2, self.IA1, self.IA2 = data[1]
+                self.X1, self.R2, self.X2, self.X3, self.E1, self.SE1, self.E2, self.SE2, self.IA1, self.IA2 = data[1]
 
             self.XAMULT = data[2]
         else:
@@ -721,7 +724,7 @@ class PSSeInductionMachine(PSSeObject):
             Newton Load object
         """
 
-        elm = Generator(name=str(self.I) + '_' + str(self.ID),
+        elm = dev.Generator(name=str(self.I) + '_' + str(self.ID),
                         active_power=self.PSET,
                         voltage_module=self.RATEKV,
                         Snom=self.MBASE,
@@ -778,7 +781,7 @@ class PSSeBranch(PSSeObject):
         self.MET = 0
         self.LEN = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -796,9 +799,9 @@ class PSSeBranch(PSSeObject):
             """
 
             self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME, \
-             self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6, \
-             self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,  \
-             self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
+                self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6, \
+                self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12, \
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
 
             self.RATEA = self.RATE1
             self.RATEB = self.RATE1
@@ -810,7 +813,7 @@ class PSSeBranch(PSSeObject):
             '''
 
             self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-            self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
 
         elif version in [29, 30]:
             """
@@ -819,13 +822,13 @@ class PSSeBranch(PSSeObject):
             """
 
             self.I, self.J, self.CKT, self.R, self.X, self.B, self.RATEA, self.RATEB, self.RATEC, \
-            self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, *var = data[0]
+                self.GI, self.BI, self.GJ, self.BJ, self.ST, self.LEN, *var = data[0]
 
         else:
 
             logger.add_warning('Branch not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
         """
         Return Newton branch object
         Args:
@@ -841,7 +844,8 @@ class PSSeBranch(PSSeObject):
         code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
 
         if self.NAME.strip() == '':
-            name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(i, bus_from.name, bus_from.Vnom, j, bus_to.name, bus_to.Vnom, self.CKT)
+            name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(i, bus_from.name, bus_from.Vnom, j, bus_to.name, bus_to.Vnom,
+                                                        self.CKT)
             name = name.replace("'", "").replace(" ", "").strip()
         else:
             name = self.NAME.strip()
@@ -851,7 +855,7 @@ class PSSeBranch(PSSeObject):
         if contingency_factor == 0:
             contingency_factor = 1.0
 
-        branch = Line(bus_from=bus_from,
+        branch = dev.Line(bus_from=bus_from,
                       bus_to=bus_to,
                       idtag=None,
                       code=code,
@@ -922,7 +926,7 @@ class PSSeTwoTerminalDCLine(PSSeObject):
         self.IDI = 0
         self.XCAPI = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -938,13 +942,13 @@ class PSSeTwoTerminalDCLine(PSSeObject):
             '''
 
             self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+                self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
 
             self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+                self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
 
             self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+                self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
 
         elif version == 29:
             '''
@@ -954,19 +958,19 @@ class PSSeTwoTerminalDCLine(PSSeObject):
             '''
 
             self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+                self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
 
             self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+                self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
 
             self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+                self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
 
             self.NAME = str(self.I)
         else:
             logger.add_warning('Version not implemented for DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -998,7 +1002,7 @@ class PSSeTwoTerminalDCLine(PSSeObject):
         # set the HVDC line active
         active = bus1.active and bus2.active
 
-        obj = HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
+        obj = dev.HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
                        bus_to=bus2,  # inverter as of PSSe
                        active=active,
                        name=name1,
@@ -1065,7 +1069,7 @@ class PSSeVscDCLine(PSSeObject):
         self.REMOT2 = 0
         self.RMPCT2 = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -1085,10 +1089,10 @@ class PSSeVscDCLine(PSSeObject):
             self.NAME, self.MDC, self.RDC, *var = data[0]
 
             self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
-            self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
+                self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
 
             self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2, self.BLOSS2, self.MINLOSS2, \
-            self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
+                self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
 
         elif version == 29:
 
@@ -1101,15 +1105,15 @@ class PSSeVscDCLine(PSSeObject):
             self.NAME, self.MDC, self.RDC, *var = data[0]
 
             self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1, self.BLOSS1, self.MINLOSS1, \
-            self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
+                self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1 = data[1]
 
             self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2, self.BLOSS2, self.MINLOSS2, \
-            self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
+                self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
 
         else:
             logger.add_warning('Version not implemented for VSC-DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1134,7 +1138,7 @@ class PSSeVscDCLine(PSSeObject):
         P = dV * dV / self.RDC if self.RDC != 0 else 0  # power in W
         specified_power = P * 1e-6  # power in MW
 
-        obj = HvdcLine(bus_from=bus1,
+        obj = dev.HvdcLine(bus_from=bus1,
                        bus_to=bus2,
                        name=name1,
                        idtag=idtag,
@@ -1305,7 +1309,6 @@ class PSSeTransformer(PSSeObject):
         self.CX2 = 0
         self.CNXA2 = 0
 
-
         self.WINDV3 = 0
         self.NOMV3 = 0
         self.ANG3 = 0
@@ -1367,7 +1370,7 @@ class PSSeTransformer(PSSeObject):
         self.RATE3_11 = 0
         self.RATE3_12 = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -1381,7 +1384,7 @@ class PSSeTransformer(PSSeObject):
 
             # Line 1: for both types
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-             self.NAME, self.STAT, *var, self.VECGRP, self.ZCOD = data[0]
+                self.NAME, self.STAT, *var, self.VECGRP, self.ZCOD = data[0]
 
             if len(data) == 4:
                 self.windings = 2
@@ -1397,10 +1400,10 @@ class PSSeTransformer(PSSeObject):
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, \
-                 self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
-                 self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
-                 self.COD1, self.CONT1, self.NOD1, self.RMA1, \
-                 self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+                    self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
+                    self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
+                    self.COD1, self.CONT1, self.NOD1, self.RMA1, \
+                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -1418,25 +1421,28 @@ class PSSeTransformer(PSSeObject):
                 '''
 
                 self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
-                self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                    self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, \
-                self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
-                self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
-                self.COD1, self.CONT1, self.NOD1, \
-                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+                    self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
+                    self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
+                    self.COD1, self.CONT1, self.NOD1, \
+                    self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
+                data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, \
-                self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6, \
-                self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12, \
-                self.COD2, self.CONT2, self.NOD2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
+                    self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6, \
+                    self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12, \
+                    self.COD2, self.CONT2, self.NOD2, \
+                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
+                data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, \
-                self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6, \
-                self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12, \
-                self.COD3, self.CONT3, self.NOD3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
+                    self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6, \
+                    self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12, \
+                    self.COD3, self.CONT3, self.NOD3, \
+                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
+                data[4]
 
                 self.RATA1 = self.RATE1_1
                 self.RATA2 = self.RATE2_1
@@ -1446,7 +1452,7 @@ class PSSeTransformer(PSSeObject):
 
             # Line 1: for both types
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            self.NAME, self.STAT, *var, self.VECGRP = data[0]
+                self.NAME, self.STAT, *var, self.VECGRP = data[0]
 
             if len(data) == 4:
                 self.windings = 2
@@ -1465,7 +1471,7 @@ class PSSeTransformer(PSSeObject):
                 dta[0:n] = data[2]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
+                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -1481,16 +1487,19 @@ class PSSeTransformer(PSSeObject):
                 '''
 
                 self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
-                self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                    self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, \
-                self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+                    self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
+                data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = data[3]
+                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
+                data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = data[4]
+                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
+                data[4]
 
         elif version == 32:
 
@@ -1507,7 +1516,7 @@ class PSSeTransformer(PSSeObject):
 
             # Line 1: for both types
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            self.NAME, self.STAT, *var = data[0]
+                self.NAME, self.STAT, *var = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -1522,14 +1531,14 @@ class PSSeTransformer(PSSeObject):
                 # 3-windings
                 self.windings = 3
                 self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
             # line 3: for both types
             n = len(data[2])
             dta = np.zeros(17, dtype=object)
             dta[0:n] = data[2]
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-            self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
+                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
 
             # line 4
             if len(data[3]) == 2:
@@ -1538,10 +1547,10 @@ class PSSeTransformer(PSSeObject):
             else:
                 # 3 - windings
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2, \
-                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                self.CR3, self.CX3, self.CNXA3 = data[3]
+                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2, \
+                    self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
+                    self.CR3, self.CX3, self.CNXA3 = data[3]
 
         elif version == 30:
 
@@ -1557,7 +1566,7 @@ class PSSeTransformer(PSSeObject):
             """
 
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            self.NAME, self.STAT, *var = data[0]
+                self.NAME, self.STAT, *var = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -1567,11 +1576,11 @@ class PSSeTransformer(PSSeObject):
                 # 3-windings
                 self.windings = 3
                 self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
             # line 3: for both types
             self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-            self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
 
             # line 4
             if len(data[3]) == 2:
@@ -1580,10 +1589,10 @@ class PSSeTransformer(PSSeObject):
             else:
                 # 3 - windings
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
-                self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
-                self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                self.CR3, self.CX3 = data[3]
+                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
+                    self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
+                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
+                    self.CR3, self.CX3 = data[3]
 
         elif version == 29:
 
@@ -1608,7 +1617,7 @@ class PSSeTransformer(PSSeObject):
             '''
 
             self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-            self.NAME, self.STAT, *var = data[0]
+                self.NAME, self.STAT, *var = data[0]
 
             if len(data[1]) == 3:
 
@@ -1624,7 +1633,7 @@ class PSSeTransformer(PSSeObject):
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, self.RMA1, \
-                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -1645,11 +1654,11 @@ class PSSeTransformer(PSSeObject):
                 self.windings = 3
 
                 self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, \
-                self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
-                self.CR1, self.CX1 = data[2]
+                    self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
+                    self.CR1, self.CX1 = data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2 = data[3]
 
@@ -1658,7 +1667,7 @@ class PSSeTransformer(PSSeObject):
         else:
             logger.add_warning('Transformer not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, sbase, logger: Logger):
+    def get_object(self, psse_bus_dict, sbase, logger: bs.Logger):
         """
         Return Newton branch object
         Args:
@@ -1733,7 +1742,7 @@ class PSSeTransformer(PSSeObject):
                 HV = V2
                 LV = V1
 
-            elm = Transformer2W(bus_from=bus_from,
+            elm = dev.Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
                                 idtag=None,
                                 code=code,
@@ -1832,7 +1841,7 @@ class PSSeTransformer(PSSeObject):
             else:
                 raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
 
-            elm1 = Transformer2W(bus_from=bus_1,
+            elm1 = dev.Transformer2W(bus_from=bus_1,
                                  bus_to=bus_2,
                                  idtag=code + '_12',
                                  name=self.NAME,
@@ -1846,7 +1855,7 @@ class PSSeTransformer(PSSeObject):
                                  mttf=0,
                                  mttr=0)
 
-            elm2 = Transformer2W(bus_from=bus_2,
+            elm2 = dev.Transformer2W(bus_from=bus_2,
                                  bus_to=bus_3,
                                  idtag=code + '_23',
                                  name=self.NAME,
@@ -1860,7 +1869,7 @@ class PSSeTransformer(PSSeObject):
                                  mttf=0,
                                  mttr=0)
 
-            elm3 = Transformer2W(bus_from=bus_3,
+            elm3 = dev.Transformer2W(bus_from=bus_3,
                                  bus_to=bus_1,
                                  idtag=code + '_31',
                                  name=self.NAME,
@@ -1907,7 +1916,7 @@ class PSSeFACTS(PSSeObject):
         self.REMOT = 0
         self.MNAME = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -1937,7 +1946,7 @@ class PSSeFACTS(PSSeObject):
         else:
             logger.add_warning('Version not implemented for DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
+    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger, circuit: MultiCircuit):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1984,7 +1993,7 @@ class PSSeFACTS(PSSeObject):
             # circuit.add_generator(bus2, gen_to)
             # # circuit.add_line(branch)
 
-            elm = UPFC(name=name1,
+            elm = dev.UPFC(name=name1,
                        bus_from=bus1,
                        bus_to=bus2,
                        code=idtag,
@@ -2046,7 +2055,7 @@ class PSSeInterArea(PSSeObject):
         self.PDES = 0
         self.PTOL = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -2074,7 +2083,7 @@ class PSSeArea(PSSeObject):
         self.PDES = 0
         self.PTOL = 0
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -2103,7 +2112,7 @@ class PSSeZone(PSSeObject):
         self.I = -1
         self.ZONAME = ''
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data, version, logger: bs.Logger):
         """
 
         :param data:
@@ -2121,7 +2130,6 @@ class PSSeZone(PSSeObject):
 
 
 def delete_comment(raw_line):
-
     lne = ""
     text_active = False
     for c in raw_line:
@@ -2138,6 +2146,7 @@ def delete_comment(raw_line):
         lne += c
 
     return lne
+
 
 def interpret_line(raw_line, splitter=','):
     """
@@ -2188,7 +2197,7 @@ def interpret_line(raw_line, splitter=','):
 
 class PSSeParser:
 
-    def __init__(self, file_name, text_func=print,  progress_func=None):
+    def __init__(self, file_name, text_func=print, progress_func=None):
         """
         Parse PSSe file
         Args:
@@ -2197,11 +2206,11 @@ class PSSeParser:
         self.parsers = dict()
         self.versions = [35, 34, 33, 32, 30, 29]
 
-        self.logger = Logger()
+        self.logger = bs.Logger()
 
         self.file_name = file_name
 
-        self.pss_grid, logs = self.parse_psse(text_func=text_func,  progress_func=progress_func)
+        self.pss_grid, logs = self.parse_psse(text_func=text_func, progress_func=progress_func)
 
         self.logger += logs
 
@@ -2210,7 +2219,7 @@ class PSSeParser:
         self.circuit.comments = 'Converted from the PSS/e .raw file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
-    def read_and_split_old(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split_old(self, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
@@ -2272,7 +2281,7 @@ class PSSeParser:
 
         return sections, sections_dict
 
-    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split(self, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
@@ -2343,7 +2352,7 @@ class PSSeParser:
 
         return sections_dict
 
-    def parse_psse(self, text_func=None,  progress_func=None) -> (MultiCircuit, List[AnyStr]):
+    def parse_psse(self, text_func=None, progress_func=None) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
             - POM section 4.1.1 Power Flow Raw Data File Contents (v.29)
@@ -2353,12 +2362,12 @@ class PSSeParser:
         Returns: MultiCircuit, List[str]
         """
 
-        logger = Logger()
+        logger = bs.Logger()
 
         if text_func is not None:
             text_func("Reading file...")
 
-        sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
+        sections_dict = self.read_and_split(text_func=text_func, progress_func=progress_func)
 
         # header -> new grid
         # grid = PSSeGrid(interpret_line(sections[0]))

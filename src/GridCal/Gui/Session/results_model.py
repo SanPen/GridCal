@@ -19,8 +19,7 @@ import io
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from PySide6.QtWidgets import *
-from PySide6 import QtCore
+from PySide6 import QtCore, QtWidgets
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 
@@ -250,7 +249,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             txt = s.getvalue()
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(txt, mode=cb.Clipboard)
 
@@ -271,7 +270,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             txt = fast_data_to_numpy_text(data)
 
             # copy to clipboard
-            cb = QApplication.clipboard()
+            cb = QtWidgets.QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(txt, mode=cb.Clipboard)
 

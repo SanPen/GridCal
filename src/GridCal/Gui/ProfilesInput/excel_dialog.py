@@ -3,7 +3,7 @@ import openpyxl
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from GridCal.Gui.ProfilesInput.excel_sheet_selection import *
+from GridCal.Gui.ProfilesInput.excel_sheet_selection import Ui_ExcelSelectionDialog
 
 
 class ExcelDialog(QtWidgets.QDialog):

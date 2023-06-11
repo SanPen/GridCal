@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
-
+import numpy as np
 from GridCal.Engine.basic_structures import Logger
 
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -431,8 +431,8 @@ def get_hvdc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, t
     :param ntime: number of time steps
     """
 
-    cmode_dict = {HvdcControlType.type_0_free: btg.HvdcControlType.free,
-                  HvdcControlType.type_1_Pset: btg.HvdcControlType.Pdc}
+    cmode_dict = {dev.HvdcControlType.type_0_free: btg.HvdcControlType.free,
+                  dev.HvdcControlType.type_1_Pset: btg.HvdcControlType.Pdc}
 
     for i, elm in enumerate(circuit.hvdc_lines):
         hvdc = btg.HvdcLine(uuid=elm.idtag,

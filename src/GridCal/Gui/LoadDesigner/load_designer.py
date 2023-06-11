@@ -8,8 +8,9 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from PySide6.QtWidgets import QWidget, QApplication
+from PySide6 import QtCore, QtWidgets
 
-from GridCal.Gui.LoadDesigner.gui import *
+from GridCal.Gui.LoadDesigner.gui import Ui_Dialog
 
 
 class LoadPointsModel(QtCore.QAbstractTableModel):
@@ -70,14 +71,14 @@ class LoadPointsModel(QtCore.QAbstractTableModel):
         return None
 
 
-class LoadDesigner(QDialog):
+class LoadDesigner(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         """
 
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Load designer')
@@ -93,13 +94,13 @@ class LoadDesigner(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def process_by_peak(self):

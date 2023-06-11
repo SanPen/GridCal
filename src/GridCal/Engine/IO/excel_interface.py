@@ -14,10 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from warnings import warn
+import numpy as np
+import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 from GridCal.Engine.IO.pack_unpack import create_data_frames, get_objects_dictionary
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
@@ -61,7 +63,7 @@ def check_names(names):
 #     return object_types
 
 
-def get_allowed_sheets(circuit=MultiCircuit()):
+def get_allowed_sheets():
     """
 
     :param circuit:
@@ -270,9 +272,9 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 conv = obj_.editable_headers[attr].tpe  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
-                elif conv is BranchType:
+                elif conv is dev.BranchType:
                     # cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, BranchType(values[a]))
+                    setattr(obj_, attr, dev.BranchType(values[a]))
                 else:
                     setattr(obj_, attr, conv(values[a]))
             else:
@@ -330,7 +332,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = lst.columns.values
         vals = lst.values
         for i in range(len(lst)):
-            obj = Bus()
+            obj = dev.Bus()
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
@@ -346,7 +348,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Load()
+            obj = dev.Load()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'load_Sprof' in data.keys():
@@ -404,7 +406,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Generator()
+            obj = dev.Generator()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'CtrlGen_P_profiles' in data.keys():
@@ -446,7 +448,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Battery()
+            obj = dev.Battery()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'battery_P_profiles' in data.keys():
@@ -487,7 +489,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = StaticGenerator()
+            obj = dev.StaticGenerator()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'static_generator_Sprof' in data.keys():
@@ -528,7 +530,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = lst[hdr].values
         for i in range(len(lst)):
-            obj = Shunt()
+            obj = dev.Shunt()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'shunt_Y_profiles' in data.keys():
@@ -556,7 +558,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = lst.columns.values
         vals = lst.values
         for i in range(len(lst)):
-            obj = Wire()
+            obj = dev.Wire()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_wire(obj)
     else:
@@ -567,7 +569,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         lst = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
             for tower_name in lst['tower_name'].unique():
-                tower = Tower()
+                tower = dev.Tower()
                 vals = lst[lst['tower_name'] == tower_name].values
 
                 # set the tower values
@@ -575,7 +577,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
                 # add the wires
                 for i in range(vals.shape[0]):
-                    wire = Wire()
+                    wire = dev.Wire()
                     set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.editable_headers):])
                     tower.wires_in_tower.append(wire)
 
@@ -605,7 +607,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = lst.columns.values
         vals = lst.values
         for i in range(len(lst)):
-            obj = SequenceLineType()
+            obj = dev.SequenceLineType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_sequence_line(obj)
             branch_types[str(obj)] = obj
@@ -618,7 +620,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         hdr = lst.columns.values
         vals = lst.values
         for i in range(len(lst)):
-            obj = TransformerType()
+            obj = dev.TransformerType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_transformer_type(obj)
             branch_types[str(obj)] = obj
@@ -642,7 +644,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         vals = lst[hdr].values
         for i in range(len(lst)):
             try:
-                obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+                obj = dev.Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
             except KeyError as ex:
                 raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
 
@@ -710,11 +712,13 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 conv = obj_.editable_headers[attr].tpe  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
-                elif conv is BranchType:
+                elif conv is dev.BranchType:
                     # cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, BranchType(values[a]))
-                elif conv in [DeviceType.AreaDevice, DeviceType.SubstationDevice,
-                              DeviceType.ZoneDevice, DeviceType.CountryDevice]:
+                    setattr(obj_, attr, dev.BranchType(values[a]))
+                elif conv in [dev.DeviceType.AreaDevice,
+                              dev.DeviceType.SubstationDevice,
+                              dev.DeviceType.ZoneDevice,
+                              dev.DeviceType.CountryDevice]:
                     pass
                 else:
                     setattr(obj_, attr, conv(values[a]))
@@ -735,7 +739,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = df.columns.values
         vals = df.values
         for i in range(len(df)):
-            obj = Bus()
+            obj = dev.Bus()
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
@@ -761,7 +765,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         'load_Cost_prof': 'Cost_prof'}
 
         for i in range(df.shape[0]):
-            obj = Load()
+            obj = dev.Load()
             set_object_attributes(obj, hdr, vals[i, :])
 
             # parse profiles:
@@ -797,7 +801,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = df[hdr].values
         for i in range(df.shape[0]):
-            obj = Generator()
+            obj = dev.Generator()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'generator_P_prof' in data.keys():
@@ -852,7 +856,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = df[hdr].values
         for i in range(df.shape[0]):
-            obj = Battery()
+            obj = dev.Battery()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'battery_P_prof' in data.keys():
@@ -899,7 +903,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = df[hdr].values
         for i in range(df.shape[0]):
-            obj = StaticGenerator()
+            obj = dev.StaticGenerator()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'static_generator_Sprof' in data.keys():
@@ -950,7 +954,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = np.delete(hdr, np.argwhere(hdr == 'bus'))
         vals = df[hdr].values
         for i in range(df.shape[0]):
-            obj = Shunt()
+            obj = dev.Shunt()
             set_object_attributes(obj, hdr, vals[i, :])
 
             if 'shunt_Y_profiles' in data.keys():
@@ -999,7 +1003,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = df.columns.values
         vals = df.values
         for i in range(len(df)):
-            obj = Wire()
+            obj = dev.Wire()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_wire(obj)
     else:
@@ -1010,7 +1014,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         df = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
             for tower_name in df['tower_name'].unique():
-                obj = Tower()
+                obj = dev.Tower()
                 dft = df[df['tower_name'] == tower_name]
                 vals = dft.values
 
@@ -1032,8 +1036,8 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         ypos = dft['ypos'].values[i]
                         phase = dft['phase'].values[i]
 
-                        wire = Wire(name=name, gmr=gmr, r=r, x=x)
-                        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
+                        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
+                        w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
                         obj.wires_in_tower.append(w)
 
                 circuit.add_overhead_line(obj)
@@ -1062,7 +1066,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = df.columns.values
         vals = df.values
         for i in range(len(df)):
-            obj = SequenceLineType()
+            obj = dev.SequenceLineType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_sequence_line(obj)
             branch_types[str(obj)] = obj
@@ -1075,7 +1079,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         hdr = df.columns.values
         vals = df.values
         for i in range(len(df)):
-            obj = TransformerType()
+            obj = dev.TransformerType()
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_transformer_type(obj)
             branch_types[str(obj)] = obj
@@ -1099,7 +1103,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         vals = df[hdr].values
         for i in range(df.shape[0]):
             try:
-                obj = Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
+                obj = dev.Branch(bus_from=bus_dict[str(bus_from[i])], bus_to=bus_dict[str(bus_to[i])])
             except KeyError as ex:
                 raise Exception(str(i) + ': Branch bus is not in the buses list.\n' + str(ex))
 

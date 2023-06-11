@@ -33,6 +33,7 @@ import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
+import GridCal.Engine.Core.DataStructures as ds
 
 sparse_type = get_sparse_type()
 
@@ -217,20 +218,20 @@ class SnapshotData:
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data = gc_compiler.BusData(nbus=nbus, ntime=ntime)
-        self.branch_data = gc_compiler.BranchData(nbr=self.nbr, nbus=nbus, ntime=ntime)
-        self.line_data = gc_compiler.LinesData(nline=nline, nbus=nbus, ntime=ntime)
-        self.dc_line_data = gc_compiler.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
-        self.transformer_data = gc_compiler.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
-        self.vsc_data = gc_compiler.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
-        self.upfc_data = gc_compiler.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
-        self.hvdc_data = gc_compiler.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
+        self.bus_data = ds.BusData(nbus=nbus, ntime=ntime)
+        self.branch_data = ds.BranchData(nbr=self.nbr, nbus=nbus, ntime=ntime)
+        self.line_data = ds.LinesData(nline=nline, nbus=nbus, ntime=ntime)
+        self.dc_line_data = ds.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
+        self.transformer_data = ds.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
+        self.vsc_data = ds.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
+        self.upfc_data = ds.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
+        self.hvdc_data = ds.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
 
-        self.load_data = gc_compiler.LoadData(nload=nload, nbus=nbus, ntime=ntime)
-        self.static_generator_data = gc_compiler.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
-        self.battery_data = gc_compiler.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
-        self.generator_data = gc_compiler.GeneratorData(ngen=ngen, nbus=nbus, ntime=ntime)
-        self.shunt_data = gc_compiler.ShuntData(nshunt=nshunt, nbus=nbus, ntime=ntime)
+        self.load_data = ds.LoadData(nload=nload, nbus=nbus, ntime=ntime)
+        self.static_generator_data = ds.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
+        self.battery_data = ds.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
+        self.generator_data = ds.GeneratorData(ngen=ngen, nbus=nbus, ntime=ntime)
+        self.shunt_data = ds.ShuntData(nshunt=nshunt, nbus=nbus, ntime=ntime)
 
         self.original_bus_idx = np.arange(self.nbus)
         self.original_branch_idx = np.arange(self.nbr)

@@ -20,7 +20,7 @@ from PySide6.QtCore import QPointF, QLineF, QLine
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 
 class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):

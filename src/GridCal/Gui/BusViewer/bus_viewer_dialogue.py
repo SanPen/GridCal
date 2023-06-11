@@ -6,17 +6,17 @@ from enum import Enum
 import numpy as np
 from numpy.random import default_rng
 import networkx as nx
-from PySide6.QtWidgets import *
+from PySide6 import QtWidgets
 
-from GridCal.Gui.BusViewer.gui import *
-from GridCal.Gui.GridEditorWidget import *
-from GridCal.Engine.Devices import *
+from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
+from GridCal.Gui.GridEditorWidget import GridEditor
+import GridCal.Engine.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class BusViewerGUI(QMainWindow):
 
-    def __init__(self, circuit: MultiCircuit, root_bus: Bus, parent=None, ):
+    def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, parent=None, ):
         """
 
         :param circuit:
@@ -59,13 +59,13 @@ class BusViewerGUI(QMainWindow):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
     def bigger_nodes(self):
@@ -169,30 +169,30 @@ class BusViewerGUI(QMainWindow):
 
             self.branch_idx.append(branch_dict[obj])
 
-            if obj.device_type == DeviceType.LineDevice:
+            if obj.device_type == dev.DeviceType.LineDevice:
                 lines.append(obj)
 
-            elif obj.device_type == DeviceType.DCLineDevice:
+            elif obj.device_type == dev.DeviceType.DCLineDevice:
                 dc_lines.append(obj)
 
-            elif obj.device_type == DeviceType.Transformer2WDevice:
+            elif obj.device_type == dev.DeviceType.Transformer2WDevice:
                 transformers2w.append(obj)
 
-            elif obj.device_type == DeviceType.Transformer3WDevice:
+            elif obj.device_type == dev.DeviceType.Transformer3WDevice:
                 transformers3w.append(obj)
 
-            elif obj.device_type == DeviceType.HVDCLineDevice:
+            elif obj.device_type == dev.DeviceType.HVDCLineDevice:
                 hvdc_lines.append(obj)
 
-            elif obj.device_type == DeviceType.VscDevice:
+            elif obj.device_type == dev.DeviceType.VscDevice:
                 vsc_converters.append(obj)
 
-            elif obj.device_type == DeviceType.UpfcDevice:
+            elif obj.device_type == dev.DeviceType.UpfcDevice:
                 upfc_devices.append(obj)
 
-            elif obj.device_type == DeviceType.BranchDevice:
+            elif obj.device_type == dev.DeviceType.BranchDevice:
                 # we need to convert it :D
-                obj2 = convert_branch(obj)
+                obj2 = dev.convert_branch(obj)
                 lines.append(obj2)  # call this again, but this time it is not a Branch object
             else:
                 raise Exception('Unrecognized branch type ' + obj.device_type.value)
@@ -218,9 +218,9 @@ class BusViewerGUI(QMainWindow):
 
 if __name__ == "__main__":
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     circuit_ = MultiCircuit()
-    circuit_.add_bus(Bus('bus1'))
+    circuit_.add_bus(dev.Bus('bus1'))
     window = BusViewerGUI(circuit=circuit_, root_bus=circuit_.buses[0])
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

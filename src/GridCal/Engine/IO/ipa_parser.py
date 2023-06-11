@@ -1,6 +1,6 @@
 import json
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 
 
 def load_iPA(file_name) -> MultiCircuit:
@@ -23,7 +23,7 @@ def load_iPA(file_name) -> MultiCircuit:
     buses_dict = dict()
     for entry in data['Nudos']:
         nodes_dict[entry['id']] = entry
-        bus = Bus(name=str(entry['id']))
+        bus = dev.Bus(name=str(entry['id']))
         buses_dict[entry['id']] = bus
         if entry['id'] > 0:  # omit the node 0 because it is the "earth node"...
             circuit.add_bus(bus)
@@ -84,7 +84,7 @@ def load_iPA(file_name) -> MultiCircuit:
                 bus = bus1
 
             bus.is_slack = True
-            elm = Generator(name='Slack')
+            elm = dev.Generator(name='Slack')
             circuit.add_generator(bus, elm)
 
         elif tpe == 1:  # Elemento impedancia(lineas)
@@ -101,12 +101,12 @@ def load_iPA(file_name) -> MultiCircuit:
                 x = entry['X1'] / Zbase
 
                 if r > 1e-5:
-                    branch_type = BranchType.Line
+                    branch_type = dev.BranchType.Line
                 else:
                     # mark as "generic branch" the branches with very low resistance
-                    branch_type = BranchType.Branch
+                    branch_type = dev.BranchType.Branch
 
-                elm = Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=branch_type)
+                elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=branch_type)
                 circuit.add_branch(elm)
 
         elif tpe == 2:  # Elemento PQ
@@ -119,7 +119,7 @@ def load_iPA(file_name) -> MultiCircuit:
 
             p = entry['P']  # power in MW
             q = entry['Q']
-            elm = Load(name=str(identifier), P=p*1e-3, Q=q * 1e-3)
+            elm = dev.Load(name=str(identifier), P=p*1e-3, Q=q * 1e-3)
             circuit.add_load(bus, elm)
 
         elif tpe == 3:  # Elemento  PV
@@ -132,7 +132,8 @@ def load_iPA(file_name) -> MultiCircuit:
 
             r = entry['R1'] / Zbase
             x = entry['X1'] / Zbase
-            elm = Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=BranchType.Transformer)
+            elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x,
+                             branch_type=dev.BranchType.Transformer)
             circuit.add_branch(elm)
 
         elif tpe == 5:  # Transformador
@@ -142,7 +143,8 @@ def load_iPA(file_name) -> MultiCircuit:
 
             r = entry['R1'] / Zbase
             x = entry['X1'] / Zbase
-            elm = Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=BranchType.Transformer)
+            elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x,
+                             branch_type=dev.BranchType.Transformer)
             circuit.add_branch(elm)
 
     # return the circuit
@@ -155,6 +157,6 @@ if __name__ == '__main__':
 
     circuit = load_iPA(file_name=fname)
 
-    circuit.save_excel(fname + '_assuming_kW.xlsx')
+    # circuit.save_excel(fname + '_assuming_kW.xlsx')
 
     pass

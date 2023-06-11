@@ -14,16 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.Core.DataStructures.battery_data import *
-from GridCal.Engine.Core.DataStructures.branch_data import *
-from GridCal.Engine.Core.DataStructures.bus_data import *
-from GridCal.Engine.Core.DataStructures.dc_lines_data import *
-from GridCal.Engine.Core.DataStructures.generator_data import *
-from GridCal.Engine.Core.DataStructures.hvdc_data import *
-from GridCal.Engine.Core.DataStructures.lines_data import *
-from GridCal.Engine.Core.DataStructures.load_data import *
-from GridCal.Engine.Core.DataStructures.shunt_data import *
-from GridCal.Engine.Core.DataStructures.static_generator_data import *
-from GridCal.Engine.Core.DataStructures.transformer_data import *
-from GridCal.Engine.Core.DataStructures.vsc_data import *
-from GridCal.Engine.Core.DataStructures.upfc_data import *
+from GridCal.Engine.Core.DataStructures.battery_data import BatteryData, BatteryOpfData
+from GridCal.Engine.Core.DataStructures.branch_data import BranchData, BranchOpfData
+from GridCal.Engine.Core.DataStructures.bus_data import BusData
+from GridCal.Engine.Core.DataStructures.dc_lines_data import DcLinesData
+from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData, GeneratorOpfData
+from GridCal.Engine.Core.DataStructures.hvdc_data import HvdcData
+from GridCal.Engine.Core.DataStructures.lines_data import LinesData
+from GridCal.Engine.Core.DataStructures.load_data import LoadData, LoadOpfData
+from GridCal.Engine.Core.DataStructures.shunt_data import ShuntData
+from GridCal.Engine.Core.DataStructures.static_generator_data import StaticGeneratorData
+from GridCal.Engine.Core.DataStructures.transformer_data import TransformerData
+from GridCal.Engine.Core.DataStructures.vsc_data import VscData
+from GridCal.Engine.Core.DataStructures.upfc_data import UpfcData

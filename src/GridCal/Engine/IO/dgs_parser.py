@@ -19,7 +19,7 @@ GridCal
 """
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
 import math
 import numpy as np
 import pandas as pd
@@ -194,8 +194,8 @@ def read_DGS(filename):
     # format keys
     for key in data.keys():
         # print("Converting " + str(key))
-        table = array([tuple(x) for x in data[key]],dtype=types_dict2[key])
-        table = array([list(x) for x in table],dtype=np.object)
+        table = array([tuple(x) for x in data[key]], dtype=types_dict2[key])
+        table = array([list(x) for x in table], dtype=np.object)
         header = Headers[key]
         data[key] = df(data=table, columns=header)
 
@@ -632,9 +632,9 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         ID = buses['ID'][i]
         x, y = pos_dict[ID]
         buses_dict[ID] = i
-        bus_name = buses['loc_name'][i].decode(codification)   # BUS_Name
+        bus_name = buses['loc_name'][i].decode(codification)  # BUS_Name
         vnom = buses['uknom'][i]
-        bus = Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
+        bus = dev.Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
         circuit.add_bus(bus)
 
     ####################################################################################################################
@@ -707,10 +707,10 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                 p = 0
 
             # add a generator to the bus
-            gen = Generator(name=external['loc_name'][i].decode(codification),
-                            active_power=p,
-                            voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
-                            power_prof=None, vset_prof=None)
+            gen = dev.Generator(name=external['loc_name'][i].decode(codification),
+                                active_power=p,
+                                voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
+                                power_prof=None, vset_prof=None)
             circuit.add_generator(bus_obj, gen)
 
             # # mark the bus as pv
@@ -730,9 +730,9 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
         elif external['bustp'].values[i] == b'PQ':
             # Add a load to the bus
-            load = Load(name=external['loc_name'][i].decode(codification),
-                        P=external['pgini'].values[i],
-                        Q=external['qgini'].values[i])
+            load = dev.Load(name=external['loc_name'][i].decode(codification),
+                            P=external['pgini'].values[i],
+                            Q=external['qgini'].values[i])
             circuit.add_load(bus_obj, load)
 
             # BUSES[bus1, bd.BUS_TYPE] = 1
@@ -786,7 +786,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
             # pass impedance to per unit
             vbase = np.double(lines_voltage[type_idx])  # kV
-            zbase = vbase**2 / baseMVA  # Ohm
+            zbase = vbase ** 2 / baseMVA  # Ohm
             ybase = 1.0 / zbase  # S
             r = R / zbase  # pu
             l = L / zbase  # pu
@@ -796,16 +796,16 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             Irated = np.double(lines_rate[type_idx])  # kA
             Smax = Irated * vbase  # MVA
 
-            line = Branch(bus_from=bus_from, bus_to=bus_to,
-                          name=lines['loc_name'][i].decode(codification),
-                          r=r,
-                          x=l,
-                          g=1e-20,
-                          b=b,
-                          rate=Smax,
-                          tap=1,
-                          shift_angle=0,
-                          active=status, mttf=0, mttr=0)
+            line = dev.Branch(bus_from=bus_from, bus_to=bus_to,
+                              name=lines['loc_name'][i].decode(codification),
+                              r=r,
+                              x=l,
+                              g=1e-20,
+                              b=b,
+                              rate=Smax,
+                              tap=1,
+                              shift_angle=0,
+                              active=status, mttf=0, mttr=0)
 
             circuit.add_branch(line)
 
@@ -909,15 +909,15 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                 Smax = Nominal_power[type_idx]
 
                 # Uhv, Ulv, Sn, Pcu, Pfe, I0, Usc
-                tpe = TransformerType(hv_nominal_voltage=HV_nominal_voltage[type_idx],
-                                      lv_nominal_voltage=LV_nominal_voltage[type_idx],
-                                      nominal_power=Smax,
-                                      copper_losses=Copper_losses[type_idx],
-                                      iron_losses=Iron_losses[type_idx],
-                                      no_load_current=No_load_current[type_idx],
-                                      short_circuit_voltage=Short_circuit_voltage[type_idx],
-                                      gr_hv1=0.5,
-                                      gx_hv1=0.5)
+                tpe = dev.TransformerType(hv_nominal_voltage=HV_nominal_voltage[type_idx],
+                                          lv_nominal_voltage=LV_nominal_voltage[type_idx],
+                                          nominal_power=Smax,
+                                          copper_losses=Copper_losses[type_idx],
+                                          iron_losses=Iron_losses[type_idx],
+                                          no_load_current=No_load_current[type_idx],
+                                          short_circuit_voltage=Short_circuit_voltage[type_idx],
+                                          gr_hv1=0.5,
+                                          gx_hv1=0.5)
 
                 Zs, Zsh = tpe.get_impedances(VH=HV_nominal_voltage[type_idx],
                                              VL=LV_nominal_voltage[type_idx],
@@ -930,20 +930,20 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
                 status = 1 - transformers['outserv'][i]
 
-                trafo = Branch(bus_from=bus_from,
-                               bus_to=bus_to,
-                               name=transformers['loc_name'][i].decode(codification),
-                               r=Zs.real,
-                               x=Zs.imag,
-                               g=Ysh.real,
-                               b=Ysh.imag,
-                               rate=Smax,
-                               tap=1.0,
-                               shift_angle=0.0,
-                               active=status,
-                               mttf=0,
-                               mttr=0,
-                               branch_type=BranchType.Transformer)
+                trafo = dev.Branch(bus_from=bus_from,
+                                   bus_to=bus_to,
+                                   name=transformers['loc_name'][i].decode(codification),
+                                   r=Zs.real,
+                                   x=Zs.imag,
+                                   g=Ysh.real,
+                                   b=Ysh.imag,
+                                   rate=Smax,
+                                   tap=1.0,
+                                   shift_angle=0.0,
+                                   active=status,
+                                   mttf=0,
+                                   mttr=0,
+                                   branch_type=dev.BranchType.Transformer)
 
                 circuit.add_branch(trafo)
 
@@ -982,9 +982,9 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             p = loads_P[i] * scale[i]  # in MW
             q = loads_Q[i] * scale[i]  # in MVA
 
-            load = Load(name=loads['loc_name'][i].decode(codification),
-                        P=p,
-                        Q=q)
+            load = dev.Load(name=loads['loc_name'][i].decode(codification),
+                            P=p,
+                            Q=q)
 
             circuit.add_load(bus_obj, load)
 
@@ -1026,7 +1026,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         else:
             b = 1e-20
 
-        shunt = Shunt(name=name, B=b)
+        shunt = dev.Shunt(name=name, B=b)
         circuit.add_shunt(bus_obj, shunt)
 
     ####################################################################################################################
@@ -1058,9 +1058,9 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         mode = static_generators['av_mode'][i]
         num_machines = static_generators['ngnum'][i]
 
-        gen = StaticGenerator(name=static_generators['loc_name'][i].decode(codification),
-                              P=static_generators['pgini'][i] * num_machines,
-                              Q=static_generators['qgini'][i] * num_machines)
+        gen = dev.StaticGenerator(name=static_generators['loc_name'][i].decode(codification),
+                                  P=static_generators['pgini'][i] * num_machines,
+                                  Q=static_generators['qgini'][i] * num_machines)
         circuit.add_static_generator(bus_obj, gen)
 
     ####################################################################################################################
@@ -1117,14 +1117,14 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         snom = typ['sgn'].values[0]
         vnom = synchronous_machine['usetp'][i]
         name = synchronous_machine['loc_name'][i].decode(codification)
-        gen = Generator(name=name,
-                        active_power=synchronous_machine['pgini'][i] * num_machines,
-                        voltage_module=vnom,
-                        Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
-                        Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
-                        Snom=snom,
-                        power_prof=None,
-                        vset_prof=None)
+        gen = dev.Generator(name=name,
+                            active_power=synchronous_machine['pgini'][i] * num_machines,
+                            voltage_module=vnom,
+                            Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
+                            Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
+                            Snom=snom,
+                            power_prof=None,
+                            vset_prof=None)
         circuit.add_generator(bus_obj, gen)
 
         # if synchronous_machine['pgini'][i] != 0:
@@ -1136,14 +1136,12 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
 
 def dgs_to_circuit(filename) -> MultiCircuit:
-
     data, pos_dict = read_DGS(filename)
 
     return data_to_grid_object(data, pos_dict)
 
 
 if __name__ == "__main__":
-
     # fname = 'Example1.dgs'
     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.dgs'
     # fname = 'PLATOS grid 3.dgs'
@@ -1167,6 +1165,3 @@ if __name__ == "__main__":
 
     # from matplotlib import pyplot as plt
     # plt.show()
-
-
-

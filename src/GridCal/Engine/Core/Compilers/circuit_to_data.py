@@ -3,7 +3,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
-from GridCal.Engine.Core.DataStructures import *
+import GridCal.Engine.Core.DataStructures as ds
 
 
 def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_guess=False):
@@ -15,7 +15,7 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_g
     :param use_stored_guess:
     :return:
     """
-    bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
+    bus_data = ds.BusData(nbus=len(circuit.buses), ntime=ntime)
 
     areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
 
@@ -63,9 +63,9 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
     devices = circuit.get_loads()
 
     if opf:
-        data = LoadOpfData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.LoadOpfData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
     else:
-        data = LoadData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.LoadData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
 
     for k, elm in enumerate(devices):
 
@@ -112,7 +112,7 @@ def get_static_generator_data(circuit: MultiCircuit, bus_dict, time_series=False
     """
     devices = circuit.get_static_generators()
 
-    data = StaticGeneratorData(nstagen=len(devices), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.StaticGeneratorData(nstagen=len(devices), nbus=len(circuit.buses), ntime=ntime)
 
     for k, elm in enumerate(devices):
 
@@ -142,7 +142,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
     """
     devices = circuit.get_shunts()
 
-    data = ShuntData(nshunt=len(devices), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.ShuntData(nshunt=len(devices), nbus=len(circuit.buses), ntime=ntime)
 
     for k, elm in enumerate(devices):
 
@@ -189,9 +189,9 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     devices = circuit.get_generators()
 
     if opf:
-        data = GeneratorOpfData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.GeneratorOpfData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
     else:
-        data = GeneratorData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.GeneratorData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
 
     for k, elm in enumerate(devices):
 
@@ -271,9 +271,9 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     devices = circuit.get_batteries()
 
     if opf:
-        data = BatteryOpfData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.BatteryOpfData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
     else:
-        data = BatteryData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
+        data = ds.BatteryData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
 
     for k, elm in enumerate(devices):
 
@@ -359,7 +359,7 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
     :return:
     """
 
-    data = LinesData(nline=len(circuit.lines),
+    data = ds.LinesData(nline=len(circuit.lines),
                      nbus=len(circuit.buses),
                      ntime=ntime)
 
@@ -401,7 +401,7 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
     :param bus_dict:
     :return:
     """
-    data = TransformerData(ntr=len(circuit.transformers2w),
+    data = ds.TransformerData(ntr=len(circuit.transformers2w),
                            nbus=len(circuit.buses),
                            ntime=ntime)
 
@@ -455,7 +455,7 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    data = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
@@ -497,7 +497,7 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    data = UpfcData(nelm=len(circuit.upfc_devices), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.UpfcData(nelm=len(circuit.upfc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
@@ -513,9 +513,9 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
 
         # vsc values
         data.names[i] = elm.name
-        data.Rl[i] = elm.Rl
-        data.Xl[i] = elm.Xl
-        data.Bl[i] = elm.Bl
+        data.Rl[i] = elm.Rs
+        data.Xl[i] = elm.Xs
+        data.Bl[i] = 0.0
 
         data.Rs[i] = elm.Rs
         data.Xs[i] = elm.Xs
@@ -543,7 +543,7 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
     :param branch_tolerance_mode:
     :return:
     """
-    data = DcLinesData(ndcline=len(circuit.dc_lines), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.DcLinesData(ndcline=len(circuit.dc_lines), nbus=len(circuit.buses), ntime=ntime)
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
@@ -610,9 +610,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
     nbr = nline + ntr + nwind + nvsc + ndcline + nupfc
 
     if opf:
-        data = BranchOpfData(nbr=nbr, nbus=len(circuit.buses), ntime=ntime)
+        data = ds.BranchOpfData(nbr=nbr, nbus=len(circuit.buses), ntime=ntime)
     else:
-        data = BranchData(nbr=nbr, nbus=len(circuit.buses), ntime=ntime)
+        data = ds.BranchData(nbr=nbr, nbus=len(circuit.buses), ntime=ntime)
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
@@ -1045,7 +1045,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
     :param opf_results:
     :return:
     """
-    data = HvdcData(nhvdc=len(circuit.hvdc_lines), nbus=len(circuit.buses), ntime=ntime)
+    data = ds.HvdcData(nhvdc=len(circuit.hvdc_lines), nbus=len(circuit.buses), ntime=ntime)
 
     # HVDC
     for i, elm in enumerate(circuit.hvdc_lines):

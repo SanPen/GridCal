@@ -22,7 +22,7 @@ import os.path
 import platform
 import webbrowser
 from collections import OrderedDict
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 import numpy as np
 import networkx as nx
 import pandas as pd
@@ -51,15 +51,17 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
 # GUI imports
+from PySide6 import QtGui, QtWidgets, QtCore
+import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import *
-from GridCal.Gui.GridEditorWidget import *
-from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, NewProfilesStructureDialogue, ElementsDialogue, \
+    TimeReIndexDialogue
+from GridCal.Gui.GridEditorWidget import GridEditor
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
 
-from GridCal.Gui.GuiFunctions import *
-from GridCal.Gui.Main.MainWindow import *
+from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
@@ -158,7 +160,7 @@ class MainGUI(QMainWindow):
         # solvers dictionary
         self.solvers_dict = OrderedDict()
 
-        mdl = get_list_model(self.circuit.profile_magnitudes.keys())
+        mdl = gf.get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)
         self.profile_device_type_changed()
 
@@ -167,14 +169,14 @@ class MainGUI(QMainWindow):
         self.q_control_modes_dict['No control'] = bs.ReactivePowerControlMode.NoControl
         self.q_control_modes_dict['Direct'] = bs.ReactivePowerControlMode.Direct
         lst = list(self.q_control_modes_dict.keys())
-        self.ui.reactive_power_control_mode_comboBox.setModel(get_list_model(lst))
+        self.ui.reactive_power_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # taps controls (transformer voltage regulator)
         self.taps_control_modes_dict = OrderedDict()
         self.taps_control_modes_dict['No control'] = bs.TapsControlMode.NoControl
         self.taps_control_modes_dict['Direct'] = bs.TapsControlMode.Direct
         lst = list(self.taps_control_modes_dict.keys())
-        self.ui.taps_control_mode_comboBox.setModel(get_list_model(lst))
+        self.ui.taps_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
@@ -183,7 +185,7 @@ class MainGUI(QMainWindow):
         self.transfer_modes_dict['Area load'] = sim.AvailableTransferMode.Load
         self.transfer_modes_dict['Area nodes'] = sim.AvailableTransferMode.GenerationAndLoad
         lst = list(self.transfer_modes_dict.keys())
-        self.ui.transferMethodComboBox.setModel(get_list_model(lst))
+        self.ui.transferMethodComboBox.setModel(gf.get_list_model(lst))
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
@@ -205,7 +207,7 @@ class MainGUI(QMainWindow):
         self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
         self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
         self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
-        mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
+        mdl = gf.get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
         self.ui.automatic_layout_comboBox.setCurrentIndex(6)
 
@@ -215,12 +217,12 @@ class MainGUI(QMainWindow):
             sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
         self.stochastic_pf_methods_dict[
             sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
-        mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
+        mdl = gf.get_list_model(list(self.stochastic_pf_methods_dict.keys()))
         self.ui.stochastic_pf_method_comboBox.setModel(mdl)
 
         # list of styles
         plt_styles = plt.style.available
-        self.ui.plt_style_comboBox.setModel(get_list_model(plt_styles))
+        self.ui.plt_style_comboBox.setModel(gf.get_list_model(plt_styles))
 
         if 'fivethirtyeight' in plt_styles:
             self.ui.plt_style_comboBox.setCurrentText('fivethirtyeight')
@@ -230,7 +232,7 @@ class MainGUI(QMainWindow):
         self.ui.dark_mode_checkBox.setChecked(is_dark)
 
         # branch types for reduction
-        mdl = get_list_model(BranchType.list(), checks=True)
+        mdl = gf.get_list_model(dev.BranchType.list(), checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
 
         # opf solvers dictionary
@@ -239,7 +241,7 @@ class MainGUI(QMainWindow):
         if NEWTON_PA_AVAILABLE:
             self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
         self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
-        self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+        self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
         self.opf_time_groups = OrderedDict()
         self.opf_time_groups[bs.TimeGrouping.NoGrouping.value] = bs.TimeGrouping.NoGrouping
@@ -247,13 +249,13 @@ class MainGUI(QMainWindow):
         self.opf_time_groups[bs.TimeGrouping.Weekly.value] = bs.TimeGrouping.Weekly
         self.opf_time_groups[bs.TimeGrouping.Daily.value] = bs.TimeGrouping.Daily
         self.opf_time_groups[bs.TimeGrouping.Hourly.value] = bs.TimeGrouping.Hourly
-        self.ui.opf_time_grouping_comboBox.setModel(get_list_model(list(self.opf_time_groups.keys())))
+        self.ui.opf_time_grouping_comboBox.setModel(gf.get_list_model(list(self.opf_time_groups.keys())))
 
         self.opf_zonal_groups = OrderedDict()
         self.opf_zonal_groups[bs.ZonalGrouping.NoGrouping.value] = bs.ZonalGrouping.NoGrouping
         # self.opf_zonal_groups[bs.ZonalGrouping.Area.value] = bs.ZonalGrouping.Area
         self.opf_zonal_groups[bs.ZonalGrouping.All.value] = bs.ZonalGrouping.All
-        self.ui.opfZonalGroupByComboBox.setModel(get_list_model(list(self.opf_zonal_groups.keys())))
+        self.ui.opfZonalGroupByComboBox.setModel(gf.get_list_model(list(self.opf_zonal_groups.keys())))
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
@@ -263,11 +265,11 @@ class MainGUI(QMainWindow):
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
         self.mip_solvers_dict[bs.MIPSolvers.GUROBI.value] = bs.MIPSolvers.GUROBI
         self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
-        self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
+        self.ui.mip_solver_comboBox.setModel(gf.get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
-        self.ui.vc_stop_at_comboBox.setModel(get_list_model([sim.CpfStopAt.Nose.value,
-                                                             sim.CpfStopAt.ExtraOverloads.value]))
+        self.ui.vc_stop_at_comboBox.setModel(gf.get_list_model([sim.CpfStopAt.Nose.value,
+                                                                sim.CpfStopAt.ExtraOverloads.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
         # available engines
@@ -279,7 +281,7 @@ class MainGUI(QMainWindow):
         if PGM_AVAILABLE:
             engine_lst.append(bs.EngineType.PGM)
 
-        self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
+        self.ui.engineComboBox.setModel(gf.get_list_model([x.value for x in engine_lst]))
         self.ui.engineComboBox.setCurrentIndex(0)
         self.engine_dict = {x.value: x for x in engine_lst}
 
@@ -301,16 +303,16 @@ class MainGUI(QMainWindow):
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
 
-        self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value
-                                                                for o in self.circuit.objects_with_profiles]))
+        self.ui.dataStructuresListView.setModel(gf.get_list_model([o.device_type.value
+                                                                   for o in self.circuit.objects_with_profiles]))
 
         self.add_default_catalogue()
 
-        self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
+        self.ui.catalogueDataStructuresListView.setModel(gf.get_list_model(self.grid_editor.catalogue_types))
 
         pfo = core.SnapshotData(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nupfc=1, nhvdc=1,
                                 nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
-        self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
+        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(pfo.available_structures))
 
         self.schematic_list_steps = list()
 
@@ -352,9 +354,9 @@ class MainGUI(QMainWindow):
                          palettes.Colormaps.Heatmap,
                          palettes.Colormaps.TSO]
         self.cmap_dict = {e.value: e for e in palettes_list}
-        self.ui.palette_comboBox.setModel(get_list_model([e.value for e in palettes_list]))
+        self.ui.palette_comboBox.setModel(gf.get_list_model([e.value for e in palettes_list]))
 
-        self.ui.tile_provider_comboBox.setModel(get_list_model(list(self.tile_sources.keys())))
+        self.ui.tile_provider_comboBox.setModel(gf.get_list_model(list(self.tile_sources.keys())))
         self.ui.tile_provider_comboBox.setCurrentIndex(0)
 
         # These get initialized by create_map()
@@ -413,10 +415,10 @@ class MainGUI(QMainWindow):
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
 
-        self.buses_for_storage: List[Bus] | None = None
+        self.buses_for_storage: List[dev.Bus] | None = None
 
         # dictionaries for available results
-        self.available_results_dict: Dict[str, List[ResultTypes]] | None = None
+        self.available_results_dict: Dict[str, List[sim.ResultTypes]] | None = None
         self.available_results_steps_dict = None
 
         ################################################################################################################
@@ -514,7 +516,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
 
-        self.ui.actionSync.triggered.connect(self.file_sync_toggle)
+        # self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
@@ -798,7 +800,7 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
             self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
-            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
@@ -811,7 +813,7 @@ class MainGUI(QMainWindow):
             self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
             self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
-            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         elif eng == bs.EngineType.GridCal:
@@ -825,7 +827,7 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
-            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
@@ -839,7 +841,7 @@ class MainGUI(QMainWindow):
             self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
             self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
-            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         elif eng == bs.EngineType.Bentayga:
@@ -853,7 +855,7 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
-            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
@@ -867,7 +869,7 @@ class MainGUI(QMainWindow):
             self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
             self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
-            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         elif eng == bs.EngineType.PGM:
@@ -881,7 +883,7 @@ class MainGUI(QMainWindow):
             self.lp_solvers_dict = OrderedDict()
             self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
             self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
-            self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
@@ -890,7 +892,7 @@ class MainGUI(QMainWindow):
             self.solvers_dict[bs.SolverType.BFS_linear.value] = bs.SolverType.BFS_linear
             self.solvers_dict[bs.SolverType.Constant_Impedance_linear.value] = bs.SolverType.Constant_Impedance_linear
 
-            self.ui.solver_comboBox.setModel(get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         else:
@@ -1122,9 +1124,11 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.buses) > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
-                    reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                    reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                           QtWidgets.QMessageBox.Yes,
+                                                           QtWidgets.QMessageBox.No)
 
-                    if reply == QMessageBox.Yes:
+                    if reply == QtWidgets.QMessageBox.Yes:
                         self.open_file_now(filenames=file_names)
                 else:
                     # Just open the file
@@ -1323,10 +1327,11 @@ class MainGUI(QMainWindow):
 
         # if the ask, checkbox is checked, then ask
         if self.ui.ask_before_appliying_layout_checkBox.isChecked():
-            reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to try an automatic layout?',
-                                         QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                   'Are you sure that you want to try an automatic layout?',
+                                                   QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
                 do_it = True
                 # build the graph always in this step
                 self.circuit.build_graph()
@@ -1357,7 +1362,7 @@ class MainGUI(QMainWindow):
                 try:
                     x = pos[i][0] * 500
                     y = pos[i][1] * 500
-                    bus.graphic_obj.setPos(QPoint(x, y))
+                    bus.graphic_obj.setPos(QtCore.QPoint(x, y))
                 except KeyError as ex:
                     warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
             # adjust the view
@@ -1407,7 +1412,7 @@ class MainGUI(QMainWindow):
 
         self.grid_editor.clear()
 
-        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
+        self.ui.dataStructuresListView.setModel(gf.get_list_model(self.grid_editor.object_types))
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -1442,9 +1447,11 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
-            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
                 self.new_project_now()
 
     def open_file(self):
@@ -1456,9 +1463,11 @@ class MainGUI(QMainWindow):
             if len(self.circuit.buses) > 0:
                 quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                            "\n If the process is cancelled the grid will remain."
-                reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                       QtWidgets.QMessageBox.Yes,
+                                                       QtWidgets.QMessageBox.No)
 
-                if reply == QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.Yes:
                     self.new_project_now()
                     self.open_file_threaded()
                 else:
@@ -1480,14 +1489,12 @@ class MainGUI(QMainWindow):
         # files_types = ''
         # call dialog to select the file
 
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        # options = QtWidgets.QFileDialog.Options()
+        # options |= QtWidgets.QFileDialog.DontUseNativeDialog
 
-        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
-                                                                          caption='Open file',
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(caption='Open file',
                                                                           dir=self.project_directory,
-                                                                          filter=files_types,
-                                                                          options=options)
+                                                                          filter=files_types)
 
         if len(filenames) > 0:
             self.open_file_now(filenames, post_function)
@@ -1526,7 +1533,8 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
+            self.open_file_thread_object = filedrv.FileOpenThread(
+                file_name=filenames if len(filenames) > 1 else filenames[0])
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1570,10 +1578,10 @@ class MainGUI(QMainWindow):
                     quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
                                "Do you want to enable the schematic?\n" \
                                "(you can always enable the drawing later)"
-                    reply = QMessageBox.question(self, 'Enable schematic', quit_msg,
-                                                 QMessageBox.Yes, QMessageBox.No)
+                    reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
+                                                           QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                    if reply == QMessageBox.No:
+                    if reply == QtWidgets.QMessageBox.No:
                         self.ui.draw_schematic_checkBox.setChecked(False)
                         self.set_grid_editor_state()
                 else:
@@ -1604,7 +1612,7 @@ class MainGUI(QMainWindow):
 
                 # get the session tree structure
                 session_data_dict = self.open_file_thread_object.get_session_tree()
-                mdl = get_tree_model(session_data_dict, 'Sessions')
+                mdl = gf.get_tree_model(session_data_dict, 'Sessions')
                 self.ui.diskSessionsTreeView.setModel(mdl)
 
                 # apply the GUI settings if found:
@@ -1664,11 +1672,11 @@ class MainGUI(QMainWindow):
         update the drop down menus that display dates
         """
         if self.circuit.time_profile is not None:
-            mdl = get_list_model(self.circuit.time_profile)
+            mdl = gf.get_list_model(self.circuit.time_profile)
             # setup profile sliders
             self.set_up_profile_sliders()
         else:
-            mdl = QStandardItemModel()
+            mdl = QtGui.QStandardItemModel()
         self.ui.profile_time_selection_comboBox.setModel(mdl)
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
@@ -1678,8 +1686,8 @@ class MainGUI(QMainWindow):
         Update the area dependent combos
         """
         n = len(self.circuit.areas)
-        mdl1 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
-        mdl2 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        mdl1 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        mdl2 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
 
         self.ui.areaFromListView.setModel(mdl1)
         self.ui.areaToListView.setModel(mdl2)
@@ -1729,7 +1737,7 @@ class MainGUI(QMainWindow):
             # if the global file_name is empty, ask where to save
             fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != '':
 
@@ -1822,7 +1830,7 @@ class MainGUI(QMainWindow):
 
         # get the session tree structure
         session_data_dict = self.save_file_thread_object.get_session_tree()
-        mdl = get_tree_model(session_data_dict, 'Sessions')
+        mdl = gf.get_tree_model(session_data_dict, 'Sessions')
         self.ui.diskSessionsTreeView.setModel(mdl)
 
         # call the garbage collector to free memory
@@ -1836,9 +1844,11 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             quit_msg = "Are you sure that you want to exit GridCal?"
-            reply = QMessageBox.question(self, 'Close', quit_msg, QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
                 self.delete_created_files()
                 # save config regardless
                 self.save_gui_config()
@@ -1873,7 +1883,7 @@ class MainGUI(QMainWindow):
 
             fname = os.path.join(self.project_directory, 'profiles of ' + self.grid_editor.name_label.text())
 
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != "":
                 if not filename.endswith('.xlsx'):
@@ -1899,7 +1909,7 @@ class MainGUI(QMainWindow):
             files_types = "Zip file (*.zip)"
             fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
 
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if filename != "":
                 self.LOCK()
@@ -1946,7 +1956,7 @@ class MainGUI(QMainWindow):
 
         fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
-        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+        filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
         if filename != "":
             if not filename.endswith('.xlsx'):
@@ -1977,7 +1987,7 @@ class MainGUI(QMainWindow):
             fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
 
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
             if not (filename.endswith('.svg') or filename.endswith('.png')):
                 filename += ".svg"
@@ -2089,15 +2099,15 @@ class MainGUI(QMainWindow):
 
         dictionary_of_lists = dict()
 
-        if elm_type == DeviceType.BusDevice.value:
-            elm = Bus()
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.circuit.countries,
+        if elm_type == dev.DeviceType.BusDevice.value:
+            elm = dev.Bus()
+            dictionary_of_lists = {dev.DeviceType.AreaDevice.value: self.circuit.areas,
+                                   dev.DeviceType.ZoneDevice.value: self.circuit.zones,
+                                   dev.DeviceType.SubstationDevice.value: self.circuit.substations,
+                                   dev.DeviceType.CountryDevice.value: self.circuit.countries,
                                    }
 
-        elif elm_type == DeviceType.BranchDevice.value:
+        elif elm_type == dev.DeviceType.BranchDevice.value:
 
             self.fill_catalogue_tree_view()
 
@@ -2106,94 +2116,94 @@ class MainGUI(QMainWindow):
 
             self.view_template_controls(True)
 
-        elif elm_type == DeviceType.LoadDevice.value:
+        elif elm_type == dev.DeviceType.LoadDevice.value:
             elm = dev.Load()
 
-        elif elm_type == DeviceType.StaticGeneratorDevice.value:
+        elif elm_type == dev.DeviceType.StaticGeneratorDevice.value:
             elm = dev.StaticGenerator()
 
-        elif elm_type == DeviceType.GeneratorDevice.value:
+        elif elm_type == dev.DeviceType.GeneratorDevice.value:
             elm = dev.Generator()
-            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
+            dictionary_of_lists = {dev.DeviceType.Technology.value: self.circuit.technologies, }
 
-        elif elm_type == DeviceType.BatteryDevice.value:
+        elif elm_type == dev.DeviceType.BatteryDevice.value:
             elm = dev.Battery()
-            dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies, }
+            dictionary_of_lists = {dev.DeviceType.Technology.value: self.circuit.technologies, }
 
-        elif elm_type == DeviceType.ShuntDevice.value:
+        elif elm_type == dev.DeviceType.ShuntDevice.value:
             elm = dev.Shunt()
 
-        elif elm_type == DeviceType.ExternalGridDevice.value:
+        elif elm_type == dev.DeviceType.ExternalGridDevice.value:
             elm = dev.ExternalGrid()
 
-        elif elm_type == DeviceType.LineDevice.value:
+        elif elm_type == dev.DeviceType.LineDevice.value:
             elm = dev.Line(None, None)
 
-        elif elm_type == DeviceType.Transformer2WDevice.value:
+        elif elm_type == dev.DeviceType.Transformer2WDevice.value:
             elm = dev.Transformer2W(None, None)
 
-        elif elm_type == DeviceType.WindingDevice.value:
+        elif elm_type == dev.DeviceType.WindingDevice.value:
             elm = dev.Winding(None, None)
 
-        elif elm_type == DeviceType.Transformer3WDevice.value:
+        elif elm_type == dev.DeviceType.Transformer3WDevice.value:
             elm = dev.Transformer3W()
 
-        elif elm_type == DeviceType.HVDCLineDevice.value:
+        elif elm_type == dev.DeviceType.HVDCLineDevice.value:
             elm = dev.HvdcLine(None, None)
 
-        elif elm_type == DeviceType.VscDevice.value:
+        elif elm_type == dev.DeviceType.VscDevice.value:
             elm = dev.VSC(None, None)
 
-        elif elm_type == DeviceType.UpfcDevice.value:
+        elif elm_type == dev.DeviceType.UpfcDevice.value:
             elm = dev.UPFC(None, None)
 
-        elif elm_type == DeviceType.DCLineDevice.value:
+        elif elm_type == dev.DeviceType.DCLineDevice.value:
             elm = dev.DcLine(None, None)
 
-        elif elm_type == DeviceType.SubstationDevice.value:
+        elif elm_type == dev.DeviceType.SubstationDevice.value:
             elm = dev.Substation()
 
-        elif elm_type == DeviceType.ZoneDevice.value:
+        elif elm_type == dev.DeviceType.ZoneDevice.value:
             elm = dev.Zone()
 
-        elif elm_type == DeviceType.AreaDevice.value:
+        elif elm_type == dev.DeviceType.AreaDevice.value:
             elm = dev.Area()
 
-        elif elm_type == DeviceType.CountryDevice.value:
+        elif elm_type == dev.DeviceType.CountryDevice.value:
             elm = dev.Country()
 
-        elif elm_type == DeviceType.ContingencyDevice.value:
+        elif elm_type == dev.DeviceType.ContingencyDevice.value:
             elm = dev.Contingency()
-            dictionary_of_lists = {DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups, }
+            dictionary_of_lists = {dev.DeviceType.ContingencyGroupDevice.value: self.circuit.contingency_groups, }
 
-        elif elm_type == DeviceType.ContingencyGroupDevice.value:
+        elif elm_type == dev.DeviceType.ContingencyGroupDevice.value:
             elm = dev.ContingencyGroup()
 
-        elif elm_type == DeviceType.InvestmentDevice.value:
+        elif elm_type == dev.DeviceType.InvestmentDevice.value:
             elm = dev.Investment()
-            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice.value: self.circuit.investments_groups, }
+            dictionary_of_lists = {dev.DeviceType.InvestmentsGroupDevice.value: self.circuit.investments_groups, }
 
-        elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+        elif elm_type == dev.DeviceType.InvestmentsGroupDevice.value:
             elm = dev.InvestmentsGroup()
 
-        elif elm_type == DeviceType.Technology.value:
+        elif elm_type == dev.DeviceType.Technology.value:
             elm = dev.Technology()
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
         if elm_type == 'Branches':
-            mdl = BranchObjectModel(elements, elm.editable_headers,
-                                    parent=self.ui.dataStructureTableView,
-                                    editable=True,
-                                    non_editable_attributes=elm.non_editable_attributes)
+            mdl = gf.BranchObjectModel(elements, elm.editable_headers,
+                                       parent=self.ui.dataStructureTableView,
+                                       editable=True,
+                                       non_editable_attributes=elm.non_editable_attributes)
         else:
 
-            mdl = ObjectsModel(elements, elm.editable_headers,
-                               parent=self.ui.dataStructureTableView,
-                               editable=True,
-                               non_editable_attributes=elm.non_editable_attributes,
-                               dictionary_of_lists=dictionary_of_lists)
+            mdl = gf.ObjectsModel(elements, elm.editable_headers,
+                                  parent=self.ui.dataStructureTableView,
+                                  editable=True,
+                                  non_editable_attributes=elm.non_editable_attributes,
+                                  dictionary_of_lists=dictionary_of_lists)
 
         return mdl
 
@@ -2221,7 +2231,7 @@ class MainGUI(QMainWindow):
 
         self.view_template_controls(False)
 
-        elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
+        elements = self.circuit.get_elements_by_type(element_type=dev.DeviceType(elm_type))
 
         mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
 
@@ -2238,18 +2248,18 @@ class MainGUI(QMainWindow):
 
         catalogue_dict = self.circuit.get_catalogue_dict(branches_only=True)
 
-        model = QStandardItemModel()
+        model = QtGui.QStandardItemModel()
 
         model.setHorizontalHeaderLabels(['Template'])
 
         for key in catalogue_dict.keys():
             # add parent node
-            parent1 = QStandardItem(str(key))
+            parent1 = QtGui.QStandardItem(str(key))
             parent1.setEditable(False)
 
             # add children to parent
             for elm in catalogue_dict[key]:
-                child1 = QStandardItem(str(elm))
+                child1 = QtGui.QStandardItem(str(elm))
                 child1.setEditable(False)
                 parent1.appendRow([child1])
 
@@ -2271,7 +2281,7 @@ class MainGUI(QMainWindow):
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
-            mdl = PandasModel(df)
+            mdl = gf.PandasModel(df)
 
             self.ui.simulationDataStructureTableView.setModel(mdl)
 
@@ -2324,7 +2334,7 @@ class MainGUI(QMainWindow):
 
         """
         dev_type = self.ui.profile_device_type_comboBox.currentText()
-        mdl = get_list_model(self.circuit.profile_magnitudes[dev_type][0])
+        mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
         self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
 
@@ -2355,9 +2365,11 @@ class MainGUI(QMainWindow):
 
         if self.circuit.time_profile is not None:
             quit_msg = "Are you sure that you want to remove the profiles?"
-            reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
                 for bus in self.circuit.buses:
                     bus.delete_profiles()
                 self.circuit.time_profile = None
@@ -2431,13 +2443,13 @@ class MainGUI(QMainWindow):
                 # ask to update active profile when magnitude is P for generators and loads
                 if len(objects) > 0:
                     if magnitude == 'P':
-                        if objects[0].device_type == DeviceType.GeneratorDevice:
+                        if objects[0].device_type == dev.DeviceType.GeneratorDevice:
                             ok = yes_no_question(
                                 "Do you want to correct the generators active profile based on the active power profile?",
                                 "Match")
                             if ok:
                                 self.fix_generators_active_based_on_the_power(ask_before=False)
-                        elif objects[0].device_type == DeviceType.LoadDevice:
+                        elif objects[0].device_type == dev.DeviceType.LoadDevice:
                             ok = yes_no_question(
                                 "Do you want to correct the loads active profile based on the active power profile?",
                                 "Match")
@@ -2563,9 +2575,11 @@ class MainGUI(QMainWindow):
             msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
                   " with the values of " + magnitude_from + "?"
 
-            reply = QMessageBox.question(self, 'Message', msg, QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
 
                 dev_type = self.circuit.device_type_name_dict[dev_type_text]
                 objects = self.circuit.get_elements_by_type(dev_type)
@@ -2596,7 +2610,7 @@ class MainGUI(QMainWindow):
         if len(idx) > 0:
             tree_mdl = self.ui.diskSessionsTreeView.model()
             item = tree_mdl.itemFromIndex(idx[0])
-            path = get_tree_item_path(item)
+            path = gf.get_tree_item_path(item)
 
             if len(path) > 1:
                 session_name = path[0]
@@ -2622,17 +2636,17 @@ class MainGUI(QMainWindow):
         if len(idx) > 0:
             tree_mdl = self.ui.results_treeView.model()
             item = tree_mdl.itemFromIndex(idx[0])
-            path = get_tree_item_path(item)
+            path = gf.get_tree_item_path(item)
 
             if len(path) > 0:
                 study_name = path[0]
                 study_type = self.available_results_dict[study_name]
 
                 quit_msg = "Do you want to delete the results driver " + study_name + "?"
-                reply = QMessageBox.question(self, 'Message', quit_msg,
-                                             QMessageBox.Yes, QMessageBox.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                if reply == QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.Yes:
                     self.session.delete_driver_by_name(study_name)
                     self.update_available_results()
 
@@ -2699,11 +2713,11 @@ class MainGUI(QMainWindow):
                 magnitude = magnitudes[idx]
                 mtype = mag_types[idx]
 
-                mdl = ProfilesModel(multi_circuit=self.circuit,
-                                    device_type=dev_type,
-                                    magnitude=magnitude,
-                                    format=mtype,
-                                    parent=self.ui.profiles_tableView)
+                mdl = gf.ProfilesModel(multi_circuit=self.circuit,
+                                       device_type=dev_type,
+                                       magnitude=magnitude,
+                                       format=mtype,
+                                       parent=self.ui.profiles_tableView)
             else:
                 mdl = None
 
@@ -3995,7 +4009,7 @@ class MainGUI(QMainWindow):
                 self.colour_schematic()
 
             # Set cascade table
-            self.ui.cascade_tableView.setModel(PandasModel(drv.get_table()))
+            self.ui.cascade_tableView.setModel(gf.PandasModel(drv.get_table()))
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4281,9 +4295,11 @@ class MainGUI(QMainWindow):
 
                     quit_msg = "Are you sure that you want overwrite the time events " \
                                "with the simulated by the OPF time series?"
-                    reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                    reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                           QtWidgets.QMessageBox.Yes,
+                                                           QtWidgets.QMessageBox.No)
 
-                    if reply == QMessageBox.Yes:
+                    if reply == QtWidgets.QMessageBox.Yes:
 
                         self.circuit.apply_lp_profiles(results)
 
@@ -4631,14 +4647,14 @@ class MainGUI(QMainWindow):
                 rx_threshold = 1.0 / (10.0 ** exponent)
 
                 # get the selected indices
-                checked = get_checked_indices(self.ui.removeByTypeListView.model())
+                checked = gf.get_checked_indices(self.ui.removeByTypeListView.model())
 
                 if len(checked) > 0:
 
                     selected_types = list()
                     for i in checked:
                         selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = BranchType(selected_type_txt)
+                        selected_type = dev.BranchType(selected_type_txt)
                         selected_types.append(selected_type)
 
                     # compose options
@@ -4756,7 +4772,7 @@ class MainGUI(QMainWindow):
                     if bus.active:
                         if bus.graphic_obj is not None:
                             r, g, b, a = colours[c]
-                            color = QColor(r * 255, g * 255, b * 255, a * 255)
+                            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                             bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
     def run_inputs_analysis(self):
@@ -4847,7 +4863,7 @@ class MainGUI(QMainWindow):
                             # add a marker to the bus if there are no batteries in it
                             if bus.graphic_obj.big_marker is None and len(bus.batteries) == 0:
                                 r, g, b, a = cmap(freq / fmax)
-                                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                                 bus.graphic_obj.add_big_marker(color=color)
                     else:
 
@@ -4903,11 +4919,11 @@ class MainGUI(QMainWindow):
         if self.grid_generator_dialogue.applied:
 
             if len(self.circuit.buses) > 0:
-                reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to delete '
-                                                              'the current grid and replace it?',
-                                             QMessageBox.Yes, QMessageBox.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                       'Are you sure that you want to delete the current grid and replace it?',
+                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                if reply == QMessageBox.No:
+                if reply == QtWidgets.QMessageBox.No:
                     return
 
             self.circuit = self.grid_generator_dialogue.circuit
@@ -4988,10 +5004,11 @@ class MainGUI(QMainWindow):
         @return:
         """
 
-        reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to cancel the simulation?',
-                                     QMessageBox.Yes, QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                               'Are you sure that you want to cancel the simulation?',
+                                               QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-        if reply == QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             # send the cancel state to whatever it is being executed
 
             for drv in self.get_all_threads():
@@ -5060,9 +5077,9 @@ class MainGUI(QMainWindow):
                  SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
                  SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg', }
 
-        self.ui.results_treeView.setModel(get_tree_model(d, 'Results', icons=icons))
+        self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
         lst.reverse()  # this is to show the latest simulation first
-        mdl = get_list_model(lst)
+        mdl = gf.get_list_model(lst)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.available_results_to_color_map_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
@@ -5525,7 +5542,7 @@ class MainGUI(QMainWindow):
         """
         tree_mdl = self.ui.results_treeView.model()
         item = tree_mdl.itemFromIndex(index)
-        path = get_tree_item_path(item)
+        path = gf.get_tree_item_path(item)
 
         if len(path) > 1:
 
@@ -5617,8 +5634,8 @@ class MainGUI(QMainWindow):
         mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
-            file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
-                                                       filter="CSV (*.csv);;Excel files (*.xlsx)")
+            file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                                 filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
                 if 'xlsx' in filter:
@@ -5972,45 +5989,45 @@ class MainGUI(QMainWindow):
 
             if tpe == 'Overhead lines':
                 elm = dev.Tower()
-                mdl = ObjectsModel(self.circuit.overhead_line_types,
-                                   elm.editable_headers,
-                                   parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['name'])
+                mdl = gf.ObjectsModel(self.circuit.overhead_line_types,
+                                      elm.editable_headers,
+                                      parent=self.ui.catalogueTableView, editable=True,
+                                      non_editable_attributes=elm.non_editable_attributes,
+                                      check_unique=['name'])
 
             elif tpe == 'Underground lines':
                 elm = dev.UndergroundLineType()
-                mdl = ObjectsModel(self.circuit.underground_cable_types,
-                                   elm.editable_headers,
-                                   parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['name'])
+                mdl = gf.ObjectsModel(self.circuit.underground_cable_types,
+                                      elm.editable_headers,
+                                      parent=self.ui.catalogueTableView, editable=True,
+                                      non_editable_attributes=elm.non_editable_attributes,
+                                      check_unique=['name'])
 
             elif tpe == 'Sequence lines':
                 elm = dev.SequenceLineType()
-                mdl = ObjectsModel(self.circuit.sequence_line_types,
-                                   elm.editable_headers,
-                                   parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['name'])
+                mdl = gf.ObjectsModel(self.circuit.sequence_line_types,
+                                      elm.editable_headers,
+                                      parent=self.ui.catalogueTableView, editable=True,
+                                      non_editable_attributes=elm.non_editable_attributes,
+                                      check_unique=['name'])
             elif tpe == 'Wires':
                 elm = dev.Wire(name='', gmr=0, r=0, x=0)
-                mdl = ObjectsModel(self.circuit.wire_types,
-                                   elm.editable_headers,
-                                   parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['name'])
+                mdl = gf.ObjectsModel(self.circuit.wire_types,
+                                      elm.editable_headers,
+                                      parent=self.ui.catalogueTableView, editable=True,
+                                      non_editable_attributes=elm.non_editable_attributes,
+                                      check_unique=['name'])
 
             elif tpe == 'Transformers':
                 elm = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=10, nominal_power=10,
                                           copper_losses=0, iron_losses=0, no_load_current=0.1,
                                           short_circuit_voltage=0.1,
                                           gr_hv1=0.5, gx_hv1=0.5)
-                mdl = ObjectsModel(self.circuit.transformer_types,
-                                   elm.editable_headers,
-                                   parent=self.ui.catalogueTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   check_unique=['name'])
+                mdl = gf.ObjectsModel(self.circuit.transformer_types,
+                                      elm.editable_headers,
+                                      parent=self.ui.catalogueTableView, editable=True,
+                                      non_editable_attributes=elm.non_editable_attributes,
+                                      check_unique=['name'])
 
             else:
                 mdl = None
@@ -6025,7 +6042,7 @@ class MainGUI(QMainWindow):
         """
         Assign the selected branch templates
         """
-        logger = Logger()
+        logger = bs.Logger()
 
         if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
 
@@ -6039,10 +6056,10 @@ class MainGUI(QMainWindow):
 
                 # get the compatible BRanch Type that matches the type class
                 compatible_types = {'Wires': None,
-                                    'Overhead lines': BranchType.Line,
-                                    'Underground lines': BranchType.Line,
-                                    'Sequence lines': BranchType.Line,
-                                    'Transformers': BranchType.Transformer}
+                                    'Overhead lines': dev.BranchType.Line,
+                                    'Underground lines': dev.BranchType.Line,
+                                    'Sequence lines': dev.BranchType.Line,
+                                    'Transformers': dev.BranchType.Transformer}
                 compatible_type = compatible_types[type_class]
 
                 # get catalogue dictionary of the selected type
@@ -6077,9 +6094,9 @@ class MainGUI(QMainWindow):
                     # update catalogue displayed
 
             else:
-                info_msg('Select a type from the catalogue not the generic category', 'Assign branch type')
+                info_msg("Choose a type from the catalogue not the generic category", 'Assign branch type')
         else:
-            info_msg('Select a type from the catalogue', 'Assign branch type')
+            info_msg('Choose a type from the catalogue', 'Assign branch type')
 
     def process_templates(self):
         """
@@ -6273,7 +6290,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
 
-                elif elm.device_type == DeviceType.BusDevice:
+                elif elm.device_type == dev.DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
@@ -6304,7 +6321,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
-                elif elm.device_type == DeviceType.BusDevice:
+                elif elm.device_type == dev.DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
@@ -6327,7 +6344,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
 
-                elif elm.device_type == DeviceType.BusDevice:
+                elif elm.device_type == dev.DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
 
                 else:
@@ -6357,15 +6374,15 @@ class MainGUI(QMainWindow):
 
             if len(objects) > 0:
 
-                if objects[0].device_type == DeviceType.BusDevice:
+                if objects[0].device_type == dev.DeviceType.BusDevice:
 
                     if len(sel_idx) > 0:
 
-                        reply = QMessageBox.question(self, 'Message',
-                                                     'Do you want to reduce and delete the selected elements?',
-                                                     QMessageBox.Yes, QMessageBox.No)
+                        reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                               'Do you want to reduce and delete the selected elements?',
+                                                               QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                        if reply == QMessageBox.Yes:
+                        if reply == QtWidgets.QMessageBox.Yes:
 
                             self.LOCK()
 
@@ -6468,7 +6485,7 @@ class MainGUI(QMainWindow):
         """
         numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False, )
         islands = numerical_circuit_.split_into_islands()
-        logger = Logger()
+        logger = bs.Logger()
         buses_to_delete = list()
         buses_to_delete_idx = list()
         for island in islands:
@@ -6539,38 +6556,38 @@ class MainGUI(QMainWindow):
 
         if model is not None:
 
-            if elm_type == DeviceType.SubstationDevice.value:
+            if elm_type == dev.DeviceType.SubstationDevice.value:
                 self.circuit.add_substation(dev.Substation('Default'))
                 self.update_area_combos()
 
-            elif elm_type == DeviceType.ZoneDevice.value:
+            elif elm_type == dev.DeviceType.ZoneDevice.value:
                 self.circuit.add_zone(dev.Zone('Default'))
                 self.update_area_combos()
 
-            elif elm_type == DeviceType.AreaDevice.value:
+            elif elm_type == dev.DeviceType.AreaDevice.value:
                 self.circuit.add_area(dev.Area('Default'))
                 self.update_area_combos()
 
-            elif elm_type == DeviceType.CountryDevice.value:
+            elif elm_type == dev.DeviceType.CountryDevice.value:
                 self.circuit.add_country(dev.Country('Default'))
                 self.update_area_combos()
 
-            elif elm_type == DeviceType.BusDevice.value:
+            elif elm_type == dev.DeviceType.BusDevice.value:
                 self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
                                              area=self.circuit.areas[0],
                                              zone=self.circuit.zones[0],
                                              substation=self.circuit.substations[0],
                                              country=self.circuit.countries[0]))
 
-            elif elm_type == DeviceType.ContingencyGroupDevice.value:
+            elif elm_type == dev.DeviceType.ContingencyGroupDevice.value:
                 group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
                 self.circuit.add_contingency_group(group)
 
-            elif elm_type == DeviceType.InvestmentsGroupDevice.value:
+            elif elm_type == dev.DeviceType.InvestmentsGroupDevice.value:
                 group = dev.InvestmentsGroup(name="Investments group " + str(len(self.circuit.contingency_groups) + 1))
                 self.circuit.add_investments_group(group)
 
-            elif elm_type == DeviceType.Technology.value:
+            elif elm_type == dev.DeviceType.Technology.value:
                 tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
                 self.circuit.add_technology(tech)
 
@@ -6589,7 +6606,7 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 bus.graphic_obj.delete_big_marker()
 
-    def set_big_bus_marker(self, buses, color: QColor):
+    def set_big_bus_marker(self, buses, color: QtGui.QColor):
         """
         Set a big marker at the selected buses
         :param buses: list of Bus objects
@@ -6626,18 +6643,18 @@ class MainGUI(QMainWindow):
                     elm = objects[0]
 
                     self.clear_big_bus_markers()
-                    color = QColor(55, 200, 171, 180)
+                    color = QtGui.QColor(55, 200, 171, 180)
 
-                    if elm.device_type == DeviceType.BusDevice:
+                    if elm.device_type == dev.DeviceType.BusDevice:
 
                         self.set_big_bus_marker(buses=sel_obj, color=color)
 
-                    elif elm.device_type in [DeviceType.BranchDevice,
-                                             DeviceType.LineDevice,
-                                             DeviceType.Transformer2WDevice,
-                                             DeviceType.HVDCLineDevice,
-                                             DeviceType.VscDevice,
-                                             DeviceType.DCLineDevice]:
+                    elif elm.device_type in [dev.DeviceType.BranchDevice,
+                                             dev.DeviceType.LineDevice,
+                                             dev.DeviceType.Transformer2WDevice,
+                                             dev.DeviceType.HVDCLineDevice,
+                                             dev.DeviceType.VscDevice,
+                                             dev.DeviceType.DCLineDevice]:
                         buses = list()
                         for br in sel_obj:
                             buses.append(br.bus_from)
@@ -6675,19 +6692,19 @@ class MainGUI(QMainWindow):
 
                     self.clear_big_bus_markers()
 
-                    if elm.device_type == DeviceType.BusDevice:
+                    if elm.device_type == dev.DeviceType.BusDevice:
                         # buses
                         buses = objects
                         values = [getattr(elm, attr) for elm in objects]
 
-                    elif elm.device_type in [DeviceType.BranchDevice,
-                                             DeviceType.LineDevice,
-                                             DeviceType.DCLineDevice,
-                                             DeviceType.HVDCLineDevice,
-                                             DeviceType.Transformer2WDevice,
-                                             DeviceType.SwitchDevice,
-                                             DeviceType.VscDevice,
-                                             DeviceType.UpfcDevice]:
+                    elif elm.device_type in [dev.DeviceType.BranchDevice,
+                                             dev.DeviceType.LineDevice,
+                                             dev.DeviceType.DCLineDevice,
+                                             dev.DeviceType.HVDCLineDevice,
+                                             dev.DeviceType.Transformer2WDevice,
+                                             dev.DeviceType.SwitchDevice,
+                                             dev.DeviceType.VscDevice,
+                                             dev.DeviceType.UpfcDevice]:
                         # branches
                         buses = list()
                         values = list()
@@ -6715,7 +6732,7 @@ class MainGUI(QMainWindow):
                         for bus, value in zip(buses, values):
                             if bus.graphic_obj is not None:
                                 r, g, b, a = cmap(value / mx)
-                                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                                 bus.graphic_obj.add_big_marker(color=color)
                     else:
                         info_msg('The maximum value is 0, so the coloring cannot be applied',
@@ -6727,12 +6744,12 @@ class MainGUI(QMainWindow):
             else:
                 pass
 
-    def get_selected_buses(self) -> List[Tuple[int, Bus]]:
+    def get_selected_buses(self) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus]] = list()
+        lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self.circuit.buses):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():
@@ -6773,11 +6790,11 @@ class MainGUI(QMainWindow):
             selected = self.get_selected_buses()
 
             if len(selected) > 0:
-                reply = QMessageBox.question(self, 'Delete',
-                                             'Are you sure that you want to delete the selected elements?',
-                                             QMessageBox.Yes, QMessageBox.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Delete',
+                                                       'Are you sure that you want to delete the selected elements?',
+                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                if reply == QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.Yes:
 
                     # remove the buses (from the schematic and the circuit)
                     for k, bus in selected:
@@ -6788,7 +6805,7 @@ class MainGUI(QMainWindow):
                 else:
                     pass
             else:
-                info_msg('Select some elements from the schematic', 'Delete buses')
+                info_msg('Choose some elements from the schematic', 'Delete buses')
         else:
             pass
 
@@ -6804,7 +6821,7 @@ class MainGUI(QMainWindow):
                 if bus.graphic_obj is not None:
                     bus.graphic_obj.set_position(x=bus.x, y=bus.y)
         else:
-            info_msg('Select some elements from the schematic', 'Fix buses locations')
+            info_msg('Choose some elements from the schematic', 'Fix buses locations')
 
     def copy_opf_to_profiles(self):
         """
@@ -6814,12 +6831,12 @@ class MainGUI(QMainWindow):
 
         if results is not None:
 
-            reply = QMessageBox.question(self, 'Message',
-                                         'Are you sure that you want to overwrite '
-                                         'the generation profiles with the OPF results?',
-                                         QMessageBox.Yes, QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                   'Are you sure that you want to overwrite '
+                                                   'the generation profiles with the OPF results?',
+                                                   QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:
                 for i, gen in enumerate(self.circuit.get_generators()):
                     gen.P_prof = results.generator_power[:, i]
 
@@ -6853,144 +6870,144 @@ class MainGUI(QMainWindow):
         self.ui.actionNew_project.setEnabled(val)
         self.ui.actionOpen_file.setEnabled(val)
 
-    def file_sync_toggle(self):
-        """
-        Toggle file sync on/off
-        """
-        if self.ui.actionSync.isChecked():
+    # def file_sync_toggle(self):
+    #     """
+    #     Toggle file sync on/off
+    #     """
+    #     if self.ui.actionSync.isChecked():
+    #
+    #         # attempt to start synchronizing
+    #         if os.path.exists(self.file_name):
+    #             sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
+    #             self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, file_name=self.file_name,
+    #                                                            sleep_time=sleep_time)
+    #
+    #             # upon sync check (call the gui dialogue)
+    #             self.file_sync_thread.sync_event.connect(self.post_file_sync)
+    #
+    #             # upon sync gui check
+    #             self.file_sync_thread.items_processed_event.connect(self.post_file_sync_items_processed)
+    #
+    #             self.file_sync_thread.start()
+    #
+    #             # disable the regular save so that you cannot override the synchronization process
+    #             self.enable_manual_file_operations(False)
+    #
+    #         else:
+    #             warning_msg('Cannot sync because the file does not exist.\nDid you save the model?')
+    #             self.ui.actionSync.setChecked(False)
+    #
+    #             # enable the regular save button
+    #             self.enable_manual_file_operations(True)
+    #     else:
+    #         # attempt to stop the synchronization
+    #         if self.file_sync_thread.isRunning():
+    #             self.file_sync_thread.cancel()
+    #             self.file_sync_thread.quit()
+    #
+    #             # enable the regular save button
+    #             self.enable_manual_file_operations(True)
+    #
+    #         self.UNLOCK()
 
-            # attempt to start synchronizing
-            if os.path.exists(self.file_name):
-                sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
-                self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, file_name=self.file_name,
-                                                               sleep_time=sleep_time)
+    # def post_file_sync(self):
+    #     """
+    #     Actions to perform upon synchronization
+    #     """
+    #
+    #     if self.file_sync_thread.version_conflict:
+    #         # version conflict and changes
+    #         if len(self.file_sync_thread.issues) > 0:
+    #
+    #             if self.ui.accept_newer_changes_checkBox.isChecked():
+    #                 if self.file_sync_thread.highest_version > self.circuit.model_version:
+    #                     # there are newer changes and we want to automatically accept them
+    #                     self.post_file_sync_items_processed()
+    #                 else:
+    #                     # there are newer changes but we do not want to automatically accept them
+    #                     self.file_sync_window = SyncDialogueWindow(parent=self,
+    #                                                                file_sync_thread=self.file_sync_thread)  # will pause the thread
+    #                     self.file_sync_window.setModal(True)
+    #                     self.file_sync_window.show()
+    #             else:
+    #                 # we want to check all the conflicts
+    #                 self.file_sync_window = SyncDialogueWindow(parent=self,
+    #                                                            file_sync_thread=self.file_sync_thread)  # will pause the thread
+    #                 self.file_sync_window.setModal(True)
+    #                 self.file_sync_window.show()
+    #         else:
+    #             # just read the file because there were no changes but the version was upgraded
+    #             self.circuit.model_version = self.file_sync_thread.highest_version
+    #             self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+    #
+    #     else:
+    #         # no version conflict, and there were changes on my side
+    #         if len(self.file_sync_thread.issues) > 0:
+    #             self.save_file()
 
-                # upon sync check (call the gui dialogue)
-                self.file_sync_thread.sync_event.connect(self.post_file_sync)
-
-                # upon sync gui check
-                self.file_sync_thread.items_processed_event.connect(self.post_file_sync_items_processed)
-
-                self.file_sync_thread.start()
-
-                # disable the regular save so that you cannot override the synchronization process
-                self.enable_manual_file_operations(False)
-
-            else:
-                warning_msg('Cannot sync because the file does not exist.\nDid you save the model?')
-                self.ui.actionSync.setChecked(False)
-
-                # enable the regular save button
-                self.enable_manual_file_operations(True)
-        else:
-            # attempt to stop the synchronization
-            if self.file_sync_thread.isRunning():
-                self.file_sync_thread.cancel()
-                self.file_sync_thread.quit()
-
-                # enable the regular save button
-                self.enable_manual_file_operations(True)
-
-            self.UNLOCK()
-
-    def post_file_sync(self):
-        """
-        Actions to perform upon synchronization
-        """
-
-        if self.file_sync_thread.version_conflict:
-            # version conflict and changes
-            if len(self.file_sync_thread.issues) > 0:
-
-                if self.ui.accept_newer_changes_checkBox.isChecked():
-                    if self.file_sync_thread.highest_version > self.circuit.model_version:
-                        # there are newer changes and we want to automatically accept them
-                        self.post_file_sync_items_processed()
-                    else:
-                        # there are newer changes but we do not want to automatically accept them
-                        self.file_sync_window = SyncDialogueWindow(parent=self,
-                                                                   file_sync_thread=self.file_sync_thread)  # will pause the thread
-                        self.file_sync_window.setModal(True)
-                        self.file_sync_window.show()
-                else:
-                    # we want to check all the conflicts
-                    self.file_sync_window = SyncDialogueWindow(parent=self,
-                                                               file_sync_thread=self.file_sync_thread)  # will pause the thread
-                    self.file_sync_window.setModal(True)
-                    self.file_sync_window.show()
-            else:
-                # just read the file because there were no changes but the version was upgraded
-                self.circuit.model_version = self.file_sync_thread.highest_version
-                self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
-
-        else:
-            # no version conflict, and there were changes on my side
-            if len(self.file_sync_thread.issues) > 0:
-                self.save_file()
-
-    def post_file_sync_items_processed(self):
-        """
-        Modify, Add or delete objects after the sync acceptation
-        This is done here because it concerns the GUI thread
-        """
-
-        # first add any bus that has been created
-        for issue in self.file_sync_thread.issues:
-            if issue.issue_type == bs.SyncIssueType.Added and issue.device_type == DeviceType.BusDevice:
-                # add the bus directly with all the device it may contain
-                issue.their_elm.delete_children()
-                if issue.their_elm.graphic_obj is not None:
-                    issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
-                self.circuit.add_bus(issue.their_elm)
-
-        # create dictionary of buses
-        bus_dict = self.circuit.get_bus_dict()
-
-        # add the rest of the devices
-        for issue in self.file_sync_thread.issues:
-
-            if issue.issue_type == bs.SyncIssueType.Conflict:
-                if issue.accepted():
-                    issue.accept_change()
-
-            elif issue.issue_type == bs.SyncIssueType.Added:
-
-                if issue.device_type == DeviceType.BranchDevice:
-                    # re_map the buses
-                    name_f = issue.their_elm.bus_from.name
-                    issue.their_elm.bus_from = bus_dict[name_f]
-                    name_t = issue.their_elm.bus_to.name
-                    issue.their_elm.bus_to = bus_dict[name_t]
-
-                    # add the device
-                    if issue.their_elm.graphic_obj is not None:
-                        issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
-                        issue.their_elm.bus_from.graphic_obj.update()
-                        issue.their_elm.bus_to.graphic_obj.update()
-                        issue.their_elm.graphic_obj.redraw()
-                    self.circuit.add_branch(issue.their_elm)
-
-                elif issue.device_type == DeviceType.BusDevice:
-                    # we already added the buses, but we need to exclude them from the list
-                    continue
-
-                else:
-                    # re_map the buses
-                    name_f = issue.their_elm.bus.name
-                    bus = bus_dict[name_f]
-                    issue.their_elm.bus = bus
-
-                    # add the device
-                    bus.add_device(issue.their_elm)
-                    if issue.their_elm.graphic_obj is not None:
-                        bus.graphic_obj.create_children_icons()
-
-            elif issue.issue_type == bs.SyncIssueType.Deleted:
-                if issue.their_elm.graphic_obj is not None:
-                    issue.my_elm.graphic_obj.remove(ask=False)
-
-        # center nodes
-        self.grid_editor.align_schematic()
+    # def post_file_sync_items_processed(self):
+    #     """
+    #     Modify, Add or delete objects after the sync acceptation
+    #     This is done here because it concerns the GUI thread
+    #     """
+    #
+    #     # first add any bus that has been created
+    #     for issue in self.file_sync_thread.issues:
+    #         if issue.issue_type == bs.SyncIssueType.Added and issue.device_type == DeviceType.BusDevice:
+    #             # add the bus directly with all the device it may contain
+    #             issue.their_elm.delete_children()
+    #             if issue.their_elm.graphic_obj is not None:
+    #                 issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
+    #             self.circuit.add_bus(issue.their_elm)
+    #
+    #     # create dictionary of buses
+    #     bus_dict = self.circuit.get_bus_dict()
+    #
+    #     # add the rest of the devices
+    #     for issue in self.file_sync_thread.issues:
+    #
+    #         if issue.issue_type == bs.SyncIssueType.Conflict:
+    #             if issue.accepted():
+    #                 issue.accept_change()
+    #
+    #         elif issue.issue_type == bs.SyncIssueType.Added:
+    #
+    #             if issue.device_type == DeviceType.BranchDevice:
+    #                 # re_map the buses
+    #                 name_f = issue.their_elm.bus_from.name
+    #                 issue.their_elm.bus_from = bus_dict[name_f]
+    #                 name_t = issue.their_elm.bus_to.name
+    #                 issue.their_elm.bus_to = bus_dict[name_t]
+    #
+    #                 # add the device
+    #                 if issue.their_elm.graphic_obj is not None:
+    #                     issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
+    #                     issue.their_elm.bus_from.graphic_obj.update()
+    #                     issue.their_elm.bus_to.graphic_obj.update()
+    #                     issue.their_elm.graphic_obj.redraw()
+    #                 self.circuit.add_branch(issue.their_elm)
+    #
+    #             elif issue.device_type == DeviceType.BusDevice:
+    #                 # we already added the buses, but we need to exclude them from the list
+    #                 continue
+    #
+    #             else:
+    #                 # re_map the buses
+    #                 name_f = issue.their_elm.bus.name
+    #                 bus = bus_dict[name_f]
+    #                 issue.their_elm.bus = bus
+    #
+    #                 # add the device
+    #                 bus.add_device(issue.their_elm)
+    #                 if issue.their_elm.graphic_obj is not None:
+    #                     bus.graphic_obj.create_children_icons()
+    #
+    #         elif issue.issue_type == bs.SyncIssueType.Deleted:
+    #             if issue.their_elm.graphic_obj is not None:
+    #                 issue.my_elm.graphic_obj.remove(ask=False)
+    #
+    #     # center nodes
+    #     self.grid_editor.align_schematic()
 
     def snapshot_balance(self):
         """
@@ -7176,8 +7193,8 @@ class MainGUI(QMainWindow):
 
         :return:
         """
-        areas_from_idx = get_checked_indices(self.ui.areaFromListView.model())
-        areas_to_idx = get_checked_indices(self.ui.areaToListView.model())
+        areas_from_idx = gf.get_checked_indices(self.ui.areaFromListView.model())
+        areas_to_idx = gf.get_checked_indices(self.ui.areaToListView.model())
         areas_from = [self.circuit.areas[i] for i in areas_from_idx]
         areas_to = [self.circuit.areas[i] for i in areas_to_idx]
 
@@ -7433,7 +7450,7 @@ class MainGUI(QMainWindow):
             files_types = "JSON file (*.json)"
 
             # call dialog to select the file
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', '', files_types)
+            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', '', files_types)
 
             if not (filename.endswith('.json')):
                 filename += ".json"
