@@ -19,18 +19,17 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
+import numpy as np
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
-from GridCal.ThirdParty.pulp import *
+from GridCal.ThirdParty.pulp import lpSum, lpDot, lpAddRestrictions2, LpProblem, lpMakeVars
 
 
 def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
-    :param problem: LpProblem instance
     :param Pg: generator LpVars (ng, nt)
     :param Pb: batteries LpVars (nb, nt)
     :param LSlack: Load slack LpVars (nl, nt)
@@ -406,50 +405,3 @@ class OpfAcTimeSeries(OpfTimeSeries):
         modules = self.v0 + self.extract2D(self.dvm)
         return modules * np.exp(-1j * angles)
 
-
-if __name__ == '__main__':
-
-    from GridCal.Engine import *
-
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-
-    main_circuit = FileOpen(fname).open()
-
-    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
-
-    # get the power flow options from the GUI
-    solver = SolverType.AC_OPF
-    mip_solver = MIPSolvers.CBC
-    grouping = TimeGrouping.Daily
-    pf_options = PowerFlowOptions()
-
-    options = OptimalPowerFlowOptions(solver=solver,
-                                      time_grouping=grouping,
-                                      mip_solver=mip_solver,
-                                      power_flow_options=pf_options)
-
-    start = 0
-    end = len(main_circuit.time_profile)
-
-    # create the OPF time series instance
-    # if non_sequential:
-    optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=main_circuit,
-                                                                options=options,
-                                                                start_=start,
-                                                                end_=end)
-
-    optimal_power_flow_time_series.run()
-
-    v = optimal_power_flow_time_series.results.voltage
-    print('Angles\n', np.angle(v))
-
-    l = optimal_power_flow_time_series.results.loading
-    print('Branch loading\n', l)
-
-    g = optimal_power_flow_time_series.results.generator_power
-    print('Gen power\n', g)
-
-    pr = optimal_power_flow_time_series.results.shadow_prices
-    print('Nodal prices \n', pr)

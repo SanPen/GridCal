@@ -21,7 +21,8 @@ import numpy as np
 import pandas as pd
 from math import sqrt
 from typing import Set, Dict, List, Tuple
-from GridCal.Engine.IO.cim.cim_enums import *
+from GridCal.Engine.IO.cim.cim_enums import UnitSymbol, UnitMultiplier, cgmesProfile
+import GridCal.Engine.IO.cim.cim_enums as cim_enums
 from GridCal.Engine.basic_structures import Logger
 
 
@@ -702,7 +703,7 @@ class Terminal(ACDCTerminal):
     def __init__(self, rdfid, tpe):
         ACDCTerminal.__init__(self, rdfid, tpe)
 
-        self.phases: PhaseCode = PhaseCode.ABC
+        self.phases: cim_enums.PhaseCode = cim_enums.PhaseCode.ABC
         self.sequenceNumber: int = 0
 
         # self.connected: bool = True
@@ -730,7 +731,7 @@ class Terminal(ACDCTerminal):
         }
 
         self.register_property(name='phases',
-                               class_type=PhaseCode,
+                               class_type=cim_enums.PhaseCode,
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="Represents the normal network phasing condition. "
@@ -1340,8 +1341,8 @@ class OperationalLimitType(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.limitType: LimitTypeKind = LimitTypeKind.patl
-        self.direction: OperationalLimitDirectionKind = OperationalLimitDirectionKind.absoluteValue
+        self.limitType: cim_enums.LimitTypeKind = cim_enums.LimitTypeKind.patl
+        self.direction: cim_enums.OperationalLimitDirectionKind = cim_enums.OperationalLimitDirectionKind.absoluteValue
         self.acceptableDuration: float = 0.0
 
         self.possibleProfileList |= {'class': [cgmesProfile.EQ.value, ],
@@ -1352,14 +1353,14 @@ class OperationalLimitType(IdentifiedObject):
                                      }
 
         self.register_property(name='limitType',
-                               class_type=LimitTypeKind,
+                               class_type=cim_enums.LimitTypeKind,
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="Types of limits defined in the ENTSO-E "
                                            "Operational Handbook Policy 3.")
 
         self.register_property(name='direction',
-                               class_type=OperationalLimitDirectionKind,
+                               class_type=cim_enums.OperationalLimitDirectionKind,
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="The direction of the limit.")
@@ -1548,11 +1549,11 @@ class ControlArea(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.type: ControlAreaTypeKind = ControlAreaTypeKind.AGC
+        self.type: cim_enums.ControlAreaTypeKind = cim_enums.ControlAreaTypeKind.AGC
         self.netInterchange: float = 0.0
         self.pTolerance: float = 0.0
 
-        self.EnergyArea: EnergyArea = None
+        self.EnergyArea: EnergyArea | None = None
 
         self.possibleProfileList |= {'class': [cgmesProfile.SSH.value, cgmesProfile.EQ.value, ],
                                      'netInterchange': [cgmesProfile.SSH.value, ],
@@ -1564,7 +1565,7 @@ class ControlArea(IdentifiedObject):
                                      }
 
         self.register_property(name='type',
-                               class_type=ControlAreaTypeKind,
+                               class_type=cim_enums.ControlAreaTypeKind,
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="The primary type of control area definition used "
@@ -2112,7 +2113,7 @@ class PowerTransformerEnd(IdentifiedObject):
 
         self.endNumber: int = 0
 
-        self.connectionKind: WindingConnection = WindingConnection.D
+        self.connectionKind: cim_enums.WindingConnection = cim_enums.WindingConnection.D
 
         self.phaseAngleClock: int = 0
 
@@ -2245,7 +2246,7 @@ class PowerTransformerEnd(IdentifiedObject):
                                )
 
         self.register_property(name='connectionKind',
-                               class_type=WindingConnection,
+                               class_type=cim_enums.WindingConnection,
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="Kind of connection.")
@@ -2884,7 +2885,7 @@ class RegulatingControl(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.mode: RegulatingControlModeKind = RegulatingControlModeKind.voltage
+        self.mode: cim_enums.RegulatingControlModeKind = cim_enums.RegulatingControlModeKind.voltage
 
         self.discrete: bool = False
         self.enabled: bool = True
@@ -2908,7 +2909,7 @@ class RegulatingControl(IdentifiedObject):
 
         self.register_property(
             name='mode',
-            class_type=RegulatingControlModeKind,
+            class_type=cim_enums.RegulatingControlModeKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="The regulating control mode presently available. "
@@ -3073,7 +3074,7 @@ class RatioTapChanger(TapChanger):
     def __init__(self, rdfid, tpe):
         TapChanger.__init__(self, rdfid, tpe)
 
-        self.tculControlMode: TransformerControlMode = TransformerControlMode.volt
+        self.tculControlMode: cim_enums.TransformerControlMode = cim_enums.TransformerControlMode.volt
         self.stepVoltageIncrement: float = 0.0
 
         self.TransformerEnd: PowerTransformerEnd = None
@@ -3088,7 +3089,7 @@ class RatioTapChanger(TapChanger):
 
         self.register_property(
             name='tculControlMode',
-            class_type=TransformerControlMode,
+            class_type=cim_enums.TransformerControlMode,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="Specifies the regulation control mode (voltage or reactive) of the RatioTapChanger.")
@@ -3121,7 +3122,7 @@ class GeneratingUnit(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.genControlSource: GeneratorControlSource = None
+        self.genControlSource: cim_enums.GeneratorControlSource = None
         self.governorSCD: float = 0.0
         self.initialP: float = 0.0
         self.longPF: float = 0.0
@@ -3168,7 +3169,7 @@ class GeneratingUnit(IdentifiedObject):
 
         self.register_property(
             name='genControlSource',
-            class_type=GeneratorControlSource,
+            class_type=cim_enums.GeneratorControlSource,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="The ratio tap changer of this tap ratio table.")
@@ -3450,9 +3451,9 @@ class SynchronousMachine(MonoPole, RotatingMachine):
         self.satDirectSubtransX: float = 0.0
         self.satDirectSyncX: float = 0.0
         self.satDirectTransX: float = 0.0
-        self.shortCircuitRotorType: ShortCircuitRotorKind = ShortCircuitRotorKind.salientPole1
+        self.shortCircuitRotorType: cim_enums.ShortCircuitRotorKind = cim_enums.ShortCircuitRotorKind.salientPole1
 
-        self.type: SynchronousMachineKind = SynchronousMachineKind.generator
+        self.type: cim_enums.SynchronousMachineKind = cim_enums.SynchronousMachineKind.generator
 
         self.voltageRegulationRange: float = 0.0
 
@@ -3460,7 +3461,7 @@ class SynchronousMachine(MonoPole, RotatingMachine):
         self.ratedS: float = 0.0
         self.ratedU: float = 0.0
 
-        self.operatingMode: SynchronousMachineOperatingMode = SynchronousMachineOperatingMode.generator
+        self.operatingMode: cim_enums.SynchronousMachineOperatingMode = cim_enums.SynchronousMachineOperatingMode.generator
         self.referencePriority = 0
 
         self.InitialReactiveCapabilityCurve: ReactiveCapabilityCurve = None
@@ -3635,7 +3636,7 @@ class SynchronousMachine(MonoPole, RotatingMachine):
 
         self.register_property(
             name='shortCircuitRotorType',
-            class_type=ShortCircuitRotorKind,
+            class_type=cim_enums.ShortCircuitRotorKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="Type of rotor, used by short circuit applications, "
@@ -3643,7 +3644,7 @@ class SynchronousMachine(MonoPole, RotatingMachine):
 
         self.register_property(
             name='type',
-            class_type=SynchronousMachineKind,
+            class_type=cim_enums.SynchronousMachineKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="Modes that this synchronous machine can operate in.")
@@ -3682,7 +3683,7 @@ class SynchronousMachine(MonoPole, RotatingMachine):
 
         self.register_property(
             name='operatingMode',
-            class_type=SynchronousMachineOperatingMode,
+            class_type=cim_enums.SynchronousMachineOperatingMode,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="")
@@ -3756,7 +3757,7 @@ class HydroGeneratingUnit(GeneratingUnit):
     def __init__(self, rdfid, tpe):
         GeneratingUnit.__init__(self, rdfid, tpe)
 
-        self.energyConversionCapability: HydroEnergyConversionKind = HydroEnergyConversionKind.generator
+        self.energyConversionCapability: cim_enums.HydroEnergyConversionKind = cim_enums.HydroEnergyConversionKind.generator
 
         self.HydroPowerPlant: HydroPowerPlant = None
 
@@ -3767,7 +3768,7 @@ class HydroGeneratingUnit(GeneratingUnit):
 
         self.register_property(
             name='energyConversionCapability',
-            class_type=HydroEnergyConversionKind,
+            class_type=cim_enums.HydroEnergyConversionKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="Energy conversion capability for generating.")
@@ -3785,7 +3786,7 @@ class HydroPowerPlant(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.hydroPlantStorageType: HydroPlantStorageKind = HydroPlantStorageKind.storage
+        self.hydroPlantStorageType: cim_enums.HydroPlantStorageKind = cim_enums.HydroPlantStorageKind.storage
 
         self.possibleProfileList |= {'class': [cgmesProfile.EQ.value, ],
                                      # 'HydroGeneratingUnits': [cgmesProfile.EQ.value, ],
@@ -3795,7 +3796,7 @@ class HydroPowerPlant(IdentifiedObject):
 
         self.register_property(
             name='hydroPlantStorageType',
-            class_type=HydroPlantStorageKind,
+            class_type=cim_enums.HydroPlantStorageKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="The type of hydro power plant water storage.")
@@ -4114,7 +4115,7 @@ class ReactiveCapabilityCurve(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.curveStyle: CurveStyle = CurveStyle.straightLineYValues
+        self.curveStyle: cim_enums.CurveStyle = cim_enums.CurveStyle.straightLineYValues
         self.xUnit: UnitSymbol = UnitSymbol.none
         self.y1Unit: UnitSymbol = UnitSymbol.none
         self.y2Unit: UnitSymbol = UnitSymbol.none
@@ -4131,7 +4132,7 @@ class ReactiveCapabilityCurve(IdentifiedObject):
 
         self.register_property(
             name='curveStyle',
-            class_type=CurveStyle,
+            class_type=cim_enums.CurveStyle,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="The style or shape of the curve.")
@@ -4167,7 +4168,7 @@ class StaticVarCompensator(RegulatingCondEq):
         self.capacitiveRating: float = 0.0  # S
         self.inductiveRating: float = 0.0  # S
         self.slope: float = 0.0  # kV/MVAr
-        self.sVCControlMode: SVCControlMode = SVCControlMode.volt
+        self.sVCControlMode: cim_enums.SVCControlMode = cim_enums.SVCControlMode.volt
         self.voltageSetPoint: float = 0.0
 
         self.RegulatingControl: RegulatingControl = None
@@ -4217,7 +4218,7 @@ class StaticVarCompensator(RegulatingCondEq):
 
         self.register_property(
             name='sVCControlMode',
-            class_type=SVCControlMode,
+            class_type=cim_enums.SVCControlMode,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="SVC control mode.")
@@ -4270,7 +4271,7 @@ class WindGeneratingUnit(GeneratingUnit):
     def __init__(self, rdfid, tpe):
         GeneratingUnit.__init__(self, rdfid, tpe)
 
-        self.windGenUnitType: WindGenUnitKind = WindGenUnitKind.onshore
+        self.windGenUnitType: cim_enums.WindGenUnitKind = cim_enums.WindGenUnitKind.onshore
 
         self.possibleProfileList |= {
             'windGenUnitType': [cgmesProfile.EQ.value, ],
@@ -4278,7 +4279,7 @@ class WindGeneratingUnit(GeneratingUnit):
 
         self.register_property(
             name='windGenUnitType',
-            class_type=WindGenUnitKind,
+            class_type=cim_enums.WindGenUnitKind,
             multiplier=UnitMultiplier.none,
             unit=UnitSymbol.none,
             description="The kind of wind generating unit.")

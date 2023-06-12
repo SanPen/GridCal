@@ -9,7 +9,7 @@ from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 
 linear_solver = get_linear_solver()
@@ -434,10 +434,10 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
             lam -= mu * dlam
 
             # update Vm and Va again in case we wrapped around with a negative Vm
-            V = polar_to_rect(Vm, Va)
+            V = cf.polar_to_rect(Vm, Va)
 
             # evaluate F(x, lam)
-            Scalc = compute_power(Ybus, V)
+            Scalc = cf.compute_power(Ybus, V)
             mismatch = Scalc - Sbus - lam * Sxfr
 
             # evaluate the parametrization function P(x, lambda)
@@ -750,70 +750,3 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
     return results
 
-
-if __name__ == '__main__':
-
-    from GridCal.Engine import *
-    from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-
-    fname = os.path.join('/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE 14.xlsx')
-    # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
-
-    print('Reading...')
-    main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.Direct,
-                                  control_p=True)
-
-    ####################################################################################################################
-    # PowerFlowDriver
-    ####################################################################################################################
-    print('\n\n')
-    power_flow = PowerFlowDriver(main_circuit, pf_options)
-    power_flow.run()
-
-    print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sf|:', abs(power_flow.results.Sf))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\tReport')
-    print(power_flow.results.get_report_dataframe())
-
-    ####################################################################################################################
-    # Voltage collapse
-    ####################################################################################################################
-    vc_options = ContinuationPowerFlowOptions(step=0.001,
-                                              approximation_order=CpfParametrization.ArcLength,
-                                              adapt_step=True,
-                                              step_min=0.00001,
-                                              step_max=0.2,
-                                              error_tol=1e-3,
-                                              tol=1e-6,
-                                              max_it=20,
-                                              stop_at=CpfStopAt.Full,
-                                              verbose=False)
-
-    # just for this test
-    numeric_circuit = compile_snapshot_circuit(main_circuit)
-    numeric_inputs = numeric_circuit.split_into_islands()
-    Sbase_ = power_flow.results.Sbus / numeric_circuit.Sbase
-    Vbase_ = power_flow.results.voltage
-
-    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase_,
-                                           Vbase=Vbase_,
-                                           Starget=Sbase_ * 2)
-
-    vc = ContinuationPowerFlowDriver(circuit=main_circuit,
-                                     options=vc_options,
-                                     inputs=vc_inputs,
-                                     pf_options=pf_options)
-    vc.run()
-    res = vc.results.mdl(ResultTypes.BusActivePower)
-    res.plot()
-
-    res = vc.results.mdl(ResultTypes.BusVoltage)
-    res.plot()
-
-    plt.show()

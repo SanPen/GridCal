@@ -581,14 +581,3 @@ class PowerWorldParser:
         logger += grid.fill_xy_from_lat_lon()
 
         return grid, logger
-
-
-if __name__ == '__main__':
-
-    # f = '/home/santi/Descargas/ACTIVSg500/ACTIVSg500.EPC'
-    f = r'C:\Users\SPV86\Downloads\IEEE300\IEEE300Bus.epc'
-
-    parser = PowerWorldParser(f)
-    parser.parse_case()
-
-    print()

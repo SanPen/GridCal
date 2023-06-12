@@ -1041,19 +1041,3 @@ class CompressedJsonStruct:
         j = self.get_col_index(prop=col_name)
         self.__data[i][j] = val
 
-
-if __name__ == '__main__':
-    from GridCal.Engine.IO.file_handler import FileOpen
-
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.gridcal'
-
-    main_circuit = FileOpen(fname).open()
-
-    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Monthly)
-
-    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Weekly)
-
-    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Daily)
-
-    get_time_groups(t_array=main_circuit.time_profile, grouping=TimeGrouping.Hourly)

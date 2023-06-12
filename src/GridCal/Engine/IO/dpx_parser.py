@@ -818,13 +818,3 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
 
     # return the circuit and the logs
     return circuit, logger
-
-
-if __name__ == '__main__':
-
-    fname = 'example.dpx'
-
-    circuit_, logger = load_dpx(file_name=fname)
-
-    for l in logger:
-        print(l)

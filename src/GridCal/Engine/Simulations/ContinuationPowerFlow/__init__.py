@@ -14,5 +14,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import *
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import *
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowDriver, ContinuationPowerFlowOptions, CpfParametrization, CpfStopAt, ContinuationPowerFlowInput

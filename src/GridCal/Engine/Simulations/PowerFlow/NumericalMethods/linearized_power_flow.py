@@ -22,7 +22,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -68,13 +68,13 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> Num
         Va[ref] = Va_ref
 
         # re assemble the voltage
-        V = polar_to_rect(Vm, Va)
+        V = cf.polar_to_rect(Vm, Va)
 
         # compute the calculated power injection and the error of the voltage solution
         Scalc = V * np.conj(Ybus * V - I0)
 
         # compute the power mismatch between the specified power Sbus and the calculated power Scalc
-        mismatch = compute_fx(Scalc, S0, pvpq, pq)
+        mismatch = cf.compute_fx(Scalc, S0, pvpq, pq)
 
         # check for convergence
         norm_f = np.linalg.norm(mismatch, np.Inf)
@@ -138,9 +138,9 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
         except Exception as e:
             V = Vset
             # Calculate the error and check the convergence
-            Scalc = compute_power(Ybus, V)
-            mismatch = compute_fx(Scalc=Scalc, Sbus=S0, pvpq=pvpq, pq=pq)
-            norm_f = compute_fx_error(mismatch)
+            Scalc = cf.compute_power(Ybus, V)
+            mismatch = cf.compute_fx(Scalc=Scalc, Sbus=S0, pvpq=pvpq, pq=pq)
+            norm_f = cf.compute_fx_error(mismatch)
 
             # check for convergence
             end = time.time()
@@ -154,21 +154,21 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
         #  set the pv voltages
         va_pv = x[0:npv]
         vm_pv = np.abs(Vset[pv])
-        V[pv] = polar_to_rect(vm_pv, va_pv)
+        V[pv] = cf.polar_to_rect(vm_pv, va_pv)
 
         # set the PQ voltages
         va_pq = x[npv:npv+npq]
         vm_pq = np.ones(npq) - x[npv+npq::]
-        V[pq] = polar_to_rect(vm_pq, va_pq)
+        V[pq] = cf.polar_to_rect(vm_pq, va_pq)
 
         # Calculate the error and check the convergence
-        Scalc = compute_power(Ybus, V)
-        mismatch = compute_fx(Scalc, S0, pvpq, pq)
-        norm_f = compute_fx_error(mismatch)
+        Scalc = cf.compute_power(Ybus, V)
+        mismatch = cf.compute_fx(Scalc, S0, pvpq, pq)
+        norm_f = cf.compute_fx_error(mismatch)
     else:
         norm_f = 0.0
         V = Vset
-        Scalc = compute_power(Ybus, V)
+        Scalc = cf.compute_power(Ybus, V)
 
     end = time.time()
     elapsed = end - start

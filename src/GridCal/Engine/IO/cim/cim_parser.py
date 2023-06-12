@@ -992,24 +992,3 @@ class CIMImport:
 
         self.emit_text('Done!')
         return circuit
-
-
-if __name__ == '__main__':
-    import os
-
-    # folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
-    folder = '/home/santi/Documentos/Private_Grids/CGMES/TYNDP_2025'
-
-    files = [
-        # '2025NT_FR_model_004.zip',
-        # '2025NT_ES_model_003.zip',
-        '2025NT_PT_model_003.zip',
-        '20191017T0918Z_ENTSO-E_BD_1130.zip'
-    ]
-    fnames = [os.path.join(folder, f) for f in files]
-
-    print('Reading...')
-    parser = CIMImport(text_func=print)
-    circuit_ = parser.load_cim_file(fnames)
-    print()
-    # parser.cim.to_excel('Spain_data.xlsx')

@@ -116,9 +116,3 @@ def get_wires_catalogue():
     else:
         return list()
 
-
-if __name__ == '__main__':
-    tr = get_transformer_catalogue()
-    cab = get_cables_catalogue()
-    wi = get_wires_catalogue()
-    print()

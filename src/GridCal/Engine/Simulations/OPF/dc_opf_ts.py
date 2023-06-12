@@ -21,11 +21,13 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from itertools import product
-
+from typing import List
+# from GridCal.ThirdParty.pulp import lpSum, lpDot, lpAddRestrictions2, LpProblem, lpMakeVars, LpStatus, LpVariable
 from GridCal.Engine.basic_structures import ZonalGrouping
-from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries, LpProblem, LpVariable, Logger
+from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.basic_structures import Logger
 import GridCal.ThirdParty.pulp as pl
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 
@@ -111,7 +113,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, theta, P, start_, end_):
+def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: pl.LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -169,7 +171,7 @@ def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem:
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: LpProblem,
+def add_branch_loading_restriction(problem: pl.LpProblem,
                                    nc: OpfTimeCircuit,
                                    theta, F, T,
                                    ratings, ratings_slack_from, ratings_slack_to,
@@ -210,7 +212,7 @@ def add_branch_loading_restriction(problem: LpProblem,
             # compute the flow
             if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                tau[m, t] = LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
+                tau[m, t] = pl.LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
                 Pbr_f[m, t] = bk * (theta[F[m], t] - theta[T[m], t] + tau[m, t])
 
                 # power injected and subtracted due to the phase shift
@@ -231,7 +233,7 @@ def add_branch_loading_restriction(problem: LpProblem,
     return Pbr_f, tau, Pinj_tau
 
 
-def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor,
+def formulate_contingency(problem: pl.LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor,
                           lodf_tolerance):
     """
 
@@ -268,12 +270,12 @@ def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit,
                     contingency_flow = flow_f[m, t] + LODF[m, c] * flow_f[c, t]
 
                     # rating restriction in the sense from-to
-                    overload1 = LpVariable("n-1_overload1_{0}_{1}_{2}".format(t, m, c), 0, 99999)
+                    overload1 = pl.LpVariable("n-1_overload1_{0}_{1}_{2}".format(t, m, c), 0, 99999)
                     problem.add(contingency_flow <= (ratings[m, t] + overload1),
                                 "n-1_ft_up_rating_{0}_{1}_{2}".format(t, m, c))
 
                     # rating restriction in the sense to-from
-                    overload2 = LpVariable("n-1_overload2_{0}_{1}_{2}".format(t, m, c), 0, 99999)
+                    overload2 = pl.LpVariable("n-1_overload2_{0}_{1}_{2}".format(t, m, c), 0, 99999)
                     problem.add((-ratings[m, t] - overload2) <= contingency_flow,
                                 "n-1_tf_down_rating_{0}_{1}_{2}".format(t, m, c))
 
@@ -286,7 +288,7 @@ def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit,
     return flow_lst, overload1_lst, overload2_lst, indices
 
 
-def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
+def add_battery_discharge_restriction(problem: pl.LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
     """
     Add the batteries capacity restrictions
     :param problem: LpProblem instance
@@ -324,7 +326,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
                               op='=')
 
 
-def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
+def formulate_hvdc_flow(problem: pl.LpProblem, angles, Pinj, rates, active, Pset,
                         control_mode, dispatchable, angle_droop, F, T, Sbase,
                         logger: Logger = Logger(), inf=999999):
     """
@@ -362,7 +364,7 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
                     logger.add_error('Rate = 0', 'HVDC:{0} t:{1}'.format(i, t), rates[i, t])
 
                 # formulate the hvdc flow as an AC line equivalent
-                flow_f[i, t] = LpVariable('flow_hvdc1_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
+                flow_f[i, t] = pl.LpVariable('flow_hvdc1_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
                 P0 = Pset[i, t] / Sbase
                 problem.add(flow_f[i, t] == P0 + angle_droop[i, t] * (angles[_f, t] - angles[_t, t]),
                             "hvdc_flow_set_{0}_{1}".format(i, t))
@@ -388,7 +390,7 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
                 # simple injections model, the power is a variable and it is optimized
-                P0 = LpVariable('hvdc_pf_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
+                P0 = pl.LpVariable('hvdc_pf_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
                 flow_f[i, t] = P0
                 Pinj[_f, t] -= flow_f[i, t]
                 Pinj[_t, t] += flow_f[i, t]
@@ -580,7 +582,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         branch_rating_slack2 = pl.lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
         # declare problem ----------------------------------------------------------------------------------------------
-        self.problem = LpProblem(name='DC_OPF_Time_Series')
+        self.problem = pl.LpProblem(name='DC_OPF_Time_Series')
 
         # set the fixed generation values ------------------------------------------------------------------------------
         set_fix_generation(problem=self.problem,
@@ -724,53 +726,3 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = con_overload1_lst
 
-
-if __name__ == '__main__':
-
-    from GridCal.Engine import *
-
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-
-    main_circuit = FileOpen(fname).open()
-
-    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
-
-    # get the power flow options from the GUI
-    solver = SolverType.DC_OPF
-    mip_solver = MIPSolvers.CBC
-    grouping = TimeGrouping.Daily
-    pf_options = PowerFlowOptions()
-
-    options = OptimalPowerFlowOptions(solver=solver,
-                                      time_grouping=grouping,
-                                      mip_solver=mip_solver,
-                                      power_flow_options=pf_options)
-
-    start = 0
-    end = len(main_circuit.time_profile)
-
-    # create the OPF time series instance
-    # if non_sequential:
-    optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=main_circuit,
-                                                                options=options,
-                                                                start_=start,
-                                                                end_=end)
-
-    optimal_power_flow_time_series.run()
-
-    v = optimal_power_flow_time_series.results.voltage
-    print('Angles\n', np.angle(v))
-
-    l = optimal_power_flow_time_series.results.loading
-    print('Branch loading\n', l)
-
-    g = optimal_power_flow_time_series.results.generator_power
-    print('Gen power\n', g)
-
-    pr = optimal_power_flow_time_series.results.shadow_prices
-    print('Nodal prices \n', pr)
-
-    import pandas as pd
-    pd.DataFrame(optimal_power_flow_time_series.results.loading).to_excel('opf_loading.xlsx')

@@ -502,20 +502,3 @@ class NodeGroupsDriver(DriverTemplate):
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
 
-
-if __name__ == '__main__':
-
-    from GridCal.Engine import *
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Illinois 200 Bus.gridcal'
-    fname = '/home/santi/Documentos/Private_Grids/Penísula Ibérica 2026.gridcal'
-    grid = FileOpen(fname).open()
-
-    driver = NodeGroupsDriver(grid=grid, sigmas=1e-3)
-    driver.run()
-
-    print('\nGroups:')
-    for group in driver.groups_by_name:
-        print(group)
-
-    for group in driver.groups_by_index:
-        print(group)

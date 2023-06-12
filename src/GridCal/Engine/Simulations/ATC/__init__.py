@@ -14,5 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import *
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import *
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityDriver, AvailableTransferMode, AvailableTransferCapacityOptions
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesDriver
+

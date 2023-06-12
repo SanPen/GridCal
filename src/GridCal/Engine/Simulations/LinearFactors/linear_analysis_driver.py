@@ -16,16 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
 import multiprocessing
-
+import numpy as np
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
-# from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, new
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
@@ -71,7 +70,7 @@ class LinearAnalysisResults(ResultsTemplate):
 
         self.bus_types = bus_types
 
-        self.logger = Logger()
+        self.logger = bs.Logger()
 
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
@@ -248,24 +247,4 @@ class LinearAnalysisDriver(DriverTemplate):
             return [v for v in self.results.bus_names]
         else:
             return list()
-
-
-if __name__ == '__main__':
-
-    from GridCal.Engine import FileOpen, SolverType
-
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-
-    main_circuit = FileOpen(fname).open()
-
-    options = LinearAnalysisOptions()
-    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
-    simulation.run()
-    ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
-
-    print(ptdf_df.get_data_frame())
-
 

@@ -789,16 +789,3 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
 
     return results
 
-
-if __name__ == "__main__":
-    import GridCal.Engine as gce
-    # fname = './../../../../../Grids_and_profiles/grids/IEEE 14.xlsx'
-    # fname = './../../../../../Grids_and_profiles/grids/IEEE 30 Bus.gridcal'
-    fname = './../../../../../Grids_and_profiles/grids/Some distribution grid (Video).gridcal'
-    circ = gce.FileOpen(fname).open()
-
-    pf_opt = PowerFlowOptions()
-    lgr = Logger()
-    pf_res_ = pgm_pf(circ, pf_opt, lgr, time_series=True)
-
-    print(pf_res_.voltage)

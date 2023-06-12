@@ -15,6 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis_ts_driver import *
-from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import *
-from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis_driver import *
+# from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis_ts_driver import
+from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
+from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis_driver import NonLinearAnalysisDriver, NonLinearAnalysisOptions, NonLinearAnalysisResults

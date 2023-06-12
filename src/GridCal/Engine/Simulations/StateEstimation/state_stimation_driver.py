@@ -273,7 +273,3 @@ class StateEstimation(DriverTemplate):
                                            island.original_bus_idx,
                                            island.original_branch_idx,
                                            island.original_tr_idx)
-
-
-if __name__ == '__main__':
-    pass

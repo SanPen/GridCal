@@ -18,11 +18,12 @@
 import platform
 
 import numpy as np
-
+from itertools import product
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.ThirdParty.pulp import *
+from GridCal.ThirdParty.pulp import lpSum, lpDot, lpAddRestrictions2, LpProblem, lpMakeVars, LpStatus, LpVariable
+from GridCal.ThirdParty.pulp import SCIP_CMD, GUROBI_CMD, CPLEX_CMD, HiGHS_CMD, PULP_CBC_CMD, XPRESS
 from GridCal.Engine.basic_structures import Logger
 
 try:

@@ -15,6 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import *
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeries, LinearAnalysisTimeSeriesResults
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearAnalysis2
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions, LinearAnalysisDriver, LinearAnalysisResults

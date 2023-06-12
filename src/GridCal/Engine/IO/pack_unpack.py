@@ -577,14 +577,3 @@ def data_frames_to_circuit(data: Dict):
 
     return circuit
 
-
-if __name__ == '__main__':
-    from GridCal.Engine.IO.file_handler import FileOpen, FileSave
-
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Some distribution grid.gridcal'
-
-    main_circuit = FileOpen(fname).open()
-
-    FileSave(main_circuit, 'file.gridcal').save()

@@ -2499,9 +2499,3 @@ class PSSeParser:
 
         return grid, logger
 
-
-if __name__ == '__main__':
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid.raw'
-    pss_parser = PSSeParser(fname)
-
-    print()

@@ -150,13 +150,3 @@ def load_iPA(file_name) -> MultiCircuit:
     # return the circuit
     return circuit
 
-
-if __name__ == '__main__':
-
-    fname = 'Export_sensible_v15_modif.json'
-
-    circuit = load_iPA(file_name=fname)
-
-    # circuit.save_excel(fname + '_assuming_kW.xlsx')
-
-    pass

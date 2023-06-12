@@ -45,3 +45,4 @@ from GridCal.Engine.Devices.investment import Investment
 from GridCal.Engine.Devices.investments_group import InvestmentsGroup
 from GridCal.Engine.Devices.technology import Technology
 from GridCal.Engine.Devices.groupings import Area, Substation, Zone, Country
+from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation

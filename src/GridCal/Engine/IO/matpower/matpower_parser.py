@@ -571,10 +571,3 @@ def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
         logger.add_error('No bus data')
 
     return circuit, logger
-
-
-if __name__ == '__main__':
-    fname = '/home/santi/Descargas/matpower-fubm-master/data/fubm_caseHVDC_vt.m'
-    grid = parse_matpower_file(fname)
-
-    print()

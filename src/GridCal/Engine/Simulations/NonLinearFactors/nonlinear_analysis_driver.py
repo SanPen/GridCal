@@ -16,9 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
 import multiprocessing
-
+import numpy as np
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import *
+from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -70,7 +70,7 @@ class NonLinearAnalysisResults(ResultsTemplate):
 
         self.bus_types = bus_types
 
-        self.logger = Logger()
+        self.logger = bs.Logger()
 
         self.PTDF = np.zeros((n_br, n_bus))
 
@@ -236,22 +236,5 @@ class NonLinearAnalysisDriver(DriverTemplate):
             return list()
 
 
-if __name__ == '__main__':
-
-    from GridCal.Engine import FileOpen, SolverType
-
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-
-    main_circuit = FileOpen(fname).open()
-
-    options = NonLinearAnalysisOptions()
-    simulation = NonLinearAnalysisDriver(grid=main_circuit, options=options)
-    simulation.run()
-    ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
-
-    print(ptdf_df.get_data_frame())
 
 

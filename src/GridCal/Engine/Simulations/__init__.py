@@ -31,3 +31,6 @@ from GridCal.Engine.Simulations.Topology import *
 from GridCal.Engine.Simulations.SigmaAnalysis import *
 from GridCal.Engine.Simulations.InputsAnalysis import *
 from GridCal.Engine.Simulations.NTC import *
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCal.Engine.Simulations.result_types import ResultTypes

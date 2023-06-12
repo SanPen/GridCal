@@ -17,11 +17,14 @@
 
 import time
 
+import numpy as np
+import numpy as np
+import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
 
 
@@ -113,34 +116,34 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
         St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
         # compute converter losses
-        Gsw = compute_converter_losses(V=V, It=It, F=F,
-                                       alpha1=nc.branch_data.alpha1,
-                                       alpha2=nc.branch_data.alpha2,
-                                       alpha3=nc.branch_data.alpha3,
-                                       iVscL=nc.iVscL)
+        Gsw = cf.compute_converter_losses(V=V, It=It, F=F,
+                                          alpha1=nc.branch_data.alpha1,
+                                          alpha2=nc.branch_data.alpha2,
+                                          alpha3=nc.branch_data.alpha3,
+                                          iVscL=nc.iVscL)
 
         # compute total mismatch
-        Scalc = compute_power(Ybus, V)
-        dz = compute_acdc_fx(Vm=Vm,
-                             Sbus=Sbus,
-                             Scalc=Scalc,
-                             Sf=Sf,
-                             St=St,
-                             Pfset=Pfset,
-                             Qfset=Qfset,
-                             Qtset=Qtset,
-                             Vmfset=Vmfset,
-                             Kdp=Kdp,
-                             F=F,
-                             pvpq=pvpq,
-                             pq=pq,
-                             iPfsh=nc.iPfsh,
-                             iQfma=nc.iQfma,
-                             iBeqz=nc.iBeqz,
-                             iQtma=nc.iQtma,
-                             iPfdp=nc.iPfdp,
-                             VfBeqbus=nc.VfBeqbus,
-                             Vtmabus=nc.Vtmabus)
+        Scalc = cf.compute_power(Ybus, V)
+        dz = cf.compute_acdc_fx(Vm=Vm,
+                                Sbus=Sbus,
+                                Scalc=Scalc,
+                                Sf=Sf,
+                                St=St,
+                                Pfset=Pfset,
+                                Qfset=Qfset,
+                                Qtset=Qtset,
+                                Vmfset=Vmfset,
+                                Kdp=Kdp,
+                                F=F,
+                                pvpq=pvpq,
+                                pq=pq,
+                                iPfsh=nc.iPfsh,
+                                iQfma=nc.iQfma,
+                                iBeqz=nc.iBeqz,
+                                iQtma=nc.iQtma,
+                                iPfdp=nc.iPfdp,
+                                VfBeqbus=nc.VfBeqbus,
+                                Vtmabus=nc.Vtmabus)
 
         norm_f = np.max(np.abs(dz))
 
@@ -217,7 +220,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                 m[nc.iVtma] -= dma_Vt
                 Beq[nc.iBeqz] -= dBeq_z
                 Beq[nc.iBeqv] -= dBeq_v
-                V = polar_to_rect(Vm, Va)
+                V = cf.polar_to_rect(Vm, Va)
                 Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
             else:
@@ -244,34 +247,34 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
             St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
             # compute converter losses
-            Gsw = compute_converter_losses(V=V, It=It, F=F,
-                                           alpha1=nc.branch_data.alpha1,
-                                           alpha2=nc.branch_data.alpha2,
-                                           alpha3=nc.branch_data.alpha3,
-                                           iVscL=nc.iVscL)
+            Gsw = cf.compute_converter_losses(V=V, It=It, F=F,
+                                              alpha1=nc.branch_data.alpha1,
+                                              alpha2=nc.branch_data.alpha2,
+                                              alpha3=nc.branch_data.alpha3,
+                                              iVscL=nc.iVscL)
 
             # check convergence
-            Scalc = compute_power(Ybus, V)
-            dz = compute_acdc_fx(Vm=Vm,
-                                 Sbus=Sbus,
-                                 Scalc=Scalc,
-                                 Sf=Sf,
-                                 St=St,
-                                 Pfset=Pfset,
-                                 Qfset=Qfset,
-                                 Qtset=Qtset,
-                                 Vmfset=Vmfset,
-                                 Kdp=Kdp,
-                                 F=F,
-                                 pvpq=pvpq,
-                                 pq=pq,
-                                 iPfsh=nc.iPfsh,
-                                 iQfma=nc.iQfma,
-                                 iBeqz=nc.iBeqz,
-                                 iQtma=nc.iQtma,
-                                 iPfdp=nc.iPfdp,
-                                 VfBeqbus=nc.VfBeqbus,
-                                 Vtmabus=nc.Vtmabus)
+            Scalc = cf.compute_power(Ybus, V)
+            dz = cf.compute_acdc_fx(Vm=Vm,
+                                    Sbus=Sbus,
+                                    Scalc=Scalc,
+                                    Sf=Sf,
+                                    St=St,
+                                    Pfset=Pfset,
+                                    Qfset=Qfset,
+                                    Qtset=Qtset,
+                                    Vmfset=Vmfset,
+                                    Kdp=Kdp,
+                                    F=F,
+                                    pvpq=pvpq,
+                                    pq=pq,
+                                    iPfsh=nc.iPfsh,
+                                    iQfma=nc.iQfma,
+                                    iBeqz=nc.iBeqz,
+                                    iQtma=nc.iQtma,
+                                    iPfdp=nc.iPfdp,
+                                    VfBeqbus=nc.VfBeqbus,
+                                    Vtmabus=nc.Vtmabus)
 
             norm_f = np.max(np.abs(dz))
             converged = norm_f < tolerance
@@ -301,4 +304,3 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     elapsed = end - start
 
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iter_, elapsed)
-

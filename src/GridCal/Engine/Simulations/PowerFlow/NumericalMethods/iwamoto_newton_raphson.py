@@ -17,10 +17,10 @@
 
 import time
 import scipy
-
+import numpy as np
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -108,10 +108,10 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     if npvpq > 0:
 
         # evaluate F(x0)
-        Sbus = compute_zip_power(S0, I0, Y0, Vm)
-        Scalc = compute_power(Ybus, V)
-        f = compute_fx(Scalc, Sbus, pvpq, pq)
-        norm_f = compute_fx_error(f)
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = cf.compute_power(Ybus, V)
+        f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+        norm_f = cf.compute_fx_error(f)
 
         # check tolerance
         converged = norm_f < tol
@@ -160,10 +160,10 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
             Va = np.angle(V)  # we wrapped around with a negative Vm
 
             # evaluate F(x)
-            Sbus = compute_zip_power(S0, I0, Y0, Vm)
-            Scalc = compute_power(Ybus, V)
-            f = compute_fx(Scalc, Sbus, pvpq, pq)
-            norm_f = compute_fx_error(f)
+            Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = cf.compute_power(Ybus, V)
+            f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+            norm_f = cf.compute_fx_error(f)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error
@@ -184,8 +184,8 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                     npvpq = npv + npq
 
                     # recompute the error based on the new Sbus
-                    f = compute_fx(Scalc, Sbus, pvpq, pq)
-                    norm_f = compute_fx_error(f)
+                    f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                    norm_f = cf.compute_fx_error(f)
 
                     # if verbose > 0:
                     #     for sense, idx, var in messages:

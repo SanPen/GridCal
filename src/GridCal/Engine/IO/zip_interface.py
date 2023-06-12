@@ -371,17 +371,3 @@ def get_xml_from_zip(file_name_zip, text_func=None, progress_func=None):
             data[name] = text_lines
 
     return data
-
-
-if __name__ == '__main__':
-
-    fname = '/home/santi/Descargas/IEEE 39.gridcal'
-    # data = get_xml_from_zip(fname)
-
-    data_ = get_session_tree(fname)
-
-    load_session_driver_objects(file_name_zip=fname,
-                                session_name='GUI session',
-                                study_name='Power Flow')
-
-    print()

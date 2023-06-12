@@ -18,9 +18,10 @@
 import time
 import scipy
 import json
+import numpy as np
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -77,10 +78,10 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     if npvpq > 0:
 
         # evaluate F(x0)
-        Sbus = compute_zip_power(S0, I0, Y0, Vm)
-        Scalc = compute_power(Ybus, V)
-        f = compute_fx(Scalc, Sbus, pvpq, pq)
-        norm_f = compute_fx_error(f)
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = cf.compute_power(Ybus, V)
+        f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+        norm_f = cf.compute_fx_error(f)
         converged = norm_f < tol
 
         if verbose:
@@ -135,13 +136,13 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # update voltage the Newton way
                 Vm2 = Vm - mu * dVm
                 Va2 = Va - mu * dVa
-                V2 = polar_to_rect(Vm2, Va2)
+                V2 = cf.polar_to_rect(Vm2, Va2)
 
                 # compute the mismatch function f(x_new)
-                Sbus = compute_zip_power(S0, I0, Y0, Vm2)
-                Scalc = compute_power(Ybus, V2)
-                f = compute_fx(Scalc, Sbus, pvpq, pq)
-                norm_f_new = compute_fx_error(f)
+                Sbus = cf.compute_zip_power(S0, I0, Y0, Vm2)
+                Scalc = cf.compute_power(Ybus, V2)
+                f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                norm_f_new = cf.compute_fx_error(f)
 
                 # change mu for the next iteration
                 mu *= acceleration_parameter
@@ -193,8 +194,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npvpq = npv + npq
 
                     # recompute the error based on the new Scalc and S0
-                    Sbus = compute_zip_power(S0, I0, Y0, Vm)
-                    f = compute_fx(Scalc, Sbus, pvpq, pq)
+                    Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+                    f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(f, np.inf)
 
                     if verbose > 0:
@@ -208,7 +209,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     else:
         norm_f = 0
         converged = True
-        Scalc = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
+        Scalc = cf.compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
 
     end = time.time()
     elapsed = end - start

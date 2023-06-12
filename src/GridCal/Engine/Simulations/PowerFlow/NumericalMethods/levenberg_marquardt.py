@@ -17,10 +17,11 @@
 
 import time
 import scipy
-
+import numpy as np
+import scipy.sparse as sp
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -113,9 +114,9 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 H2 = H1.dot(H)
 
             # evaluate the solution error F(x0)
-            Sbus = compute_zip_power(S0, I0, Y0, Vm)
-            Scalc = compute_power(Ybus, V)
-            dz = compute_fx(Scalc, Sbus, pvpq, pq)
+            Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = cf.compute_power(Ybus, V)
+            dz = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
             # set first value of lmbda
             if iter_ == 0:
@@ -157,7 +158,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 # update Vm and Va again in case we wrapped around with a negative Vm
                 Vm -= dVm
                 Va -= dVa
-                V = polar_to_rect(Vm, Va)
+                V = cf.polar_to_rect(Vm, Va)
 
                 if verbose > 1:
                     logger.add_debug('J:\n', H.toarray())
@@ -171,10 +172,10 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 nu *= 2.0
 
             # check convergence
-            Sbus = compute_zip_power(S0, I0, Y0, Vm)
-            Scalc = compute_power(Ybus, V)
-            e = compute_fx(Scalc, Sbus, pvpq, pq)
-            normF = compute_fx_error(e)
+            Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = cf.compute_power(Ybus, V)
+            e = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+            normF = cf.compute_fx_error(e)
 
             if verbose:
                 logger.add_debug('error', normF)
@@ -204,8 +205,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 
                     # recompute the error based on the new Sbus
-                    e = compute_fx(Scalc, Sbus, pvpq, pq)
-                    normF = compute_fx_error(e)
+                    e = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                    normF = cf.compute_fx_error(e)
 
                     if verbose > 0:
                         for sense, idx, var in messages:
@@ -220,7 +221,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
     else:
         normF = 0
         converged = True
-        Scalc = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
+        Scalc = cf.compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
         iter_ = 0
 
     end = time.time()

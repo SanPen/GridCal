@@ -1299,14 +1299,3 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
     text_file.close()
 
     return logger
-
-
-if __name__ == '__main__':
-    import GridCal.Engine as gce
-
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 39+HVDC line.gridcal'
-    # _circuit = gce.FileOpen(fname).open()
-    # save_json_file_v3('/home/santi/Escritorio/IEEE 39+HVDC line.ejson3', _circuit)
-
-    data = json.load(open('/home/santi/Escritorio/IEEE 39+HVDC line.ejson3'))
-    parse_json_data_v3(data, Logger())

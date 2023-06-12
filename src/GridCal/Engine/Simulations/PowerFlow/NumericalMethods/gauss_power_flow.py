@@ -21,7 +21,7 @@ Solves the power flow using a Gauss-Seidel method.
 
 import time
 import numpy as np
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import Logger
 
@@ -58,10 +58,10 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50,
     pvpq = np.r_[pv, pq]
 
     # evaluate F(x0)
-    Sbus = compute_zip_power(S0, I0, Y0, Vm)
-    Scalc = compute_power(Ybus, V)
-    F = compute_fx(Scalc, Sbus, pvpq, pq)
-    normF = compute_fx_error(F)
+    Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+    Scalc = cf.compute_power(Ybus, V)
+    F = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+    normF = cf.compute_fx_error(F)
 
     # check tolerance
     converged = normF < tol
@@ -88,10 +88,10 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50,
 
         # evaluate F(x)
         Vm = np.abs(V)
-        Sbus = compute_zip_power(S0, I0, Y0, Vm)
-        Scalc = compute_power(Ybus, V)
-        F = compute_fx(Scalc, Sbus, pvpq, pq)
-        normF = compute_fx_error(F)
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = cf.compute_power(Ybus, V)
+        F = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+        normF = cf.compute_fx_error(F)
 
         # check for convergence
         converged = normF < tol

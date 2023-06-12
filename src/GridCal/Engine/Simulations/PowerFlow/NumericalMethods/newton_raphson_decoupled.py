@@ -17,9 +17,10 @@
 
 import time
 import scipy
-
+import numpy as np
+import scipy.sparse as sp
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 linear_solver = get_linear_solver()
@@ -94,9 +95,9 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
     npq = len(pq)
 
     # evaluate F(x0)
-    Sbus = compute_zip_power(S0, I0, Y0, Vm)
-    Scalc = compute_power(Ybus, V)
-    f = compute_fx(Scalc, Sbus, pvpq, pq)
+    Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+    Scalc = cf.compute_power(Ybus, V)
+    f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
     # check tolerance
     if use_norm_error:
@@ -126,12 +127,12 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
         mu_ = 1.0
         Vm -= mu_ * dVm
         Va -= mu_ * dVa
-        Vnew = polar_to_rect(Vm, Va)
+        Vnew = cf.polar_to_rect(Vm, Va)
 
         # compute the mismatch function f(x_new)
-        Sbus = compute_zip_power(S0, I0, Y0, Vm)
-        Scalc = compute_power(Ybus, Vnew)
-        f_new = compute_fx(Scalc, Sbus, pvpq, pq)
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = cf.compute_power(Ybus, Vnew)
+        f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
         if use_norm_error:
             norm_f_new = np.linalg.norm(f_new, np.Inf)
@@ -153,12 +154,12 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
             mu_ *= acceleration_parameter
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
-            Vnew = polar_to_rect(Vm, Va)
+            Vnew = cf.polar_to_rect(Vm, Va)
 
             # compute the mismatch function f(x_new)
-            Sbus = compute_zip_power(S0, I0, Y0, Vm)
-            Scalc = compute_power(Ybus, Vnew)
-            f_new = compute_fx(Scalc, Sbus, pvpq, pq)
+            Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = cf.compute_power(Ybus, Vnew)
+            f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
             if use_norm_error:
                 norm_f_new = np.linalg.norm(f_new, np.Inf)

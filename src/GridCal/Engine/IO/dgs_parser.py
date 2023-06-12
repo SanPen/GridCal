@@ -1139,29 +1139,3 @@ def dgs_to_circuit(filename) -> MultiCircuit:
     data, pos_dict = read_DGS(filename)
 
     return data_to_grid_object(data, pos_dict)
-
-
-if __name__ == "__main__":
-    # fname = 'Example1.dgs'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.dgs'
-    # fname = 'PLATOS grid 3.dgs'
-    # fname = 'Example4.dgs'
-    circuit = dgs_to_circuit(fname)
-
-    circuit.compile_snapshot()
-
-    # print(BUS_NAMES, '\n')
-    # print(BUSES)
-    #
-    # print(BRANCH_NAMES, '\n')
-    # print(BRANCHES)
-    #
-    # print(GEN_NAMES, '\n')
-    # print(GEN)
-    #
-    # print(graph)
-    # print('Plotting grid...')
-    # nx.draw(circuit.graph)
-
-    # from matplotlib import pyplot as plt
-    # plt.show()

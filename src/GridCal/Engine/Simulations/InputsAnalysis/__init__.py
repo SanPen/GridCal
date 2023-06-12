@@ -1,2 +1,2 @@
 
-from GridCal.Engine.Simulations.InputsAnalysis.inputs_analysis_driver import *
+from GridCal.Engine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisDriver, InputsAnalysisResults
