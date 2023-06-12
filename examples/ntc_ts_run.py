@@ -67,7 +67,7 @@ options = OptimalNetTransferCapacityOptions(
     dispatch_all_areas=False,
     tolerance=1e-2,
     sensitivity_dT=100.0,
-    transfer_mode=AvailableTransferMode.InstalledPower,
+    # transfer_mode=AvailableTransferMode.InstalledPower,
     # todo: checkear si queremos el ptdf por potencia generada
     perform_previous_checks=False,
     weight_power_shift=1e5,

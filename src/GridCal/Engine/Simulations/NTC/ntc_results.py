@@ -265,6 +265,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 'converged'
             ]
         )
+        nbr = len(branch_names)
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -908,12 +909,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y = self.loading * 100.0
             y_label = '(%)'
             title = 'Branch loading'
-
-        elif result_type == ResultTypes.BranchOverloads:
-            labels = self.branch_names
-            y = np.abs(self.overloads)
-            y_label = '(MW)'
-            title = 'Branch overloads'
 
         elif result_type == ResultTypes.BranchLosses:
             labels = self.branch_names

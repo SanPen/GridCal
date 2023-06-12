@@ -300,39 +300,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         # this function is necessary because this graphic item behaves like a bus
         pass
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
-        """
-        Add a big marker to the bus
-        :param color: Qt Color ot the marker
-        :param tool_tip_text: tool tip text to display
-        :return:
-        """
-        if self.big_marker is None:
-            self.big_marker = QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
-            self.big_marker.setBrush(color)
-            self.big_marker.setOpacity(0.5)
-            self.big_marker.setToolTip(tool_tip_text)
-
-    def delete_big_marker(self):
-        """
-        Delete the big marker
-        """
-        if self.big_marker is not None:
-            self.diagramScene.removeItem(self.big_marker)
-            self.big_marker = None
-
-    def set_position(self, x, y):
-        """
-        Set the bus x, y position
-        :param x: x in pixels
-        :param y: y in pixels
-        """
-        if np.isnan(x):
-            x = 0
-        if np.isnan(y):
-            y = 0
-        self.setPos(QPoint(int(x), int(y)))
-
     def set_tile_color(self, brush: QColor):
         """
         Set the voltage colour

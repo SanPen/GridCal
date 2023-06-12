@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from numba.typed import List
 import numpy as np
 from collections.abc import Iterable
 import scipy.sparse.sparsetools as sptools
@@ -381,11 +380,11 @@ def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
     :return: Final assembled matrix in CSC format
     """
 
-    mats_data = List()
-    mats_indptr = List()
-    mats_indices = List()
-    mats_cols = List()
-    mats_rows = List()
+    mats_data = list()
+    mats_indptr = list()
+    mats_indices = list()
+    mats_cols = list()
+    mats_rows = list()
     for x in mats:
         mats_data.append(x.data)
         mats_indptr.append(x.indptr)

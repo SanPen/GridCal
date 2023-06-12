@@ -5,4 +5,4 @@ extension-pkg-whitelist=PyQt5, PySide6
 [BASIC]
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=a, b, c, d, e, f, g, h, i, j, k, x, y, z, ex, Run, df, l, l1, l2, l3
+good-names=a, b, c, d, e, f, g, h, i, j, k, x, y, z, ex, Run, df, l, l1, l2, l3, ok

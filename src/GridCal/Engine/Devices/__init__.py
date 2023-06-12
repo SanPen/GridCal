@@ -30,7 +30,7 @@ from GridCal.Engine.Devices.hvdc_line import HvdcLine, HvdcControlType
 from GridCal.Engine.Devices.upfc import UPFC
 from GridCal.Engine.Devices.shunt import Shunt
 from GridCal.Engine.Devices.static_generator import StaticGenerator
-from GridCal.Engine.Devices.tower import Tower
+from GridCal.Engine.Devices.tower import Tower, WireInTower
 from GridCal.Engine.Devices.transformer import Transformer2W, TransformerType, TransformerControlType
 from GridCal.Engine.Devices.winding import Winding
 from GridCal.Engine.Devices.transformer3w import Transformer3W

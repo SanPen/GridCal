@@ -2856,13 +2856,6 @@ class OpfNTC(Opf):
         x[self.gen_a2_idx] *= -1  # this is so that the deltas in the receiving area appear negative in the final vector
         return x
 
-    def get_generator_delta_slacks(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract(self.generation_delta_slacks, make_abs=False) * self.numerical_circuit.Sbase
-
     def get_phase_angles(self):
         """
         Get the phase shift solution

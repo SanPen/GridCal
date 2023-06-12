@@ -2359,8 +2359,7 @@ class MultiCircuit:
             logger.add_error("pyproj is not installed")
             return logger
 
-        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon,
-                                                                                  lat)  # TODO: check the return types
+        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)  # TODO: check the return types
         x *= factor
         y *= factor
 

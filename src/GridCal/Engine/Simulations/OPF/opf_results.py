@@ -107,6 +107,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'generator_power',
                                                  'converged'])
 
+        nbus = len(bus_names)
+        nbr = len(branch_names)
+
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.load_names = load_names
@@ -125,18 +128,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.bus_types = bus_types
 
-        self.overloads = overloads
+        self.overloads = overloads if overloads is not None else np.zeros(nbr, dtype=complex)
 
-        self.loading = loading
+        self.loading = loading if loading is not None else np.zeros(nbr, dtype=complex)
 
-        self.losses = losses
+        self.losses = losses if losses is not None else np.zeros(nbr, dtype=complex)
 
         self.hvdc_names = hvdc_names
         self.hvdc_Pf = hvdc_power
         self.hvdc_loading = hvdc_loading
         self.hvdc_losses = np.zeros_like(self.hvdc_Pf)
 
-        self.phase_shift = phase_shift
+        self.phase_shift = phase_shift if phase_shift is not None else np.zeros(nbr, dtype=complex)
 
         self.battery_power = battery_power
 

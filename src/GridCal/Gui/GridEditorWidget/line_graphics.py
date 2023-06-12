@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
 from GridCal.Engine.Devices.branch import BranchType

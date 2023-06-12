@@ -357,7 +357,7 @@ class SimulationSession:
 
     @property
     def net_transfer_capacity_ts(self):
-        return self.get_driver_results(SimulationTypes.NetTransferCapacityTS_runy_run)[1]
+        return self.get_driver_results(SimulationTypes.NetTransferCapacityTS_run)[1]
 
     @property
     def optimal_net_transfer_capacity(self):
