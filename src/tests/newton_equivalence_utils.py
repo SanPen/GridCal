@@ -6,6 +6,8 @@ import GridCal.Engine as gce
 import scipy.sparse as sp
 from typing import List
 from scipy.sparse.linalg import spsolve
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit_at
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 npa.findAndActivateLicense()
 
 
@@ -158,9 +160,9 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # ------------------------------------------------------------------------------------------------------------------
 
     J_newton = npa.getJacobian(nc_newton)
-    J_gc = gce.AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
+    J_gc = AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
 
-    J_gc2 = gce.AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
+    J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
     CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
     CheckArr((J_newton - J_gc).data, np.zeros_like((J_newton - J_gc).data), tol, 'Jacobian', '')
@@ -177,7 +179,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, t)
-    nc_gc = gce.compile_snapshot_circuit_at(grid_gc, t)
+    nc_gc = compile_snapshot_circuit_at(grid_gc, t)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data
@@ -269,9 +271,9 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # ------------------------------------------------------------------------------------------------------------------
 
     J_newton = npa.getJacobian(nc_newton)
-    J_gc = gce.AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
+    J_gc = AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
 
-    J_gc2 = gce.AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
+    J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
     err_count += CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
 

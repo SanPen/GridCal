@@ -637,8 +637,8 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
     :param ntime: number of time steps
     """
 
-    cmode_dict = {HvdcControlType.type_0_free: npa.HvdcControlMode.HvdcControlAngleDroop,
-                  HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
+    cmode_dict = {dev.HvdcControlType.type_0_free: npa.HvdcControlMode.HvdcControlAngleDroop,
+                  dev.HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
 
     for i, elm in enumerate(circuit.hvdc_lines):
         """

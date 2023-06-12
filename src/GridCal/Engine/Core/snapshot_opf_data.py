@@ -21,6 +21,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
+import GridCal.Engine.Core.DataStructures as ds
 
 
 class SnapshotOpfData(SnapshotData):
@@ -48,10 +49,10 @@ class SnapshotOpfData(SnapshotData):
                               sbase=sbase, ntime=1)
 
         # overwrite with their opf version
-        self.branch_data = gc_compiler.BranchOpfData(nbr=self.nbr, nbus=nbus, ntime=self.ntime)
-        self.load_data = gc_compiler.LoadOpfData(nload=nload, nbus=nbus, ntime=self.ntime)
-        self.battery_data = gc_compiler.BatteryOpfData(nbatt=nbatt, nbus=nbus, ntime=self.ntime)
-        self.generator_data = gc_compiler.GeneratorOpfData(ngen=ngen, nbus=nbus, ntime=self.ntime)
+        self.branch_data = ds.BranchOpfData(nbr=self.nbr, nbus=nbus, ntime=self.ntime)
+        self.load_data = ds.LoadOpfData(nload=nload, nbus=nbus, ntime=self.ntime)
+        self.battery_data = ds.BatteryOpfData(nbatt=nbatt, nbus=nbus, ntime=self.ntime)
+        self.generator_data = ds.GeneratorOpfData(ngen=ngen, nbus=nbus, ntime=self.ntime)
 
     @property
     def battery_pmax(self):

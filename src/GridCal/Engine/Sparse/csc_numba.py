@@ -18,7 +18,6 @@
 
 import numpy as np
 import numba as nb
-from numba.pycc import CC
 from numba.typed import List
 import math
 
