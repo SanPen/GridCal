@@ -21,7 +21,8 @@ import numpy as np
 from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
-from GridCal.Engine import MultiCircuit, Bus, Generator, Branch, Load, GeneratorTechnologyType, BranchType, FileSave
+from GridCal.Engine.Devices import Bus, Generator, Branch, Load, GeneratorTechnologyType, BranchType
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class XmlDictConfig(dict):
@@ -788,6 +789,36 @@ class PlexosModel:
         return df2
 
 
+def get_st_generation_sent_out(plexos_results_folder):
+    """
+    Get the generation auxiliary use from a PLEXOS results folder
+    :param plexos_results_folder: PLEXOS results folder
+    :return: pandas DataFrame with the generation dispatch
+    """
+    fname = os.path.join(plexos_results_folder, 'Interval', 'ST Generator.Generation Sent Out.csv')
+
+    df = pd.read_csv(fname,index_col='DATETIME')
+    df = pd.read_csv(fname, index_col='DATETIME')
+
+    return df
+
+
+def get_st_node_load(plexos_results_folder, parse_dates=False):
+    """
+    Get the node load use from a PLEXOS results folder
+    :param plexos_results_folder: PLEXOS results folder
+    :return: pandas DataFrame with the node load
+    """
+    fname = os.path.join(plexos_results_folder, 'Interval', 'ST Node.Load.csv')
+
+    if parse_dates:
+        df = pd.read_csv(fname, index_col='DATETIME', parse_dates=True, dayfirst=True)
+    else:
+        df = pd.read_csv(fname, index_col='DATETIME')
+
+    return df
+
+
 def plexos_to_gridcal(mdl: PlexosModel, plexos_results_folder, time_indices=None, text_func=None, prog_func=None):
     """
     Reads plexos model with results and creates a GridCal model
@@ -870,8 +901,7 @@ def plexos_to_gridcal(mdl: PlexosModel, plexos_results_folder, time_indices=None
             gen = Generator(name=name,
                             power_prof=gen_profile,
                             p_min=elm.p_min,
-                            p_max=elm.p_max,
-                            technology=GeneratorTechnologyType.CombinedCycle)
+                            p_max=elm.p_max)
 
             bus = bus_dict[elm.node.name]
             gen.ensure_profiles_exist(circuit.time_profile)

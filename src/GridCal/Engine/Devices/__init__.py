@@ -21,7 +21,7 @@ from GridCal.Engine.Devices.battery import Battery
 from GridCal.Engine.Devices.branch import Branch, BranchTemplate, BranchType, convert_branch
 from GridCal.Engine.Devices.dc_line import DcLine
 from GridCal.Engine.Devices.vsc import VSC, ConverterControlType
-from GridCal.Engine.Devices.generator import Generator
+from GridCal.Engine.Devices.generator import Generator, GeneratorTechnologyType
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.external_grid import ExternalGrid, ExternalGridMode
 from GridCal.Engine.Devices.line import Line, LineTemplate
