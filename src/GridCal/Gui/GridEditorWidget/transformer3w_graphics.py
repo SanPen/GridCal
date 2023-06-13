@@ -225,6 +225,10 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.diagramScene.removeItem(self.big_marker)
             self.big_marker = None
 
+    def change_size(self, w, h):
+        # Keep for compatibility
+        pass
+
     def set_position(self, x, y):
         """
         Set the bus x, y position

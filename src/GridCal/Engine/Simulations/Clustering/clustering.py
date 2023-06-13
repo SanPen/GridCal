@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import os
 import json
 import pandas as pd
 import numpy as np
@@ -22,6 +22,36 @@ import time
 import multiprocessing
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
+
+
+def kmeans_sampling(X, n_points=10):
+    os.environ['OPENBLAS_NUM_THREADS'] = '12'
+
+    tm0 = time.time()
+
+    # declare the model
+    model = KMeans(n_clusters=n_points, random_state=0, n_init=10)
+
+    tm1 = time.time()
+
+    # model fitting
+    model.fit_predict(X)
+    print(f'kmeans: model fitted in {time.time()-tm1:.2f} scs.')
+
+    centroid_idx = model.transform(X).argmin(axis=0)
+    sample_idx = model.transform(X).argmin(axis=1)
+
+    # compute probabilities
+    centroids, counts = np.unique(model.labels_, return_counts=True)
+    prob = counts.astype(float) / len(model.labels_)
+    prob_dict = {u: p for u, p in zip(centroids, prob)}
+
+    # sort results and assign probability
+    centroid_idx = np.sort(centroid_idx)
+    samples = sample_idx[centroid_idx]
+    probabilities = [prob_dict[i] for i in samples]
+
+    return centroid_idx, probabilities
 
 
 def kmeans_approximate_sampling(X, n_points=10):

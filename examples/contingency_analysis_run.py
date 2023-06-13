@@ -15,16 +15,11 @@ options_ = ContingencyAnalysisOptions()
 simulation = ContingencyAnalysisDriver(grid=main_circuit, options=options_)
 simulation.run()
 
-otdf_ = simulation.get_otdf()
-
 # save the result
 br_names = [b.name for b in main_circuit.branches]
 br_names2 = ['#' + b.name for b in main_circuit.branches]
-w = pd.ExcelWriter('LODF IEEE30.xlsx')  # pylint: disable=abstract-class-instantiated
-pd.DataFrame(data=simulation.results.Sf.real,
-             columns=br_names,
-             index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
-pd.DataFrame(data=otdf_,
-             columns=br_names,
-             index=br_names2).to_excel(w, sheet_name='LODF')
-w.save()
+
+with pd.ExcelWriter('LODF IEEE30.xlsx') as w:
+    pd.DataFrame(data=simulation.results.Sf.real,
+                 columns=br_names,
+                 index=['base'] + br_names2).to_excel(w, sheet_name='branch power')

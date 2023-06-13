@@ -8,21 +8,53 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType
 
 
-def add_exchange_sensibilities(y, columns, alpha, mc_idx=None, alpha_n1=None):
+def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,
+                               decimals=5, str_separator='; '):
     """
     :param y: report data matrix
     :param columns: report column names
     :param mc_idx: Idx tuple (monitor, contingency) for contingency flows
+    :param alpha_n1: exchange sensitivities
+    :param report_contigency_alpha: boolean to report contingency element alpha
+    :param: decimals: alpha decimals to report
     :return: Extended y, columns with required data
     """
+
+
+    columns.extend([
+        'Alpha',
+    ])
+
+    if report_contigency_alpha:
+        if alpha_n1.shape[1] > 1:
+            c_str = str_separator.join(['cnt'+str(i) for i in range(alpha_n1.shape[1])])
+            c_name = f'Alpha [{c_str}]'
+        else:
+            c_name = f'Alpha cnt'
+
+        columns.extend([
+            [c_name]
+        ])
+
+    if alpha_n1 is not None:
+        if np.any([len(a) > 1 for a in alpha_n1]):
+            max_n = np.max([len(a) for a in alpha_n1])
+            c_str = str_separator.join(['c'+str(i) for i in range(max_n)])
+            c_name = f'Alpha n-1 [{c_str}]'
+        else:
+            c_name = f'Alpha n-1'
+
+        columns.extend(
+            [c_name]
+        )
+
     if y.shape[0] == 0:
         # empty data, return
         return y, columns
 
-
     if mc_idx:
         # unzip monitor and contingency lists
-        m, c = list(map(list, zip(*np.array(mc_idx))))
+        m, c = list(map(list, zip(*np.array(mc_idx, dtype=object))))
 
     else:
         m = np.arange(len(alpha))
@@ -33,29 +65,22 @@ def add_exchange_sensibilities(y, columns, alpha, mc_idx=None, alpha_n1=None):
 
     y = np.concatenate([y, y_], axis=1)
 
-    columns.extend([
-        'Alpha',
-    ])
+    if report_contigency_alpha and mc_idx:
+        y_ = np.array([
+            # Collapse alpha into one column
+            [str_separator.join(row) for row in np.round(alpha[c].astype(float), decimals=decimals).astype(str)],
+        ], dtype=object).T
+
+        y = np.concatenate([y, y_], axis=1)
 
     if alpha_n1 is not None:
-        # Worst alpha for monitorized branch
-        idx_c = np.argmax(np.abs(alpha_n1), axis=1)
-        alpha_c = np.take_along_axis(alpha_n1, np.expand_dims(idx_c, axis=1), axis=1)[m]
+        y_ = np.array(
+            # Collapse alpha_n1 into one column
+            [[str_separator.join(a.astype(str)) for a in alpha_n1]],
+            dtype=object
+        ).T
 
-        # Alpha for contingency branch
-        # alpna_c = np.array([alpha_n1[m, c]]).T
-
-        # y_ = np.array([
-        #     # alpha_n1[m, c],  # Alpha: sensibility to exchange power in contingency situation
-        #     alpna_max[m, :],  # Worst alpha for monitorized branch
-        # ], dtype=object).T
-
-        y = np.concatenate([y, alpha_c], axis=1)
-
-        columns.extend([
-            # 'Alpha n-1',
-            '|Worst alpha n-1| ',
-        ])
+        y = np.concatenate([y, y_], axis=1)
 
     return y, columns
 
@@ -69,6 +94,10 @@ def add_maczt(y, columns, trm, ttc):
     :param trm: Transmission reliability margin
     :return: Extended y, columns with required data
     """
+
+    columns.extend([
+        'MACZT',
+    ])
 
     if y.shape[0] == 0:
         # empty data, return
@@ -85,10 +114,6 @@ def add_maczt(y, columns, trm, ttc):
 
     y = np.concatenate([y, maczt.T], axis=1)
 
-    columns.extend([
-        'MACZT',
-    ])
-
     return y, columns
 
 
@@ -101,6 +126,14 @@ def add_min_ntc(y, columns, ntc_load_rule):
     :return: Extended y, columns with required data
     """
 
+    columns.extend([
+        'NTC min'
+    ])
+
+    if y.shape[0] == 0:
+        # empty data, return
+        return y, columns
+
     alpha_col = list(map(lambda c: c.lower(), columns)).index('alpha')
     rate_col = list(map(lambda c: c.lower(), columns)).index('rate')
 
@@ -111,10 +144,6 @@ def add_min_ntc(y, columns, ntc_load_rule):
     min_ntc = np.array([y[:, rate_col] / np.abs(alpha) * ntc_load_rule])
 
     y = np.concatenate([y, min_ntc.T], axis=1)
-
-    columns.extend([
-        'NTC min'
-    ])
 
     return y, columns
 
@@ -129,24 +158,27 @@ def add_ntc_data(y, columns, ttc, trm):
     :return: Extended y, columns with required data
     """
 
+    columns = [
+        'TTC',
+        'NTC',
+        'TRM',
+    ] + columns  # to append to beginning of columns
+
     if y.shape[0] == 0:
         # empty data, return
         return y, columns
 
-    trm = np.ones(y.shape[0]) * trm
     ttc = np.ones(y.shape[0]) * np.floor(ttc)
+    sign = ttc / (np.abs(ttc) + 1e-10)  # add 1e-10 to avoid zero division
+
+    trm = sign * trm
     ntc = ttc - trm
 
-    y_ = np.array([trm, ttc, ntc]).T
-    y = np.concatenate([y, y_], axis=1)
-
-    columns.extend([
-        'TRM',
-        'TTC',
-        'NTC',
-    ])
+    y_ = np.array([ttc, ntc, trm]).T
+    y = np.concatenate([y_, y], axis=1)
 
     return y, columns
+
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
@@ -191,6 +223,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  inter_area_hvdc=None,
                  alpha=None,
                  alpha_n1=None,
+                 alpha_w=None,
                  rates=None,
                  contingency_branch_flows_list=None,
                  contingency_branch_indices_list=None,
@@ -212,6 +245,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  monitor_by_sensitivity=None,
                  monitor_by_unrealistic_ntc=None,
                  monitor_by_zero_exchange=None,
+                 loading_threshold=0.0,
+                 reversed_sort_loading=True,
                  ):
 
         ResultsTemplate.__init__(
@@ -314,6 +349,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.alpha = alpha
         self.alpha_n1 = alpha_n1
+        self.alpha_w = alpha_w
 
         self.monitor = monitor
         self.monitor_loading = monitor_loading
@@ -343,6 +379,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.sbase = sbase
 
         self.plot_bars_limit = 100
+
+        self.loading_threshold = loading_threshold
+        self.reversed_sort_loading = reversed_sort_loading
 
         self.reports = dict()
 
@@ -382,39 +421,68 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return np.array(y).sum()
 
-    def get_full_contingency_report(self, loading_threshold=0.98, reverse=True):
+    def create_contingency_report(self, loading_threshold=0.98, reverse=True):
+
+        title = f'{ResultTypes.ContingencyFlowsReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
 
         # Gel all contingency reports. All they are returned as tuples (y, columns, labels)
-        b = self.get_ntc_contingency_branch_report(loading_threshold=loading_threshold)
-        g = self.get_ntc_contingency_generation_report(loading_threshold=loading_threshold)
-        h = self.get_ntc_contingency_hvdc_report(loading_threshold=loading_threshold)
+        b = self.get_contingency_branch_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        g = self.get_contingency_generation_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        h = self.get_contingency_hvdc_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
 
         # Group all, but only if they are not empty
         labels, y_list = list(), list()
-        for i, (l_, c_, y_) in enumerate([b, g, h]):
-            if y_.shape[0] != 0:
-                labels.extend(l_)
-                y_list.extend(y_)
+        for i, mdl in enumerate([b, g, h]):
+            if mdl.get_data()[2].shape[0] != 0:
+                labels.extend(mdl.get_data()[0])
+                y_list.extend(mdl.get_data()[2])
 
-        columns = b[1]
-        y = np.array(y_list)
+        columns = mdl.get_data()[1]
+
+        if y_list != list():
+            y = np.stack(y_list, axis=0)
+        else:
+            y = b.get_data()[2]
+
         labels = np.array(labels)
+
+        c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
         # sort if necessary
         y, labels = apply_sort(
             y=y,
             labels=labels,
-            col=columns.index('Contingency load %'),
+            col=columns.index(c_name),
             reverse=reverse,
         )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='',
+            xlabel='',
+            units='',
+        )
 
-    def get_monitoring_logic_report(self):
+    def create_monitoring_logic_report(self):
         """
         Get flow report
-        :param load_threshold: load threshold to filter results
         """
+
+        title = ResultTypes.BranchMonitoring.value[0]
 
         y = np.array([
             self.monitor,  # Monitor result
@@ -437,11 +505,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             'Contingency rate',
         ]
 
-        # Add exchange sensibilities
-        y, columns = add_exchange_sensibilities(
+        # Add exchange sensitivities
+        y, columns = add_exchange_sensitivities(
             y=y,
             columns=columns,
             alpha=self.alpha,
+            report_contigency_alpha=False,
         )
 
         # Add MACZT (margin available for cross-zonal trade) data
@@ -459,18 +528,28 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             ntc_load_rule=self.ntc_load_rule,
         )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='(p.u.)',
+            xlabel='',
+            units='',
+        )
 
-    def get_ntc_base_report(self, loading_threshold=0.0, reverse=True):
+    def create_base_report(self, loading_threshold, reverse):
         """
         Get base report
         :param loading_threshold: threshold to filter results,
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        m = np.where(self.monitor)
+        title = f'{ResultTypes.BaseFlowReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
 
-        labels, columns, y = get_flow_report(
+        labels, columns, y = get_flow_table(
             m=np.arange(len(self.branch_names)),
             flow=self.Sf,
             rates=self.rates,
@@ -478,11 +557,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_names=self.branch_names,
         )
 
-        # Add exchange sensibilities
-        y, columns = add_exchange_sensibilities(
+        # Add exchange sensitivities
+        y, columns = add_exchange_sensitivities(
             y=y,
             columns=columns,
             alpha=self.alpha,
+            report_contigency_alpha=False,
         )
 
         # Add TTC, TRM and NTC
@@ -523,7 +603,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y, labels = apply_filter(
                 y=y,
                 labels=labels,
-                col=columns.index('Load %'),
+                col=columns.index('Flow %'),
                 threshold=loading_threshold,
             )
 
@@ -532,20 +612,32 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y, labels = apply_sort(
                 y=y,
                 labels=labels,
-                col=columns.index('Load %'),
+                col=columns.index('Flow %'),
                 reverse=reverse,
             )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='',
+            xlabel='',
+            units='',
+        )
 
-    def get_ntc_contingency_branch_report(self, loading_threshold=0.0, reverse=True):
+    def create_contingency_branch_report(self, loading_threshold, reverse):
         """
         Get branch contingency report
         :param loading_threshold: threshold to filter results,
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        labels, columns, y = get_contingency_flow_report(
+        title = f'{ResultTypes.ContingencyFlowsBranchReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        labels, columns, y = get_contingency_flow_table(
             mc_idx=self.contingency_branch_indices_list,
             flow=self.Sf,
             contingency_flow=self.contingency_branch_flows_list,
@@ -555,13 +647,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensibilities
-        y, columns = add_exchange_sensibilities(
+        # Add exchange sensitivities
+        y, columns = add_exchange_sensitivities(
             y=y,
             columns=columns,
             mc_idx=self.contingency_branch_indices_list,
             alpha=self.alpha,
-            alpha_n1=self.alpha_n1,
+            alpha_n1=self.contingency_branch_alpha_list,
+            report_contigency_alpha=False,
         )
 
         # Add TTC, TRM and NTC
@@ -612,13 +705,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             phase_shift=self.phase_shift,
         )
 
+        c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
         # filter results if required
         if loading_threshold != 0.0:
+
             y, labels = apply_filter(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 threshold=loading_threshold,
             )
 
@@ -627,20 +722,31 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y, labels = apply_sort(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 reverse=reverse,
             )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='',
+            xlabel='',
+            units='',
+        )
 
-    def get_ntc_contingency_generation_report(self, loading_threshold=0.0, reverse=True):
+    def create_contingency_generation_report(self, loading_threshold, reverse):
         """
         Get generation contingency report
         :param loading_threshold: threshold to filter results,
         :param reverse: Boolean to get ordered results. None to keep original .
         """
+        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
 
-        labels, columns, y = get_contingency_flow_report(
+        labels, columns, y = get_contingency_flow_table(
             mc_idx=self.contingency_generation_indices_list,
             flow=self.Sf,
             contingency_flow=self.contingency_generation_flows_list,
@@ -650,13 +756,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensibilities
-        y, columns = add_exchange_sensibilities(
+        # Add exchange sensitivities
+        y, columns = add_exchange_sensitivities(
             y=y,
             columns=columns,
             mc_idx=self.contingency_generation_indices_list,
             alpha=self.alpha,
-            alpha_n1=self.alpha_n1,  #todo: check how to do it
+            alpha_n1=self.contingency_generation_alpha_list,
+            report_contigency_alpha=False,
         )
 
         # Add TTC, TRM and NTC
@@ -707,13 +814,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             phase_shift=self.phase_shift,
         )
 
+        c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
         # filter results if required
         if loading_threshold != 0.0:
             y, labels = apply_filter(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 threshold=loading_threshold,
             )
 
@@ -722,20 +830,32 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y, labels = apply_sort(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 reverse=reverse,
             )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='',
+            xlabel='',
+            units='',
+        )
 
-    def get_ntc_contingency_hvdc_report(self, loading_threshold=0.0, reverse=True):
+    def create_contingency_hvdc_report(self, loading_threshold, reverse):
         """
         Get hvdc contingency report
         :param loading_threshold: threshold to filter results,
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        labels, columns, y = get_contingency_flow_report(
+        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        labels, columns, y = get_contingency_flow_table(
             mc_idx=self.contingency_hvdc_indices_list,
             flow=self.Sf,
             contingency_flow=self.contingency_hvdc_flows_list,
@@ -745,13 +865,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensibilities
-        y, columns = add_exchange_sensibilities(
+        # Add exchange sensitivities
+        y, columns = add_exchange_sensitivities(
             y=y,
             columns=columns,
             mc_idx=self.contingency_hvdc_indices_list,
             alpha=self.alpha,
-            alpha_n1=self.alpha_n1, #todo: check how to do it
+            alpha_n1=self.contingency_hvdc_alpha_list,
+            report_contigency_alpha=False,
         )
 
         # Add TTC, TRM and NTC
@@ -802,12 +923,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             phase_shift=self.phase_shift,
         )
 
+        c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
+
         # Apply filters
         if loading_threshold != 0.0:
             y, labels = apply_filter(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 threshold=loading_threshold,
             )
 
@@ -816,11 +939,71 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y, labels = apply_sort(
                 y=y,
                 labels=labels,
-                col=columns.index('Contingency load %'),
+                col=columns.index(c_name),
                 reverse=reverse,
             )
 
-        return labels, columns, y
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=columns,
+            title=title,
+            ylabel='(p.u.)',
+            xlabel='',
+            units='',
+        )
+
+    def create_interarea_exchange_report(self):
+
+        title = ResultTypes.InterAreaExchange.value[0]
+
+        labels = list()
+        y = list()
+
+        for (k, sign) in self.inter_area_branches:
+            labels.append(self.branch_names[k])
+            y.append([self.Sf[k] * sign])
+
+        for (k, sign) in self.inter_area_hvdc:
+            labels.append(self.hvdc_names[k])
+            y.append([self.hvdc_Pf[k] * sign])
+
+        y.append([np.array(y).sum()])
+        y = np.array(y)
+        labels = np.array(labels + ['Total'])
+
+        self.reports[title] = ResultsTable(
+            data=y,
+            index=labels,
+            columns=['Exchange'],
+            title=title,
+            ylabel='(MW)',
+            xlabel='',
+            units='',
+        )
+
+    def create_all_reports(self, loading_threshold, reverse, save_memory=False):
+        self.create_contingency_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        self.create_contingency_branch_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        self.create_contingency_generation_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        self.create_contingency_hvdc_report(
+            loading_threshold=loading_threshold,
+            reverse=reverse,
+        )
+        self.create_monitoring_logic_report()
+        self.create_interarea_exchange_report()
+
+        if save_memory:
+            self.alpha_n1 = None
 
     def get_controlled_shifters_as_pt(self):
         shifter_idx = np.where(self.branch_control_modes == TransformerControlType.Pt)
@@ -837,14 +1020,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param phase_shift: branches phase shift
         :return:
         """
+
+        idx, names = controlled_shifters
+
+        columns.extend(names)
+
         if y.shape[0] == 0:
             # empty data, return
             return y, columns
 
-        idx, names = controlled_shifters
         y_ = np.array([phase_shift[idx]] * y.shape[0])
         y = np.concatenate([y, y_], axis=1)
-        columns.extend(names)
         return y, columns
 
     def make_report(self, path_out=None):
@@ -856,20 +1042,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         print('NTC is', self.get_exchange_power(), 'MW')
 
-        labels, columns, data = self.get_full_contingency_report(
+        mdl = self.get_contingency_report(
             loading_threshold=0.98,
             reverse=True,
         )
 
-        df = pd.DataFrame(data=data, columns=columns, index=labels)
-
-        # print result dataframe
-        print('\n\n')
-        print(df)
-
         # Save file
         if path_out:
-            df.to_csv(path_out, index=False)
+            mdl.to_df().to_csv(
+                path_or_buf=path_out,
+                index=False
+            )
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -878,260 +1061,282 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :return: DataFrame of the results (or None if the result was not understood)
         """
 
-        columns = [result_type.value[0]]
-
         if result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            y = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage module'
+            return ResultsTable(
+                data=np.abs(self.voltage),
+                index=self.bus_names,
+                columns=['V (p.u.)'],
+                title=result_type.value[0],
+                ylabel='(p.u.)',
+            )
 
         elif result_type == ResultTypes.BusVoltageAngle:
-            labels = self.bus_names
-            y = np.angle(self.voltage)
-            y_label = '(Radians)'
-            title = 'Bus voltage angle'
+            return ResultsTable(
+                data=np.angle(self.voltage),
+                index=self.bus_names,
+                columns=['V (radians)'],
+                title=result_type.value[0],
+                ylabel='(radians)',
+            )
 
         elif result_type == ResultTypes.BranchPower:
-            labels = self.branch_names
-            y = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power'
+            return ResultsTable(
+                data=self.Sf.real,
+                columns=['Sf'],
+                index=self.branch_names,
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.BusPower:
-            labels = self.bus_names
-            y = self.Sbus.real
-            y_label = '(MW)'
-            title = 'Bus power'
+            return ResultsTable(
+                data=self.loading * 100.0,
+                index=self.Sbus.real,
+                columns=['Sb'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            y = self.loading * 100.0
-            y_label = '(%)'
-            title = 'Branch loading'
+            return ResultsTable(
+                data=self.loading * 100.0,
+                index=self.branch_names,
+                columns=['Loading'],
+                title=result_type.value[0],
+                ylabel='(%)',
+            )
 
         elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            y = self.losses.real
-            y_label = '(MW)'
-            title = 'Branch losses'
+            return ResultsTable(
+                data=self.losses.real,
+                index=self.branch_names,
+                columns=['PLosses'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.BranchTapAngle:
-            labels = self.branch_names
-            y = np.rad2deg(self.phase_shift)
-            y_label = '(deg)'
-            title = result_type.value[0]
-
-        elif result_type == ResultTypes.BranchMonitoring:
-            if not 'monitoring_logic' in self.reports.keys():
-                self.create_monitoring_logic_report()
-
-            report = self.reports['monitoring_logic']
-            labels = report['labels']
-            columns = report['columns']
-            y = report['y']
-            y_label = report['y_label']
-            title = report['title']
+            return ResultsTable(
+                data=np.rad2deg(self.phase_shift),
+                index=self.branch_names,
+                columns=['V (deg)'],
+                title=result_type.value[0],
+                ylabel='(deg)',
+            )
 
         elif result_type == ResultTypes.GeneratorPower:
-            labels = self.generator_names
-            y = self.generator_power
-            y_label = '(MW)'
-            title = 'Controlled generators power'
+            return ResultsTable(
+                data=self.generator_power,
+                index=self.generator_names,
+                columns=['P'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.BatteryPower:
-            labels = self.battery_names
-            y = self.battery_power
-            y_label = '(MW)'
-            title = 'Battery power'
+            return ResultsTable(
+                data=self.battery_power,
+                index=self.battery_names,
+                columns=['P'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.HvdcPowerFrom:
-            labels = self.hvdc_names
-            y = self.hvdc_Pf
-            y_label = '(MW)'
-            title = result_type.value[0]
-
-        # elif result_type == ResultTypes.HvdcPmode3Slack:
-        #    labels = self.hvdc_names
-        #    y = self.hvdc_angle_slack
-        #    y_label = '(rad)'
-        #    title = result_type.value[0]
+            return ResultsTable(
+                data=self.hvdc_Pf,
+                index=self.hvdc_names,
+                columns=['Pf'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+            )
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
-            labels = self.branch_names
-            y = self.alpha
-            y_label = '(p.u.)'
-            title = result_type.value[0]
+            return ResultsTable(
+                data=self.alpha,
+                index=self.branch_names,
+                title=result_type.value[0],
+                columns=['Sensitivity'],
+                ylabel='(p.u.)',
+                xlabel='',
+                units='',
+            )
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
-
-            labels = self.branch_names
-            columns = labels
-            y = self.alpha_n1
-            y_label = '(p.u.)'
-            title = result_type.value[0]
+            return ResultsTable(
+                data=self.alpha_n1,
+                index=self.branch_names,
+                columns=self.branch_names,
+                title=result_type.value[0],
+                ylabel='(p.u.)',
+                xlabel='',
+                units='',
+            )
 
         elif result_type == ResultTypes.GenerationDelta:
-            labels = self.generator_names
-            y = self.generation_delta
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return ResultsTable(
+                data=self.generation_delta,
+                index=self.generator_names,
+                columns=['P'],
+                title=result_type.value[0],
+                ylabel='(MW)',
+                xlabel='',
+                units='',
+            )
+
+        elif result_type == ResultTypes.BranchMonitoring:
+            return self.get_monitoring_logic_report()
 
         elif result_type == ResultTypes.InterAreaExchange:
-            labels = list()
-            y = list()
-
-            for (k, sign) in self.inter_area_branches:
-                labels.append(self.branch_names[k])
-                y.append([self.Sf[k] * sign])
-
-            for (k, sign) in self.inter_area_hvdc:
-                labels.append(self.hvdc_names[k])
-                y.append([self.hvdc_Pf[k] * sign])
-
-            y.append([np.array(y).sum()])
-            y = np.array(y)
-            labels = np.array(labels + ['Total'])
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return self.get_interarea_exchange_report()
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
-            if not 'contingency_full_flows' in self.reports.keys():
-                self.create_contingency_full_report()
-
-            report = self.reports['contingency_full_flows']
-            labels = report['labels']
-            columns = report['columns']
-            y = report['y']
-            y_label = report['y_label']
-            title = report['title']
+            return self.get_contingency_report(
+                loading_threshold=self.loading_threshold,
+                reverse=self.reversed_sort_loading,
+            )
 
         elif result_type == ResultTypes.ContingencyFlowsBranchReport:
-
-            if not 'continency_branch_flows' in self.reports.keys():
-                self.create_contingency_hvdc_report()
-
-            report = self.reports['continency_branch_flows']
-            labels = report['labels']
-            columns = report['columns']
-            y = report['y']
-            y_label = report['y_label']
-            title = report['title']
+            return self.get_contingency_branch_report(
+                loading_threshold=self.loading_threshold,
+                reverse=self.reversed_sort_loading,
+            )
 
         elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
-
-            if not 'contingency_generation_flows' in self.reports.keys():
-                self.create_contingency_generator_report()
-
-            report = self.reports['contingency_generation_flows']
-            labels = report['labels']
-            columns = report['columns']
-            y = report['y']
-            y_label = report['y_label']
-            title = report['title']
+            return self.get_contingency_generation_report(
+                loading_threshold=self.loading_threshold,
+                reverse=self.reversed_sort_loading,
+            )
 
         elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
-
-            if not 'contingency_hvdc_flows' in self.reports.keys():
-                self.create_contingency_hvdc_report()
-
-            report = self.reports['contingency_hvdc_flows']
-            labels = report['labels']
-            columns = report['columns']
-            y = report['y']
-            y_label = report['y_label']
-            title = report['title']
+            return self.get_contingency_hvdc_report(
+                loading_threshold=self.loading_threshold,
+                reverse=self.reversed_sort_loading,
+            )
 
         else:
-            labels = []
-            y = np.zeros(0)
-            y_label = ''
-            title = ''
+            return ResultsTable(
+                data=np.zeros(0),
+                index=np.zeros(0).shape[0] * [''],
+                columns=np.zeros(0).shape[0] * [''],
+            )
 
-        mdl = ResultsTable(data=y,
-                           index=labels,
-                           columns=columns,
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
+    def get_monitoring_logic_report(self):
+        """
 
-    def create_monitoring_logic_report(self):
-        labels, columns, y = self.get_monitoring_logic_report()
-        y_label = '(p.u.)'
+        :return:
+        """
         title = ResultTypes.BranchMonitoring.value[0]
-        self.reports['monitoring_logic'] = {
-            'labels': labels,
-            'columns': columns,
-            'y': y,
-            'y_label': y_label,
-            'title': title,
-        }
 
-    def create_contingency_full_report(self):
-        labels, columns, y = self.get_full_contingency_report(
-            loading_threshold=0.0,
-            reverse=True,
-        )
-        y_label = ''
-        title = ResultTypes.ContingencyFlowsReport.value[0]
-        self.reports['contingency_full_flows'] = {
-            'labels': labels,
-            'columns': columns,
-            'y': y,
-            'y_label': y_label,
-            'title': title
-        }
-    def create_contingency_branch_report(self):
-        labels, columns, y = self.get_ntc_contingency_branch_report(
-            loading_threshold=0.0,
-            reverse=True,
-        )
-        y_label = ''
-        title = ResultTypes.ContingencyFlowsBranchReport.value[0]
-        self.reports['continency_branch_flows'] = {
-            'labels': labels,
-            'columns': columns,
-            'y': y,
-            'y_label': y_label,
-            'title': title
-        }
-    def create_contingency_generator_report(self):
-        labels, columns, y = self.get_ntc_contingency_generation_report(
-            loading_threshold=0.0,
-            reverse=True,
-        )
-        y_label = ''
-        title = ResultTypes.ContingencyFlowsGenerationReport.value[0]
-        self.reports['contingency_generation_flows'] = {
-            'labels': labels,
-            'columns': columns,
-            'y': y,
-            'y_label': y_label,
-            'title': title
-        }
-    def create_contingency_hvdc_report(self):
-        labels, columns, y = self.get_ntc_contingency_hvdc_report(
-            loading_threshold=0.0,
-            reverse=True,
-        )
-        y_label = ''
-        title = ResultTypes.ContingencyFlowsHvdcReport.value[0]
-        self.reports['contingency_hvdc_flows'] = {
-            'labels': labels,
-            'columns': columns,
-            'y': y,
-            'y_label': y_label,
-            'title': title
-        }
+        if title not in self.reports.keys():
+            self.create_monitoring_logic_report()
 
-    def create_all_reports(self):
-        self.create_contingency_full_report()
-        self.create_contingency_branch_report()
-        self.create_contingency_generator_report()
-        self.create_contingency_hvdc_report()
-        self.create_monitoring_logic_report()
+        return self.reports[title]
+
+    def get_base_report(self, loading_threshold=0.0, reverse=True):
+        """
+
+        :param loading_threshold:
+        :param reverse:
+        :return:
+        """
+        title = f'{ResultTypes.BaseFlowReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        if title not in self.reports.keys():
+            self.create_base_report(
+                loading_threshold=loading_threshold,
+                reverse=reverse,
+            )
+        return self.reports[title]
+
+    def get_contingency_report(self, loading_threshold=0.0, reverse=True):
+        """
+
+        :param loading_threshold:
+        :param reverse:
+        :return:
+        """
+        title = f'{ResultTypes.ContingencyFlowsReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        if title not in self.reports.keys():
+            self.create_contingency_report(
+                loading_threshold=loading_threshold,
+                reverse=reverse,
+            )
+        return self.reports[title]
+
+    def get_contingency_branch_report(self, loading_threshold=0.0, reverse=True):
+        """
+
+        :param loading_threshold:
+        :param reverse:
+        :return:
+        """
+        title = f'{ResultTypes.ContingencyFlowsBranchReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        if title not in self.reports.keys():
+            self.create_contingency_branch_report(
+                loading_threshold=loading_threshold,
+                reverse=reverse,
+            )
+        return self.reports[title]
+
+    def get_contingency_generation_report(self, loading_threshold=0.0, reverse=True):
+        """
+
+        :param loading_threshold:
+        :param reverse:
+        :return:
+        """
+        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        if title not in self.reports.keys():
+            self.create_contingency_generation_report(
+                loading_threshold=loading_threshold,
+                reverse=reverse,
+            )
+
+        return self.reports[title]
+
+    def get_contingency_hvdc_report(self, loading_threshold=0.0, reverse=True):
+        """
+
+        :param loading_threshold:
+        :param reverse:
+        :return:
+        """
+        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value[0]}. ' \
+                f'Loading threshold: {str(loading_threshold)}. ' \
+                f'Reverse: {str(reverse)}'
+
+        if title not in self.reports.keys():
+            self.create_contingency_hvdc_report(
+                loading_threshold=loading_threshold,
+                reverse=reverse,
+            )
+
+        return self.reports[title]
+
+    def get_interarea_exchange_report(self):
+        """
+
+        :return:
+        """
+        title = ResultTypes.InterAreaExchange.value[0]
+
+        if title not in self.reports.keys():
+            self.create_interarea_exchange_report()
+
+        return self.reports[title]
+
 
 def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
     """
@@ -1142,6 +1347,9 @@ def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
     :param hvdc_names: HVDC names
     :return:
     """
+
+    columns.extend(hvdc_names)
+
     if y.shape[0] == 0:
         # empty data, return
         return y, columns
@@ -1149,7 +1357,7 @@ def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
     # add hvdc power
     y_ = np.array([hvdc_Pf] * y.shape[0])
     y = np.concatenate((y, y_), axis=1)
-    columns.extend(hvdc_names)
+
     return y, columns
 
 
@@ -1163,15 +1371,18 @@ def add_inter_area_branches_data(y, columns, inter_area_branches, names, Sf):
     :param names: branch names
     :return:
     """
+
+    idx, senses = list(map(list, zip(*inter_area_branches)))
+
+    columns.extend(names[idx])
+
     if y.shape[0] == 0:
         # empty data, return
         return y, columns
 
-    idx, senses = list(map(list, zip(*inter_area_branches)))
-
     y_ = np.array([Sf[idx]] * y.shape[0])
     y = np.concatenate([y, y_], axis=1)
-    columns.extend(names[idx])
+
     return y, columns
 
 
@@ -1191,9 +1402,9 @@ def apply_sort(y, labels, col, reverse=False):
     return y, labels
 
 
-def get_contingency_flow_report(
+def get_contingency_flow_table(
         mc_idx, flow, contingency_flow, monitor_names, contingency_names,
-        rates, contingency_rates
+        rates, contingency_rates, str_separator='; ', decimals=2,
 ):
     """
     Get flow report
@@ -1204,37 +1415,48 @@ def get_contingency_flow_report(
     :param contingency_names: Array with full list of contingency element names
     :param rates: Rates array
     :param contingency_rates: Contingency rates array
+    :param decimals: float decimals to report
 
     """
+
+    columns = [
+        'Monitored',
+        'Contingency',
+        'Flow',
+        'Flow %',
+        'Rate',
+        'Contingency flow',
+        'Contingency flow %',
+        'Contingency rate',
+    ]
+
+    if len(mc_idx) == 0:
+        labels = []
+        y = np.array([])
+        return labels, columns, y
+
     # unzip monitor and contingency lists
-    m, c = list(map(list, zip(*np.array(mc_idx))))
+    m, c = list(map(list, zip(*np.array(mc_idx, dtype=object))))
+
+    cnt_names = [str_separator.join(contingency_names[cnt]) for cnt in c]
 
     y = np.array([
-        contingency_names[c],  # Contingency name
-        flow[m].real,  # Branch flow
-        np.round(flow[m] / rates[m] * 100, 2),  # Branch loading
-        rates[m],  # Rates
-        contingency_flow.real,  # Contingency flow
-        np.round(contingency_flow / contingency_rates[m] * 100, 2),  # Contingency loading
-        contingency_rates[m],  # Contingency rates
+        monitor_names[m],
+        cnt_names,  # Contingency name
+        np.round(flow[m].real,decimals=decimals),  # Branch flow
+        np.round(flow[m] / rates[m] * 100, decimals=decimals),  # Branch loading
+        np.round(rates[m], decimals=decimals),  # Rates
+        np.round(contingency_flow.real, decimals=decimals),  # Contingency flow
+        np.round(contingency_flow / contingency_rates[m] * 100, decimals=decimals),  # Contingency loading
+        np.round(contingency_rates[m], decimals=decimals),  # Contingency rates
     ], dtype=object).T
 
     labels = monitor_names[m]
 
-    columns = [
-        'Contingency',
-        'Flow',
-        'Load %',
-        'Rate',
-        'Contingency flow',
-        'Contingency load %',
-        'Contingency rate',
-    ]
-
     return labels, columns, y
 
 
-def get_flow_report(m, flow, rates, monitor_names, contingency_names):
+def get_flow_table(m, flow, rates, monitor_names, contingency_names):
     """
     Get flow report
     :param m: monitor indices
@@ -1242,6 +1464,14 @@ def get_flow_report(m, flow, rates, monitor_names, contingency_names):
     :param contingency_names: full contingency element names
     returns
     """
+
+    columns = [
+        'Branch',
+        'Flow',
+        'Flow %',
+        'Rate',
+    ]
+
     y = np.array([
         contingency_names[m],  # Contingency names
         flow[m].real,  # Branch flow
@@ -1251,17 +1481,21 @@ def get_flow_report(m, flow, rates, monitor_names, contingency_names):
 
     labels = monitor_names[m]
 
-    columns = [
-        'Branch',
-        'Flow',
-        'Load %',
-        'Rate',
-    ]
-
     return labels, columns, y
 
 
 def apply_filter(y, labels, col, threshold):
+    """
+
+    :param y:
+    :param labels:
+    :param col:
+    :param threshold:
+    :return:
+    """
+    if y.shape[0] == 0:
+        return y, labels
+
     idx = np.where(np.abs(y[:, col]) >= threshold)
     return y[idx], labels[idx]
 

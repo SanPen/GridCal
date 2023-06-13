@@ -64,6 +64,7 @@ problem = OpfNTC(
     alpha=alpha,
     alpha_n1=alpha_n1,
     LODF=linear.LODF,
+    LODF_NX=linear.LODF_NX,
     PTDF=linear.PTDF,
     generation_formulation=GenerationNtcFormulation.Proportional,
     ntc_load_rule=0.7,

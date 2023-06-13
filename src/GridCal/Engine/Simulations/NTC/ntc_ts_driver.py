@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacity
 from GridCal.Engine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling
+from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
@@ -78,9 +78,12 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             contingency_rates=[],
             time_array=[],
             time_indices=[],
+            sampled_probabilities=[],
             trm=self.options.trm,
+            ntc_load_rule=self.options.ntc_load_rule,
             loading_threshold_to_report=self.options.loading_threshold_to_report,
-            ntc_load_rule=self.options.ntc_load_rule)
+            reversed_sort_loading=self.options.reversed_sort_loading,
+        )
 
         self.installed_alpha = None
         self.installed_alpha_n1 = None
@@ -113,23 +116,36 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.progress_signal.emit(0)
 
+        if self.progress_text is not None:
+            self.progress_text.emit('Compiling circuit...')
+        else:
+            print('Compiling cicuit...')
+
         tm0 = time.time()
         nc = compile_opf_time_circuit(self.grid)
-        # self.logger.add_info('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
-
-        time_indices = self.get_time_indices()
-
-        nt = len(time_indices)
+        self.logger.add_info(f'Time circuit compiled in {time.time()-tm0:.2f} scs')
+        print(f'Time circuit compiled in {time.time()-tm0:.2f} scs')
 
         # declare the linear analysis
+        if self.progress_text is not None:
+            self.progress_text.emit('Computing linear analysis...')
+        else:
+            print('Computing linear analysis...')
+
         linear = LinearAnalysis(
             grid=self.grid,
             distributed_slack=False,
-            correct_values=False)
+            correct_values=False,
+            with_nx=self.options.consider_nx_contingencies,
+        )
 
         tm0 = time.time()
         linear.run()
-        # self.logger.add_info('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
+
+        self.logger.add_info(f'Linear analysis computed in {time.time()-tm0:.2f} scs.')
+        print(f'Linear analysis computed in {time.time()-tm0:.2f} scs.')
+
+        time_indices = self.get_time_indices()
 
         if self.use_clustering:
 
@@ -143,84 +159,58 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             X = X[:, time_indices].real.T
 
             # cluster and re-assign the time indices
-            time_indices, sampled_probabilities = kmeans_approximate_sampling(
-                X, n_points=self.cluster_number)
+            tm1 = time.time()
+            time_indices, sampled_probabilities = kmeans_sampling(
+                X=X,
+                n_points=self.cluster_number,
+            )
 
-            self.results = OptimalNetTransferCapacityTimeSeriesResults(
-                branch_names=linear.numerical_circuit.branch_names,
-                bus_names=linear.numerical_circuit.bus_names,
-                generator_names=linear.numerical_circuit.generator_names,
-                load_names=linear.numerical_circuit.load_names,
-                rates=nc.Rates,
-                contingency_rates=nc.ContingencyRates,
-                time_array=nc.time_array[time_indices],
-                sampled_probabilities=sampled_probabilities,
-                time_indices=time_indices,
-                trm=self.options.trm,
-                loading_threshold_to_report=self.options.loading_threshold_to_report,
-                ntc_load_rule=self.options.ntc_load_rule)
+            self.logger.add_info(f'Kmeans sampling computed in {time.time()-tm1:.2f} scs. [{len(time_indices)} points]')
+            print(f'Kmeans sampling computed in {time.time()-tm1:.2f} scs. [{len(time_indices)} points]')
 
         else:
-            self.results = OptimalNetTransferCapacityTimeSeriesResults(
-                branch_names=linear.numerical_circuit.branch_names,
-                bus_names=linear.numerical_circuit.bus_names,
-                generator_names=linear.numerical_circuit.generator_names,
-                load_names=linear.numerical_circuit.load_names,
-                rates=nc.Rates,
-                contingency_rates=nc.ContingencyRates,
-                time_array=nc.time_array[time_indices],
-                time_indices=time_indices,
-                trm=self.options.trm,
-                loading_threshold_to_report=self.options.loading_threshold_to_report,
-                ntc_load_rule=self.options.ntc_load_rule)
+            sampled_probabilities = np.full(len(time_indices), 1.0 / len(time_indices))
+
+        nt = len(time_indices)
+
+        # Initialize results object
+        self.results = OptimalNetTransferCapacityTimeSeriesResults(
+            branch_names=linear.numerical_circuit.branch_names,
+            bus_names=linear.numerical_circuit.bus_names,
+            generator_names=linear.numerical_circuit.generator_names,
+            load_names=linear.numerical_circuit.load_names,
+            rates=nc.Rates,
+            contingency_rates=nc.ContingencyRates,
+            time_array=nc.time_array[time_indices],
+            time_indices=time_indices,
+            sampled_probabilities=sampled_probabilities,
+            trm=self.options.trm,
+            loading_threshold_to_report=self.options.loading_threshold_to_report,
+            ntc_load_rule=self.options.ntc_load_rule)
 
         if self.options.transfer_method == AvailableTransferMode.InstalledPower:
-            self.installed_alpha, self.installed_alpha_n1 = self.compute_exchange_sensitivity(
+            alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=nc,
                 t=0,
-                with_n1=self.options.n1_consideration)
+                with_n1=self.options.n1_consideration
+            )
+        else:
+            alpha = np.ones(nc.nbr),
+            alpha_n1 = np.ones((nc.nbr, nc.nbr)),
 
         for t_idx, t in enumerate(time_indices):
 
-            # update progress bar
-            progress = (t_idx + 1) / len(time_indices) * 100
-            self.progress_signal.emit(progress)
-
-            if self.progress_text is not None:
-                self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
-
-            else:
-                print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
-
-            # sensitivities
-            if self.options.monitor_only_sensitive_branches or self.options.monitor_only_ntc_load_rule_branches:
-
-                if self.options.transfer_method == AvailableTransferMode.InstalledPower:
-                    alpha = self.installed_alpha
-                    alpha_n1 = self.installed_alpha_n1
-
-                else:
-                    alpha, alpha_n1 = self.compute_exchange_sensitivity(
-                        linear=linear,
-                        numerical_circuit=nc,
-                        t=t,
-                        with_n1=self.options.n1_consideration)
-            else:
-                alpha = np.ones(nc.nbr)
-                alpha_n1 = np.ones((nc.nbr, nc.nbr))
-
-            # Define the problem
-            self.progress_text.emit('Formulating NTC OPF...')
-
+            # Initialize problem object (needed to reset solver variable names)
             problem = OpfNTC(
                 numerical_circuit=nc,
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
+                LODF=linear.LODF,
+                LODF_NX=linear.LODF_NX,
+                PTDF=linear.PTDF,
                 alpha=alpha,
                 alpha_n1=alpha_n1,
-                LODF=linear.LODF,
-                PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
@@ -241,19 +231,38 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 logger=self.logger
             )
 
-            # Solve
+            # update progress bar
+            progress = (t_idx + 1) / len(time_indices) * 100
+            self.progress_signal.emit(progress)
+
+            if self.progress_text is not None:
+                self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
+
+            else:
+                print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
+
+            # sensitivities
+            if self.options.monitor_only_sensitive_branches or self.options.monitor_only_ntc_load_rule_branches:
+
+                if self.options.transfer_method != AvailableTransferMode.InstalledPower:
+                    problem.alpha, problem.alpha_n1 = self.compute_exchange_sensitivity(
+                        linear=linear,
+                        numerical_circuit=nc,
+                        t=t,
+                        with_n1=self.options.n1_consideration)
+
             time_str = str(nc.time_array[time_indices][t_idx])
-            self.progress_text.emit('Solving NTC OPF...['+time_str+']')
 
-            # tm0 = time.time()
+            # Define the problem
+            self.progress_text.emit('Formulating NTC OPF...['+time_str+']')
             problem.formulate_ts(t=t)
-            # print('Problem formulated in {0:.2f} scs.'.format(time.time() - tm0))
 
-            # tm0 = time.time()
+            # Solve
+            self.progress_text.emit('Solving NTC OPF...['+time_str+']')
             solved = problem.solve_ts(
                 t=t,
-                with_check=self.options.with_solution_checks,
-                time_limit_ms=self.options.time_limit_ms)
+                time_limit_ms=self.options.time_limit_ms
+            )
             # print('Problem solved in {0:.2f} scs.'.format(time.time() - tm0))
 
             self.logger += problem.logger
@@ -294,6 +303,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                         'NTC OPF')
 
             # pack the results
+            idx_w = np.argmax(np.abs(problem.alpha_n1), axis=1)
+            alpha_w = np.take_along_axis(problem.alpha_n1, np.expand_dims(idx_w, axis=1), axis=1)
+
             result = OptimalNetTransferCapacityResults(
                 bus_names=nc.bus_data.names,
                 branch_names=nc.branch_data.names,
@@ -320,8 +332,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
-                alpha=alpha,
-                alpha_n1=np.amax(np.abs(alpha_n1), axis=1),
+                alpha=problem.alpha,
+                alpha_n1=problem.alpha_n1,
+                alpha_w=alpha_w,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
                 contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
@@ -343,12 +356,18 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 monitor_by_sensitivity=problem.monitor_by_sensitivity,
                 monitor_by_unrealistic_ntc=problem.monitor_by_unrealistic_ntc,
                 monitor_by_zero_exchange=problem.monitor_by_zero_exchange,
+                loading_threshold=self.options.loading_threshold_to_report,
+                reversed_sort_loading=self.options.reversed_sort_loading,
             )
 
             self.progress_text.emit('Creating report...['+time_str+']')
-            result.create_all_reports()
-            self.results.results_dict[t] = result
 
+            result.create_all_reports(
+                loading_threshold=self.options.loading_threshold_to_report,
+                reverse=self.options.reversed_sort_loading,
+                save_memory=True,  # todo: check if needed
+            )
+            self.results.results_dict[t] = result
 
             if self.progress_signal is not None:
                 self.progress_signal.emit((t_idx + 1) / nt * 100)
@@ -357,7 +376,12 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 break
 
         self.progress_text.emit('Creating final reports...')
-        self.results.create_all_reports()
+
+        self.results.create_all_reports(
+            loading_threshold=self.options.loading_threshold_to_report,
+            reverse=self.options.reversed_sort_loading,
+
+        )
 
         self.progress_text.emit('Done!')
 

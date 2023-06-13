@@ -20,29 +20,29 @@ grid = FileOpen(fname).open()
 nc = grid.compile_snapshot()
 inputs = nc.compute()[0]  # pick the first island
 
-V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
-                                                           Yseries=inputs.Yseries,
-                                                           V0=inputs.Vbus,
-                                                           S0=inputs.Sbus,
-                                                           Ysh0=inputs.Ysh,
-                                                           pq=inputs.pq,
-                                                           pv=inputs.pv,
-                                                           sl=inputs.ref,
-                                                           pqpv=inputs.pqpv,
-                                                           tolerance=1e-6,
-                                                           max_coefficients=10,
-                                                           use_pade=False,
-                                                           verbose=False)
-Vm = np.abs(V)
-Va = np.angle(V)
-dP = np.abs(inputs.Sbus.real - Scalc_.real)
+results = helm_josep(Ybus=inputs.Ybus,
+                     Yseries=inputs.Yseries,
+                     V0=inputs.Vbus,
+                     S0=inputs.Sbus,
+                     Ysh0=inputs.Ysh,
+                     pq=inputs.pq,
+                     pv=inputs.pv,
+                     sl=inputs.ref,
+                     pqpv=inputs.pqpv,
+                     tolerance=1e-6,
+                     max_coefficients=10,
+                     use_pade=False,
+                     verbose=False)
+Vm = np.abs(results.V)
+Va = np.angle(results.V)
+dP = np.abs(inputs.Sbus.real - results.Scalc.real)
 dP[inputs.ref] = 0
-dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
+dQ = np.abs(inputs.Sbus.imag - results.Scalc.imag)
 dQ[inputs.pv] = np.nan
 dQ[inputs.ref] = np.nan
 df = pd.DataFrame(data=np.c_[inputs.bus_types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
                   columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
 print(df)
-print('Error', error)
+print('Error', results.norm_f)
 print('P error', np.max(np.abs(dP)))
-print('Elapsed', elapsed_)
+print('Elapsed', results.elapsed)

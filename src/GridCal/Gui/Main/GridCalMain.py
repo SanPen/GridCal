@@ -4400,7 +4400,9 @@ class MainGUI(QMainWindow):
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
 
+                #todo: add consider_nx_contingencies to gui if necessary
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_nx_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
@@ -4424,17 +4426,18 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
-                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
+                    consider_nx_contingencies=consider_nx_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
                     loading_threshold_to_report=loading_threshold_to_report,
                     trm=trm,
                     ntc_load_rule=ntc_load_rule,
-                    n1_consideration=n1_consideration)
+                    n1_consideration=n1_consideration,
+                )
 
                 self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
@@ -4516,13 +4519,10 @@ class MainGUI(QMainWindow):
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
-                    # perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Proportional
-                    # perform_previous_checks = True
                 else:
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
-                    # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
                 monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
@@ -4539,7 +4539,9 @@ class MainGUI(QMainWindow):
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
 
+                # todo: add consider_nx_contingencies to gui if necessary
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_nx_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
                 consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
                 generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
@@ -4563,12 +4565,12 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
-                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
                     consider_hvdc_contingencies=consider_hvdc_contingencies,
                     consider_gen_contingencies=consider_gen_contingencies,
+                    consider_nx_contingencies=consider_nx_contingencies,
                     generation_contingency_threshold=generation_contingency_threshold,
                     trm=trm,
                     loading_threshold_to_report=loading_threshold_to_report,

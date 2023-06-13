@@ -26,72 +26,29 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed tests after refactor">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Deleted the rest API thing&#10;Fixed some pylint signaled errors">
+      <change afterPath="$PROJECT_DIR$/examples/ntc_driver.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/ntc_ts_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/newton_pf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/newton_pf_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/contingency_analysis_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/contingency_analysis_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/helm_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/helm_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ntc_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_run_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ntc_run_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/ntc_ts_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ntc_ts_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/.pylintrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/.pylintrc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Clustering/clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Clustering/clustering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_options.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_options.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Sparse/csc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Sparse/csc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/ntc_ts_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/transformer3w_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/transformer3w_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Session/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Session/session.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/ClientGui.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/GridCal_icon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/GridCal_icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/MainWindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/MainWindow.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/create_py_code.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/create_py_code.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/icons.qrc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/icons_rc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/automatic_layout.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/bars.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/blackout.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/chip.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/console.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/continuation_power_flow.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/copy.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/dcopf.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/dcopf_ts.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/delete.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/detect_tr.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/edit.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/gear.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/grid_icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/latin_hypercube2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/load.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/loadc.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/minus.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/new.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/new2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/new2c.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/pf.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/pf_ts.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/pic.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/plus.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/powerplant.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/rate_br.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/resize.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/run_cascade.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/run_cascade_step.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/save.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/savec.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/short_circuit.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/squares.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/Main/white_icons/stochastic_power_flow.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/Gui/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/html_clients/test.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/main_api.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_rest/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,7 +76,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel_4.7.9(pyside2)" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -218,7 +175,8 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.leinardi.pycharm.pylint.PylintConfigurable",
+    "settings.editor.selected.configurable": "Errors",
+    "settings.editor.splitter.proportion": "0.28680688",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -1196,14 +1154,8 @@
       <workItem from="1686410502686" duration="3074000" />
       <workItem from="1686413587048" duration="374000" />
       <workItem from="1686558089725" duration="5137000" />
-      <workItem from="1686590782319" duration="2536000" />
-    </task>
-    <task id="LOCAL-00338" summary="Made the short circuit vastly more efficient by avoiding Y inversions">
-      <created>1660923842529</created>
-      <option name="number" value="00338" />
-      <option name="presentableId" value="LOCAL-00338" />
-      <option name="project" value="LOCAL" />
-      <updated>1660923842529</updated>
+      <workItem from="1686590782319" duration="3299000" />
+      <workItem from="1686641662191" duration="8615000" />
     </task>
     <task id="LOCAL-00339" summary="slight refactor">
       <created>1660924026298</created>
@@ -1541,7 +1493,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686565771142</updated>
     </task>
-    <option name="localTasksCounter" value="387" />
+    <task id="LOCAL-00387" summary="Deleted the rest API thing&#10;Fixed some pylint signaled errors">
+      <created>1686594446123</created>
+      <option name="number" value="00387" />
+      <option name="presentableId" value="LOCAL-00387" />
+      <option name="project" value="LOCAL" />
+      <updated>1686594446124</updated>
+    </task>
+    <option name="localTasksCounter" value="388" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1583,7 +1542,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added voltage limits passing to newton" />
     <MESSAGE value="Added nonlinear opf shadow prices" />
     <MESSAGE value="added optional newton file saver when converting to Newton" />
     <MESSAGE value="Improved circuit_to_data2.py compilation" />
@@ -1608,7 +1566,8 @@
     <MESSAGE value="All the GUI config is being saved to the local usr directory&#10;Optionally, GridCal files now store the GUI config" />
     <MESSAGE value="Removed most if __name__ == &quot;__main__&quot; from the engine and copied the examples to the &quot;examples&quot; folder" />
     <MESSAGE value="Fixed tests after refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed tests after refactor" />
+    <MESSAGE value="Deleted the rest API thing&#10;Fixed some pylint signaled errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted the rest API thing&#10;Fixed some pylint signaled errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1998,7 +1957,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>7708</line>
+          <line>7710</line>
           <option name="timeStamp" value="1183" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2198,7 +2157,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1681979679516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GIS" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1686569784682" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1686665828928" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

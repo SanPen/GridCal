@@ -165,8 +165,6 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
 
     return LODF
 
-def make_lodf_nx(lodf, contingency, flows):
-    pass
 
 @nb.njit(cache=True)
 def make_otdf(ptdf, lodf, j):
@@ -307,9 +305,59 @@ def make_worst_contingency_transfer_limits(tmc):
     return wtmc
 
 
+# @nb.njit(cache=True)
+def make_lodf_nx(circuit: MultiCircuit, lodf):
+    """
+    Make the LODF with any contingency combination using the
+    declared contingencies
+    :param circuit: MultiCircuit
+    :param lodf: original LODF matrix (nbr, nbus)
+    :return: List[(list of indices of contingencies, LODF matching)]
+    """
+
+    lodf_nx_list = list()
+
+    # Create dictionaries to speed up the access
+    cg_dict = {cg.idtag: cg for cg in circuit.contingency_groups}
+    idx_dict = {e.idtag: i for i, e in enumerate(circuit.get_branches())}
+
+    # Initialize c_idx list for each contingency groups
+    for cg in circuit.contingency_groups:
+        cg.c_idx = list()
+
+    # Loop for contingencies to fill group c_idx
+    for c in circuit.contingencies:
+        cg_dict[c.group.idtag].c_idx.append(idx_dict[c.device_idtag])
+
+    for cg in circuit.contingency_groups:
+
+        # Sort unique c_idx
+        cg.c_idx = list(sorted(set(cg.c_idx), reverse=False))
+
+        # Compute LODF vector
+        L = lodf[:, cg.c_idx]  # Take the columns of the LODF associated with the contingencies
+
+        # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
+        M = np.ones((len(cg.c_idx), len(cg.c_idx)))
+        for i in range(len(cg.c_idx)):
+            for j in range(len(cg.c_idx)):
+                if not (i == j):
+                    M[i, j] = -lodf[cg.c_idx[i], cg.c_idx[j]]
+
+        # Compute LODF_NX
+        lodf_nx = np.matmul(L, np.linalg.inv(M))
+
+        # store tuple (c_idx, lodf_nx)
+        lodf_nx_list.append(
+            (cg.c_idx, lodf_nx)  # TODO: cg.c_idx -> pensar si esto tiene sentido
+        )
+
+    return lodf_nx_list
+
+
 class LinearAnalysis2:
 
-    def __init__(self, numerical_circuit: SnapshotData, distributed_slack=True, correct_values=True):
+    def __init__(self, numerical_circuit: SnapshotData, distributed_slack=True, correct_values=True, with_nx=False):
         """
 
         :param grid:
@@ -319,6 +367,8 @@ class LinearAnalysis2:
         self.distributed_slack = distributed_slack
 
         self.correct_values = correct_values
+
+        self.with_nx = with_nx
 
         self.numerical_circuit: SnapshotData = numerical_circuit
 
@@ -386,6 +436,8 @@ class LinearAnalysis2:
                                   PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 
+
+
     @property
     def OTDF(self):
         """
@@ -441,7 +493,7 @@ class LinearAnalysis2:
 
 class LinearAnalysis(LinearAnalysis2):
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True):
+    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, with_nx=False):
         """
 
         :param grid:
@@ -450,5 +502,12 @@ class LinearAnalysis(LinearAnalysis2):
         LinearAnalysis2.__init__(self,
                                  numerical_circuit=compile_snapshot_circuit(grid),
                                  distributed_slack=distributed_slack,
-                                 correct_values=correct_values)
+                                 correct_values=correct_values,
+                                 with_nx=with_nx)
         self.grid = grid
+
+        if self.with_nx:
+            self.LODF_NX = make_lodf_nx(
+                circuit=self.grid,
+                lodf=self.LODF,
+            )

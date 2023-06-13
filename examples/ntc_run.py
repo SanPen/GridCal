@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from GridCal.Engine import *
 import GridCal.Engine.basic_structures as bs
@@ -5,88 +6,98 @@ import GridCal.Engine.Devices as dev
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCal.Engine import FileOpen, PowerFlowOptions
-
-folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
-fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'
-path_out = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.csv'
-
-circuit = FileOpen(fname).open()
-
-areas_from_idx = [0]
-areas_to_idx = [1]
-
-areas_from = [circuit.areas[i] for i in areas_from_idx]
-areas_to = [circuit.areas[i] for i in areas_to_idx]
-
-compatible_areas = True
-for a1 in areas_from:
-    if a1 in areas_to:
-        compatible_areas = False
-        print("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
-              'Incompatible areas')
-
-for a2 in areas_to:
-    if a2 in areas_from:
-        compatible_areas = False
-        print("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
-              'Incompatible areas')
-
-lst_from = circuit.get_areas_buses(areas_from)
-lst_to = circuit.get_areas_buses(areas_to)
-lst_br = circuit.get_inter_areas_branches(areas_from, areas_to)
-lst_br_hvdc = circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
-
-idx_from = np.array([i for i, bus in lst_from])
-idx_to = np.array([i for i, bus in lst_to])
-idx_br = np.array([i for i, bus, sense in lst_br])
-sense_br = np.array([sense for i, bus, sense in lst_br])
-idx_hvdc_br = np.array([i for i, bus, sense in lst_br_hvdc])
-sense_hvdc_br = np.array([sense for i, bus, sense in lst_br_hvdc])
-
-if len(idx_from) == 0:
-    print('The area "from" has no buses!')
-
-if len(idx_to) == 0:
-    print('The area "to" has no buses!')
-
-if len(idx_br) == 0:
-    print('There are no inter-area branches!')
+import time
+from GridCal.Engine.basic_structures import BranchImpedanceMode
+from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_lodf_nx
 
 
-options = OptimalNetTransferCapacityOptions(
-    area_from_bus_idx=idx_from,
-    area_to_bus_idx=idx_to,
-    mip_solver=bs.MIPSolvers.CBC,
-    generation_formulation=dev.GenerationNtcFormulation.Proportional,
-    monitor_only_sensitive_branches=True,
-    branch_sensitivity_threshold=0.05,
-    skip_generation_limits=True,
+folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
+fname = os.path.join(folder, 'MOU_2022_5GW_v6f_contingencias_dc.gridcal')
+
+tm0 = time.time()
+main_circuit = FileOpen(fname).open()
+print(f'circuit opened in {time.time() - tm0:.2f} scs.')
+
+# compute information about areas ----------------------------------------------------------------------------------
+area_from_idx = 0
+area_to_idx = 1
+areas = main_circuit.get_bus_area_indices()
+
+tm0 = time.time()
+numerical_circuit_ = compile_snapshot_opf_circuit(
+    circuit=main_circuit,
+    apply_temperature=False,
+    branch_tolerance_mode=BranchImpedanceMode.Specified
+)
+print(f'numerical circuit computed in {time.time() - tm0:.2f} scs.')
+
+# get the area bus indices
+areas = areas[numerical_circuit_.original_bus_idx]
+a1 = np.where(areas == area_from_idx)[0]
+a2 = np.where(areas == area_to_idx)[0]
+
+linear = LinearAnalysis(
+    grid=main_circuit,
+    distributed_slack=False,
+    correct_values=False,
+    with_nx=True
+)
+
+tm0 = time.time()
+linear.run()
+print(f'linear analysis computed in {time.time() - tm0:.2f} scs.')
+
+tm0 = time.time()
+alpha, alpha_n1 = compute_alpha(
+    ptdf=linear.PTDF,
+    lodf=linear.LODF,
+    P0=numerical_circuit_.Sbus.real,
+    Pinstalled=numerical_circuit_.bus_installed_power,
+    Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
+    Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
+    idx1=a1,
+    idx2=a2,
+    mode=AvailableTransferMode.InstalledPower.value,
+)
+
+print(f'alpha and alpha n-1 computed in {time.time() - tm0:.2f} scs.')
+
+problem = OpfNTC(
+    numerical_circuit=numerical_circuit_,
+    area_from_bus_idx=a1,
+    area_to_bus_idx=a2,
+    alpha=alpha,
+    alpha_n1=alpha_n1,
+    LODF=linear.LODF,
+    LODF_NX=linear.LODF_NX,
+    PTDF=linear.PTDF,
+    generation_formulation=GenerationNtcFormulation.Proportional,
+    ntc_load_rule=0.7,
     consider_contingencies=True,
-    consider_gen_contingencies=True,
     consider_hvdc_contingencies=True,
-    dispatch_all_areas=False,
+    consider_gen_contingencies=True,
     generation_contingency_threshold=1000,
-    tolerance=1e-2,
-    sensitivity_dT=100.0,
-    transfer_mode=AvailableTransferMode.InstalledPower,
-    # todo: checkear si queremos el ptdf por potencia generada
-    perform_previous_checks=False,
-    weight_power_shift=1e5,
-    weight_generation_cost=1e2,
-    with_solution_checks=False,
-    time_limit_ms=1e4,
-    max_report_elements=5)
+    match_gen_load=False,
+    transfer_method=AvailableTransferMode.InstalledPower,
+    skip_generation_limits=False,
+)
 
-print('Running optimal net transfer capacity...')
+print('Formulating...')
+tm0 = time.time()
+problem.formulate()
+print(f'optimization formulated in {time.time() - tm0:.2f} scs.')
 
+print('Solving...')
+tm0 = time.time()
+solved = problem.solve()
+print(f'optimization computed in {time.time() - tm0:.2f} scs.')
 
-# set optimal net transfer capacity driver instance
-circuit.set_state(t=1)
-driver = OptimalNetTransferCapacityDriver(
-    grid=circuit,
-    options=options,
-    pf_options=PowerFlowOptions(solver_type=SolverType.DC))
-driver.run()
-
-driver.results.make_report(path_out=path_out)
-# driver.results.make_report()
+print('Angles\n', np.angle(problem.get_voltage()))
+print('Branch loading\n', problem.get_loading())
+print('Gen power\n', problem.get_generator_power())
+print('Delta power\n', problem.get_generator_delta())
+print('Area slack', problem.power_shift.solution_value())
+print('HVDC flow\n', problem.get_hvdc_flow())

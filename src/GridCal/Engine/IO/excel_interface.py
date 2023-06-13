@@ -1153,10 +1153,8 @@ def save_excel(circuit: MultiCircuit, file_path):
     dfs = create_data_frames(circuit=circuit)
 
     # flush-save ###################################################################################################
-    writer = pd.ExcelWriter(file_path)
-    for key in dfs.keys():
-        dfs[key].to_excel(writer, key)
-
-    writer.save()
+    with pd.ExcelWriter(file_path) as writer:
+        for key in dfs.keys():
+            dfs[key].to_excel(writer, key)
 
     return logger

@@ -61,12 +61,10 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
-def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int=1):
-
+def add_npa_areas(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", ntime: int = 1):
     d = dict()
 
     for i, area in enumerate(circuit.areas):
-
         elm = npa.Area(uuid=area.idtag,
                        secondary_id=str(area.code),
                        name=area.name,
@@ -169,7 +167,7 @@ def add_npa_investments(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit",
     return d
 
 
-def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int=1, tidx=None,
+def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_series: bool, ntime: int = 1, tidx=None,
                   area_dict=None):
     """
     Convert the buses to Newton buses
@@ -206,7 +204,8 @@ def add_npa_buses(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", time_
     return bus_dict
 
 
-def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_npa_loads(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                  tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -272,7 +271,8 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
         npa_circuit.addPowerElectronicsInjection(pe_inj)
 
 
-def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                   tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -302,7 +302,8 @@ def add_npa_shunts(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_
         npa_circuit.addCapacitor(sh)
 
 
-def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                       tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -353,7 +354,8 @@ def add_npa_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", 
         npa_circuit.addGenerator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                     tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -408,7 +410,8 @@ def get_battery_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
         npa_circuit.addBattery(gen)
 
 
-def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                 tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -447,7 +450,7 @@ def add_npa_line(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         npa_circuit.addAcLine(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
+def add_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
                          time_series: bool, ntime=1, tidx=None, override_controls=False):
     """
 
@@ -514,7 +517,57 @@ def get_transformer_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit"
         npa_circuit.addTransformers2wFul(tr2)
 
 
-def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_transformer3w_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict,
+                           time_series: bool, ntime=1, tidx=None, override_controls=False):
+    """
+
+    :param circuit: GridCal circuit
+    :param npa_circuit: Newton circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to Newton bus object
+    :param ntime: number of time steps
+    :param tidx:
+    :param override_controls: If true the controls are set to Fix
+    """
+
+    ctrl_dict = {
+        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
+        TransformerControlType.PtVt: npa.BranchControlModes.BranchPt,
+    }
+
+    for i, elm in enumerate(circuit.transformers3w):
+        tr3 = npa.Transformer3W(uuid=elm.idtag,
+                                secondary_id=str(elm.code),
+                                name=elm.name,
+                                time_steps=ntime,
+                                active_default=elm.active,
+                                calc_node_1=bus_dict[elm.bus1.idtag],
+                                calc_node_2=bus_dict[elm.bus2.idtag],
+                                calc_node_3=bus_dict[elm.bus3.idtag],
+                                V1=elm.V1,
+                                V2=elm.V2,
+                                V3=elm.V3,
+                                r12=elm.r12, r23=elm.r23, r31=elm.r31,
+                                x12=elm.x12, x23=elm.x23, x31=elm.x31,
+                                rate12=elm.rate12, rate23=elm.rate23, rate31=elm.rate31,
+                                contingency_rate12=elm.rate12,
+                                contingency_rate23=elm.rate23,
+                                contingency_rate31=elm.rate31,)
+
+        if time_series:
+            pass
+        else:
+            pass
+
+        npa_circuit.addTransformers3w(tr3)
+
+
+def add_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                 tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -590,7 +643,8 @@ def get_vsc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_di
         npa_circuit.addAcDcConverter(vsc)
 
 
-def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                     tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -627,7 +681,8 @@ def get_dc_line_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bu
         npa_circuit.addDcLine(lne)
 
 
-def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1, tidx=None):
+def add_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_dict, time_series: bool, ntime=1,
+                  tidx=None):
     """
 
     :param circuit: GridCal circuit
@@ -747,12 +802,13 @@ def to_newton_pa(circuit: MultiCircuit, time_series: bool, tidx: List[int] = Non
     add_npa_static_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_shunts(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_generators(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_battery_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
     add_npa_line(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx, override_branch_controls)
-    get_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
-    get_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_transformer_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx, override_branch_controls)
+    add_transformer3w_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx, override_branch_controls)
+    add_vsc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_dc_line_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
+    add_hvdc_data(circuit, npaCircuit, bus_dict, time_series, ntime, tidx)
 
     # npa.FileHandler().save(npaCircuit, circuit.name + "_circuit.newton")
 
@@ -768,7 +824,6 @@ class FakeAdmittances:
 
 
 def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=False):
-
     from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
@@ -780,7 +835,6 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
     data_lst = list()
 
     for npa_data in npa_data_lst:
-
         data = SnapshotData(nbus=0,
                             nline=0,
                             ndcline=0,
@@ -1123,7 +1177,6 @@ def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False, ov
 
 
 def convert_bus_types(arr: List["npa.BusType"]):
-
     tpe = np.zeros(len(arr), dtype=int)
     for i, val in enumerate(arr):
         if val == npa.BusType.VD:
@@ -1184,7 +1237,6 @@ def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResu
 
 
 def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
-
     from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
@@ -1231,14 +1283,12 @@ def translate_newton_pa_opf_results(grid: "MultiCircuit", res: "npa.NonlinearOpf
 
 
 def debug_newton_pa_circuit_at(npa_circuit: "npa.HybridCircuit", t: int = None):
-
     if t is None:
         t = 0
 
     data = npa.compileAt(npa_circuit, t=t)
 
     for i in range(len(data)):
-
         print('_' * 200)
         print('Island', i)
         print('_' * 200)
@@ -1272,4 +1322,3 @@ def debug_newton_pa_circuit_at(npa_circuit: "npa.HybridCircuit", t: int = None):
 
         print('Qmax')
         print(data[i].Qmax_bus)
-

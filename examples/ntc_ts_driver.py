@@ -1,7 +1,9 @@
 import os
+import numpy as np
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Devices as dev
-from GridCal.Engine import *
+from GridCal.Engine import FileOpen, OptimalNetTransferCapacityOptions, AvailableTransferMode, OptimalNetTransferCapacityTimeSeriesDriver
+
 
 folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')
@@ -51,7 +53,6 @@ if len(idx_to) == 0:
 if len(idx_br) == 0:
     print('There are no inter-area branches!')
 
-
 options = OptimalNetTransferCapacityOptions(
     area_from_bus_idx=idx_from,
     area_to_bus_idx=idx_to,
@@ -63,23 +64,25 @@ options = OptimalNetTransferCapacityOptions(
     consider_contingencies=True,
     consider_gen_contingencies=True,
     consider_hvdc_contingencies=True,
+    consider_nx_contingencies=True,
     generation_contingency_threshold=1000,
     dispatch_all_areas=False,
     tolerance=1e-2,
     sensitivity_dT=100.0,
-    # transfer_mode=AvailableTransferMode.InstalledPower,
+    transfer_method=AvailableTransferMode.InstalledPower,
     # todo: checkear si queremos el ptdf por potencia generada
     perform_previous_checks=False,
     weight_power_shift=1e5,
     weight_generation_cost=1e2,
     time_limit_ms=1e4,
-    loading_threshold_to_report=.98)
+    loading_threshold_to_report=.98
+)
 
 print('Running optimal net transfer capacity...')
 
 # set optimal net transfer capacity driver instance
 start = 5
-end = 6  #circuit.get_time_number()-1
+end = 6  # circuit.get_time_number()-1
 
 driver = OptimalNetTransferCapacityTimeSeriesDriver(
     grid=circuit,
