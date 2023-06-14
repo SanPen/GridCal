@@ -671,7 +671,7 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results.It = res.It[0, :]
     results.Beq = res.Beq[0, :]
     results.m = res.tap_modules[0, :]
-    results.theta = res.tap_angles[0, :]
+    results.tap_angle = res.tap_angles[0, :]
     results.F = res.F
     results.T = res.T
     results.hvdc_F = res.F_hvdc

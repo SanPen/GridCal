@@ -31,7 +31,7 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import L
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import PowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -55,7 +55,7 @@ def get_results_object_dictionary():
            (OptimalPowerFlowResults((), (), (), (), ()), SimulationTypes.OPF_run),
            (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
            (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
-           (TimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
+           (PowerFlowTimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
            (ShortCircuitResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.ShortCircuit_run),
            (StochasticPowerFlowResults(0, 0, 0, (), (), ()), SimulationTypes.StochasticPowerFlow)
            ]

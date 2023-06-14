@@ -198,14 +198,14 @@ class GeneratorData:
         Get generator Qmax per bus
         :return:
         """
-        return self.C_bus_elm * (self.qmax.reshape(-1, 1) * self.active)
+        return self.C_bus_elm * (self.qmax * self.active)
 
     def get_qmin_per_bus(self):
         """
         Get generator Qmin per bus
         :return:
         """
-        return self.C_bus_elm * (self.qmin.reshape(-1, 1) * self.active)
+        return self.C_bus_elm * (self.qmin * self.active)
 
     def __len__(self):
         """

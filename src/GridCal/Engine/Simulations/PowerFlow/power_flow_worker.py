@@ -81,7 +81,7 @@ def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.Conve
                                              norm_f=1e200,
                                              Scalc=S0,
                                              ma=ma,
-                                             theta=circuit.branch_data.tap_angle[:, 0],
+                                             theta=circuit.branch_data.tap_angle,
                                              Beq=Beq,
                                              Ybus=circuit.Ybus,
                                              Yf=circuit.Yf,
@@ -405,11 +405,9 @@ def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
                                m=circuit.nbr,
-                               n_tr=circuit.ntr,
                                n_hvdc=circuit.nhvdc,
                                bus_names=circuit.bus_names,
                                branch_names=circuit.branch_names,
-                               transformer_names=circuit.tr_names,
                                hvdc_names=circuit.hvdc_names,
                                bus_types=bus_types)
 
@@ -420,12 +418,11 @@ def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
     results.If = If  # in p.u.
     results.It = It  # in p.u.
     results.tap_module = solution.ma
-    results.theta = solution.theta
+    results.tap_angle = solution.theta
     results.Beq = solution.Beq
     results.Vbranch = Vbranch
     results.loading = loading
     results.losses = losses
-    results.transformer_tap_module = solution.ma[circuit.transformer_idx]
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[circuit.pv]
 
@@ -547,7 +544,6 @@ def single_island_pf(circuit: NumericalCircuit, Vbus, Sbus, Ibus, Yloadbus, ma, 
 
 
 def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
-
     Shvdc = np.zeros(len(multi_circuit.buses))
     Losses_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
     Pf_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
@@ -594,7 +590,8 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
+def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(),
+                       V_guess=None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -606,11 +603,9 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
     # declare results
     results = PowerFlowResults(n=nc.nbus,
                                m=nc.nbr,
-                               n_tr=nc.ntr,
                                n_hvdc=nc.nhvdc,
                                bus_names=nc.bus_data.names,
                                branch_names=nc.branch_data.names,
-                               transformer_names=nc.transformer_data.names,
                                hvdc_names=nc.hvdc_data.names,
                                bus_types=nc.bus_data.bus_types)
 
@@ -649,27 +644,24 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
                     Sbus=island.Sbus + Shvdc[island.original_bus_idx],
                     Ibus=island.Ibus,
                     Yloadbus=island.YLoadBus,
-                    ma=island.branch_data.tap_module[:, 0],
-                    theta=island.branch_data.tap_angle[:, 0],
-                    Beq=island.branch_data.Beq[:, 0],
+                    ma=island.branch_data.tap_module,
+                    theta=island.branch_data.tap_angle,
+                    Beq=island.branch_data.Beq,
                     branch_rates=island.Rates,
                     pq=island.pq,
                     pv=island.pv,
                     vd=island.vd,
                     pqpv=island.pqpv,
-                    Qmin=island.Qmin_bus[:, 0],
-                    Qmax=island.Qmax_bus[:, 0],
+                    Qmin=island.Qmin_bus,
+                    Qmax=island.Qmax_bus,
                     options=options,
                     logger=logger
                 )
 
                 # merge the results from this island
-                results.apply_from_island(
-                    res,
-                    island.original_bus_idx,
-                    island.original_branch_idx,
-                    island.original_tr_idx
-                )
+                results.apply_from_island(results=res,
+                                          b_idx=island.original_bus_idx,
+                                          br_idx=island.original_branch_idx)
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
@@ -678,7 +670,8 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
         if n_free and control_iter < max_control_iter:
 
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
-                                                                                                theta=np.angle(results.voltage))
+                                                                                                theta=np.angle(
+                                                                                                    results.voltage))
 
             # hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
             hvdc_control_err = np.max(np.abs(Shvdc - Shvdc_prev))

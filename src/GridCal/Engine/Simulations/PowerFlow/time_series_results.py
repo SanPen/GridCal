@@ -19,7 +19,7 @@ import json
 import pandas as pd
 import numpy as np
 import time
-
+from typing import List
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -28,20 +28,25 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 import GridCal.Engine.basic_structures as bs
 
 
-class TimeSeriesResults(PowerFlowResults):
+class PowerFlowTimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names,
-                 time_array, bus_types,
+    def __init__(self,
+                 n: int,
+                 m: int,
+                 n_hvdc: int,
+                 bus_names: List[str],
+                 branch_names: List[str],
+                 hvdc_names: List[str],
+                 time_array: np.ndarray,
+                 bus_types: np.ndarray,
                  area_names=None):
         """
         TimeSeriesResults constructor
         :param n: number of buses
         :param m: number of branches
-        :param n_tr:
         :param n_hvdc:
         :param bus_names:
         :param branch_names:
-        :param transformer_names:
         :param hvdc_names:
         :param time_array:
         :param bus_types:
@@ -49,11 +54,9 @@ class TimeSeriesResults(PowerFlowResults):
         PowerFlowResults.__init__(self,
                                   n=n,
                                   m=m,
-                                  n_tr=n_tr,
                                   n_hvdc=n_hvdc,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
-                                  transformer_names=transformer_names,
                                   hvdc_names=hvdc_names,
                                   bus_types=bus_types,
                                   area_names=area_names)
@@ -123,9 +126,12 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
-        rates = nc.Rates.T
-        self.loading = self.Sf / (rates + 1e-9)
+    def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
+        """
+        Recompute the loading with new rates
+        :param nc: NumericalCircuit instance
+        """
+        self.loading = self.Sf / (nc.rates + 1e-9)
 
     def set_at(self, t, results: PowerFlowResults):
         """

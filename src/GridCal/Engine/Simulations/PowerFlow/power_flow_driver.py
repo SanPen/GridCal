@@ -52,9 +52,13 @@ class PowerFlowDriver(DriverTemplate):
 
         self.opf_results = opf_results
 
-        self.results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
-                                        bus_names=(), branch_names=(), transformer_names=(),
-                                        hvdc_names=(), bus_types=())
+        self.results = PowerFlowResults(n=0,
+                                        m=0,
+                                        n_hvdc=0,
+                                        bus_names=[],
+                                        branch_names=[],
+                                        hvdc_names=[],
+                                        bus_types=np.empty(0))
 
         self.logger = Logger()
 
@@ -88,6 +92,7 @@ class PowerFlowDriver(DriverTemplate):
 
         if self.engine == bs.EngineType.GridCal:
             self.results = multi_island_pf(multi_circuit=self.grid,
+                                           t=None,
                                            options=self.options,
                                            opf_results=self.opf_results,
                                            logger=self.logger)
@@ -99,11 +104,9 @@ class PowerFlowDriver(DriverTemplate):
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),
-                                            n_tr=self.grid.get_transformers2w_number(),
                                             n_hvdc=self.grid.get_hvdc_number(),
                                             bus_names=res.bus_names,
                                             branch_names=res.branch_names,
-                                            transformer_names=[],
                                             hvdc_names=res.hvdc_names,
                                             bus_types=res.bus_types)
 
@@ -117,11 +120,9 @@ class PowerFlowDriver(DriverTemplate):
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),
-                                            n_tr=self.grid.get_transformers2w_number(),
                                             n_hvdc=self.grid.get_hvdc_number(),
                                             bus_names=res.names,
                                             branch_names=res.names,
-                                            transformer_names=[],
                                             hvdc_names=res.hvdc_names,
                                             bus_types=res.bus_types)
 

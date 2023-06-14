@@ -17,13 +17,13 @@
 import numpy as np
 
 
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import PowerFlowTimeSeriesResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
 
 class TimeSeriesResultsAnalysis:
 
-    def __init__(self, numerical_circuit: NumericalCircuit, results: TimeSeriesResults):
+    def __init__(self, numerical_circuit: NumericalCircuit, results: PowerFlowTimeSeriesResults):
         """
         Constructor
         :param numerical_circuit: TimeCircuit instance

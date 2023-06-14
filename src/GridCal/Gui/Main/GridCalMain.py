@@ -18,6 +18,8 @@ import datetime as dtelib
 import gc
 import json
 import sys
+import ctypes
+import threading
 import os.path
 import platform
 import webbrowser
@@ -103,6 +105,27 @@ __author__ = 'Santiago Peñate Vera'
 This class is the handler of the main gui of GridCal.
 """
 
+
+def terminate_thread(thread):
+    """Terminates a python thread from another thread.
+
+    :param thread: a threading.Thread instance
+    """
+    if not thread.is_alive():
+        return False
+
+    exc = ctypes.py_object(SystemExit)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+        ctypes.c_long(thread.ident), exc)
+    if res == 0:
+        raise ValueError("nonexistent thread id")
+    elif res > 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread.ident, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+
+    return True
 
 def traverse_objects(name, obj, lst: list, i=0):
     lst.append((name, sys.getsizeof(obj)))
@@ -915,6 +938,7 @@ class MainGUI(QMainWindow):
         :return: list of simulation threads
         """
 
+
         all_threads = list(self.session.threads.values())
 
         return all_threads
@@ -961,6 +985,26 @@ class MainGUI(QMainWindow):
         for thr in self.get_all_threads():
             if thr is not None:
                 thr.quit()
+
+        for thread in threading.enumerate():
+            print(thread.name, end="")
+            if "MainThread" not in thread.name:
+                stat = terminate_thread(thread)
+                if stat:
+                    print(" killed")
+                else:
+                    print(" not killed")
+            else:
+                print(" Skipped")
+
+        # second pass, kill main too
+        for thread in threading.enumerate():
+            print(thread.name, end="")
+            stat = terminate_thread(thread)
+            if stat:
+                print(" killed")
+            else:
+                print(" not killed")
 
     def any_thread_running(self):
         """
@@ -1532,7 +1576,8 @@ class MainGUI(QMainWindow):
 
             # create thread
             self.open_file_thread_object = filedrv.FileOpenThread(
-                file_name=filenames if len(filenames) > 1 else filenames[0])
+                file_name=filenames if len(filenames) > 1 else filenames[0]
+            )
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

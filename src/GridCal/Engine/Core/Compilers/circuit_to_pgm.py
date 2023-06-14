@@ -30,7 +30,7 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.time_series_results import TimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.time_series_results import PowerFlowTimeSeriesResults
 
 try:
     import power_grid_model as pgm
@@ -721,7 +721,7 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
     return results
 
 
-def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
+def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> PowerFlowTimeSeriesResults:
     """
     Translate the time series power flow results
     :param grid:
@@ -732,16 +732,16 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
 
     nc = compile_numerical_circuit(grid)
 
-    results = TimeSeriesResults(n=nc.nbus,
-                                m=nc.nbr,
-                                n_tr=nc.ntr,
-                                n_hvdc=nc.nhvdc,
-                                bus_names=nc.bus_names,
-                                branch_names=nc.branch_names,
-                                transformer_names=nc.transformer_data.names,
-                                hvdc_names=nc.hvdc_names,
-                                time_array=grid.time_profile,
-                                bus_types=nc.bus_types)
+    results = PowerFlowTimeSeriesResults(n=nc.nbus,
+                                         m=nc.nbr,
+                                         n_tr=nc.ntr,
+                                         n_hvdc=nc.nhvdc,
+                                         bus_names=nc.bus_names,
+                                         branch_names=nc.branch_names,
+                                         transformer_names=nc.transformer_data.names,
+                                         hvdc_names=nc.hvdc_names,
+                                         time_array=grid.time_profile,
+                                         bus_types=nc.bus_types)
 
     if pf_res is None:
         return results

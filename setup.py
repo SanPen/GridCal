@@ -69,6 +69,7 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "pyarrow",
                 "fastparquet",
                 "pyqtdarktheme",
+                "ortools",
                 "pytest>=3.8"]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.

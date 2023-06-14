@@ -353,7 +353,7 @@ class NumericalCircuit:
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
         self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
-        self.battery_data.C_bus_batt = self.battery_data.C_bus_batt.tocsr()
+        self.battery_data.C_bus_elm= self.battery_data.C_bus_elm.tocsr()
         self.generator_data.C_bus_elm = self.generator_data.C_bus_elm.tocsr()
         self.shunt_data.C_bus_elm = self.shunt_data.C_bus_elm.tocsr()
 
@@ -1543,7 +1543,10 @@ class NumericalCircuit:
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
         nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
-        nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
+
+        # HVDC data does not propagate into islands
+        # nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
+
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)

@@ -74,8 +74,8 @@ class PowerFlowResults(ResultsTemplate):
     def __init__(self, n: int,
                  m: int,
                  n_hvdc: int,
-                 bus_names,
-                 branch_names,
+                 bus_names: List[str],
+                 branch_names: List[str],
                  hvdc_names: List[str],
                  bus_types: np.ndarray,
                  area_names=None):
@@ -181,7 +181,7 @@ class PowerFlowResults(ResultsTemplate):
         self.It = np.zeros(m, dtype=complex)
 
         self.tap_module = np.zeros(m, dtype=float)
-        self.theta = np.zeros(m, dtype=float)
+        self.tap_angle = np.zeros(m, dtype=float)
         self.Beq = np.zeros(m, dtype=float)
 
         self.Vbranch = np.zeros(m, dtype=complex)
@@ -292,7 +292,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return val
 
-    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx, tr_idx):
+    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -497,7 +497,7 @@ class PowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchTapAngle:
             labels = self.branch_names
-            y = self.theta
+            y = self.tap_angle
             y_label = '(rad)'
             title = result_type.value[0]
 

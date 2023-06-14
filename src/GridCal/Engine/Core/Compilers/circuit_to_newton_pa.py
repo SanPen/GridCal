@@ -836,19 +836,14 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
 
     for npa_data in npa_data_lst:
         data = NumericalCircuit(nbus=0,
-                                nline=0,
-                                ndcline=0,
-                                ntr=0,
-                                nvsc=0,
-                                nupfc=0,
+                                nbr=0,
                                 nhvdc=0,
                                 nload=0,
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
-                                nstagen=0,
                                 sbase=0,
-                                ntime=1)
+                                t_idx=0)
 
         conn = npa_data.getConnectivity()
         inj = npa_data.getInjections()
@@ -969,7 +964,8 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions):
 def get_newton_pa_nonlinear_opf_options(pfopt: PowerFlowOptions, opfopt: "OptimalPowerFlowOptions"):
     """
     Translate GridCal power flow options to Newton power flow options
-    :param opt:
+    :param pfopt:
+    :param opfopt:
     :return:
     """
     q_control_dict = {ReactivePowerControlMode.NoControl: npa.ReactivePowerControlMode.NoControl,
@@ -1063,7 +1059,6 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
     :param opt: Power Flow Options
     :param time_series: Compile with GridCal time series?
     :param tidx: Array of time indices
-    :param override_branch_controls: If true, the branch controls are set to fix
     :return: Newton Power flow results object
     """
     npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
@@ -1095,6 +1090,7 @@ def newton_pa_linear_opf(circuit: MultiCircuit, opf_options, pfopt: PowerFlowOpt
     """
     Newton power flow
     :param circuit: MultiCircuit instance
+    :param opf_options:
     :param pfopt: Power Flow Options
     :param time_series: Compile with GridCal time series?
     :param tidx: Array of time indices
@@ -1189,13 +1185,17 @@ def convert_bus_types(arr: List["npa.BusType"]):
 
 
 def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResults") -> "PowerFlowResults":
+    """
+    Translate the Newton Power Analytics results back to GridCal
+    :param grid: MultiCircuit instance
+    :param res: Newton's PowerFlowResults instance
+    :return: PowerFlowResults instance
+    """
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
-                               n_tr=grid.get_transformers2w_number(),
                                n_hvdc=grid.get_hvdc_number(),
                                bus_names=res.bus_names,
                                branch_names=res.branch_names,
-                               transformer_names=[],
                                hvdc_names=res.hvdc_names,
                                bus_types=res.bus_types)
 
@@ -1210,7 +1210,7 @@ def translate_newton_pa_pf_results(grid: "MultiCircuit", res: "npa.PowerFlowResu
     # results.It = res.It[0, :]
     results.Beq = res.Beq[0, :]
     results.m = res.tap_module[0, :]
-    results.theta = res.tap_angle[0, :]
+    results.tap_angle = res.tap_angle[0, :]
     results.F = res.F
     results.T = res.T
     results.hvdc_F = res.hvdc_F

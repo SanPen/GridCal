@@ -150,10 +150,10 @@ def get_shunt_data(circuit: MultiCircuit,
             data.admittance[k] = complex(elm.G, elm.B)
 
         if not use_stored_guess:
-            if Vbus[i, 0].real == 1.0:
-                Vbus[i, :] = complex(elm.Vset, 0)
-            elif elm.Vset != Vbus[i, 0]:
-                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+            if Vbus[i].real == 1.0:
+                Vbus[i] = complex(elm.Vset, 0)
+            elif elm.Vset != Vbus[i]:
+                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         data.C_bus_elm[i, k] = 1
 
@@ -229,10 +229,10 @@ def get_generator_data(circuit: MultiCircuit,
                     bus_data.bus_types[i] = 2  # set as PV
 
                     if not use_stored_guess:
-                        if Vbus[i, 0].real == 1.0:
-                            Vbus[i, :] = complex(elm.Vset_prof[t_idx], 0)
-                        elif elm.Vset_prof[t_idx] != Vbus[i, 0]:
-                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i, 0])
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
+                        elif elm.Vset_prof[t_idx] != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
 
         else:
             if opf_results is not None:
@@ -250,15 +250,15 @@ def get_generator_data(circuit: MultiCircuit,
                 data.pmin[k] = elm.Pmin
                 data.cost[k] = elm.Cost
 
-            if elm.active_prof[t_idx] and elm.is_controlled:
+            if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
                     bus_data.bus_types[i] = 2  # set as PV
 
                 if not use_stored_guess:
-                    if Vbus[i, 0].real == 1.0:
-                        Vbus[i, :] = complex(elm.Vset, 0)
-                    elif elm.Vset != Vbus[i, 0]:
-                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+                    if Vbus[i].real == 1.0:
+                        Vbus[i] = complex(elm.Vset, 0)
+                    elif elm.Vset != Vbus[i]:
+                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         data.C_bus_elm[i, k] = 1
 
@@ -339,10 +339,10 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.bus_types[i] = 2  # set as PV
 
                     if not use_stored_guess:
-                        if Vbus[i, 0].real == 1.0:
-                            Vbus[i, :] = complex(elm.Vset_prof[t_idx], 0)
-                        elif elm.Vset_prof[t_idx] != Vbus[i, 0]:
-                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i, 0])
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
+                        elif elm.Vset_prof[t_idx] != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
 
         else:
             if opf_results is not None:
@@ -366,15 +366,15 @@ def get_battery_data(circuit: MultiCircuit,
                 data.charge_efficiency[k] = elm.charge_efficiency
                 data.cost[k] = elm.Cost
 
-            if elm.active_prof[t_idx] and elm.is_controlled:
+            if elm.active[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
                     bus_data.bus_types[i] = 2  # set as PV
 
                 if not use_stored_guess:
-                    if Vbus[i, 0].real == 1.0:
-                        Vbus[i, :] = complex(elm.Vset, 0)
-                    elif elm.Vset != Vbus[i, 0]:
-                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+                    if Vbus[i].real == 1.0:
+                        Vbus[i] = complex(elm.Vset, 0)
+                    elif elm.Vset != Vbus[i]:
+                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         data.C_bus_elm[i, k] = 1
 
