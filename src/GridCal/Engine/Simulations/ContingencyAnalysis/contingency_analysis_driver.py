@@ -20,13 +20,13 @@ import numpy as np
 from itertools import combinations
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, compile_numerical_circuit_at
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis2
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power, multi_island_pf2
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power, multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 
 
@@ -114,10 +114,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         :return: returns the results
         """
         # set the numerical circuit
-        if t is None:
-            numerical_circuit = compile_numerical_circuit(self.grid)
-        else:
-            numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
+        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
 
         if self.options.pf_options is None:
             pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
@@ -145,7 +142,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         original_gen_p = numerical_circuit.generator_data.p.copy()
 
         # run 0
-        pf_res_0 = multi_island_pf2(nc=numerical_circuit, options=pf_opts)
+        pf_res_0 = multi_island_pf_nc(nc=numerical_circuit, options=pf_opts)
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.grid.contingency_groups):
@@ -173,7 +170,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
 
             # run
-            pf_res = multi_island_pf2(nc=numerical_circuit, options=pf_opts, V_guess=pf_res_0.voltage)
+            pf_res = multi_island_pf_nc(nc=numerical_circuit, options=pf_opts, V_guess=pf_res_0.voltage)
 
             results.Sf[ic, :] = pf_res.Sf
             results.S[ic, :] = pf_res.Sbus

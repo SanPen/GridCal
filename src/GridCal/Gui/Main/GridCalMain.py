@@ -310,9 +310,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(gf.get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = core.NumericalCircuit(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nupfc=1, nhvdc=1,
-                                    nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
-        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(pfo.available_structures))
+        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(core.NumericalCircuit.available_structures))
 
         self.schematic_list_steps = list()
 

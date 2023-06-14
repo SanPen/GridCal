@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, TimeCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -157,8 +157,10 @@ class Cascading(DriverTemplate):
         return idx, criteria
 
     @staticmethod
-    def remove_probability_based(numerical_circuit: TimeCircuit, results: StochasticPowerFlowResults,
-                                 max_val, min_prob):
+    def remove_probability_based(numerical_circuit: NumericalCircuit,
+                                 results: StochasticPowerFlowResults,
+                                 max_val,
+                                 min_prob):
         """
         Remove branches based on their chance of overload
         :param numerical_circuit:
@@ -256,7 +258,7 @@ class Cascading(DriverTemplate):
 
         # compile
         # print('Compiling...', end='')
-        nc = compile_time_circuit(self.grid)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
         calculation_inputs = nc.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         self.results = CascadingResults(self.cascade_type)

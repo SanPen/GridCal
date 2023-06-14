@@ -15,21 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from xmlrpc.client import Fault
 import numpy as np
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_ph3, short_circuit_unbalanced
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_ph3, \
+    short_circuit_unbalanced
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Devices import Branch, Bus
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Devices.enumerations import FaultType
+
 
 ########################################################################################################################
 # Short circuit classes
@@ -38,8 +39,9 @@ from GridCal.Engine.Devices.enumerations import FaultType
 
 class ShortCircuitOptions:
 
-    def __init__(self, bus_index=None, fault_type=FaultType.ph3, branch_index=None, branch_fault_locations=None, 
-                 branch_fault_impedance=None, branch_impedance_tolerance_mode=BranchImpedanceMode.Specified, verbose=False):
+    def __init__(self, bus_index=None, fault_type=FaultType.ph3, branch_index=None, branch_fault_locations=None,
+                 branch_fault_impedance=None, branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+                 verbose=False):
         """
 
         :param bus_index:
@@ -140,7 +142,7 @@ class ShortCircuitDriver(DriverTemplate):
         :return: the two new branches and the mid short circuited bus
         """
 
-        assert(0.0 < fault_position < 1.0)
+        assert (0.0 < fault_position < 1.0)
 
         r = branch.R
         x = branch.X
@@ -211,11 +213,11 @@ class ShortCircuitDriver(DriverTemplate):
         # voltage, Sf, loading, losses, error, converged, Qpv
         results = results = ShortCircuitResults(n=calculation_inputs.nbus,
                                                 m=calculation_inputs.nbr,
-                                                n_tr=calculation_inputs.ntr,
+                                                n_tr=0,
                                                 n_hvdc=calculation_inputs.nhvdc,
                                                 bus_names=calculation_inputs.bus_names,
                                                 branch_names=calculation_inputs.branch_names,
-                                                transformer_names=calculation_inputs.tr_names,
+                                                transformer_names=[],
                                                 hvdc_names=calculation_inputs.hvdc_names,
                                                 bus_types=calculation_inputs.bus_types,
                                                 area_names=None)
@@ -244,7 +246,6 @@ class ShortCircuitDriver(DriverTemplate):
             sc_bus_index = list()
 
             for k, br_idx in enumerate(self.options.branch_index):
-
                 # modify the grid by inserting a mid-line short circuit bus
                 br1, br2, middle_bus = self.split_branch(branch=br_idx,
                                                          fault_position=self.options.branch_fault_locations[k],
@@ -260,22 +261,25 @@ class ShortCircuitDriver(DriverTemplate):
             grid = self.grid
 
         # Compile the grid
-        numerical_circuit = compile_numerical_circuit(circuit=grid,
-                                                      apply_temperature=self.pf_options.apply_temperature_correction,
-                                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                      opf_results=self.opf_results)
+        numerical_circuit = compile_numerical_circuit_at(circuit=grid,
+                                                         t_idx=None,
+                                                         apply_temperature=self.pf_options.apply_temperature_correction,
+                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                         opf_results=self.opf_results)
 
-        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(
+            ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
         results = ShortCircuitResults(n=numerical_circuit.nbus,
                                       m=numerical_circuit.nbr,
-                                      n_tr=numerical_circuit.ntr,
+                                      n_tr=0,
                                       n_hvdc=numerical_circuit.nhvdc,
                                       bus_names=numerical_circuit.bus_names,
                                       branch_names=numerical_circuit.branch_names,
-                                      transformer_names=numerical_circuit.tr_names,
+                                      transformer_names=[],
                                       hvdc_names=numerical_circuit.hvdc_names,
                                       bus_types=numerical_circuit.bus_types)
+
         results.bus_types = numerical_circuit.bus_types
 
         Zf = self.compile_zf(grid)
@@ -288,20 +292,19 @@ class ShortCircuitDriver(DriverTemplate):
                 # for the calculation we need the bus index in the island scheme.
                 # Hence, we need to convert it, and if the global bus index is not
                 # in the island, do not perform any calculation
-                reverse_bus_index = {b: i for i, b in enumerate(island.original_bus_idx)}
+                reverse_bus_index = {b: i for i, b in enumerate(island.bus_data.original_idx)}
 
                 island_bus_index = reverse_bus_index.get(self.options.bus_index, None)
 
                 if island_bus_index is not None:
-
                     res = self.single_short_circuit(calculation_inputs=island,
-                                                    Vpf=self.pf_results.voltage[island.original_bus_idx],
-                                                    Zf=Zf[island.original_bus_idx],
+                                                    Vpf=self.pf_results.voltage[island.bus_data.original_idx],
+                                                    Zf=Zf[island.bus_data.original_idx],
                                                     island_bus_index=island_bus_index,
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.original_bus_idx, island.original_branch_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx, island.branch_data.original_idx)
 
         else:  # single island
 
@@ -312,7 +315,8 @@ class ShortCircuitDriver(DriverTemplate):
                                             fault_type=self.options.fault_type)
 
             # merge results
-            results.apply_from_island(res, calculation_inputs[0].original_bus_idx, calculation_inputs[0].original_branch_idx)
+            results.apply_from_island(res, calculation_inputs[0].original_bus_idx,
+                                      calculation_inputs[0].original_branch_idx)
 
         results.sc_type = self.options.fault_type
         results.sc_bus_index = self.options.bus_index
@@ -323,4 +327,3 @@ class ShortCircuitDriver(DriverTemplate):
 
     def isRunning(self):
         return self._is_running
-

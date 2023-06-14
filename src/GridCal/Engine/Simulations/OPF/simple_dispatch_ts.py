@@ -21,13 +21,13 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 
 
 class OpfSimpleTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
                  text_prog=None, prog_func=None):
         """
         DC time series linear optimal power flow

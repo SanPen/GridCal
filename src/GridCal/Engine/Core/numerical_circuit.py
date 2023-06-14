@@ -19,7 +19,7 @@ import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Union
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -29,11 +29,12 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import Ja
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
-import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
 import GridCal.Engine.Core.DataStructures as ds
+from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Devices.groupings import Area
 
 sparse_type = get_sparse_type()
 
@@ -178,8 +179,46 @@ def get_devices_per_areas(Cdev, buses_in_a1, buses_in_a2):
 
 
 class NumericalCircuit:
+    available_structures = [
+        'Vbus',
+        'Sbus',
+        'Ibus',
+        'Ybus',
+        'G',
+        'B',
+        'Yf',
+        'Yt',
+        'Bbus',
+        'Bf',
+        'Cf',
+        'Ct',
+        'Yshunt',
+        'Yseries',
+        "B'",
+        "B''",
+        'Types',
+        'Jacobian',
+        'Qmin',
+        'Qmax',
+        'pq',
+        'pv',
+        'vd',
+        'pqpv',
+        'tap_f',
+        'tap_t',
+        'iPfsh',
+        'iQfma',
+        'iBeqz',
+        'iBeqv',
+        'iVtma',
+        'iQtma',
+        'iPfdp',
+        'iVscL',
+        'VfBeqbus',
+        'Vtmabus'
+    ]
 
-    def __init__(self, nbus, nbr,  nhvdc, nload, ngen, nbatt, nshunt,  sbase, t_idx=0):
+    def __init__(self, nbus, nbr, nhvdc, nload, ngen, nbatt, nshunt, sbase, t_idx=0):
         """
         Numerical circuit
         :param nbus: Number of calculation buses
@@ -271,45 +310,6 @@ class NumericalCircuit:
         self.pqpv_ = None
         self.ac_ = None
         self.dc_ = None
-
-        self.available_structures = [
-            'Vbus',
-            'Sbus',
-            'Ibus',
-            'Ybus',  
-            'G',
-            'B',
-            'Yf',
-            'Yt',
-            'Bbus',
-            'Bf',
-            'Cf',
-            'Ct',
-            'Yshunt',
-            'Yseries',
-            "B'",
-            "B''",
-            'Types',
-            'Jacobian',
-            'Qmin',
-            'Qmax',
-            'pq',
-            'pv',
-            'vd',
-            'pqpv',
-            'tap_f',
-            'tap_t',
-            'iPfsh',
-            'iQfma',
-            'iBeqz',
-            'iBeqv',
-            'iVtma',
-            'iQtma',
-            'iPfdp',
-            'iVscL',
-            'VfBeqbus',
-            'Vtmabus'
-            ]
 
     def get_injections(self, normalize=True):
         """
@@ -596,6 +596,30 @@ class NumericalCircuit:
         return self.branch_data.to_df()
 
     @property
+    def original_bus_idx(self):
+        return self.bus_data.original_idx
+
+    @property
+    def original_branch_idx(self):
+        return self.branch_data.original_idx
+
+    @property
+    def original_load_idx(self):
+        return self.load_data.original_idx
+
+    @property
+    def original_generator_idx(self):
+        return self.generator_data.original_idx
+
+    @property
+    def original_battery_idx(self):
+        return self.battery_data.original_idx
+
+    @property
+    def original_shunt_idx(self):
+        return self.shunt_data.original_idx
+
+    @property
     def Vbus(self):
 
         if self.Vbus_ is None:
@@ -716,7 +740,6 @@ class NumericalCircuit:
     def battery_names(self):
         return self.battery_data.names
 
-
     @property
     def hvdc_names(self):
         return self.hvdc_data.names
@@ -732,7 +755,6 @@ class NumericalCircuit:
     @property
     def branch_rates(self):
         return self.branch_data.rates
-
 
     @property
     def ac_indices(self):
@@ -813,7 +835,6 @@ class NumericalCircuit:
 
         # compute admittances on demand
         if self.Admittances is None:
-
             self.Admittances = ycalc.compute_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
@@ -866,7 +887,6 @@ class NumericalCircuit:
         """
         # compute admittances on demand
         if self.Yseries_ is None:
-
             self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
@@ -1483,7 +1503,7 @@ class NumericalCircuit:
                 index=self.bus_data.names[self.Vtmabus],
             )
         else:
-            raise Exception('PF input: structure type not found' +  str(structure_type))
+            raise Exception('PF input: structure type not found' + str(structure_type))
 
         return df
 
@@ -1568,122 +1588,32 @@ class NumericalCircuit:
         return circuit_islands
 
 
-def compile_numerical_circuit(
-        circuit: MultiCircuit,
-        apply_temperature=False,
-        branch_tolerance_mode=BranchImpedanceMode.Specified,
-        opf_results=None,
-        use_stored_guess=False) -> NumericalCircuit:
-    """
-
-    :param circuit:
-    :param apply_temperature:
-    :param branch_tolerance_mode:
-    :param opf_results:
-    :param use_stored_guess:
-    :return:
-    """
-
-    logger = Logger()
-
-    # declare the numerical circuit
-    nc = NumericalCircuit(
-        nbus=0,
-        nbr=0,
-        nhvdc=0,
-        nload=0,
-        ngen=0,
-        nbatt=0,
-        nshunt=0,
-        sbase=circuit.Sbase,
-    )
-
-    bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
-
-    nc.bus_data = gc_compiler.get_bus_data(
-        circuit=circuit,
-        use_stored_guess=use_stored_guess,
-    )
-
-    nc.load_data = gc_compiler.get_load_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        opf_results=opf_results,
-    )
-
-    nc.generator_data = gc_compiler.get_generator_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
-
-    nc.battery_data = gc_compiler.get_battery_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
-
-    nc.shunt_data = gc_compiler.get_shunt_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        use_stored_guess=use_stored_guess,
-    )
-
-    nc.branch_data = gc_compiler.get_branch_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        apply_temperature=apply_temperature,
-        branch_tolerance_mode=branch_tolerance_mode,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
-
-    nc.hvdc_data = gc_compiler.get_hvdc_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        bus_types=nc.bus_data.bus_types,
-        opf_results=opf_results,
-    )
-
-    nc.consolidate_information(
-        use_stored_guess=use_stored_guess,
-    )
-
-    return nc
-
-
 def compile_numerical_circuit_at(
         circuit: MultiCircuit,
-        t_idx,
+        t_idx: Union[int, None] = None,
         apply_temperature=False,
         branch_tolerance_mode=BranchImpedanceMode.Specified,
-        opf_results=None,
+        opf_results: Union["OptimalPowerFlowResults", None] = None,
         use_stored_guess=False,
-        bus_dict=None,
-        areas_dict=None) -> NumericalCircuit:
+        bus_dict: Union[Dict[Bus, int], None] = None,
+        areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
     """
-
-    :param circuit:
-    :param t_idx: time step from the time series to gather data from
-    :param apply_temperature:
-    :param branch_tolerance_mode:
-    :param opf_results:
-    :param use_stored_guess:
-    :param bus_dict
-    :param areas_dict
-    :return:
+    Compile a NumericalCircuit from a MultiCircuit
+    :param circuit: MultiCircuit instance
+    :param t_idx: time step from the time series to gather data from, if None the snapshot is used
+    :param apply_temperature: apply the branch temperature correction
+    :param branch_tolerance_mode: Branch tolerance mode
+    :param opf_results:(optional) OptimalPowerFlowResults instance
+    :param use_stored_guess: use the storage voltage guess?
+    :param bus_dict (optional) Dict[Bus, int] dictionary
+    :param areas_dict (optional) Dict[Area, int] dictionary
+    :return: NumericalCircuit instance
     """
 
     logger = Logger()
+
+    # if any valis time index is specified, then the data is compiled from the time series
+    time_series = t_idx is not None
 
     # declare the numerical circuit
     nc = NumericalCircuit(
@@ -1707,7 +1637,7 @@ def compile_numerical_circuit_at(
     nc.bus_data = gc_compiler2.get_bus_data(
         circuit=circuit,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         areas_dict=areas_dict,
         use_stored_guess=use_stored_guess,
     )
@@ -1716,7 +1646,7 @@ def compile_numerical_circuit_at(
         circuit=circuit,
         bus_dict=bus_dict,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         opf_results=opf_results,
     )
 
@@ -1725,7 +1655,7 @@ def compile_numerical_circuit_at(
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         Vbus=nc.bus_data.Vbus,
         logger=logger,
         opf_results=opf_results,
@@ -1737,7 +1667,7 @@ def compile_numerical_circuit_at(
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         Vbus=nc.bus_data.Vbus,
         logger=logger,
         opf_results=opf_results,
@@ -1748,7 +1678,7 @@ def compile_numerical_circuit_at(
         circuit=circuit,
         bus_dict=bus_dict,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         Vbus=nc.bus_data.Vbus,
         logger=logger,
         use_stored_guess=use_stored_guess,
@@ -1757,7 +1687,7 @@ def compile_numerical_circuit_at(
     nc.branch_data = gc_compiler2.get_branch_data(
         circuit=circuit,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         bus_dict=bus_dict,
         Vbus=nc.bus_data.Vbus,
         apply_temperature=apply_temperature,
@@ -1769,14 +1699,12 @@ def compile_numerical_circuit_at(
     nc.hvdc_data = gc_compiler2.get_hvdc_data(
         circuit=circuit,
         t_idx=t_idx,
-        time_series=True,
+        time_series=time_series,
         bus_dict=bus_dict,
         bus_types=nc.bus_data.bus_types,
         opf_results=opf_results
     )
 
-    nc.consolidate_information(
-        use_stored_guess=use_stored_guess
-    )
+    nc.consolidate_information(use_stored_guess=use_stored_guess)
 
     return nc

@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import Union, Dict
 import numpy as np
 import GridCal.Engine.basic_structures as bs
 
@@ -24,8 +25,10 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, compile_numerical_circuit_at
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Devices.enumerations import HvdcControlType
+from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Devices.groupings import Area
 
 
 def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
@@ -591,7 +594,7 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf2(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
+def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -721,7 +724,8 @@ def multi_island_pf2(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.
 
         control_iter += 1
 
-    # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
+    # Compile HVDC results (available for the complete grid since HVDC line as
+    # formulated are split objects
     # Pt is the "generation" at the sending point
     # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc
     results.hvdc_Pf = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
@@ -732,8 +736,13 @@ def multi_island_pf2(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.
     return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None, t=None,
-                    logger=bs.Logger(), bus_dict=None, areas_dict=None) -> "PowerFlowResults":
+def multi_island_pf(multi_circuit: MultiCircuit,
+                    options: PowerFlowOptions,
+                    opf_results: Union["OptimalPowerFlowResults", None] = None,
+                    t: Union[int, None] = None,
+                    logger: bs.Logger = bs.Logger(),
+                    bus_dict: Union[Dict[Bus, int], None] = None,
+                    areas_dict: Union[Dict[Area, int], None] = None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
@@ -746,24 +755,15 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :return: PowerFlowResults instance
     """
 
-    if t is None:
-        nc = compile_numerical_circuit(
-            circuit=multi_circuit,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess
-        )
-    else:
-        nc = compile_numerical_circuit_at(
-            circuit=multi_circuit,
-            t_idx=t,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess,
-            bus_dict=bus_dict,
-            areas_dict=areas_dict
-        )
+    nc = compile_numerical_circuit_at(
+        circuit=multi_circuit,
+        t_idx=t,
+        apply_temperature=options.apply_temperature_correction,
+        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=options.use_stored_guess,
+        bus_dict=bus_dict,
+        areas_dict=areas_dict
+    )
 
-    return multi_island_pf2(nc=nc, options=options, logger=logger)
+    return multi_island_pf_nc(nc=nc, options=options, logger=logger)

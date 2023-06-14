@@ -21,13 +21,14 @@ import time
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.NTC.ntc_opf import OpfNTC, get_inter_areas_branches
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit, SnapshotOpfData
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCal.Engine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, ContingencyAnalysisOptions
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, \
+    ContingencyAnalysisOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.basic_structures import Logger
@@ -64,7 +65,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit: SnapshotOpfData, with_n1=True):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: NumericalCircuit, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
         return compute_alpha(
@@ -99,8 +100,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         contingency_generation_alpha_list = list()
         contingency_hvdc_alpha_list = list()
 
-        numerical_circuit = compile_snapshot_opf_circuit(
+        numerical_circuit = compile_numerical_circuit_at(
             circuit=self.grid,
+            t_idx=None,
             apply_temperature=self.pf_options.apply_temperature_correction,
             branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
@@ -139,8 +141,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
             for m in zip(indices[0]):
                 if numerical_circuit.branch_data.monitor_loading[m] and \
-                   alpha[m] >= self.options.branch_sensitivity_threshold:
-
+                        alpha[m] >= self.options.branch_sensitivity_threshold:
                     elm_name = '{0}'.format(numerical_circuit.branch_names[m])
 
                     self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
@@ -159,9 +160,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
                 for m, c in zip(indices[0], indices[1]):
                     if numerical_circuit.branch_data.monitor_loading[m] and \
-                       numerical_circuit.branch_data.contingency_enabled[c] and \
-                       alpha[m] >= self.options.branch_sensitivity_threshold:
-
+                            numerical_circuit.branch_data.contingency_enabled[c] and \
+                            alpha[m] >= self.options.branch_sensitivity_threshold:
                         elm_name = '{0} @ {1}'.format(
                             numerical_circuit.branch_names[m],
                             numerical_circuit.branch_names[c])

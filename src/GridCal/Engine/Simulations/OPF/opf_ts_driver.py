@@ -26,7 +26,7 @@ from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
-from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -238,8 +238,9 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         if self.engine == bs.EngineType.GridCal:
 
             # compile the circuit into a numerical equivalent for this simulation
-            self.numerical_circuit = compile_opf_time_circuit(
+            self.numerical_circuit = compile_numerical_circuit_at(
                 circuit=self.grid,
+                t_idx=None,
                 apply_temperature=self.pf_options.apply_temperature_correction,
                 branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 

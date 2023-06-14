@@ -24,7 +24,6 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_results import TimeSeriesR
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate

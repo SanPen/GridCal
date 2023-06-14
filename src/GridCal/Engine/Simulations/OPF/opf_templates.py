@@ -19,8 +19,7 @@ import platform
 
 import numpy as np
 from itertools import product
-from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import lpSum, lpDot, lpAddRestrictions2, LpProblem, lpMakeVars, LpStatus, LpVariable
 from GridCal.ThirdParty.pulp import SCIP_CMD, GUROBI_CMD, CPLEX_CMD, HiGHS_CMD, PULP_CBC_CMD, XPRESS
@@ -34,7 +33,7 @@ except ModuleNotFoundError:
 
 class Opf:
 
-    def __init__(self, numerical_circuit: SnapshotOpfData,
+    def __init__(self, numerical_circuit: NumericalCircuit,
                  solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
         """
         Optimal power flow template class
@@ -285,11 +284,16 @@ class Opf:
         """
         return self.extract_list(self.contingency_hvdc_flows_list) * self.numerical_circuit.Sbase
 
+
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit,
-                 start_idx, end_idx, solver_type: MIPSolvers=MIPSolvers.CBC,
-                 skip_formulation=True, ortools=False):
+    def __init__(self,
+                 numerical_circuit: NumericalCircuit,
+                 start_idx,
+                 end_idx,
+                 solver_type: MIPSolvers=MIPSolvers.CBC,
+                 skip_formulation=True,
+                 ortools=False):
         """
 
         :param numerical_circuit:

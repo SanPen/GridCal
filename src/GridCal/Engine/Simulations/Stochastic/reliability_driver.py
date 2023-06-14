@@ -19,7 +19,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCal.Engine.Devices import DeviceType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -101,27 +101,28 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     # branches
     all_events += get_reliability_events(horizon,
                                          nc.branch_data.branch_mttf,
-                                         nc.branch_data.branch_mttr, DeviceType.BranchDevice)
+                                         nc.branch_data.branch_mttr,
+                                         DeviceType.BranchDevice)
 
     all_events += get_reliability_events(horizon,
                                          nc.generator_data.generator_mttf,
-                                         nc.generator_data.generator_mttr, DeviceType.GeneratorDevice)
+                                         nc.generator_data.generator_mttr,
+                                         DeviceType.GeneratorDevice)
 
     all_events += get_reliability_events(horizon,
                                          nc.battery_data.battery_mttf,
-                                         nc.battery_data.battery_mttr, DeviceType.BatteryDevice)
-
-    all_events += get_reliability_events(horizon,
-                                         nc.static_generator_data.static_gen_mttf,
-                                         nc.static_generator_data.static_gen_mttr, DeviceType.StaticGeneratorDevice)
+                                         nc.battery_data.battery_mttr,
+                                         DeviceType.BatteryDevice)
 
     all_events += get_reliability_events(horizon,
                                          nc.load_data.load_mttf,
-                                         nc.load_data.load_mttr, DeviceType.LoadDevice)
+                                         nc.load_data.load_mttr,
+                                         DeviceType.LoadDevice)
 
     all_events += get_reliability_events(horizon,
                                          nc.shunt_data.shunt_mttf,
-                                         nc.shunt_data.shunt_mttr, DeviceType.ShuntDevice)
+                                         nc.shunt_data.shunt_mttr,
+                                         DeviceType.ShuntDevice)
 
     # sort all
     all_events.sort(key=lambda tup: tup[0])
@@ -142,9 +143,6 @@ def run_events(nc: NumericalCircuit, events_list: list):
 
         elif tpe == DeviceType.GeneratorDevice:
             nc.generator_data.active[i] = state
-
-        elif tpe == DeviceType.StaticGeneratorDevice:
-            nc.static_generator_data.static_gen_active[i] = state
 
         elif tpe == DeviceType.BatteryDevice:
             nc.battery_data.active[i] = state
@@ -195,7 +193,7 @@ class ReliabilityStudy(DriverTemplate):
         print('Running voltage collapse...')
 
         # compile the numerical circuit
-        numerical_circuit = compile_numerical_circuit(self.grid)
+        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None)
 
         evt = get_reliability_scenario(numerical_circuit)
 

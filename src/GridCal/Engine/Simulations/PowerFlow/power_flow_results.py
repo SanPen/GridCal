@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import List
 import numpy as np
 import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -25,8 +26,19 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class NumericPowerFlowResults:
 
-    def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, Ybus=None, Yf=None, Yt=None,
-                 iterations=0, elapsed=0, method=None):
+    def __init__(self, V,
+                 converged,
+                 norm_f,
+                 Scalc,
+                 ma=None,
+                 theta=None,
+                 Beq=None,
+                 Ybus=None,
+                 Yf=None,
+                 Yt=None,
+                 iterations=0,
+                 elapsed=0.0,
+                 method=None):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -59,21 +71,25 @@ class NumericPowerFlowResults:
 
 class PowerFlowResults(ResultsTemplate):
 
-    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types,
+    def __init__(self, n: int,
+                 m: int,
+                 n_hvdc: int,
+                 bus_names,
+                 branch_names,
+                 hvdc_names: List[str],
+                 bus_types: np.ndarray,
                  area_names=None):
         """
         A **PowerFlowResults** object is create as an attribute of the
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
         provides access to the simulation results through its class attributes.
-        :param n:
-        :param m:
-        :param n_tr:
-        :param n_hvdc:
-        :param bus_names:
-        :param branch_names:
-        :param transformer_names:
-        :param hvdc_names:
-        :param bus_types:
+        :param n: number of nodes
+        :param m: number of branches
+        :param n_hvdc: number of HVDC devices
+        :param bus_names: list of bus names
+        :param branch_names: list of branch names
+        :param hvdc_names: list of HVDC names
+        :param bus_types: array of bus types
         """
 
         ResultsTemplate.__init__(self,
@@ -138,14 +154,12 @@ class PowerFlowResults(ResultsTemplate):
 
         self.n = n
         self.m = m
-        self.n_tr = n_tr
         self.n_hvdc = n_hvdc
 
         self.bus_types = bus_types
 
         self.bus_names = bus_names
         self.branch_names = branch_names
-        self.transformer_names = transformer_names
         self.hvdc_names = hvdc_names
 
         # vars for the inter-area computation
@@ -189,11 +203,20 @@ class PowerFlowResults(ResultsTemplate):
         self.convergence_reports = list()
 
     def apply_new_rates(self, nc: "SnapshotData"):
+        """
+
+        :param nc:
+        :return:
+        """
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
     def fill_circuit_info(self, grid: "MultiCircuit"):
+        """
 
+        :param grid:
+        :return:
+        """
         area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
         bus_dict = grid.get_bus_index_dict()
 
@@ -252,10 +275,11 @@ class PowerFlowResults(ResultsTemplate):
         Return a copy of this
         @return:
         """
-        val = PowerFlowResults(n=self.n, m=self.m, n_tr=self.n_tr, n_hvdc=self.n_hvdc,
+        val = PowerFlowResults(n=self.n,
+                               m=self.m,
+                               n_hvdc=self.n_hvdc,
                                bus_names=self.bus_names,
                                branch_names=self.branch_names,
-                               transformer_names=self.transformer_names,
                                hvdc_names=self.hvdc_names,
                                bus_types=self.bus_types)
         val.Sbus = self.Sbus.copy()

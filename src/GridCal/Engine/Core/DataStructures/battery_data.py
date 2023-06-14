@@ -49,8 +49,7 @@ class BatteryData(GeneratorData):
             self,
             elm_idx: np.ndarray,
             bus_idx: np.ndarray,
-            time_idx: Union[int, None] = None,
-    ):
+            time_idx: Union[int, None] = None):
         """
         Slice battery data by given indices
         :param elm_idx: array of element indices

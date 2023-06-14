@@ -22,7 +22,7 @@ from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 
@@ -500,7 +500,7 @@ class LinearAnalysis(LinearAnalysis2):
         :param distributed_slack:
         """
         LinearAnalysis2.__init__(self,
-                                 numerical_circuit=compile_numerical_circuit(grid),
+                                 numerical_circuit=compile_numerical_circuit_at(grid, t_idx=None),
                                  distributed_slack=distributed_slack,
                                  correct_values=correct_values,
                                  with_nx=with_nx)

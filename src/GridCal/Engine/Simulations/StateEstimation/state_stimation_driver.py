@@ -21,7 +21,7 @@ import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Devices.measurement import MeasurementType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -110,26 +110,22 @@ class StateEstimationInput:
 
 class StateEstimationResults(PowerFlowResults):
 
-    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
+    def __init__(self, n, m, bus_names, branch_names, bus_types):
         """
 
         :param n:
         :param m:
-        :param n_tr:
         :param bus_names:
         :param branch_names:
-        :param transformer_names:
         :param bus_types:
         """
         # initialize the
         PowerFlowResults.__init__(self,
                                   n=n,
                                   m=m,
-                                  n_tr=n_tr,
                                   n_hvdc=0,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
-                                  transformer_names=transformer_names,
                                   hvdc_names=(),
                                   bus_types=bus_types)
 
@@ -209,12 +205,11 @@ class StateEstimation(DriverTemplate):
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
 
-        numerical_circuit = compile_numerical_circuit(self.grid)
-        self.results = StateEstimationResults(n=n, m=m,
-                                              n_tr=numerical_circuit.ntr,
+        numerical_circuit = compile_numerical_circuit_at(self.grid)
+        self.results = StateEstimationResults(n=n,
+                                              m=m,
                                               bus_names=numerical_circuit.bus_names,
                                               branch_names=numerical_circuit.branch_names,
-                                              transformer_names=numerical_circuit.transformer_data.names,
                                               bus_types=numerical_circuit.bus_types)
         # self.se_results.initialize(n, m)
 
@@ -257,10 +252,8 @@ class StateEstimation(DriverTemplate):
             # pack results into a SE results object
             results = StateEstimationResults(n=island.nbus,
                                              m=island.nbr,
-                                             n_tr=island.ntr,
                                              bus_names=island.bus_names,
                                              branch_names=island.branch_names,
-                                             transformer_names=island.transformer_data.names,
                                              bus_types=island.bus_types)
             results.Sbus = Sbus
             results.Sf = Sfb

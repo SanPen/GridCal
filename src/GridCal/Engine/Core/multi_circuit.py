@@ -252,22 +252,23 @@ class MultiCircuit:
         '''
         for elm in self.objects_with_profiles:
             if elm.properties_with_profile is not None:
+                key = str(elm.device_type.value)
                 profile_attr = list(elm.properties_with_profile.keys())
                 profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
-                self.profile_magnitudes[elm.device_type.value] = (profile_attr, profile_types)
-                self.device_type_name_dict[elm.device_type.value] = elm.device_type
+                self.profile_magnitudes[key] = (profile_attr, profile_types)
+                self.device_type_name_dict[key] = elm.device_type
 
     def __str__(self):
         return str(self.name)
 
     @property
-    def has_time_series(self):
+    def has_time_series(self) -> bool:
         return self.time_profile is not None
 
     def get_zones(self):
         return self.zones
 
-    def get_zone_number(self):
+    def get_zone_number(self) -> int:
         """
         Get number of areas
         :return: number of areas
@@ -277,7 +278,7 @@ class MultiCircuit:
     def get_areas(self):
         return self.areas
 
-    def get_area_number(self):
+    def get_area_number(self) -> int:
         """
         Get number of areas
         :return: number of areas
@@ -287,14 +288,14 @@ class MultiCircuit:
     def get_substations(self):
         return self.substations
 
-    def get_substation_number(self):
+    def get_substation_number(self) -> int:
         """
         Get number of areas
         :return: number of areas
         """
         return len(self.substations)
 
-    def get_bus_number(self):
+    def get_bus_number(self) -> int:
         """
         Return the number of buses
         :return: number
@@ -306,10 +307,18 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.windings, self.vsc_devices, self.dc_lines, self.upfc_devices]
+        return [self.lines,
+                self.dc_lines,
+                self.transformers2w,
+                self.windings,
+                self.vsc_devices,
+                self.upfc_devices]
 
-    def get_branch_names_wo_hvdc(self):
-
+    def get_branch_names_wo_hvdc(self) -> List[str]:
+        """
+        Get all branch names without HVDC devices
+        :return: list of names
+        """
         names = list()
         for lst in self.get_branch_lists_wo_hvdc():
             for elm in lst:
@@ -323,7 +332,7 @@ class MultiCircuit:
         """
         return self.get_branch_lists_wo_hvdc() + [self.hvdc_lines]
 
-    def get_branch_number(self):
+    def get_branch_number(self) -> int:
         """
         return the number of branches (of all types)
         :return: number
@@ -333,7 +342,11 @@ class MultiCircuit:
             m += len(branch_list)
         return m
 
-    def get_branch_names(self):
+    def get_branch_names(self) -> List[str]:
+        """
+        Get all branch names
+        :return:
+        """
 
         names = list()
         for lst in self.get_branch_lists():
@@ -341,17 +354,17 @@ class MultiCircuit:
                 names.append(elm.name)
         return names
 
-    def get_branch_number_wo_hvdc(self):
+    def get_branch_number_wo_hvdc(self) -> int:
         """
         return the number of branches (of all types)
         :return: number
         """
-        m = 0
+        count = 0
         for branch_list in self.get_branch_lists_wo_hvdc():
-            m += len(branch_list)
-        return m
+            count += len(branch_list)
+        return count
 
-    def get_time_number(self):
+    def get_time_number(self) -> int:
         """
         Return the number of buses
         :return: number
@@ -584,6 +597,45 @@ class MultiCircuit:
         lst = list()
         for bus in self.buses:
             for elm in bus.static_generators:
+                lst.append(elm.name)
+        return np.array(lst)
+
+    def get_calculation_loads(self) -> List[dev.Load]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.loads:
+                elm.bus = bus
+            lst += bus.loads
+
+            for elm in bus.external_grids:
+                elm.bus = bus
+            lst += bus.external_grids
+
+            for elm in bus.static_generators:
+                elm.bus = bus
+            lst += bus.static_generators
+
+        return lst
+
+    def get_calculation_loads_number(self) -> List[dev.Load]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        val = 0
+        for bus in self.buses:
+            val = val + len(bus.loads)
+        return val
+
+    def get_calculation_load_names(self):
+        """
+        Returns a list of :ref:`Load<load>` names.
+        """
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.loads:
                 lst.append(elm.name)
         return np.array(lst)
 

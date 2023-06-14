@@ -21,7 +21,7 @@ import numba as nb
 from enum import Enum
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_worst_contingency_transfer_limits
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -562,7 +562,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.progress_signal.emit(0)
 
         # compile the circuit
-        nc = compile_numerical_circuit(self.grid)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
 
         # get the converted bus indices
         idx1b = self.options.bus_idx_from

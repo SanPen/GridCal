@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.OPF.simple_dispatch import OpfSimple
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -80,7 +80,8 @@ class OptimalPowerFlow(DriverTemplate):
         @return: OptimalPowerFlowResults object
         """
 
-        numerical_circuit = compile_snapshot_opf_circuit(circuit=self.grid,
+        numerical_circuit = compile_numerical_circuit_at(circuit=self.grid,
+                                                         t_idx=None,
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 

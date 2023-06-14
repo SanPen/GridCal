@@ -21,7 +21,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import lpSum, lpDot, lpAddRestrictions2, LpProblem, lpMakeVars
 
@@ -98,7 +98,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSl
     return P, Q
 
 
-def add_ac_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, dvm, dva, P, Q, start_, end_):
+def add_ac_nodal_power_balance(numerical_circuit: NumericalCircuit, problem: LpProblem, dvm, dva, P, Q, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -260,7 +260,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         AC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance

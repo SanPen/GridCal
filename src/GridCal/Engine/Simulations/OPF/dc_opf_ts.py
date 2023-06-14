@@ -26,7 +26,7 @@ from typing import List
 from GridCal.Engine.basic_structures import ZonalGrouping
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.basic_structures import Logger
 import GridCal.ThirdParty.pulp as pl
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
@@ -113,7 +113,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: pl.LpProblem, theta, P, start_, end_):
+def formulate_dc_nodal_power_balance(numerical_circuit: NumericalCircuit, problem: pl.LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -172,14 +172,14 @@ def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem:
 
 
 def add_branch_loading_restriction(problem: pl.LpProblem,
-                                   nc: OpfTimeCircuit,
+                                   nc: NumericalCircuit,
                                    theta, F, T,
                                    ratings, ratings_slack_from, ratings_slack_to,
                                    monitored, active):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
-    :param nc: OpfTimeCircuit instance
+    :param nc: NumericalCircuit instance
     :param theta: array of LpVariables with the bus angles (n, nt)
     :param F: Array with the "from" branch indices (m)
     :param T: Array with the "to" branch indices (m)
@@ -233,7 +233,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem,
     return Pbr_f, tau, Pinj_tau
 
 
-def formulate_contingency(problem: pl.LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor,
+def formulate_contingency(problem: pl.LpProblem, numerical_circuit: NumericalCircuit, flow_f, ratings, LODF, monitor,
                           lodf_tolerance):
     """
 
@@ -398,12 +398,12 @@ def formulate_hvdc_flow(problem: pl.LpProblem, angles, Pinj, rates, active, Pset
     return flow_f
 
 
-def formulate_inter_area_flow(numerical_circuit: OpfTimeCircuit,
+def formulate_inter_area_flow(numerical_circuit: NumericalCircuit,
                               buses_areas_1, buses_areas_2,
                               flow_f, hvdc_flow_f):
     """
     Formulate the flow that goes through the links from the area 1 (from) to the area 2 (to)
-    :param numerical_circuit: OpfTimeCircuit instance
+    :param numerical_circuit: NumericalCircuit instance
     :param buses_areas_1: array of bus indices that compose the area 1 (from)
     :param buses_areas_2: array of bus indices that compose the area 2 (to)
     :param flow_f: array of branch flows
@@ -434,10 +434,10 @@ def formulate_inter_area_flow(numerical_circuit: OpfTimeCircuit,
     return flow_from_a1_to_a2
 
 
-def formulate_area_generation_summations(numerical_circuit: OpfTimeCircuit, buses_areas_1, buses_areas_2, Pg):
+def formulate_area_generation_summations(numerical_circuit: NumericalCircuit, buses_areas_1, buses_areas_2, Pg):
     """
     Compute the summation of the generation in the area 1 and area 2
-    :param numerical_circuit: OpfTimeCircuit instance
+    :param numerical_circuit: NumericalCircuit instance
     :param buses_areas_1: array of bus indices that compose the area 1 (from)
     :param buses_areas_2: array of bus indices that compose the area 2 (to)
     :param Pg: Array of generator variables
@@ -474,7 +474,7 @@ def formulate_area_generation_summations(numerical_circuit: OpfTimeCircuit, buse
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  skip_generation_limits=False, consider_contingencies=False, LODF=None, lodf_tolerance=0.001,
                  maximize_inter_area_flow=False,

@@ -15,5 +15,5 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_unbalance, short_circuit_3p
-from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitDriver, ShortCircuitOptions, FaultType, Fault
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitDriver, ShortCircuitOptions, FaultType
 

@@ -23,7 +23,7 @@ import numpy as np
 from typing import List, Tuple, Dict
 import GridCal.ThirdParty.pulp as pl
 from GridCal.Engine.basic_structures import ZonalGrouping
-from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, Logger, LpVariable
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 
@@ -106,7 +106,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return pl.lpDot(C_bus_gen, Pg) + pl.lpDot(C_bus_bat, Pb) - pl.lpDot(C_bus_load, Pl - LSlack)
 
 
-def formulate_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.LpProblem, theta, P):
+def formulate_dc_nodal_power_balance(numerical_circuit: NumericalCircuit, problem: pl.LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -165,7 +165,8 @@ def formulate_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem
     return nodal_restrictions
 
 
-def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
+def formulate_branch_loading_restriction(problem: pl.LpProblem,
+                                         nc: NumericalCircuit,
                                          F, T, theta, active, monitored,
                                          ratings, ratings_slack_from, ratings_slack_to):
     """
@@ -223,7 +224,13 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
     return Pbr_f, tau, Pinj_tau
 
 
-def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfData, flow_f, ratings, LODF, monitor, lodf_tolerance):
+def formulate_contingency(problem: pl.LpProblem,
+                          numerical_circuit: NumericalCircuit,
+                          flow_f,
+                          ratings,
+                          LODF,
+                          monitor,
+                          lodf_tolerance):
     """
     Formulate contingencies
     :param problem:
@@ -276,7 +283,7 @@ def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfD
     return flow_lst, overload1_lst, overload2_lst, indices
 
 
-def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj, t=0,
+def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pinj, t=0,
                         logger: Logger = Logger(), inf=999999):
     """
 
@@ -342,7 +349,7 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj
     return flow_f
 
 
-def formulate_inter_area_flow(numerical_circuit: SnapshotOpfData, buses_areas_1, buses_areas_2, flow_f, hvdc_flow_f):
+def formulate_inter_area_flow(numerical_circuit: NumericalCircuit, buses_areas_1, buses_areas_2, flow_f, hvdc_flow_f):
     """
     Formulate the flow that goes through the links from the area 1 (from) to the area 2 (to)
     :param numerical_circuit: SnapshotOpfData instance
@@ -369,7 +376,7 @@ def formulate_inter_area_flow(numerical_circuit: SnapshotOpfData, buses_areas_1,
     return flow_from_a1_to_a2
 
 
-def formulate_area_generation_summations(numerical_circuit: SnapshotOpfData, buses_areas_1, buses_areas_2, Pg):
+def formulate_area_generation_summations(numerical_circuit: NumericalCircuit, buses_areas_1, buses_areas_2, Pg):
     """
     Compute the summation of the generation in the area 1 and area 2
     :param numerical_circuit: SnapshotOpfData instance

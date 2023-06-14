@@ -26,7 +26,7 @@ from sklearn.cluster import SpectralClustering
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling

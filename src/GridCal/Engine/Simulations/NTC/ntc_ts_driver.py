@@ -21,7 +21,7 @@ import time
 import os
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit, OpfTimeCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.NTC.ntc_opf import OpfNTC
 from GridCal.Engine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityOptions, OptimalNetTransferCapacityResults
 from GridCal.Engine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
@@ -90,7 +90,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t, with_n1=True):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: NumericalCircuit, t, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
         tm0 = time.time()
@@ -122,7 +122,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             print('Compiling cicuit...')
 
         tm0 = time.time()
-        nc = compile_opf_time_circuit(self.grid)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
         self.logger.add_info(f'Time circuit compiled in {time.time()-tm0:.2f} scs')
         print(f'Time circuit compiled in {time.time()-tm0:.2f} scs')
 

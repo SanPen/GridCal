@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from numba import jit, prange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, ContingencyAnalysisDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
@@ -135,8 +135,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         """
 
         self.progress_text.emit("Analyzing...")
-
-        ts_numeric_circuit = compile_time_circuit(self.grid)
+        # TODO: fix this
+        ts_numeric_circuit = compile_numerical_circuit_at(self.grid)
         ne = ts_numeric_circuit.nelm
         nc = ts_numeric_circuit.nelm
         nt = len(ts_numeric_circuit.time_array)

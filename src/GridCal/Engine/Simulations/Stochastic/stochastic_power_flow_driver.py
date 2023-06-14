@@ -22,15 +22,15 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
-from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at, BranchImpedanceMode
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
-                                                                    power_flow_post_process
+    power_flow_post_process
 
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+
 
 ########################################################################################################################
 # Monte Carlo classes
@@ -38,26 +38,20 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 class StochasticPowerFlowType(Enum):
-
     MonteCarlo = 'Monte Carlo'
     LatinHypercube = 'Latin Hypercube'
 
 
-def make_monte_carlo_input(numerical_input_island: TimeCircuit):
+def make_monte_carlo_input(numerical_input_island: NumericalCircuit):
     """
     Generate a monte carlo input instance
     :param numerical_input_island:
     :return:
     """
     n = numerical_input_island.nbus
-    Scdf = [None] * n
-    Icdf = [None] * n
-    Ycdf = [None] * n
-
-    for i in range(n):
-        Scdf[i] = CDF(numerical_input_island.Sbus[i, :])
-        Icdf[i] = CDF(numerical_input_island.Ibus[i, :])
-        Ycdf[i] = CDF(numerical_input_island.Yshunt_from_devices[i, :])
+    Scdf = [CDF(numerical_input_island.Sbus[i, :]) for i in range(n)]
+    Icdf = [CDF(numerical_input_island.Ibus[i, :]) for i in range(n)]
+    Ycdf = [CDF(numerical_input_island.Yshunt_from_devices[i, :]) for i in range(n)]
 
     return StochasticPowerFlowInput(n, Scdf, Icdf, Ycdf)
 
@@ -66,7 +60,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
     name = 'Stochastic Power Flow'
     tpe = SimulationTypes.StochasticPowerFlow
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, sampling_points=10000,
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100,
+                 sampling_points=10000,
                  opf_time_series_results=None,
                  simulation_type: StochasticPowerFlowType = StochasticPowerFlowType.LatinHypercube):
         """
@@ -130,17 +125,18 @@ class StochasticPowerFlowDriver(DriverTemplate):
         self.progress_text.emit('Running Monte Carlo Sampling...')
 
         # compile the multi-circuit
-        numerical_circuit = compile_time_circuit(circuit=self.grid,
-                                                 apply_temperature=False,
-                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                 opf_results=self.opf_time_series_results)
+        numerical_circuit = compile_numerical_circuit_at(circuit=self.grid,
+                                                         t_idx=None,
+                                                         apply_temperature=False,
+                                                         branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                         opf_results=self.opf_time_series_results)
 
         # do the topological computation
         calculation_inputs = numerical_circuit.split_into_islands(
             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
-                                                m=numerical_circuit.nelm,
+                                                m=numerical_circuit.nbr,
                                                 p=self.sampling_points,
                                                 bus_names=numerical_circuit.bus_names,
                                                 branch_names=numerical_circuit.branch_names,
@@ -148,12 +144,12 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                 name='Monte Carlo')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
-                                   m=numerical_circuit.nelm,
-                                   n_tr=numerical_circuit.ntr,
-                                   n_hvdc=numerical_circuit.nelm,
+                                   m=numerical_circuit.nbr,
+                                   n_tr=0,
+                                   n_hvdc=numerical_circuit.nhvdc,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
-                                   transformer_names=numerical_circuit.tr_names,
+                                   transformer_names=[],
                                    hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 
@@ -238,10 +234,10 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
             # compute the island branch results
             Sfb, Stb, If, It, Vbranch, loading, \
-            losses, Sbus = power_flow_post_process(numerical_island,
-                                                   Sbus=mc_results.S_points.mean(axis=0)[bus_idx],
-                                                   V=mc_results.V_points.mean(axis=0)[bus_idx],
-                                                   branch_rates=numerical_island.rates)
+                losses, Sbus = power_flow_post_process(numerical_island,
+                                                       Sbus=mc_results.S_points.mean(axis=0)[bus_idx],
+                                                       V=mc_results.V_points.mean(axis=0)[bus_idx],
+                                                       branch_rates=numerical_island.rates)
 
             # apply the island averaged results
             avg_res.Sbus[bus_idx] = Sbus
@@ -279,16 +275,18 @@ class StochasticPowerFlowDriver(DriverTemplate):
         self.progress_text.emit('Running Latin Hypercube Sampling...')
 
         # compile the multi-circuit
-        numerical_circuit = compile_time_circuit(circuit=self.grid,
-                                                 apply_temperature=False,
-                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                 opf_results=self.opf_time_series_results)
+        numerical_circuit = compile_numerical_circuit_at(circuit=self.grid,
+                                                         t_idx=None,
+                                                         apply_temperature=False,
+                                                         branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                         opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(
+            ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         lhs_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
-                                                 m=numerical_circuit.nelm,
+                                                 m=numerical_circuit.nbr,
                                                  p=self.sampling_points,
                                                  bus_names=numerical_circuit.bus_names,
                                                  branch_names=numerical_circuit.branch_names,
@@ -296,12 +294,12 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                  name='Latin Hypercube')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
-                                   m=numerical_circuit.nelm,
-                                   n_tr=numerical_circuit.ntr,
-                                   n_hvdc=numerical_circuit.nelm,
+                                   m=numerical_circuit.nbr,
+                                   n_tr=0,
+                                   n_hvdc=numerical_circuit.nhvdc,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
-                                   transformer_names=numerical_circuit.tr_names,
+                                   transformer_names=[],
                                    hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 
@@ -316,8 +314,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
             Vbus = numerical_island.Vbus[:, 0]
 
             # short cut the indices
-            bus_idx = numerical_island.original_bus_idx
-            br_idx = numerical_island.original_branch_idx
+            bus_idx = numerical_island.bus_data.original_idx
+            br_idx = numerical_island.branch_data.original_idx
 
             # run the time series
             for t in range(self.sampling_points):
@@ -365,10 +363,10 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
             # compute the island branch results
             Sfb, Stb, If, It, Vbranch, loading, \
-            losses, Sbus = power_flow_post_process(numerical_island,
-                                                   Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
-                                                   V=lhs_results.V_points.mean(axis=0)[bus_idx],
-                                                   branch_rates=numerical_island.branch_data.rates[:, 0])
+                losses, Sbus = power_flow_post_process(numerical_island,
+                                                       Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
+                                                       V=lhs_results.V_points.mean(axis=0)[bus_idx],
+                                                       branch_rates=numerical_island.branch_data.rates[:, 0])
 
             # apply the island averaged results
             avg_res.Sbus[bus_idx] = Sbus
@@ -412,4 +410,3 @@ class StochasticPowerFlowDriver(DriverTemplate):
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
-

@@ -20,7 +20,7 @@ import scipy as sp
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
 
 
@@ -387,7 +387,7 @@ class NonLinearAnalysis:
         """
         Run the PTDF and LODF
         """
-        self.numerical_circuit = compile_numerical_circuit(self.grid)
+        self.numerical_circuit = compile_numerical_circuit_at(self.grid)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus
