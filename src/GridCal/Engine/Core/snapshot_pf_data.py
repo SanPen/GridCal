@@ -1731,34 +1731,34 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=
                                                 logger=logger,
                                                 use_stored_guess=use_stored_guess)
 
-    nc.line_data = gc_compiler2.get_line_data(circuit=circuit,
-                                              t_idx=t_idx,
-                                              time_series=True,
-                                              bus_dict=bus_dict,
-                                              apply_temperature=apply_temperature,
-                                              branch_tolerance_mode=branch_tolerance_mode)
-
-    nc.transformer_data = gc_compiler2.get_transformer_data(circuit=circuit,
-                                                            t_idx=t_idx,
-                                                            time_series=True,
-                                                            bus_dict=bus_dict)
-
-    nc.vsc_data = gc_compiler2.get_vsc_data(circuit=circuit,
-                                            t_idx=t_idx,
-                                            time_series=True,
-                                            bus_dict=bus_dict)
-
-    nc.upfc_data = gc_compiler2.get_upfc_data(circuit=circuit,
-                                              t_idx=t_idx,
-                                              time_series=True,
-                                              bus_dict=bus_dict)
-
-    nc.dc_line_data = gc_compiler2.get_dc_line_data(circuit=circuit,
-                                                    t_idx=t_idx,
-                                                    time_series=True,
-                                                    bus_dict=bus_dict,
-                                                    apply_temperature=apply_temperature,
-                                                    branch_tolerance_mode=branch_tolerance_mode)
+    # nc.line_data = gc_compiler2.get_line_data(circuit=circuit,
+    #                                           t_idx=t_idx,
+    #                                           time_series=True,
+    #                                           bus_dict=bus_dict,
+    #                                           apply_temperature=apply_temperature,
+    #                                           branch_tolerance_mode=branch_tolerance_mode)
+    #
+    # nc.transformer_data = gc_compiler2.get_transformer_data(circuit=circuit,
+    #                                                         t_idx=t_idx,
+    #                                                         time_series=True,
+    #                                                         bus_dict=bus_dict)
+    #
+    # nc.vsc_data = gc_compiler2.get_vsc_data(circuit=circuit,
+    #                                         t_idx=t_idx,
+    #                                         time_series=True,
+    #                                         bus_dict=bus_dict)
+    #
+    # nc.upfc_data = gc_compiler2.get_upfc_data(circuit=circuit,
+    #                                           t_idx=t_idx,
+    #                                           time_series=True,
+    #                                           bus_dict=bus_dict)
+    #
+    # nc.dc_line_data = gc_compiler2.get_dc_line_data(circuit=circuit,
+    #                                                 t_idx=t_idx,
+    #                                                 time_series=True,
+    #                                                 bus_dict=bus_dict,
+    #                                                 apply_temperature=apply_temperature,
+    #                                                 branch_tolerance_mode=branch_tolerance_mode)
 
     nc.branch_data = gc_compiler2.get_branch_data(circuit=circuit,
                                                   t_idx=t_idx,
