@@ -22,110 +22,111 @@ from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 class HvdcData:
 
-    def __init__(self, nhvdc, nbus, ntime=1):
+    def __init__(self, nelm, nbus):
         """
-
-        :param nhvdc:
-        :param nbus:
+        Hvdc data arrays
+        :param nelm: number of hvdcs
+        :param nbus: number of buses
         """
-        self.nbus = nbus
-        self.nhvdc = nhvdc
-        self.ntime = ntime
+        self.nbus: int = nbus
+        self.nelm: int = nelm
 
-        self.names = np.zeros(nhvdc, dtype=object)
+        self.names: np.array = np.zeros(nelm, dtype=object)
 
-        self.angle_droop = np.zeros((nhvdc, ntime))
+        self.angle_droop: np.array = np.zeros(nelm, dtype=float)
 
-        self.control_mode = np.zeros(nhvdc, dtype=object)
+        self.control_mode: np.array = np.zeros(nelm, dtype=object)
 
-        self.dispatchable = np.zeros(nhvdc, dtype=int)
+        self.dispatchable: np.array = np.zeros(nelm, dtype=int)
 
-        self.F = np.zeros(nhvdc, dtype=int)
-        self.T = np.zeros(nhvdc, dtype=int)
+        self.F: np.array = np.zeros(nelm, dtype=int)
+        self.T: np.array = np.zeros(nelm, dtype=int)
 
-        self.active = np.zeros((nhvdc, ntime), dtype=bool)
-        self.rate = np.zeros((nhvdc, ntime))
-        self.contingency_rate = np.zeros((nhvdc, ntime))
+        self.active: np.array = np.zeros(nelm, dtype=bool)
+        self.rate: np.array = np.zeros(nelm, dtype=float)
+        self.contingency_rate: np.array = np.zeros(nelm, dtype=float)
 
-        self.r = np.zeros(nhvdc)
+        self.r: np.array = np.zeros(nelm, dtype=float)
 
-        self.Pset = np.zeros((nhvdc, ntime))
-        self.Pt = np.zeros((nhvdc, ntime))
+        self.Pset: np.array = np.zeros(nelm, dtype=float)
+        self.Pt: np.array = np.zeros(nelm, dtype=float)
 
         # voltage p.u. set points
-        self.Vset_f = np.zeros((nhvdc, ntime))
-        self.Vset_t = np.zeros((nhvdc, ntime))
+        self.Vset_f: np.array = np.zeros(nelm, dtype=float)
+        self.Vset_t: np.array = np.zeros(nelm, dtype=float)
 
         # nominal bus voltages at the from and to ends
-        self.Vnf = np.zeros(nhvdc)
-        self.Vnt = np.zeros(nhvdc)
+        self.Vnf: np.array = np.zeros(nelm, dtype=float)
+        self.Vnt: np.array = np.zeros(nelm, dtype=float)
 
-        self.Qmin_f = np.zeros(nhvdc)
-        self.Qmax_f = np.zeros(nhvdc)
-        self.Qmin_t = np.zeros(nhvdc)
-        self.Qmax_t = np.zeros(nhvdc)
+        self.Qmin_f: np.array = np.zeros(nelm, dtype=float)
+        self.Qmax_f: np.array = np.zeros(nelm, dtype=float)
+        self.Qmin_t: np.array = np.zeros(nelm, dtype=float)
+        self.Qmax_t: np.array = np.zeros(nelm, dtype=float)
 
-        self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
-        self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
+        self.C_hvdc_bus_f: sp.lil_matrix = sp.lil_matrix((nelm, nbus), dtype=int)  # this ons is just for splitting islands
+        self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus), dtype=int)  # this ons is just for splitting islands
 
-    def slice(self, elm_idx, bus_idx, time_idx=None):
-        """
-
-        :param elm_idx:
-        :param bus_idx:
-        :param time_idx:
-        :return:
-        """
-
-        if time_idx is None:
-            tidx = elm_idx
-        else:
-            tidx = np.ix_(elm_idx, time_idx)
-
-        data = HvdcData(nhvdc=len(elm_idx), nbus=len(bus_idx))
-
-        data.names = self.names[elm_idx]
-        data.active = self.active[elm_idx]
-        data.dispatchable = self.dispatchable[elm_idx]
-
-        data.rate = self.rate[tidx]
-        data.contingency_rate = self.contingency_rate[tidx]
-        data.Pset = self.Pset[tidx]
-
-        data.r = self.r[elm_idx]
-
-        data.Vset_f = self.Vset_f[tidx]
-        data.Vset_t = self.Vset_t[tidx]
-
-        data.angle_droop = self.angle_droop[elm_idx]
-
-        data.control_mode = self.control_mode[elm_idx]
-
-        data.Qmin_f = self.Qmin_f[elm_idx]
-        data.Qmax_f = self.Qmax_f[elm_idx]
-        data.Qmin_t = self.Qmin_t[elm_idx]
-        data.Qmax_t = self.Qmax_t[elm_idx]
-
-        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
-        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
-
-        return data
+    # def slice(self, elm_idx, bus_idx):
+    #     """
+    #     Slice hvdc data by given indices
+    #     :param elm_idx: array of branch indices
+    #     :param bus_idx: array of bus indices
+    #     :return: new GeneratorData instance
+    #     """
+    #
+    #     data = HvdcData(nelm=len(elm_idx), nbus=len(bus_idx))
+    #
+    #     data.names = self.names[elm_idx]
+    #     data.active = self.active[elm_idx]
+    #     data.dispatchable = self.dispatchable[elm_idx]
+    #
+    #     data.rate = self.rate[elm_idx]
+    #     data.contingency_rate = self.contingency_rate[elm_idx]
+    #     data.Pset = self.Pset[elm_idx]
+    #
+    #     data.r = self.r[elm_idx]
+    #
+    #     data.Vset_f = self.Vset_f[elm_idx]
+    #     data.Vset_t = self.Vset_t[elm_idx]
+    #
+    #     data.angle_droop = self.angle_droop[elm_idx]
+    #
+    #     data.control_mode = self.control_mode[elm_idx]
+    #
+    #     data.Qmin_f = self.Qmin_f[elm_idx]
+    #     data.Qmax_f = self.Qmax_f[elm_idx]
+    #     data.Qmin_t = self.Qmin_t[elm_idx]
+    #     data.Qmax_t = self.Qmax_t[elm_idx]
+    #
+    #     data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
+    #     data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
+    #
+    #     return data
 
     def get_bus_indices_f(self):
+        """
+        Get bus indices "from"
+        :return:
+        """
         return self.C_hvdc_bus_f * np.arange(self.C_hvdc_bus_f.shape[1])
 
     def get_bus_indices_t(self):
+        """
+        Get bus indices "to"
+        :return:
+        """
         return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
 
-    def get_island(self, bus_idx, t_idx=0):
+    def get_island(self, bus_idx):
         """
         Get HVDC indices of the island given by the bus indices
         :param bus_idx: list of bus indices
         :return: list of HVDC lines indices
         """
-        if self.nhvdc:
-            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx,
-                                                 active=self.active[:, t_idx])
+        if self.nelm:
+            return tp.get_elements_of_the_island(
+                self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
         else:
             return np.zeros(0, dtype=int)
 
@@ -134,28 +135,28 @@ class HvdcData:
         Max reactive power in the From Bus
         :return: (nbus, nt) Qmax From
         """
-        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active.T).T
+        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active).T
 
     def get_qmin_from_per_bus(self):
         """
         Min reactive power in the From Bus
         :return: (nbus, nt) Qmin From
         """
-        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active.T).T
+        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active).T
 
     def get_qmax_to_per_bus(self):
         """
         Max reactive power in the To Bus
         :return: (nbus, nt) Qmax To
         """
-        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active.T).T
+        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active).T
 
     def get_qmin_to_per_bus(self):
         """
         Min reactive power in the To Bus
         :return: (nbus, nt) Qmin To
         """
-        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
+        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active).T
 
     def get_angle_droop_in_pu_rad(self, Sbase):
         """
@@ -167,20 +168,19 @@ class HvdcData:
 
     def get_power(self, Sbase, theta):
         """
-
-        :param nbus:
+        Get hvdc power
         :param Sbase:
         :param theta:
         :return:
         """
         Pbus = np.zeros(self.nbus)
-        Losses = np.zeros(self.nhvdc)
-        loading = np.zeros(self.nhvdc)
-        Pf = np.zeros(self.nhvdc)
-        Pt = np.zeros(self.nhvdc)
+        Losses = np.zeros(self.nelm)
+        loading = np.zeros(self.nelm)
+        Pf = np.zeros(self.nelm)
+        Pt = np.zeros(self.nelm)
         nfree = 0
 
-        for i in range(self.nhvdc):
+        for i in range(self.nelm):
 
             if self.active[i]:
 
@@ -233,4 +233,8 @@ class HvdcData:
         return Pbus, Losses, Pf, Pt, loading, nfree
 
     def __len__(self):
-        return self.nhvdc
+        """
+        Get hvdc count
+        :return:
+        """
+        return self.nelm

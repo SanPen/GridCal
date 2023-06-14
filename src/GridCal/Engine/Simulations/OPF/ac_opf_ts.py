@@ -288,41 +288,41 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
         # general indices
         n = numerical_circuit.nbus
-        m = numerical_circuit.nbr
-        ng = numerical_circuit.ngen
+        m = numerical_circuit.nelm
+        ng = numerical_circuit.nelm
         nb = numerical_circuit.nbatt
-        nl = numerical_circuit.nload
+        nl = numerical_circuit.nelm
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
         Sbase = numerical_circuit.Sbase
 
         # battery
-        Capacity = numerical_circuit.battery_enom / Sbase
-        minSoC = numerical_circuit.battery_min_soc
-        maxSoC = numerical_circuit.battery_max_soc
+        Capacity = numerical_circuit.enom / Sbase
+        minSoC = numerical_circuit.min_soc
+        maxSoC = numerical_circuit.max_soc
 
         if batteries_energy_0 is None:
-            SoC0 = numerical_circuit.battery_soc_0
+            SoC0 = numerical_circuit.soc_0
         else:
             SoC0 = (batteries_energy_0 / Sbase) / Capacity
 
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
-        Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
+        Efficiency = (numerical_circuit.discharge_efficiency + numerical_circuit.charge_efficiency) / 2.0
         cost_b = numerical_circuit.battery_cost[:, a:b]
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax / Sbase
-        Pg_min = numerical_circuit.generator_pmin / Sbase
+        Pg_max = numerical_circuit.pmax / Sbase
+        Pg_min = numerical_circuit.pmin / Sbase
         P_profile = numerical_circuit.generator_p[:, a:b] / Sbase
-        cost_g = numerical_circuit.generator_cost[:, a:b]
-        enabled_for_dispatch = numerical_circuit.generator_dispatchable
+        cost_g = numerical_circuit.cost[:, a:b]
+        enabled_for_dispatch = numerical_circuit.dispatchable
 
         # load
         Pl = (numerical_circuit.load_active[:, a:b] * numerical_circuit.load_s.real[:, a:b]) / Sbase
         Ql = (numerical_circuit.load_active[:, a:b] * numerical_circuit.load_s.imag[:, a:b]) / Sbase
-        cost_l = numerical_circuit.load_cost[:, a:b]
+        cost_l = numerical_circuit.cost[:, a:b]
 
         # branch
         branch_ratings = numerical_circuit.branch_rates[:, a:b] / Sbase
@@ -359,9 +359,9 @@ class OpfAcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
-        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_elm, Pg=Pg,
                                     C_bus_bat=numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
-                                    C_bus_load=numerical_circuit.load_data.C_bus_load,
+                                    C_bus_load=numerical_circuit.load_data.C_bus_elm,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)
 

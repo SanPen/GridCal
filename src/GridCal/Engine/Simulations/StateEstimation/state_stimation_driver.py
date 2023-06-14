@@ -21,7 +21,7 @@ import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 from GridCal.Engine.Devices.measurement import MeasurementType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -209,7 +209,7 @@ class StateEstimation(DriverTemplate):
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
 
-        numerical_circuit = compile_snapshot_circuit(self.grid)
+        numerical_circuit = compile_numerical_circuit(self.grid)
         self.results = StateEstimationResults(n=n, m=m,
                                               n_tr=numerical_circuit.ntr,
                                               bus_names=numerical_circuit.bus_names,

@@ -8,7 +8,7 @@ import GridCal.Engine as gce
 def test_1():
     fname = os.path.join('data', 'grids', 'IEEE14_types_test.gridcal')
     circuit = gce.FileOpen(fname).open()
-    sn_nc = gce.compile_snapshot_circuit(circuit)
+    sn_nc = gce.compile_numerical_circuit(circuit)
     ts_nc = gce.compile_time_circuit(circuit)
 
     # snapshot types

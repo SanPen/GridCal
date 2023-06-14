@@ -1963,7 +1963,7 @@ class OpfNTC(Opf):
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
         Pgen_orig = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
-        Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
+        Cgen = self.numerical_circuit.generator_data.C_bus_elm.tocsc()
 
         if self.skip_generation_limits:
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
@@ -2007,7 +2007,7 @@ class OpfNTC(Opf):
 
         base_flows = np.dot(self.PTDF, Sbus.real)
 
-        load_cost = self.numerical_circuit.load_data.load_cost[:, t]
+        load_cost = self.numerical_circuit.load_data.cost[:, t]
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(
@@ -2051,8 +2051,8 @@ class OpfNTC(Opf):
             gen_cost = formulate_optimal_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
-                dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
+                dispatchable=self.numerical_circuit.generator_data.dispatchable,
+                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
@@ -2072,8 +2072,8 @@ class OpfNTC(Opf):
             gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
-                generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
+                generator_dispatchable=self.numerical_circuit.generator_data.dispatchable,
+                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,
@@ -2096,7 +2096,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Cgen=Cgen,
             generation=generation,
-            Cload=self.numerical_circuit.load_data.C_bus_load,
+            Cload=self.numerical_circuit.load_data.C_bus_elm,
             load_power=Pload,
             logger=self.logger)
 
@@ -2116,9 +2116,9 @@ class OpfNTC(Opf):
             nbr=self.numerical_circuit.nbr,
             branch_active=self.numerical_circuit.branch_active,
             branch_names=self.numerical_circuit.branch_names,
-            branch_theta=self.numerical_circuit.branch_data.theta[:, t],
-            branch_theta_min=self.numerical_circuit.branch_data.theta_min,
-            branch_theta_max=self.numerical_circuit.branch_data.theta_max,
+            branch_theta=self.numerical_circuit.branch_data.tap_angle[:, t],
+            branch_theta_min=self.numerical_circuit.branch_data.tap_angle_min,
+            branch_theta_max=self.numerical_circuit.branch_data.tap_angle_max,
             control_mode=self.numerical_circuit.branch_data.control_mode,
             logger=self.logger)
 
@@ -2359,7 +2359,7 @@ class OpfNTC(Opf):
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
         Pgen_orig = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
-        Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
+        Cgen = self.numerical_circuit.generator_data.C_bus_elm.tocsc()
 
         if self.skip_generation_limits:
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
@@ -2400,7 +2400,7 @@ class OpfNTC(Opf):
 
         base_flows = np.dot(self.PTDF, Sbus_at_t.real)
 
-        load_cost = self.numerical_circuit.load_data.load_cost[:, t]
+        load_cost = self.numerical_circuit.load_data.cost[:, t]
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(
@@ -2444,8 +2444,8 @@ class OpfNTC(Opf):
             gen_cost = formulate_optimal_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
-                dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
+                dispatchable=self.numerical_circuit.generator_data.dispatchable,
+                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
@@ -2465,8 +2465,8 @@ class OpfNTC(Opf):
             gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
-                generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.generator_cost[:, t],
+                generator_dispatchable=self.numerical_circuit.generator_data.dispatchable,
+                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,
@@ -2489,7 +2489,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Cgen=Cgen,
             generation=generation,
-            Cload=self.numerical_circuit.load_data.C_bus_load,
+            Cload=self.numerical_circuit.load_data.C_bus_elm,
             load_power=Pload,
             logger=self.logger)
 
@@ -2509,9 +2509,9 @@ class OpfNTC(Opf):
             nbr=self.numerical_circuit.nbr,
             branch_active=self.numerical_circuit.branch_active[:, t],
             branch_names=self.numerical_circuit.branch_names,
-            branch_theta=self.numerical_circuit.branch_data.theta[:, t],
-            branch_theta_min=self.numerical_circuit.branch_data.theta_min,
-            branch_theta_max=self.numerical_circuit.branch_data.theta_max,
+            branch_theta=self.numerical_circuit.branch_data.tap_angle[:, t],
+            branch_theta_min=self.numerical_circuit.branch_data.tap_angle_min,
+            branch_theta_max=self.numerical_circuit.branch_data.tap_angle_max,
             control_mode=self.numerical_circuit.branch_data.control_mode,
             logger=self.logger)
 

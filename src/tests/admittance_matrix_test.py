@@ -29,7 +29,7 @@ def __check__(fname):
     main_circuit = FileOpen(fname).open()
 
     # compile the data
-    numerical_circuit = compile_snapshot_circuit(main_circuit, apply_temperature=False)
+    numerical_circuit = compile_numerical_circuit(main_circuit, apply_temperature=False)
 
     # split into the possible islands
     islands = numerical_circuit.split_into_islands()

@@ -22,13 +22,13 @@ import GridCal.Engine.Simulations.PowerFlow as pflw
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, compile_snapshot_circuit_at
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, compile_numerical_circuit_at
 from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
-def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
+def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
           ma, theta, Beq, pq, pv, ref, pqpv, Qmin, Qmax, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -78,7 +78,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                              norm_f=1e200,
                                              Scalc=S0,
                                              ma=ma,
-                                             theta=circuit.branch_data.theta[:, 0],
+                                             theta=circuit.branch_data.tap_angle[:, 0],
                                              Beq=Beq,
                                              Ybus=circuit.Ybus,
                                              Yf=circuit.Yf,
@@ -300,7 +300,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
     return final_solution
 
 
-def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
+def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
                           voltage_solution, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
                           pq, pv, vd, pqpv, Qmin, Qmax, logger=bs.Logger()) -> "PowerFlowResults":
     """
@@ -431,7 +431,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None,
+def power_flow_post_process(calculation_inputs: NumericalCircuit, Sbus, V, branch_rates, Yf=None, Yt=None,
                             method: bs.SolverType = None):
     """
     Compute the power Sf trough the branches.
@@ -498,7 +498,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
-def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
+def single_island_pf(circuit: NumericalCircuit, Vbus, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
                      pq, pv, vd, pqpv, Qmin, Qmax,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
@@ -591,7 +591,7 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
+def multi_island_pf2(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(), V_guess=None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -646,8 +646,8 @@ def multi_island_pf2(nc: SnapshotData, options: PowerFlowOptions, logger=bs.Logg
                     Sbus=island.Sbus + Shvdc[island.original_bus_idx],
                     Ibus=island.Ibus,
                     Yloadbus=island.YLoadBus,
-                    ma=island.branch_data.m[:, 0],
-                    theta=island.branch_data.theta[:, 0],
+                    ma=island.branch_data.tap_module[:, 0],
+                    theta=island.branch_data.tap_angle[:, 0],
                     Beq=island.branch_data.Beq[:, 0],
                     branch_rates=island.Rates,
                     pq=island.pq,
@@ -747,7 +747,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     """
 
     if t is None:
-        nc = compile_snapshot_circuit(
+        nc = compile_numerical_circuit(
             circuit=multi_circuit,
             apply_temperature=options.apply_temperature_correction,
             branch_tolerance_mode=options.branch_impedance_tolerance_mode,
@@ -755,7 +755,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             use_stored_guess=options.use_stored_guess
         )
     else:
-        nc = compile_snapshot_circuit_at(
+        nc = compile_numerical_circuit_at(
             circuit=multi_circuit,
             t_idx=t,
             apply_temperature=options.apply_temperature_correction,

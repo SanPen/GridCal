@@ -212,7 +212,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem,
             # compute the flow
             if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                tau[m, t] = pl.LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
+                tau[m, t] = pl.LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.tap_angle_min[m], nc.branch_data.tap_angle_max[m])
                 Pbr_f[m, t] = bk * (theta[F[m], t] - theta[T[m], t] + tau[m, t])
 
                 # power injected and subtracted due to the phase shift
@@ -517,43 +517,43 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # general indices
         n = self.numerical_circuit.nbus
-        m = self.numerical_circuit.nbr
-        ng = self.numerical_circuit.ngen
+        m = self.numerical_circuit.nelm
+        ng = self.numerical_circuit.nelm
         nb = self.numerical_circuit.nbatt
-        nl = self.numerical_circuit.nload
+        nl = self.numerical_circuit.nelm
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
         Sbase = self.numerical_circuit.Sbase
 
         # battery
-        Capacity = self.numerical_circuit.battery_enom / Sbase
-        minSoC = self.numerical_circuit.battery_min_soc
-        maxSoC = self.numerical_circuit.battery_max_soc
+        Capacity = self.numerical_circuit.enom / Sbase
+        minSoC = self.numerical_circuit.min_soc
+        maxSoC = self.numerical_circuit.max_soc
         if batteries_energy_0 is None:
-            SoC0 = self.numerical_circuit.battery_soc_0
+            SoC0 = self.numerical_circuit.soc_0
         else:
             SoC0 = (batteries_energy_0 / Sbase) / Capacity
         Pb_max = self.numerical_circuit.battery_pmax / Sbase
         Pb_min = self.numerical_circuit.battery_pmin / Sbase
-        Efficiency = (self.numerical_circuit.battery_discharge_efficiency + self.numerical_circuit.battery_charge_efficiency) / 2.0
+        Efficiency = (self.numerical_circuit.discharge_efficiency + self.numerical_circuit.charge_efficiency) / 2.0
         cost_b = self.numerical_circuit.battery_cost[:, a:b]
 
         # generator
         if self.skip_generation_limits:
-            Pg_max = np.zeros(self.numerical_circuit.ngen) * 99999999.0
-            Pg_min = np.zeros(self.numerical_circuit.ngen) * -99999999.0
+            Pg_max = np.zeros(self.numerical_circuit.nelm) * 99999999.0
+            Pg_min = np.zeros(self.numerical_circuit.nelm) * -99999999.0
         else:
-            Pg_max = self.numerical_circuit.generator_pmax / Sbase
-            Pg_min = self.numerical_circuit.generator_pmin / Sbase
+            Pg_max = self.numerical_circuit.pmax / Sbase
+            Pg_min = self.numerical_circuit.pmin / Sbase
 
         P_profile = self.numerical_circuit.generator_p[:, a:b] / Sbase
-        cost_g = self.numerical_circuit.generator_cost[:, a:b]
-        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
+        cost_g = self.numerical_circuit.cost[:, a:b]
+        enabled_for_dispatch = self.numerical_circuit.dispatchable
 
         # load
         Pl = (self.numerical_circuit.load_active[:, a:b] * self.numerical_circuit.load_s.real[:, a:b]) / Sbase
-        cost_l = self.numerical_circuit.load_cost[:, a:b]
+        cost_l = self.numerical_circuit.cost[:, a:b]
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
@@ -591,11 +591,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections ---------------------------------------------------------------------------------
-        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_gen,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_elm,
                                  Pg=Pg,
                                  C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt,
                                  Pb=Pb,
-                                 C_bus_load=self.numerical_circuit.load_data.C_bus_load,
+                                 C_bus_load=self.numerical_circuit.load_data.C_bus_elm,
                                  LSlack=load_slack,
                                  Pl=Pl)
 
@@ -629,9 +629,9 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                                    active=br_active)
 
         elif self.zonal_grouping == ZonalGrouping.All:
-            flow_f = np.zeros((self.numerical_circuit.nbr, nt))
-            tau = np.ones((self.numerical_circuit.nbr, nt))
-            Pinj_tau = np.zeros((self.numerical_circuit.nbr, nt))
+            flow_f = np.zeros((self.numerical_circuit.nelm, nt))
+            tau = np.ones((self.numerical_circuit.nelm, nt))
+            Pinj_tau = np.zeros((self.numerical_circuit.nelm, nt))
 
         else:
             raise ValueError()

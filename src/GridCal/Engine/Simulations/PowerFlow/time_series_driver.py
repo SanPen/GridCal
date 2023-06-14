@@ -25,7 +25,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit_at
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
@@ -84,9 +84,9 @@ class TimeSeries(DriverTemplate):
 
         # initialize the grid time series results we will append the island results with another function
         time_series_results = TimeSeriesResults(n=time_circuit.nbus,
-                                                m=time_circuit.nbr,
+                                                m=time_circuit.nelm,
                                                 n_tr=time_circuit.ntr,
-                                                n_hvdc=time_circuit.nhvdc,
+                                                n_hvdc=time_circuit.nelm,
                                                 bus_names=time_circuit.bus_names,
                                                 branch_names=time_circuit.branch_names,
                                                 transformer_names=time_circuit.tr_names,
@@ -128,9 +128,9 @@ class TimeSeries(DriverTemplate):
 
             # declare a results object for the partition
             results = TimeSeriesResults(n=calculation_input.nbus,
-                                        m=calculation_input.nbr,
+                                        m=calculation_input.nelm,
                                         n_tr=calculation_input.ntr,
-                                        n_hvdc=calculation_input.nhvdc,
+                                        n_hvdc=calculation_input.nelm,
                                         bus_names=calculation_input.bus_data.names,
                                         branch_names=calculation_input.branch_data.names,
                                         transformer_names=calculation_input.transformer_data.names,
@@ -180,8 +180,8 @@ class TimeSeries(DriverTemplate):
                                            Sbus=S,
                                            Ibus=I,
                                            Yloadbus=Yload,
-                                           ma=calculation_input.branch_data.m[:, it],
-                                           theta=calculation_input.branch_data.theta[:, it],
+                                           ma=calculation_input.branch_data.tap_module[:, it],
+                                           theta=calculation_input.branch_data.tap_angle[:, it],
                                            Beq=calculation_input.branch_data.Beq[:, it],
                                            pq=calculation_input.pq_prof[it],
                                            pv=calculation_input.pv_prof[it],

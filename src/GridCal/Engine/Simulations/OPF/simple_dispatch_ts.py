@@ -57,10 +57,10 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
 
         # general indices
         n = nc.nbus
-        m = nc.nbr
-        ng = nc.ngen
+        m = nc.nelm
+        ng = nc.nelm
         nb = nc.nbatt
-        nl = nc.nload
+        nl = nc.nelm
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
@@ -80,10 +80,10 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         # cost_b = nc.battery_cost_profile[a:b, :].transpose()
 
         # generator
-        Pg_max = nc.generator_pmax / Sbase
-        Pg_min = nc.generator_pmin / Sbase
+        Pg_max = nc.pmax / Sbase
+        Pg_min = nc.pmin / Sbase
         P_profile = nc.generator_p[a:b, :] / Sbase
-        cost_g = nc.generator_cost[a:b, :]
+        cost_g = nc.cost[a:b, :]
         enabled_for_dispatch = nc.generator_active
 
         # load
@@ -116,8 +116,8 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         self.E = E
 
         self.Pinj = self.numerical_circuit.Sbus.transpose().real
-        self.hvdc_flow = np.zeros((nt, self.numerical_circuit.nhvdc))
-        self.hvdc_slacks = np.zeros((nt, self.numerical_circuit.nhvdc))
+        self.hvdc_flow = np.zeros((nt, self.numerical_circuit.nelm))
+        self.hvdc_slacks = np.zeros((nt, self.numerical_circuit.nelm))
         self.phase_shift = np.zeros((nt, m))
 
         self.load_shedding = np.zeros((nt, nl))

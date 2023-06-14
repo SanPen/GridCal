@@ -824,7 +824,7 @@ class FakeAdmittances:
 
 
 def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=False):
-    from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+    from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
                                                                 time_series=False,
@@ -835,20 +835,20 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
     data_lst = list()
 
     for npa_data in npa_data_lst:
-        data = SnapshotData(nbus=0,
-                            nline=0,
-                            ndcline=0,
-                            ntr=0,
-                            nvsc=0,
-                            nupfc=0,
-                            nhvdc=0,
-                            nload=0,
-                            ngen=0,
-                            nbatt=0,
-                            nshunt=0,
-                            nstagen=0,
-                            sbase=0,
-                            ntime=1)
+        data = NumericalCircuit(nbus=0,
+                                nline=0,
+                                ndcline=0,
+                                ntr=0,
+                                nvsc=0,
+                                nupfc=0,
+                                nhvdc=0,
+                                nload=0,
+                                ngen=0,
+                                nbatt=0,
+                                nshunt=0,
+                                nstagen=0,
+                                sbase=0,
+                                ntime=1)
 
         conn = npa_data.getConnectivity()
         inj = npa_data.getInjections()
@@ -863,8 +863,8 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Sbus_ = inj.S0.reshape(-1, 1)
         data.Ibus_ = inj.I0.reshape(-1, 1)
         data.branch_data.names = np.array(npa_data.branch_data.names)
-        data.branch_data.tap_f = npa_data.branch_data.vtap_f
-        data.branch_data.tap_t = npa_data.branch_data.vtap_t
+        data.branch_data.virtual_tap_f = npa_data.branch_data.vtap_f
+        data.branch_data.virtual_tap_t = npa_data.branch_data.vtap_t
 
         data.bus_data.names = np.array(npa_data.bus_data.names)
 

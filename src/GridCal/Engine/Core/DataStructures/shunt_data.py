@@ -21,41 +21,37 @@ import GridCal.Engine.Core.topology as tp
 
 class ShuntData:
 
-    def __init__(self, nshunt, nbus, ntime=1):
+    def __init__(self, nelm, nbus):
+        """
+        Shunt data arrays
+        :param nelm: number of shunts
+        :param nbus: number of buses
+        :param ntime: time index
+        """
+        self.nelm: int = nelm
+
+        self.names: np.array = np.empty(nelm, dtype=object)
+
+        self.active: np.array = np.zeros(nelm, dtype=bool)
+        self.admittance: np.array = np.zeros(nelm, dtype=complex)
+
+        self.controlled: np.array = np.zeros(nelm, dtype=bool)
+        self.b_min: np.array = np.zeros(nelm, dtype=float)
+        self.b_max: np.array = np.zeros(nelm, dtype=float)
+
+        self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
+
+        self.original_idx = np.zeros(nelm, dtype=int)
+
+    def slice(self, elm_idx, bus_idx):
+        """
+        Slice shunt data by given indices
+        :param elm_idx: array of branch indices
+        :param bus_idx: array of bus indices
+        :return: new ShuntData instance
         """
 
-        :param nshunt:
-        :param nbus:
-        """
-        self.nshunt = nshunt
-        self.ntime = ntime
-
-        self.names = np.empty(nshunt, dtype=object)
-
-        self.active = np.zeros((nshunt, ntime), dtype=bool)
-        self.admittance = np.zeros((nshunt, ntime), dtype=complex)
-
-        self.controlled = np.zeros(nshunt, dtype=bool)
-        self.b_min = np.zeros(nshunt, dtype=float)
-        self.b_max = np.zeros(nshunt, dtype=float)
-
-        self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
-
-    def slice(self, elm_idx, bus_idx, time_idx=None):
-        """
-
-        :param elm_idx:
-        :param bus_idx:
-        :param time_idx:
-        :return:
-        """
-
-        if time_idx is None:
-            tidx = elm_idx
-        else:
-            tidx = np.ix_(elm_idx, time_idx)
-
-        data = ShuntData(nshunt=len(elm_idx), nbus=len(bus_idx))
+        data = ShuntData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
 
@@ -63,31 +59,54 @@ class ShuntData:
         data.b_min = self.b_min[elm_idx]
         data.b_max = self.b_max[elm_idx]
 
-        data.active = self.active[tidx]
-        data.admittance = self.admittance[tidx]
+        data.active = self.active[elm_idx]
+        data.admittance = self.admittance[elm_idx]
 
-        data.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, elm_idx)]
+        data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
+
+        data.original_idx = elm_idx
 
         return data
 
-    def get_island(self, bus_idx, t_idx=0):
-        if self.nshunt:
-            return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx, active=self.active[t_idx])
+    def get_island(self, bus_idx):
+        """
+        Get the array of shunt indices that belong to the islands given by the bus indices
+        :param bus_idx: array of bus indices
+        :return: array of island branch indices
+        """
+        if self.nelm:
+            return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
         else:
             return np.zeros(0, dtype=int)
 
     def get_controlled_per_bus(self):
-        return self.C_bus_shunt * (self.controlled * self.active)
+        """
+        Get controlled per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.controlled * self.active)
 
     def get_injections_per_bus(self):
-        return self.C_bus_shunt * (self.admittance * self.active)
+        """
+        Get injections per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.admittance * self.active)
 
     def get_b_max_per_bus(self):
-        return self.C_bus_shunt * (self.b_max.reshape(-1, 1) * self.active)
+        """
+        Get Bmax per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.b_max * self.active)
 
     def get_b_min_per_bus(self):
-        return self.C_bus_shunt * (self.b_min.reshape(-1, 1) * self.active)
+        """
+        Get Bmin per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.b_min * self.active)
 
     def __len__(self):
-        return self.nshunt
+        return self.nelm
 

@@ -127,7 +127,7 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
 
 
 def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, Sbase,
-                   m, theta, Beq, Gsw, mf, mt):
+                   tap_module, tap_angle, Beq, Gsw, virtual_tap_from, virtual_tap_to):
     """
     Compile the admittance matrices using the variable elements
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -138,12 +138,12 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
     :param ys: array of branch series admittances
     :param B: array of branch susceptances
     :param Sbase: base power (i.e. 100 MVA)
-    :param m: array of tap modules (for all branches, regardless of their type)
-    :param theta: array of tap angles (for all branches, regardless of their type)
+    :param tap_module: array of tap modules (for all branches, regardless of their type)
+    :param tap_angle: array of tap angles (for all branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
     :param Gsw: Array of branch (converter) losses
-    :param mf: array of virtual taps at the "from" side
-    :param mt: array of virtual taps at the "to" side
+    :param virtual_tap_from: array of virtual taps at the "from" side
+    :param virtual_tap_to: array of virtual taps at the "to" side
     :return: Ybus, Yf, Yt, tap
     """
 
@@ -156,13 +156,13 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
     bc2 = 1j * B / 2  # shunt conductance
     # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
 
-    tap = m * np.exp(1.0j * theta)
+    tap = tap_module * np.exp(1.0j * tap_angle)
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (m * m * mf * mf)
-    Yft = -ys / (np.conj(tap) * mf * mt)
-    Ytf = -ys / (tap * mf * mt)
-    Ytt = ys + bc2 + yshunt_t / (mt * mt)
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (tap_module * tap_module * virtual_tap_from * virtual_tap_from)
+    Yft = -ys / (np.conj(tap) * virtual_tap_from * virtual_tap_to)
+    Ytf = -ys / (tap * virtual_tap_from * virtual_tap_to)
+    Ytt = ys + bc2 + yshunt_t / (virtual_tap_to * virtual_tap_to)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct

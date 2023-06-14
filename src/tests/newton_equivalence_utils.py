@@ -6,7 +6,7 @@ import GridCal.Engine as gce
 import scipy.sparse as sp
 from typing import List
 from scipy.sparse.linalg import spsolve
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit_at
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 npa.findAndActivateLicense()
 
@@ -65,7 +65,7 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, 0)
-    nc_gc = gce.compile_snapshot_circuit(grid_gc)
+    nc_gc = gce.compile_numerical_circuit(grid_gc)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data
@@ -81,8 +81,8 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     CheckArr(nc_newton.branch_data.g, nc_gc.branch_data.G, tol, 'BranchData', 'g')
     CheckArr(nc_newton.branch_data.b, nc_gc.branch_data.B, tol, 'BranchData', 'b')
     CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.branch_rates[:, t], tol, 'BranchData', 'rates')
-    CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.m[:, t], tol, 'BranchData', 'tap_module')
-    CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.theta[:, t], tol, 'BranchData', 'tap_angle')
+    CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.tap_module[:, t], tol, 'BranchData', 'tap_module')
+    CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.tap_angle[:, t], tol, 'BranchData', 'tap_angle')
 
     CheckArr(nc_newton.branch_data.g0, nc_gc.branch_data.G0, tol, 'BranchData', 'g0')
     CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw[:, t], tol, 'BranchData', 'G0sw')
@@ -92,8 +92,8 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     CheckArr(nc_newton.branch_data.alpha2, nc_gc.branch_data.alpha2, tol, 'BranchData', 'alpha2')
     CheckArr(nc_newton.branch_data.alpha3, nc_gc.branch_data.alpha3, tol, 'BranchData', 'alpha3')
 
-    CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.tap_f, tol, 'BranchData', 'vtap_f')
-    CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.tap_t, tol, 'BranchData', 'vtap_t')
+    CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.virtual_tap_f, tol, 'BranchData', 'vtap_f')
+    CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.virtual_tap_t, tol, 'BranchData', 'vtap_t')
 
     # bus data
     tpes = convert_bus_types(nc_newton.bus_data.types)
@@ -179,7 +179,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, t)
-    nc_gc = compile_snapshot_circuit_at(grid_gc, t)
+    nc_gc = compile_numerical_circuit_at(grid_gc, t)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data
@@ -193,8 +193,8 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     err_count += CheckArr(nc_newton.branch_data.g, nc_gc.branch_data.G, tol, 'BranchData', 'g')
     err_count += CheckArr(nc_newton.branch_data.b, nc_gc.branch_data.B, tol, 'BranchData', 'b')
     err_count += CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.rates[:, 0], tol, 'BranchData', 'rates')
-    err_count += CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.m[:, 0], tol, 'BranchData', 'tap_module')
-    err_count += CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.theta[:, 0], tol, 'BranchData', 'tap_angle')
+    err_count += CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.tap_module[:, 0], tol, 'BranchData', 'tap_module')
+    err_count += CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.tap_angle[:, 0], tol, 'BranchData', 'tap_angle')
 
     err_count += CheckArr(nc_newton.branch_data.g0, nc_gc.branch_data.G0, tol, 'BranchData', 'g0')
     err_count += CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw[:, 0], tol, 'BranchData', 'G0sw')
@@ -203,8 +203,8 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     err_count += CheckArr(nc_newton.branch_data.alpha1, nc_gc.branch_data.alpha1, tol, 'BranchData', 'alpha1')
     err_count += CheckArr(nc_newton.branch_data.alpha2, nc_gc.branch_data.alpha2, tol, 'BranchData', 'alpha2')
     err_count += CheckArr(nc_newton.branch_data.alpha3, nc_gc.branch_data.alpha3, tol, 'BranchData', 'alpha3')
-    err_count += CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.tap_f, tol, 'BranchData', 'vtap_f')
-    err_count += CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.tap_t, tol, 'BranchData', 'vtap_t')
+    err_count += CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.virtual_tap_f, tol, 'BranchData', 'vtap_f')
+    err_count += CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.virtual_tap_t, tol, 'BranchData', 'vtap_t')
 
     # bus data
     tpes = convert_bus_types(nc_newton.bus_data.types)

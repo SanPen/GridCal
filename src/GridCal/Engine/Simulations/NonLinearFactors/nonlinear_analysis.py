@@ -20,7 +20,7 @@ import scipy as sp
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
 
 
@@ -70,10 +70,10 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                              xs=branch_data.X[i],
                              gsh=branch_data.G[i],
                              bsh=branch_data.B[i],
-                             tap_module=branch_data.m[i][0],
-                             vtap_f=branch_data.tap_f[i],
-                             vtap_t=branch_data.tap_t[i],
-                             tap_angle=branch_data.theta[i][0],
+                             tap_module=branch_data.tap_module[i][0],
+                             vtap_f=branch_data.virtual_tap_f[i],
+                             vtap_t=branch_data.virtual_tap_t[i],
+                             tap_angle=branch_data.tap_angle[i][0],
                              n_bus=nbus)
 
         # solve the modified HELM
@@ -367,7 +367,7 @@ class NonLinearAnalysis:
 
         self.correct_values = correct_values
 
-        self.numerical_circuit: SnapshotData = None
+        self.numerical_circuit: NumericalCircuit = None
 
         self.PTDF = None  # power transfer distribution factors (n_br, n_bus)
 
@@ -387,7 +387,7 @@ class NonLinearAnalysis:
         """
         Run the PTDF and LODF
         """
-        self.numerical_circuit = compile_snapshot_circuit(self.grid)
+        self.numerical_circuit = compile_numerical_circuit(self.grid)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus

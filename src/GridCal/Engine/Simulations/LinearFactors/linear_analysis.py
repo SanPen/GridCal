@@ -22,7 +22,7 @@ from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 
@@ -357,7 +357,7 @@ def make_lodf_nx(circuit: MultiCircuit, lodf):
 
 class LinearAnalysis2:
 
-    def __init__(self, numerical_circuit: SnapshotData, distributed_slack=True, correct_values=True, with_nx=False):
+    def __init__(self, numerical_circuit: NumericalCircuit, distributed_slack=True, correct_values=True, with_nx=False):
         """
 
         :param grid:
@@ -370,7 +370,7 @@ class LinearAnalysis2:
 
         self.with_nx = with_nx
 
-        self.numerical_circuit: SnapshotData = numerical_circuit
+        self.numerical_circuit: NumericalCircuit = numerical_circuit
 
         self.PTDF = None
 
@@ -500,7 +500,7 @@ class LinearAnalysis(LinearAnalysis2):
         :param distributed_slack:
         """
         LinearAnalysis2.__init__(self,
-                                 numerical_circuit=compile_snapshot_circuit(grid),
+                                 numerical_circuit=compile_numerical_circuit(grid),
                                  distributed_slack=distributed_slack,
                                  correct_values=correct_values,
                                  with_nx=with_nx)

@@ -662,9 +662,9 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
     :param pf_res:
     :return: PowerFlowResults
     """
-    from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+    from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 
-    nc = compile_snapshot_circuit(grid)
+    nc = compile_numerical_circuit(grid)
 
     results = PowerFlowResults(n=nc.nbus,
                                m=nc.nbr,
@@ -728,9 +728,9 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> TimeSeriesResults:
     :param pf_res:
     :return: TimeSeriesResults
     """
-    from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+    from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 
-    nc = compile_snapshot_circuit(grid)
+    nc = compile_numerical_circuit(grid)
 
     results = TimeSeriesResults(n=nc.nbus,
                                 m=nc.nbr,

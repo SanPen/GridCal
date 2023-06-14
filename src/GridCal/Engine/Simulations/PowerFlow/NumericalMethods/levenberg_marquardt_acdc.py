@@ -43,7 +43,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     # initialize the variables
     nb = nc.nbus
-    nl = nc.nbr
+    nl = nc.nelm
     V = Vbus
 
     Va = np.angle(V)
@@ -52,8 +52,8 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
     Vmfset = nc.branch_data.vf_set[:, 0]
-    m = nc.branch_data.m[:, 0].copy()
-    theta = nc.branch_data.theta[:, 0].copy()
+    m = nc.branch_data.tap_module[:, 0].copy()
+    theta = nc.branch_data.tap_angle[:, 0].copy()
     Beq = nc.branch_data.Beq[:, 0].copy()
     Gsw = nc.branch_data.G0sw[:, 0]
     Pfset = nc.branch_data.Pfset[:, 0] / nc.Sbase
@@ -99,15 +99,15 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
         # -------------------------------------------------------------------------
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                           C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                           C_bus_shunt=nc.shunt_data.C_bus_elm,
                                            shunt_admittance=nc.shunt_data.admittance[:, 0],
                                            shunt_active=nc.shunt_data.active[:, 0],
                                            ys=Ys,
                                            B=Bc,
                                            Sbase=nc.Sbase,
-                                           m=m, theta=theta, Beq=Beq, Gsw=Gsw,
-                                           mf=nc.branch_data.tap_f,
-                                           mt=nc.branch_data.tap_t)
+                                           tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                           virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                           virtual_tap_to=nc.branch_data.virtual_tap_t)
 
         #  compute branch power Sf
         If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
@@ -230,15 +230,15 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
             # compute initial admittances
             Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                               C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                               C_bus_shunt=nc.shunt_data.C_bus_elm,
                                                shunt_admittance=nc.shunt_data.admittance[:, 0],
                                                shunt_active=nc.shunt_data.active[:, 0],
                                                ys=Ys,
                                                B=Bc,
                                                Sbase=nc.Sbase,
-                                               m=m, theta=theta, Beq=Beq, Gsw=Gsw,
-                                               mf=nc.branch_data.tap_f,
-                                               mt=nc.branch_data.tap_t)
+                                               tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                               virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                               virtual_tap_to=nc.branch_data.virtual_tap_t)
 
             #  compute branch power Sf
             If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches

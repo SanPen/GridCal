@@ -185,7 +185,7 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
         self.results = LinearAnalysisTimeSeriesResults(n=ts_numeric_circuit.nbus,
-                                                       m=ts_numeric_circuit.nbr,
+                                                       m=ts_numeric_circuit.nelm,
                                                        time_array=ts_numeric_circuit.time_array[time_indices],
                                                        bus_names=ts_numeric_circuit.bus_names,
                                                        bus_types=ts_numeric_circuit.bus_types,

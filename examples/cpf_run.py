@@ -1,7 +1,7 @@
 import os
 from matplotlib import pyplot as plt
 import GridCal.Engine as gce
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 
 fname = os.path.join('/Grids_and_profiles/grids', 'IEEE 14.xlsx')
 # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
@@ -43,7 +43,7 @@ vc_options = gce.ContinuationPowerFlowOptions(step=0.001,
                                               verbose=False)
 
 # just for this test
-numeric_circuit = compile_snapshot_circuit(main_circuit)
+numeric_circuit = compile_numerical_circuit(main_circuit)
 numeric_inputs = numeric_circuit.split_into_islands()
 Sbase_ = power_flow.results.Sbus / numeric_circuit.Sbase
 Vbase_ = power_flow.results.voltage

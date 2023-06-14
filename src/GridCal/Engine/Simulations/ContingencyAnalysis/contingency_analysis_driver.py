@@ -20,7 +20,7 @@ import numpy as np
 from itertools import combinations
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, compile_snapshot_circuit_at
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis2
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
@@ -115,9 +115,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
         # set the numerical circuit
         if t is None:
-            numerical_circuit = compile_snapshot_circuit(self.grid)
+            numerical_circuit = compile_numerical_circuit(self.grid)
         else:
-            numerical_circuit = compile_snapshot_circuit_at(self.grid, t_idx=t)
+            numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
 
         if self.options.pf_options is None:
             pf_opts = PowerFlowOptions(solver_type=SolverType.DC,

@@ -140,7 +140,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         mc_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
-                                                m=numerical_circuit.nbr,
+                                                m=numerical_circuit.nelm,
                                                 p=self.sampling_points,
                                                 bus_names=numerical_circuit.bus_names,
                                                 branch_names=numerical_circuit.branch_names,
@@ -148,9 +148,9 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                 name='Monte Carlo')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
-                                   m=numerical_circuit.nbr,
+                                   m=numerical_circuit.nelm,
                                    n_tr=numerical_circuit.ntr,
-                                   n_hvdc=numerical_circuit.nhvdc,
+                                   n_hvdc=numerical_circuit.nelm,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    transformer_names=numerical_circuit.tr_names,
@@ -187,8 +187,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                        Sbus=S,
                                        Ibus=I,
                                        Yloadbus=np.zeros_like(S),  # TODO: Check this
-                                       ma=numerical_island.branch_data.m[:, 0],
-                                       theta=numerical_island.branch_data.theta[:, 0],
+                                       ma=numerical_island.branch_data.tap_module[:, 0],
+                                       theta=numerical_island.branch_data.tap_angle[:, 0],
                                        Beq=numerical_island.branch_data.Beq[:, 0],
                                        branch_rates=numerical_island.rates,
                                        pq=numerical_island.pq,
@@ -288,7 +288,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
         calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         lhs_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
-                                                 m=numerical_circuit.nbr,
+                                                 m=numerical_circuit.nelm,
                                                  p=self.sampling_points,
                                                  bus_names=numerical_circuit.bus_names,
                                                  branch_names=numerical_circuit.branch_names,
@@ -296,9 +296,9 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                  name='Latin Hypercube')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
-                                   m=numerical_circuit.nbr,
+                                   m=numerical_circuit.nelm,
                                    n_tr=numerical_circuit.ntr,
-                                   n_hvdc=numerical_circuit.nhvdc,
+                                   n_hvdc=numerical_circuit.nelm,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    transformer_names=numerical_circuit.tr_names,
@@ -331,8 +331,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                        Sbus=S,
                                        Ibus=I,
                                        Yloadbus=np.zeros_like(S),  # TODO: Check this
-                                       ma=numerical_island.branch_data.m[:, 0],
-                                       theta=numerical_island.branch_data.theta[:, 0],
+                                       ma=numerical_island.branch_data.tap_module[:, 0],
+                                       theta=numerical_island.branch_data.tap_angle[:, 0],
                                        Beq=numerical_island.branch_data.Beq[:, 0],
                                        branch_rates=numerical_island.branch_data.rates[:, 0],
                                        pq=numerical_island.pq,

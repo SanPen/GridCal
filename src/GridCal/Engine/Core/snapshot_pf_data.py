@@ -39,88 +39,100 @@ sparse_type = get_sparse_type()
 
 
 @nb.njit(cache=True)
-def compose_generator_voltage_profile(nbus, ntime,
-                                      gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
-                                      bat_bus_indices, bat_vset, bat_status, bat_is_controlled,
-                                      hvdc_bus_f, hvdc_bus_t, hvdc_status, hvdc_vf, hvdc_vt,
-                                      iBeqv, iVtma, VfBeqbus, Vtmabus, branch_status, br_vf, br_vt):
+def compose_generator_voltage_profile(
+        nbus: int,
+        gen_bus_indices: np.array,
+        gen_vset: np.array,
+        gen_status: np.array,
+        gen_is_controlled: np.array,
+        bat_bus_indices: np.array,
+        bat_vset: np.array,
+        bat_status: np.array,
+        bat_is_controlled: np.array,
+        hvdc_bus_f: np.array,
+        hvdc_bus_t: np.array,
+        hvdc_status: np.array,
+        hvdc_vf: np.array,
+        hvdc_vt: np.array,
+        iBeqv: np.array,
+        iVtma: np.array,
+        VfBeqbus: np.array,
+        Vtmabus: np.array,
+        branch_status: np.array,
+        br_vf: np.array,
+        br_vt: np.array,
+):
     """
     Get the array of voltage set points per bus
     :param nbus: number of buses
-    :param ntime: number of time steps
-    :param gen_bus_indices: array of bus indices per generator
-    :param gen_vset: array of voltage set points (ngen, ntime)
-    :param gen_status: array of generator status (ngen, ntime)
+    :param gen_bus_indices: array of bus indices per generator (ngen)
+    :param gen_vset: array of voltage set points (ngen)
+    :param gen_status: array of generator status (ngen)
     :param gen_is_controlled: array of values indicating if a generator controls the voltage or not (ngen)
-    :param bat_bus_indices:  array of bus indices per battery
-    :param bat_vset: array of voltage set points (nbat, ntime)
-    :param bat_status: array of battery status (nbat, ntime)
-    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (ngen)
-    :param hvdc_bus_f:
-    :param hvdc_bus_t:
-    :param hvdc_status:
-    :param hvdc_vf
-    :param hvdc_vt
+    :param bat_bus_indices:  array of bus indices per battery (nbatt)
+    :param bat_vset: array of voltage set points (nbatt)
+    :param bat_status: array of battery status (nbatt)
+    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (nbatt)
+    :param hvdc_bus_f: array of hvdc bus from indices (nhvdc)
+    :param hvdc_bus_t: array of hvdc bus to indices (nhvdc)
+    :param hvdc_status: array of hvdc status (nhvdc)
+    :param hvdc_vf: array of hvdc voltage from set points (nhvdc)
+    :param hvdc_vt: array of hvdc voltage to set points (nhvdc)
     :param iBeqv: indices of the branches when controlling Vf with Beq
     :param iVtma: indices of the branches when controlling Vt with ma
     :param VfBeqbus: indices of the buses where Vf is controlled by Beq
     :param Vtmabus: indices of the buses where Vt is controlled by ma
-    :param branch_status:
-    :param br_vf:
-    :param br_vt:
-    :return: Voltage set points array per bus (nbus, ntime)
+    :param branch_status: array of brach status (nbr)
+    :param br_vf: array of branch voltage from set points (nbr)
+    :param br_vt: array of branch voltage from set points (nbr)
+    :return: Voltage set points array per bus nbus
     """
-    V = np.ones((nbus, ntime), dtype=nb.complex128)
-    used = np.zeros((nbus, ntime), dtype=nb.int8)
+    V = np.ones(nbus, dtype=nb.complex128)
+    used = np.zeros(nbus, dtype=nb.int8)
 
     # generators
     for i, bus_idx in enumerate(gen_bus_indices):
         if gen_is_controlled[i]:
-            for t in range(ntime):
-                if used[bus_idx, t] == 0:
-                    if gen_status[i, t]:
-                        V[bus_idx, t] = complex(gen_vset[i, t], 0)
-                        used[bus_idx, t] = 1
+            if used[bus_idx] == 0:
+                if gen_status[i]:
+                    V[bus_idx] = complex(gen_vset[i], 0)
+                    used[bus_idx] = 1
 
     # batteries
     for i, bus_idx in enumerate(bat_bus_indices):
         if bat_is_controlled[i]:
-            for t in range(ntime):
-                if used[bus_idx, t] == 0:
-                    if bat_status[i, t]:
-                        V[bus_idx, t] = complex(bat_vset[i, t], 0)
-                        used[bus_idx, t] = 1
+            if used[bus_idx] == 0:
+                if bat_status[i]:
+                    V[bus_idx] = complex(bat_vset[i], 0)
+                    used[bus_idx] = 1
 
     # HVDC
     for i in range(hvdc_status.shape[0]):
         from_idx = hvdc_bus_f[i]
         to_idx = hvdc_bus_t[i]
-        for t in range(ntime):
-            if hvdc_status[i, t] != 0:
-                if used[from_idx, t] == 0:
-                    V[from_idx, t] = complex(hvdc_vf[i, t], 0)
-                    used[from_idx, t] = 1
-                if used[to_idx, t] == 0:
-                    V[to_idx, t] = complex(hvdc_vt[i, t], 0)
-                    used[to_idx, t] = 1
+        if hvdc_status[i] != 0:
+            if used[from_idx] == 0:
+                V[from_idx] = complex(hvdc_vf[i], 0)
+                used[from_idx] = 1
+            if used[to_idx] == 0:
+                V[to_idx] = complex(hvdc_vt[i], 0)
+                used[to_idx] = 1
 
     # branch - from
     for i in iBeqv:  # branches controlling Vf
         from_idx = VfBeqbus[i]
-        for t in range(ntime):
-            if branch_status[i, t] != 0:
-                if used[from_idx, t] == 0:
-                    V[from_idx, t] = complex(br_vf[i, t], 0)
-                    used[from_idx, t] = 1
+        if branch_status[i] != 0:
+            if used[from_idx] == 0:
+                V[from_idx] = complex(br_vf[i], 0)
+                used[from_idx] = 1
 
     # branch - to
     for i in iVtma:  # branches controlling Vt
         from_idx = Vtmabus[i]
-        for t in range(ntime):
-            if branch_status[i, t] != 0:
-                if used[from_idx, t] == 0:
-                    V[from_idx, t] = complex(br_vt[i, t], 0)
-                    used[from_idx, t] = 1
+        if branch_status[i] != 0:
+            if used[from_idx] == 0:
+                V[from_idx] = complex(br_vt[i], 0)
+                used[from_idx] = 1
 
     return V
 
@@ -165,40 +177,30 @@ def get_devices_per_areas(Cdev, buses_in_a1, buses_in_a2):
     return gens_in_a1, gens_in_a2, gens_out
 
 
-class SnapshotData:
+class NumericalCircuit:
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, ntime=1):
+    def __init__(self, nbus, nbr,  nhvdc, nload, ngen, nbatt, nshunt,  sbase, t_idx=0):
         """
-
-        :param nbus:
-        :param nline:
-        :param ndcline:
-        :param ntr:
-        :param nvsc:
-        :param nhvdc:
-        :param nload:
-        :param ngen:
-        :param nbatt:
-        :param nshunt:
-        :param nstagen:
-        :param sbase:
+        Numerical circuit
+        :param nbus: Number of calculation buses
+        :param nbr: Number of calculation branches
+        :param nhvdc: Number of calculation hvdc devices
+        :param nload:  Number of calculation load devices
+        :param ngen:  Number of calculation generator devices
+        :param nbatt:  Number of calculation battery devices
+        :param nshunt:  Number of calculation shunt devices
+        :param sbase:  Base power (MVA)
+        :param t_idx:  Time index
         """
-
         self.nbus = nbus
-        self.nline = nline
-        self.ndcline = ndcline
-        self.ntr = ntr
-        self.nvsc = nvsc
-        self.nupfc = nupfc
-        self.nhvdc = nhvdc
+        self.nbr = nbr
+        self.t_idx = t_idx
 
         self.nload = nload
         self.ngen = ngen
         self.nbatt = nbatt
         self.nshunt = nshunt
-        self.nstagen = nstagen
-        self.ntime = ntime
-        self.nbr = nline + ntr + nvsc + ndcline
+        self.nhvdc = nhvdc
 
         self.Sbase = sbase
 
@@ -218,35 +220,14 @@ class SnapshotData:
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data = ds.BusData(nbus=nbus, ntime=ntime)
-        self.branch_data = ds.BranchData(nbr=self.nbr, nbus=nbus, ntime=ntime)
-        self.line_data = ds.LinesData(nline=nline, nbus=nbus, ntime=ntime)
-        self.dc_line_data = ds.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
-        self.transformer_data = ds.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
-        self.vsc_data = ds.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
-        self.upfc_data = ds.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
-        self.hvdc_data = ds.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
+        self.bus_data = ds.BusData(nbus=nbus)
+        self.branch_data = ds.BranchData(nelm=nbr, nbus=nbus)
+        self.hvdc_data = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
-        self.load_data = ds.LoadData(nload=nload, nbus=nbus, ntime=ntime)
-        self.static_generator_data = ds.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
-        self.battery_data = ds.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
-        self.generator_data = ds.GeneratorData(ngen=ngen, nbus=nbus, ntime=ntime)
-        self.shunt_data = ds.ShuntData(nshunt=nshunt, nbus=nbus, ntime=ntime)
-
-        self.original_bus_idx = np.arange(self.nbus)
-        self.original_branch_idx = np.arange(self.nbr)
-        self.original_line_idx = np.arange(self.nline)
-        self.original_tr_idx = np.arange(self.ntr)
-        self.original_dc_line_idx = np.arange(self.ndcline)
-        self.original_vsc_idx = np.arange(self.nvsc)
-        self.original_upfc_idx = np.arange(self.nupfc)
-        self.original_hvdc_idx = np.arange(self.nhvdc)
-        self.original_gen_idx = np.arange(self.ngen)
-        self.original_bat_idx = np.arange(self.nbatt)
-        self.original_load_idx = np.arange(self.nload)
-        self.original_stagen_idx = np.arange(self.nstagen)
-        self.original_shunt_idx = np.arange(self.nshunt)
-        self.original_time_idx = np.arange(self.ntime)
+        self.load_data = ds.LoadData(nelm=nload, nbus=nbus)
+        self.battery_data = ds.BatteryData(nelm=nbatt, nbus=nbus)
+        self.generator_data = ds.GeneratorData(nelm=ngen, nbus=nbus)
+        self.shunt_data = ds.ShuntData(nelm=nshunt, nbus=nbus)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
@@ -291,47 +272,44 @@ class SnapshotData:
         self.ac_ = None
         self.dc_ = None
 
-        self.available_structures = ['Vbus',
-                                     'Sbus',
-                                     'Ibus',
-                                     'Ybus',  'G', 'B',
-                                     'Yf',
-                                     'Yt',
-                                     'Bbus',
-                                     'Bf',
-                                     'Cf',
-                                     'Ct',
-                                     'Yshunt',
-                                     'Yseries',
-                                     "B'",
-                                     "B''",
-                                     'Types',
-                                     'Jacobian',
-                                     'Qmin',
-                                     'Qmax',
-                                     'pq',
-                                     'pv',
-                                     'vd',
-                                     'pqpv',
-                                     'tap_f',
-                                     'tap_t',
-                                     'original_bus_idx',
-                                     'original_branch_idx',
-                                     'original_line_idx',
-                                     'original_tr_idx',
-                                     'original_gen_idx',
-                                     'original_bat_idx',
-                                     'iPfsh',
-                                     'iQfma',
-                                     'iBeqz',
-                                     'iBeqv',
-                                     'iVtma',
-                                     'iQtma',
-                                     'iPfdp',
-                                     'iVscL',
-                                     'VfBeqbus',
-                                     'Vtmabus'
-                                     ]
+        self.available_structures = [
+            'Vbus',
+            'Sbus',
+            'Ibus',
+            'Ybus',  
+            'G',
+            'B',
+            'Yf',
+            'Yt',
+            'Bbus',
+            'Bf',
+            'Cf',
+            'Ct',
+            'Yshunt',
+            'Yseries',
+            "B'",
+            "B''",
+            'Types',
+            'Jacobian',
+            'Qmin',
+            'Qmax',
+            'pq',
+            'pv',
+            'vd',
+            'pqpv',
+            'tap_f',
+            'tap_t',
+            'iPfsh',
+            'iQfma',
+            'iBeqz',
+            'iBeqv',
+            'iVtma',
+            'iQtma',
+            'iPfdp',
+            'iVscL',
+            'VfBeqbus',
+            'Vtmabus'
+            ]
 
     def get_injections(self, normalize=True):
         """
@@ -341,9 +319,6 @@ class SnapshotData:
 
         # load
         Sbus = self.load_data.get_injections_per_bus()  # MW (negative already)
-
-        # static generators
-        Sbus += self.static_generator_data.get_injections_per_bus()
 
         # generators
         Sbus += self.generator_data.get_injections_per_bus()
@@ -365,92 +340,66 @@ class SnapshotData:
         """
 
         self.nbus = len(self.bus_data)
-        self.nline = len(self.line_data)
-        self.ndcline = len(self.dc_line_data)
-        self.ntr = len(self.transformer_data)
-        self.nvsc = len(self.vsc_data)
+        self.nbr = len(self.branch_data)
         self.nhvdc = len(self.hvdc_data)
         self.nload = len(self.load_data)
         self.ngen = len(self.generator_data)
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
-        self.nstagen = len(self.static_generator_data)
-        self.nupfc = len(self.upfc_data)
-        self.nbr = len(self.branch_data)
-
-        self.original_bus_idx = np.arange(self.nbus)
-        self.original_branch_idx = np.arange(self.nbr)
-        self.original_line_idx = np.arange(self.nline)
-        self.original_tr_idx = np.arange(self.ntr)
-        self.original_dc_line_idx = np.arange(self.ndcline)
-        self.original_vsc_idx = np.arange(self.nvsc)
-        self.original_hvdc_idx = np.arange(self.nhvdc)
-        self.original_gen_idx = np.arange(self.ngen)
-        self.original_bat_idx = np.arange(self.nbatt)
-        self.original_load_idx = np.arange(self.nload)
-        self.original_stagen_idx = np.arange(self.nstagen)
-        self.original_shunt_idx = np.arange(self.nshunt)
 
         self.branch_data.C_branch_bus_f = self.branch_data.C_branch_bus_f.tocsc()
         self.branch_data.C_branch_bus_t = self.branch_data.C_branch_bus_t.tocsc()
 
-        self.line_data.C_line_bus = self.line_data.C_line_bus.tocsc()
-        self.dc_line_data.C_dc_line_bus = self.dc_line_data.C_dc_line_bus.tocsc()
-        self.transformer_data.C_tr_bus = self.transformer_data.C_tr_bus.tocsc()
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
-        self.vsc_data.C_vsc_bus = self.vsc_data.C_vsc_bus.tocsc()
-        self.upfc_data.C_elm_bus = self.upfc_data.C_elm_bus.tocsc()
-
-        self.load_data.C_bus_load = self.load_data.C_bus_load.tocsr()
+        self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
         self.battery_data.C_bus_batt = self.battery_data.C_bus_batt.tocsr()
-        self.generator_data.C_bus_gen = self.generator_data.C_bus_gen.tocsr()
-        self.shunt_data.C_bus_shunt = self.shunt_data.C_bus_shunt.tocsr()
-        self.static_generator_data.C_bus_static_generator = self.static_generator_data.C_bus_static_generator.tocsr()
+        self.generator_data.C_bus_elm = self.generator_data.C_bus_elm.tocsr()
+        self.shunt_data.C_bus_elm = self.shunt_data.C_bus_elm.tocsr()
 
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
 
         if not use_stored_guess:
-            self.bus_data.Vbus = compose_generator_voltage_profile(nbus=self.nbus,
-                                                                   ntime=self.ntime,
-                                                                   gen_bus_indices=self.generator_data.get_bus_indices(),
-                                                                   gen_vset=self.generator_data.v,
-                                                                   gen_status=self.generator_data.active,
-                                                                   gen_is_controlled=self.generator_data.controllable,
-                                                                   bat_bus_indices=self.battery_data.get_bus_indices(),
-                                                                   bat_vset=self.battery_data.v,
-                                                                   bat_status=self.battery_data.active,
-                                                                   bat_is_controlled=self.battery_data.controllable,
-                                                                   hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
-                                                                   hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
-                                                                   hvdc_status=self.hvdc_data.active,
-                                                                   hvdc_vf=self.hvdc_data.Vset_f,
-                                                                   hvdc_vt=self.hvdc_data.Vset_t,
-                                                                   iBeqv=np.array(self.iBeqv, dtype=int),
-                                                                   iVtma=np.array(self.iVtma, dtype=int),
-                                                                   VfBeqbus=np.array(self.VfBeqbus, dtype=int),
-                                                                   Vtmabus=np.array(self.Vtmabus, dtype=int),
-                                                                   branch_status=self.branch_data.active,
-                                                                   br_vf=self.branch_data.vf_set,
-                                                                   br_vt=self.branch_data.vt_set)
+            self.bus_data.Vbus = compose_generator_voltage_profile(
+                nbus=self.nbus,
+                gen_bus_indices=self.generator_data.get_bus_indices(),
+                gen_vset=self.generator_data.v,
+                gen_status=self.generator_data.active,
+                gen_is_controlled=self.generator_data.controllable,
+                bat_bus_indices=self.battery_data.get_bus_indices(),
+                bat_vset=self.battery_data.v,
+                bat_status=self.battery_data.active,
+                bat_is_controlled=self.battery_data.controllable,
+                hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
+                hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
+                hvdc_status=self.hvdc_data.active,
+                hvdc_vf=self.hvdc_data.Vset_f,
+                hvdc_vt=self.hvdc_data.Vset_t,
+                iBeqv=np.array(self.iBeqv, dtype=int),
+                iVtma=np.array(self.iVtma, dtype=int),
+                VfBeqbus=np.array(self.VfBeqbus, dtype=int),
+                Vtmabus=np.array(self.Vtmabus, dtype=int),
+                branch_status=self.branch_data.active,
+                br_vf=self.branch_data.vf_set,
+                br_vt=self.branch_data.vt_set
+            )
 
         self.determine_control_indices()
 
-    def re_calc_admittance_matrices(self, tap_module, t=0, idx=None):
+    def re_calc_admittance_matrices(self, tap_module, idx=None):
         """
         Fast admittance recombination
         :param tap_module: transformer taps (if idx is provided, must have the same length as idx,
                            otherwise the length must be the number of branches)
-        :param t: time index, 0 by default
         :param idx: Indices of the branches where the tap belongs,
                     if None assumes that the tap sizes is equal to the number of branches
         :return:
         """
         if idx is None:
-            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.m[:, t], tap_module)
+            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.tap_module, tap_module)
         else:
-            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.m[np.ix_(idx, t)], tap_module)
+            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.tap_module[idx], tap_module)
 
         self.Admittances.Ybus = Ybus_
         self.Admittances.Yf = Yf_
@@ -643,24 +592,8 @@ class SnapshotData:
         self.iPfdp_va = np.array(self.iPfdp_va, dtype=int)
         self.iVscL = np.array(self.iVscL, dtype=int)
 
-    def get_branch_df(self, t=0):
-        return self.branch_data.to_df(t)
-
-    @property
-    def line_idx(self):
-        return slice(0, self.nline, 1)
-
-    @property
-    def transformer_idx(self):
-        return slice(self.nline, self.nline + self.ntr, 1)
-
-    @property
-    def vsc_idx(self):
-        return slice(self.nline + self.ntr, self.nline + self.ntr + self.nvsc, 1)
-
-    @property
-    def dc_line_idx(self):
-        return slice(self.nline + self.ntr + self.nvsc, self.nline + self.ntr + self.nvsc + self.ndcline, 1)
+    def get_branch_df(self):
+        return self.branch_data.to_df()
 
     @property
     def Vbus(self):
@@ -668,7 +601,7 @@ class SnapshotData:
         if self.Vbus_ is None:
             self.Vbus_ = self.bus_data.Vbus
 
-        return self.Vbus_[:, 0]
+        return self.Vbus_
 
     @property
     def Sbus(self):
@@ -680,7 +613,7 @@ class SnapshotData:
         if self.Sbus_ is None:
             self.Sbus_ = self.get_injections(normalize=True)
 
-        return self.Sbus_[:, 0]
+        return self.Sbus_
 
     @property
     def Ibus(self):
@@ -688,7 +621,7 @@ class SnapshotData:
         if self.Ibus_ is None:
             self.Ibus_ = self.load_data.get_current_injections_per_bus() / self.Sbase
 
-        return self.Ibus_[:, 0]
+        return self.Ibus_
 
     @property
     def YLoadBus(self):
@@ -696,15 +629,15 @@ class SnapshotData:
         if self.YloadBus_ is None:
             self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
-        return self.YloadBus_[:, 0]
+        return self.YloadBus_
 
     @property
     def Rates(self):
-        return self.branch_data.rates[:, 0]
+        return self.branch_data.rates
 
     @property
     def ContingencyRates(self):
-        return self.branch_data.contingency_rates[:, 0]
+        return self.branch_data.contingency_rates
 
     @property
     def Qmax_bus(self):
@@ -765,11 +698,11 @@ class SnapshotData:
 
     @property
     def rates(self):
-        return self.branch_data.rates[:, 0]
+        return self.branch_data.rates
 
     @property
     def contingency_rates(self):
-        return self.branch_data.contingency_rates[:, 0]
+        return self.branch_data.contingency_rates
 
     @property
     def load_names(self):
@@ -783,45 +716,10 @@ class SnapshotData:
     def battery_names(self):
         return self.battery_data.names
 
-    @property
-    def tr_names(self):
-        return self.transformer_data.names
 
     @property
     def hvdc_names(self):
         return self.hvdc_data.names
-
-    @property
-    def tr_tap_position(self):
-        return self.transformer_data.tap_position
-
-    @property
-    def tr_tap_mod(self):
-        return self.transformer_data.tap_mod
-
-    @property
-    def tr_bus_to_regulated_idx(self):
-        return self.transformer_data.bus_to_regulated_idx
-
-    @property
-    def tr_max_tap(self):
-        return self.transformer_data.max_tap
-
-    @property
-    def tr_min_tap(self):
-        return self.transformer_data.min_tap
-
-    @property
-    def tr_tap_inc_reg_up(self):
-        return self.transformer_data.tap_inc_reg_up
-
-    @property
-    def tr_tap_inc_reg_down(self):
-        return self.transformer_data.tap_inc_reg_down
-
-    @property
-    def tr_vset(self):
-        return self.transformer_data.vset
 
     @property
     def F(self):
@@ -833,7 +731,7 @@ class SnapshotData:
 
     @property
     def branch_rates(self):
-        return self.branch_data.rates[:, 0]
+        return self.branch_data.rates
 
 
     @property
@@ -866,9 +764,10 @@ class SnapshotData:
         """
         # compute on demand and store
         if self.Cf_ is None:
-            self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.active[:, 0],
-                                                            Cf_=self.branch_data.C_branch_bus_f,
-                                                            Ct_=self.branch_data.C_branch_bus_t)
+            self.Cf_, self.Ct_ = ycalc.compute_connectivity(
+                branch_active=self.branch_data.active,
+                Cf_=self.branch_data.C_branch_bus_f,
+                Ct_=self.branch_data.C_branch_bus_t)
 
         if not isinstance(self.Cf_, sp.csc_matrix):
             self.Cf_ = self.Cf_.tocsc()
@@ -883,9 +782,10 @@ class SnapshotData:
         """
         # compute on demand and store
         if self.Ct_ is None:
-            self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.active[:, 0],
-                                                            Cf_=self.branch_data.C_branch_bus_f,
-                                                            Ct_=self.branch_data.C_branch_bus_t)
+            self.Cf_, self.Ct_ = ycalc.compute_connectivity(
+                branch_active=self.branch_data.active,
+                Cf_=self.branch_data.C_branch_bus_f,
+                Ct_=self.branch_data.C_branch_bus_t)
 
         if not isinstance(self.Ct_, sp.csc_matrix):
             self.Ct_ = self.Ct_.tocsc()
@@ -914,24 +814,26 @@ class SnapshotData:
         # compute admittances on demand
         if self.Admittances is None:
 
-            self.Admittances = ycalc.compute_admittances(R=self.branch_data.R,
-                                                         X=self.branch_data.X,
-                                                         G=self.branch_data.G,
-                                                         B=self.branch_data.B,
-                                                         k=self.branch_data.k,
-                                                         tap_module=self.branch_data.m[:, 0],
-                                                         vtap_f=self.branch_data.tap_f,
-                                                         vtap_t=self.branch_data.tap_t,
-                                                         tap_angle=self.branch_data.theta[:, 0],
-                                                         Beq=self.branch_data.Beq[:, 0],
-                                                         Cf=self.Cf,
-                                                         Ct=self.Ct,
-                                                         G0sw=self.branch_data.G0sw[:, 0],
-                                                         If=np.zeros(len(self.branch_data)),
-                                                         a=self.branch_data.a,
-                                                         b=self.branch_data.b,
-                                                         c=self.branch_data.c,
-                                                         Yshunt_bus=self.Yshunt_from_devices[:, 0])
+            self.Admittances = ycalc.compute_admittances(
+                R=self.branch_data.R,
+                X=self.branch_data.X,
+                G=self.branch_data.G,
+                B=self.branch_data.B,
+                k=self.branch_data.k,
+                tap_module=self.branch_data.tap_module,
+                vtap_f=self.branch_data.virtual_tap_f,
+                vtap_t=self.branch_data.virtual_tap_t,
+                tap_angle=self.branch_data.tap_angle,
+                Beq=self.branch_data.Beq,
+                Cf=self.Cf,
+                Ct=self.Ct,
+                G0sw=self.branch_data.G0sw,
+                If=np.zeros(len(self.branch_data)),
+                a=self.branch_data.a,
+                b=self.branch_data.b,
+                c=self.branch_data.c,
+                Yshunt_bus=self.Yshunt_from_devices
+            )
         return self.Admittances.Ybus
 
     @property
@@ -951,6 +853,7 @@ class SnapshotData:
         Admittance matrix of the "to" nodes with the branches
         :return: CSC matrix
         """
+        #todo: check this
         if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yt
 
@@ -965,24 +868,27 @@ class SnapshotData:
         # compute admittances on demand
         if self.Yseries_ is None:
 
-            self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(R=self.branch_data.R,
-                                                                          X=self.branch_data.X,
-                                                                          G=self.branch_data.G,
-                                                                          B=self.branch_data.B,
-                                                                          k=self.branch_data.k,
-                                                                          m=self.branch_data.m[:, 0],
-                                                                          mf=self.branch_data.tap_f,
-                                                                          mt=self.branch_data.tap_t,
-                                                                          theta=self.branch_data.theta[:, 0],
-                                                                          Beq=self.branch_data.Beq[:, 0],
-                                                                          Cf=self.Cf,
-                                                                          Ct=self.Ct,
-                                                                          G0=self.branch_data.G0sw[:, 0],
-                                                                          If=np.zeros(len(self.branch_data)),
-                                                                          a=self.branch_data.a,
-                                                                          b=self.branch_data.b,
-                                                                          c=self.branch_data.c,
-                                                                          Yshunt_bus=self.Yshunt_from_devices[:, 0])
+            self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(
+                R=self.branch_data.R,
+                X=self.branch_data.X,
+                G=self.branch_data.G,
+                B=self.branch_data.B,
+                k=self.branch_data.k,
+                m=self.branch_data.tap_module,
+                mf=self.branch_data.virtual_tap_f,
+                mt=self.branch_data.virtual_tap_t,
+                theta=self.branch_data.tap_angle,
+                Beq=self.branch_data.Beq,
+                Cf=self.Cf,
+                Ct=self.Ct,
+                G0=self.branch_data.G0sw,
+                If=np.zeros(len(self.branch_data)),
+                a=self.branch_data.a,
+                b=self.branch_data.b,
+                c=self.branch_data.c,
+                Yshunt_bus=self.Yshunt_from_devices,
+            )
+
         return self.Yseries_
 
     @property
@@ -991,6 +897,7 @@ class SnapshotData:
         Array of shunt admittances of the pi model of the branches (used in HELM mostly)
         :return: Array of complex values
         """
+        #todo: check this
         if self.Yshunt_ is None:
             x = self.Yseries  # call the constructor of Yshunt
 
@@ -998,7 +905,7 @@ class SnapshotData:
 
     # @property
     # def YshuntHelm(self):
-    #     return self.Yshunt_from_devices[:, 0]
+    #     return self.Yshunt_from_devices
 
     @property
     def B1(self):
@@ -1008,13 +915,16 @@ class SnapshotData:
         """
         if self.B1_ is None:
 
-            self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(X=self.branch_data.X,
-                                                                          B=self.branch_data.B,
-                                                                          m=self.branch_data.m[:, 0],
-                                                                          mf=self.branch_data.vf_set[:, 0],
-                                                                          mt=self.branch_data.vt_set[:, 0],
-                                                                          Cf=self.Cf,
-                                                                          Ct=self.Ct)
+            self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(
+                X=self.branch_data.X,
+                B=self.branch_data.B,
+                m=self.branch_data.tap_module,
+                mf=self.branch_data.vf_set,
+                mt=self.branch_data.vt_set,
+                Cf=self.Cf,
+                Ct=self.Ct,
+            )
+
         return self.B1_
 
     @property
@@ -1023,6 +933,7 @@ class SnapshotData:
         B'' matrix of the fast decoupled method
         :return:
         """
+        #todo: check this
         if self.B2_ is None:
             x = self.B1  # call the constructor of B2
 
@@ -1035,15 +946,18 @@ class SnapshotData:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(nbr=self.nbr,
-                                                                                  X=self.branch_data.X,
-                                                                                  R=self.branch_data.R,
-                                                                                  m=self.branch_data.m[:, 0],
-                                                                                  active=self.branch_data.active[:, 0],
-                                                                                  Cf=self.Cf,
-                                                                                  Ct=self.Ct,
-                                                                                  ac=self.ac_indices,
-                                                                                  dc=self.dc_indices)
+            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(
+                nbr=self.nbr,
+                X=self.branch_data.X,
+                R=self.branch_data.R,
+                m=self.branch_data.tap_module,
+                active=self.branch_data.active,
+                Cf=self.Cf,
+                Ct=self.Ct,
+                ac=self.ac_indices,
+                dc=self.dc_indices
+            )
+
             self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)].tocsc()
             self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)].tocsc()
 
@@ -1055,6 +969,7 @@ class SnapshotData:
         Susceptance matrix of the "from" nodes to the branches
         :return:
         """
+        #todo: check this
         if self.Bf_ is None:
             x = self.Bbus  # call the constructor of Bf
 
@@ -1063,6 +978,7 @@ class SnapshotData:
     @property
     def Btheta(self):
 
+        #todo: check this
         if self.Bf_ is None:
             x = self.Bbus  # call the constructor of Bf
 
@@ -1071,6 +987,7 @@ class SnapshotData:
     @property
     def Bpqpv(self):
 
+        #todo: check this
         if self.Bpqpv_ is None:
             x = self.Bbus  # call the constructor of Bpqpv
 
@@ -1079,6 +996,7 @@ class SnapshotData:
     @property
     def Bref(self):
 
+        #todo: check this
         if self.Bref_ is None:
             x = self.Bbus  # call the constructor of Bref
 
@@ -1096,6 +1014,7 @@ class SnapshotData:
     @property
     def pq(self):
 
+        #todo: check this
         if self.pq_ is None:
             x = self.vd  # call the constructor
 
@@ -1104,6 +1023,7 @@ class SnapshotData:
     @property
     def pv(self):
 
+        #todo: check this
         if self.pv_ is None:
             x = self.vd  # call the constructor
 
@@ -1112,6 +1032,7 @@ class SnapshotData:
     @property
     def pqpv(self):
 
+        #todo: check this
         if self.pqpv_ is None:
             x = self.vd  # call the constructor
 
@@ -1152,7 +1073,10 @@ class SnapshotData:
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
     def compute_susceptance_limits(self):
-
+        """
+        Compute susceptance limits
+        :return:
+        """
         Bmin = self.shunt_data.get_b_min_per_bus() / self.Sbase
         Bmax = self.shunt_data.get_b_max_per_bus() / self.Sbase
 
@@ -1186,10 +1110,10 @@ class SnapshotData:
         :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out)
                  each of the lists contains (bus index, generator index) tuples
         """
-        if isinstance(self.generator_data.C_bus_gen, sp.csc_matrix):
-            Cgen = self.generator_data.C_bus_gen
+        if isinstance(self.generator_data.C_bus_elm, sp.csc_matrix):
+            Cgen = self.generator_data.C_bus_elm
         else:
-            Cgen = self.generator_data.C_bus_gen.tocsc()
+            Cgen = self.generator_data.C_bus_elm.tocsc()
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
@@ -1223,132 +1147,179 @@ class SnapshotData:
         """
 
         if structure_type == 'Vbus':
-
-            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Vbus,
+                columns=['Voltage (p.u.)'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Sbus':
-            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Sbus,
+                columns=['Power (p.u.)'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Ibus':
-            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Ibus,
+                columns=['Current (p.u.)'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'tap_f':
-            df = pd.DataFrame(data=self.branch_data.tap_f,
-                              columns=['Virtual tap from (p.u.)'],
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.branch_data.virtual_tap_f,
+                columns=['Virtual tap from (p.u.)'],
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'tap_t':
-            df = pd.DataFrame(data=self.branch_data.tap_t,
-                              columns=['Virtual tap to (p.u.)'],
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.branch_data.virtual_tap_t,
+                columns=['Virtual tap to (p.u.)'],
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Ybus':
-            df = pd.DataFrame(data=self.Ybus.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Ybus.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'G':
-            df = pd.DataFrame(data=self.Ybus.real.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Ybus.real.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'B':
-            df = pd.DataFrame(data=self.Ybus.imag.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Ybus.imag.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Yf':
-            df = pd.DataFrame(data=self.Yf.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.Yf.toarray(),
+                columns=self.bus_data.names,
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Yt':
-            df = pd.DataFrame(data=self.Yt.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.Yt.toarray(),
+                columns=self.bus_data.names,
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Bbus':
-            df = pd.DataFrame(data=self.Bbus.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Bbus.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Bf':
-            df = pd.DataFrame(data=self.Bf.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.Bf.toarray(),
+                columns=self.bus_data.names,
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Cf':
-            df = pd.DataFrame(data=self.Cf.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.Cf.toarray(),
+                columns=self.bus_data.names,
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Ct':
-            df = pd.DataFrame(data=self.Ct.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.branch_data.names)
+            df = pd.DataFrame(
+                data=self.Ct.toarray(),
+                columns=self.bus_data.names,
+                index=self.branch_data.names,
+            )
 
         elif structure_type == 'Yshunt':
-            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Yshunt,
+                columns=['Shunt admittance (p.u.)'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Yseries':
-            df = pd.DataFrame(data=self.Yseries.toarray(),
-                              columns=self.bus_data.names,
-                              index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Yseries.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == "B'":
-            df = pd.DataFrame(data=self.B1.toarray(), columns=self.bus_data.names, index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.B1.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == "B''":
-            df = pd.DataFrame(data=self.B2.toarray(), columns=self.bus_data.names, index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.B2.toarray(),
+                columns=self.bus_data.names,
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Types':
-            df = pd.DataFrame(data=self.bus_types, columns=['Bus types'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.bus_types,
+                columns=['Bus types'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Qmin':
-            df = pd.DataFrame(data=self.Qmin_bus, columns=['Qmin'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Qmin_bus,
+                columns=['Qmin'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'Qmax':
-            df = pd.DataFrame(data=self.Qmax_bus, columns=['Qmax'], index=self.bus_data.names)
+            df = pd.DataFrame(
+                data=self.Qmax_bus,
+                columns=['Qmax'],
+                index=self.bus_data.names,
+            )
 
         elif structure_type == 'pq':
-            df = pd.DataFrame(data=self.pq, columns=['pq'], index=self.bus_data.names[self.pq])
+            df = pd.DataFrame(
+                data=self.pq,
+                columns=['pq'],
+                index=self.bus_data.names[self.pq],
+            )
 
         elif structure_type == 'pv':
-            df = pd.DataFrame(data=self.pv, columns=['pv'], index=self.bus_data.names[self.pv])
+            df = pd.DataFrame(
+                data=self.pv,
+                columns=['pv'],
+                index=self.bus_data.names[self.pv],
+            )
 
         elif structure_type == 'vd':
-            df = pd.DataFrame(data=self.vd, columns=['vd'], index=self.bus_data.names[self.vd])
+            df = pd.DataFrame(
+                data=self.vd,
+                columns=['vd'],
+                index=self.bus_data.names[self.vd],
+            )
 
         elif structure_type == 'pqpv':
-            df = pd.DataFrame(data=self.pqpv, columns=['pqpv'], index=self.bus_data.names[self.pqpv])
-
-        elif structure_type == 'original_bus_idx':
-            df = pd.DataFrame(data=self.original_bus_idx, columns=['original_bus_idx'], index=self.bus_data.names)
-
-        elif structure_type == 'original_branch_idx':
-            df = pd.DataFrame(data=self.original_branch_idx,
-                              columns=['original_branch_idx'],
-                              index=self.branch_data.names)
-
-        elif structure_type == 'original_line_idx':
-            df = pd.DataFrame(data=self.original_line_idx,
-                              columns=['original_line_idx'],
-                              index=self.line_data.names)
-
-        elif structure_type == 'original_tr_idx':
-            df = pd.DataFrame(data=self.original_tr_idx,
-                              columns=['original_tr_idx'],
-                              index=self.transformer_data.names)
-
-        elif structure_type == 'original_gen_idx':
-            df = pd.DataFrame(data=self.original_gen_idx,
-                              columns=['original_gen_idx'],
-                              index=self.generator_data.names)
-
-        elif structure_type == 'original_bat_idx':
-            df = pd.DataFrame(data=self.original_bat_idx,
-                              columns=['original_bat_idx'],
-                              index=self.battery_data.names)
+            df = pd.DataFrame(
+                data=self.pqpv,
+                columns=['pqpv'],
+                index=self.bus_data.names[self.pqpv],
+            )
 
         elif structure_type == 'Jacobian':
 
@@ -1376,143 +1347,181 @@ class SnapshotData:
 
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
-            Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(Cf=self.Cf, Ct=self.Ct,
-                                                     C_bus_shunt=self.shunt_data.C_bus_shunt,
-                                                     shunt_admittance=self.shunt_data.admittance[:, 0],
-                                                     shunt_active=self.shunt_data.active[:, 0],
-                                                     ys=Ys,
-                                                     B=self.branch_data.B,
-                                                     Sbase=self.Sbase,
-                                                     m=self.branch_data.m[:, 0],
-                                                     theta=self.branch_data.theta[:, 0],
-                                                     Beq=self.branch_data.Beq[:, 0],
-                                                     Gsw=self.branch_data.G0sw[:, 0],
-                                                     mf=self.branch_data.tap_f,
-                                                     mt=self.branch_data.tap_t)
+            Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(
+                Cf=self.Cf,
+                Ct=self.Ct,
+                C_bus_shunt=self.shunt_data.C_bus_elm,
+                shunt_admittance=self.shunt_data.admittance,
+                shunt_active=self.shunt_data.active,
+                ys=Ys,
+                B=self.branch_data.B,
+                Sbase=self.Sbase,
+                tap_module=self.branch_data.tap_module,
+                tap_angle=self.branch_data.tap_angle,
+                Beq=self.branch_data.Beq,
+                Gsw=self.branch_data.G0sw,
+                virtual_tap_from=self.branch_data.virtual_tap_f,
+                virtual_tap_to=self.branch_data.virtual_tap_t,
+            )
 
-            J = fubm_jacobian(self.nbus, self.nbr, self.iPfsh, self.iPfdp,
-                              self.iQfma, self.iQtma, self.iVtma, self.iBeqz, self.iBeqv,
-                              self.VfBeqbus, self.Vtmabus,
-                              self.F, self.T, Ys,
-                              self.branch_data.k, tap, self.branch_data.m[:, 0], self.branch_data.B,
-                              self.branch_data.Beq[:, 0], self.branch_data.Kdp,
-                              self.Vbus, Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), self.Cf.tocsc(), self.Ct.tocsc(),
-                              pvpq, self.pq)
+            J = fubm_jacobian(
+                nb=self.nbus,
+                nl=self.nbr,
+                iPfsh=self.iPfsh,
+                iPfdp=self.iPfdp,
+                iQfma=self.iQfma,
+                iQtma=self.iQtma,
+                iVtma=self.iVtma,
+                iBeqz=self.iBeqz,
+                iBeqv=self.iBeqv,
+                VfBeqbus=self.VfBeqbus,
+                Vtmabus=self.Vtmabus,
+                F=self.F,
+                T=self.T,
+                Ys=Ys,
+                k2=self.branch_data.k,
+                tap=tap,
+                ma=self.branch_data.tap_module,
+                Bc=self.branch_data.B,
+                Beq=self.branch_data.Beq,
+                Kdp=self.branch_data.Kdp,
+                V=self.Vbus,
+                Ybus=Ybus.tocsc(),
+                Yf=Yf.tocsc(),
+                Yt=Yt.tocsc(),
+                Cf=self.Cf.tocsc(),
+                Ct=self.Ct.tocsc(),
+                pvpq=pvpq,
+                pq=self.pq,
+            )
 
-            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
-
+            df = pd.DataFrame(
+                data=J.toarray(),
+                columns=cols,
+                index=rows,
+            )
 
         elif structure_type == 'iPfsh':
-            df = pd.DataFrame(data=self.iPfsh, columns=['iPfsh'], index=self.branch_data.names[self.iPfsh])
+            df = pd.DataFrame(
+                data=self.iPfsh,
+                columns=['iPfsh'],
+                index=self.branch_data.names[self.iPfsh],
+            )
 
         elif structure_type == 'iQfma':
-            df = pd.DataFrame(data=self.iQfma, columns=['iQfma'], index=self.branch_data.names[self.iQfma])
+            df = pd.DataFrame(
+                data=self.iQfma,
+                columns=['iQfma'],
+                index=self.branch_data.names[self.iQfma],
+            )
 
         elif structure_type == 'iBeqz':
-            df = pd.DataFrame(data=self.iBeqz, columns=['iBeqz'], index=self.branch_data.names[self.iBeqz])
+            df = pd.DataFrame(
+                data=self.iBeqz,
+                columns=['iBeqz'],
+                index=self.branch_data.names[self.iBeqz],
+            )
 
         elif structure_type == 'iBeqv':
-            df = pd.DataFrame(data=self.iBeqv, columns=['iBeqv'], index=self.branch_data.names[self.iBeqv])
+            df = pd.DataFrame(
+                data=self.iBeqv,
+                columns=['iBeqv'],
+                index=self.branch_data.names[self.iBeqv],
+            )
 
         elif structure_type == 'iVtma':
-            df = pd.DataFrame(data=self.iVtma, columns=['iVtma'], index=self.branch_data.names[self.iVtma])
+            df = pd.DataFrame(
+                data=self.iVtma,
+                columns=['iVtma'],
+                index=self.branch_data.names[self.iVtma],
+            )
 
         elif structure_type == 'iQtma':
-            df = pd.DataFrame(data=self.iQtma, columns=['iQtma'], index=self.branch_data.names[self.iQtma])
+            df = pd.DataFrame(
+                data=self.iQtma,
+                columns=['iQtma'],
+                index=self.branch_data.names[self.iQtma],
+            )
 
         elif structure_type == 'iPfdp':
-            df = pd.DataFrame(data=self.iPfdp, columns=['iPfdp'], index=self.branch_data.names[self.iPfdp])
+            df = pd.DataFrame(
+                data=self.iPfdp,
+                columns=['iPfdp'],
+                index=self.branch_data.names[self.iPfdp],
+            )
 
         elif structure_type == 'iVscL':
-            df = pd.DataFrame(data=self.iVscL, columns=['iVscL'], index=self.branch_data.names[self.iVscL])
+            df = pd.DataFrame(
+                data=self.iVscL,
+                columns=['iVscL'],
+                index=self.branch_data.names[self.iVscL],
+            )
 
         elif structure_type == 'VfBeqbus':
-            df = pd.DataFrame(data=self.VfBeqbus, columns=['VfBeqbus'], index=self.bus_data.names[self.VfBeqbus])
+            df = pd.DataFrame(
+                data=self.VfBeqbus,
+                columns=['VfBeqbus'],
+                index=self.bus_data.names[self.VfBeqbus],
+            )
 
         elif structure_type == 'Vtmabus':
-            df = pd.DataFrame(data=self.Vtmabus, columns=['Vtmabus'], index=self.bus_data.names[self.Vtmabus])
+            df = pd.DataFrame(
+                data=self.Vtmabus,
+                columns=['Vtmabus'],
+                index=self.bus_data.names[self.Vtmabus],
+            )
         else:
-
             raise Exception('PF input: structure type not found' +  str(structure_type))
 
         return df
 
-    def get_island(self, bus_idx, time_idx=None) -> "SnapshotData":
+    def get_island(self, bus_idx) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :param time_idx: array of time indices (or None for all time indices)
         :return: SnapshotData
         """
 
         # if the island is the same as the original bus indices, no slicing is needed
-        if len(bus_idx) == len(self.original_bus_idx):
-            if np.all(bus_idx == self.original_bus_idx):
+        if len(bus_idx) == len(self.bus_data.original_idx):
+            if np.all(bus_idx == self.bus_data.original_idx):
                 return self
 
         # find the indices of the devices of the island
-        line_idx = self.line_data.get_island(bus_idx)
-        dc_line_idx = self.dc_line_data.get_island(bus_idx)
-        tr_idx = self.transformer_data.get_island(bus_idx)
-        vsc_idx = self.vsc_data.get_island(bus_idx)
-        upfc_idx = self.upfc_data.get_island(bus_idx)
-        hvdc_idx = self.hvdc_data.get_island(bus_idx)
         br_idx = self.branch_data.get_island(bus_idx)
+        hvdc_idx = self.hvdc_data.get_island(bus_idx)
 
         load_idx = self.load_data.get_island(bus_idx)
-        stagen_idx = self.static_generator_data.get_island(bus_idx)
         gen_idx = self.generator_data.get_island(bus_idx)
         batt_idx = self.battery_data.get_island(bus_idx)
         shunt_idx = self.shunt_data.get_island(bus_idx)
 
-        nc = SnapshotData(nbus=len(bus_idx),
-                          nline=len(line_idx),
-                          ndcline=len(dc_line_idx),
-                          ntr=len(tr_idx),
-                          nvsc=len(vsc_idx),
-                          nupfc=len(upfc_idx),
-                          nhvdc=len(hvdc_idx),
-                          nload=len(load_idx),
-                          ngen=len(gen_idx),
-                          nbatt=len(batt_idx),
-                          nshunt=len(shunt_idx),
-                          nstagen=len(stagen_idx),
-                          sbase=self.Sbase)
-
-        # set the original indices
-        nc.original_bus_idx = bus_idx
-        nc.original_branch_idx = br_idx
-        nc.original_line_idx = line_idx
-        nc.original_tr_idx = tr_idx
-        nc.original_dc_line_idx = dc_line_idx
-        nc.original_vsc_idx = vsc_idx
-        nc.original_upfc_idx = upfc_idx
-        nc.original_hvdc_idx = hvdc_idx
-        nc.original_gen_idx = gen_idx
-        nc.original_bat_idx = batt_idx
-        nc.original_load_idx = load_idx
-        nc.original_stagen_idx = stagen_idx
-        nc.original_shunt_idx = shunt_idx
+        nc = NumericalCircuit(
+            nbus=len(bus_idx),
+            nbr=len(br_idx),
+            nhvdc=len(hvdc_idx),
+            nload=len(load_idx),
+            ngen=len(gen_idx),
+            nbatt=len(batt_idx),
+            nshunt=len(shunt_idx),
+            sbase=self.Sbase,
+            t_idx=self.t_idx,
+        )
 
         # slice data
-        nc.bus_data = self.bus_data.slice(bus_idx, time_idx)
-        nc.branch_data = self.branch_data.slice(br_idx, bus_idx, time_idx)
-        nc.line_data = self.line_data.slice(line_idx, bus_idx, time_idx)
-        nc.transformer_data = self.transformer_data.slice(tr_idx, bus_idx, time_idx)
-        nc.hvdc_data = self.hvdc_data.slice(hvdc_idx, bus_idx, time_idx)
-        nc.vsc_data = self.vsc_data.slice(vsc_idx, bus_idx, time_idx)
-        nc.dc_line_data = self.dc_line_data.slice(dc_line_idx, bus_idx, time_idx)
-        nc.load_data = self.load_data.slice(load_idx, bus_idx, time_idx)
-        nc.static_generator_data = self.static_generator_data.slice(stagen_idx, bus_idx, time_idx)
-        nc.battery_data = self.battery_data.slice(batt_idx, bus_idx, time_idx)
-        nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, time_idx)
-        nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, time_idx)
+        nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
+        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
+        nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
+        nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
+        nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
+        nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)
+        nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
 
         nc.determine_control_indices()
 
         return nc
 
-    def split_into_islands(self, ignore_single_node_islands=False) -> List["SnapshotData"]:
+    def split_into_islands(self, ignore_single_node_islands=False) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
@@ -1520,24 +1529,26 @@ class SnapshotData:
         """
 
         # compute the adjacency matrix
-        A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
-                                    C_branch_bus_t=self.Ct,
-                                    branch_active=self.branch_data.active[:, 0],
-                                    bus_active=self.bus_data.active[:, 0])
+        A = tp.get_adjacency_matrix(
+            C_branch_bus_f=self.Cf,
+            C_branch_bus_t=self.Ct,
+            branch_active=self.branch_data.active,
+            bus_active=self.bus_data.active
+        )
 
         # find the matching islands
-        idx_islands = tp.find_islands(A, active=self.bus_data.active[:, 0])
+        idx_islands = tp.find_islands(
+            adj=A,
+            active=self.bus_data.active
+        )
 
-        circuit_islands = list()  # type: List[SnapshotData]
+        circuit_islands = list()  # type: List[NumericalCircuit]
 
         for bus_idx in idx_islands:
-
             if ignore_single_node_islands:
-
                 if len(bus_idx) > 1:
                     island = self.get_island(bus_idx)
                     circuit_islands.append(island)
-
             else:
                 island = self.get_island(bus_idx)
                 circuit_islands.append(island)
@@ -1545,10 +1556,12 @@ class SnapshotData:
         return circuit_islands
 
 
-def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
-                             branch_tolerance_mode=BranchImpedanceMode.Specified,
-                             opf_results=None,
-                             use_stored_guess=False) -> SnapshotData:
+def compile_numerical_circuit(
+        circuit: MultiCircuit,
+        apply_temperature=False,
+        branch_tolerance_mode=BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False) -> NumericalCircuit:
     """
 
     :param circuit:
@@ -1562,94 +1575,89 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     logger = Logger()
 
     # declare the numerical circuit
-    nc = SnapshotData(nbus=0,
-                      nline=0,
-                      ndcline=0,
-                      ntr=0,
-                      nvsc=0,
-                      nupfc=0,
-                      nhvdc=0,
-                      nload=0,
-                      ngen=0,
-                      nbatt=0,
-                      nshunt=0,
-                      nstagen=0,
-                      sbase=circuit.Sbase)
+    nc = NumericalCircuit(
+        nbus=0,
+        nbr=0,
+        nhvdc=0,
+        nload=0,
+        ngen=0,
+        nbatt=0,
+        nshunt=0,
+        sbase=circuit.Sbase,
+    )
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit, use_stored_guess=use_stored_guess)
+    nc.bus_data = gc_compiler.get_bus_data(
+        circuit=circuit,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.load_data = gc_compiler.get_load_data(circuit=circuit,
-                                             bus_dict=bus_dict,
-                                             opf_results=opf_results)
+    nc.load_data = gc_compiler.get_load_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        opf_results=opf_results,
+    )
 
-    nc.static_generator_data = gc_compiler.get_static_generator_data(circuit=circuit,
-                                                                     bus_dict=bus_dict)
+    nc.generator_data = gc_compiler.get_generator_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.generator_data = gc_compiler.get_generator_data(circuit=circuit,
-                                                       bus_dict=bus_dict,
-                                                       Vbus=nc.bus_data.Vbus,
-                                                       logger=logger,
-                                                       opf_results=opf_results,
-                                                       use_stored_guess=use_stored_guess)
+    nc.battery_data = gc_compiler.get_battery_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
-                                                   bus_dict=bus_dict,
-                                                   Vbus=nc.bus_data.Vbus,
-                                                   logger=logger,
-                                                   opf_results=opf_results,
-                                                   use_stored_guess=use_stored_guess)
+    nc.shunt_data = gc_compiler.get_shunt_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
-                                               bus_dict=bus_dict,
-                                               Vbus=nc.bus_data.Vbus,
-                                               logger=logger,
-                                               use_stored_guess=use_stored_guess)
+    nc.branch_data = gc_compiler.get_branch_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        apply_temperature=apply_temperature,
+        branch_tolerance_mode=branch_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.line_data = gc_compiler.get_line_data(circuit=circuit,
-                                             bus_dict=bus_dict,
-                                             apply_temperature=apply_temperature,
-                                             branch_tolerance_mode=branch_tolerance_mode)
+    nc.hvdc_data = gc_compiler.get_hvdc_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_types=nc.bus_data.bus_types,
+        opf_results=opf_results,
+    )
 
-    nc.transformer_data = gc_compiler.get_transformer_data(circuit=circuit,
-                                                           bus_dict=bus_dict)
-
-    nc.vsc_data = gc_compiler.get_vsc_data(circuit=circuit,
-                                           bus_dict=bus_dict)
-
-    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
-                                             bus_dict=bus_dict)
-
-    nc.dc_line_data = gc_compiler.get_dc_line_data(circuit=circuit,
-                                                   bus_dict=bus_dict,
-                                                   apply_temperature=apply_temperature,
-                                                   branch_tolerance_mode=branch_tolerance_mode)
-
-    nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
-                                                 bus_dict=bus_dict,
-                                                 Vbus=nc.bus_data.Vbus,
-                                                 apply_temperature=apply_temperature,
-                                                 branch_tolerance_mode=branch_tolerance_mode,
-                                                 opf_results=opf_results,
-                                                 use_stored_guess=use_stored_guess)
-
-    nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
-                                             bus_dict=bus_dict,
-                                             bus_types=nc.bus_data.bus_types,
-                                             opf_results=opf_results)
-
-    nc.consolidate_information(use_stored_guess=use_stored_guess)
+    nc.consolidate_information(
+        use_stored_guess=use_stored_guess,
+    )
 
     return nc
 
 
-def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=False,
-                                branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                opf_results=None,
-                                use_stored_guess=False,
-                                bus_dict=None,
-                                areas_dict=None) -> SnapshotData:
+def compile_numerical_circuit_at(
+        circuit: MultiCircuit,
+        t_idx,
+        apply_temperature=False,
+        branch_tolerance_mode=BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False,
+        bus_dict=None,
+        areas_dict=None) -> NumericalCircuit:
     """
 
     :param circuit:
@@ -1666,19 +1674,17 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=
     logger = Logger()
 
     # declare the numerical circuit
-    nc = SnapshotData(nbus=0,
-                      nline=0,
-                      ndcline=0,
-                      ntr=0,
-                      nvsc=0,
-                      nupfc=0,
-                      nhvdc=0,
-                      nload=0,
-                      ngen=0,
-                      nbatt=0,
-                      nshunt=0,
-                      nstagen=0,
-                      sbase=circuit.Sbase)
+    nc = NumericalCircuit(
+        nbus=0,
+        nbr=0,
+        nhvdc=0,
+        nload=0,
+        ngen=0,
+        nbatt=0,
+        nshunt=0,
+        sbase=circuit.Sbase,
+        t_idx=t_idx,
+    )
 
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
@@ -1686,97 +1692,79 @@ def compile_snapshot_circuit_at(circuit: MultiCircuit, t_idx, apply_temperature=
     if areas_dict is None:
         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
 
-    nc.bus_data = gc_compiler2.get_bus_data(circuit=circuit,
-                                            t_idx=t_idx,
-                                            time_series=True,
-                                            areas_dict=areas_dict,
-                                            use_stored_guess=use_stored_guess)
+    nc.bus_data = gc_compiler2.get_bus_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=True,
+        areas_dict=areas_dict,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.load_data = gc_compiler2.get_load_data(circuit=circuit,
-                                              bus_dict=bus_dict,
-                                              t_idx=t_idx,
-                                              time_series=True,
-                                              opf_results=opf_results)
+    nc.load_data = gc_compiler2.get_load_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        t_idx=t_idx,
+        time_series=True,
+        opf_results=opf_results,
+    )
 
-    nc.static_generator_data = gc_compiler2.get_static_generator_data(circuit=circuit,
-                                                                      bus_dict=bus_dict,
-                                                                      t_idx=t_idx,
-                                                                      time_series=True, )
+    nc.generator_data = gc_compiler2.get_generator_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        t_idx=t_idx,
+        time_series=True,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        bus_data=nc.bus_data,
-                                                        t_idx=t_idx,
-                                                        time_series=True,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        logger=logger,
-                                                        opf_results=opf_results,
-                                                        use_stored_guess=use_stored_guess)
+    nc.battery_data = gc_compiler2.get_battery_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        t_idx=t_idx,
+        time_series=True,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    bus_data=nc.bus_data,
-                                                    t_idx=t_idx,
-                                                    time_series=True,
-                                                    Vbus=nc.bus_data.Vbus,
-                                                    logger=logger,
-                                                    opf_results=opf_results,
-                                                    use_stored_guess=use_stored_guess)
+    nc.shunt_data = gc_compiler2.get_shunt_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        t_idx=t_idx,
+        time_series=True,
+        Vbus=nc.bus_data.Vbus,
+        logger=logger,
+        use_stored_guess=use_stored_guess,
+    )
 
-    nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
-                                                bus_dict=bus_dict,
-                                                t_idx=t_idx,
-                                                time_series=True,
-                                                Vbus=nc.bus_data.Vbus,
-                                                logger=logger,
-                                                use_stored_guess=use_stored_guess)
+    nc.branch_data = gc_compiler2.get_branch_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=True,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        apply_temperature=apply_temperature,
+        branch_tolerance_mode=branch_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+    )
 
-    # nc.line_data = gc_compiler2.get_line_data(circuit=circuit,
-    #                                           t_idx=t_idx,
-    #                                           time_series=True,
-    #                                           bus_dict=bus_dict,
-    #                                           apply_temperature=apply_temperature,
-    #                                           branch_tolerance_mode=branch_tolerance_mode)
-    #
-    # nc.transformer_data = gc_compiler2.get_transformer_data(circuit=circuit,
-    #                                                         t_idx=t_idx,
-    #                                                         time_series=True,
-    #                                                         bus_dict=bus_dict)
-    #
-    # nc.vsc_data = gc_compiler2.get_vsc_data(circuit=circuit,
-    #                                         t_idx=t_idx,
-    #                                         time_series=True,
-    #                                         bus_dict=bus_dict)
-    #
-    # nc.upfc_data = gc_compiler2.get_upfc_data(circuit=circuit,
-    #                                           t_idx=t_idx,
-    #                                           time_series=True,
-    #                                           bus_dict=bus_dict)
-    #
-    # nc.dc_line_data = gc_compiler2.get_dc_line_data(circuit=circuit,
-    #                                                 t_idx=t_idx,
-    #                                                 time_series=True,
-    #                                                 bus_dict=bus_dict,
-    #                                                 apply_temperature=apply_temperature,
-    #                                                 branch_tolerance_mode=branch_tolerance_mode)
+    nc.hvdc_data = gc_compiler2.get_hvdc_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=True,
+        bus_dict=bus_dict,
+        bus_types=nc.bus_data.bus_types,
+        opf_results=opf_results
+    )
 
-    nc.branch_data = gc_compiler2.get_branch_data(circuit=circuit,
-                                                  t_idx=t_idx,
-                                                  time_series=True,
-                                                  bus_dict=bus_dict,
-                                                  Vbus=nc.bus_data.Vbus,
-                                                  apply_temperature=apply_temperature,
-                                                  branch_tolerance_mode=branch_tolerance_mode,
-                                                  opf_results=opf_results,
-                                                  use_stored_guess=use_stored_guess)
-
-    nc.hvdc_data = gc_compiler2.get_hvdc_data(circuit=circuit,
-                                              t_idx=t_idx,
-                                              time_series=True,
-                                              bus_dict=bus_dict,
-                                              bus_types=nc.bus_data.bus_types,
-                                              opf_results=opf_results)
-
-    nc.consolidate_information(use_stored_guess=use_stored_guess)
+    nc.consolidate_information(
+        use_stored_guess=use_stored_guess
+    )
 
     return nc

@@ -196,8 +196,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 with_n1=self.options.n1_consideration
             )
         else:
-            alpha = np.ones(nc.nbr),
-            alpha_n1 = np.ones((nc.nbr, nc.nbr)),
+            alpha = np.ones(nc.nelm),
+            alpha_n1 = np.ones((nc.nelm, nc.nelm)),
 
         for t_idx, t in enumerate(time_indices):
 

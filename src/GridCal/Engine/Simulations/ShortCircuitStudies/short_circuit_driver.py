@@ -24,9 +24,9 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_ph3, short_circuit_unbalanced
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 from GridCal.Engine.Devices import Branch, Bus
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Devices.enumerations import FaultType
@@ -177,7 +177,7 @@ class ShortCircuitDriver(DriverTemplate):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: SnapshotData, Vpf, Zf, island_bus_index, fault_type):
+    def single_short_circuit(self, calculation_inputs: NumericalCircuit, Vpf, Zf, island_bus_index, fault_type):
         """
         Run a short circuit simulation for a single island
         @param calculation_inputs:
@@ -260,10 +260,10 @@ class ShortCircuitDriver(DriverTemplate):
             grid = self.grid
 
         # Compile the grid
-        numerical_circuit = compile_snapshot_circuit(circuit=grid,
-                                                     apply_temperature=self.pf_options.apply_temperature_correction,
-                                                     branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                     opf_results=self.opf_results)
+        numerical_circuit = compile_numerical_circuit(circuit=grid,
+                                                      apply_temperature=self.pf_options.apply_temperature_correction,
+                                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                      opf_results=self.opf_results)
 
         calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 

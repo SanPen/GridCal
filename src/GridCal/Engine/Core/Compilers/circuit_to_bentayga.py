@@ -508,7 +508,7 @@ class FakeAdmittances:
 
 def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
-    from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+    from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 
     btgCircuit = to_bentayga(circuit, time_series=False)
 
@@ -518,27 +518,27 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
     for btg_data in btg_data_lst:
 
-        data = SnapshotData(nbus=0,
-                            nline=0,
-                            ndcline=0,
-                            ntr=0,
-                            nvsc=0,
-                            nupfc=0,
-                            nhvdc=0,
-                            nload=0,
-                            ngen=0,
-                            nbatt=0,
-                            nshunt=0,
-                            nstagen=0,
-                            sbase=0,
-                            ntime=1)
+        data = NumericalCircuit(nbus=0,
+                                nline=0,
+                                ndcline=0,
+                                ntr=0,
+                                nvsc=0,
+                                nupfc=0,
+                                nhvdc=0,
+                                nload=0,
+                                ngen=0,
+                                nbatt=0,
+                                nshunt=0,
+                                nstagen=0,
+                                sbase=0,
+                                ntime=1)
 
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
         data.Ibus_ = btg_data.Ibus
         data.branch_data.names = np.array(btg_data.branch_data.names)
-        data.branch_data.tap_f = btg_data.branch_data.virtual_tap_f
-        data.branch_data.tap_t = btg_data.branch_data.virtual_tap_t
+        data.branch_data.virtual_tap_f = btg_data.branch_data.virtual_tap_f
+        data.branch_data.virtual_tap_t = btg_data.branch_data.virtual_tap_t
 
         data.bus_data.names = np.array(btg_data.bus_data.names)
 

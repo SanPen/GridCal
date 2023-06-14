@@ -65,9 +65,9 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
     devices = circuit.get_loads()
 
     if opf:
-        data = ds.LoadOpfData(nload=len(devices), nbus=len(circuit.buses), ntime=1)
+        data = ds.LoadOpfData(nelm=len(devices), nbus=len(circuit.buses), ntime=1)
     else:
-        data = ds.LoadData(nload=len(devices), nbus=len(circuit.buses), ntime=1)
+        data = ds.LoadData(nelm=len(devices), nbus=len(circuit.buses), ntime=1)
 
     for k, elm in enumerate(devices):
 
@@ -87,7 +87,7 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
             data.active[k] = elm.active_prof[t_idx]
 
             if opf:
-                data.load_cost[k] = elm.Cost_prof[t_idx]
+                data.cost[k] = elm.Cost_prof[t_idx]
 
         else:
             if opf_results is not None:
@@ -100,9 +100,9 @@ def get_load_data(circuit: MultiCircuit, bus_dict, t_idx=-1,
             data.active[k] = elm.active
 
             if opf:
-                data.load_cost[k] = elm.Cost
+                data.cost[k] = elm.Cost
 
-        data.C_bus_load[i, k] = 1
+        data.C_bus_elm[i, k] = 1
 
     return data
 
@@ -150,7 +150,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, t_idx=
     """
     devices = circuit.get_shunts()
 
-    data = ds.ShuntData(nshunt=len(devices), nbus=len(circuit.buses), ntime=1)
+    data = ds.ShuntData(nelm=len(devices), nbus=len(circuit.buses), ntime=1)
 
     for k, elm in enumerate(devices):
 
@@ -174,7 +174,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, t_idx=
             elif elm.Vset != Vbus[i, 0]:
                 logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
-        data.C_bus_shunt[i, k] = 1
+        data.C_bus_elm[i, k] = 1
 
     return data
 
@@ -201,7 +201,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bu
     if opf:
         data = ds.GeneratorOpfData(ngen=len(devices), nbus=len(circuit.buses), ntime=1)
     else:
-        data = ds.GeneratorData(ngen=len(devices), nbus=len(circuit.buses), ntime=1)
+        data = ds.GeneratorData(nelm=len(devices), nbus=len(circuit.buses), ntime=1)
 
     for k, elm in enumerate(devices):
 
@@ -233,10 +233,10 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bu
             data.v[k] = elm.Vset_prof[t_idx]
 
             if opf:
-                data.generator_dispatchable[k] = elm.enabled_dispatch
-                data.generator_pmax[k] = elm.Pmax
-                data.generator_pmin[k] = elm.Pmin
-                data.generator_cost[k] = elm.Cost_prof[t_idx]
+                data.dispatchable[k] = elm.enabled_dispatch
+                data.pmax[k] = elm.Pmax
+                data.pmin[k] = elm.Pmin
+                data.cost[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -260,10 +260,10 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bu
             data.v[k] = elm.Vset
 
             if opf:
-                data.generator_dispatchable[k] = elm.enabled_dispatch
-                data.generator_pmax[k] = elm.Pmax
-                data.generator_pmin[k] = elm.Pmin
-                data.generator_cost[k] = elm.Cost
+                data.dispatchable[k] = elm.enabled_dispatch
+                data.pmax[k] = elm.Pmax
+                data.pmin[k] = elm.Pmin
+                data.cost[k] = elm.Cost
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -275,7 +275,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bu
                     elif elm.Vset != Vbus[i, 0]:
                         logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
-        data.C_bus_gen[i, k] = 1
+        data.C_bus_elm[i, k] = 1
 
     return data
 
@@ -302,7 +302,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bus_
     if opf:
         data = ds.BatteryOpfData(nbatt=len(devices), nbus=len(circuit.buses), ntime=1)
     else:
-        data = ds.BatteryData(nbatt=len(devices), nbus=len(circuit.buses), ntime=1)
+        data = ds.BatteryData(nelm=len(devices), nbus=len(circuit.buses), ntime=1)
 
     for k, elm in enumerate(devices):
 
@@ -337,12 +337,12 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bus_
                 data.battery_dispatchable[k] = elm.enabled_dispatch
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
-                data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.min_soc
-                data.battery_max_soc[k] = elm.max_soc
-                data.battery_soc_0[k] = elm.soc_0
-                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                data.battery_charge_efficiency[k] = elm.charge_efficiency
+                data.enom[k] = elm.Enom
+                data.min_soc[k] = elm.min_soc
+                data.max_soc[k] = elm.max_soc
+                data.soc_0[k] = elm.soc_0
+                data.discharge_efficiency[k] = elm.discharge_efficiency
+                data.charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
@@ -369,12 +369,12 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, bus_
                 data.battery_dispatchable[k] = elm.enabled_dispatch
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
-                data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.min_soc
-                data.battery_max_soc[k] = elm.max_soc
-                data.battery_soc_0[k] = elm.soc_0
-                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                data.battery_charge_efficiency[k] = elm.charge_efficiency
+                data.enom[k] = elm.Enom
+                data.min_soc[k] = elm.min_soc
+                data.max_soc[k] = elm.max_soc
+                data.soc_0[k] = elm.soc_0
+                data.discharge_efficiency[k] = elm.discharge_efficiency
+                data.charge_efficiency[k] = elm.charge_efficiency
                 data.battery_cost[k] = elm.Cost
 
             if elm.active_prof[t_idx] and elm.is_controlled:
@@ -488,7 +488,7 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, t_idx=-1, time_series=
         data.bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
 
         # virtual taps for transformers where the connection voltage is off
-        data.tap_f[i], data.tap_t[i] = elm.get_virtual_taps()
+        data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
 
     return data
 
@@ -520,8 +520,8 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, t_idx=-1, time_series=False) -
         data.X1[i] = elm.X1
         data.G0[i] = elm.G0sw
         data.Beq[i] = elm.Beq
-        data.m[i] = elm.m
-        data.theta[i] = elm.theta
+        data.tap_module[i] = elm.m
+        data.tap_angle[i] = elm.theta
         # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
         data.Pfset[i] = elm.Pdc_set
         data.Qtset[i] = elm.Qac_set
@@ -655,7 +655,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
     if opf:
         data = ds.BranchOpfData(nbr=nbr, nbus=len(circuit.buses), ntime=1)
     else:
-        data = ds.BranchData(nbr=nbr, nbus=len(circuit.buses), ntime=1)
+        data = ds.BranchData(nelm=nbr, nbus=len(circuit.buses), ntime=1)
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
@@ -806,28 +806,28 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         if time_series:
             if opf_results is not None:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = opf_results.phase_shift[t_idx, ii]
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
-                data.m[ii] = elm.tap_module_prof[t_idx]
-                data.theta[ii] = elm.angle_prof[t_idx]
+                data.tap_module[ii] = elm.tap_module_prof[t_idx]
+                data.tap_angle[ii] = elm.angle_prof[t_idx]
         else:
             if opf_results is not None:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = opf_results.phase_shift[ii]
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = elm.angle
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = elm.angle
 
-        data.m_min[ii] = elm.tap_module_min
-        data.m_max[ii] = elm.tap_module_max
-        data.theta_min[ii] = elm.angle_min
-        data.theta_max[ii] = elm.angle_max
+        data.tap_module_min[ii] = elm.tap_module_min
+        data.tap_module_max[ii] = elm.tap_module_max
+        data.tap_angle_min[ii] = elm.angle_min
+        data.tap_angle_max[ii] = elm.angle_max
 
         data.Pfset[ii] = elm.Pset
 
         data.control_mode[ii] = elm.control_mode
-        data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
@@ -889,28 +889,28 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         if time_series:
             if opf_results is not None:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = opf_results.phase_shift[t_idx, ii]
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
-                data.m[ii] = elm.tap_module_prof[t_idx]
-                data.theta[ii] = elm.angle_prof[t_idx]
+                data.tap_module[ii] = elm.tap_module_prof[t_idx]
+                data.tap_angle[ii] = elm.angle_prof[t_idx]
         else:
             if opf_results is not None:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = opf_results.phase_shift[ii]
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
-                data.m[ii] = elm.tap_module
-                data.theta[ii] = elm.angle
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = elm.angle
 
-        data.m_min[ii] = elm.tap_module_min
-        data.m_max[ii] = elm.tap_module_max
-        data.theta_min[ii] = elm.angle_min
-        data.theta_max[ii] = elm.angle_max
+        data.tap_module_min[ii] = elm.tap_module_min
+        data.tap_module_max[ii] = elm.tap_module_max
+        data.tap_angle_min[ii] = elm.angle_min
+        data.tap_angle_max[ii] = elm.angle_max
 
         data.Pfset[ii] = elm.Pset
 
         data.control_mode[ii] = elm.control_mode
-        data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
@@ -964,9 +964,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.G0sw[ii] = elm.G0sw
         data.Beq[ii] = elm.Beq
-        data.m[ii] = elm.m
-        data.m_max[ii] = elm.m_max
-        data.m_min[ii] = elm.m_min
+        data.tap_module[ii] = elm.m
+        data.tap_module_max[ii] = elm.m_max
+        data.tap_module_min[ii] = elm.m_min
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
@@ -974,17 +974,17 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         if time_series:
             if opf_results is not None:
-                data.theta[ii] = opf_results.phase_shift[t_idx, ii]
+                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
-                data.theta[ii] = elm.theta
+                data.tap_angle[ii] = elm.theta
         else:
             if opf_results is not None:
-                data.theta[ii] = opf_results.phase_shift[ii]
+                data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
-                data.theta[ii] = elm.theta
+                data.tap_angle[ii] = elm.theta
 
-        data.theta_min[ii] = elm.theta_min
-        data.theta_max[ii] = elm.theta_max
+        data.tap_angle_min[ii] = elm.theta_min
+        data.tap_angle_max[ii] = elm.theta_max
         data.Pfset[ii] = elm.Pdc_set
         data.Qtset[ii] = elm.Qac_set
         data.Kdp[ii] = elm.kdp
@@ -1088,7 +1088,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, t_idx=-1, time_ser
     :param opf_results:
     :return:
     """
-    data = ds.HvdcData(nhvdc=len(circuit.hvdc_lines), nbus=len(circuit.buses), ntime=1)
+    data = ds.HvdcData(nelm=len(circuit.hvdc_lines), nbus=len(circuit.buses), ntime=1)
 
     # HVDC
     for i, elm in enumerate(circuit.hvdc_lines):

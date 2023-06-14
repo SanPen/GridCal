@@ -137,8 +137,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         self.progress_text.emit("Analyzing...")
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
-        ne = ts_numeric_circuit.nbr
-        nc = ts_numeric_circuit.nbr
+        ne = ts_numeric_circuit.nelm
+        nc = ts_numeric_circuit.nelm
         nt = len(ts_numeric_circuit.time_array)
 
         results = ContingencyAnalysisTimeSeriesResults(ne=ne,

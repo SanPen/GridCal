@@ -289,9 +289,9 @@ class OpfAc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
-        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_elm, Pg=Pg,
                                     C_bus_bat=numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
-                                    C_bus_load=numerical_circuit.load_data.C_bus_load,
+                                    C_bus_load=numerical_circuit.load_data.C_bus_elm,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)
 

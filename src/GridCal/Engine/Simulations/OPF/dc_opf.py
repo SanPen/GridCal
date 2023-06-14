@@ -204,7 +204,7 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
             # compute the flow
             if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
+                tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.tap_angle_min[m], nc.branch_data.tap_angle_max[m])
                 Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]] + tau[m])
 
                 # power injected and subtracted due to the phase shift
@@ -490,9 +490,9 @@ class OpfDc(Opf):
         set_fix_generation(problem=self.problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the nodal power injections ---------------------------------------------------------------------------
-        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_elm, Pg=Pg,
                                  C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
-                                 C_bus_load=self.numerical_circuit.load_data.C_bus_load,
+                                 C_bus_load=self.numerical_circuit.load_data.C_bus_elm,
                                  LSlack=load_slack, Pl=Pl)
 
         # formulate the simple HVDC models -----------------------------------------------------------------------------

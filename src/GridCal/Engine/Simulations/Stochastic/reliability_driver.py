@@ -19,7 +19,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit, compile_numerical_circuit
 from GridCal.Engine.Devices import DeviceType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -86,7 +86,7 @@ def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
     return events
 
 
-def get_reliability_scenario(nc: SnapshotData, horizon=10000):
+def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     """
     Get reliability events
     Args:
@@ -129,7 +129,7 @@ def get_reliability_scenario(nc: SnapshotData, horizon=10000):
     return all_events
 
 
-def run_events(nc: SnapshotData, events_list: list):
+def run_events(nc: NumericalCircuit, events_list: list):
 
     for t, tpe, i, state in events_list:
 
@@ -195,7 +195,7 @@ class ReliabilityStudy(DriverTemplate):
         print('Running voltage collapse...')
 
         # compile the numerical circuit
-        numerical_circuit = compile_snapshot_circuit(self.grid)
+        numerical_circuit = compile_numerical_circuit(self.grid)
 
         evt = get_reliability_scenario(numerical_circuit)
 

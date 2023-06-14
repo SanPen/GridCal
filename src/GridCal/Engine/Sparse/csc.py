@@ -231,14 +231,14 @@ class CscMat(csc_matrix):
         # 2-pass matrix multiplication
         Cp = np.empty(self.n + 1, dtype=np.int32)
 
-        sptools.csc_matmat_pass1(self.n, o.m,
+        sptools.csc_matmat_pass1(self.n, o.tap_module,
                                  self.indptr, self.indices,
                                  o.indptr, o.indices, Cp)
         nnz = Cp[-1]
         Ci = np.empty(nnz, dtype=np.int32)
         Cx = np.empty(nnz, dtype=np.float64)
 
-        sptools.csc_matmat_pass2(self.n, o.m,
+        sptools.csc_matmat_pass2(self.n, o.tap_module,
                                  self.indptr, self.indices, self.data,
                                  o.indptr, o.indices, o.data,
                                  Cp, Ci, Cx)

@@ -217,7 +217,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                     bus_types=numerical_circuit.bus_types,
                     hvdc_flow=pf_drv.results.hvdc_Pt,
                     hvdc_loading=pf_drv.results.hvdc_loading,
-                    phase_shift=pf_drv.results.theta,
+                    phase_shift=pf_drv.results.tap_angle,
                     generation_delta=np.zeros(numerical_circuit.ngen),
                     inter_area_branches=inter_area_branches,
                     inter_area_hvdc=inter_area_hvdc,

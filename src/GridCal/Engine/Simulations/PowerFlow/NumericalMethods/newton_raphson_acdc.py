@@ -47,7 +47,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     # initialize the variables
     nb = nc.nbus
-    nl = nc.nbr
+    nl = nc.nelm
     V = Vbus
 
     Va = np.angle(V)
@@ -56,8 +56,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
     Vmfset = nc.branch_data.vf_set[:, t]
-    m = nc.branch_data.m[:, t].copy()
-    theta = nc.branch_data.theta[:, t].copy()
+    m = nc.branch_data.tap_module[:, t].copy()
+    theta = nc.branch_data.tap_angle[:, t].copy()
     Beq = nc.branch_data.Beq[:, t].copy()
     Gsw = nc.branch_data.G0sw[:, t]
     Pfset = nc.branch_data.Pfset[:, t] / nc.Sbase
@@ -105,15 +105,15 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     # -------------------------------------------------------------------------
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                       C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                       C_bus_shunt=nc.shunt_data.C_bus_elm,
                                        shunt_admittance=nc.shunt_data.admittance[:, 0],
                                        shunt_active=nc.shunt_data.active[:, 0],
                                        ys=Ys,
                                        B=Bc,
                                        Sbase=nc.Sbase,
-                                       m=m, theta=theta, Beq=Beq, Gsw=Gsw,
-                                       mf=nc.branch_data.tap_f,
-                                       mt=nc.branch_data.tap_t)
+                                       tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                       virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                       virtual_tap_to=nc.branch_data.virtual_tap_t)
 
     #  compute branch power Sf
     If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
@@ -209,15 +209,15 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
                 # compute admittances
                 Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                                   C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                                   C_bus_shunt=nc.shunt_data.C_bus_elm,
                                                    shunt_admittance=nc.shunt_data.admittance[:, 0],
                                                    shunt_active=nc.shunt_data.active[:, 0],
                                                    ys=Ys,
                                                    B=Bc,
                                                    Sbase=nc.Sbase,
-                                                   m=m, theta=theta, Beq=Beq, Gsw=Gsw,
-                                                   mf=nc.branch_data.tap_f,
-                                                   mt=nc.branch_data.tap_t)
+                                                   tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                                   virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                                   virtual_tap_to=nc.branch_data.virtual_tap_t)
 
                 #  compute branch power Sf
                 If = Yf * V  # complex current injected at "from" bus
@@ -273,8 +273,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                 elapsed = end - start
 
                 # set the state for the next solver_type
-                nc.branch_data.m[:, 0] = m
-                nc.branch_data.theta[:, 0] = theta
+                nc.branch_data.tap_module[:, 0] = m
+                nc.branch_data.tap_angle[:, 0] = theta
                 nc.branch_data.Beq[:, 0] = Beq
 
                 return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
@@ -284,16 +284,16 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
                     for idx in nc.iVscL:
                         # correct m (tap modules)
-                        if m[idx] < nc.branch_data.m_min[idx]:
-                            m[idx] = nc.branch_data.m_min[idx]
-                        elif m[idx] > nc.branch_data.m_max[idx]:
-                            m[idx] = nc.branch_data.m_max[idx]
+                        if m[idx] < nc.branch_data.tap_module_min[idx]:
+                            m[idx] = nc.branch_data.tap_module_min[idx]
+                        elif m[idx] > nc.branch_data.tap_module_max[idx]:
+                            m[idx] = nc.branch_data.tap_module_max[idx]
 
                         # correct theta (tap angles)
-                        if theta[idx] < nc.branch_data.theta_min[idx]:
-                            theta[idx] = nc.branch_data.theta_min[idx]
-                        elif theta[idx] > nc.branch_data.theta_max[idx]:
-                            theta[idx] = nc.branch_data.theta_max[idx]
+                        if theta[idx] < nc.branch_data.tap_angle_min[idx]:
+                            theta[idx] = nc.branch_data.tap_angle_min[idx]
+                        elif theta[idx] > nc.branch_data.tap_angle_max[idx]:
+                            theta[idx] = nc.branch_data.tap_angle_max[idx]
 
                     # review reactive power limits
                     # it is only worth checking Q limits with a low error

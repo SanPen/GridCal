@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOpti
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -345,10 +345,10 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         """
         print('Running voltage collapse...')
 
-        nc = compile_snapshot_circuit(circuit=self.grid,
-                                      apply_temperature=self.pf_options.apply_temperature_correction,
-                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                      opf_results=self.opf_results)
+        nc = compile_numerical_circuit(circuit=self.grid,
+                                       apply_temperature=self.pf_options.apply_temperature_correction,
+                                       branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                       opf_results=self.opf_results)
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 

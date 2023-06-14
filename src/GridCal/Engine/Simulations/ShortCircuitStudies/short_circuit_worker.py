@@ -18,14 +18,14 @@
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p, short_circuit_unbalance
 from GridCal.Engine.Core.admittance_matrices import compute_admittances
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 
 
-def short_circuit_post_process(calculation_inputs: SnapshotData, V, branch_rates, Yf, Yt):
+def short_circuit_post_process(calculation_inputs: NumericalCircuit, V, branch_rates, Yf, Yt):
     """
     Compute the important results for short-circuits
 
@@ -96,9 +96,9 @@ def short_circuit_ph3(calculation_inputs, Vpf, Zf, bus_index):
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                  m=calculation_inputs.nbr,
+                                  m=calculation_inputs.nelm,
                                   n_tr=calculation_inputs.ntr,
-                                  n_hvdc=calculation_inputs.nhvdc,
+                                  n_hvdc=calculation_inputs.nelm,
                                   bus_names=calculation_inputs.bus_data.names,
                                   branch_names=calculation_inputs.branch_data.names,
                                   transformer_names=calculation_inputs.transformer_data.names,
@@ -130,7 +130,7 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     """
 
     # build Y0, Y1, Y2
-    nbr = calculation_inputs.nbr
+    nbr = calculation_inputs.nelm
     nbus = calculation_inputs.nbus
 
     Y_gen0 = calculation_inputs.generator_data.get_Yshunt(seq=0)
@@ -142,10 +142,10 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                G=calculation_inputs.branch_data.G0,  # renamed, it was overwritten
                                B=calculation_inputs.branch_data.B0,
                                k=calculation_inputs.branch_data.k,
-                               tap_module=calculation_inputs.branch_data.m[:, 0],
-                               vtap_f=calculation_inputs.branch_data.tap_f,
-                               vtap_t=calculation_inputs.branch_data.tap_t,
-                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               tap_module=calculation_inputs.branch_data.tap_module[:, 0],
+                               vtap_f=calculation_inputs.branch_data.virtual_tap_f,
+                               vtap_t=calculation_inputs.branch_data.virtual_tap_t,
+                               tap_angle=calculation_inputs.branch_data.tap_angle[:, 0],
                                Beq=np.zeros(nbr),
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
@@ -167,10 +167,10 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                G=calculation_inputs.branch_data.G,
                                B=calculation_inputs.branch_data.B,
                                k=calculation_inputs.branch_data.k,
-                               tap_module=calculation_inputs.branch_data.m[:, 0],
-                               vtap_f=calculation_inputs.branch_data.tap_f,
-                               vtap_t=calculation_inputs.branch_data.tap_t,
-                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               tap_module=calculation_inputs.branch_data.tap_module[:, 0],
+                               vtap_f=calculation_inputs.branch_data.virtual_tap_f,
+                               vtap_t=calculation_inputs.branch_data.virtual_tap_t,
+                               tap_angle=calculation_inputs.branch_data.tap_angle[:, 0],
                                Beq=calculation_inputs.branch_data.Beq[:, 0],
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
@@ -192,10 +192,10 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                G=calculation_inputs.branch_data.G2,
                                B=calculation_inputs.branch_data.B2,
                                k=calculation_inputs.branch_data.k,
-                               tap_module=calculation_inputs.branch_data.m[:, 0],
-                               vtap_f=calculation_inputs.branch_data.tap_f,
-                               vtap_t=calculation_inputs.branch_data.tap_t,
-                               tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                               tap_module=calculation_inputs.branch_data.tap_module[:, 0],
+                               vtap_f=calculation_inputs.branch_data.virtual_tap_f,
+                               vtap_t=calculation_inputs.branch_data.virtual_tap_t,
+                               tap_angle=calculation_inputs.branch_data.tap_angle[:, 0],
                                Beq=np.zeros(nbr),
                                Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                Ct=calculation_inputs.branch_data.C_branch_bus_t,
@@ -235,10 +235,10 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                      G=np.zeros(nbr),
                                      B=np.zeros(nbr),
                                      k=calculation_inputs.branch_data.k,
-                                     tap_module=calculation_inputs.branch_data.m[:, 0],
-                                     vtap_f=calculation_inputs.branch_data.tap_f,
-                                     vtap_t=calculation_inputs.branch_data.tap_t,
-                                     tap_angle=calculation_inputs.branch_data.theta[:, 0],
+                                     tap_module=calculation_inputs.branch_data.tap_module[:, 0],
+                                     vtap_f=calculation_inputs.branch_data.virtual_tap_f,
+                                     vtap_t=calculation_inputs.branch_data.virtual_tap_t,
+                                     tap_angle=calculation_inputs.branch_data.tap_angle[:, 0],
                                      Beq=np.zeros(nbr),
                                      Cf=calculation_inputs.branch_data.C_branch_bus_f,
                                      Ct=calculation_inputs.branch_data.C_branch_bus_t,
@@ -300,9 +300,9 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                  m=calculation_inputs.nbr,
+                                  m=calculation_inputs.nelm,
                                   n_tr=calculation_inputs.ntr,
-                                  n_hvdc=calculation_inputs.nhvdc,
+                                  n_hvdc=calculation_inputs.nelm,
                                   bus_names=calculation_inputs.bus_names,
                                   branch_names=calculation_inputs.branch_names,
                                   transformer_names=calculation_inputs.tr_names,

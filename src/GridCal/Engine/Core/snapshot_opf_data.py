@@ -19,12 +19,12 @@ import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
 import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 import GridCal.Engine.Core.DataStructures as ds
 
 
-class SnapshotOpfData(SnapshotData):
+class SnapshotOpfData(NumericalCircuit):
 
     def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase):
         """
@@ -42,15 +42,15 @@ class SnapshotOpfData(SnapshotData):
         :param nstagen:
         :param sbase:
         """
-        SnapshotData.__init__(self, nbus=nbus, nline=nline,
-                              ndcline=ndcline, ntr=ntr, nvsc=nvsc, nupfc=nupfc,
-                              nhvdc=nhvdc, nload=nload, ngen=ngen,
-                              nbatt=nbatt, nshunt=nshunt, nstagen=nstagen,
-                              sbase=sbase, ntime=1)
+        NumericalCircuit.__init__(self, nbus=nbus, nline=nline,
+                                  ndcline=ndcline, ntr=ntr, nvsc=nvsc, nupfc=nupfc,
+                                  nhvdc=nhvdc, nload=nload, ngen=ngen,
+                                  nbatt=nbatt, nshunt=nshunt, nstagen=nstagen,
+                                  sbase=sbase, ntime=1)
 
         # overwrite with their opf version
         self.branch_data = ds.BranchOpfData(nbr=self.nbr, nbus=nbus, ntime=self.ntime)
-        self.load_data = ds.LoadOpfData(nload=nload, nbus=nbus, ntime=self.ntime)
+        self.load_data = ds.LoadOpfData(nelm=nload, nbus=nbus, ntime=self.ntime)
         self.battery_data = ds.BatteryOpfData(nbatt=nbatt, nbus=nbus, ntime=self.ntime)
         self.generator_data = ds.GeneratorOpfData(ngen=ngen, nbus=nbus, ntime=self.ntime)
 
@@ -68,19 +68,19 @@ class SnapshotOpfData(SnapshotData):
 
     @property
     def generator_pmax(self):
-        return self.generator_data.generator_pmax
+        return self.generator_data.pmax
 
     @property
     def generator_pmin(self):
-        return self.generator_data.generator_pmin
+        return self.generator_data.pmin
 
     @property
     def generator_dispatchable(self):
-        return self.generator_data.generator_dispatchable
+        return self.generator_data.dispatchable
 
     @property
     def generator_cost(self):
-        return self.generator_data.generator_cost[:, 0]
+        return self.generator_data.cost[:, 0]
 
     @property
     def generator_p(self):
@@ -100,7 +100,7 @@ class SnapshotOpfData(SnapshotData):
 
     @property
     def load_cost(self):
-        return self.load_data.load_cost[:, 0]
+        return self.load_data.cost[:, 0]
 
     @property
     def branch_R(self):
@@ -118,11 +118,11 @@ class SnapshotOpfData(SnapshotData):
     def branch_cost(self):
         return self.branch_data.branch_cost[:, 0]
 
-    def get_island(self, bus_idx, time_idx=None) -> "SnapshotData":
+    def get_island(self, bus_idx, t_idx=None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :param time_idx: array of time indices (or None for all time indices)
+        :param t_idx: array of time indices (or None for all time indices)
         :return: SnapshotData
         """
         # if the island is the same as the original bus indices, no slicing is needed
@@ -174,18 +174,18 @@ class SnapshotOpfData(SnapshotData):
         nc.original_shunt_idx = shunt_idx
 
         # slice data
-        nc.bus_data = self.bus_data.slice(bus_idx, time_idx)
-        nc.branch_data = self.branch_data.slice(br_idx, bus_idx, time_idx)
-        nc.line_data = self.line_data.slice(line_idx, bus_idx, time_idx)
-        nc.transformer_data = self.transformer_data.slice(tr_idx, bus_idx, time_idx)
-        nc.hvdc_data = self.hvdc_data.slice(hvdc_idx, bus_idx, time_idx)
-        nc.vsc_data = self.vsc_data.slice(vsc_idx, bus_idx, time_idx)
-        nc.dc_line_data = self.dc_line_data.slice(dc_line_idx, bus_idx, time_idx)
-        nc.load_data = self.load_data.slice(load_idx, bus_idx, time_idx)
-        nc.static_generator_data = self.static_generator_data.slice(stagen_idx, bus_idx, time_idx)
-        nc.battery_data = self.battery_data.slice(batt_idx, bus_idx, time_idx)
-        nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, time_idx)
-        nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, time_idx)
+        nc.bus_data = self.bus_data.slice(bus_idx, t_idx)
+        nc.branch_data = self.branch_data.slice(br_idx, bus_idx, t_idx)
+        nc.line_data = self.line_data.slice(line_idx, bus_idx, t_idx)
+        nc.transformer_data = self.transformer_data.slice(tr_idx, bus_idx, t_idx)
+        nc.hvdc_data = self.hvdc_data.slice(hvdc_idx, bus_idx, t_idx)
+        nc.vsc_data = self.vsc_data.slice(vsc_idx, bus_idx, t_idx)
+        nc.dc_line_data = self.dc_line_data.slice(dc_line_idx, bus_idx, t_idx)
+        nc.load_data = self.load_data.slice(load_idx, bus_idx, t_idx)
+        nc.static_generator_data = self.static_generator_data.slice(stagen_idx, bus_idx, t_idx)
+        nc.battery_data = self.battery_data.slice(batt_idx, bus_idx, t_idx)
+        nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, t_idx)
+        nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, t_idx)
 
         return nc
 

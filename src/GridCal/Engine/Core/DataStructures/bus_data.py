@@ -19,57 +19,51 @@ import numpy as np
 
 class BusData:
 
-    def __init__(self, nbus, ntime=1):
+    def __init__(self, nbus):
         """
-
-        :param nbus:
+        Bus data arrays
+        :param nbus: number of buses
         """
-        self.nbus = nbus
-        self.ntime = ntime
-        self.names = np.empty(nbus, dtype=object)
-        self.active = np.ones((nbus, ntime), dtype=int)
-        self.Vbus = np.ones((nbus, ntime), dtype=complex)
-        self.Vmin = np.ones(nbus, dtype=float)
-        self.Vmax = np.ones(nbus, dtype=float)
-        self.angle_min = np.ones(nbus, dtype=float) * -3.14
-        self.angle_max = np.ones(nbus, dtype=float) * 3.14
-        self.bus_types = np.empty(nbus, dtype=int)
-        self.bus_types_prof = np.zeros((nbus, ntime), dtype=int)
-        self.installed_power = np.zeros(nbus, dtype=float)
-        self.is_dc = np.empty(nbus, dtype=bool)
-        self.areas = np.empty(nbus, dtype=int)
+        self.nbus: int = nbus
+        self.names: np.array = np.empty(nbus, dtype=object)
+        self.active: np.array = np.ones(nbus, dtype=int)
+        self.Vbus: np.array = np.ones(nbus, dtype=complex)
+        self.Vmin: np.array = np.ones(nbus, dtype=float)
+        self.Vmax: np.array = np.ones(nbus, dtype=float)
+        self.angle_min: np.array = np.full(nbus, fill_value=-3.14, dtype=float)
+        self.angle_max: np.array = np.full(nbus, fill_value=3.14, dtype=float)
+        self.bus_types: np.array = np.empty(nbus, dtype=int)
+        self.installed_power: np.array = np.zeros(nbus, dtype=float)
+        self.is_dc: np.array = np.empty(nbus, dtype=bool)
+        self.areas: np.array = np.empty(nbus, dtype=int)
 
-    def slice(self, elm_idx, time_idx=None):
+        self.original_idx = np.zeros(nbus, dtype=int)
+
+    def slice(self, elm_idx):
         """
         Slice this data structure
         :param elm_idx: array of bus indices
-        :param time_idx: array of time indices
         :return: instance of BusData
         """
-
-        if time_idx is None:
-            tidx = elm_idx
-        else:
-            tidx = np.ix_(elm_idx, time_idx)
 
         data = BusData(nbus=len(elm_idx))
 
         data.names = self.names[elm_idx]
 
-        data.active = self.active[tidx]
+        data.active = self.active[elm_idx]
 
-        data.Vbus = self.Vbus[tidx]
+        data.Vbus = self.Vbus[elm_idx]
         data.Vmin = self.Vmin[elm_idx]
         data.Vmax = self.Vmax[elm_idx]
         data.angle_min = self.angle_min[elm_idx]
         data.angle_max = self.angle_max[elm_idx]
 
         data.bus_types = self.bus_types[elm_idx]
-        data.bus_types_prof = self.bus_types_prof[tidx]
-
         data.installed_power = self.installed_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
         data.areas = self.areas[elm_idx]
+
+        data.original_idx = elm_idx
 
         return data
 

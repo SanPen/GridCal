@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
     sigma_function
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -214,10 +214,10 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions,
     m = multi_circuit.get_branch_number()
     results = SigmaAnalysisResults(n)
 
-    nc = compile_snapshot_circuit(circuit=multi_circuit,
-                                  apply_temperature=options.apply_temperature_correction,
-                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                  opf_results=None)
+    nc = compile_numerical_circuit(circuit=multi_circuit,
+                                   apply_temperature=options.apply_temperature_correction,
+                                   branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                   opf_results=None)
     results.bus_names = nc.bus_data.names
 
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)

@@ -34,97 +34,95 @@ def get_bus_indices(C_branch_bus):
 
 class BranchData:
 
-    def __init__(self, nbr, nbus, ntime=1):
+    def __init__(self, nelm, nbus):
         """
         Branch data arrays
-        :param nbr: number of branches
+        :param nelm: number of elements
         :param nbus: number of buses
         """
-        self.nbr = nbr
-        self.ntime = ntime
+        self.nelm: int = nelm
 
-        self.names = np.empty(self.nbr, dtype=object)
+        self.names: np.array = np.empty(self.nelm, dtype=object)
 
-        self.dc = np.zeros(self.nbr, dtype=int)
+        self.dc: np.array = np.zeros(self.nelm, dtype=int)
 
-        self.active = np.zeros((nbr, ntime), dtype=int)
-        self.rates = np.zeros((nbr, ntime), dtype=float)
-        self.contingency_rates = np.zeros((nbr, ntime), dtype=float)
+        self.active: np.array = np.zeros(nelm, dtype=int)
+        self.rates: np.array = np.zeros(nelm, dtype=float)
+        self.contingency_rates: np.array = np.zeros(nelm, dtype=float)
 
-        self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
-        self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
+        self.F: np.array = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
+        self.T: np.array = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
         # composite losses curve (a * x^2 + b * x + c)
-        self.a = np.zeros(self.nbr, dtype=float)
-        self.b = np.zeros(self.nbr, dtype=float)
-        self.c = np.zeros(self.nbr, dtype=float)
+        self.a: np.array = np.zeros(self.nelm, dtype=float)
+        self.b: np.array = np.zeros(self.nelm, dtype=float)
+        self.c: np.array = np.zeros(self.nelm, dtype=float)
 
-        self.R = np.zeros(self.nbr, dtype=float)
-        self.X = np.zeros(self.nbr, dtype=float)
-        self.G = np.zeros(self.nbr, dtype=float)
-        self.B = np.zeros(self.nbr, dtype=float)
+        self.R: np.array = np.zeros(self.nelm, dtype=float)
+        self.X: np.array = np.zeros(self.nelm, dtype=float)
+        self.G: np.array = np.zeros(self.nelm, dtype=float)
+        self.B: np.array = np.zeros(self.nelm, dtype=float)
 
-        self.R0 = np.zeros(self.nbr, dtype=float)
-        self.X0 = np.zeros(self.nbr, dtype=float)
-        self.G0 = np.zeros(self.nbr, dtype=float)
-        self.B0 = np.zeros(self.nbr, dtype=float)
+        self.R0: np.array = np.zeros(self.nelm, dtype=float)
+        self.X0: np.array = np.zeros(self.nelm, dtype=float)
+        self.G0: np.array = np.zeros(self.nelm, dtype=float)
+        self.B0: np.array = np.zeros(self.nelm, dtype=float)
 
-        self.R2 = np.zeros(self.nbr, dtype=float)
-        self.X2 = np.zeros(self.nbr, dtype=float)
-        self.G2 = np.zeros(self.nbr, dtype=float)
-        self.B2 = np.zeros(self.nbr, dtype=float)
+        self.R2: np.array = np.zeros(self.nelm, dtype=float)
+        self.X2: np.array = np.zeros(self.nelm, dtype=float)
+        self.G2: np.array = np.zeros(self.nelm, dtype=float)
+        self.B2: np.array = np.zeros(self.nelm, dtype=float)
 
-        # self.conn = np.empty(self.nbr, dtype=str)  # winding connection, ground-ground by default
-        self.conn = np.array([WindingsConnection.GG] * self.nbr)
+        self.conn: np.array = np.array([WindingsConnection.GG] * self.nelm)
 
-        self.k = np.ones(nbr, dtype=float)
+        self.k: np.array = np.ones(nelm, dtype=float)
 
-        self.m = np.ones((nbr, ntime), dtype=float)
-        self.m_min = 0.1 * np.ones(nbr, dtype=float)
-        self.m_max = 1.5 * np.ones(nbr, dtype=float)
-        self.theta = np.zeros((nbr, ntime), dtype=float)
-        self.theta_min = - 6.28 * np.ones(nbr, dtype=float)
-        self.theta_max = 6.28 * np.ones(nbr, dtype=float)
-        self.Beq = np.zeros((nbr, ntime), dtype=float)
-        self.G0sw = np.zeros((nbr, ntime), dtype=float)
+        self.tap_module: np.array = np.ones(nelm, dtype=float)
+        self.tap_module_min: np.array = np.full(nelm, fill_value=0.1, dtype=float)
+        self.tap_module_max: np.array = np.full(nelm, fill_value=1.5, dtype=float)
+        self.tap_angle: np.array = np.zeros(nelm, dtype=float)
+        self.tap_angle_min: np.array = np.full(nelm, fill_value=-6.28, dtype=float)
+        self.tap_angle_max: np.array = np.full(nelm, fill_value=6.28, dtype=float)
+        self.Beq: np.array = np.zeros(nelm, dtype=float)
+        self.G0sw: np.array = np.zeros(nelm, dtype=float)
 
-        self.tap_t = np.ones(self.nbr, dtype=float)
-        self.tap_f = np.ones(self.nbr, dtype=float)
+        self.virtual_tap_t: np.array = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_f: np.array = np.ones(self.nelm, dtype=float)
 
-        self.Pfset = np.zeros((nbr, ntime))
-        self.Qfset = np.zeros((nbr, ntime))
-        self.Qtset = np.zeros((nbr, ntime))
-        self.vf_set = np.ones((nbr, ntime))
-        self.vt_set = np.ones((nbr, ntime))
+        self.Pfset: np.array = np.zeros(nelm, dtype=float)
+        self.Qfset: np.array = np.zeros(nelm, dtype=float)
+        self.Qtset: np.array = np.zeros(nelm, dtype=float)
+        self.vf_set: np.array = np.ones(nelm, dtype=float)
+        self.vt_set: np.array = np.ones(nelm, dtype=float)
 
-        self.Kdp = np.ones(self.nbr)
-        self.Kdp_va = np.ones(self.nbr)
-        self.alpha1 = np.zeros(self.nbr)  # converter losses parameter (alpha1)
-        self.alpha2 = np.zeros(self.nbr)  # converter losses parameter (alpha2)
-        self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
-        self.control_mode = np.zeros(self.nbr, dtype=object)
+        self.Kdp: np.array = np.ones(self.nelm, dtype=float)
+        self.Kdp_va: np.array = np.ones(self.nelm, dtype=float)
+        self.alpha1: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
+        self.alpha2: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
+        self.alpha3: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
+        self.control_mode: np.array = np.zeros(self.nelm, dtype=object)
 
-        self.contingency_enabled = np.ones(self.nbr, dtype=int)
-        self.monitor_loading = np.ones(self.nbr, dtype=int)
+        self.contingency_enabled: np.array = np.ones(self.nelm, dtype=int)
+        self.monitor_loading: np.array = np.ones(self.nelm, dtype=int)
 
-        self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
-        self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
+        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
+                                                           dtype=int)  # connectivity branch with their "from" bus
+        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
+                                                           dtype=int)  # connectivity branch with their "to" bus
 
-    def slice(self, elm_idx, bus_idx, time_idx=None):
+        self.branch_cost: np.array = np.zeros(nelm, dtype=float)
+
+        self.original_idx = np.zeros(nelm, dtype=int)
+
+    def slice(self, elm_idx, bus_idx):
         """
-        Slice this class
-        :param elm_idx: branch indices
-        :param bus_idx: bus indices
-        :param time_idx: array of time indices
+        Slice branch data by given indices
+        :param elm_idx: array of branch indices
+        :param bus_idx: array of bus indices
         :return: new BranchData instance
         """
 
-        if time_idx is None:
-            tidx = elm_idx
-        else:
-            tidx = np.ix_(elm_idx, time_idx)
-
-        data = BranchData(nbr=len(elm_idx), nbus=len(bus_idx))
+        data = BranchData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
 
@@ -144,8 +142,8 @@ class BranchData:
         data.B2 = self.B[elm_idx]
 
         data.k = self.k[elm_idx]
-        data.tap_t = self.tap_f[elm_idx]
-        data.tap_f = self.tap_t[elm_idx]
+        data.virtual_tap_t = self.virtual_tap_f[elm_idx]
+        data.virtual_tap_f = self.virtual_tap_t[elm_idx]
         data.Kdp = self.Kdp[elm_idx]
         data.Kdp_va = self.Kdp_va[elm_idx]
         data.dc = self.dc[elm_idx]
@@ -159,23 +157,23 @@ class BranchData:
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
 
-        data.active = self.active[tidx]
-        data.rates = self.rates[tidx]
-        data.contingency_rates = self.contingency_rates[tidx]
-        data.m = self.m[tidx]
+        data.active = self.active[elm_idx]
+        data.rates = self.rates[elm_idx]
+        data.contingency_rates = self.contingency_rates[elm_idx]
+        data.tap_module = self.tap_module[elm_idx]
 
-        data.m_min = self.m_min[elm_idx]
-        data.m_max = self.m_max[elm_idx]
-        data.theta = self.theta[tidx]
-        data.theta_min = self.theta_min[elm_idx]
-        data.theta_max = self.theta_max[elm_idx]
-        data.Beq = self.Beq[tidx]
-        data.G0sw = self.G0sw[tidx]
-        data.Pfset = self.Pfset[tidx]
-        data.Qfset = self.Qfset[tidx]
-        data.Qtset = self.Qtset[tidx]
-        data.vf_set = self.vf_set[tidx]
-        data.vt_set = self.vt_set[tidx]
+        data.tap_module_min = self.tap_module_min[elm_idx]
+        data.tap_module_max = self.tap_module_max[elm_idx]
+        data.tap_angle = self.tap_angle[elm_idx]
+        data.tap_angle_min = self.tap_angle_min[elm_idx]
+        data.tap_angle_max = self.tap_angle_max[elm_idx]
+        data.Beq = self.Beq[elm_idx]
+        data.G0sw = self.G0sw[elm_idx]
+        data.Pfset = self.Pfset[elm_idx]
+        data.Qfset = self.Qfset[elm_idx]
+        data.Qtset = self.Qtset[elm_idx]
+        data.vf_set = self.vf_set[elm_idx]
+        data.vt_set = self.vt_set[elm_idx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
@@ -183,125 +181,97 @@ class BranchData:
         data.F = get_bus_indices(data.C_branch_bus_f)
         data.T = get_bus_indices(data.C_branch_bus_t)
 
+        data.branch_cost = self.branch_cost[elm_idx]
+
+        data.original_idx = elm_idx
+
         return data
 
-    def get_island(self, bus_idx, t_idx=0):
+    def get_island(self, bus_idx):
         """
-        get the array of branch indices that belong to the islands given by the bus indices
+        Get the array of branch indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
         :return: array of island branch indices
         """
-        if self.nbr:
-            return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t,
-                                                 island=bus_idx,
-                                                 active=self.active[:, t_idx])
+        if self.nelm:
+            return tp.get_elements_of_the_island(
+                self.C_branch_bus_f + self.C_branch_bus_t,
+                island=bus_idx,
+                active=self.active)
         else:
             return np.zeros(0, dtype=int)
 
     def get_ac_indices(self):
         """
-
+        Get ac branch indices
         :return:
         """
         return np.where(self.dc == 0)[0]
 
     def get_dc_indices(self):
         """
-
+        Get dc branch indices
         :return:
         """
         return np.where(self.dc != 0)[0]
 
-    def get_linear_series_admittance(self, t=0):
+    def get_linear_series_admittance(self):
         """
         Get the linear version of the series admittance for ACDC systems
-        :param t: time step index
         :return: Array of the length of the number of branches with 1/X or 1/R depending whether if it is AC or DC
         """
         dc = self.get_dc_indices()
         ac = self.get_ac_indices()
-        m_abs = np.abs(self.m[:, t])
+        m_abs = np.abs(self.tap_module)
         if len(dc):
             # compose the vector for AC-DC grids where the R is needed for this matrix
             # even if conceptually we only want the susceptance
-            b = np.zeros(self.nbr)
-            active = self.active[:, t]
+            b = np.zeros(self.nelm)
+            active = self.active
             b[ac] = 1.0 / (m_abs[ac] * self.X[ac] * active[ac] + 1e-20)  # for ac branches
             b[dc] = 1.0 / (m_abs[dc] * self.R[dc] * active[dc] + 1e-20)  # for dc branches
         else:
-            b = 1.0 / (m_abs * self.X * self.active[:, t] + 1e-20)  # for ac branches
+            b = 1.0 / (m_abs * self.X * self.active + 1e-20)  # for ac branches
 
         return b
 
     def get_monitor_enabled_indices(self):
         """
-
+        Get monitored branch indices
         :return:
         """
         return np.where(self.monitor_loading == 1)[0]
 
     def get_contingency_enabled_indices(self):
         """
-
+        Get contingency branch indices
         :return:
         """
         return np.where(self.contingency_enabled == 1)[0]
 
-    def to_df(self, t=0):
+    def to_df(self):
         """
         Create DataFrame with the compiled branches information
         :param t: time index, relevant for those magnitudes that change with time
         :return: Pandas DataFrame
         """
-        data = {'names': self.names,
-                'active': self.active[:, t],
-                'F': self.F,
-                'T': self.T,
-                'Rates': self.rates[:, t],
-                'Contingency rates': self.contingency_rates[:, t],
-                'R': self.R,
-                'X': self.X,
-                'G': self.G,
-                'B': self.B,
-                'Vtap F': self.tap_f,
-                'Vtap T': self.tap_t,
-                'Tap module': self.m[:, t],
-                'Tap angle': self.theta[:, t]}
+        data = {
+            'names': self.names,
+            'active': self.active,
+            'F': self.F,
+            'T': self.T,
+            'Rates': self.rates,
+            'Contingency rates': self.contingency_rates,
+            'R': self.R,
+            'X': self.X,
+            'G': self.G,
+            'B': self.B,
+            'Vtap F': self.virtual_tap_f,
+            'Vtap T': self.virtual_tap_t,
+            'Tap module': self.tap_module,
+            'Tap angle': self.tap_angle
+        }
         return pd.DataFrame(data=data)
 
     def __len__(self):
-        return self.nbr
-
-
-class BranchOpfData(BranchData):
-
-    def __init__(self, nbr, nbus, ntime=1):
-        """
-
-        :param nbr:
-        :param nbus:
-        :param ntime:
-        """
-        BranchData.__init__(self, nbr, nbus, ntime)
-
-        self.branch_cost = np.zeros((nbr, ntime), dtype=float)
-
-    def slice(self, elm_idx, bus_idx, time_idx=None):
-        """
-        Slice this class
-        :param elm_idx: branch indices
-        :param bus_idx: bus indices
-        :param time_idx: array of time indices
-        :return: new BranchData instance
-        """
-
-        if time_idx is None:
-            tidx = elm_idx
-        else:
-            tidx = np.ix_(elm_idx, time_idx)
-
-        data = super().slice(elm_idx, bus_idx, time_idx)
-
-        data.branch_cost = self.branch_cost[tidx]
-
-        return data
+        return self.nelm

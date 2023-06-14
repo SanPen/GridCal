@@ -310,8 +310,8 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(gf.get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = core.SnapshotData(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nupfc=1, nhvdc=1,
-                                nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
+        pfo = core.NumericalCircuit(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nupfc=1, nhvdc=1,
+                                    nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(pfo.available_structures))
 
         self.schematic_list_steps = list()
@@ -1962,7 +1962,7 @@ class MainGUI(QMainWindow):
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
 
-            numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+            numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
             calculation_inputs = numerical_circuit.split_into_islands()
 
             with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
@@ -5167,7 +5167,7 @@ class MainGUI(QMainWindow):
                                  hvdc_loading=results.hvdc_loading,
                                  use_flow_based_width=use_flow_based_width,
                                  ma=results.tap_module,
-                                 theta=results.theta,
+                                 theta=results.tap_angle,
                                  Beq=results.Beq,
                                  min_branch_width=min_branch_width,
                                  max_branch_width=max_branch_width,
@@ -6121,7 +6121,7 @@ class MainGUI(QMainWindow):
             engine = self.get_preferred_engine()
 
             if engine == bs.EngineType.GridCal:
-                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
@@ -6135,7 +6135,7 @@ class MainGUI(QMainWindow):
 
             else:
                 # fallback to gridcal
-                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
@@ -7152,7 +7152,7 @@ class MainGUI(QMainWindow):
         Get a snapshot compilation
         :return: SnapshotData instance
         """
-        return core.compile_snapshot_circuit(circuit=self.circuit)
+        return core.compile_numerical_circuit(circuit=self.circuit)
 
     def get_time_circuit(self):
         """
@@ -7223,7 +7223,7 @@ class MainGUI(QMainWindow):
 
     @property
     def islands(self):
-        numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+        numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
 
