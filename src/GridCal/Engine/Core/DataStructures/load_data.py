@@ -21,7 +21,11 @@ import GridCal.Engine.Core.topology as tp
 
 class LoadData:
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm: int,
+            nbus: int,
+    ):
         """
         Load data arrays
         :param nelm: number of load
@@ -43,7 +47,11 @@ class LoadData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx, bus_idx):
+    def slice(
+            self,
+            elm_idx: np.ndarray,
+            bus_idx: np.ndarray,
+    ):
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
@@ -51,7 +59,10 @@ class LoadData:
         :return: new LoadData instance
         """
 
-        data = LoadData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = LoadData(
+            nelm=len(elm_idx),
+            nbus=len(bus_idx)
+        )
 
         data.names = self.names[elm_idx]
 
@@ -68,7 +79,10 @@ class LoadData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(
+            self,
+            bus_idx: np.ndarray,
+    ):
         """
         Get the array of load indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -76,7 +90,10 @@ class LoadData:
         """
         if self.nelm:
             return tp.get_elements_of_the_island(
-                self.C_bus_elm.T, bus_idx, active=self.active)
+                C_element_bus=self.C_bus_elm.T,
+                island=bus_idx,
+                active=self.active
+            )
         else:
             return np.zeros(0, dtype=int)
 

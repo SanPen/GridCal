@@ -21,7 +21,11 @@ import GridCal.Engine.Core.topology as tp
 
 class ShuntData:
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm: int,
+            nbus: int,
+    ):
         """
         Shunt data arrays
         :param nelm: number of shunts
@@ -43,7 +47,11 @@ class ShuntData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx, bus_idx):
+    def slice(
+            self,
+            elm_idx: np.ndarray,
+            bus_idx: np.ndarray,
+    ):
         """
         Slice shunt data by given indices
         :param elm_idx: array of branch indices
@@ -51,7 +59,10 @@ class ShuntData:
         :return: new ShuntData instance
         """
 
-        data = ShuntData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = ShuntData(
+            nelm=len(elm_idx),
+            nbus=len(bus_idx),
+        )
 
         data.names = self.names[elm_idx]
 
@@ -68,14 +79,21 @@ class ShuntData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(
+            self,
+            bus_idx: np.ndarray,
+    ):
         """
         Get the array of shunt indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
+            return tp.get_elements_of_the_island(
+                C_element_bus=self.C_bus_elm.T,
+                island=bus_idx,
+                active=self.active,
+            )
         else:
             return np.zeros(0, dtype=int)
 

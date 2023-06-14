@@ -26,7 +26,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New numerical circuit" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="replaced types definition">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/battery_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/battery_data.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1068,13 +1070,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00343" summary="Merged devel with devel_REE (successfully)">
-      <created>1662028943800</created>
-      <option name="number" value="00343" />
-      <option name="presentableId" value="LOCAL-00343" />
-      <option name="project" value="LOCAL" />
-      <updated>1662028943800</updated>
-    </task>
     <task id="LOCAL-00344" summary="updated version">
       <created>1662028986050</created>
       <option name="number" value="00344" />
@@ -1411,7 +1406,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686747000777</updated>
     </task>
-    <option name="localTasksCounter" value="392" />
+    <task id="LOCAL-00392" summary="replaced types definition">
+      <created>1686747339137</created>
+      <option name="number" value="00392" />
+      <option name="presentableId" value="LOCAL-00392" />
+      <option name="project" value="LOCAL" />
+      <updated>1686747339137</updated>
+    </task>
+    <option name="localTasksCounter" value="393" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1445,7 +1447,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="ntc_opf/reports:&#10; - New add_ntc_data&#10; - New flow_report&#10; - New contingency_report&#10; - rebased all reports to use the new ones.&#10; - New filter by loading" />
     <MESSAGE value="ntc_opf/reports:&#10; - New reports working" />
     <MESSAGE value="ntc_opf/reports:&#10; - Fixed new reports working" />
     <MESSAGE value="ntc_opf/:&#10; - Fixed Pg_min assignment" />
@@ -1470,7 +1471,8 @@
     <MESSAGE value="GridCal/pack_unpack:&#10; - Fix datetime format in last Pandas version" />
     <MESSAGE value="GridCal/pmode3:&#10; - Working." />
     <MESSAGE value="New numerical circuit" />
-    <option name="LAST_COMMIT_MESSAGE" value="New numerical circuit" />
+    <MESSAGE value="replaced types definition" />
+    <option name="LAST_COMMIT_MESSAGE" value="replaced types definition" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1688,7 +1690,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
-          <line>168</line>
+          <line>172</line>
           <option name="timeStamp" value="740" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

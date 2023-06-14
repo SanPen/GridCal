@@ -22,6 +22,8 @@ from GridCal.Engine.Devices.enumerations import WindingsConnection
 
 
 def get_bus_indices(C_branch_bus):
+
+    # todo: add assertion of type
     F = np.zeros(C_branch_bus.shape[0], dtype=int)
 
     for j in range(C_branch_bus.shape[1]):
@@ -118,7 +120,11 @@ class BranchData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx, bus_idx):
+    def slice(
+            self,
+            elm_idx:np.ndarray,
+            bus_idx:np.ndarray
+    ):
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -191,7 +197,10 @@ class BranchData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(
+            self,
+            bus_idx: np.ndarray
+    ):
         """
         Get the array of branch indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices

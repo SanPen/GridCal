@@ -22,7 +22,11 @@ from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 class HvdcData:
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm: int,
+            nbus: int,
+    ):
         """
         Hvdc data arrays
         :param nelm: number of hvdcs
@@ -118,7 +122,10 @@ class HvdcData:
         """
         return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
 
-    def get_island(self, bus_idx):
+    def get_island(
+            self,
+            bus_idx: np.ndarray,
+    ):
         """
         Get HVDC indices of the island given by the bus indices
         :param bus_idx: list of bus indices
@@ -158,19 +165,26 @@ class HvdcData:
         """
         return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active).T
 
-    def get_angle_droop_in_pu_rad(self, Sbase):
+    def get_angle_droop_in_pu_rad(
+            self,
+            Sbase: float
+    ):
         """
         Get the angle droop in pu/rad
-        :param Sbase:
+        :param Sbase: base power
         :return:
         """
         return self.angle_droop * 57.295779513 / Sbase
 
-    def get_power(self, Sbase, theta):
+    def get_power(
+            self,
+            Sbase: float,
+            theta: np.ndarray,
+    ):
         """
         Get hvdc power
-        :param Sbase:
-        :param theta:
+        :param Sbase: base power
+        :param theta: bus angles array
         :return:
         """
         Pbus = np.zeros(self.nbus)

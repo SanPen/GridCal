@@ -21,7 +21,11 @@ import GridCal.Engine.Core.topology as tp
 
 class GeneratorData:
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm: int,
+            nbus: int,
+    ):
         """
         Generator data arrays
         :param nelm: number of generator
@@ -107,7 +111,10 @@ class GeneratorData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(
+            self,
+            bus_idx: np.ndarray,
+    ):
         """
         Get the array of generator indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -129,7 +136,10 @@ class GeneratorData:
         Q = pf_sign * self.p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.p + 1.0j * Q
 
-    def get_Yshunt(self, seq=1):
+    def get_Yshunt(
+            self,
+            seq: int=1
+    ):
         """
         Obtain the vector of shunt admittances of a given sequence
         :param seq: sequence (0, 1 or 2)
