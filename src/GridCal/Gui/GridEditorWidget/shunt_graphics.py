@@ -66,18 +66,21 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
+        lines_data = list()
+        lines_data.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
+        lines_data.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
+        lines_data.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
+        lines_data.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
+        lines_data.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
+
         self.lines = list()
-        self.lines.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
-        self.lines.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
-        self.lines.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
-        self.lines.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
-        self.lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
-        self.lines.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
-        self.lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
-        for l in self.lines:
+        for l in lines_data:
             l1 = Line(self)
             l1.setLine(l)
             l1.setPen(pen)
+            self.lines.append(l1)
             self.addToGroup(l1)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)

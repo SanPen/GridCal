@@ -116,7 +116,7 @@ class BranchData:
         self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
                                                            dtype=int)  # connectivity branch with their "to" bus
 
-        self.branch_cost: np.ndarray = np.zeros(nelm, dtype=float)
+        self.overload_cost: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
@@ -191,7 +191,7 @@ class BranchData:
         data.F = get_bus_indices(data.C_branch_bus_f)
         data.T = get_bus_indices(data.C_branch_bus_t)
 
-        data.branch_cost = self.branch_cost[elm_idx]
+        data.overload_cost = self.overload_cost[elm_idx]
 
         data.original_idx = elm_idx
 

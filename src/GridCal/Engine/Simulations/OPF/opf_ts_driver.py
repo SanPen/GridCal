@@ -31,7 +31,8 @@ from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSe
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf, translate_newton_pa_opf_results
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf, \
+    translate_newton_pa_opf_results
 import GridCal.Engine.basic_structures as bs
 
 
@@ -53,53 +54,25 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         # power flow options
         self.pf_options = options.power_flow_options
 
-        # compile the circuit into a numerical equivalent for this simulation
-        self.numerical_circuit: "OpfTimeCircuit" = None
-
         # OPF results
         self.results: OptimalPowerFlowTimeSeriesResults = OptimalPowerFlowTimeSeriesResults(
-                                                            bus_names=self.grid.get_bus_names(),
-                                                            branch_names=self.grid.get_branch_names_wo_hvdc(),
-                                                            load_names=self.grid.get_load_names(),
-                                                            generator_names=self.grid.get_controlled_generator_names(),
-                                                            battery_names=self.grid.get_battery_names(),
-                                                            hvdc_names=self.grid.get_hvdc_names(),
-                                                            n=self.grid.get_bus_number(),
-                                                            m=self.grid.get_branch_number_wo_hvdc(),
-                                                            nt=self.grid.get_time_number(),
-                                                            ngen=self.grid.get_generators_number(),
-                                                            nbat=self.grid.get_batteries_number(),
-                                                            nload=self.grid.get_loads_number(),
-                                                            nhvdc=self.grid.get_hvdc_number(),
-                                                            time=self.grid.time_profile,
-                                                            bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
+            bus_names=self.grid.get_bus_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            load_names=self.grid.get_load_names(),
+            generator_names=self.grid.get_generator_names(),
+            battery_names=self.grid.get_battery_names(),
+            hvdc_names=self.grid.get_hvdc_names(),
+            n=self.grid.get_bus_number(),
+            m=self.grid.get_branch_number_wo_hvdc(),
+            nt=self.grid.get_time_number(),
+            ngen=self.grid.get_generators_number(),
+            nbat=self.grid.get_batteries_number(),
+            nload=self.grid.get_loads_number(),
+            nhvdc=self.grid.get_hvdc_number(),
+            time=self.grid.time_profile,
+            bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
 
         self.all_solved = True
-
-    def reset_results(self):
-        """
-        Clears the results
-        """
-        # reinitialize
-        self.results = OptimalPowerFlowTimeSeriesResults(
-            bus_names=self.numerical_circuit.bus_names,
-            branch_names=self.numerical_circuit.branch_names,
-            load_names=self.numerical_circuit.load_names,
-            generator_names=self.numerical_circuit.generator_names,
-            battery_names=self.numerical_circuit.battery_names,
-            hvdc_names=self.numerical_circuit.hvdc_names,
-            n=self.numerical_circuit.nbus,
-            m=self.numerical_circuit.nelm,
-            nt=self.numerical_circuit.ntime,
-            ngen=self.numerical_circuit.nelm,
-            nbat=self.numerical_circuit.nbatt,
-            nload=self.numerical_circuit.nelm,
-            nhvdc=self.numerical_circuit.nelm,
-            time=self.grid.time_profile,
-            bus_types=self.numerical_circuit.bus_types)
-
-        self.results.rates = self.numerical_circuit.branch_data.rates
-        self.results.contingency_rates = self.numerical_circuit.branch_data.contingency_rates
 
     def get_steps(self):
         """
@@ -182,7 +155,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         self.results.Sbus[a:b, :] = problem.get_power_injections()
         self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
-        self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
+        self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:,
+                                                                           a:b].transpose()
         self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
 
         self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
@@ -216,7 +190,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                     'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             if start_ >= self.start_ and end_ <= self.end_:
-
                 # run an opf for the group interval only if the group is within the start:end boundaries
                 self.opf(start_=start_, end_=end_ + 1, remote=True, batteries_energy_0=energy_0)
 
@@ -236,34 +209,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         start = time.time()
         if self.engine == bs.EngineType.GridCal:
-
-            # compile the circuit into a numerical equivalent for this simulation
-            self.numerical_circuit = compile_numerical_circuit_at(
-                circuit=self.grid,
-                t_idx=None,
-                apply_temperature=self.pf_options.apply_temperature_correction,
-                branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
-
-            # OPF results
-            self.results = OptimalPowerFlowTimeSeriesResults(
-                bus_names=self.numerical_circuit.bus_names,
-                branch_names=self.numerical_circuit.branch_names,
-                load_names=self.numerical_circuit.load_names,
-                generator_names=self.numerical_circuit.generator_names,
-                battery_names=self.numerical_circuit.battery_names,
-                hvdc_names=self.numerical_circuit.hvdc_names,
-                n=self.numerical_circuit.nbus,
-                m=self.numerical_circuit.nelm,
-                nt=self.numerical_circuit.ntime,
-                ngen=self.numerical_circuit.nelm,
-                nbat=self.numerical_circuit.nbatt,
-                nload=self.numerical_circuit.nelm,
-                nhvdc=self.numerical_circuit.nelm,
-                time=self.grid.time_profile,
-                bus_types=self.numerical_circuit.bus_types)
-
-            self.results.rates = self.numerical_circuit.branch_data.rates
-            self.results.contingency_rates = self.numerical_circuit.branch_data.contingency_rates
 
             if self.options.grouping == TimeGrouping.NoGrouping:
                 self.opf(start_=self.start_, end_=self.end_)

@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
 from GridCal.Engine.Simulations.results_table import ResultsTable
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -183,9 +183,9 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.end_ = len(self.grid.time_profile)
         time_indices = np.arange(self.start_, self.end_ + 1)
 
-        ts_numeric_circuit = compile_time_circuit(self.grid)
+        ts_numeric_circuit = compile_numerical_circuit_at(self.grid)
         self.results = LinearAnalysisTimeSeriesResults(n=ts_numeric_circuit.nbus,
-                                                       m=ts_numeric_circuit.nelm,
+                                                       m=ts_numeric_circuit.nbr,
                                                        time_array=ts_numeric_circuit.time_array[time_indices],
                                                        bus_names=ts_numeric_circuit.bus_names,
                                                        bus_types=ts_numeric_circuit.bus_types,

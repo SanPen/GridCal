@@ -43,7 +43,7 @@ class StaticGenerator(EditableDevice):
     """
 
     def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
-                 mttf=0.0, mttr=0.0,
+                 mttf=0.0, mttr=0.0, cost=1200.0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
         EditableDevice.__init__(self,
@@ -61,6 +61,8 @@ class StaticGenerator(EditableDevice):
                                                   'Q': GCProp('MVAr', float, 'Reactive power'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                  'Cost': GCProp('e/MWh', float,
+                                                                 'Cost of not served energy. Used in OPF.'),
                                                   'capex': GCProp('e/MW', float,
                                                                   'Cost of investment. Used in expansion planning.'),
                                                   'opex': GCProp('e/MWh', float,
@@ -71,7 +73,8 @@ class StaticGenerator(EditableDevice):
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',
-                                                         'Q': 'Q_prof'})
+                                                         'Q': 'Q_prof',
+                                                         'Cost': 'Cost_prof'})
 
         self.bus = None
 
@@ -88,6 +91,9 @@ class StaticGenerator(EditableDevice):
         # power profile for this load
         self.P_prof = P_prof
         self.Q_prof = Q_prof
+
+        self.Cost = cost
+        self.Cost_prof = None
 
         self.capex = capex
 
@@ -125,8 +131,15 @@ class StaticGenerator(EditableDevice):
                 'capex': self.capex,
                 'opex': self.opex,
                 'build_status': str(self.build_status.value).lower(),
-                'technology': ""
+                'technology': "",
+                'Cost': self.Cost
                 }
+
+        if self.active_prof is not None:
+            data['active_profile'] = self.active_prof.tolist()
+            data['P_prof'] = self.P_prof.tolist()
+            data['Q_prof'] = self.Q_prof.tolist()
+            data['Cost_prof'] = self.Cost_prof.tolist()
 
         return data
 

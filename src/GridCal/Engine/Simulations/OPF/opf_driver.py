@@ -126,7 +126,7 @@ class OptimalPowerFlow(DriverTemplate):
         gn[gn == None] = 0
 
         hvdc_power = problem.get_hvdc_flows()
-        hvdc_loading = hvdc_power / (numerical_circuit.hvdc_data.rate[:, 0] + 1e-20)
+        hvdc_loading = hvdc_power / (numerical_circuit.hvdc_data.rate + 1e-20)
 
         # pack the results
         self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.names,

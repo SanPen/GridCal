@@ -283,7 +283,7 @@ def formulate_contingency(problem: pl.LpProblem,
     return flow_lst, overload1_lst, overload2_lst, indices
 
 
-def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pinj, t=0,
+def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pinj,
                         logger: Logger = Logger(), inf=999999):
     """
 
@@ -296,17 +296,17 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pin
     :param inf:
     :return:
     """
-    rates = nc.hvdc_data.rate[:, t] / nc.Sbase
+    rates = nc.hvdc_data.rate / nc.Sbase
     F = nc.hvdc_data.get_bus_indices_f()
     T = nc.hvdc_data.get_bus_indices_t()
 
     flow_f = np.zeros(nc.nhvdc, dtype=object)
 
-    angle_droop = nc.hvdc_data.get_angle_droop_in_pu_rad(nc.Sbase)[:, t]
+    angle_droop = nc.hvdc_data.get_angle_droop_in_pu_rad(nc.Sbase)
 
     for i in range(nc.nhvdc):
 
-        if nc.hvdc_data.active[i, t]:
+        if nc.hvdc_data.active[i]:
 
             _f = F[i]
             _t = T[i]
@@ -318,7 +318,7 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pin
 
                 # formulate the hvdc flow as an AC line equivalent
                 flow_f[i] = LpVariable('flow_hvdc1_' + str(i), -rates[i], rates[i])
-                P0 = nc.hvdc_data.Pset[i, t] / nc.Sbase
+                P0 = nc.hvdc_data.Pset[i] / nc.Sbase
                 problem.add(flow_f[i] == P0 + angle_droop[i] * (angles[_f] - angles[_t]), 'flow_hvdc1_eq_' + str(i))
                 # add the injections matching the flow
                 Pinj[_f] -= flow_f[i]
@@ -334,7 +334,7 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: NumericalCircuit, angles, Pin
 
             elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and not nc.hvdc_data.dispatchable[i]:
                 # simple injections model: The power is set by the user
-                P0 = nc.hvdc_data.Pset[i, t] / nc.Sbase
+                P0 = nc.hvdc_data.Pset[i] / nc.Sbase
                 flow_f[i] = P0
                 Pinj[_f] -= flow_f[i]
                 Pinj[_t] += flow_f[i]
@@ -454,31 +454,31 @@ class OpfDc(Opf):
         Sbase = self.numerical_circuit.Sbase
 
         # battery
-        Pb_max = self.numerical_circuit.battery_pmax / Sbase
-        Pb_min = self.numerical_circuit.battery_pmin / Sbase
-        cost_b = self.numerical_circuit.battery_cost
+        Pb_max = self.numerical_circuit.battery_data.pmax / Sbase
+        Pb_min = self.numerical_circuit.battery_data.pmin / Sbase
+        cost_b = self.numerical_circuit.battery_data.cost
 
         # generator
         if self.skip_generation_limits:
             Pg_max = np.zeros(self.numerical_circuit.ngen) + 99999
             Pg_min = np.zeros(self.numerical_circuit.ngen) - 99999
         else:
-            Pg_max = self.numerical_circuit.generator_pmax / Sbase
-            Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        cost_g = self.numerical_circuit.generator_cost
-        P_fix = self.numerical_circuit.generator_p / Sbase
-        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
+            Pg_max = self.numerical_circuit.generator_data.pmax / Sbase
+            Pg_min = self.numerical_circuit.generator_data.pmin / Sbase
+        cost_g = self.numerical_circuit.generator_data.cost
+        P_fix = self.numerical_circuit.generator_data.p / Sbase
+        enabled_for_dispatch = self.numerical_circuit.generator_data.dispatchable
 
         # load
-        Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
-        cost_l = self.numerical_circuit.load_cost
+        Pl = (self.numerical_circuit.load_data.active * self.numerical_circuit.load_data.S.real) / Sbase
+        cost_l = self.numerical_circuit.load_data.cost
 
         # branch
-        branch_active = self.numerical_circuit.branch_data.active[:, 0]
+        branch_active = self.numerical_circuit.branch_data.active
         branch_monitored = self.numerical_circuit.branch_data.monitor_loading
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
 
-        cost_br = self.numerical_circuit.branch_cost
+        cost_br = self.numerical_circuit.branch_data.overload_cost
 
         # create LP variables ------------------------------------------------------------------------------------------
         Pg = pl.lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
@@ -498,7 +498,7 @@ class OpfDc(Opf):
 
         # compute the nodal power injections ---------------------------------------------------------------------------
         P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_elm, Pg=Pg,
-                                 C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
+                                 C_bus_bat=self.numerical_circuit.battery_data.C_bus_elm, Pb=Pb,
                                  C_bus_load=self.numerical_circuit.load_data.C_bus_elm,
                                  LSlack=load_slack, Pl=Pl)
 
@@ -507,7 +507,6 @@ class OpfDc(Opf):
                                           nc=self.numerical_circuit,
                                           angles=theta,
                                           Pinj=P,
-                                          t=0,
                                           logger=self.logger,
                                           inf=999999)
 

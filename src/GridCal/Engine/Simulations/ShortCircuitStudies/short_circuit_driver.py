@@ -213,11 +213,9 @@ class ShortCircuitDriver(DriverTemplate):
         # voltage, Sf, loading, losses, error, converged, Qpv
         results = results = ShortCircuitResults(n=calculation_inputs.nbus,
                                                 m=calculation_inputs.nbr,
-                                                n_tr=0,
                                                 n_hvdc=calculation_inputs.nhvdc,
                                                 bus_names=calculation_inputs.bus_names,
                                                 branch_names=calculation_inputs.branch_names,
-                                                transformer_names=[],
                                                 hvdc_names=calculation_inputs.hvdc_names,
                                                 bus_types=calculation_inputs.bus_types,
                                                 area_names=None)
@@ -272,11 +270,9 @@ class ShortCircuitDriver(DriverTemplate):
 
         results = ShortCircuitResults(n=numerical_circuit.nbus,
                                       m=numerical_circuit.nbr,
-                                      n_tr=0,
                                       n_hvdc=numerical_circuit.nhvdc,
                                       bus_names=numerical_circuit.bus_names,
                                       branch_names=numerical_circuit.branch_names,
-                                      transformer_names=[],
                                       hvdc_names=numerical_circuit.hvdc_names,
                                       bus_types=numerical_circuit.bus_types)
 

@@ -26,19 +26,16 @@ from GridCal.Engine.Devices.enumerations import FaultType
 
 class ShortCircuitResults(ResultsTemplate):
 
-    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types,
-                 area_names=None):
+    def __init__(self, n, m, n_hvdc, bus_names, branch_names, hvdc_names, bus_types, area_names=None):
         """
         A **ShortCircuitResults** object is create as an attribute of the
         :ref:`ShortCircuitResults<pf_mp>` (as ShortCircuitResults.results) when the power flow is run. It
         provides access to the simulation results through its class attributes.
         :param n:
         :param m:
-        :param n_tr:
         :param n_hvdc:
         :param bus_names:
         :param branch_names:
-        :param transformer_names:
         :param hvdc_names:
         :param bus_types:
         """
@@ -133,14 +130,12 @@ class ShortCircuitResults(ResultsTemplate):
 
         self.n = n
         self.m = m
-        self.n_tr = n_tr
         self.n_hvdc = n_hvdc
 
         self.bus_types = bus_types
 
         self.bus_names = bus_names
         self.branch_names = branch_names
-        self.transformer_names = transformer_names
         self.hvdc_names = hvdc_names
 
         # vars for the inter-area computation

@@ -23,12 +23,14 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, \
+    CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+
 
 ########################################################################################################################
 # Voltage collapse classes
@@ -345,10 +347,11 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         """
         print('Running voltage collapse...')
 
-        nc = compile_numerical_circuit(circuit=self.grid,
-                                       apply_temperature=self.pf_options.apply_temperature_correction,
-                                       branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                       opf_results=self.opf_results)
+        nc = compile_numerical_circuit_at(circuit=self.grid,
+                                          t_idx=None,
+                                          apply_temperature=self.pf_options.apply_temperature_correction,
+                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                          opf_results=self.opf_results)
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
@@ -359,7 +362,6 @@ class ContinuationPowerFlowDriver(DriverTemplate):
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
             if len(island.vd) > 0 and len(island.pqpv) > 0:
-
                 results = continuation_nr(Ybus=island.Ybus,
                                           Cf=island.Cf,
                                           Ct=island.Ct,

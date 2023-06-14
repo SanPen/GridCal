@@ -46,7 +46,7 @@ class TimeSeriesClustering(TimeSeries):
         @param grid: MultiCircuit instance
         @param options: PowerFlowOptions instance
         """
-        TimeSeries.__init__(self,  grid=grid, options=options, opf_time_series_results=opf_time_series_results,
+        TimeSeries.__init__(self, grid=grid, options=options, opf_time_series_results=opf_time_series_results,
                             start_=start_, end_=end_)
 
         self.cluster_number = cluster_number
@@ -73,16 +73,18 @@ class TimeSeriesClustering(TimeSeries):
         time_indices = np.arange(self.start_, self.end_)
 
         # compile the multi-circuit
-        time_circuit = compile_time_circuit(circuit=self.grid,
-                                            apply_temperature=False,
-                                            branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                            opf_results=self.opf_time_series_results)
+        # TODO: Fix X calculation, make specific function to get power injections with time without compiling
+        time_circuit = compile_numerical_circuit_at(circuit=self.grid,
+                                                    apply_temperature=False,
+                                                    branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                    opf_results=self.opf_time_series_results)
 
         if len(time_indices) >= self.cluster_number:
             self.progress_text.emit('Clustering...')
             X = time_circuit.Sbus
             X = X[:, time_indices].real.T
-            self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
+            self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X,
+                                                                                            n_points=self.cluster_number)
         else:
             # less time indices than clusters, so no clustering at all
             self.sampled_time_idx = np.array(range(len(time_indices)))

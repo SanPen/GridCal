@@ -620,7 +620,7 @@ class MultiCircuit:
 
         return lst
 
-    def get_calculation_loads_number(self) -> List[dev.Load]:
+    def get_calculation_loads_number(self) -> int:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -677,7 +677,7 @@ class MultiCircuit:
             val = val + len(bus.controlled_generators)
         return val
 
-    def get_controlled_generator_names(self):
+    def get_generator_names(self):
         """
         Returns a list of :ref:`Generator<generator>` names.
         """

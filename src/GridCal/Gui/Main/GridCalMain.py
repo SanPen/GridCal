@@ -6164,7 +6164,7 @@ class MainGUI(QMainWindow):
             engine = self.get_preferred_engine()
 
             if engine == bs.EngineType.GridCal:
-                numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
+                numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
@@ -6178,7 +6178,7 @@ class MainGUI(QMainWindow):
 
             else:
                 # fallback to gridcal
-                numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
+                numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 

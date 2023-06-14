@@ -65,7 +65,7 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, 0)
-    nc_gc = gce.compile_numerical_circuit(grid_gc)
+    nc_gc = gce.compile_numerical_circuit_at(grid_gc)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data

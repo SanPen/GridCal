@@ -15,7 +15,7 @@ def test_q_control_true():
     power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
-    nc = compile_numerical_circuit(main_circuit)
+    nc = compile_numerical_circuit_at(main_circuit)
 
     assert(power_flow.results.converged)
 
@@ -42,7 +42,7 @@ def test_q_control_false():
     power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
-    nc = compile_numerical_circuit(main_circuit)
+    nc = compile_numerical_circuit_at(main_circuit)
 
     Q = power_flow.results.Sbus.imag
     Qmin = nc.Qmin_bus[:, 0] * nc.Sbase
