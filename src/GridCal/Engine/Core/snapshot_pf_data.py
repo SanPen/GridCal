@@ -843,7 +843,7 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         if self.Admittances is None:
-            x = self.Ybus  # call the constructor of Yf
+            _ = self.Ybus  # call the constructor of Yf
 
         return self.Admittances.Yf
 
@@ -853,9 +853,8 @@ class NumericalCircuit:
         Admittance matrix of the "to" nodes with the branches
         :return: CSC matrix
         """
-        #todo: check this
         if self.Admittances is None:
-            x = self.Ybus  # call the constructor of Yt
+            _ = self.Ybus  # call the constructor of Yt
 
         return self.Admittances.Yt
 
@@ -897,9 +896,8 @@ class NumericalCircuit:
         Array of shunt admittances of the pi model of the branches (used in HELM mostly)
         :return: Array of complex values
         """
-        #todo: check this
         if self.Yshunt_ is None:
-            x = self.Yseries  # call the constructor of Yshunt
+            _ = self.Yseries  # call the constructor of Yshunt
 
         return self.Yshunt_
 
@@ -914,7 +912,6 @@ class NumericalCircuit:
         :return:
         """
         if self.B1_ is None:
-
             self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(
                 X=self.branch_data.X,
                 B=self.branch_data.B,
@@ -933,9 +930,8 @@ class NumericalCircuit:
         B'' matrix of the fast decoupled method
         :return:
         """
-        #todo: check this
         if self.B2_ is None:
-            x = self.B1  # call the constructor of B2
+            _ = self.B1  # call the constructor of B2
 
         return self.B2_
 
@@ -969,72 +965,88 @@ class NumericalCircuit:
         Susceptance matrix of the "from" nodes to the branches
         :return:
         """
-        #todo: check this
         if self.Bf_ is None:
-            x = self.Bbus  # call the constructor of Bf
+            _ = self.Bbus  # call the constructor of Bf
 
         return self.Bf_
 
     @property
     def Btheta(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.Bf_ is None:
-            x = self.Bbus  # call the constructor of Bf
+            _ = self.Bbus  # call the constructor of Bf
 
         return self.Btheta_
 
     @property
     def Bpqpv(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.Bpqpv_ is None:
-            x = self.Bbus  # call the constructor of Bpqpv
+            _ = self.Bbus  # call the constructor of Bpqpv
 
         return self.Bpqpv_
 
     @property
     def Bref(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.Bref_ is None:
-            x = self.Bbus  # call the constructor of Bref
+            _ = self.Bbus  # call the constructor of Bref
 
         return self.Bref_
 
     @property
     def vd(self):
+        """
 
+        :return:
+        """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus,
-                                                                     types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(
+                Sbus=self.Sbus,
+                types=self.bus_data.bus_types
+            )
 
         return self.vd_
 
     @property
     def pq(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.pq_ is None:
-            x = self.vd  # call the constructor
+            _ = self.vd  # call the constructor
 
         return self.pq_
 
     @property
     def pv(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.pv_ is None:
-            x = self.vd  # call the constructor
+            _ = self.vd  # call the constructor
 
         return self.pv_
 
     @property
     def pqpv(self):
+        """
 
-        #todo: check this
+        :return:
+        """
         if self.pqpv_ is None:
-            x = self.vd  # call the constructor
+            _ = self.vd  # call the constructor
 
         return self.pqpv_
 
