@@ -508,7 +508,7 @@ class FakeAdmittances:
 
 def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
-    from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
+    from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
     btgCircuit = to_bentayga(circuit, time_series=False)
 

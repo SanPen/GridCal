@@ -20,7 +20,7 @@ import scipy as sp
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
 
 

@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
     sigma_function
 from GridCal.Engine.Simulations.driver_template import DriverTemplate

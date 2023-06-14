@@ -19,7 +19,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit, compile_numerical_circuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit
 from GridCal.Engine.Devices import DeviceType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 

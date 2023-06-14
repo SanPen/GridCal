@@ -824,7 +824,7 @@ class FakeAdmittances:
 
 
 def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=False):
-    from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
+    from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
     npaCircuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
                                                                 time_series=False,

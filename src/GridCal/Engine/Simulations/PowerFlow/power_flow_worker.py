@@ -22,9 +22,9 @@ import GridCal.Engine.Simulations.PowerFlow as pflw
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_numerical_circuit, compile_numerical_circuit_at
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit, compile_numerical_circuit_at
 from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 

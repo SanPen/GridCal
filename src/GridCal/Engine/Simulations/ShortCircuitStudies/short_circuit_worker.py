@@ -18,7 +18,7 @@
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
-from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p, short_circuit_unbalance
 from GridCal.Engine.Core.admittance_matrices import compute_admittances
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults

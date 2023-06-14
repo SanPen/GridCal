@@ -19,7 +19,7 @@ import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.Core.snapshot_pf_data import NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 import GridCal.Engine.Core.DataStructures as ds
 
