@@ -30,38 +30,42 @@ class GeneratorData:
         """
         self.nelm: int = nelm
 
-        self.names: np.array = np.empty(nelm, dtype=object)
+        self.names: np.ndarray = np.empty(nelm, dtype=object)
 
-        self.controllable: np.array = np.zeros(nelm, dtype=bool)
-        self.installed_p: np.array = np.zeros(nelm, dtype=float)
+        self.controllable: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.installed_p: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.active: np.array = np.zeros(nelm, dtype=bool)
-        self.p: np.array = np.zeros(nelm, dtype=float)
-        self.pf: np.array = np.zeros(nelm, dtype=float)
-        self.v: np.array = np.zeros(nelm, dtype=float)
+        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.p: np.ndarray = np.zeros(nelm, dtype=float)
+        self.pf: np.ndarray = np.zeros(nelm, dtype=float)
+        self.v: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.qmin: np.array = np.zeros(nelm, dtype=float)
-        self.qmax: np.array = np.zeros(nelm, dtype=float)
+        self.qmin: np.ndarray = np.zeros(nelm, dtype=float)
+        self.qmax: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         # r0, r1, r2, x0, x1, x2
-        self.r0: np.array = np.zeros(nelm, dtype=float)
-        self.r1: np.array = np.zeros(nelm, dtype=float)
-        self.r2: np.array = np.zeros(nelm, dtype=float)
+        self.r0: np.ndarray = np.zeros(nelm, dtype=float)
+        self.r1: np.ndarray = np.zeros(nelm, dtype=float)
+        self.r2: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.x0: np.array = np.zeros(nelm, dtype=float)
-        self.x1: np.array = np.zeros(nelm, dtype=float)
-        self.x2: np.array = np.zeros(nelm, dtype=float)
+        self.x0: np.ndarray = np.zeros(nelm, dtype=float)
+        self.x1: np.ndarray = np.zeros(nelm, dtype=float)
+        self.x2: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.dispatchable: np.array = np.zeros(nelm, dtype=bool)
-        self.pmax: np.array = np.zeros(nelm, dtype=float)
-        self.pmin: np.array = np.zeros(nelm, dtype=float)
-        self.cost: np.array = np.zeros(nelm, dtype=float)
+        self.dispatchable: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.pmax: np.ndarray = np.zeros(nelm, dtype=float)
+        self.pmin: np.ndarray = np.zeros(nelm, dtype=float)
+        self.cost: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx, bus_idx):
+    def slice(
+            self,
+            elm_idx: np.ndarray,
+            bus_idx: np.ndarray
+    ):
         """
         Slice generator data by given indices
         :param elm_idx: array of element indices
@@ -170,7 +174,7 @@ class GeneratorData:
         # the division by n_per_bus achieves the averaging of the voltage control
         # value if more than 1 battery is present per bus
         # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
-        return np.array((self.C_bus_elm * self.v) / n_per_bus)
+        return np.ndarray((self.C_bus_elm * self.v) / n_per_bus)
 
     def get_installed_power_per_bus(self):
         """

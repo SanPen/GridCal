@@ -34,7 +34,11 @@ def get_bus_indices(C_branch_bus):
 
 class BranchData:
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm:int,
+            nbus:int
+    ):
         """
         Branch data arrays
         :param nelm: number of elements
@@ -42,75 +46,75 @@ class BranchData:
         """
         self.nelm: int = nelm
 
-        self.names: np.array = np.empty(self.nelm, dtype=object)
+        self.names: np.ndarray = np.empty(self.nelm, dtype=object)
 
-        self.dc: np.array = np.zeros(self.nelm, dtype=int)
+        self.dc: np.ndarray = np.zeros(self.nelm, dtype=int)
 
-        self.active: np.array = np.zeros(nelm, dtype=int)
-        self.rates: np.array = np.zeros(nelm, dtype=float)
-        self.contingency_rates: np.array = np.zeros(nelm, dtype=float)
+        self.active: np.ndarray = np.zeros(nelm, dtype=int)
+        self.rates: np.ndarray = np.zeros(nelm, dtype=float)
+        self.contingency_rates: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.F: np.array = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
-        self.T: np.array = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
+        self.F: np.ndarray = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
+        self.T: np.ndarray = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
         # composite losses curve (a * x^2 + b * x + c)
-        self.a: np.array = np.zeros(self.nelm, dtype=float)
-        self.b: np.array = np.zeros(self.nelm, dtype=float)
-        self.c: np.array = np.zeros(self.nelm, dtype=float)
+        self.a: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.b: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.c: np.ndarray = np.zeros(self.nelm, dtype=float)
 
-        self.R: np.array = np.zeros(self.nelm, dtype=float)
-        self.X: np.array = np.zeros(self.nelm, dtype=float)
-        self.G: np.array = np.zeros(self.nelm, dtype=float)
-        self.B: np.array = np.zeros(self.nelm, dtype=float)
+        self.R: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.X: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.G: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.B: np.ndarray = np.zeros(self.nelm, dtype=float)
 
-        self.R0: np.array = np.zeros(self.nelm, dtype=float)
-        self.X0: np.array = np.zeros(self.nelm, dtype=float)
-        self.G0: np.array = np.zeros(self.nelm, dtype=float)
-        self.B0: np.array = np.zeros(self.nelm, dtype=float)
+        self.R0: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.X0: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.G0: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.B0: np.ndarray = np.zeros(self.nelm, dtype=float)
 
-        self.R2: np.array = np.zeros(self.nelm, dtype=float)
-        self.X2: np.array = np.zeros(self.nelm, dtype=float)
-        self.G2: np.array = np.zeros(self.nelm, dtype=float)
-        self.B2: np.array = np.zeros(self.nelm, dtype=float)
+        self.R2: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.X2: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.G2: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.B2: np.ndarray = np.zeros(self.nelm, dtype=float)
 
-        self.conn: np.array = np.array([WindingsConnection.GG] * self.nelm)
+        self.conn: np.ndarray = np.array([WindingsConnection.GG] * self.nelm)
 
-        self.k: np.array = np.ones(nelm, dtype=float)
+        self.k: np.ndarray = np.ones(nelm, dtype=float)
 
-        self.tap_module: np.array = np.ones(nelm, dtype=float)
-        self.tap_module_min: np.array = np.full(nelm, fill_value=0.1, dtype=float)
-        self.tap_module_max: np.array = np.full(nelm, fill_value=1.5, dtype=float)
-        self.tap_angle: np.array = np.zeros(nelm, dtype=float)
-        self.tap_angle_min: np.array = np.full(nelm, fill_value=-6.28, dtype=float)
-        self.tap_angle_max: np.array = np.full(nelm, fill_value=6.28, dtype=float)
-        self.Beq: np.array = np.zeros(nelm, dtype=float)
-        self.G0sw: np.array = np.zeros(nelm, dtype=float)
+        self.tap_module: np.ndarray = np.ones(nelm, dtype=float)
+        self.tap_module_min: np.ndarray = np.full(nelm, fill_value=0.1, dtype=float)
+        self.tap_module_max: np.ndarray = np.full(nelm, fill_value=1.5, dtype=float)
+        self.tap_angle: np.ndarray = np.zeros(nelm, dtype=float)
+        self.tap_angle_min: np.ndarray = np.full(nelm, fill_value=-6.28, dtype=float)
+        self.tap_angle_max: np.ndarray = np.full(nelm, fill_value=6.28, dtype=float)
+        self.Beq: np.ndarray = np.zeros(nelm, dtype=float)
+        self.G0sw: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.virtual_tap_t: np.array = np.ones(self.nelm, dtype=float)
-        self.virtual_tap_f: np.array = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_t: np.ndarray = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_f: np.ndarray = np.ones(self.nelm, dtype=float)
 
-        self.Pfset: np.array = np.zeros(nelm, dtype=float)
-        self.Qfset: np.array = np.zeros(nelm, dtype=float)
-        self.Qtset: np.array = np.zeros(nelm, dtype=float)
-        self.vf_set: np.array = np.ones(nelm, dtype=float)
-        self.vt_set: np.array = np.ones(nelm, dtype=float)
+        self.Pfset: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qfset: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qtset: np.ndarray = np.zeros(nelm, dtype=float)
+        self.vf_set: np.ndarray = np.ones(nelm, dtype=float)
+        self.vt_set: np.ndarray = np.ones(nelm, dtype=float)
 
-        self.Kdp: np.array = np.ones(self.nelm, dtype=float)
-        self.Kdp_va: np.array = np.ones(self.nelm, dtype=float)
-        self.alpha1: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
-        self.alpha2: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
-        self.alpha3: np.array = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
-        self.control_mode: np.array = np.zeros(self.nelm, dtype=object)
+        self.Kdp: np.ndarray = np.ones(self.nelm, dtype=float)
+        self.Kdp_va: np.ndarray = np.ones(self.nelm, dtype=float)
+        self.alpha1: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
+        self.alpha2: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
+        self.alpha3: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
+        self.control_mode: np.ndarray = np.zeros(self.nelm, dtype=object)
 
-        self.contingency_enabled: np.array = np.ones(self.nelm, dtype=int)
-        self.monitor_loading: np.array = np.ones(self.nelm, dtype=int)
+        self.contingency_enabled: np.ndarray = np.ones(self.nelm, dtype=int)
+        self.monitor_loading: np.ndarray = np.ones(self.nelm, dtype=int)
 
         self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
                                                            dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
                                                            dtype=int)  # connectivity branch with their "to" bus
 
-        self.branch_cost: np.array = np.zeros(nelm, dtype=float)
+        self.branch_cost: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 

@@ -30,16 +30,16 @@ class LoadData:
         """
         self.nelm: int = nelm
 
-        self.names: np.array = np.empty(nelm, dtype=object)
+        self.names: np.ndarray = np.empty(nelm, dtype=object)
 
-        self.active: np.array = np.zeros(nelm, dtype=bool)
-        self.S: np.array = np.zeros(nelm, dtype=complex)
-        self.I: np.array = np.zeros(nelm, dtype=complex)
-        self.Y: np.array = np.zeros(nelm, dtype=complex)
+        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.S: np.ndarray = np.zeros(nelm, dtype=complex)
+        self.I: np.ndarray = np.zeros(nelm, dtype=complex)
+        self.Y: np.ndarray = np.zeros(nelm, dtype=complex)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
-        self.cost: np.array = np.zeros(nelm, dtype=float)
+        self.cost: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 

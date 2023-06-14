@@ -20,7 +20,11 @@ from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 
 class BatteryData(GeneratorData):
 
-    def __init__(self, nelm, nbus):
+    def __init__(
+            self,
+            nelm:int,
+            nbus:int
+    ):
         """
         Battery data arrays
         :param nelm: number of batteries
@@ -29,16 +33,17 @@ class BatteryData(GeneratorData):
         """
 
         GeneratorData.__init__(
+            self,
             nelm=nelm,
             nbus=nbus,
         )
 
-        self.enom: np.array = np.zeros(nelm)
-        self.min_soc: np.array = np.zeros(nelm)
-        self.max_soc: np.array = np.zeros(nelm)
-        self.soc_0: np.array = np.zeros(nelm)
-        self.discharge_efficiency: np.array = np.zeros(nelm)
-        self.charge_efficiency: np.array = np.zeros(nelm)
+        self.enom: np.ndarray = np.zeros(nelm)
+        self.min_soc: np.ndarray = np.zeros(nelm)
+        self.max_soc: np.ndarray = np.zeros(nelm)
+        self.soc_0: np.ndarray = np.zeros(nelm)
+        self.discharge_efficiency: np.ndarray = np.zeros(nelm)
+        self.charge_efficiency: np.ndarray = np.zeros(nelm)
 
     def slice(self, elm_idx, bus_idx, time_idx=None):
         """

@@ -31,38 +31,38 @@ class HvdcData:
         self.nbus: int = nbus
         self.nelm: int = nelm
 
-        self.names: np.array = np.zeros(nelm, dtype=object)
+        self.names: np.ndarray = np.zeros(nelm, dtype=object)
 
-        self.angle_droop: np.array = np.zeros(nelm, dtype=float)
+        self.angle_droop: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.control_mode: np.array = np.zeros(nelm, dtype=object)
+        self.control_mode: np.ndarray = np.zeros(nelm, dtype=object)
 
-        self.dispatchable: np.array = np.zeros(nelm, dtype=int)
+        self.dispatchable: np.ndarray = np.zeros(nelm, dtype=int)
 
-        self.F: np.array = np.zeros(nelm, dtype=int)
-        self.T: np.array = np.zeros(nelm, dtype=int)
+        self.F: np.ndarray = np.zeros(nelm, dtype=int)
+        self.T: np.ndarray = np.zeros(nelm, dtype=int)
 
-        self.active: np.array = np.zeros(nelm, dtype=bool)
-        self.rate: np.array = np.zeros(nelm, dtype=float)
-        self.contingency_rate: np.array = np.zeros(nelm, dtype=float)
+        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.rate: np.ndarray = np.zeros(nelm, dtype=float)
+        self.contingency_rate: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.r: np.array = np.zeros(nelm, dtype=float)
+        self.r: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.Pset: np.array = np.zeros(nelm, dtype=float)
-        self.Pt: np.array = np.zeros(nelm, dtype=float)
+        self.Pset: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Pt: np.ndarray = np.zeros(nelm, dtype=float)
 
         # voltage p.u. set points
-        self.Vset_f: np.array = np.zeros(nelm, dtype=float)
-        self.Vset_t: np.array = np.zeros(nelm, dtype=float)
+        self.Vset_f: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Vset_t: np.ndarray = np.zeros(nelm, dtype=float)
 
         # nominal bus voltages at the from and to ends
-        self.Vnf: np.array = np.zeros(nelm, dtype=float)
-        self.Vnt: np.array = np.zeros(nelm, dtype=float)
+        self.Vnf: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Vnt: np.ndarray = np.zeros(nelm, dtype=float)
 
-        self.Qmin_f: np.array = np.zeros(nelm, dtype=float)
-        self.Qmax_f: np.array = np.zeros(nelm, dtype=float)
-        self.Qmin_t: np.array = np.zeros(nelm, dtype=float)
-        self.Qmax_t: np.array = np.zeros(nelm, dtype=float)
+        self.Qmin_f: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qmax_f: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qmin_t: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qmax_t: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.C_hvdc_bus_f: sp.lil_matrix = sp.lil_matrix((nelm, nbus), dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus), dtype=int)  # this ons is just for splitting islands

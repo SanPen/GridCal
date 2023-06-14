@@ -30,14 +30,14 @@ class ShuntData:
         """
         self.nelm: int = nelm
 
-        self.names: np.array = np.empty(nelm, dtype=object)
+        self.names: np.ndarray = np.empty(nelm, dtype=object)
 
-        self.active: np.array = np.zeros(nelm, dtype=bool)
-        self.admittance: np.array = np.zeros(nelm, dtype=complex)
+        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.admittance: np.ndarray = np.zeros(nelm, dtype=complex)
 
-        self.controlled: np.array = np.zeros(nelm, dtype=bool)
-        self.b_min: np.array = np.zeros(nelm, dtype=float)
-        self.b_max: np.array = np.zeros(nelm, dtype=float)
+        self.controlled: np.ndarray = np.zeros(nelm, dtype=bool)
+        self.b_min: np.ndarray = np.zeros(nelm, dtype=float)
+        self.b_max: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 

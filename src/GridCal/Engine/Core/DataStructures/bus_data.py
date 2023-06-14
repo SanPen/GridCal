@@ -19,27 +19,33 @@ import numpy as np
 
 class BusData:
 
-    def __init__(self, nbus):
+    def __init__(
+            self,
+            nbus:int
+    ):
         """
         Bus data arrays
         :param nbus: number of buses
         """
         self.nbus: int = nbus
-        self.names: np.array = np.empty(nbus, dtype=object)
-        self.active: np.array = np.ones(nbus, dtype=int)
-        self.Vbus: np.array = np.ones(nbus, dtype=complex)
-        self.Vmin: np.array = np.ones(nbus, dtype=float)
-        self.Vmax: np.array = np.ones(nbus, dtype=float)
-        self.angle_min: np.array = np.full(nbus, fill_value=-3.14, dtype=float)
-        self.angle_max: np.array = np.full(nbus, fill_value=3.14, dtype=float)
-        self.bus_types: np.array = np.empty(nbus, dtype=int)
-        self.installed_power: np.array = np.zeros(nbus, dtype=float)
-        self.is_dc: np.array = np.empty(nbus, dtype=bool)
-        self.areas: np.array = np.empty(nbus, dtype=int)
+        self.names: np.ndarray = np.empty(nbus, dtype=object)
+        self.active: np.ndarray = np.ones(nbus, dtype=int)
+        self.Vbus: np.ndarray = np.ones(nbus, dtype=complex)
+        self.Vmin: np.ndarray = np.ones(nbus, dtype=float)
+        self.Vmax: np.ndarray = np.ones(nbus, dtype=float)
+        self.angle_min: np.ndarray = np.full(nbus, fill_value=-3.14, dtype=float)
+        self.angle_max: np.ndarray = np.full(nbus, fill_value=3.14, dtype=float)
+        self.bus_types: np.ndarray = np.empty(nbus, dtype=int)
+        self.installed_power: np.ndarray = np.zeros(nbus, dtype=float)
+        self.is_dc: np.ndarray = np.empty(nbus, dtype=bool)
+        self.areas: np.ndarray = np.empty(nbus, dtype=int)
 
         self.original_idx = np.zeros(nbus, dtype=int)
 
-    def slice(self, elm_idx):
+    def slice(
+            self,
+            elm_idx: np.ndarray
+    ):
         """
         Slice this data structure
         :param elm_idx: array of bus indices
