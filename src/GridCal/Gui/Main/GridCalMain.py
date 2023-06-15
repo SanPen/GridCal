@@ -7233,10 +7233,19 @@ class MainGUI(QMainWindow):
         self.apply_new_snapshot_rates()
         self.apply_new_time_series_rates()
 
-    def get_compatible_areas_from_to(self):
+    def get_compatible_areas_from_to(self) -> Tuple[bool,
+                                                    List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
+                                                    List[Tuple[int, object, float]], List[Tuple[int, object, float]],
+                                                    List[dev.Area], List[dev.Area]]:
         """
-
-        :return:
+        Get the lists that help defining the inter area objects
+        :return: success?,
+                 list of tuples bus idx, Bus in the areas from,
+                 list of tuples bus idx, Bus in the areas to,
+                 List of inter area branches (branch index, branch object, flow sense w.r.t the area exchange),
+                 List of inter area HVDC (branch index, branch object, flow sense w.r.t the area exchange),
+                 List of areas from,
+                 List of areas to
         """
         areas_from_idx = gf.get_checked_indices(self.ui.areaFromListView.model())
         areas_to_idx = gf.get_checked_indices(self.ui.areaToListView.model())
@@ -7247,12 +7256,12 @@ class MainGUI(QMainWindow):
             if a1 in areas_to:
                 error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
                           'Incompatible areas')
-                return False, [], [], [], []
+                return False, [], [], [], [], [], []
         for a2 in areas_to:
             if a2 in areas_from:
                 error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
                           'Incompatible areas')
-                return False, [], [], [], []
+                return False, [], [], [], [], [], []
 
         lst_from = self.circuit.get_areas_buses(areas_from)
         lst_to = self.circuit.get_areas_buses(areas_to)
