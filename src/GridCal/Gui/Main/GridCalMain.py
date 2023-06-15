@@ -557,8 +557,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImport_contingencies.triggered.connect(self.import_contingencies)
 
-        self.ui.actionApply_new_rates.triggered.connect(self.apply_new_rates)
-
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
@@ -7195,43 +7193,7 @@ class MainGUI(QMainWindow):
         Get a snapshot compilation
         :return: SnapshotData instance
         """
-        return core.compile_numerical_circuit(circuit=self.circuit)
-
-    def get_time_circuit(self):
-        """
-        Get a time circuit compilation
-        :return: TimeCircuit instance
-        """
-        return core.compile_time_circuit(circuit=self.circuit)
-
-    def apply_new_snapshot_rates(self):
-        """
-        Change the loading of a snapshot solution from new rating data if it has means to do it
-        """
-        nc = self.get_snapshot_circuit()
-
-        for drv_tpe, drv in self.session.drivers.items():
-            if drv.results is not None:
-                drv.results.apply_new_rates(nc)
-
-    def apply_new_time_series_rates(self):
-        """
-        Change the loading of a time series solution from new rating data if it has means to do it
-        """
-        if self.circuit.time_profile is not None:
-            nc = self.get_time_circuit()
-
-            for drv_tpe, drv in self.session.drivers.items():
-                if drv.results is not None:
-                    drv.results.apply_new_time_series_rates(nc)
-
-    def apply_new_rates(self):
-        """
-        Apply the new rates everywhere
-        :return:
-        """
-        self.apply_new_snapshot_rates()
-        self.apply_new_time_series_rates()
+        return core.compile_numerical_circuit_at(circuit=self.circuit)
 
     def get_compatible_areas_from_to(self) -> Tuple[bool,
                                                     List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
@@ -7275,7 +7237,7 @@ class MainGUI(QMainWindow):
 
     @property
     def islands(self):
-        numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
+        numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
 

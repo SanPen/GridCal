@@ -291,7 +291,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         for elm in self.api_object.static_generators:
             self.add_static_generator(elm)
 
-        for elm in self.api_object.controlled_generators:
+        for elm in self.api_object.generators:
             self.add_generator(elm)
 
         for elm in self.api_object.shunts:

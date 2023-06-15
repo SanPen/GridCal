@@ -20,7 +20,7 @@ import sys
 import cmath
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
@@ -667,15 +667,15 @@ class MultiCircuit:
         """
         lst = list()
         for bus in self.buses:
-            for elm in bus.controlled_generators:
+            for elm in bus.generators:
                 elm.bus = bus
-            lst = lst + bus.controlled_generators
+            lst = lst + bus.generators
         return lst
 
     def get_generators_number(self):
         val = 0
         for bus in self.buses:
-            val = val + len(bus.controlled_generators)
+            val = val + len(bus.generators)
         return val
 
     def get_generator_names(self):
@@ -684,7 +684,7 @@ class MultiCircuit:
         """
         lst = list()
         for bus in self.buses:
-            for elm in bus.controlled_generators:
+            for elm in bus.generators:
                 lst.append(elm.name)
         return np.array(lst)
 
@@ -1471,17 +1471,14 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_generator(self, bus: dev.Bus, api_obj=None):
+    def add_generator(self, bus: dev.Bus, api_obj: Union[dev.Generator, None] = None):
         """
-        Add a (controlled) :ref:`Generator<generator>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Generator<generator>`): :ref:`Generator<generator>`
-            object
+        Add a generator
+        :param bus: Bus object
+        :param api_obj: Generator object
+        :return: Generator object (created if api_obj is None)
         """
+
         if api_obj is None:
             api_obj = dev.Generator()
         api_obj.bus = bus
@@ -1489,21 +1486,18 @@ class MultiCircuit:
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
 
-        bus.controlled_generators.append(api_obj)
+        bus.generators.append(api_obj)
 
         return api_obj
 
-    def add_static_generator(self, bus: dev.Bus, api_obj=None):
+    def add_static_generator(self, bus: dev.Bus, api_obj: Union[dev.StaticGenerator, None] = None):
         """
-        Add a :ref:`StaticGenerator<static_generator>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`StaticGenerator<static_generator>`):
-            :ref:`StaticGenerator<static_generator>` object
+        Add a generator
+        :param bus: Bus object
+        :param api_obj: StaticGenerator object
+        :return: StaticGenerator object (created if api_obj is None)
         """
+
         if api_obj is None:
             api_obj = dev.StaticGenerator()
         api_obj.bus = bus
@@ -1517,6 +1511,13 @@ class MultiCircuit:
 
     def add_external_grid(self, bus: dev.Bus, api_obj=None):
         """
+
+        :param bus:
+        :param api_obj:
+        :return:
+        """
+
+        """
         Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
 
         Arguments:
@@ -1525,6 +1526,7 @@ class MultiCircuit:
 
             **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
+
         if api_obj is None:
             api_obj = dev.ExternalGrid()
         api_obj.bus = bus
@@ -2032,7 +2034,7 @@ class MultiCircuit:
                     G.append(elm.G_prof)
                     B.append(elm.B_prof)
 
-                for elm in bus.controlled_generators:
+                for elm in bus.generators:
                     gen_names.append(elm.name)
 
                     P_gen.append(elm.P_prof)
@@ -2308,7 +2310,7 @@ class MultiCircuit:
 
         for bus in self.buses:
 
-            for gen in bus.controlled_generators:
+            for gen in bus.generators:
                 if gen.active:
                     data['Generators'] = data['Generators'] + gen.P
 
