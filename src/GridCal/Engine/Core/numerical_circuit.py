@@ -32,7 +32,7 @@ from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
-import GridCal.Engine.Core.DataStructures as ds
+from GridCal.Engine.Core.DataStructures import BusData, BranchData, LoadData,
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.groupings import Area
 
@@ -138,44 +138,56 @@ def compose_generator_voltage_profile(
     return V
 
 
-def get_inter_areas_branch(F, T, buses_areas_1, buses_areas_2):
+def get_inter_areas_branch(
+        F: np.ndarray,
+        T: np.ndarray,
+        buses_in_a1: np.ndarray,
+        buses_in_a2: np.ndarray,
+):
     """
     Get the branches that join two areas
-    :param buses_areas_1: Area from
-    :param buses_areas_2: Area to
+    :param F: Array indices of branch bus from indices
+    :param T: Array of branch bus to indices
+    :param buses_in_a1: Array of bus indices belonging area from
+    :param buses_in_a2: Array of bus indices belonging area to
     :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
     """
     nbr = len(F)
     lst: List[Tuple[int, float]] = list()
     for k in range(nbr):
-        if F[k] in buses_areas_1 and T[k] in buses_areas_2:
+        if F[k] in buses_in_a1 and T[k] in buses_in_a2:
             lst.append((k, 1.0))
-        elif F[k] in buses_areas_2 and T[k] in buses_areas_1:
+        elif F[k] in buses_in_a2 and T[k] in buses_in_a1:
             lst.append((k, -1.0))
     return lst
 
 
-def get_devices_per_areas(Cdev, buses_in_a1, buses_in_a2):
+def get_devices_per_areas(
+        Cdev: np.ndarray,
+        buses_in_a1: np.ndarray,
+        buses_in_a2: np.ndarray,
+):
     """
-    Get the generators that belong to the Area 1, Area 2 and the rest of areas
-    :param buses_in_a1: List of bus indices of the area 1
-    :param buses_in_a2: List of bus indices of the area 2
-    :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out) each of the lists contains (bus index, generator index) tuples
+    Get the devices that belong to the Area 1, Area 2 and the rest of areas
+    :param Cdev: Array of bus indices of the device
+    :param buses_in_a1: Array of bus indices belonging area from
+    :param buses_in_a2: Array of bus indices belonging area to
+    :return: Tree lists: (devs_in_a1, devs_in_a2, devs_out) each of the lists contains (bus index, device index) tuples
     """
-    gens_in_a1 = list()
-    gens_in_a2 = list()
-    gens_out = list()
+    devs_in_a1 = list()
+    devs_in_a2 = list()
+    devs_out = list()
     for j in range(Cdev.shape[1]):  # for each bus
         for ii in range(Cdev.indptr[j], Cdev.indptr[j + 1]):
             i = Cdev.indices[ii]
             if i in buses_in_a1:
-                gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
+                devs_in_a1.append((i, j))  # i: bus idx, j: dev idx
             elif i in buses_in_a2:
-                gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+                devs_in_a2.append((i, j))  # i: bus idx, j: dev idx
             else:
-                gens_out.append((i, j))  # i: bus idx, j: gen idx
+                devs_out.append((i, j))  # i: bus idx, j: dev idx
 
-    return gens_in_a1, gens_in_a2, gens_out
+    return devs_in_a1, devs_in_a2, devs_out
 
 
 class NumericalCircuit:
@@ -218,7 +230,18 @@ class NumericalCircuit:
         'Vtmabus'
     ]
 
-    def __init__(self, nbus, nbr, nhvdc, nload, ngen, nbatt, nshunt, sbase, t_idx=0):
+    def __init__(
+            self,
+            nbus: int,
+            nbr: int,
+            nhvdc: int,
+            nload: int,
+            ngen: int,
+            nbatt: int,
+            nshunt: int,
+            sbase: float,
+            t_idx: int = 0,
+    ):
         """
         Numerical circuit
         :param nbus: Number of calculation buses
@@ -231,39 +254,39 @@ class NumericalCircuit:
         :param sbase:  Base power (MVA)
         :param t_idx:  Time index
         """
-        self.nbus = nbus
-        self.nbr = nbr
-        self.t_idx = t_idx
+        self.nbus: int = nbus
+        self.nbr: int = nbr
+        self.t_idx: int = t_idx
 
-        self.nload = nload
-        self.ngen = ngen
-        self.nbatt = nbatt
-        self.nshunt = nshunt
-        self.nhvdc = nhvdc
+        self.nload: int = nload
+        self.ngen: int = ngen
+        self.nbatt: int = nbatt
+        self.nshunt: int = nshunt
+        self.nhvdc: int = nhvdc
 
-        self.Sbase = sbase
+        self.Sbase: float = sbase
 
-        self.any_control = False
-        self.iPfsh = list()  # indices of the branches controlling Pf flow with theta sh
-        self.iQfma = list()  # indices of the branches controlling Qf with ma
-        self.iBeqz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv = list()  # indices of the branches when controlling Vf with Beq
-        self.iVtma = list()  # indices of the branches when controlling Vt with ma
-        self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
-        self.iPfdp = list()  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va = list()  # indices of the drop-Va converters controlling the power flow with theta sh
-        self.iVscL = list()  # indices of the converters
-        self.VfBeqbus = list()  # indices of the buses where Vf is controlled by Beq
-        self.Vtmabus = list()  # indices of the buses where Vt is controlled by ma
+        self.any_control: bool = False
+        self.iPfsh: List = list()  # indices of the branches controlling Pf flow with theta sh
+        self.iQfma: List = list()  # indices of the branches controlling Qf with ma
+        self.iBeqz: List = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv: List = list()  # indices of the branches when controlling Vf with Beq
+        self.iVtma: List = list()  # indices of the branches when controlling Vt with ma
+        self.iQtma: List = list()  # indices of the branches controlling the Qt flow with ma
+        self.iPfdp: List = list()  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va: List = list()  # indices of the drop-Va converters controlling the power flow with theta sh
+        self.iVscL: List = list()  # indices of the converters
+        self.VfBeqbus: List = list()  # indices of the buses where Vf is controlled by Beq
+        self.Vtmabus: List = list()  # indices of the buses where Vt is controlled by ma
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data = ds.BusData(nbus=nbus)
-        self.branch_data = ds.BranchData(nelm=nbr, nbus=nbus)
-        self.hvdc_data = ds.HvdcData(nelm=nhvdc, nbus=nbus)
+        self.bus_data: BusData = ds.BusData(nbus=nbus)
+        self.branch_data: BranchData  = ds.BranchData(nelm=nbr, nbus=nbus)
+        self.hvdc_data: HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
-        self.load_data = ds.LoadData(nelm=nload, nbus=nbus)
+        self.load_data: Load = ds.LoadData(nelm=nload, nbus=nbus)
         self.battery_data = ds.BatteryData(nelm=nbatt, nbus=nbus)
         self.generator_data = ds.GeneratorData(nelm=ngen, nbus=nbus)
         self.shunt_data = ds.ShuntData(nelm=nshunt, nbus=nbus)
@@ -1167,15 +1190,8 @@ class NumericalCircuit:
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
-
-        Arguments:
-
-            **structure_type** (str): 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries' or 'Types'
-
-        Returns:
-
-            pandas DataFrame
-
+        :param: structure_type: String representig structure type
+        :return: pandas DataFrame
         """
 
         if structure_type == 'Vbus':
@@ -1197,20 +1213,6 @@ class NumericalCircuit:
                 data=self.Ibus,
                 columns=['Current (p.u.)'],
                 index=self.bus_data.names,
-            )
-
-        elif structure_type == 'tap_f':
-            df = pd.DataFrame(
-                data=self.branch_data.virtual_tap_f,
-                columns=['Virtual tap from (p.u.)'],
-                index=self.branch_data.names,
-            )
-
-        elif structure_type == 'tap_t':
-            df = pd.DataFrame(
-                data=self.branch_data.virtual_tap_t,
-                columns=['Virtual tap to (p.u.)'],
-                index=self.branch_data.names,
             )
 
         elif structure_type == 'Ybus':
@@ -1311,48 +1313,6 @@ class NumericalCircuit:
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Qmin':
-            df = pd.DataFrame(
-                data=self.Qmin_bus,
-                columns=['Qmin'],
-                index=self.bus_data.names,
-            )
-
-        elif structure_type == 'Qmax':
-            df = pd.DataFrame(
-                data=self.Qmax_bus,
-                columns=['Qmax'],
-                index=self.bus_data.names,
-            )
-
-        elif structure_type == 'pq':
-            df = pd.DataFrame(
-                data=self.pq,
-                columns=['pq'],
-                index=self.bus_data.names[self.pq],
-            )
-
-        elif structure_type == 'pv':
-            df = pd.DataFrame(
-                data=self.pv,
-                columns=['pv'],
-                index=self.bus_data.names[self.pv],
-            )
-
-        elif structure_type == 'vd':
-            df = pd.DataFrame(
-                data=self.vd,
-                columns=['vd'],
-                index=self.bus_data.names[self.vd],
-            )
-
-        elif structure_type == 'pqpv':
-            df = pd.DataFrame(
-                data=self.pqpv,
-                columns=['pqpv'],
-                index=self.bus_data.names[self.pqpv],
-            )
-
         elif structure_type == 'Jacobian':
 
             pvpq = np.r_[self.pv, self.pq]
@@ -1433,6 +1393,62 @@ class NumericalCircuit:
                 index=rows,
             )
 
+        elif structure_type == 'Qmin':
+            df = pd.DataFrame(
+                data=self.Qmin_bus,
+                columns=['Qmin'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'Qmax':
+            df = pd.DataFrame(
+                data=self.Qmax_bus,
+                columns=['Qmax'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'pq':
+            df = pd.DataFrame(
+                data=self.pq,
+                columns=['pq'],
+                index=self.bus_data.names[self.pq],
+            )
+
+        elif structure_type == 'pv':
+            df = pd.DataFrame(
+                data=self.pv,
+                columns=['pv'],
+                index=self.bus_data.names[self.pv],
+            )
+
+        elif structure_type == 'vd':
+            df = pd.DataFrame(
+                data=self.vd,
+                columns=['vd'],
+                index=self.bus_data.names[self.vd],
+            )
+
+        elif structure_type == 'pqpv':
+            df = pd.DataFrame(
+                data=self.pqpv,
+                columns=['pqpv'],
+                index=self.bus_data.names[self.pqpv],
+            )
+
+        elif structure_type == 'tap_f':
+            df = pd.DataFrame(
+                data=self.branch_data.virtual_tap_f,
+                columns=['Virtual tap from (p.u.)'],
+                index=self.branch_data.names,
+            )
+
+        elif structure_type == 'tap_t':
+            df = pd.DataFrame(
+                data=self.branch_data.virtual_tap_t,
+                columns=['Virtual tap to (p.u.)'],
+                index=self.branch_data.names,
+            )
+
         elif structure_type == 'iPfsh':
             df = pd.DataFrame(
                 data=self.iPfsh,
@@ -1502,6 +1518,7 @@ class NumericalCircuit:
                 columns=['Vtmabus'],
                 index=self.bus_data.names[self.Vtmabus],
             )
+
         else:
             raise Exception('PF input: structure type not found' + str(structure_type))
 
