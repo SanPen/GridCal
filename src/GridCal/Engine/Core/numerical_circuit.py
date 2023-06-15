@@ -32,7 +32,7 @@ from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
-from GridCal.Engine.Core.DataStructures import BusData, BranchData, LoadData,
+import GridCal.Engine.Core.DataStructures as ds
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.groupings import Area
 
@@ -282,14 +282,14 @@ class NumericalCircuit:
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data: BusData = ds.BusData(nbus=nbus)
-        self.branch_data: BranchData  = ds.BranchData(nelm=nbr, nbus=nbus)
-        self.hvdc_data: HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
+        self.bus_data: ds.BusData = ds.BusData(nbus=nbus)
+        self.branch_data: ds.BranchData  = ds.BranchData(nelm=nbr, nbus=nbus)
+        self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
-        self.load_data: Load = ds.LoadData(nelm=nload, nbus=nbus)
-        self.battery_data = ds.BatteryData(nelm=nbatt, nbus=nbus)
-        self.generator_data = ds.GeneratorData(nelm=ngen, nbus=nbus)
-        self.shunt_data = ds.ShuntData(nelm=nshunt, nbus=nbus)
+        self.load_data: ds.Load = ds.LoadData(nelm=nload, nbus=nbus)
+        self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus)
+        self.generator_data: ds.BatteryData = ds.GeneratorData(nelm=ngen, nbus=nbus)
+        self.shunt_data: ds.BatteryData= ds.ShuntData(nelm=nshunt, nbus=nbus)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed

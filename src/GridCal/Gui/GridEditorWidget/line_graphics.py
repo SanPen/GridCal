@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
+from typing import Union
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
@@ -256,7 +257,7 @@ class LineEditor(QDialog):
 
 class LineGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem | None, diagramScene, width=5, branch: Line = None):
+    def __init__(self, fromPort: TerminalItem, toPort: Union[TerminalItem, None], diagramScene, width=5, branch: Line = None):
         """
 
         :param fromPort:
@@ -286,8 +287,8 @@ class LineGraphicItem(QGraphicsLineItem):
 
         self.pos1 = None
         self.pos2 = None
-        self.fromPort: TerminalItem | None = None
-        self.toPort: TerminalItem | None = None
+        self.fromPort: Union[TerminalItem, None] = None
+        self.toPort: Union[TerminalItem, None] = None
         self.diagramScene = diagramScene
 
         if fromPort:

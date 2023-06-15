@@ -24,7 +24,7 @@ import os.path
 import platform
 import webbrowser
 from collections import OrderedDict
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 import numpy as np
 import networkx as nx
 import pandas as pd
@@ -382,8 +382,8 @@ class MainGUI(QMainWindow):
 
         # These get initialized by create_map()
         self.tile_source = None
-        self.map_widget: PySlipQt | None = None
-        self.polyline_layer_id: int | None = None
+        self.map_widget: Union[PySlipQt, None] = None
+        self.polyline_layer_id: Union[int, None] = None
 
         self.create_map()
 
@@ -409,22 +409,22 @@ class MainGUI(QMainWindow):
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
         self.topology_reduction = None
-        self.find_node_groups_driver: sim.NodeGroupsDriver | None = None
+        self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
         self.stuff_running_now = list()
 
         # window pointers ----------------------------------------------------------------------------------------------
-        self.file_sync_window: SyncDialogueWindow | None = None
-        self.sigma_dialogue: SigmaAnalysisGUI | None = None
-        self.grid_generator_dialogue: GridGeneratorGUI | None = None
-        self.contingency_planner_dialogue: ContingencyPlannerGUI | None = None
-        self.analysis_dialogue: GridAnalysisGUI | None = None
-        self.profile_input_dialogue: ProfileInputGUI | None = None
-        self.models_input_dialogue: ModelsInputGUI | None = None
-        self.object_select_window: ObjectSelectWindow | None = None
-        self.coordinates_window: CoordinatesInputGUI | None = None
-        self.about_msg_window: AboutDialogueGuiGUI | None = None
-        self.tower_builder_window: TowerBuilderGUI | None = None
+        self.file_sync_window: Union[SyncDialogueWindow, None] = None
+        self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
+        self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
+        self.contingency_planner_dialogue: Union[ContingencyPlannerGUI, None] = None
+        self.analysis_dialogue: Union[GridAnalysisGUI, None] = None
+        self.profile_input_dialogue: Union[ProfileInputGUI, None] = None
+        self.models_input_dialogue: Union[ModelsInputGUI, None] = None
+        self.object_select_window: Union[ObjectSelectWindow, None] = None
+        self.coordinates_window: Union[CoordinatesInputGUI, None] = None
+        self.about_msg_window: Union[AboutDialogueGuiGUI, None] = None
+        self.tower_builder_window: Union[TowerBuilderGUI, None] = None
 
         self.file_name = ''
 
@@ -436,17 +436,17 @@ class MainGUI(QMainWindow):
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
 
-        self.buses_for_storage: List[dev.Bus] | None = None
+        self.buses_for_storage: Union[List[dev.Bus], None] = None
 
         # dictionaries for available results
-        self.available_results_dict: Dict[str, List[sim.ResultTypes]] | None = None
+        self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = None
         self.available_results_steps_dict = None
 
         ################################################################################################################
         # Console
         ################################################################################################################
 
-        self.console: ConsoleWidget | None = None
+        self.console: Union[ConsoleWidget, None] = None
         try:
             self.create_console()
         except TypeError:
@@ -7748,9 +7748,13 @@ def run():
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
     # Apply the complete dark theme to your Qt App.
-    qdarktheme.setup_theme(theme='auto',
-                           custom_colors={"primary": "#00aa88ff",
-                                          "primary>list.selectionBackground": "#00aa88be"})
+    qdarktheme.setup_theme(
+        theme='auto',
+        custom_colors={
+            "primary": "#00aa88ff",
+            "primary>list.selectionBackground": "#00aa88be"
+        }
+    )
 
     window_ = MainGUI()
 
