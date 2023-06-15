@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import pandas as pd
-from typing import Dict
+from typing import Dict, List
 from PySide6 import QtWidgets
 from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
@@ -1319,7 +1319,7 @@ def get_list_model(lst, checks=False, check_value=False):
     return list_model
 
 
-def get_checked_indices(mdl: QtGui.QStandardItemModel()):
+def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> List[int]:
     """
     Get a list of the selected indices in a QStandardItemModel
     :param mdl:
@@ -1332,7 +1332,6 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()):
             idx.append(row)
 
     return np.array(idx)
-
 
 
 

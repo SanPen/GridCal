@@ -250,7 +250,7 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logge
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
-        circuit.buses[bus_idx].controlled_generators.append(gen)
+        circuit.buses[bus_idx].generators.append(gen)
 
     if 'gen_cost' in data:
         # parse the OPF data

@@ -432,10 +432,10 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
+                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.controlled_generators.append(obj)
+            bus.generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')
@@ -840,10 +840,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.controlled_generators) + 1) + '@' + bus.name
+                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.controlled_generators.append(obj)
+            bus.generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')

@@ -197,7 +197,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)
-            self.api_object.bus.controlled_generators.remove(self.api_object)
+            self.api_object.bus.generators.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

@@ -217,7 +217,7 @@ def parse_json_data(data) -> MultiCircuit:
                                     p_min=0.0,
                                     p_max=element['Snom'],
                                     op_cost=1.0)
-                bus.controlled_generators.append(elm)
+                bus.generators.append(elm)
 
             elif element["type"] == "static_gen":
 
@@ -1219,7 +1219,7 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
         add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=elm.device_type.value)
 
         # pack all the elements within the bus
-        devices = elm.loads + elm.controlled_generators + elm.static_generators + elm.batteries + elm.shunts
+        devices = elm.loads + elm.generators + elm.static_generators + elm.batteries + elm.shunts
         for device in devices:
             add_to_dict(d=elements, d2=device.get_properties_dict(), key=device.device_type.value)
             add_to_dict(d=element_profiles, d2=convert_to_sparse(device.get_profiles_dict()),

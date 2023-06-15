@@ -159,7 +159,7 @@ def compare_devices_lists(dev_list1, dev_list2):
             if elm1.device_type == DeviceType.BusDevice:
 
                 issues += compare_devices_lists(elm1.loads, elm2.loads)
-                issues += compare_devices_lists(elm1.controlled_generators, elm2.controlled_generators)
+                issues += compare_devices_lists(elm1.generators, elm2.generators)
                 issues += compare_devices_lists(elm1.batteries, elm2.batteries)
                 issues += compare_devices_lists(elm1.static_generators, elm2.static_generators)
                 issues += compare_devices_lists(elm1.shunts, elm2.shunts)

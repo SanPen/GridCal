@@ -17,9 +17,10 @@
 
 import os
 import sys
+import cmath
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
@@ -666,15 +667,15 @@ class MultiCircuit:
         """
         lst = list()
         for bus in self.buses:
-            for elm in bus.controlled_generators:
+            for elm in bus.generators:
                 elm.bus = bus
-            lst = lst + bus.controlled_generators
+            lst = lst + bus.generators
         return lst
 
     def get_generators_number(self):
         val = 0
         for bus in self.buses:
-            val = val + len(bus.controlled_generators)
+            val = val + len(bus.generators)
         return val
 
     def get_generator_names(self):
@@ -683,7 +684,7 @@ class MultiCircuit:
         """
         lst = list()
         for bus in self.buses:
-            for elm in bus.controlled_generators:
+            for elm in bus.generators:
                 lst.append(elm.name)
         return np.array(lst)
 
@@ -1470,17 +1471,14 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_generator(self, bus: dev.Bus, api_obj=None):
+    def add_generator(self, bus: dev.Bus, api_obj: Union[dev.Generator, None] = None):
         """
-        Add a (controlled) :ref:`Generator<generator>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Generator<generator>`): :ref:`Generator<generator>`
-            object
+        Add a generator
+        :param bus: Bus object
+        :param api_obj: Generator object
+        :return: Generator object (created if api_obj is None)
         """
+
         if api_obj is None:
             api_obj = dev.Generator()
         api_obj.bus = bus
@@ -1488,21 +1486,18 @@ class MultiCircuit:
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
 
-        bus.controlled_generators.append(api_obj)
+        bus.generators.append(api_obj)
 
         return api_obj
 
-    def add_static_generator(self, bus: dev.Bus, api_obj=None):
+    def add_static_generator(self, bus: dev.Bus, api_obj: Union[dev.StaticGenerator, None] = None):
         """
-        Add a :ref:`StaticGenerator<static_generator>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`StaticGenerator<static_generator>`):
-            :ref:`StaticGenerator<static_generator>` object
+        Add a generator
+        :param bus: Bus object
+        :param api_obj: StaticGenerator object
+        :return: StaticGenerator object (created if api_obj is None)
         """
+
         if api_obj is None:
             api_obj = dev.StaticGenerator()
         api_obj.bus = bus
@@ -1516,6 +1511,13 @@ class MultiCircuit:
 
     def add_external_grid(self, bus: dev.Bus, api_obj=None):
         """
+
+        :param bus:
+        :param api_obj:
+        :return:
+        """
+
+        """
         Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
 
         Arguments:
@@ -1524,6 +1526,7 @@ class MultiCircuit:
 
             **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
+
         if api_obj is None:
             api_obj = dev.ExternalGrid()
         api_obj.bus = bus
@@ -2031,7 +2034,7 @@ class MultiCircuit:
                     G.append(elm.G_prof)
                     B.append(elm.B_prof)
 
-                for elm in bus.controlled_generators:
+                for elm in bus.generators:
                     gen_names.append(elm.name)
 
                     P_gen.append(elm.P_prof)
@@ -2307,7 +2310,7 @@ class MultiCircuit:
 
         for bus in self.buses:
 
-            for gen in bus.controlled_generators:
+            for gen in bus.generators:
                 if gen.active:
                     data['Generators'] = data['Generators'] + gen.P
 
@@ -2657,7 +2660,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]):
+    def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area branches. HVDC branches are not considered
         :param a1: Area from
@@ -2672,7 +2675,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]):
+    def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area branches
         :param a1: Area from
@@ -2687,7 +2690,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone):
+    def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area branches
         :param z1: Zone from
@@ -2702,7 +2705,7 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
-    def get_branch_area_connectivity_matrix(self, a1: List[dev.Area], a2: List[dev.Area]):
+    def get_branch_area_connectivity_matrix(self, a1: List[dev.Area], a2: List[dev.Area]) -> csc_matrix:
         """
         Get the inter area connectivity matrix
         :param a1: list of sending areas
@@ -2815,102 +2818,6 @@ class MultiCircuit:
         for ld in self.get_loads():
             ld.active_prof = ld.P_prof.astype(bool)
 
-    # def normalize_bus_positions(self):
-    #     # figure limits
-    #     min_x = sys.maxsize
-    #     min_y = sys.maxsize
-    #     max_x = -sys.maxsize
-    #     max_y = -sys.maxsize
-    #
-    #     # Align lines
-    #     for bus in self.buses:
-    #         # get the item position
-    #         x = bus.x
-    #         y = bus.y
-    #
-    #         # compute the boundaries of the grid
-    #         max_x = max(max_x, x)
-    #         min_x = min(min_x, x)
-    #         max_y = max(max_y, y)
-    #         min_y = min(min_y, y)
-    #
-    #     # Fix boundaries
-    #     for bus in self.buses:
-    #         # get the item position
-    #         x = bus.x
-    #         y = bus.y
-    #         bus.x = x - min_x
-    #         bus.y = y - max_y
-
-    def correct_inconsistencies(self, logger: bs.Logger, maximum_difference=0.1, min_vset=0.98, max_vset=1.02):
-        """
-        Correct devices' inconsistencies
-        :param logger: logger to store the events
-        :param maximum_difference: proportion to be under or above (i.e.
-                                   Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 ->
-                                   0.9 <= 0.93 <= 1.1, so its ok
-        :param min_vset: minimum voltage set point (p.u.)
-        :param max_vset: maximum voltage set point (p.u.)
-        :return:
-        """
-        for elm in self.transformers2w:
-            elm.fix_inconsistencies(logger,
-                                    maximum_difference=maximum_difference)
-
-        for elm in self.lines:
-            elm.fix_inconsistencies(logger)
-
-        for elm in self.get_generators():
-            elm.fix_inconsistencies(logger,
-                                    min_vset=min_vset,
-                                    max_vset=max_vset)
-
-    def normalize_bus_positions_offset(self, base_offset=100):
-        """
-        Normalize the massive offset that may be in the Qt graphic objects' positions
-        :param base_offset:
-        :return:
-        """
-        n = len(self.buses)
-        x = np.zeros(n, dtype=int)
-        y = np.zeros(n, dtype=int)
-
-        # read values
-        for i, bus in enumerate(self.buses):
-            gr = bus.graphic_obj
-            x[i] = gr.x()
-            y[i] = gr.y()
-
-        # correct values
-        x_min = np.min(x)
-        y_max = np.max(y)
-        x -= x_min + base_offset  # 100 is a healthy offset
-        y -= y_max - base_offset  # 100 is a healthy offset
-
-        # assign values
-        for i, bus in enumerate(self.buses):
-            bus.x = x[i]
-            bus.y = y[i]
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.set_position(x[i], y[i])
-
-    def purge_defaults(self):
-        """
-        Remove all default objects, and its references in other list objects
-        :return:
-        """
-        defaults = list()
-        for key in [k for k in self.__dict__.keys() if 'default' in k]:
-            defaults.append(getattr(self, key))
-
-        for att, val in self.__dict__.items():
-
-            if val in defaults:
-                setattr(self, att, None)
-
-            if isinstance(val, list) and any(x in defaults for x in val):
-                setattr(self, att, [v for v in val if v not in defaults])
-
     def set_contingencies(self, contingencies: List[dev.Contingency]):
         """
         Set contingencies and contingency groups to circuit
@@ -2948,29 +2855,15 @@ class MultiCircuit:
 
         return logger
 
-    def initialize_contingencies(self, min_branch_voltage, max_branch_voltage):
-        for b in self.get_branches():
-            if min_branch_voltage <= b.get_max_bus_nominal_voltage() <= max_branch_voltage:
-                group = dev.ContingencyGroup(name=b.name,
-                                             category='single')
-
-                contingency = dev.Contingency(device_idtag=b.idtag,
-                                              name=b.name,
-                                              code=b.code,
-                                              prop='active',
-                                              value=0,
-                                              group=group)
-
-                self.contingencies.append(contingency)
-                self.contingency_groups.append(group)
-
-    def get_voltage_guess(self):
+    def get_voltage_guess(self) -> np.ndarray:
+        """
+        Get the buses stored voltage guess
+        :return: array of complex voltages per bus
+        """
         v = np.zeros(len(self.buses), dtype=complex)
 
         for i, bus in enumerate(self.buses):
             if bus.active:
-                x = bus.Vm0 * np.cos(bus.Va0)
-                y = bus.Vm0 * np.sin(bus.Va0)
-                v[i] = complex(x, y)
+                v[i] = cmath.rect(bus.Vm0, bus.Va0)
 
         return v

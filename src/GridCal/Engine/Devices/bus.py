@@ -179,7 +179,7 @@ class Bus(EditableDevice):
         self.loads = list()
 
         # List of Controlled generators attached to this bus
-        self.controlled_generators = list()
+        self.generators = list()
 
         # List of External Grids
         self.external_grids = list()
@@ -239,7 +239,7 @@ class Bus(EditableDevice):
         self.static_generators.clear()
         self.external_grids.clear()
         self.loads.clear()
-        self.controlled_generators.clear()
+        self.generators.clear()
 
     def add_device(self, device):
         """
@@ -260,7 +260,7 @@ class Bus(EditableDevice):
             self.loads.append(device)
 
         elif device.device_type == DeviceType.GeneratorDevice:
-            self.controlled_generators.append(device)
+            self.generators.append(device)
 
         elif device.device_type == DeviceType.ExternalGridDevice:
             self.external_grids.append(device)
@@ -297,7 +297,7 @@ class Bus(EditableDevice):
 
         # count the active and controlled generators
         gen_on = 0
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             if elm.active and elm.is_controlled:
                 gen_on += 1
 
@@ -350,7 +350,7 @@ class Bus(EditableDevice):
 
         # count the active and controlled generators
         gen_on = 0
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             if elm.active_prof[t] and elm.is_controlled:
                 gen_on += 1
 
@@ -395,7 +395,7 @@ class Bus(EditableDevice):
         Qmax = 0.0
 
         # count the active and controlled generators
-        for elm in self.controlled_generators + self.batteries:
+        for elm in self.generators + self.batteries:
             if elm.active:
                 if elm.is_controlled:
                     Qmin += elm.Qmin
@@ -423,7 +423,7 @@ class Bus(EditableDevice):
             va = 0.0
             v = complex(1, 0)
 
-            for lst in [self.controlled_generators, self.batteries]:
+            for lst in [self.generators, self.batteries]:
                 for elm in lst:
                     if vm == 1.0:
                         v = complex(elm.Vset, 0)
@@ -469,7 +469,7 @@ class Bus(EditableDevice):
 
             # plot the objects' active power profiles
 
-            devices = self.loads + self.controlled_generators + self.batteries + self.static_generators
+            devices = self.loads + self.generators + self.batteries + self.static_generators
             if len(devices) > 0:
                 dta = dict()
                 for elm in devices:
@@ -494,7 +494,7 @@ class Bus(EditableDevice):
         :return:
         """
         dta = dict()
-        devices = self.controlled_generators + self.batteries + self.static_generators
+        devices = self.generators + self.batteries + self.static_generators
         if len(devices) > 0:
             for elm in devices:
                 dta[elm.name] = elm.P_prof
@@ -534,8 +534,8 @@ class Bus(EditableDevice):
             bus.loads.append(elm.copy())
 
         # List of Controlled generators attached to this bus
-        for elm in self.controlled_generators:
-            bus.controlled_generators.append(elm.copy())
+        for elm in self.generators:
+            bus.generators.append(elm.copy())
 
         # List of shunt s attached to this bus
         for elm in self.shunts:
@@ -667,7 +667,7 @@ class Bus(EditableDevice):
         for elm in self.batteries:
             elm.set_profile_values(t)
 
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             elm.set_profile_values(t)
 
         for elm in self.shunts:
@@ -699,7 +699,7 @@ class Bus(EditableDevice):
         for elm in self.batteries:
             elm.delete_profiles()
 
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             elm.delete_profiles()
 
         for elm in self.shunts:
@@ -725,7 +725,7 @@ class Bus(EditableDevice):
         for elm in self.batteries:
             elm.create_profiles(index)
 
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             elm.create_profiles(index)
 
         for elm in self.shunts:
@@ -750,7 +750,7 @@ class Bus(EditableDevice):
         for elm in self.batteries:
             elm.set_profile_values(t)
 
-        for elm in self.controlled_generators:
+        for elm in self.generators:
             elm.set_profile_values(t)
 
         for elm in self.shunts:
@@ -765,7 +765,7 @@ class Bus(EditableDevice):
         self.loads += other_bus.loads.copy()
 
         # List of Controlled generators attached to this bus
-        self.controlled_generators += other_bus.controlled_generators.copy()
+        self.generators += other_bus.generators.copy()
 
         self.external_grids += other_bus.external_grids.copy()
 
@@ -800,7 +800,7 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + \
-            self.controlled_generators + \
+            self.generators + \
             self.batteries + \
             self.static_generators + \
             self.shunts + \
@@ -812,7 +812,7 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return len(self.loads) + \
-            len(self.controlled_generators) + \
+            len(self.generators) + \
             len(self.batteries) + \
             len(self.static_generators) + \
             len(self.shunts) + \
@@ -908,8 +908,8 @@ class Bus(EditableDevice):
         """
         Fuse the devices into one device per type
         """
-        self.controlled_generators = self.get_fused_device_lst(self.controlled_generators,
-                                                               ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax', 'Snom', 'P_prof'])
+        self.generators = self.get_fused_device_lst(self.generators,
+                                                    ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax', 'Snom', 'P_prof'])
         self.batteries = self.get_fused_device_lst(self.batteries,
                                                    ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax', 'Snom', 'Enom', 'P_prof'])
 

@@ -8682,7 +8682,6 @@ QProgressBar::chunk{
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionApply_new_rates"/>
     <addaction name="actionDrawSchematic"/>
     <addaction name="actionShow_color_controls"/>
     <addaction name="separator"/>
@@ -9450,18 +9449,6 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Contingency analysis</string>
-   </property>
-  </action>
-  <action name="actionApply_new_rates">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Apply new rates</string>
-   </property>
-   <property name="toolTip">
-    <string>Apply new rates to all the simulation results</string>
    </property>
   </action>
   <action name="actionOptimal_Net_Transfer_Capacity">

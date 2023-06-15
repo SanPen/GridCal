@@ -354,7 +354,7 @@ class CIMExport:
                         model.parsed_properties['sequenceNumber'] = '1'
                         text_file.write(model.get_xml(1))
 
-                    for il, elm in enumerate(bus.controlled_generators):
+                    for il, elm in enumerate(bus.generators):
                         id2 = elm.idtag + '_SyncGen_' + str(il)
                         id3 = id2 + '_GU'
                         id4 = id2 + '_RC'
