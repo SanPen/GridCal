@@ -51,7 +51,14 @@ def get_system_user():
         mac = ''
 
     return str(mac) + ':' + user
-
+def get_grouped_indices(array, axis):
+    u_ = np.unique(array, axis=axis)
+    groups = list()
+    for row in u_:
+        groups.append(
+            np.where((array == row).all(axis=int(not axis)))[0]
+        )
+    return groups
 
 class MultiCircuit:
     """
@@ -381,6 +388,32 @@ class MultiCircuit:
         :return: (nbus, nbranch, ntime)
         """
         return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
+
+    def get_branch_active_time_array(self):
+        active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
+        for i, b in enumerate(self.get_branches_wo_hvdc()):
+            active[:, i] = b.active_prof
+        return active
+
+    def get_topologic_group_indices(self):
+        """
+        Get numerical circuit time groups
+        :return:
+        """
+
+        topology = np.concatenate(
+            (
+                # Add here active arrays for relevant topologic elements
+                self.get_branch_active_time_array(),
+            ),
+            axis=1
+        )
+
+        return get_grouped_indices(
+            array=topology,
+            axis=0
+        )
+
 
     def clear(self):
         """
