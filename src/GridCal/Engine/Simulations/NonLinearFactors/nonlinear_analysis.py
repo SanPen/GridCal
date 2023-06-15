@@ -354,11 +354,18 @@ def make_worst_contingency_transfer_limits(tmc):
 
 class NonLinearAnalysis:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, pf_results=None):
+    def __init__(self, grid: MultiCircuit,
+                 distributed_slack=True,
+                 correct_values=True,
+                 pf_results=None,
+                 t_idx=None):
         """
 
         :param grid:
         :param distributed_slack:
+        :param correct_values:
+        :param pf_results:
+        :param t_idx:
         """
 
         self.grid = grid
@@ -381,13 +388,15 @@ class NonLinearAnalysis:
 
         self.pf_results = pf_results
 
+        self.t_idx = t_idx
+
         self.logger = Logger()
 
     def run(self):
         """
         Run the PTDF and LODF
         """
-        self.numerical_circuit = compile_numerical_circuit_at(self.grid)
+        self.numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus
@@ -441,8 +450,10 @@ class NonLinearAnalysis:
 
                         else:
                             self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+
                     elif len(island.vd) == 0:
                         self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
+
                     else:
                         self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
             else:

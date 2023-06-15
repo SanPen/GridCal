@@ -382,6 +382,13 @@ class MultiCircuit:
         else:
             return 0
 
+    def get_contingency_number(self):
+        """
+
+        :return:
+        """
+        return len(self.contingencies)
+
     def get_dimensions(self):
         """
         Get the three dimensions of the circuit: number of buses, number of branches, number of time steps

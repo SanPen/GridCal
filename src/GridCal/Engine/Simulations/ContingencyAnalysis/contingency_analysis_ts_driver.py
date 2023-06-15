@@ -26,6 +26,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver 
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
+import GridCal.Engine.basic_structures as bs
 
 
 @jit(nopython=True, parallel=False, cache=True)
@@ -109,7 +110,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         self.options = options
 
         # N-K results
-        self.results = ContingencyAnalysisTimeSeriesResults(n=0, ne=0, nc=0,
+        self.results = ContingencyAnalysisTimeSeriesResults(n=0, nbr=0, nc=0,
                                                             time_array=(),
                                                             bus_names=(),
                                                             branch_names=(),
@@ -135,19 +136,16 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         """
 
         self.progress_text.emit("Analyzing...")
-        # TODO: fix this
-        ts_numeric_circuit = compile_numerical_circuit_at(self.grid)
-        ne = ts_numeric_circuit.nelm
-        nc = ts_numeric_circuit.nelm
-        nt = len(ts_numeric_circuit.time_array)
 
-        results = ContingencyAnalysisTimeSeriesResults(ne=ne,
-                                                       nc=nc,
-                                                       time_array=ts_numeric_circuit.time_array,
-                                                       n=ts_numeric_circuit.nbus,
-                                                       branch_names=ts_numeric_circuit.branch_names,
-                                                       bus_names=ts_numeric_circuit.bus_names,
-                                                       bus_types=ts_numeric_circuit.bus_types,
+        n = self.grid.get_bus_number()
+
+        results = ContingencyAnalysisTimeSeriesResults(n=n,
+                                                       nbr=self.grid.get_branch_number_wo_hvdc(),
+                                                       nc=self.grid.get_contingency_number(),
+                                                       time_array=self.grid.time_profile,
+                                                       branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                       bus_names=self.grid.get_bus_names(),
+                                                       bus_types=np.ones(n, dtype=int),
                                                        con_names=self.grid.get_contingency_group_names())
 
         if self.end_ is None:
@@ -165,7 +163,17 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.progress_signal.emit((it + 1) / len(time_indices) * 100)
 
             # run contingency at t
-            res_t = cdriver.n_minus_k(t=t)
+            if self.options.engine == bs.ContingencyEngine.PowerFlow:
+                res_t = cdriver.n_minus_k(t=t)
+
+            elif self.options.engine == bs.ContingencyEngine.PTDF:
+                raise Exception('Not implemented')
+
+            elif self.options.engine == bs.ContingencyEngine.HELM:
+                res_t = cdriver.n_minus_k_nl(t=t)
+
+            else:
+                res_t = cdriver.n_minus_k(t=t)
 
             l_abs = np.abs(res_t.loading)
             contingency = l_abs > 1
