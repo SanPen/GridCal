@@ -18,7 +18,7 @@ import os
 import numpy as np
 import chardet
 import re
-from typing import List, AnyStr, Dict
+from typing import List, AnyStr, Dict, Union
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.Devices as dev
@@ -228,7 +228,8 @@ class PSSeGrid:
         # Go through facts lines
         for psse_elm in self.facts:
             # since these may be shunt or series or both, pass the circuit so that the correct device is added
-            psse_elm.get_object(psse_bus_dict, self.SBASE, logger, circuit)
+            if psse_elm.is_connected():
+                psse_elm.get_object(psse_bus_dict, self.SBASE, logger, circuit)
 
         return circuit
 
@@ -1923,8 +1924,17 @@ class PSSeFACTS(PSSeObject):
         :param version:
         :param logger:
         """
+        if version in [35]:
+            '''
+            'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
+            '''
 
-        if version in [32, 33, 34]:
+            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
+                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
+                self.SET1, self.SET2, self.VSREF, self.FCREG, self.NREG, self.MNAME = data[0]
+
+        elif version in [32, 33, 34]:
             '''
             'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
@@ -1945,6 +1955,9 @@ class PSSeFACTS(PSSeObject):
                 self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
         else:
             logger.add_warning('Version not implemented for DC Lines', str(version))
+
+    def is_connected(self):
+        return self.I > 0 and self.J > 0
 
     def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger, circuit: MultiCircuit):
         """
@@ -2301,7 +2314,7 @@ class PSSeParser:
         if text_func is not None:
             text_func("Reading raw file...")
 
-        sections_dict: Dict[str, List[str | float | int]] = dict()
+        sections_dict: Dict[str, List[Union[str, float, int]]] = dict()
         sections_dict["bus"] = list()
         sep = ","
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
