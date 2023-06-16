@@ -527,6 +527,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
 
+        data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
+
         ii += 1
 
     # DC-lines
@@ -560,6 +562,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
         if apply_temperature:
             data.R[ii] = elm.R_corrected

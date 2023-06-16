@@ -15,9 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
-import json
 import numpy as np
-import pandas as pd
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
@@ -33,6 +31,9 @@ from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
+    """
+
+    """
 
     def __init__(self, br_names, bus_names, rates, contingency_rates, time_array):
         """

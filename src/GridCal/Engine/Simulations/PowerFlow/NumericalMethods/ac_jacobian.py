@@ -254,8 +254,6 @@ def AC_jacobian(Ybus, V, pvpq, pq):
     :param V: Voltages vector
     :param pvpq: array of pv|pq bus indices
     :param pq: array of pq indices
-    :param npv: number of pv buses
-    :param npq: number of pq buses
     :return: Jacobian Matrix in CSR format
     """
 
@@ -298,15 +296,18 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
     """
     Compute the Tinney version of the AC jacobian without any sin, cos or abs
     (Lynn book page 89)
-    :param G: Conductance matrix in CSC format
-    :param B: Susceptance matrix in CSC format
+    :param nbus:
+    :param Gi:
+    :param Gp:
+    :param Gx:
+    :param Bx:
     :param P: Real computed power
     :param Q: Imaginary computed power
     :param E: Real voltage
     :param F: Imaginary voltage
     :param Vm: Voltage module
     :param pq: array pf pq indices
-    :param pv: array of pv indices
+    :param pvpq: array of pv indices
     :return: CSC Jacobian matrix
     """
     npqpv = len(pvpq)
