@@ -212,7 +212,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
                                                distributed_slack=self.options.distributed_slack,
                                                correct_values=self.options.correct_values,
-                                               pf_results=self.options.pf_results,
+                                               pf_options=self.options.pf_options,
                                                t_idx=t)
         nonlinear_analysis.run()
 
@@ -231,7 +231,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # get the contingency branch indices
         br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
         mon_idx = nonlinear_analysis.numerical_circuit.branch_data.get_monitor_enabled_indices()
-        Pbus = numerical_circuit.get_injections(False).real[:, 0]
+        Pbus = numerical_circuit.get_injections(False).real
         PTDF = nonlinear_analysis.PTDF
         LODF = nonlinear_analysis.LODF
 

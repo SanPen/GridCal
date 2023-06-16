@@ -310,6 +310,13 @@ class MultiCircuit:
         """
         return len(self.buses)
 
+    def get_bus_default_types(self) -> np.ndarray:
+        """
+        Return an array of bus types
+        :return: number
+        """
+        return np.ones(len(self.buses), dtype=int)
+
     def get_branch_lists_wo_hvdc(self):
         """
         GEt list of the branch lists
@@ -2907,3 +2914,42 @@ class MultiCircuit:
                 v[i] = cmath.rect(bus.Vm0, bus.Va0)
 
         return v
+
+    def get_Sbus(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (ntime, nbus) [MW + j MVAr]
+        """
+        val = np.zeros((self.get_time_number(), self.get_bus_number()), dtype=complex)
+
+        for i, bus in enumerate(self.buses):
+            val[:, i] = bus.get_Sbus_prof()
+
+        return val
+
+    def get_Pbus(self):
+        return self.get_Sbus().real
+
+    def get_branch_rates_wo_hvdc(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (ntime, nbr) [MVA]
+        """
+        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+
+        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+            val[:, i] = branch.rate_prof
+
+        return val
+
+    def get_branch_contingency_rates_wo_hvdc(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (ntime, nbr) [MVA]
+        """
+        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+
+        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+            val[:, i] = branch.rate_prof * branch.contingency_factor_prof
+
+        return val

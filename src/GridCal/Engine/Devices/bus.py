@@ -918,3 +918,28 @@ class Bus(EditableDevice):
 
         self.shunts = self.get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
         self.external_grids = self.get_fused_device_lst(self.external_grids, [])
+
+    def get_Sbus_prof(self) -> np.ndarray:
+        """
+        Compute the complex power injections
+        :return:
+        """
+        nt = len(self.active_prof)
+        val = np.zeros(nt, dtype=complex)
+
+        for elm in self.generators:
+            val += elm.P_prof
+
+        for elm in self.batteries:
+            val += elm.P_prof
+
+        for elm in self.static_generators:
+            val += elm.P_prof + 1j * elm.Q_prof
+
+        for elm in self.external_grids:
+            val += elm.P_prof + 1j * elm.Q_prof
+
+        for elm in self.loads:
+            val -= elm.P_prof + 1j * elm.Q_prof
+
+        return val

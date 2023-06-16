@@ -24,6 +24,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 # from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, new
 import GridCal.Engine.basic_structures as bs
@@ -150,14 +151,16 @@ class NonLinearAnalysisResults(ResultsTemplate):
 
 class NonLinearAnalysisOptions:
 
-    def __init__(self, distribute_slack=True, correct_values=True, pf_results=None):
+    def __init__(self, distribute_slack=True, correct_values=True, pf_options: PowerFlowOptions = PowerFlowOptions()):
         """
         Power Transfer Distribution Factors' options
         :param distribute_slack:
+        :param correct_values
+        :param pf_options
         """
         self.distribute_slack = distribute_slack
         self.correct_values = correct_values
-        self.pf_results = pf_results
+        self.pf_options: PowerFlowOptions = pf_options
 
 
 class NonLinearAnalysisDriver(DriverTemplate):
@@ -208,7 +211,7 @@ class NonLinearAnalysisDriver(DriverTemplate):
         analysis = NonLinearAnalysis(grid=self.grid,
                                      distributed_slack=self.options.distribute_slack,
                                      correct_values=self.options.correct_values,
-                                     pf_results=self.options.pf_results)
+                                     pf_options=self.options.pf_options)
 
         analysis.run()
         self.logger += analysis.logger

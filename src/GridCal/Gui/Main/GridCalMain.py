@@ -5448,7 +5448,7 @@ class MainGUI(QMainWindow):
             raise Exception('Not implemented :(')
 
         else:
-            raise Exception('<' + current_study + '> Not implemented :(')
+            print('<' + current_study + '> Not implemented :(')
 
     def colour_schematic(self):
         """
