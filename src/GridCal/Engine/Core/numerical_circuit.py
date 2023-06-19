@@ -27,7 +27,7 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import Jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
-from GridCal.Engine.Core.common_functions import compile_types
+from GridCal.Engine.Core.topology import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc

@@ -29,6 +29,7 @@ from scipy.sparse import csc_matrix, lil_matrix
 
 import GridCal.Engine.Devices as dev
 import GridCal.Engine.basic_structures as bs
+import GridCal.Engine.Core.topology as tp
 
 
 def get_system_user():
@@ -51,14 +52,6 @@ def get_system_user():
         mac = ''
 
     return str(mac) + ':' + user
-def get_grouped_indices(array, axis):
-    u_ = np.unique(array, axis=axis)
-    groups = list()
-    for row in u_:
-        groups.append(
-            np.where((array == row).all(axis=int(not axis)))[0]
-        )
-    return groups
 
 class MultiCircuit:
     """
@@ -395,25 +388,18 @@ class MultiCircuit:
             active[:, i] = b.active_prof
         return active
 
-    def get_topologic_group_indices(self):
+    def get_topologic_group_indices(self)-> Dict[int, List[int]]:
         """
         Get numerical circuit time groups
-        :return:
+        :return: Dictionary with the time: [array of times] represented by the index, for instance
+                 {0: [0, 1, 2, 3, 4], 5: [5, 6, 7, 8]}
+                 This means that [0, 1, 2, 3, 4] are represented by the topology of 0
+                 and that [5, 6, 7, 8] are represented by the topology of 5
         """
 
-        topology = np.concatenate(
-            (
-                # Add here active arrays for relevant topologic elements
-                self.get_branch_active_time_array(),
-            ),
-            axis=1
+        return tp.find_different_states(
+            states_array=self.get_branch_active_time_array()
         )
-
-        return get_grouped_indices(
-            array=topology,
-            axis=0
-        )
-
 
     def clear(self):
         """

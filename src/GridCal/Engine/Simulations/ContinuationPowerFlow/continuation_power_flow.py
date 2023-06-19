@@ -8,7 +8,7 @@ from enum import Enum
 from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
-from GridCal.Engine.Core.common_functions import compile_types
+from GridCal.Engine.Core.topology import compile_types
 import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 

@@ -7,6 +7,7 @@ from GridCal.Engine.Core.Compilers.circuit_to_data2 import get_branch_data
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Core.admittance_matrices import compute_linear_admittances
 from GridCal.Engine.Core.multi_circuit import get_grouped_indices
+from GridCal.Engine.Core.topology import find_different_states
 
 def nc_snapshot():
     tm0 = time.time()
@@ -140,10 +141,25 @@ def create_numerical_circuits():
     topologic[200:205, 30:40] = 0
     topologic[300:315, 30:40] = 0
     topologic[1000:1003, 1100:1300] = 0
-    groups = get_grouped_indices(
-        array=topologic,
-        axis=0
-    )
+
+    ttotal =0
+    for i in range(10):
+        tm_ = time.time()
+        g_ = find_different_states(states_array=topologic)
+        ttotal += time.time() - tm_
+
+    print(f'Con find_different_statuis he tardado {ttotal/10:.02f} scs.')
+
+    ttotal = 0
+    for i in range(10):
+        tm_ = time.time()
+        groups = get_grouped_indices(
+            array=topologic,
+            axis=0
+        )
+        ttotal += time.time() - tm_
+    print(f'Con numpy he tardado {ttotal/10:.02f} scs.')
+
 
     # groups = circuit.get_topologic_group_indices()
     ncs = np.empty(len(circuit.time_profile), dtype=object)
