@@ -183,30 +183,28 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.end_ = len(self.grid.time_profile)
         time_indices = np.arange(self.start_, self.end_ + 1)
 
-        ts_numeric_circuit = compile_numerical_circuit_at(self.grid)  # TODO fix this
-        self.results = LinearAnalysisTimeSeriesResults(n=ts_numeric_circuit.nbus,
-                                                       m=ts_numeric_circuit.nelm,
-                                                       time_array=ts_numeric_circuit.time_array[time_indices],
-                                                       bus_names=ts_numeric_circuit.bus_names,
-                                                       bus_types=ts_numeric_circuit.bus_types,
-                                                       branch_names=ts_numeric_circuit.branch_names)
+        self.results = LinearAnalysisTimeSeriesResults(n=self.grid.get_bus_number(),
+                                                       m=self.grid.get_branch_number_wo_hvdc(),
+                                                       time_array=self.grid.time_profile[time_indices],
+                                                       bus_names=self.grid.get_bus_names(),
+                                                       bus_types=self.grid.get_bus_default_types(),
+                                                       branch_names=self.grid.get_branches_wo_hvdc_names())
 
-        self.indices = pd.to_datetime(ts_numeric_circuit.time_array[time_indices])
+        self.indices = pd.to_datetime(self.grid.time_profile[time_indices])
 
         self.progress_text.emit('Computing PTDF...')
         linear_analysis = LinearAnalysis(grid=self.grid,
                                          distributed_slack=self.options.distribute_slack,
-                                         correct_values=self.options.correct_values
-                                         )
+                                         correct_values=self.options.correct_values)
         linear_analysis.run()
 
         self.progress_text.emit('Computing branch flows...')
 
-        Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
+        Pbus_0 = self.grid.get_Sbus().T[:, time_indices]
         self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)
 
         # compute post process
-        self.results.loading = self.results.Sf / (ts_numeric_circuit.Rates[:, time_indices].T + 1e-9)
+        self.results.loading = self.results.Sf / (self.grid.get_branch_rates_wo_hvdc()[time_indices, :] + 1e-9)
         self.results.S = Pbus_0.T
 
         self.elapsed = time.time() - a

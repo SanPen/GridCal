@@ -24,7 +24,7 @@ from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 class BatteryGraphicItem(QtWidgets.QGraphicsItemGroup):
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj: Battery, diagramScene):
         """
 
         :param parent:
@@ -34,7 +34,7 @@ class BatteryGraphicItem(QtWidgets.QGraphicsItemGroup):
 
         self.parent = parent
 
-        self.api_object = api_obj
+        self.api_object: Battery = api_obj
 
         self.diagramScene = diagramScene
 

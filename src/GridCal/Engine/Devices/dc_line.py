@@ -18,6 +18,7 @@
 
 import pandas as pd
 import numpy as np
+from typing import Tuple
 from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
@@ -217,6 +218,31 @@ class DcLine(EditableDevice):
 
     def get_min_bus_nominal_voltage(self):
         return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_virtual_taps(self) -> Tuple[float, float]:
+        """
+        Get the branch virtual taps
+
+        The virtual taps generate when a line nominal voltage ate the two connection buses differ
+
+        Returns:
+
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
+
+        """
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        if bus_f_v == bus_t_v:
+            return 1.0, 1.0
+        else:
+            if bus_f_v > 0.0 and bus_t_v > 0.0:
+                return bus_f_v / bus_t_v, 1.0
+            else:
+                return 1.0, 1.0
 
     def copy(self, bus_dict=None):
         """

@@ -860,8 +860,10 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.branch_data.names = np.array(npa_data.branch_data.names)
         data.branch_data.virtual_tap_f = npa_data.branch_data.vtap_f
         data.branch_data.virtual_tap_t = npa_data.branch_data.vtap_t
+        data.branch_data.original_idx = npa_data.branch_data.original_indices
 
         data.bus_data.names = np.array(npa_data.bus_data.names)
+        data.bus_data.original_idx = npa_data.bus_data.original_indices
 
         data.Admittances = FakeAdmittances()
         data.Admittances.Ybus = adm.Ybus
@@ -886,13 +888,10 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.vd_ = tpes.vd
         data.pqpv_ = tpes.no_slack
 
-        data.original_bus_idx = npa_data.bus_data.original_indices
-        data.original_branch_idx = npa_data.branch_data.original_indices
-
         data.Qmax_bus_ = qlim.qmax_bus
         data.Qmin_bus_ = qlim.qmin_bus
 
-        control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_)
+        control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_[:, 0])
 
         data.iPfsh = control_indices.iPfsh
         data.iQfma = control_indices.iQfma

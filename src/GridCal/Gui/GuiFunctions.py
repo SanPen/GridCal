@@ -499,8 +499,8 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(txt)
 
 
 class ObjectsModel(QtCore.QAbstractTableModel):
@@ -876,8 +876,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(txt)
 
 
 class BranchObjectModel(ObjectsModel):
@@ -1134,7 +1134,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            text = cb.text(mode=cb.Clipboard)
+            text = cb.text()
 
             rows = text.split('\n')
 
@@ -1195,8 +1195,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(data, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(data)
 
         else:
             # there are no elements

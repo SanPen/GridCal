@@ -246,26 +246,26 @@ class OpfAc(Opf):
         Sbase = numerical_circuit.Sbase
 
         # battery
-        Pb_max = numerical_circuit.battery_pmax / Sbase
-        Pb_min = numerical_circuit.battery_pmin / Sbase
-        cost_b = numerical_circuit.battery_cost
+        Pb_max = numerical_circuit.battery_data.pmax / Sbase
+        Pb_min = numerical_circuit.battery_data.pmin / Sbase
+        cost_b = numerical_circuit.battery_data.cost
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax / Sbase
-        Pg_min = numerical_circuit.generator_pmin / Sbase
-        cost_g = numerical_circuit.generator_cost
-        P_fix = numerical_circuit.generator_p / Sbase
-        enabled_for_dispatch = numerical_circuit.generator_dispatchable
+        Pg_max = numerical_circuit.generator_data.pmax / Sbase
+        Pg_min = numerical_circuit.generator_data.pmin / Sbase
+        cost_g = numerical_circuit.generator_data.cost
+        P_fix = numerical_circuit.generator_data.p / Sbase
+        enabled_for_dispatch = numerical_circuit.generator_data.dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active * numerical_circuit.load_s.real) / Sbase
-        Ql = (numerical_circuit.load_active * numerical_circuit.load_s.imag) / Sbase
-        cost_l = numerical_circuit.load_cost
+        Pl = (numerical_circuit.load_data.active * numerical_circuit.load_data.S.real) / Sbase
+        Ql = (numerical_circuit.load_data.active * numerical_circuit.load_data.S.imag) / Sbase
+        cost_l = numerical_circuit.load_data.cost
 
         # branch
         branch_ratings = numerical_circuit.branch_rates / Sbase
-        Bseries = (numerical_circuit.branch_active * (1 / (numerical_circuit.branch_R + 1j * numerical_circuit.branch_X))).imag
-        cost_br = numerical_circuit.branch_cost
+        Bseries = (numerical_circuit.branch_data.active * (1 / (numerical_circuit.branch_data.R + 1j * numerical_circuit.branch_data.X))).imag
+        cost_br = numerical_circuit.branch_data.overload_cost
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
@@ -290,7 +290,7 @@ class OpfAc(Opf):
 
         # compute the power injections per node
         P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_elm, Pg=Pg,
-                                    C_bus_bat=numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
+                                    C_bus_bat=numerical_circuit.battery_data.C_bus_elm, Pb=Pb,
                                     C_bus_load=numerical_circuit.load_data.C_bus_elm,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)

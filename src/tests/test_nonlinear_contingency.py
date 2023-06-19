@@ -23,7 +23,7 @@ def test_ptdf():
     # Run the nonlinear factors calculation ----------------------------------------------------------------------------
     nl_options = NonLinearAnalysisOptions(distribute_slack=False,
                                           correct_values=True,
-                                          pf_results=pf.results)
+                                          pf_options=pf.options)
     nl_simulation = NonLinearAnalysisDriver(grid=main_circuit, options=nl_options)
     nl_simulation.run()
 

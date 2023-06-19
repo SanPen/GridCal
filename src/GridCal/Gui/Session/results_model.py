@@ -250,8 +250,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(txt)
 
         else:
             # there are no elements
@@ -271,8 +271,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(txt)
 
         else:
             # there are no elements

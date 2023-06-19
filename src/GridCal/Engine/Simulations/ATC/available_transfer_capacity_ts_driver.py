@@ -15,14 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
-import json
 import numpy as np
-import pandas as pd
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, compute_atc_list, compute_alpha
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, \
+    compute_atc_list, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -32,6 +31,9 @@ from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
+    """
+
+    """
 
     def __init__(self, br_names, bus_names, rates, contingency_rates, time_array):
         """
@@ -242,7 +244,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.progress_signal.emit(0)
         nc = compile_numerical_circuit_at(self.grid, t_idx=0)  # TODO: Fix this
-        nt = len(nc.time_array)
+        nt = self.grid.get_time_number()
         time_indices = self.get_time_indices()
 
         # declare the linear analysis
@@ -257,11 +259,13 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         con_br_idx = nc.branch_data.get_contingency_enabled_indices()
 
         # declare the results
-        self.results = AvailableTransferCapacityTimeSeriesResults(br_names=linear_analysis.numerical_circuit.branch_names,
-                                                                  bus_names=linear_analysis.numerical_circuit.bus_names,
-                                                                  rates=nc.Rates,
-                                                                  contingency_rates=nc.ContingencyRates,
-                                                                  time_array=nc.time_array[time_indices])
+        self.results = AvailableTransferCapacityTimeSeriesResults(
+            br_names=linear_analysis.numerical_circuit.branch_names,
+            bus_names=linear_analysis.numerical_circuit.bus_names,
+            rates=nc.Rates,
+            contingency_rates=nc.ContingencyRates,
+            time_array=self.grid.time_profile[time_indices]
+        )
 
         if self.options.use_clustering:
             self.progress_text.emit('Clustering...')
@@ -273,7 +277,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 X, n_points=self.options.cluster_number)
 
         # get the power injections
-        P = nc.Sbus.real  # these are in p.u.
+        P = self.grid.get_Pbus().T  # these are in p.u.
 
         # get flow
         if self.options.use_provided_flows:
@@ -288,8 +292,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
 
         # transform the contingency rates and the normal rates
-        contingency_rates = nc.ContingencyRates.T
-        rates = nc.Rates.T
+        rates = self.grid.get_branch_rates_wo_hvdc()
+        contingency_rates = self.grid.get_branch_contingency_rates_wo_hvdc()
 
         # these results can be copied directly
         self.results.base_flow = flows
@@ -306,12 +310,13 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 ptdf=linear_analysis.PTDF,
                 P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
                 Pinstalled=nc.bus_installed_power,
-                Pgen=nc.generator_data.get_injections_per_bus(),
-                Pload=nc.load_data.get_injections_per_bus(),
+                Pgen=nc.generator_data.get_injections_per_bus().real,
+                Pload=nc.load_data.get_injections_per_bus().real,
                 idx1=self.options.bus_idx_from,
                 idx2=self.options.bus_idx_to,
                 dT=self.options.dT,
-                mode=self.options.mode.value)
+                mode=self.options.mode.value
+            )
 
             # base exchange
             base_exchange = (self.options.inter_area_branch_sense * flows[t, self.options.inter_area_branch_idx]).sum()
@@ -319,7 +324,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # consider the HVDC transfer
             if self.options.Pf_hvdc is not None:
                 if len(self.options.idx_hvdc_br):
-                    base_exchange += (self.options.inter_area_hvdc_branch_sense * self.options.Pf_hvdc[t, self.options.idx_hvdc_br]).sum()
+                    base_exchange += (self.options.inter_area_hvdc_branch_sense * self.options.Pf_hvdc[
+                        t, self.options.idx_hvdc_br]).sum()
 
             # compute ATC
             report = compute_atc_list(br_idx=br_idx,
@@ -370,4 +376,3 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
-

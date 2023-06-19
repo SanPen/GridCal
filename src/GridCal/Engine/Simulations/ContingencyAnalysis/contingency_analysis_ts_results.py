@@ -25,12 +25,19 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types, con_names):
+    def __init__(self, n, nbr, nc, time_array, bus_names, branch_names, bus_types, con_names):
         """
-        TimeSeriesResults constructor
-        @param n: number of buses
-        @param m: number of branches
+        ContingencyAnalysisTimeSeriesResults
+        :param n: 
+        :param nbr: 
+        :param nc: 
+        :param time_array: 
+        :param bus_names: 
+        :param branch_names: 
+        :param bus_types: 
+        :param con_names: 
         """
+
         ResultsTemplate.__init__(self,
                                  name='N-1 time series',
                                  available_results=[ResultTypes.ContingencyFrequency,
@@ -51,7 +58,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         nt = len(time_array)
 
         self.nbus = n
-        self.nbranch = ne
+        self.nbranch = nbr
         self.ncon = nc
 
         self.branch_names = branch_names
@@ -66,15 +73,15 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.S = np.zeros((nt, n))
 
-        self.worst_flows = np.zeros((nt, ne))
+        self.worst_flows = np.zeros((nt, nbr))
 
-        self.worst_loading = np.zeros((nt, ne))
+        self.worst_loading = np.zeros((nt, nbr))
 
-        self.overload_count = np.zeros(ne, dtype=int)
+        self.overload_count = np.zeros(nbr, dtype=int)
 
-        self.relative_frequency = np.zeros(ne)
+        self.relative_frequency = np.zeros(nbr)
 
-        self.max_overload = np.zeros(ne)
+        self.max_overload = np.zeros(nbr)
 
     def apply_new_time_series_rates(self, nc: "TimeCircuit"):
         rates = nc.Rates.T

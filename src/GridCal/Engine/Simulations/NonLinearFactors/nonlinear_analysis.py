@@ -22,6 +22,8 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import helm_coefficients_dY, helm_preparation_dY
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 
 def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv):
@@ -49,18 +51,18 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
     V_cont = np.zeros((nbus, nbr), dtype=complex)
     err = np.zeros(nbr)
 
-    mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
+    mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n = helm_preparation_dY(
+        Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv)
 
     for i in range(nbr):
-
         row_buses_f, col_buses_f = branch_data.C_branch_bus_f.nonzero()
         row_buses_t, col_buses_t = branch_data.C_branch_bus_t.nonzero()
 
         # build the admittance matrix that modifies the original admittance matrix
         dY = build_dY_outage(bus_f=col_buses_f[i],
                              bus_t=col_buses_t[i],
-                             G0sw=branch_data.G0sw[i][0],
-                             Beq=branch_data.Beq[i][0],
+                             G0sw=branch_data.G0sw[i],
+                             Beq=branch_data.Beq[i],
                              k=branch_data.k[i],
                              If=If[col_buses_f[i]],
                              a=branch_data.a[i],
@@ -70,10 +72,10 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
                              xs=branch_data.X[i],
                              gsh=branch_data.G[i],
                              bsh=branch_data.B[i],
-                             tap_module=branch_data.tap_module[i][0],
+                             tap_module=branch_data.tap_module[i],
                              vtap_f=branch_data.virtual_tap_f[i],
                              vtap_t=branch_data.virtual_tap_t[i],
-                             tap_angle=branch_data.tap_angle[i][0],
+                             tap_angle=branch_data.tap_angle[i],
                              n_bus=nbus)
 
         # solve the modified HELM
@@ -128,7 +130,8 @@ def build_dY_outage(bus_f, bus_t, G0sw, Beq, k, If, a, b, c, rs, xs,
     row = [bus_f, bus_f, bus_t, bus_t]
     col = [bus_f, bus_t, bus_f, bus_t]
 
-    dYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(n_bus, n_bus))  # TODO: Make absolutely certain of this, as it is coded it matches the COO format
+    dYmat = sp.sparse.csr_matrix((data, (row, col)), shape=(
+        n_bus, n_bus))  # TODO: Make absolutely certain of this, as it is coded it matches the COO format
 
     return -1 * dYmat  # negative because we are removing these admittances
 
@@ -342,7 +345,6 @@ def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
 
 
 def make_worst_contingency_transfer_limits(tmc):
-
     nbr = tmc.shape[0]
     wtmc = np.zeros((nbr, 2))
 
@@ -354,11 +356,18 @@ def make_worst_contingency_transfer_limits(tmc):
 
 class NonLinearAnalysis:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, pf_results=None):
+    def __init__(self, grid: MultiCircuit,
+                 distributed_slack=True,
+                 correct_values=True,
+                 pf_options: PowerFlowOptions = None,
+                 t_idx=None):
         """
 
         :param grid:
         :param distributed_slack:
+        :param correct_values:
+        :param pf_results:
+        :param t_idx:
         """
 
         self.grid = grid
@@ -371,15 +380,17 @@ class NonLinearAnalysis:
 
         self.PTDF = None  # power transfer distribution factors (n_br, n_bus)
 
-        self.LODF = None # line outage distribution factors (n_br, n_br)
+        self._OTDF = None  # outage transfer distribution factors (n_br, n_br)
 
-        self._OTDF = None
+        self.LODF = None  # line outage distribution factors (n_br, n_br)
 
         self.V_cont = None  # contingency voltages (n_bus, n_br)
 
         self.err = 0.0
 
-        self.pf_results = pf_results
+        self.pf_options: PowerFlowOptions = pf_options
+
+        self.t_idx = t_idx
 
         self.logger = Logger()
 
@@ -387,7 +398,7 @@ class NonLinearAnalysis:
         """
         Run the PTDF and LODF
         """
-        self.numerical_circuit = compile_numerical_circuit_at(self.grid)
+        self.numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus
@@ -395,81 +406,123 @@ class NonLinearAnalysis:
         self.LODF = np.zeros((n_br, n_br))
         self.V_cont = np.zeros((n_bus, n_br), dtype=complex)
 
-        # check if power_flow results are passed
-        if self.pf_results is None:
-            self.logger.add_error('No initial power flow found, it is needed')
-            raise Exception('No initial power flow found, it is needed')
+        # compose the HVDC power injections
+        Shvdc, Losses_hvdc, \
+            Pf_hvdc, Pt_hvdc, \
+            loading_hvdc, \
+            n_free = self.numerical_circuit.hvdc_data.get_power(Sbase=self.numerical_circuit.Sbase,
+                                                                theta=np.zeros(self.numerical_circuit.nbus))
 
+        # compute the PTDF and LODF per islands
+        if len(islands) > 0:
+            for n_island, island in enumerate(islands):
+
+                # no slacks will make it impossible to compute the PTDF analytically
+                if len(island.vd) == 1:
+                    if len(island.pqpv) > 0:
+
+                        # run circuit power flow
+                        pf_results = single_island_pf(
+                            circuit=island,
+                            Vbus=island.Vbus,  # TODO: if V_guess is None else V_guess[island.original_bus_idx],
+                            Sbus=island.Sbus + Shvdc[island.original_bus_idx],
+                            Ibus=island.Ibus,
+                            Yloadbus=island.YLoadBus,
+                            ma=island.branch_data.tap_module,
+                            theta=island.branch_data.tap_angle,
+                            Beq=island.branch_data.Beq,
+                            branch_rates=island.Rates,
+                            pq=island.pq,
+                            pv=island.pv,
+                            vd=island.vd,
+                            pqpv=island.pqpv,
+                            Qmin=island.Qmin_bus,
+                            Qmax=island.Qmax_bus,
+                            options=self.pf_options,
+                            logger=self.logger
+                        )
+
+                        V_cont, err = calc_V_outage(island.branch_data,
+                                                    pf_results.If,
+                                                    island.Ybus,
+                                                    island.Yseries,
+                                                    island.Vbus,
+                                                    island.Sbus,
+                                                    island.Yshunt,
+                                                    island.pq,
+                                                    island.pv,
+                                                    island.vd,
+                                                    island.pqpv)
+
+                        ptdf_island = calc_ptdf_from_V(V_cont=V_cont,
+                                                       Y=island.Ybus,
+                                                       Pini=np.real(pf_results.Sbus),
+                                                       correct_values=self.correct_values)
+
+                        lodf_island = calc_lodf_from_V(V_cont=V_cont,
+                                                       Yf=island.Yf,
+                                                       Cf=island.Cf,
+                                                       Pini=np.real(pf_results.Sf),
+                                                       correct_values=self.correct_values)
+
+                        # assign objects to the full matrix
+                        self.err = err  # how to map it well?
+                        self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
+                        self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                        self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+
+                    else:
+                        self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+
+                elif len(island.vd) == 0:
+                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
+
+                else:
+                    self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
-            # compute the PTDF and LODF per islands
-            if len(islands) > 0:
-                for n_island, island in enumerate(islands):
+            # run circuit power flow
+            pf_results = single_island_pf(
+                circuit=islands[0],
+                Vbus=islands[0].Vbus,  # TODO: if V_guess is None else V_guess[islands[0].original_bus_idx],
+                Sbus=islands[0].Sbus + Shvdc[islands[0].original_bus_idx],
+                Ibus=islands[0].Ibus,
+                Yloadbus=islands[0].YLoadBus,
+                ma=islands[0].branch_data.tap_module,
+                theta=islands[0].branch_data.tap_angle,
+                Beq=islands[0].branch_data.Beq,
+                branch_rates=islands[0].Rates,
+                pq=islands[0].pq,
+                pv=islands[0].pv,
+                vd=islands[0].vd,
+                pqpv=islands[0].pqpv,
+                Qmin=islands[0].Qmin_bus,
+                Qmax=islands[0].Qmax_bus,
+                options=self.pf_options,
+                logger=self.logger
+            )
 
-                    # no slacks will make it impossible to compute the PTDF analytically
-                    if len(island.vd) == 1:
-                        if len(island.pqpv) > 0:
+            # there is only 1 island, use island[0]
+            self.V_cont, self.err = calc_V_outage(islands[0].branch_data,
+                                                  pf_results.If,
+                                                  islands[0].Ybus,
+                                                  islands[0].Yseries,
+                                                  islands[0].Vbus,
+                                                  islands[0].Sbus,
+                                                  islands[0].Yshunt,
+                                                  islands[0].pq,
+                                                  islands[0].pv,
+                                                  islands[0].vd,
+                                                  islands[0].pqpv)
 
-                            V_cont, err = calc_V_outage(island.branch_data, 
-                                                        self.pf_results.If,
-                                                        island.Ybus,
-                                                        island.Yseries,
-                                                        island.Vbus,
-                                                        island.Sbus,
-                                                        island.Yshunt,
-                                                        island.pq,
-                                                        island.pv,
-                                                        island.vd,
-                                                        island.pqpv)
+            self.PTDF = calc_ptdf_from_V(V_cont=self.V_cont,
+                                         Y=islands[0].Ybus,
+                                         Pini=np.real(pf_results.Sbus))
 
-                            ptdf_island = calc_ptdf_from_V(V_cont=V_cont,
-                                                           Y=island.Ybus,
-                                                           Pini=np.real(self.pf_results.Sbus),
-                                                           correct_values=self.correct_values)
-
-                            lodf_island = calc_lodf_from_V(V_cont=V_cont,
-                                                           Yf=island.Yf,
-                                                           Cf=island.Cf,
-                                                           Pini=np.real(self.pf_results.Sf),
-                                                           correct_values=self.correct_values)
-
-                            # assign objects to the full matrix
-                            self.err = err  # how to map it well?
-                            self.V_cont[np.ix_(island.original_bus_idx, island.original_branch_idx)] = V_cont
-                            self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
-                            self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
-
-                        else:
-                            self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
-                    elif len(island.vd) == 0:
-                        self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
-                    else:
-                        self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
-            else:
-
-                # there is only 1 island, use island[0]
-                self.V_cont, self.err = calc_V_outage(islands[0].branch_data,
-                                                      self.pf_results.If,
-                                                      islands[0].Ybus,
-                                                      islands[0].Yseries,
-                                                      islands[0].Vbus,
-                                                      islands[0].Sbus,
-                                                      islands[0].Yshunt,
-                                                      islands[0].pq,
-                                                      islands[0].pv,
-                                                      islands[0].vd,
-                                                      islands[0].pqpv)
-
-                self.PTDF = calc_ptdf_from_V(V_cont=self.V_cont,
-                                             Y=islands[0].Ybus,
-                                             Pini=np.real(self.pf_results.Sbus))
-
-                self.LODF = calc_lodf_from_V(V_cont=self.V_cont,
-                                             Yf=islands[0].Yf,
-                                             Cf=islands[0].Cf,
-                                             Pini=np.real(self.pf_results.Sf))
-
-            print('Done running')
+            self.LODF = calc_lodf_from_V(V_cont=self.V_cont,
+                                         Yf=islands[0].Yf,
+                                         Cf=islands[0].Cf,
+                                         Pini=np.real(pf_results.Sf))
 
     @property
     def OTDF(self):

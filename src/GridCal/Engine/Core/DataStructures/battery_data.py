@@ -29,7 +29,6 @@ class BatteryData(GeneratorData):
         Battery data arrays
         :param nelm: number of batteries
         :param nbus: number of buses
-        :param ntime: time index
         """
 
         GeneratorData.__init__(

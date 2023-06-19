@@ -152,8 +152,8 @@ class BranchData:
         data.B2 = self.B[elm_idx]
 
         data.k = self.k[elm_idx]
-        data.virtual_tap_t = self.virtual_tap_f[elm_idx]
-        data.virtual_tap_f = self.virtual_tap_t[elm_idx]
+        data.virtual_tap_f = self.virtual_tap_f[elm_idx]
+        data.virtual_tap_t = self.virtual_tap_t[elm_idx]
         data.Kdp = self.Kdp[elm_idx]
         data.Kdp_va = self.Kdp_va[elm_idx]
         data.dc = self.dc[elm_idx]
@@ -265,7 +265,6 @@ class BranchData:
     def to_df(self):
         """
         Create DataFrame with the compiled branches information
-        :param t: time index, relevant for those magnitudes that change with time
         :return: Pandas DataFrame
         """
         data = {

@@ -600,7 +600,23 @@ class ZonalGrouping(Enum):
             return s
 
 
+class ContingencyEngine(Enum):
+    PowerFlow = 'Power flow'
+    HELM = 'HELM'
+    PTDF = 'PTDF'
 
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ZonalGrouping[s]
+        except KeyError:
+            return s
 
 
 

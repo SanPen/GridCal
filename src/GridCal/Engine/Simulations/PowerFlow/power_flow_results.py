@@ -74,9 +74,9 @@ class PowerFlowResults(ResultsTemplate):
     def __init__(self, n: int,
                  m: int,
                  n_hvdc: int,
-                 bus_names: List[str],
-                 branch_names: List[str],
-                 hvdc_names: List[str],
+                 bus_names: np.ndarray,
+                 branch_names: np.ndarray,
+                 hvdc_names: np.ndarray,
                  bus_types: np.ndarray,
                  area_names=None):
         """

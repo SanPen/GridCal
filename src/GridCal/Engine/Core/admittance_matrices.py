@@ -20,7 +20,6 @@ import numpy as np
 import scipy.sparse as sp
 
 from GridCal.Engine.Devices.enumerations import WindingsConnection
-from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 
 
 def compute_connectivity(branch_active, Cf_, Ct_):
@@ -189,7 +188,6 @@ def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, 
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param G0:
-    :param Inom:
     :param Yshunt_bus: array of shunts equivalent power per bus (p.u.)
     :return: Ybus, Yf, Yt
     """

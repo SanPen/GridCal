@@ -279,8 +279,8 @@ class LogsDialogue(QtWidgets.QDialog):
 
         # copy to clipboard
         cb = QtWidgets.QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        cb.setText(txt, mode=cb.Clipboard)
+        cb.clear()
+        cb.setText(txt)
 
 
 class ElementsDialogue(QtWidgets.QDialog):

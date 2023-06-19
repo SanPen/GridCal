@@ -99,6 +99,12 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             # compute update step
             dx = linear_solver(J, f)
 
+            if np.isnan(dx).any():
+                end = time.time()
+                elapsed = end - start
+                return NumericPowerFlowResults(V0, converged, norm_f, S0,
+                                               None, None, None, None, None, None, iteration, elapsed)
+
             if verbose:
                 logger.add_debug('NR Iteration {0}'.format(iteration) + '-' * 200)
 

@@ -82,11 +82,30 @@ class Bus(EditableDevice):
 
     """
 
-    def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1,
-                 angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
-                 xpos=0, ypos=0, height=0, width=0, active=True,
-                 is_slack=False, is_dc=False, is_tr_bus=False,
-                 area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0,
+    def __init__(self, name="Bus",
+                 idtag=None,
+                 code='',
+                 vnom=10,
+                 vmin=0.9,
+                 vmax=1.1,
+                 angle_min=-6.28,
+                 angle_max=6.28,
+                 r_fault=0.0,
+                 x_fault=0.0,
+                 xpos=0,
+                 ypos=0,
+                 height=0,
+                 width=0,
+                 active=True,
+                 is_slack=False,
+                 is_dc=False,
+                 is_tr_bus=False,
+                 area: Area = None,
+                 zone: Zone = None,
+                 substation: Substation = None,
+                 country: Country = None,
+                 longitude=0.0,
+                 latitude=0.0,
                  Vm0=1, Va0=0):
 
         EditableDevice.__init__(self,
@@ -167,13 +186,13 @@ class Bus(EditableDevice):
 
         self.active_prof = None
 
-        self.country = country
+        self.country: Country = country
 
-        self.area = area
+        self.area: Area = area
 
-        self.zone = zone
+        self.zone: Zone = zone
 
-        self.substation = substation
+        self.substation: Substation = substation
 
         # List of load s attached to this bus
         self.loads = list()
@@ -918,3 +937,28 @@ class Bus(EditableDevice):
 
         self.shunts = self.get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
         self.external_grids = self.get_fused_device_lst(self.external_grids, [])
+
+    def get_Sbus_prof(self) -> np.ndarray:
+        """
+        Compute the complex power injections
+        :return:
+        """
+        nt = len(self.active_prof)
+        val = np.zeros(nt, dtype=complex)
+
+        for elm in self.generators:
+            val += elm.P_prof
+
+        for elm in self.batteries:
+            val += elm.P_prof
+
+        for elm in self.static_generators:
+            val += elm.P_prof + 1j * elm.Q_prof
+
+        for elm in self.external_grids:
+            val += elm.P_prof + 1j * elm.Q_prof
+
+        for elm in self.loads:
+            val -= elm.P_prof + 1j * elm.Q_prof
+
+        return val

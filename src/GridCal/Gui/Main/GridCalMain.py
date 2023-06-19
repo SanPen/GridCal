@@ -127,6 +127,7 @@ def terminate_thread(thread):
 
     return True
 
+
 def traverse_objects(name, obj, lst: list, i=0):
     lst.append((name, sys.getsizeof(obj)))
     if i < 10:
@@ -242,6 +243,13 @@ class MainGUI(QMainWindow):
             sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
         mdl = gf.get_list_model(list(self.stochastic_pf_methods_dict.keys()))
         self.ui.stochastic_pf_method_comboBox.setModel(mdl)
+
+        # reactive power controls
+        self.contingency_engines_dict = OrderedDict()
+        self.contingency_engines_dict[bs.ContingencyEngine.PowerFlow.value] = bs.ContingencyEngine.PowerFlow
+        self.contingency_engines_dict[bs.ContingencyEngine.PTDF.value] = bs.ContingencyEngine.PTDF
+        self.contingency_engines_dict[bs.ContingencyEngine.HELM.value] = bs.ContingencyEngine.HELM
+        self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of styles
         plt_styles = plt.style.available
@@ -935,7 +943,6 @@ class MainGUI(QMainWindow):
         Get all threads that has to do with simulation
         :return: list of simulation threads
         """
-
 
         all_threads = list(self.session.threads.values())
 
@@ -3191,7 +3198,9 @@ class MainGUI(QMainWindow):
                         distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
                         use_provided_flows=False,
                         Pf=None,
-                        pf_options=pf_options)
+                        pf_options=pf_options,
+                        engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+                    )
 
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
@@ -3255,7 +3264,9 @@ class MainGUI(QMainWindow):
                             distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
                             use_provided_flows=False,
                             Pf=None,
-                            pf_options=pf_options)
+                            pf_options=pf_options,
+                            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+                        )
 
                         drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
@@ -4441,7 +4452,7 @@ class MainGUI(QMainWindow):
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
 
-                #todo: add consider_nx_contingencies to gui if necessary
+                # todo: add consider_nx_contingencies to gui if necessary
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 consider_nx_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
@@ -5437,7 +5448,7 @@ class MainGUI(QMainWindow):
             raise Exception('Not implemented :(')
 
         else:
-            raise Exception('<' + current_study + '> Not implemented :(')
+            print('<' + current_study + '> Not implemented :(')
 
     def colour_schematic(self):
         """
@@ -7196,9 +7207,9 @@ class MainGUI(QMainWindow):
         return core.compile_numerical_circuit_at(circuit=self.circuit)
 
     def get_compatible_areas_from_to(self) -> Tuple[bool,
-                                                    List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
-                                                    List[Tuple[int, object, float]], List[Tuple[int, object, float]],
-                                                    List[dev.Area], List[dev.Area]]:
+    List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
+    List[Tuple[int, object, float]], List[Tuple[int, object, float]],
+    List[dev.Area], List[dev.Area]]:
         """
         Get the lists that help defining the inter area objects
         :return: success?,
@@ -7640,6 +7651,9 @@ class MainGUI(QMainWindow):
                 "base_power": self.ui.sbase_doubleSpinBox,
                 "frequency": self.ui.fbase_doubleSpinBox,
                 "engine": self.ui.engineComboBox
+            },
+            "contingencies": {
+                "contingencies_engine": self.ui.contingencyEngineComboBox
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox

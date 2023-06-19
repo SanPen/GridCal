@@ -15,14 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
-import json
 import numpy as np
 import numba as nb
 from enum import Enum
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_worst_contingency_transfer_limits
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -505,7 +504,6 @@ class AvailableTransferCapacityOptions:
         :param mode:
         :param max_report_elements: maximum number of elements to show in the report (-1 for all)
         :param use_clustering:
-        :param n_clusters:
         """
         self.distributed_slack = distributed_slack
         self.correct_values = correct_values

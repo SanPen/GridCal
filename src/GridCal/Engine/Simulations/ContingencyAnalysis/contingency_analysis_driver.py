@@ -21,7 +21,7 @@ from itertools import combinations
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis2
+import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -57,10 +57,24 @@ def enumerate_states_n_k(m, k=1):
 
 class ContingencyAnalysisOptions:
 
-    def __init__(self, distributed_slack=True, correct_values=True,
-                 use_provided_flows=False, Pf=None, pf_results=None,
-                 nonlinear=False, pf_options=PowerFlowOptions(SolverType.DC)):
+    def __init__(self,
+                 distributed_slack=True,
+                 correct_values=True,
+                 use_provided_flows=False,
+                 Pf=None,
+                 pf_results=None,
+                 engine=bs.ContingencyEngine.PowerFlow,
+                 pf_options=PowerFlowOptions(SolverType.DC)):
+        """
 
+        :param distributed_slack:
+        :param correct_values:
+        :param use_provided_flows:
+        :param Pf:
+        :param pf_results:
+        :param engine:
+        :param pf_options:
+        """
         self.distributed_slack = distributed_slack
 
         self.correct_values = correct_values
@@ -71,7 +85,7 @@ class ContingencyAnalysisOptions:
 
         self.pf_results = pf_results
 
-        self.nonlinear = nonlinear
+        self.engine = engine
 
         self.pf_options = pf_options
 
@@ -111,6 +125,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
     def n_minus_k(self, t=None):
         """
         Run N-1 simulation in series
+        :param t: time index, if None the snapshot is used
         :return: returns the results
         """
         # set the numerical circuit
@@ -186,9 +201,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def n_minus_k_nl(self):
+    def n_minus_k_nl(self, t=None):
         """
         Run N-1 simulation in series with HELM, non-linear solution
+        :param t: time index, if None the snapshot is used
         :return: returns the results
         """
 
@@ -196,7 +212,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
         nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
                                                distributed_slack=self.options.distributed_slack,
                                                correct_values=self.options.correct_values,
-                                               pf_results=self.options.pf_results)
+                                               pf_options=self.options.pf_options,
+                                               t_idx=t)
         nonlinear_analysis.run()
 
         # set the numerical circuit
@@ -214,7 +231,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # get the contingency branch indices
         br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
         mon_idx = nonlinear_analysis.numerical_circuit.branch_data.get_monitor_enabled_indices()
-        Pbus = numerical_circuit.get_injections(False).real[:, 0]
+        Pbus = numerical_circuit.get_injections(False).real
         PTDF = nonlinear_analysis.PTDF
         LODF = nonlinear_analysis.LODF
 
@@ -249,11 +266,17 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
         start = time.time()
 
-        if not self.options.nonlinear:
+        if self.options.engine == bs.ContingencyEngine.PowerFlow:
             self.results = self.n_minus_k()
 
-        else:
+        elif self.options.engine == bs.ContingencyEngine.PTDF:
+            raise Exception('Not implemented')
+
+        elif self.options.engine == bs.ContingencyEngine.HELM:
             self.results = self.n_minus_k_nl()
+
+        else:
+            self.results = self.n_minus_k()
 
         end = time.time()
         self.elapsed = end - start
