@@ -278,12 +278,18 @@ def get_generator_data(circuit: MultiCircuit,
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
+            data.availability[k] = 1.0
+            data.ramp_up[k] = elm.RampUp
+            data.ramp_down[k] = elm.RampDown
+            data.min_time_up[k] = elm.MinTimeUp
+            data.min_time_down[k] = elm.MinTimeDown
 
             if opf:
                 data.dispatchable[k] = elm.enabled_dispatch
                 data.pmax[k] = elm.Pmax
                 data.pmin[k] = elm.Pmin
-                data.cost[k] = elm.Cost_prof[t_idx]
+                data.cost_0[k] = elm.Cost0_prof[t_idx]
+                data.cost_1[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -310,7 +316,7 @@ def get_generator_data(circuit: MultiCircuit,
                 data.dispatchable[k] = elm.enabled_dispatch
                 data.pmax[k] = elm.Pmax
                 data.pmin[k] = elm.Pmin
-                data.cost[k] = elm.Cost
+                data.cost_1[k] = elm.Cost
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -388,13 +394,22 @@ def get_battery_data(circuit: MultiCircuit,
                 data.dispatchable[k] = elm.enabled_dispatch
                 data.pmax[k] = elm.Pmax
                 data.pmin[k] = elm.Pmin
+
+                data.availability[k] = 1.0
+                data.ramp_up[k] = elm.RampUp
+                data.ramp_down[k] = elm.RampDown
+                data.min_time_up[k] = elm.MinTimeUp
+                data.min_time_down[k] = elm.MinTimeDown
+
                 data.enom[k] = elm.Enom
                 data.min_soc[k] = elm.min_soc
                 data.max_soc[k] = elm.max_soc
                 data.soc_0[k] = elm.soc_0
                 data.discharge_efficiency[k] = elm.discharge_efficiency
                 data.charge_efficiency[k] = elm.charge_efficiency
-                data.cost[k] = elm.Cost_prof[t_idx]
+
+                data.cost_0[k] = elm.Cost0_prof[t_idx]
+                data.cost_1[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -426,7 +441,7 @@ def get_battery_data(circuit: MultiCircuit,
                 data.soc_0[k] = elm.soc_0
                 data.discharge_efficiency[k] = elm.discharge_efficiency
                 data.charge_efficiency[k] = elm.charge_efficiency
-                data.cost[k] = elm.Cost
+                data.cost_1[k] = elm.Cost
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack

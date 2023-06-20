@@ -22,9 +22,8 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
-from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
+from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
-from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults

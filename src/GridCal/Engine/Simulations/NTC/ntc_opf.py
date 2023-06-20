@@ -19,150 +19,18 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+import os
 from enum import Enum
 from typing import List, Dict, Tuple, Union
 import numpy as np
+from ortools.linear_solver import pywraplp
+import pandas as pd
+from scipy.sparse import csc_matrix
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.basic_structures import Logger
-import os
-
-try:
-    from ortools.linear_solver import pywraplp
-except ModuleNotFoundError:
-    print('ORTOOLS not found :(')
-
-import pandas as pd
-from scipy.sparse import csc_matrix
-
-
-def lpDot(mat, arr):
-    """
-    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
-    :param mat: CSC sparse matrix (A)
-    :param arr: dense vector or matrix of object type (b)
-    :return: vector or matrix result of the product
-    """
-    n_rows, n_cols = mat.shape
-
-    # check dimensional compatibility
-    assert (n_cols == arr.shape[0])
-
-    # check that the sparse matrix is indeed of CSC format
-    if mat.format == 'csc':
-        mat_2 = mat
-    else:
-        # convert the matrix to CSC sparse
-        mat_2 = csc_matrix(mat)
-
-    if len(arr.shape) == 1:
-        """
-        Uni-dimensional sparse matrix - vector product
-        """
-        res = np.zeros(n_rows, dtype=arr.dtype)
-        for i in range(n_cols):
-            for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                j = mat_2.indices[ii]  # row index
-                res[j] += mat_2.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
-    else:
-        """
-        Multi-dimensional sparse matrix - matrix product
-        """
-        cols_vec = arr.shape[1]
-        res = np.zeros((n_rows, cols_vec), dtype=arr.dtype)
-
-        for k in range(cols_vec):  # for each column of the matrix "vec", do the matrix vector product
-            for i in range(n_cols):
-                for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                    j = mat_2.indices[ii]  # row index
-                    res[j, k] += mat_2.data[ii] * arr[i, k]  # C.data[ii] is equivalent to C[i, j]
-    return res
-
-
-def lpExpand(mat, arr):
-    """
-    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
-    :param mat: CSC sparse matrix (A)
-    :param arr: dense vector or matrix of object type (b)
-    :return: vector or matrix result of the product
-    """
-    n_rows, n_cols = mat.shape
-
-    # check dimensional compatibility
-    assert (n_cols == arr.shape[0])
-
-    # check that the sparse matrix is indeed of CSC format
-    if mat.format == 'csc':
-        mat_2 = mat
-    else:
-        # convert the matrix to CSC sparse
-        mat_2 = csc_matrix(mat)
-
-    if len(arr.shape) == 1:
-        """
-        Uni-dimensional sparse matrix - vector product
-        """
-        res = np.zeros(n_rows, dtype=arr.dtype)
-        for i in range(n_cols):
-            for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                j = mat_2.indices[ii]  # row index
-                res[j] = arr[i]  # C.data[ii] is equivalent to C[i, j]
-    else:
-        """
-        Multi-dimensional sparse matrix - matrix product
-        """
-        cols_vec = arr.shape[1]
-        res = np.zeros((n_rows, cols_vec), dtype=arr.dtype)
-
-        for k in range(cols_vec):  # for each column of the matrix "vec", do the matrix vector product
-            for i in range(n_cols):
-                for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                    j = mat_2.indices[ii]  # row index
-                    res[j, k] = arr[i, k]  # C.data[ii] is equivalent to C[i, j]
-    return res
-
-
-def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP
-    """
-    Extract values fro the 1D array of LP variables
-    :param arr: 1D array of LP variables
-    :param make_abs: substitute the result by its abs value
-    :return: 1D numpy array
-    """
-
-    if isinstance(arr, list):
-        arr = np.array(arr)
-
-    val = np.zeros(arr.shape)
-    for i in range(val.shape[0]):
-        if isinstance(arr[i], float) or isinstance(arr[i], int):
-            val[i] = arr[i]
-        else:
-            val[i] = arr[i].solution_value()
-    if make_abs:
-        val = np.abs(val)
-
-    return val
-
-
-def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
-    """
-    Save problem in LP format
-    :param solver: Solver instance
-    :param file_name: name of the file (.lp or .mps supported)
-    """
-    # save the problem in LP format to debug
-    if file_name.lower().endswith('.lp'):
-        lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
-    elif file_name.lower().endswith('.mps'):
-        lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
-    else:
-        raise Exception('Unsupported file format')
-    file2write = open(file_name, 'w')
-    file2write.write(lp_content)
-    file2write.close()
+from GridCal.ThirdParty.ortools.ortools_extra import lpDot, save_lp, lpExpand
 
 
 def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
@@ -1767,7 +1635,7 @@ def formulate_objective(solver: pywraplp.Solver,
     solver.Minimize(f)
 
 
-class OpfNTC(Opf):
+class OpfNTC:
 
     def __init__(self, numerical_circuit: NumericalCircuit,
                  area_from_bus_idx,
@@ -1777,7 +1645,7 @@ class OpfNTC(Opf):
                  LODF,
                  LODF_NX,
                  PTDF,
-                 solver_type: MIPSolvers = MIPSolvers.CBC,
+                 solver_type,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
                  monitor_only_sensitive_branches=False,
                  monitor_only_ntc_load_rule_branches=False,
@@ -2006,7 +1874,7 @@ class OpfNTC(Opf):
 
         base_flows = np.dot(self.PTDF, Sbus.real)
 
-        load_cost = self.numerical_circuit.load_data.cost[:, t]
+        load_cost = self.numerical_circuit.load_data.cost_1[:, t]
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(
@@ -2051,7 +1919,7 @@ class OpfNTC(Opf):
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
+                generator_cost=self.numerical_circuit.generator_data.cost_1[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
@@ -2072,7 +1940,7 @@ class OpfNTC(Opf):
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
+                generator_cost=self.numerical_circuit.generator_data.cost_1[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,
@@ -2399,7 +2267,7 @@ class OpfNTC(Opf):
 
         base_flows = np.dot(self.PTDF, Sbus_at_t.real)
 
-        load_cost = self.numerical_circuit.load_data.cost[:, t]
+        load_cost = self.numerical_circuit.load_data.cost_1[:, t]
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(
@@ -2444,7 +2312,7 @@ class OpfNTC(Opf):
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
+                generator_cost=self.numerical_circuit.generator_data.cost_1[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 Sbase=self.numerical_circuit.Sbase,
                 inf=self.inf,
@@ -2465,7 +2333,7 @@ class OpfNTC(Opf):
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.dispatchable,
-                generator_cost=self.numerical_circuit.generator_data.cost[:, t],
+                generator_cost=self.numerical_circuit.generator_data.cost_1[:, t],
                 generator_names=self.numerical_circuit.generator_data.names,
                 inf=self.inf,
                 ngen=ng,

@@ -1,16 +1,16 @@
 # GridCal
 # Copyright (C) 2022 Santiago Peñate Vera
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 3 of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -20,32 +20,50 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+from typing import List, Union
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
-class OpfSimpleTimeSeries(OpfTimeSeries):
+class OpfSimpleTimeSeries:
 
-    def __init__(self, numerical_circuit: NumericalCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
-                 text_prog=None, prog_func=None):
+    def __init__(self,  grid: MultiCircuit,
+                 time_indices: List[int],):
         """
         DC time series linear optimal power flow
-        :param numerical_circuit: NumericalCircuit instance
-        :param start_idx: start index of the time series
-        :param end_idx: end index of the time series
-        :param solver_type: MIP solver_type to use
-        :param batteries_energy_0: initial state of the batteries, if None the default values are taken
+        :param grid: NumericalCircuit instance
         """
-        OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
-                               solver_type=solver_type)
-
-        self.text_prog = text_prog
-
-        self.prog_func = prog_func
 
         # build the formulation
-        self.problem = None
+        self.grid = grid
+
+        nt = len(time_indices) if len(time_indices) > 0 else 1
+        n = grid.get_bus_number()
+        nbr = grid.get_branch_number_wo_hvdc()
+        ng = grid.get_generators_number()
+        nb = grid.get_batteries_number()
+        nl = grid.get_calculation_loads_number()
+        n_hvdc = grid.get_hvdc_number()
+
+        self.theta = np.zeros((nt, n))
+        self.Pinj = np.zeros((nt, n))
+        self.nodal_restrictions = np.zeros((nt, n))
+
+        self.Pg = np.zeros((nt, ng))
+
+        self.Pb = np.zeros((nt, nb))
+        self.E = np.zeros((nt, nb))
+
+        self.Pl = np.zeros((nt, nl))
+        self.load_shedding = np.zeros((nt, nl))
+
+        self.hvdc_flow = np.zeros((nt, n_hvdc))
+        self.hvdc_slacks = np.zeros((nt, n_hvdc))
+
+        self.phase_shift = np.zeros((nt, nbr))
+        self.s_from = np.zeros((nt, nbr))
+        self.s_to = np.zeros((nt, nbr))
+        self.overloads = np.zeros((nt, nbr))
+        self.rating = grid.get_branch_rates_wo_hvdc() / grid.Sbase
 
     def solve(self, msg=False):
         """
@@ -83,7 +101,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         Pg_max = nc.pmax / Sbase
         Pg_min = nc.pmin / Sbase
         P_profile = nc.generator_p[a:b, :] / Sbase
-        cost_g = nc.cost[a:b, :]
+        cost_g = nc.cost_1[a:b, :]
         enabled_for_dispatch = nc.generator_active
 
         # load
@@ -105,7 +123,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
             if self.text_prog is not None:
                 self.text_prog('Solving ' + str(nc.time_array[t]))
             if self.prog_func is not None:
-                self.prog_func((i+1) / nt * 100.0)
+                self.prog_func((i + 1) / nt * 100.0)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -127,6 +145,8 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         self.rating = nc.branch_rates[a:b, :] / Sbase
         self.nodal_restrictions = np.zeros((nt, n))
 
+        return True
+
     def get_voltage(self):
         """
         return the complex voltages (time, device)
@@ -146,49 +166,49 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.s_from / self.rating.T
+        return self.s_from / (self.rating + 1e-9)
 
     def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.s_from * self.numerical_circuit.Sbase
+        return self.s_from * self.grid.Sbase
 
     def get_battery_power(self):
         """
         return the battery dispatch (time, device)
         :return: 2D array
         """
-        return self.Pb * self.numerical_circuit.Sbase
+        return self.Pb * self.grid.Sbase
 
     def get_battery_energy(self):
         """
         return the battery energy (time, device)
         :return: 2D array
         """
-        return self.E * self.numerical_circuit.Sbase
+        return self.E * self.grid.Sbase
 
     def get_generator_power(self):
         """
         return the generator dispatch (time, device)
         :return: 2D array
         """
-        return self.Pg * self.numerical_circuit.Sbase
+        return self.Pg * self.grid.Sbase
 
     def get_load_shedding(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.load_shedding * self.numerical_circuit.Sbase
+        return self.load_shedding * self.grid.Sbase
 
     def get_load_power(self):
         """
         return the load shedding (time, device)
         :return: 2D array
         """
-        return self.Pl * self.numerical_circuit.Sbase
+        return self.Pl * self.grid.Sbase
 
     def get_shadow_prices(self):
         """

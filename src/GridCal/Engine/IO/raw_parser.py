@@ -231,6 +231,17 @@ class PSSeGrid:
             if psse_elm.is_connected():
                 psse_elm.get_object(psse_bus_dict, self.SBASE, logger, circuit)
 
+        # pass over lines correcting those that are actually transformers
+        branch_connection_voltage_tolerance = 0.1
+        for elm in circuit.lines:
+            V1 = min(elm.bus_to.Vnom, elm.bus_from.Vnom)
+            V2 = max(elm.bus_to.Vnom, elm.bus_from.Vnom)
+            per = V1 / V2
+            if per < (1.0 - branch_connection_voltage_tolerance):
+                circuit.convert_line_to_transformer(elm)
+                logger.add_error(msg="Converted line to transformer due to excessive voltage difference",
+                                 device=str(elm.idtag), value=per)
+
         return circuit
 
 
