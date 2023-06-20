@@ -372,7 +372,7 @@ class MultiCircuit:
             count += len(branch_list)
         return count
 
-    def get_time_number(self) -> int:
+    def get_time_number(self) -> int:  # todo: check this
         """
         Return the number of buses
         :return: number
@@ -384,7 +384,7 @@ class MultiCircuit:
 
     def get_contingency_number(self):
         """
-
+        Get number of contingencies
         :return:
         """
         return len(self.contingencies)
@@ -396,13 +396,17 @@ class MultiCircuit:
         """
         return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
 
-    def get_branch_active_time_array(self):
+    def get_branch_active_time_array(self) -> np.ndarray:
+        """
+        Get branch active matrix
+        :return: array with branch active status
+        """
         active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
         for i, b in enumerate(self.get_branches_wo_hvdc()):
             active[:, i] = b.active_prof
         return active
 
-    def get_topologic_group_indices(self)-> Dict[int, List[int]]:
+    def get_topologic_group_dict(self) -> Dict[int, List[int]]:
         """
         Get numerical circuit time groups
         :return: Dictionary with the time: [array of times] represented by the index, for instance
@@ -488,7 +492,9 @@ class MultiCircuit:
     def get_bus_names(self):
         return [e.name for e in self.buses]
 
-    def get_branches_wo_hvdc(self):
+    def get_branches_wo_hvdc(self) -> List[
+        Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.VSC, dev.UPFC, dev.Switch]
+    ]:
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
@@ -1805,7 +1811,7 @@ class MultiCircuit:
         """
         return [e.name for e in self.contingency_groups]
 
-    def get_contingency_group_dict(self) -> Dict[str, List[dev.Contingency]]:
+    def get_contingencies_dict(self) -> Dict[str, List[dev.Contingency]]:
         """
         Get a dictionary of group idtags related to list of contingencies
         :return:
@@ -1819,6 +1825,9 @@ class MultiCircuit:
                 d[cnt.group.idtag].append(cnt)
 
         return d
+
+    def get_branches_dict(self) -> Dict[str, List[dev.Branch]]:
+        return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
 
     def add_contingency(self, obj: dev.Contingency):
         self.contingencies.append(obj)

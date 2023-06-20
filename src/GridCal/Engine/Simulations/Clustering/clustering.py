@@ -25,6 +25,12 @@ from sklearn.cluster import SpectralClustering
 
 
 def kmeans_sampling(X, n_points=10):
+    """
+    K-Means clustering, fit to the closest points
+    :param X: matrix to evaluate (time, params)
+    :param n_points: number of clusters
+    :return: indices of the closest to the cluster centers, deviation of the closest representatives
+    """
     os.environ['OPENBLAS_NUM_THREADS'] = '12'
 
     tm0 = time.time()

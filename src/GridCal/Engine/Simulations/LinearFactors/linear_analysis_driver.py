@@ -17,7 +17,9 @@
 import time
 import multiprocessing
 import numpy as np
+from typing import Union, Dict
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -45,45 +47,48 @@ class LinearAnalysisResults(ResultsTemplate):
         :param bus_names: bus names
         :param bus_types: bus types array
         """
-        ResultsTemplate.__init__(self,
-                                 name='Linear Analysis',
-                                 available_results=[ResultTypes.PTDFBranchesSensitivity,
-                                                    ResultTypes.LODF,
-                                                    ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading],
-                                 data_variables=['branch_names',
-                                                 'bus_names',
-                                                 'bus_types',
-                                                 'PTDF',
-                                                 'LODF',
-                                                 'Sf',
-                                                 'loading'])
+        ResultsTemplate.__init__(
+            self,
+            name='Linear Analysis',
+            available_results=[
+                ResultTypes.PTDFBranchesSensitivity,
+                ResultTypes.LODF,
+                ResultTypes.BranchActivePowerFrom,
+                ResultTypes.BranchLoading
+            ],
+            data_variables=[
+                'branch_names',
+                'bus_names',
+                'bus_types',
+                'PTDF',
+                'LODF',
+                'Sf',
+                'loading'
+            ]
+        )
+
         # number of branches
         self.n_br = n_br
-
         self.n_bus = n_bus
 
         # names of the branches
         self.branch_names = br_names
-
         self.bus_names = bus_names
-
         self.bus_types = bus_types
 
         self.logger = bs.Logger()
 
-        self.PTDF = np.zeros((n_br, n_bus))
-        self.LODF = np.zeros((n_br, n_br))
+        self.PTDF = np.zeros((n_br, n_bus), dtype=float)
+        self.LODF = np.zeros((n_br, n_br), dtype=float)
 
-        self.Sf = np.zeros(self.n_br)
-
-        self.Sbus = np.zeros(self.n_bus)
-
+        self.Sf = np.zeros(self.n_br, dtype=complex)
+        self.Sbus = np.zeros(self.n_bus, dtype=complex)
         self.voltage = np.ones(self.n_bus, dtype=complex)
+        self.loading = np.zeros(self.n_br, dtype=float)
 
-        self.loading = np.zeros(self.n_br)
+        self.lodf_nx: Union[Dict[str, np.ndarray], None] = None
 
-    def apply_new_rates(self, nc: "SnapshotData"):
+    def apply_new_rates(self, nc: NumericalCircuit):
         """
 
         :param nc:
@@ -134,50 +139,64 @@ class LinearAnalysisResults(ResultsTemplate):
             title = ''
 
         # assemble model
-        mdl = ResultsTable(data=y,
-                           index=self.branch_names,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label,
-                           units=y_label)
+        mdl = ResultsTable(
+            data=y,
+            index=self.branch_names,
+            columns=labels,
+            title=title,
+            ylabel=y_label,
+            units=y_label
+        )
         return mdl
 
 
 class LinearAnalysisOptions:
 
-    def __init__(self, distribute_slack=True, correct_values=True):
+    def __init__(
+            self,
+            distribute_slack: bool = True,
+            correct_values: bool = True,
+    ):
         """
-        Power Transfer Distribution Factors' options
-        :param distribute_slack:
+        Linear analysis options
+        :param distribute_slack: boolean to distributed slack
+        :param correct_values: boolean to fix out layer factors
         """
-        self.distribute_slack = distribute_slack
-        self.correct_values = correct_values
+        self.distribute_slack: bool = distribute_slack
+        self.correct_values: bool = correct_values
 
 
 class LinearAnalysisDriver(DriverTemplate):
     name = 'Linear analysis'
     tpe = SimulationTypes.LinearAnalysis_run
 
-    def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+    def __init__(
+            self,
+            numerical_circuit: NumericalCircuit,
+            options: LinearAnalysisOptions,
+            engine: bs.EngineType = bs.EngineType.GridCal
+    ):
+
         """
-        Power Transfer Distribution Factors class constructor
-        @param grid: MultiCircuit Object
-        @param options: OPF options
+        Linear analysis driver constructor
+        :param numerical_circuit: NumericalCircuit instance
+        :param options: LinearAnalysisOptions instance
+        :param engine: EngineType enum
         """
-        DriverTemplate.__init__(self, grid=grid)
+
+        DriverTemplate.__init__()
 
         # Options to use
-        self.options = options
+        self.options: LinearAnalysisOptions = options
 
-        self.engine = engine
+        self.engine: bs.EngineType = engine
 
-        # OPF results
-        self.results: LinearAnalysisResults = None
+        # Results
+        self.results: Union[LinearAnalysisResults, None] = None
 
-        self.all_solved = True
+        self.all_solved: bool = True
 
-    def run(self):
+    def run(self, with_nx=True):
         """
         Run thread
         """
@@ -189,47 +208,72 @@ class LinearAnalysisDriver(DriverTemplate):
         br_names = self.grid.get_branches_wo_hvdc_names()
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
-            self.results = LinearAnalysisResults(n_br=len(br_names),
-                                                 n_bus=len(bus_names),
-                                                 br_names=br_names,
-                                                 bus_names=bus_names,
-                                                 bus_types=bus_types)
+            self.results = LinearAnalysisResults(
+                n_br=len(br_names),
+                n_bus=len(bus_names),
+                br_names=br_names,
+                bus_names=bus_names,
+                bus_types=bus_types
+            )
+
         except MemoryError as e:
             self.logger.add_error(str(e))
             return
 
         # Run Analysis
-        NEWTON_AVAILBALE = False
         if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
             self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
+            self.logger.add_warning('Failed, back to GridCal')
 
         if self.engine == bs.EngineType.GridCal:
-            analysis = LinearAnalysis(grid=self.grid,
-                                      distributed_slack=self.options.distribute_slack,
-                                      correct_values=self.options.correct_values)
+            nc = compile_numerical_circuit_at(
+                circuit=self.grid,
+                t_idx=None,
+            )
+            driver = LinearAnalysis(
+                numerical_circuit=nc,
+                distributed_slack=self.options.distribute_slack,
+                correct_values=self.options.correct_values,
+            )
 
-            analysis.run()
-            self.logger += analysis.logger
-            self.results.bus_names = analysis.numerical_circuit.bus_names
-            self.results.branch_names = analysis.numerical_circuit.branch_names
-            self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
-            self.results.PTDF = analysis.PTDF
-            self.results.LODF = analysis.LODF
+            driver.run()
+
+            if with_nx:
+                driver.lodf_nx = driver.make_lodfnx(
+                    lodf=driver.LODF,
+                    contingencies_dict=self.grid.get_contingencies_dict(),
+                    branches_dict=self.grid.get_branches_dict()
+                )
+
+            self.logger += driver.logger
+
+            self.results.bus_names = driver.numerical_circuit.bus_names
+            self.results.branch_names = driver.numerical_circuit.branch_names
+            self.results.bus_types = driver.numerical_circuit.bus_data.bus_types
+
+            self.results.PTDF = driver.PTDF
+            self.results.LODF = driver.LODF
+
+            self.results.lodf_nx = driver.lodf_nx
 
             # compose the HVDC power injections
-            bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
-                                                                                        bus_dict,
-                                                                                        theta=np.zeros(nbus))
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
+                multi_circuit=self.grid,
+                bus_dict=self.grid.get_bus_index_dict(),
+                theta=np.zeros(nbus),
+            )
 
-            self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
-            self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
-            self.results.Sbus = analysis.numerical_circuit.Sbus.real
+            self.results.Sf = driver.get_flows(driver.numerical_circuit.Sbus.real + Shvdc)
+            self.results.loading = self.results.Sf / (driver.numerical_circuit.branch_rates + 1e-20)
+            self.results.Sbus = driver.numerical_circuit.Sbus.real
+
         elif self.engine == bs.EngineType.Bentayga:
 
-            lin_mat = bentayga_linear_matrices(self.grid, distributed_slack=self.options.distribute_slack)
+            lin_mat = bentayga_linear_matrices(
+                circuit=self.grid,
+                distributed_slack=self.options.distribute_slack
+            )
             self.results.PTDF = lin_mat.PTDF
             self.results.LODF = lin_mat.LODF
             self.results.Sf = lin_mat.get_flows(lin_mat.Pbus * self.grid.Sbase)

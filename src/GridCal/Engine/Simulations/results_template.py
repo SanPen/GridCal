@@ -25,17 +25,20 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 
 class ResultsTemplate:
 
-    def __init__(self, name='',
-                 available_results=dict(),
-                 data_variables: List[str] = list()):
+    def __init__(
+            self,
+            name: str = '',
+            available_results: List[ResultTypes] = list(),
+            data_variables: List[str] = list()
+    ):
         """
         Results template class
         :param name: Name of the class
         :param available_results: list of stuff to represent the results
         :param data_variables: list of class variables to persist to disk
         """
-        self.name = name
-        self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
+        self.name: str = name
+        self.available_results: List[ResultTypes] = available_results
         self.data_variables: List[str] = data_variables
 
     def consolidate_after_loading(self):

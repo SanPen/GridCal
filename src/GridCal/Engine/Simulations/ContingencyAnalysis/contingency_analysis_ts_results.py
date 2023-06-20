@@ -21,6 +21,7 @@ import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
@@ -38,22 +39,28 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :param con_names: 
         """
 
-        ResultsTemplate.__init__(self,
-                                 name='N-1 time series',
-                                 available_results=[ResultTypes.ContingencyFrequency,
-                                                    ResultTypes.ContingencyRelativeFrequency,
-                                                    ResultTypes.MaxOverloads,
-                                                    ResultTypes.WorstContingencyFlows,
-                                                    ResultTypes.WorstContingencyLoading],
-                                 data_variables=['branch_names',
-                                                 'bus_names',
-                                                 'bus_types',
-                                                 'time_array',
-                                                 'worst_flows',
-                                                 'worst_loading',
-                                                 'overload_count',
-                                                 'relative_frequency',
-                                                 'max_overload'])
+        ResultsTemplate.__init__(
+            self,
+            name='N-1 time series',
+            available_results=[
+                ResultTypes.ContingencyFrequency,
+                ResultTypes.ContingencyRelativeFrequency,
+                ResultTypes.MaxOverloads,
+                ResultTypes.WorstContingencyFlows,
+                ResultTypes.WorstContingencyLoading
+            ],
+            data_variables=[
+                'branch_names',
+                'bus_names',
+                'bus_types',
+                'time_array',
+                'worst_flows',
+                'worst_loading',
+                'overload_count',
+                'relative_frequency',
+                'max_overload'
+            ]
+        )
 
         nt = len(time_array)
 
@@ -62,11 +69,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.ncon = nc
 
         self.branch_names = branch_names
-
         self.bus_names = bus_names
-
         self.con_names = con_names
-
         self.bus_types = bus_types
 
         self.time_array = time_array
@@ -74,16 +78,14 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.S = np.zeros((nt, n))
 
         self.worst_flows = np.zeros((nt, nbr))
-
         self.worst_loading = np.zeros((nt, nbr))
-
         self.overload_count = np.zeros(nbr, dtype=int)
 
         self.relative_frequency = np.zeros(nbr)
 
         self.max_overload = np.zeros(nbr)
 
-    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+    def apply_new_time_series_rates(self, nc: NumericalCircuit):
         rates = nc.Rates.T
         self.worst_loading = self.worst_flows / (rates + 1e-9)
 
@@ -147,10 +149,12 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsTable(data=data,
-                           index=index,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label)
+        mdl = ResultsTable(
+            data=data,
+            index=index,
+            columns=labels,
+            title=title,
+            ylabel=y_label
+        )
         return mdl
 

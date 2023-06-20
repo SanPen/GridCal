@@ -63,7 +63,12 @@ except ImportError:
 BINT = np.ulonglong
 
 
-def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime: int=1):
+def add_btg_buses(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        time_series: bool = False,
+        ntime: int = 1
+):
     """
     Convert the buses to bentayga buses
     :param circuit: GridCal circuit
@@ -95,7 +100,13 @@ def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series
     return bus_dict
 
 
-def add_btg_loads(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_loads(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime: int = 1
+):
     """
 
     :param circuit: GridCal circuit
@@ -154,7 +165,13 @@ def add_btg_static_generators(circuit: MultiCircuit, btg_circuit: "btg.Circuit",
         btg_circuit.add_load(load)
 
 
-def add_btg_shunts(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_shunts(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime=1
+):
     """
 
     :param circuit: GridCal circuit
@@ -183,7 +200,13 @@ def add_btg_shunts(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, 
         btg_circuit.add_shunt_fixed(sh)
 
 
-def add_btg_generators(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_generators(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime=1
+):
     """
 
     :param circuit: GridCal circuit
@@ -221,7 +244,13 @@ def add_btg_generators(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_di
         btg_circuit.add_generator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_battery_data(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime: int = 1,
+):
     """
 
     :param circuit: GridCal circuit
@@ -265,7 +294,13 @@ def get_battery_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict
         btg_circuit.add_battery(gen)
 
 
-def add_btg_line(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_line(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime:int = 1,
+):
     """
 
     :param circuit: GridCal circuit
@@ -300,7 +335,13 @@ def add_btg_line(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, ti
         btg_circuit.add_ac_line(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_transformer_data(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime: int=1
+):
     """
 
     :param circuit: GridCal circuit
@@ -340,7 +381,13 @@ def get_transformer_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_
         btg_circuit.add_transformer_all(tr2)
 
 
-def get_vsc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_vsc_data(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime:int = 1
+):
     """
 
     :param circuit: GridCal circuit
@@ -389,7 +436,13 @@ def get_vsc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, ti
         btg_circuit.add_vsc(vsc)
 
 
-def get_dc_line_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_dc_line_data(
+        circuit: MultiCircuit,
+        btg_circuit: "btg.Circuit",
+        bus_dict,
+        time_series: bool = False,
+        ntime: int = 1
+):
     """
 
     :param circuit: GridCal circuit

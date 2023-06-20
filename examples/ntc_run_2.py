@@ -3,9 +3,7 @@ import os
 from GridCal.Engine import *
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'MOU_2022_5GW_v6h-B_pmode1.gridcal')
@@ -20,7 +18,7 @@ area_to_idx = 1
 areas = main_circuit.get_bus_area_indices()
 
 tm0 = time.time()
-numerical_circuit_ = compile_snapshot_opf_circuit(
+numerical_circuit_ = compile_numerical_circuit_at(
     circuit=main_circuit,
     apply_temperature=False,
     branch_tolerance_mode=BranchImpedanceMode.Specified
@@ -33,9 +31,11 @@ a1 = np.where(areas == area_from_idx)[0]
 a2 = np.where(areas == area_to_idx)[0]
 
 linear = LinearAnalysis(
-    grid=main_circuit,
+    numerical_circuit=numerical_circuit_,
     distributed_slack=False,
-    correct_values=False
+    correct_values=False,
+    contingency_group_dict=main_circuit.get_contingencies_dict(),
+    branch_dict=main_circuit.get_branches_dict(),
 )
 
 tm0 = time.time()

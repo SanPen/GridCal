@@ -14,14 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import time
-import datetime
 import numpy as np
 import pandas as pd
 from numba import jit, prange
+from typing import Union
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisOptions
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, ContingencyAnalysisDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -83,45 +84,77 @@ def compute_flows_numba(e, nt, contingency_branch_idx, LODF, Flows, rates, overl
     if nc < parallelize_from:
         for ic in range(nc):
             c = contingency_branch_idx[ic]
-            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(
+                e=e,
+                c=c,
+                nt=nt,
+                LODF=LODF,
+                Flows=Flows,
+                rates=rates,
+                overload_count=overload_count,
+                max_overload=max_overload,
+                worst_flows=worst_flows,
+            )
     else:
         for ic in prange(nc):
             c = contingency_branch_idx[ic]
-            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(
+                e=e,
+                c=c,
+                nt=nt,
+                LODF=LODF,
+                Flows=Flows,
+                rates=rates,
+                overload_count=overload_count,
+                max_overload=max_overload,
+                worst_flows=worst_flows,
+            )
 
 
 class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
-    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions, start_=0, end_=None):
+    def __init__(
+            self,
+            grid: MultiCircuit,
+            options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
+            start_: int = 0,
+            end_: Union[int, None] = None
+    ):
         """
         N - k class constructor
         @param grid: MultiCircuit Object
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          start_=start_,
-                                          end_=end_)
+        TimeSeriesDriverTemplate.__init__(
+            self,
+            grid=grid,
+            start_=start_,
+            end_=end_
+        )
 
         # Options to use
-        self.options = options
+        self.options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions] = options
 
         # N-K results
-        self.results = ContingencyAnalysisTimeSeriesResults(n=0, nbr=0, nc=0,
-                                                            time_array=(),
-                                                            bus_names=(),
-                                                            branch_names=(),
-                                                            bus_types=(),
-                                                            con_names=())
+        self.results: ContingencyAnalysisTimeSeriesResults = ContingencyAnalysisTimeSeriesResults(
+            n=0,
+            nbr=0,
+            nc=0,
+            time_array=(),
+            bus_names=(),
+            branch_names=(),
+            bus_types=(),
+            con_names=()
+        )
 
-        self.branch_names = list()
+        self.branch_names: np.array = np.empty(shape=grid.get_branch_number_wo_hvdc())
 
-        self.start_ = start_
+        self.start_: int = start_
 
-        self.end_ = end_
+        self.end_: Union[int, None] = end_
 
     def get_steps(self):
         """
@@ -137,37 +170,59 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.progress_text.emit("Analyzing...")
 
-        n = self.grid.get_bus_number()
+        nb = self.grid.get_bus_number()
 
-        results = ContingencyAnalysisTimeSeriesResults(n=n,
-                                                       nbr=self.grid.get_branch_number_wo_hvdc(),
-                                                       nc=self.grid.get_contingency_number(),
-                                                       time_array=self.grid.time_profile,
-                                                       branch_names=self.grid.get_branch_names_wo_hvdc(),
-                                                       bus_names=self.grid.get_bus_names(),
-                                                       bus_types=np.ones(n, dtype=int),
-                                                       con_names=self.grid.get_contingency_group_names())
+        results = ContingencyAnalysisTimeSeriesResults(
+            n=nb,
+            nbr=self.grid.get_branch_number_wo_hvdc(),
+            nc=self.grid.get_contingency_number(),
+            time_array=self.grid.time_profile,
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            bus_names=self.grid.get_bus_names(),
+            bus_types=np.ones(nb, dtype=int),
+            con_names=self.grid.get_contingency_group_names()
+        )
 
         if self.end_ is None:
             self.end_ = len(self.grid.time_profile)
 
         time_indices = np.arange(self.start_, self.end_)
 
-        cdriver = ContingencyAnalysisDriver(self.grid, self.options)
+        cdriver = ContingencyAnalysisDriver(
+            grid=self.grid,
+            options=self.options,
+        )
 
         contingency_count = None
+
+        if self.options.engine == bs.ContingencyEngine.PTDF:
+            linear = LinearAnalysisTimeSeriesDriver(
+                grid=self.grid,
+                options=self.options,
+                start_=self.start_,
+                end_=self.end_,
+            )
+            linear.run()
 
         for it, t in enumerate(time_indices):
 
             self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
             self.progress_signal.emit((it + 1) / len(time_indices) * 100)
 
+            nc = compile_numerical_circuit_at(
+                circuit=self.grid,
+                t_idx=t
+            )
+
             # run contingency at t
             if self.options.engine == bs.ContingencyEngine.PowerFlow:
-                res_t = cdriver.n_minus_k(t=t)
+                res_t = cdriver.n_minus_k(nc=nc)
 
             elif self.options.engine == bs.ContingencyEngine.PTDF:
-                raise Exception('Not implemented')
+                res_t = cdriver.n_minus_k_ptdf(
+                    t=t,
+                    linear=linear.drivers[t]
+                )
 
             elif self.options.engine == bs.ContingencyEngine.HELM:
                 res_t = cdriver.n_minus_k_nl(t=t)

@@ -3120,10 +3120,10 @@ class MainGUI(QMainWindow):
                     options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = sim.LinearAnalysisTimeSeries(grid=self.circuit,
-                                                       options=options,
-                                                       start_=start_,
-                                                       end_=end_)
+                    drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
+                                                             options=options,
+                                                             start_=start_,
+                                                             end_=end_)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis_ts,
@@ -5378,7 +5378,7 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        elif current_study == sim.LinearAnalysisTimeSeries.tpe.value:
+        elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
 
             return plot_function(circuit=self.circuit,

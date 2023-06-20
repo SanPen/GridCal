@@ -566,10 +566,21 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         idx1b = self.options.bus_idx_from
         idx2b = self.options.bus_idx_to
 
+        # declare the numerical circuit
+        nc = compile_numerical_circuit_at(
+            circuit=self.grid,
+            t_idx=None
+        )
+
         # declare the linear analysis
-        linear = LinearAnalysis(grid=self.grid,
-                                distributed_slack=self.options.distributed_slack,
-                                correct_values=self.options.correct_values)
+        linear = LinearAnalysis(
+            numerical_circuit=nc,
+            distributed_slack=self.options.distributed_slack,
+            correct_values=self.options.correct_values,
+            contingency_group_dict=self.grid.get_contingencies_dict(),
+            branch_dict=self.grid.get_branches_dict(),
+        )
+
         linear.run()
 
         # get the branch indices to analyze
@@ -577,10 +588,13 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         con_br_idx = nc.branch_data.get_contingency_enabled_indices()
 
         # declare the results
-        self.results = AvailableTransferCapacityResults(br_names=linear.numerical_circuit.branch_names,
-                                                        bus_names=linear.numerical_circuit.bus_names,
-                                                        rates=nc.Rates,
-                                                        contingency_rates=nc.ContingencyRates)
+        self.results = AvailableTransferCapacityResults(
+            br_names=linear.numerical_circuit.branch_names,
+            bus_names=linear.numerical_circuit.bus_names,
+            rates=nc.Rates,
+            contingency_rates=nc.Continge
+        # declare the linear analysisncyRates
+        )
 
         # compute the branch exchange sensitivity (alpha)
         alpha, alpha_n1 = compute_alpha(
