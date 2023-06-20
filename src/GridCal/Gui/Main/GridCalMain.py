@@ -5321,24 +5321,24 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        elif current_study == sim.OptimalPowerFlow.tpe.value:
-            drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
-
-            return plot_function(circuit=self.circuit,
-                                 voltages=results.voltage,
-                                 loadings=results.loading,
-                                 types=results.bus_types,
-                                 Sf=results.Sf,
-                                 Sbus=results.Sbus,
-                                 hvdc_Pf=results.hvdc_Pf,
-                                 hvdc_Pt=-results.hvdc_Pf,
-                                 hvdc_loading=results.hvdc_loading,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+        # elif current_study == sim.OptimalPowerFlow.tpe.value:
+        #     drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+        #
+        #     return plot_function(circuit=self.circuit,
+        #                          voltages=results.voltage,
+        #                          loadings=results.loading,
+        #                          types=results.bus_types,
+        #                          Sf=results.Sf,
+        #                          Sbus=results.Sbus,
+        #                          hvdc_Pf=results.hvdc_Pf,
+        #                          hvdc_Pt=-results.hvdc_Pf,
+        #                          hvdc_loading=results.hvdc_loading,
+        #                          use_flow_based_width=use_flow_based_width,
+        #                          min_branch_width=min_branch_width,
+        #                          max_branch_width=max_branch_width,
+        #                          min_bus_width=min_bus_width,
+        #                          max_bus_width=max_bus_width,
+        #                          cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
