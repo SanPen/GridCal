@@ -114,8 +114,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             distributed_slack=False,
             correct_values=False,
             with_nx=self.options.consider_nx_contingencies,
-            branch_dict=self.grid.get_branches_dict(),
-            contingency_group_dict=self.grid.get_contingencies_dict(),
+            branch_dict=self.grid.get_branches_wo_hvdc_dict(),
+            contingency_group_dict=self.grid.get_contingency_group_dict(),
         )
 
         linear.run()

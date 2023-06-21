@@ -205,7 +205,7 @@ def add_btg_generators(
         btg_circuit: "btg.Circuit",
         bus_dict,
         time_series: bool = False,
-        ntime=1
+        ntime: int = 1
 ):
     """
 

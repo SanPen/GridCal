@@ -577,8 +577,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             numerical_circuit=nc,
             distributed_slack=self.options.distributed_slack,
             correct_values=self.options.correct_values,
-            contingency_group_dict=self.grid.get_contingencies_dict(),
-            branch_dict=self.grid.get_branches_dict(),
+            contingency_group_dict=self.grid.get_contingency_group_dict(),
+            branch_dict=self.grid.get_branches_wo_hvdc_dict(),
         )
 
         linear.run()

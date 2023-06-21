@@ -328,7 +328,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 raise Exception(msg)
         else:
             # compute the base Sf
-            flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
+            flows = linear_analysis.get_flows(P)  # will be converted to MW internally
 
         # transform the contingency rates and the normal rates
         rates = self.grid.get_branch_rates_wo_hvdc()

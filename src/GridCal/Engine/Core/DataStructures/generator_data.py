@@ -21,16 +21,11 @@ import GridCal.Engine.Core.topology as tp
 
 class GeneratorData:
 
-    def __init__(
-            self,
-            nelm: int,
-            nbus: int,
-    ):
+    def __init__( self, nelm: int, nbus: int):
         """
         Generator data arrays
         :param nelm: number of generator
         :param nbus: number of buses
-        :param ntime: time index
         """
         self.nelm: int = nelm
 
@@ -61,7 +56,15 @@ class GeneratorData:
         self.dispatchable: np.ndarray = np.zeros(nelm, dtype=bool)
         self.pmax: np.ndarray = np.zeros(nelm, dtype=float)
         self.pmin: np.ndarray = np.zeros(nelm, dtype=float)
-        self.cost: np.ndarray = np.zeros(nelm, dtype=float)
+
+        self.cost_1: np.ndarray = np.zeros(nelm, dtype=float)
+        self.cost_0: np.ndarray = np.zeros(nelm, dtype=float)
+        self.startup_cost: np.ndarray = np.zeros(nelm, dtype=float)
+        self.availability: np.ndarray = np.zeros(nelm, dtype=float)
+        self.ramp_up: np.ndarray = np.zeros(nelm, dtype=float)
+        self.ramp_down: np.ndarray = np.zeros(nelm, dtype=float)
+        self.min_time_up: np.ndarray = np.zeros(nelm, dtype=float)
+        self.min_time_down: np.ndarray = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
@@ -105,16 +108,21 @@ class GeneratorData:
         data.dispatchable = self.dispatchable[elm_idx]
         data.pmax = self.pmax[elm_idx]
         data.pmin = self.pmin[elm_idx]
-        data.cost = self.cost[elm_idx]
+
+        data.cost_0 = self.cost_0[elm_idx]
+        data.cost_1 = self.cost_1[elm_idx]
+        data.startup_cost = self.startup_cost[elm_idx]
+        data.availability = self.availability[elm_idx]
+        data.ramp_up = self.ramp_up[elm_idx]
+        data.ramp_down = self.ramp_down[elm_idx]
+        data.min_time_up = self.min_time_up[elm_idx]
+        data.min_time_down = self.min_time_down[elm_idx]
 
         data.original_idx = elm_idx
 
         return data
 
-    def get_island(
-            self,
-            bus_idx: np.ndarray,
-    ):
+    def get_island(self,  bus_idx: np.ndarray):
         """
         Get the array of generator indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -136,10 +144,7 @@ class GeneratorData:
         Q = pf_sign * self.p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.p + 1.0j * Q
 
-    def get_Yshunt(
-            self,
-            seq: int=1
-    ):
+    def get_Yshunt(self,  seq: int = 1):
         """
         Obtain the vector of shunt admittances of a given sequence
         :param seq: sequence (0, 1 or 2)

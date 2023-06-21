@@ -372,7 +372,7 @@ class MultiCircuit:
             count += len(branch_list)
         return count
 
-    def get_time_number(self) -> int:  # todo: check this
+    def get_time_number(self) -> int:
         """
         Return the number of buses
         :return: number
@@ -492,11 +492,9 @@ class MultiCircuit:
     def get_bus_names(self):
         return [e.name for e in self.buses]
 
-    def get_branches_wo_hvdc(self) -> List[
-        Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.VSC, dev.UPFC, dev.Switch]
-    ]:
+    def get_branches_wo_hvdc(self) -> List[dev.Branch]:
         """
-        Return all the branch objects
+        Return all the branch objects.
         :return: lines + transformers 2w + hvdc
         """
         return self.lines + self.dc_lines + self.transformers2w + self.windings + self.vsc_devices + self.upfc_devices + self.switch_devices
@@ -1811,7 +1809,7 @@ class MultiCircuit:
         """
         return [e.name for e in self.contingency_groups]
 
-    def get_contingencies_dict(self) -> Dict[str, List[dev.Contingency]]:
+    def get_contingency_group_dict(self) -> Dict[str, List[dev.Contingency]]:
         """
         Get a dictionary of group idtags related to list of contingencies
         :return:
@@ -1826,7 +1824,7 @@ class MultiCircuit:
 
         return d
 
-    def get_branches_dict(self) -> Dict[str, List[dev.Branch]]:
+    def get_branches_wo_hvdc_dict(self) -> Dict[str, List[dev.Branch]]:
         return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
 
     def add_contingency(self, obj: dev.Contingency):
@@ -2915,6 +2913,18 @@ class MultiCircuit:
         Get the complex bus power injections
         :return: (ntime, nbus) [MW + j MVAr]
         """
+        val = np.zeros(self.get_bus_number(), dtype=complex)
+
+        for i, bus in enumerate(self.buses):
+            val[i] = bus.get_Sbus()
+
+        return val
+
+    def get_Sbus_prof(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (ntime, nbus) [MW + j MVAr]
+        """
         val = np.zeros((self.get_time_number(), self.get_bus_number()), dtype=complex)
 
         for i, bus in enumerate(self.buses):
@@ -2925,7 +2935,10 @@ class MultiCircuit:
     def get_Pbus(self):
         return self.get_Sbus().real
 
-    def get_branch_rates_wo_hvdc(self) -> np.ndarray:
+    def get_Pbus_prof(self):
+        return self.get_Sbus_prof().real
+
+    def get_branch_rates_prof_wo_hvdc(self) -> np.ndarray:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2937,7 +2950,19 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_contingency_rates_wo_hvdc(self) -> np.ndarray:
+    def get_branch_rates_wo_hvdc(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (nbr) [MVA]
+        """
+        val = np.zeros(self.get_branch_number_wo_hvdc())
+
+        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+            val[i] = branch.rate
+
+        return val
+
+    def get_branch_contingency_rates_prof_wo_hvdc(self) -> np.ndarray:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2946,5 +2971,17 @@ class MultiCircuit:
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
             val[:, i] = branch.rate_prof * branch.contingency_factor_prof
+
+        return val
+
+    def get_branch_contingency_rates_wo_hvdc(self) -> np.ndarray:
+        """
+        Get the complex bus power injections
+        :return: (nbr) [MVA]
+        """
+        val = np.zeros(self.get_branch_number_wo_hvdc())
+
+        for i, branch in enumerate(self.get_branches_wo_hvdc()):
+            val[i] = branch.rate_prof * branch.contingency_factor
 
         return val

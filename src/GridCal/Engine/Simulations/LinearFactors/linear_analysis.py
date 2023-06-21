@@ -23,7 +23,8 @@ from scipy.sparse.linalg import spsolve
 
 import GridCal.Engine.Devices as dev
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 
@@ -53,6 +54,7 @@ def compute_acptdf(
     n = len(V)
     pvpq = np.r_[pv, pq]
     npq = len(pq)
+    npv = len(pv)
 
     # compute the Jacobian
     J = AC_jacobian(Ybus, V, pvpq, pq)
@@ -511,23 +513,12 @@ class LinearAnalysis:
         :param Sbus: Power injections time series array
         :return: branch active power Sf time series
         """
-
-        return np.dot(Sbus.real, self.PTDF.T) * self.numerical_circuit.Sbase
-
-
-    def get_flows_time_series(self, Sbus):
-
-        # todo: check to delete this function.
-        """
-        Compute the time series branch Sf using the PTDF
-        :param Sbus: Power injections time series array
-        :return: branch active power Sf time series
-        """
-
-        # option 2: call the power directly
-        Pbr = np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
-
-        return Pbr
+        if len(Sbus.shape) == 1:
+            return np.dot(Sbus.real, self.PTDF.T) * self.numerical_circuit.Sbase
+        elif len(Sbus.shape) == 2:
+            return np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
+        else:
+            raise Exception(f'Sbus has wrong dimensions: {Sbus.shape}')
 
     def make_lodfnx(
             self,

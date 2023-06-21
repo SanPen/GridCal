@@ -86,6 +86,8 @@ class EditableDevice:
 
         self.properties_with_profile = properties_with_profile
 
+
+
     @property
     def graphic_obj(self):
         return self._graphic_obj

@@ -27,6 +27,7 @@ from GridCal.Engine.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 from GridCal.Engine.Devices.tower import Tower
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.transformer import Transformer2W
 
 
 class SequenceLineType(EditableDevice):
@@ -56,21 +57,21 @@ class SequenceLineType(EditableDevice):
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'rating': GCProp('kA', float, "Current rating of the line"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
-                                                              "resistance per km"),
+                                                                               "resistance per km"),
                                                   'X': GCProp('Ohm/km', float, "Positive-sequence "
-                                                              "reactance per km"),
+                                                                               "reactance per km"),
                                                   'G': GCProp('S/km', float, "Positive-sequence "
-                                                              "shunt conductance per km"),
+                                                                             "shunt conductance per km"),
                                                   'B': GCProp('S/km', float, "Positive-sequence "
-                                                              "shunt susceptance per km"),
+                                                                             "shunt susceptance per km"),
                                                   'R0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                               "resistance per km"),
+                                                                                "resistance per km"),
                                                   'X0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                               "reactance per km"),
+                                                                                "reactance per km"),
                                                   'G0': GCProp('S/km', float, "Zero-sequence "
-                                                               "shunt conductance per km"),
+                                                                              "shunt conductance per km"),
                                                   'B0': GCProp('S/km', float, "Zero-sequence "
-                                                               "shunt susceptance per km"),
+                                                                              "shunt susceptance per km"),
                                                   },
                                 non_editable_attributes=list(),
                                 properties_with_profile={})
@@ -94,7 +95,6 @@ class SequenceLineType(EditableDevice):
 class LineTemplate:
 
     def __init__(self, name='BranchTemplate', tpe=BranchType.Branch, idtag=None):
-
         self.idtag = idtag
 
         self.name = name
@@ -112,7 +112,6 @@ class LineTemplate:
         return self.name
 
     def get_save_data(self):
-
         dta = list()
         for property in self.edit_headers:
             dta.append(getattr(self, property))
@@ -256,14 +255,15 @@ class Line(EditableDevice):
                                                   'contingency_enabled': GCProp('', bool,
                                                                                 'Consider this line for contingencies.'),
                                                   'monitor_loading': GCProp('', bool,
-                                                                                'Monitor this device loading for optimization, NTC or contingency studies.'),
+                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
+                                                                             'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
+                                                                             'used in reliability studies.'),
                                                   'R': GCProp('p.u.', float, 'Total positive sequence resistance.'),
                                                   'X': GCProp('p.u.', float, 'Total positive sequence reactance.'),
-                                                  'B': GCProp('p.u.', float, 'Total positive sequence shunt susceptance.'),
+                                                  'B': GCProp('p.u.', float,
+                                                              'Total positive sequence shunt susceptance.'),
 
                                                   'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
                                                   'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
@@ -271,26 +271,28 @@ class Line(EditableDevice):
 
                                                   'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
                                                   'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-                                                  'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
+                                                  'B2': GCProp('p.u.', float,
+                                                               'Total negative sequence shunt susceptance.'),
 
                                                   'tolerance': GCProp('%', float,
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
                                                                       '0% for lines.'),
                                                   'length': GCProp('km', float, 'Length of the line '
-                                                                   '(not used for calculation)'),
+                                                                                '(not used for calculation)'),
                                                   'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                      'measured.'),
-                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
+                                                                                   'measured.'),
+                                                  'temp_oper': GCProp('ºC', float,
+                                                                      'Operation temperature to modify R.'),
                                                   'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                  'around a reference temperature\n'
-                                                                  'using a linear approximation.\n'
-                                                                  'For example:\n'
-                                                                  'Copper @ 20ºC: 0.004041,\n'
-                                                                  'Copper @ 75ºC: 0.00323,\n'
-                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                  'Aluminum @ 20ºC: 0.004308,\n'
-                                                                  'Aluminum @ 75ºC: 0.00330'),
+                                                                                 'around a reference temperature\n'
+                                                                                 'using a linear approximation.\n'
+                                                                                 'For example:\n'
+                                                                                 'Copper @ 20ºC: 0.004041,\n'
+                                                                                 'Copper @ 75ºC: 0.00323,\n'
+                                                                                 'Annealed copper @ 20ºC: 0.00393,\n'
+                                                                                 'Aluminum @ 20ºC: 0.004308,\n'
+                                                                                 'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
                                                   'capex': GCProp('e/MW', float,
@@ -300,9 +302,9 @@ class Line(EditableDevice):
                                                   'build_status': GCProp('', BuildStatus,
                                                                          'Branch build status. Used in expansion planning.'),
                                                   'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
+                                                                                   'Used in short circuit studies.'),
                                                   'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
+                                                                                   'Used in short circuit studies.'),
                                                   'fault_pos': GCProp('p.u.', float,
                                                                       'Per-unit positioning of the fault:\n'
                                                                       '0 would be at the "from" side,\n'
@@ -768,3 +770,44 @@ class Line(EditableDevice):
             errors = True
 
         return errors
+
+    @property
+    def Vf(self):
+        return self.bus_from.Vnom
+
+    @property
+    def Vt(self):
+        return self.bus_to.Vnom
+
+    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
+        """
+
+        :param branch_connection_voltage_tolerance:
+        :return:
+        """
+        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+        per = V1 / V2
+        return per < (1.0 - branch_connection_voltage_tolerance)
+
+    def get_equivalent_transformer(self) -> Transformer2W:
+        """
+        Convert this line into a transformer
+        This is necessary if the buses' voltage differ too much
+        :return: Transformer2W
+        """
+        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+        return Transformer2W(bus_from=self.bus_from,
+                             bus_to=self.bus_to,
+                             name=self.name,
+                             code=self.code,
+                             active=self.active,
+                             rate=self.rate,
+                             HV=V2,
+                             LV=V1,
+                             r=self.R,
+                             x=self.X,
+                             b=self.B,
+                             active_prof=self.active_prof,
+                             rate_prof=self.rate_prof)

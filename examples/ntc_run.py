@@ -42,8 +42,8 @@ linear = LinearAnalysis(
     distributed_slack=False,
     correct_values=False,
     with_nx=True,
-    contingency_group_dict=main_circuit.get_contingencies_dict(),
-    branch_dict=main_circuit.get_branches_dict(),
+    contingency_group_dict=main_circuit.get_contingency_group_dict(),
+    branch_dict=main_circuit.get_branches_wo_hvdc_dict(),
 )
 
 tm0 = time.time()

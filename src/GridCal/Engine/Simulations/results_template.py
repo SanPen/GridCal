@@ -28,7 +28,7 @@ class ResultsTemplate:
     def __init__(
             self,
             name: str = '',
-            available_results: List[ResultTypes] = list(),
+            available_results: Dict[ResultTypes: List[ResultTypes]]  = dict(),
             data_variables: List[str] = list()
     ):
         """
@@ -38,7 +38,7 @@ class ResultsTemplate:
         :param data_variables: list of class variables to persist to disk
         """
         self.name: str = name
-        self.available_results: List[ResultTypes] = available_results
+        self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
         self.data_variables: List[str] = data_variables
 
     def consolidate_after_loading(self):

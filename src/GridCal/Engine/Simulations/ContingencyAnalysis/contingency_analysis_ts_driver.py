@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import time
+import datetime
 import numpy as np
 import pandas as pd
 from numba import jit, prange
@@ -209,14 +210,9 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
             self.progress_signal.emit((it + 1) / len(time_indices) * 100)
 
-            nc = compile_numerical_circuit_at(
-                circuit=self.grid,
-                t_idx=t
-            )
-
             # run contingency at t
             if self.options.engine == bs.ContingencyEngine.PowerFlow:
-                res_t = cdriver.n_minus_k(nc=nc)
+                res_t = cdriver.n_minus_k(t=t)
 
             elif self.options.engine == bs.ContingencyEngine.PTDF:
                 res_t = cdriver.n_minus_k_ptdf(

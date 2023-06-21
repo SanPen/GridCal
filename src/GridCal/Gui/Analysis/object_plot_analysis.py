@@ -241,10 +241,10 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
 
     # declare logs
 
-    for dev in circuit.objects_with_profiles:
+    for template_elm in circuit.objects_with_profiles:
 
         # get the device type of the prototype object
-        object_type = dev.device_type
+        object_type = template_elm.device_type
 
         if object_type == dev.DeviceType.LineDevice:
             elements = circuit.lines
@@ -265,7 +265,8 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                    severity=LogSeverity.Error,
                                    propty='Connection',
                                    message='The branch is connected between voltages '
-                                           'that differ in 10% or more. Should this be a transformer?' + s,
+                                           'that differ in {}% or more. Should this '
+                                           'be a transformer?'.format(int(branch_connection_voltage_tolerance * 100)),
                                    lower=V1,
                                    upper=V2)
                 else:
@@ -274,7 +275,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                element_index=i,
                                severity=LogSeverity.Error,
                                propty='Voltage',
-                               message='The branch does is connected to a bus with Vnom=0, this is terrible.' + s)
+                               message='The branch does is connected to a bus with Vnom=0, this is terrible.')
 
                 if elm.name == '':
                     logger.add(object_type=object_type.value,
@@ -291,7 +292,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                severity=LogSeverity.Error,
                                propty='rate',
                                message='The rating is negative. This cannot be.',
-                               lower=0,
+                               lower="0",
                                val=elm.rate)
                     fixable_errors.append(FixableErrorNegative(grid_element=elm,
                                                                property_name='rate',
@@ -506,9 +507,9 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                severity=LogSeverity.Error,
                                propty='HV or LV',
                                message='Large nominal voltage mismatch at the "from" bus',
-                               lower=1.0 - transformer_virtual_tap_tolerance,
+                               lower=str(1.0 - transformer_virtual_tap_tolerance),
                                val=tap_f,
-                               upper=1.0 + transformer_virtual_tap_tolerance)
+                               upper=str(1.0 + transformer_virtual_tap_tolerance))
                     fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
                                                                   maximum_difference=transformer_virtual_tap_tolerance))
 
@@ -587,7 +588,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                severity=LogSeverity.Warning,
                                propty='Vset',
                                message='The set point looks too low',
-                               lower=v_low,
+                               lower=str(v_low),
                                val=obj.Vset)
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
                                                                  property_name='Vset',
@@ -603,7 +604,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                propty='Vset',
                                message='The set point looks too high',
                                val=obj.Vset,
-                               upper=v_high)
+                               upper=str(v_high))
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
                                                                  property_name='Vset',
                                                                  value=obj.Vset,
@@ -656,7 +657,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                    severity=LogSeverity.Warning,
                                    propty='Vset',
                                    message='The set point looks too low',
-                                   lower=v_low,
+                                   lower=str(v_low),
                                    val=obj.Vset)
                         fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
                                                                      property_name='Vset',
@@ -672,7 +673,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                    propty='Vset',
                                    message='The set point looks too high',
                                    val=obj.Vset,
-                                   upper=v_high)
+                                   upper=str(v_high))
                         fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
                                                                      property_name='Vset',
                                                                      value=obj.Vset,
@@ -780,9 +781,9 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                    severity=LogSeverity.Error,
                                    propty="Reactive power out of bounds",
                                    message='There is too much reactive power imbalance',
-                                   lower=Qmin,
-                                   val=Ql,
-                                   upper=Qmax)
+                                   lower=str(Qmin),
+                                   val=str(Ql),
+                                   upper=str(Qmax))
 
                     if circuit.time_profile is not None:
                         nt = len(circuit.time_profile)

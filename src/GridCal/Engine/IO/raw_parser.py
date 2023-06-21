@@ -59,7 +59,7 @@ class PSSeGrid:
         Multi-Terminal DC Transmission Line Data
         Multi-Section Line Grouping Data
         Zone Data
-        Interarea Transfer Data
+        Inter-area Transfer Data
         Owner Data
         FACTS Device Data
         Switched Shunt Data
@@ -67,23 +67,24 @@ class PSSeGrid:
         Induction Machine Data
         Q Record
         """
-        self.buses = list()
-        self.loads = list()
-        self.shunts = list()
-        self.switched_shunts = list()
-        self.generators = list()
-        self.lines = list()
-        self.transformers = list()
+        self.buses: List[PSSeBus] = list()
+        self.loads: List[PSSeLoad] = list()
+        self.shunts: List[PSSeShunt] = list()
+        self.switched_shunts: List[PSSeSwitchedShunt] = list()
+        self.generators: List[PSSeGenerator] = list()
+        self.branches: List[PSSeBranch] = list()
+        self.transformers: List[PSSeTransformer] = list()
         self.hvdc_lines = list()
-        self.facts = list()
-        self.areas = list()
-        self.zones = list()
+        self.facts: List[PSSeFACTS] = list()
+        self.areas: List[PSSeArea] = list()
+        self.zones: List[PSSeZone] = list()
 
-    def get_circuit(self, logger: bs.Logger):
+    def get_circuit(self, logger: bs.Logger, branch_connection_voltage_tolerance: float = 0.1) -> MultiCircuit:
         """
-        Return Newton circuit
-        Returns:
-
+        Returns GridCal circuit
+        :param logger: Logger
+        :param branch_connection_voltage_tolerance: tolerance in p.u. of a branch voltage to be considered a transformer
+        :return: MultiCircuit instance
         """
 
         circuit = MultiCircuit(Sbase=self.SBASE)
@@ -123,7 +124,7 @@ class PSSeGrid:
 
         for psse_bus in self.buses:
 
-            # relate each PSS bus index with a Newton bus object
+            # relate each PSSe bus index with a Newton bus object
             psse_bus_dict[psse_bus.I] = psse_bus.bus
 
             # replace area idx by area name if available
@@ -175,57 +176,68 @@ class PSSeGrid:
 
             circuit.add_generator(bus, api_obj)
 
-        # ---------------------------------------------------------------------
-        # Branches
-        # ---------------------------------------------------------------------
         # Go through Branches
-        already_there = set()
-        for psse_banch in self.lines:
-            # get the object
-            branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
-
-            if branch.idtag not in already_there:
-
-                # Add to the circuit
-                circuit.add_line(branch)
-
-                already_there.add(branch.idtag)
-
-            else:
-                logger.add_warning('The RAW file has a repeated line device and it is omitted from the model',
-                                   str(branch.idtag))
+        branches_already_there = set()
 
         # Go through Transformers
-        for psse_banch in self.transformers:
+        for psse_branch in self.transformers:
             # get the object
-            branches = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
+            branches = psse_branch.get_object(psse_bus_dict, self.SBASE, logger)
 
             for branch in branches:
-                if branch.idtag not in already_there:
+                if branch.idtag not in branches_already_there:
                     # Add to the circuit
                     circuit.add_transformer2w(branch)
-                    already_there.add(branch.idtag)
+                    branches_already_there.add(branch.idtag)
 
                 else:
                     logger.add_warning('The RAW file has a repeated transformer and it is omitted from the model',
                                        branch.idtag)
 
-        # Go through hvdc lines
-        for psse_banch in self.hvdc_lines:
+        # Go through the branches
+        for psse_branch in self.branches:
             # get the object
-            branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
+            branch = psse_branch.get_object(psse_bus_dict, self.SBASE, logger)
 
-            if branch.idtag not in already_there:
+            if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance):  # detect if this branch is actually a transformer
+
+                logger.add_error(msg="Converted line to transformer due to excessive voltage difference",
+                                 device=str(branch.idtag))
+
+                transformer = branch.get_equivalent_transformer()
+
+                # Add to the circuit
+                circuit.add_transformer2w(transformer)
+                branches_already_there.add(branch.idtag)
+
+            else:
+
+                if branch.idtag not in branches_already_there:
+
+                    # Add to the circuit
+                    circuit.add_line(branch)
+                    branches_already_there.add(branch.idtag)
+
+                else:
+                    logger.add_warning('The RAW file has a repeated line device and it is omitted from the model',
+                                       str(branch.idtag))
+
+        # Go through hvdc lines
+        for psse_branch in self.hvdc_lines:
+            # get the object
+            branch = psse_branch.get_object(psse_bus_dict, self.SBASE, logger)
+
+            if branch.idtag not in branches_already_there:
 
                 # Add to the circuit
                 circuit.add_hvdc(branch)
-                already_there.add(branch.idtag)
+                branches_already_there.add(branch.idtag)
 
             else:
                 logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
                                    str(branch.idtag))
 
-        # Go through facts lines
+        # Go through facts
         for psse_elm in self.facts:
             # since these may be shunt or series or both, pass the circuit so that the correct device is added
             if psse_elm.is_connected():
@@ -417,10 +429,10 @@ class PSSeLoad(PSSeObject):
         q = self.QL
 
         elm = dev.Load(name=name,
-                   idtag=None,
-                   code=name,
-                   active=bool(self.STATUS),
-                   P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
+                       idtag=None,
+                       code=name,
+                       active=bool(self.STATUS),
+                       P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
 
         return elm
 
@@ -505,9 +517,9 @@ class PSSeSwitchedShunt(PSSeObject):
             b = self.BINIT
 
         elm = dev.Shunt(name='Switched shunt ' + name,
-                    G=g, B=b,
-                    active=bool(self.STAT),
-                    code=name)
+                        G=g, B=b,
+                        active=bool(self.STAT),
+                        code=name)
 
         return elm
 
@@ -555,10 +567,10 @@ class PSSeShunt(PSSeObject):
         b = self.BL
 
         elm = dev.Shunt(name=name,
-                    idtag=None,
-                    G=g, B=b,
-                    active=bool(self.STATUS),
-                    code=name)
+                        idtag=None,
+                        G=g, B=b,
+                        active=bool(self.STATUS),
+                        code=name)
 
         return elm
 
@@ -632,7 +644,7 @@ class PSSeGenerator(PSSeObject):
         else:
             logger.add_warning('Generator not implemented for version', str(version))
 
-    def get_object(self, logger: list):
+    def get_object(self, logger: bs.Logger):
         """
         Return Newton Load object
         Returns:
@@ -640,16 +652,16 @@ class PSSeGenerator(PSSeObject):
         """
         name = str(self.I) + '_' + str(self.ID).replace("'", "")
         elm = dev.Generator(name=name,
-                        idtag=None,
-                        code=name,
-                        active_power=self.PG,
-                        voltage_module=self.VS,
-                        Qmin=self.QB,
-                        Qmax=self.QT,
-                        Snom=self.MBASE,
-                        p_max=self.PT,
-                        p_min=self.PB,
-                        active=bool(self.STAT))
+                            idtag=None,
+                            code=name,
+                            active_power=self.PG,
+                            voltage_module=self.VS,
+                            Qmin=self.QB,
+                            Qmax=self.QT,
+                            Snom=self.MBASE,
+                            p_max=self.PT,
+                            p_min=self.PB,
+                            active=bool(self.STAT))
 
         return elm
 
@@ -726,10 +738,10 @@ class PSSeInductionMachine(PSSeObject):
         """
 
         elm = dev.Generator(name=str(self.I) + '_' + str(self.ID),
-                        active_power=self.PSET,
-                        voltage_module=self.RATEKV,
-                        Snom=self.MBASE,
-                        active=bool(self.STAT))
+                            active_power=self.PSET,
+                            voltage_module=self.RATEKV,
+                            Snom=self.MBASE,
+                            active=bool(self.STAT))
 
         return elm
 
@@ -857,19 +869,19 @@ class PSSeBranch(PSSeObject):
             contingency_factor = 1.0
 
         branch = dev.Line(bus_from=bus_from,
-                      bus_to=bus_to,
-                      idtag=None,
-                      code=code,
-                      name=name,
-                      r=self.R,
-                      x=self.X,
-                      b=self.B,
-                      rate=self.RATEA,
-                      contingency_factor=round(contingency_factor, 6),
-                      active=bool(self.ST),
-                      mttf=0,
-                      mttr=0,
-                      length=self.LEN)
+                          bus_to=bus_to,
+                          idtag=None,
+                          code=code,
+                          name=name,
+                          r=self.R,
+                          x=self.X,
+                          b=self.B,
+                          rate=self.RATEA,
+                          contingency_factor=round(contingency_factor, 6),
+                          active=bool(self.ST),
+                          mttf=0,
+                          mttr=0,
+                          length=self.LEN)
         return branch
 
 
@@ -1004,19 +1016,19 @@ class PSSeTwoTerminalDCLine(PSSeObject):
         active = bus1.active and bus2.active
 
         obj = dev.HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
-                       bus_to=bus2,  # inverter as of PSSe
-                       active=active,
-                       name=name1,
-                       idtag=idtag,
-                       Pset=specified_power,
-                       Vset_f=Vset_f,
-                       Vset_t=Vset_t,
-                       rate=specified_power,
-                       r=self.RDC,
-                       min_firing_angle_f=np.deg2rad(self.ANMNR),
-                       max_firing_angle_f=np.deg2rad(self.ANMXR),
-                       min_firing_angle_t=np.deg2rad(self.ANMNI),
-                       max_firing_angle_t=np.deg2rad(self.ANMXI))
+                           bus_to=bus2,  # inverter as of PSSe
+                           active=active,
+                           name=name1,
+                           idtag=idtag,
+                           Pset=specified_power,
+                           Vset_f=Vset_f,
+                           Vset_t=Vset_t,
+                           rate=specified_power,
+                           r=self.RDC,
+                           min_firing_angle_f=np.deg2rad(self.ANMNR),
+                           max_firing_angle_f=np.deg2rad(self.ANMXR),
+                           min_firing_angle_t=np.deg2rad(self.ANMNI),
+                           max_firing_angle_t=np.deg2rad(self.ANMXI))
         return obj
 
 
@@ -1140,13 +1152,13 @@ class PSSeVscDCLine(PSSeObject):
         specified_power = P * 1e-6  # power in MW
 
         obj = dev.HvdcLine(bus_from=bus1,
-                       bus_to=bus2,
-                       name=name1,
-                       idtag=idtag,
-                       Pset=specified_power,
-                       Vset_f=Vset_f,
-                       Vset_t=Vset_t,
-                       rate=rate)
+                           bus_to=bus2,
+                           name=name1,
+                           idtag=idtag,
+                           Pset=specified_power,
+                           Vset_f=Vset_f,
+                           Vset_t=Vset_t,
+                           rate=rate)
 
         return obj
 
@@ -1429,21 +1441,21 @@ class PSSeTransformer(PSSeObject):
                     self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
                     self.COD1, self.CONT1, self.NOD1, \
                     self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
-                data[2]
+                    data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, \
                     self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6, \
                     self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12, \
                     self.COD2, self.CONT2, self.NOD2, \
                     self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
-                data[3]
+                    data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, \
                     self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6, \
                     self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12, \
                     self.COD3, self.CONT3, self.NOD3, \
                     self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
-                data[4]
+                    data[4]
 
                 self.RATA1 = self.RATE1_1
                 self.RATA2 = self.RATE2_1
@@ -1492,15 +1504,15 @@ class PSSeTransformer(PSSeObject):
 
                 self.WINDV1, self.NOMV1, self.ANG1, self.RATA1, self.RATB1, self.RATC1, self.COD1, self.CONT1, \
                     self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
-                data[2]
+                    data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATA2, self.RATB2, self.RATC2, self.COD2, self.CONT2, \
                     self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
-                data[3]
+                    data[3]
 
                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
                     self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
-                data[4]
+                    data[4]
 
         elif version == 32:
 
@@ -1744,23 +1756,23 @@ class PSSeTransformer(PSSeObject):
                 LV = V1
 
             elm = dev.Transformer2W(bus_from=bus_from,
-                                bus_to=bus_to,
-                                idtag=None,
-                                code=code,
-                                name=name,
-                                HV=HV,
-                                LV=LV,
-                                r=r,
-                                x=x,
-                                g=g,
-                                b=b,
-                                rate=self.RATA1,
-                                contingency_factor=round(contingency_factor, 6),
-                                tap=tap_mod,
-                                shift_angle=tap_angle,
-                                active=bool(self.STAT),
-                                mttf=0,
-                                mttr=0)
+                                    bus_to=bus_to,
+                                    idtag=None,
+                                    code=code,
+                                    name=name,
+                                    HV=HV,
+                                    LV=LV,
+                                    r=r,
+                                    x=x,
+                                    g=g,
+                                    b=b,
+                                    rate=self.RATA1,
+                                    contingency_factor=round(contingency_factor, 6),
+                                    tap=tap_mod,
+                                    shift_angle=tap_angle,
+                                    active=bool(self.STAT),
+                                    mttf=0,
+                                    mttr=0)
 
             return [elm]
 
@@ -1843,46 +1855,46 @@ class PSSeTransformer(PSSeObject):
                 raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
 
             elm1 = dev.Transformer2W(bus_from=bus_1,
-                                 bus_to=bus_2,
-                                 idtag=code + '_12',
-                                 name=self.NAME,
-                                 HV=V1,
-                                 LV=V2,
-                                 r=r12,
-                                 x=x12,
-                                 rate=max(self.RATA1, self.RATA2, self.RATA3),
-                                 shift_angle=self.ANG1,
-                                 active=bool(self.STAT),
-                                 mttf=0,
-                                 mttr=0)
+                                     bus_to=bus_2,
+                                     idtag=code + '_12',
+                                     name=self.NAME,
+                                     HV=V1,
+                                     LV=V2,
+                                     r=r12,
+                                     x=x12,
+                                     rate=max(self.RATA1, self.RATA2, self.RATA3),
+                                     shift_angle=self.ANG1,
+                                     active=bool(self.STAT),
+                                     mttf=0,
+                                     mttr=0)
 
             elm2 = dev.Transformer2W(bus_from=bus_2,
-                                 bus_to=bus_3,
-                                 idtag=code + '_23',
-                                 name=self.NAME,
-                                 HV=V2,
-                                 LV=V3,
-                                 r=r23,
-                                 x=x23,
-                                 rate=max(self.RATB1, self.RATB2, self.RATB3),
-                                 shift_angle=self.ANG2,
-                                 active=bool(self.STAT),
-                                 mttf=0,
-                                 mttr=0)
+                                     bus_to=bus_3,
+                                     idtag=code + '_23',
+                                     name=self.NAME,
+                                     HV=V2,
+                                     LV=V3,
+                                     r=r23,
+                                     x=x23,
+                                     rate=max(self.RATB1, self.RATB2, self.RATB3),
+                                     shift_angle=self.ANG2,
+                                     active=bool(self.STAT),
+                                     mttf=0,
+                                     mttr=0)
 
             elm3 = dev.Transformer2W(bus_from=bus_3,
-                                 bus_to=bus_1,
-                                 idtag=code + '_31',
-                                 name=self.NAME,
-                                 HV=V1,
-                                 LV=V3,
-                                 r=r31,
-                                 x=x31,
-                                 rate=max(self.RATC1, self.RATC2, self.RATC3),
-                                 shift_angle=self.ANG3,
-                                 active=bool(self.STAT),
-                                 mttf=0,
-                                 mttr=0)
+                                     bus_to=bus_1,
+                                     idtag=code + '_31',
+                                     name=self.NAME,
+                                     HV=V1,
+                                     LV=V3,
+                                     r=r31,
+                                     x=x31,
+                                     rate=max(self.RATC1, self.RATC2, self.RATC3),
+                                     shift_angle=self.ANG3,
+                                     active=bool(self.STAT),
+                                     mttf=0,
+                                     mttr=0)
 
             return [elm1, elm2, elm3]
 
@@ -2007,17 +2019,17 @@ class PSSeFACTS(PSSeObject):
             # # circuit.add_line(branch)
 
             elm = dev.UPFC(name=name1,
-                       bus_from=bus1,
-                       bus_to=bus2,
-                       code=idtag,
-                       rs=self.SET1,
-                       xs=self.SET2 + self.LINX,
-                       rp=0.0,
-                       xp=1.0 / self.SHMX if self.SHMX > 0 else 0.0,
-                       vp=self.VSET,
-                       Pset=self.PDES,
-                       Qset=self.QDES,
-                       rate=self.IMX + 1e-20)
+                           bus_from=bus1,
+                           bus_to=bus2,
+                           code=idtag,
+                           rs=self.SET1,
+                           xs=self.SET2 + self.LINX,
+                           rp=0.0,
+                           xp=1.0 / self.SHMX if self.SHMX > 0 else 0.0,
+                           vp=self.VSET,
+                           Pset=self.PDES,
+                           Qset=self.QDES,
+                           rate=self.IMX + 1e-20)
 
             circuit.add_upfc(elm)
 
@@ -2429,8 +2441,8 @@ class PSSeParser:
         meta_data['switched shunt'] = [grid.switched_shunts, PSSeSwitchedShunt, 1]
         meta_data['generator'] = [grid.generators, PSSeGenerator, 1]
         meta_data['induction machine'] = [grid.generators, PSSeInductionMachine, 3]
-        meta_data['branch'] = [grid.lines, PSSeBranch, 1]
-        meta_data['nontransformer branch'] = [grid.lines, PSSeBranch, 1]
+        meta_data['branch'] = [grid.branches, PSSeBranch, 1]
+        meta_data['nontransformer branch'] = [grid.branches, PSSeBranch, 1]
         meta_data['transformer'] = [grid.transformers, PSSeTransformer, 4]
         meta_data['two-terminal dc'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
         meta_data['two-terminal dc line'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
@@ -2511,4 +2523,3 @@ class PSSeParser:
                     logger.add_warning('Not implemented in the parser', key)
 
         return grid, logger
-

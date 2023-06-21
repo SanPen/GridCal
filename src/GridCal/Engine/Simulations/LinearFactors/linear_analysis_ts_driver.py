@@ -34,142 +34,9 @@ from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
 
 
-class LinearAnalysisTimeSeriesResults(ResultsTemplate):
-
-    def __init__(
-            self,
-            n: int,
-            m: int,
-            time_array: np.ndarray,
-            bus_names: np.ndarray,
-            bus_types: np.ndarray,
-            branch_names: np.ndarray
-    ):
-        """
-        TimeSeriesResults constructor
-        :param n: number of buses
-        :param m: number of branches
-        :param time_array: time array
-        :param bus_names: bus names array
-        :param bus_types: bus types array
-        :param branch_names: branch names array
-        """
-        ResultsTemplate.__init__(
-            self,
-            name='Linear Analysis time series',
-            available_results=[
-                ResultTypes.BusActivePower,
-                ResultTypes.BranchActivePowerFrom,
-                ResultTypes.BranchLoading
-            ],
-            data_variables=[
-                'bus_names',
-                'bus_types',
-                'time',
-                'branch_names',
-                'voltage',
-                'S',
-                'Sf',
-                'loading',
-                'losses'
-            ]
-        )
-
-        self.m: int = m
-        self.n: int = n
-        self.nt: int = len(time_array)
-
-        self.time: np.ndarray = time_array
-
-        self.bus_names: np.ndarray = bus_names
-        self.branch_names: np.ndarray = branch_names
-        self.bus_types: np.ndarray = bus_types
-
-        self.voltage: np.ndarray = np.ones((self.nt, n), dtype=float)
-        self.S: np.ndarray = np.zeros((self.nt, n), dtype=float)
-        self.Sf: np.ndarray = np.zeros((self.nt, m), dtype=float)
-        self.loading: np.ndarray = np.zeros((self.nt, m), dtype=float)
-        self.losses: np.ndarray = np.zeros((self.nt, m), dtype=float)
-
-        self.topological_dict: Dict[int, List[int]] = dict()
-        self.results: Dict[int, LinearAnalysisResults] = dict()
-        self.reports: Dict[str, ResultsTable] = dict()
-
-    def apply_new_time_series_rates(self, nc: NumericalCircuit):
-        rates = nc.Rates.T
-        self.loading = self.Sf / (rates + 1e-9)
-
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {
-            'V': self.voltage.tolist(),
-            'P': self.S.real.tolist(),
-            'Q': self.S.imag.tolist(),
-            'Sbr_real': self.Sf.real.tolist(),
-            'Sbr_imag': self.Sf.imag.tolist(),
-            'loading': np.abs(self.loading).tolist()
-        }
-        return data
-
-    def mdl(self, result_type: ResultTypes) -> ResultsTable:
-        """
-        Get ResultsModel instance
-        :param result_type:
-        :return: ResultsModel instance
-        """
-
-        if result_type == ResultTypes.BusActivePower:
-            labels = self.bus_names
-            data = self.S
-            y_label = '(MW)'
-            title = 'Bus active power '
-
-        elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.branch_names
-            data = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power '
-
-        elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            data = self.loading * 100
-            y_label = '(%)'
-            title = 'Branch loading '
-
-        elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            data = self.losses
-            y_label = '(MVA)'
-            title = 'Branch losses'
-
-        elif result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            data = self.voltage
-            y_label = '(p.u.)'
-            title = 'Bus voltage'
-
-        else:
-            raise Exception('Result type not understood:' + str(result_type))
-
-        if self.time is not None:
-            index = self.time
-        else:
-            index = list(range(data.shape[0]))
-
-        # assemble model
-        return ResultsTable(
-            data=data,
-            index=index,
-            columns=labels,
-            title=title,
-            ylabel=y_label,
-            units=y_label
-        )
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -212,12 +79,10 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         return [l.strftime('%d-%m-%Y %H:%M') for l in self.indices]
 
-    def run(self, with_flows=True, with_nx=False):
+    def run(self):
         """
-        Run the time series analysis
-        :param with_flows: Boolean to compute flows for time series
-        :param with_nx: Boolean to compute LODF-nx sensibilities
-        :return: LinearAnalysisTimeSeriesResults instance
+        Run the time series simulation
+        @return:
         """
 
         tm_ = time.time()
@@ -250,8 +115,8 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         # Compute different topologies to consider
         self.set_topologic_groups()
 
-        contingency_dict = self.grid.get_contingencies_dict()
-        branch_dict = self.grid.get_branches_dict()
+        contingency_dict = self.grid.get_contingency_group_dict()
+        branch_dict = self.grid.get_branches_wo_hvdc_dict()
 
 
         for it, t in enumerate(self.topologic_groups.keys()):

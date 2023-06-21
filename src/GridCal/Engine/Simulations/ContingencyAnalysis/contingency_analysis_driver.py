@@ -26,7 +26,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power, multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
@@ -128,112 +128,32 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             return list()
 
-    def n_minus_k(self, numerical_circuit:NumericalCircuit):
+    def n_minus_k(self, t=None):
         """
         Run N-1 simulation in series
-        :param numerical_circuit: numerical circuit
+        :param t: time index, if None the snapshot is used
         :return: returns the results
         """
+        # set the numerical circuit
+        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
 
         if self.options.pf_options is None:
-            pf_opts = PowerFlowOptions(
-                solver_type=SolverType.DC,
-                ignore_single_node_islands=True
-            )
+            pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+                                       ignore_single_node_islands=True)
         else:
             pf_opts = self.options.pf_options
 
         # declare the results
-        results = ContingencyAnalysisResults(
-            ncon=len(self.grid.contingency_groups),
-            nbr=numerical_circuit.nbr,
-            nbus=numerical_circuit.nbus,
-            branch_names=numerical_circuit.branch_names,
-            bus_names=numerical_circuit.bus_names,
-            bus_types=numerical_circuit.bus_types,
-            con_names=self.grid.get_contingency_group_names()
-        )
+        results = ContingencyAnalysisResults(ncon=len(self.grid.contingency_groups),
+                                             nbr=numerical_circuit.nbr,
+                                             nbus=numerical_circuit.nbus,
+                                             branch_names=numerical_circuit.branch_names,
+                                             bus_names=numerical_circuit.bus_names,
+                                             bus_types=numerical_circuit.bus_types,
+                                             con_names=self.grid.get_contingency_group_names())
 
         # get contingency groups dictionary
-        cg_dict = self.grid.get_contingencies_dict()
-
-        branches_dict = self.grid.get_branches_dict()
-
-        # keep the original states
-        original_br_active = numerical_circuit.branch_data.active.copy()
-        original_gen_active = numerical_circuit.generator_data.active.copy()
-        original_gen_p = numerical_circuit.generator_data.p.copy()
-
-        # run 0
-        pf_res_0 = multi_island_pf_nc(nc=numerical_circuit, options=pf_opts)
-
-        # for each contingency group
-        for ic, contingency_group in enumerate(self.grid.contingency_groups):
-
-            # get the group's contingencies
-            contingencies = cg_dict[contingency_group.idtag]
-
-            # apply the contingencies
-            for cnt in contingencies:
-
-                # search for the contingency in the branches
-                if cnt.device_idtag in branches_dict:
-                    br_idx = branches_dict[cnt.device_idtag]
-
-                    if cnt.prop == 'active':
-                        numerical_circuit.branch_data.active[br_idx] = int(cnt.value)
-                    else:
-                        print('Unknown contingency property ', cnt.prop, 'at', cnt.name, cnt.idtag)
-                else:
-                    pass
-
-            # report progress
-            if numerical_circuit.t_idx is None:
-                self.progress_text.emit('Contingency group:' + contingency_group.name)
-                self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
-
-            # run
-            pf_res = multi_island_pf_nc(
-                nc=numerical_circuit,
-                options=pf_opts,
-                V_guess=pf_res_0.voltage
-            )
-
-            results.Sf[ic, :] = pf_res.Sf
-            results.S[ic, :] = pf_res.Sbus
-            results.loading[ic, :] = pf_res.loading
-
-            # revert the states for the next run
-            numerical_circuit.branch_data.active = original_br_active.copy()
-            numerical_circuit.generator_data.active = original_gen_active.copy()
-            numerical_circuit.generator_data.p = original_gen_p.copy()
-
-            if self.__cancel__:
-                return results
-
-        return results
-
-
-    def n_minus_k_ptdf(self, numerical_circuit:NumericalCircuit):
-        """
-        Run N-1 simulation in series by ptdf
-        :param numerical_circuit: numerical circuit
-        :return: returns the results
-        """
-
-        # declare the results
-        results = ContingencyAnalysisResults(
-            ncon=len(self.grid.contingency_groups),
-            nbr=numerical_circuit.nbr,
-            nbus=numerical_circuit.nbus,
-            branch_names=numerical_circuit.branch_names,
-            bus_names=numerical_circuit.bus_names,
-            bus_types=numerical_circuit.bus_types,
-            con_names=self.grid.get_contingency_group_names()
-        )
-
-        # get contingency groups dictionary
-        cg_dict = self.grid.get_contingencies_dict()
+        cg_dict = self.grid.get_contingency_group_dict()
 
         branches_dict = {e.idtag: ei for ei, e in enumerate(self.grid.get_branches_wo_hvdc())}
 
@@ -357,13 +277,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
         start = time.time()
 
-        nc = compile_numerical_circuit_at(
-            circuit=self.grid,
-            t_idx=None,
-        )
-
         if self.options.engine == bs.ContingencyEngine.PowerFlow:
-            self.results = self.n_minus_k(numerical_circuit=nc)
+            self.results = self.n_minus_k()
 
         elif self.options.engine == bs.ContingencyEngine.PTDF:
 
@@ -375,7 +290,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.results = self.n_minus_k_nl()
 
         else:
-            self.results = self.n_minus_k(numerical_circuit=nc)
+            self.results = self.n_minus_k()
 
         end = time.time()
         self.elapsed = end - start

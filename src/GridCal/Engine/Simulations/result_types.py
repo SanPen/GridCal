@@ -103,10 +103,10 @@ class ResultTypes(Enum):
     BusShortCircuitReactivePower = 'Short circuit reactive power', DeviceType.BusDevice
 
     # PTDF
-    PTDFBranchesSensitivity = 'Branch Flow sensitivity', DeviceType.BranchDevice
+    PTDFBranchesSensitivity = 'PTDF', DeviceType.BranchDevice
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity', DeviceType.BusDevice
 
-    LODF = 'Outage transfer distribution factors', DeviceType.BranchDevice
+    LODF = 'LODF', DeviceType.BranchDevice
 
     MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
     ContingencyFlows = 'Contingency flow', DeviceType.BranchDevice
