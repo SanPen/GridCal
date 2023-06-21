@@ -138,24 +138,29 @@ class ContingencyAnalysisDriver(DriverTemplate):
         numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
 
         if self.options.pf_options is None:
-            pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
-                                       ignore_single_node_islands=True)
+            pf_opts = PowerFlowOptions(
+                solver_type=SolverType.DC,
+                ignore_single_node_islands=True
+            )
+
         else:
             pf_opts = self.options.pf_options
 
         # declare the results
-        results = ContingencyAnalysisResults(ncon=len(self.grid.contingency_groups),
-                                             nbr=numerical_circuit.nbr,
-                                             nbus=numerical_circuit.nbus,
-                                             branch_names=numerical_circuit.branch_names,
-                                             bus_names=numerical_circuit.bus_names,
-                                             bus_types=numerical_circuit.bus_types,
-                                             con_names=self.grid.get_contingency_group_names())
+        results = ContingencyAnalysisResults(
+            ncon=len(self.grid.contingency_groups),
+            nbr=numerical_circuit.nbr,
+            nbus=numerical_circuit.nbus,
+            branch_names=numerical_circuit.branch_names,
+            bus_names=numerical_circuit.bus_names,
+            bus_types=numerical_circuit.bus_types,
+            con_names=self.grid.get_contingency_group_names()
+        )
 
         # get contingency groups dictionary
         cg_dict = self.grid.get_contingency_group_dict()
 
-        branches_dict = {e.idtag: ei for ei, e in enumerate(self.grid.get_branches_wo_hvdc())}
+        branches_dict = self.grid.get_branches_wo_hvdc_dict()
 
         # keep the original states
         original_br_active = numerical_circuit.branch_data.active.copy()
@@ -163,7 +168,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
         original_gen_p = numerical_circuit.generator_data.p.copy()
 
         # run 0
-        pf_res_0 = multi_island_pf_nc(nc=numerical_circuit, options=pf_opts)
+        pf_res_0 = multi_island_pf_nc(
+            nc=numerical_circuit,
+            options=pf_opts
+        )
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.grid.contingency_groups):
@@ -181,17 +189,21 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     if cnt.prop == 'active':
                         numerical_circuit.branch_data.active[br_idx] = int(cnt.value)
                     else:
-                        print('Unknown contingency property ', cnt.prop, 'at', cnt.name, cnt.idtag)
+                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
                 else:
                     pass
 
             # report progress
             if t is None:
-                self.progress_text.emit('Contingency group:' + contingency_group.name)
+                self.progress_text.emit(f'Contingency group: {contingency_group.name}')
                 self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
 
             # run
-            pf_res = multi_island_pf_nc(nc=numerical_circuit, options=pf_opts, V_guess=pf_res_0.voltage)
+            pf_res = multi_island_pf_nc(
+                nc=numerical_circuit,
+                options=pf_opts,
+                V_guess=pf_res_0.voltage
+            )
 
             results.Sf[ic, :] = pf_res.Sf
             results.S[ic, :] = pf_res.Sbus

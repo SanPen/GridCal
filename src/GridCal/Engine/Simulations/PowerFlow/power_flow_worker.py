@@ -23,6 +23,7 @@ import GridCal.Engine.Simulations.PowerFlow as pflw
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
@@ -590,28 +591,37 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
     return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
 
 
-def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=bs.Logger(),
-                       V_guess=None) -> "PowerFlowResults":
+def multi_island_pf_nc(
+        nc: NumericalCircuit,
+        options: PowerFlowOptions,
+        logger=bs.Logger(),
+        V_guess=None
+) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
     :param options: PowerFlowOptions instance
     :param logger: logger
+    :param V_guess:
     :return: PowerFlowResults instance
     """
 
     # declare results
-    results = PowerFlowResults(n=nc.nbus,
-                               m=nc.nbr,
-                               n_hvdc=nc.nhvdc,
-                               bus_names=nc.bus_data.names,
-                               branch_names=nc.branch_data.names,
-                               hvdc_names=nc.hvdc_data.names,
-                               bus_types=nc.bus_data.bus_types)
+    results = PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_hvdc=nc.nhvdc,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.branch_data.names,
+        hvdc_names=nc.hvdc_data.names,
+        bus_types=nc.bus_data.bus_types,
+    )
 
     # compose the HVDC power injections
-    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
-                                                                                        theta=np.zeros(nc.nbus))
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
+        Sbase=nc.Sbase,
+        theta=np.zeros(nc.nbus),
+    )
 
     # remember the initial hvdc control values
     Losses_hvdc_prev = Losses_hvdc.copy()
@@ -621,7 +631,9 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(
+        ignore_single_node_islands=options.ignore_single_node_islands,
+    )
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
@@ -655,13 +667,15 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
                     Qmin=island.Qmin_bus,
                     Qmax=island.Qmax_bus,
                     options=options,
-                    logger=logger
+                    logger=logger,
                 )
 
                 # merge the results from this island
-                results.apply_from_island(results=res,
-                                          b_idx=island.original_bus_idx,
-                                          br_idx=island.original_branch_idx)
+                results.apply_from_island(
+                    results=res,
+                    b_idx=island.original_bus_idx,
+                    br_idx=island.original_branch_idx,
+                )
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
@@ -669,9 +683,10 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
 
         if n_free and control_iter < max_control_iter:
 
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
-                                                                                                theta=np.angle(
-                                                                                                    results.voltage))
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
+                Sbase=nc.Sbase,
+                theta=np.angle(results.voltage),
+            )
 
             # hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
             hvdc_control_err = np.max(np.abs(Shvdc - Shvdc_prev))
@@ -729,13 +744,15 @@ def multi_island_pf_nc(nc: NumericalCircuit, options: PowerFlowOptions, logger=b
     return results
 
 
-def multi_island_pf(multi_circuit: MultiCircuit,
-                    options: PowerFlowOptions,
-                    opf_results: Union["OptimalPowerFlowResults", None] = None,
-                    t: Union[int, None] = None,
-                    logger: bs.Logger = bs.Logger(),
-                    bus_dict: Union[Dict[Bus, int], None] = None,
-                    areas_dict: Union[Dict[Area, int], None] = None) -> "PowerFlowResults":
+def multi_island_pf(
+        multi_circuit: MultiCircuit,
+        options: PowerFlowOptions,
+        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        t: Union[int, None] = None,
+        logger: bs.Logger = bs.Logger(),
+        bus_dict: Union[Dict[Bus, int], None] = None,
+        areas_dict: Union[Dict[Area, int], None] = None
+) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
