@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import numpy as np
 
@@ -28,7 +28,10 @@ class ResultsTemplate:
     def __init__(
             self,
             name: str = '',
-            available_results: Dict[ResultTypes, List[ResultTypes]] = dict(),
+            available_results: Union[
+                Dict[ResultTypes, List[ResultTypes]],
+                List[ResultTypes]
+            ] = dict(),
             data_variables: List[str] = list()
     ):
         """

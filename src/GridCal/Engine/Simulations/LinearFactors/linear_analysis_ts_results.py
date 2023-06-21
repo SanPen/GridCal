@@ -16,15 +16,25 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-
+import nptyping as npt
+import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, n, m, time_array, bus_names, bus_types, branch_names):
+    def __init__(
+            self,
+            n: int,
+            m: int,
+            time_array: npt.NDArray[npt.Shape['*'], npt.Datetime64],
+            bus_names: npt.NDArray[npt.Shape['*'], npt.String],
+            bus_types: npt.NDArray[npt.Shape['*'], npt.Int],
+            branch_names: npt.NDArray[npt.Shape['*'], npt.String],
+    ):
         """
         Constructor
         :param n: number of buses
@@ -34,44 +44,49 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         :param bus_types: array of bus types
         :param branch_names: array of branch names
         """
-        ResultsTemplate.__init__(self,
-                                 name='Linear Analysis time series',
-                                 available_results=[ResultTypes.BusActivePower,
-                                                    ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading
-                                                    ],
-                                 data_variables=['bus_names',
-                                                 'bus_types',
-                                                 'time',
-                                                 'branch_names',
-                                                 'voltage',
-                                                 'S',
-                                                 'Sf',
-                                                 'loading',
-                                                 'losses'])
+        ResultsTemplate.__init__(
+            self,
+            name='Linear Analysis time series',
+            available_results=[
+                ResultTypes.BusActivePower,
+                ResultTypes.BranchActivePowerFrom,
+                ResultTypes.BranchLoading
+            ],
+            data_variables=[
+                'bus_names',
+                'bus_types',
+                'time',
+                'branch_names',
+                'voltage',
+                'S',
+                'Sf',
+                'loading',
+                'losses'
+            ]
+        )
 
-        self.nt = len(time_array)
-        self.m = m
-        self.n = n
-        self.time = time_array
+        self.nt: int = len(time_array)
+        self.m: int = m
+        self.n: int = n
+        self.time: npt.NDArray[npt.Shape['*'], npt.Datetime64] = time_array
 
-        self.bus_names = bus_names
+        self.bus_names: npt.NDArray[npt.Shape['*'], npt.String] = bus_names
 
-        self.bus_types = bus_types
+        self.bus_types: npt.NDArray[npt.Shape['*'], npt.Int] = bus_types
 
-        self.branch_names = branch_names
+        self.branch_names: npt.NDArray[npt.Shape['*'], npt.String] = branch_names
 
-        self.voltage = np.ones((self.nt, n), dtype=float)
+        self.voltage: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.ones((self.nt, n), dtype=complex)
 
-        self.S = np.zeros((self.nt, n), dtype=float)
+        self.S: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.zeros((self.nt, n), dtype=complex)
 
-        self.Sf = np.zeros((self.nt, m), dtype=float)
+        self.Sf: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.zeros((self.nt, m), dtype=complex)
 
-        self.loading = np.zeros((self.nt, m), dtype=float)
+        self.loading: npt.NDArray[npt.Shape['*, *'], npt.Float] = np.zeros((self.nt, m), dtype=float)
 
-        self.losses = np.zeros((self.nt, m), dtype=float)
+        self.losses: npt.NDArray[npt.Shape['*, *'], npt.Float] = np.zeros((self.nt, m), dtype=float)
 
-    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+    def apply_new_time_series_rates(self, nc: NumericalCircuit) -> npt.NDArray[npt.Shape['*, *'], npt.Float]:
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
 
@@ -80,15 +95,17 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'V': self.voltage.tolist(),
-                'P': self.S.real.tolist(),
-                'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sf.real.tolist(),
-                'Sbr_imag': self.Sf.imag.tolist(),
-                'loading': np.abs(self.loading).tolist()}
+        data = {
+            'V': self.voltage.tolist(),
+            'P': self.S.real.tolist(),
+            'Q': self.S.imag.tolist(),
+            'Sbr_real': self.Sf.real.tolist(),
+            'Sbr_imag': self.Sf.imag.tolist(),
+            'loading': np.abs(self.loading).tolist()
+        }
         return data
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Get ResultsModel instance
         :param result_type:
@@ -134,4 +151,11 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             index = list(range(data.shape[0]))
 
         # assemble model
-        return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
+        return ResultsTable(
+            data=data,
+            index=index,
+            columns=labels,
+            title=title,
+            ylabel=y_label,
+            units=y_label
+        )
