@@ -374,7 +374,6 @@ def make_lodfnx(
 
 
 class LinearAnalysis:
-    # Todo: replace usages of LinearAnalysis to LinearAnalysisDriver
 
     def __init__(
             self,
