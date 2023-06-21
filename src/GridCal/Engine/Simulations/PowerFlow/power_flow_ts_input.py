@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 
-class TimeSeriesInput:
+class PowerFlowTimeSeriesInput:
 
     def __init__(self, s_profile: pd.DataFrame = None, i_profile: pd.DataFrame = None, y_profile: pd.DataFrame = None):
         """
@@ -109,7 +109,7 @@ class TimeSeriesInput:
         @param bus_idx:
         @return:
         """
-        ts = TimeSeriesInput()
+        ts = PowerFlowTimeSeriesInput()
         ts.S = self.S[:, bus_idx]
         ts.I = self.I[:, bus_idx]
         ts.Y = self.Y[:, bus_idx]
@@ -141,7 +141,7 @@ class TimeSeriesInput:
 
     def copy(self):
 
-        cpy = TimeSeriesInput()
+        cpy = PowerFlowTimeSeriesInput()
 
         # master time array. All the profiles must match its length
         cpy.time_array = self.time_array

@@ -120,8 +120,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
-            start_: int = 0,
-            end_: Union[int, None] = None
+            time_indices: np.ndarray,
     ):
         """
         N - k class constructor
@@ -132,8 +131,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            start_=start_,
-            end_=end_
+            time_indices=time_indices
         )
 
         # Options to use
@@ -152,16 +150,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         )
 
         self.branch_names: np.array = np.empty(shape=grid.get_branch_number_wo_hvdc())
-
-        self.start_: int = start_
-
-        self.end_: Union[int, None] = end_
-
-    def get_steps(self):
-        """
-        Get time steps list of strings
-        """
-        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
 
     def n_minus_k(self):
         """
@@ -184,11 +172,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             con_names=self.grid.get_contingency_group_names()
         )
 
-        if self.end_ is None:
-            self.end_ = len(self.grid.time_profile)
-
-        time_indices = np.arange(self.start_, self.end_)
-
         cdriver = ContingencyAnalysisDriver(
             grid=self.grid,
             options=self.options,
@@ -200,15 +183,14 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             linear = LinearAnalysisTimeSeriesDriver(
                 grid=self.grid,
                 options=self.options,
-                start_=self.start_,
-                end_=self.end_,
+                time_indices=self.time_indices
             )
             linear.run()
 
-        for it, t in enumerate(time_indices):
+        for it, t in enumerate(self.time_indices):
 
             self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
-            self.progress_signal.emit((it + 1) / len(time_indices) * 100)
+            self.progress_signal.emit((it + 1) / len(self.time_indices) * 100)
 
             # run contingency at t
             if self.options.engine == bs.ContingencyEngine.PowerFlow:
@@ -241,7 +223,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                 return results
 
         results.overload_count = contingency_count
-        results.relative_frequency = contingency_count / len(time_indices)
+        results.relative_frequency = contingency_count / len(self.time_indices)
 
         return results
 

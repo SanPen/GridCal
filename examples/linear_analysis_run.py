@@ -11,7 +11,7 @@ ptdf_driver = LinearAnalysisTimeSeriesDriver(grid=main_circuit, options=options_
 ptdf_driver.run()
 
 pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)
-ts_driver = TimeSeries(grid=main_circuit, options=pf_options_)
+ts_driver = PowerFlowTimeSeries(grid=main_circuit, options=pf_options_)
 ts_driver.run()
 
 fig = plt.figure()

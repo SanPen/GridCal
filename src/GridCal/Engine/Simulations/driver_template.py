@@ -86,25 +86,34 @@ class TimeSeriesDriverTemplate(DriverTemplate):
     def __init__(
             self,
             grid: MultiCircuit,
+            time_indices: np.ndarray,
             clustering_results: Union["ClusteringResults", None] = None,
-    ):
+            engine: bs.EngineType = bs.EngineType.GridCal):
         """
         Time Series driver constructor
-        :param grid: Multicircuit instance
+        :param grid: MultiCircuit instance
+        :param time_indices: array of time indices to simulate
         :param clustering_results: ClusteringResults object (optional)
         """
 
-        DriverTemplate.__init__(self, grid=grid)
+        DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         if clustering_results:
             self.time_indices = clustering_results.time_indices
             self.sampled_probabilities = clustering_results.sampled_probabilities
 
         else:
-            self.time_indices = self.grid.time_profile
+            self.time_indices = time_indices
             self.sampled_probabilities = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
 
         self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
+
+    def get_steps(self):
+        """
+        Get time steps list of strings
+        """
+
+        return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.time_indices]
 
     def get_topologic_groups(self) -> Dict[int, List[int]]:
         return self.grid.get_topologic_group_dict()

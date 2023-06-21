@@ -28,7 +28,6 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
-
 class PowerFlowTimeSeriesResults(PowerFlowResults):
 
     def __init__(

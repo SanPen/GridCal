@@ -17,7 +17,7 @@
 
 import numpy as np
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
-from GridCal.Engine.Simulations.PowerFlow.time_Series_input import TimeSeriesInput
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_input import PowerFlowTimeSeriesInput
 
 
 class StochasticPowerFlowInput:
@@ -78,7 +78,7 @@ class StochasticPowerFlowInput:
                     if self.Scdf[i] is not None:
                         S[i] = complex(self.Scdf[i].get_sample()[0])
 
-        time_series_input = TimeSeriesInput()
+        time_series_input = PowerFlowTimeSeriesInput()
         time_series_input.S = S
         time_series_input.I = I
         time_series_input.Y = Y
@@ -102,7 +102,7 @@ class StochasticPowerFlowInput:
             if self.Scdf[i] is not None:
                 S[:, i] = self.Scdf[i].get_at(x[i])
 
-        time_series_input = TimeSeriesInput()
+        time_series_input = PowerFlowTimeSeriesInput()
         time_series_input.S = S
         time_series_input.I = I
         time_series_input.Y = Y

@@ -27,7 +27,9 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 class OpfSimpleTimeSeries:
 
     def __init__(self,  grid: MultiCircuit,
-                 time_indices: List[int],):
+                 time_indices: np.ndarray,
+                 text_prog = None,
+                 prog_func = None):
         """
         DC time series linear optimal power flow
         :param grid: NumericalCircuit instance

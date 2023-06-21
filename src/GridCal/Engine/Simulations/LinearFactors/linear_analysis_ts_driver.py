@@ -38,6 +38,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: LinearAnalysisOptions,
+            time_indices: np.ndarray,
             clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
@@ -49,6 +50,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
+            time_indices=time_indices,
             clustering_results=clustering_results,
         )
 
@@ -56,13 +58,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.drivers: Dict[int, LinearAnalysis] = dict()
         self.results: Dict[int, LinearAnalysisTimeSeriesResults] = dict()
-
-    def get_steps(self):
-        """
-        Get time steps list of strings
-        """
-
-        return [self.grid.time_profile[l].strftime('%d-%m-%Y %H:%M') for l in self.time_indices]
 
     def run(self):
         """
@@ -95,7 +90,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         contingency_dict = self.grid.get_contingency_group_dict()
         branch_dict = self.grid.get_branches_wo_hvdc_dict()
-
 
         for it, t in enumerate(self.topologic_groups.keys()):
 
