@@ -20,7 +20,7 @@ import sys
 import cmath
 import numpy as np
 import pandas as pd
-from nptyping import NDArray
+import nptyping as npt
 from typing import List, Dict, Tuple, Union
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
@@ -313,7 +313,7 @@ class MultiCircuit:
         """
         return len(self.buses)
 
-    def get_bus_default_types(self) -> NDArray[int]:
+    def get_bus_default_types(self) -> npt.NDArray[npt.Shape['*'], npt.Int]:
         """
         Return an array of bus types
         :return: number
@@ -408,7 +408,7 @@ class MultiCircuit:
         """
         return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
 
-    def get_branch_active_time_array(self) -> np.ndarray:
+    def get_branch_active_time_array(self) -> npt.NDArray[npt.Shape['*, *'], npt.Int]:
         """
         Get branch active matrix
         :return: array with branch active status
@@ -598,7 +598,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_load_names(self) -> NDArray[str]:
+    def get_load_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
         """
         Returns a list of :ref:`Load<load>` names.
         """
@@ -619,7 +619,7 @@ class MultiCircuit:
             lst = lst + bus.external_grids
         return lst
 
-    def get_external_grid_names(self) -> NDArray[str]:
+    def get_external_grid_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
         """
         Returns a list of :ref:`ExternalGrid<external_grid>` names.
         """
@@ -640,7 +640,7 @@ class MultiCircuit:
             lst = lst + bus.static_generators
         return lst
 
-    def get_static_generators_names(self) -> NDArray[str]:
+    def get_static_generators_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` names.
         """
@@ -679,7 +679,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_calculation_load_names(self) -> NDArray[str]:
+    def get_calculation_load_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
         """
         Returns a list of :ref:`Load<load>` names.
         """
@@ -2907,7 +2907,7 @@ class MultiCircuit:
 
         return logger
 
-    def get_voltage_guess(self) -> np.ndarray:
+    def get_voltage_guess(self) -> npt.NDArray[npt.Shape['*'], npt.Complex]:
         """
         Get the buses stored voltage guess
         :return: array of complex voltages per bus
@@ -2920,7 +2920,7 @@ class MultiCircuit:
 
         return v
 
-    def get_Sbus(self) -> np.ndarray:
+    def get_Sbus(self) -> npt.NDArray[npt.Shape['*'], npt.Complex]:
         """
         Get the complex bus power injections
         :return: (ntime, nbus) [MW + j MVAr]
@@ -2932,7 +2932,7 @@ class MultiCircuit:
 
         return val
 
-    def get_Sbus_prof(self) -> np.ndarray:
+    def get_Sbus_prof(self) -> npt.NDArray[npt.Shape['*, *'], npt.Complex]:
         """
         Get the complex bus power injections
         :return: (ntime, nbus) [MW + j MVAr]
@@ -2950,7 +2950,7 @@ class MultiCircuit:
     def get_Pbus_prof(self):
         return self.get_Sbus_prof().real
 
-    def get_branch_rates_prof_wo_hvdc(self) -> np.ndarray:
+    def get_branch_rates_prof_wo_hvdc(self) -> npt.NDArray[npt.Shape['*, *'], npt.Float]:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2962,7 +2962,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_rates_wo_hvdc(self) -> np.ndarray:
+    def get_branch_rates_wo_hvdc(self) -> npt.NDArray[npt.Shape['*'], npt.Float]:
         """
         Get the complex bus power injections
         :return: (nbr) [MVA]
@@ -2974,7 +2974,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_contingency_rates_prof_wo_hvdc(self) -> np.ndarray:
+    def get_branch_contingency_rates_prof_wo_hvdc(self) -> npt.NDArray[npt.Shape['*, *'], npt.Float]:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2986,7 +2986,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_contingency_rates_wo_hvdc(self) -> np.ndarray:
+    def get_branch_contingency_rates_wo_hvdc(self) -> npt.NDArray[npt.Shape['*'], npt.Float]:
         """
         Get the complex bus power injections
         :return: (nbr) [MVA]

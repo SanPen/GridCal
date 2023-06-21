@@ -28,7 +28,7 @@ class ResultsTemplate:
     def __init__(
             self,
             name: str = '',
-            available_results: Dict[ResultTypes: List[ResultTypes]]  = dict(),
+            available_results: Dict[ResultTypes, List[ResultTypes]] = dict(),
             data_variables: List[str] = list()
     ):
         """

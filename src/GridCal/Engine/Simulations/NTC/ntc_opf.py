@@ -20,14 +20,12 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from enum import Enum
-from typing import List, Dict, Tuple, Union
+from typing import List, Tuple
 import numpy as np
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.basic_structures import Logger
-import os
 
 try:
     from ortools.linear_solver import pywraplp
@@ -1767,7 +1765,7 @@ def formulate_objective(solver: pywraplp.Solver,
     solver.Minimize(f)
 
 
-class OpfNTC(Opf):
+class OpfNTC():
 
     def __init__(self, numerical_circuit: NumericalCircuit,
                  area_from_bus_idx,
@@ -1777,7 +1775,7 @@ class OpfNTC(Opf):
                  LODF,
                  LODF_NX,
                  PTDF,
-                 solver_type: MIPSolvers = MIPSolvers.CBC,
+                 solver_type,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
                  monitor_only_sensitive_branches=False,
                  monitor_only_ntc_load_rule_branches=False,
@@ -1898,11 +1896,6 @@ class OpfNTC(Opf):
         self.transfer_method = transfer_method
 
         self.logger = logger
-
-        # this builds the formulation right away
-        Opf.__init__(self, numerical_circuit=numerical_circuit,
-                     solver_type=solver_type,
-                     ortools=True)
 
     def scale_to_reference(self, reference, scalable):
 
