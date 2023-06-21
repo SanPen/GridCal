@@ -277,7 +277,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 X, n_points=self.options.cluster_number)
 
         # get the power injections
-        P = self.grid.get_Pbus().T  # these are in p.u.
+        P = self.grid.get_Pbus_prof().T  # these are in p.u.
 
         # get flow
         if self.options.use_provided_flows:
@@ -292,8 +292,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
 
         # transform the contingency rates and the normal rates
-        rates = self.grid.get_branch_rates_wo_hvdc()
-        contingency_rates = self.grid.get_branch_contingency_rates_wo_hvdc()
+        rates = self.grid.get_branch_rates_prof_wo_hvdc()
+        contingency_rates = self.grid.get_branch_contingency_rates_prof_wo_hvdc()
 
         # these results can be copied directly
         self.results.base_flow = flows

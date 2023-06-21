@@ -360,7 +360,7 @@ class OpfDcTimeSeries:
         self.s_from = np.zeros((nt, nbr))
         self.s_to = np.zeros((nt, nbr))
         self.overloads = np.zeros((nt, nbr))
-        self.rating = grid.get_branch_rates_wo_hvdc()
+        self.rating = grid.get_branch_rates_prof_wo_hvdc()
 
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]

@@ -26,124 +26,14 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
 
-
-class LinearAnalysisTimeSeriesResults(ResultsTemplate):
-
-    def __init__(self, n, m, time_array, bus_names, bus_types, branch_names):
-        """
-        TimeSeriesResults constructor
-        @param n: number of buses
-        @param m: number of branches
-        @param nt: number of time steps
-        """
-        ResultsTemplate.__init__(self,
-                                 name='Linear Analysis time series',
-                                 available_results=[ResultTypes.BusActivePower,
-                                                    ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading
-                                                    ],
-                                 data_variables=['bus_names',
-                                                 'bus_types',
-                                                 'time',
-                                                 'branch_names',
-                                                 'voltage',
-                                                 'S',
-                                                 'Sf',
-                                                 'loading',
-                                                 'losses'])
-
-        self.nt = len(time_array)
-        self.m = m
-        self.n = n
-        self.time = time_array
-
-        self.bus_names = bus_names
-
-        self.bus_types = bus_types
-
-        self.branch_names = branch_names
-
-        self.voltage = np.ones((self.nt, n), dtype=float)
-
-        self.S = np.zeros((self.nt, n), dtype=float)
-
-        self.Sf = np.zeros((self.nt, m), dtype=float)
-
-        self.loading = np.zeros((self.nt, m), dtype=float)
-
-        self.losses = np.zeros((self.nt, m), dtype=float)
-
-    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
-        rates = nc.Rates.T
-        self.loading = self.Sf / (rates + 1e-9)
-
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {'V': self.voltage.tolist(),
-                'P': self.S.real.tolist(),
-                'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sf.real.tolist(),
-                'Sbr_imag': self.Sf.imag.tolist(),
-                'loading': np.abs(self.loading).tolist()}
-        return data
-
-    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
-        """
-        Get ResultsModel instance
-        :param result_type:
-        :return: ResultsModel instance
-        """
-
-        if result_type == ResultTypes.BusActivePower:
-            labels = self.bus_names
-            data = self.S
-            y_label = '(MW)'
-            title = 'Bus active power '
-
-        elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.branch_names
-            data = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power '
-
-        elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            data = self.loading * 100
-            y_label = '(%)'
-            title = 'Branch loading '
-
-        elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            data = self.losses
-            y_label = '(MVA)'
-            title = 'Branch losses'
-
-        elif result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            data = self.voltage
-            y_label = '(p.u.)'
-            title = 'Bus voltage'
-
-        else:
-            raise Exception('Result type not understood:' + str(result_type))
-
-        if self.time is not None:
-            index = self.time
-        else:
-            index = list(range(data.shape[0]))
-
-        # assemble model
-        return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
 class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
@@ -200,11 +90,11 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.progress_text.emit('Computing branch flows...')
 
-        Pbus_0 = self.grid.get_Sbus().T[:, time_indices]
+        Pbus_0 = self.grid.get_Sbus_prof().T[:, time_indices]
         self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)
 
         # compute post process
-        self.results.loading = self.results.Sf / (self.grid.get_branch_rates_wo_hvdc()[time_indices, :] + 1e-9)
+        self.results.loading = self.results.Sf / (self.grid.get_branch_rates_prof_wo_hvdc()[time_indices, :] + 1e-9)
         self.results.S = Pbus_0.T
 
         self.elapsed = time.time() - a

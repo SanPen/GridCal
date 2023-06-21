@@ -63,7 +63,7 @@ class OpfSimpleTimeSeries:
         self.s_from = np.zeros((nt, nbr))
         self.s_to = np.zeros((nt, nbr))
         self.overloads = np.zeros((nt, nbr))
-        self.rating = grid.get_branch_rates_wo_hvdc() / grid.Sbase
+        self.rating = grid.get_branch_rates_prof_wo_hvdc() / grid.Sbase
 
     def solve(self, msg=False):
         """

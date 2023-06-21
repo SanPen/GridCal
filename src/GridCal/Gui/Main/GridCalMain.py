@@ -3058,20 +3058,19 @@ class MainGUI(QMainWindow):
 
                 self.add_simulation(sim.SimulationTypes.LinearAnalysis_run)
 
-                if len(self.circuit.buses) > 0:
-                    self.LOCK()
+                self.LOCK()
 
-                    options = sim.LinearAnalysisOptions(
-                        distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
-                        correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
+                options = sim.LinearAnalysisOptions(
+                    distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
+                    correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    engine = self.get_preferred_engine()
-                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
+                engine = self.get_preferred_engine()
+                drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
 
-                    self.session.run(drv,
-                                     post_func=self.post_linear_analysis,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                self.session.run(drv,
+                                 post_func=self.post_linear_analysis,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
             else:
                 warning_msg('Another PTDF is being executed now...')
         else:

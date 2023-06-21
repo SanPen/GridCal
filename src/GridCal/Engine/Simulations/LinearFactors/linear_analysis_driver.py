@@ -20,138 +20,13 @@ import numpy as np
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_table import ResultsTable
-from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_linear_matrices
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
-
-
-########################################################################################################################
-# Optimal Power flow classes
-########################################################################################################################
-
-
-class LinearAnalysisResults(ResultsTemplate):
-
-    def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
-        """
-        PTDF and LODF results class
-        :param n_br: number of branches
-        :param n_bus: number of buses
-        :param br_names: branch names
-        :param bus_names: bus names
-        :param bus_types: bus types array
-        """
-        ResultsTemplate.__init__(self,
-                                 name='Linear Analysis',
-                                 available_results=[ResultTypes.PTDFBranchesSensitivity,
-                                                    ResultTypes.LODF,
-                                                    ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading],
-                                 data_variables=['branch_names',
-                                                 'bus_names',
-                                                 'bus_types',
-                                                 'PTDF',
-                                                 'LODF',
-                                                 'Sf',
-                                                 'loading'])
-        # number of branches
-        self.n_br = n_br
-
-        self.n_bus = n_bus
-
-        # names of the branches
-        self.branch_names = br_names
-
-        self.bus_names = bus_names
-
-        self.bus_types = bus_types
-
-        self.logger = bs.Logger()
-
-        self.PTDF = np.zeros((n_br, n_bus))
-        self.LODF = np.zeros((n_br, n_br))
-
-        self.Sf = np.zeros(self.n_br)
-
-        self.Sbus = np.zeros(self.n_bus)
-
-        self.voltage = np.ones(self.n_bus, dtype=complex)
-
-        self.loading = np.zeros(self.n_br)
-
-    def apply_new_rates(self, nc: "SnapshotData"):
-        """
-
-        :param nc:
-        :return:
-        """
-        rates = nc.Rates
-        self.loading = self.Sf / (rates + 1e-9)
-
-    def mdl(self, result_type: ResultTypes) -> ResultsTable:
-        """
-        Plot the results.
-
-        Arguments:
-
-            **result_type**: ResultTypes
-
-        Returns: ResultsModel
-        """
-
-        if result_type == ResultTypes.PTDFBranchesSensitivity:
-            labels = self.bus_names
-            y = self.PTDF
-            y_label = '(p.u.)'
-            title = 'Branches sensitivity'
-
-        elif result_type == ResultTypes.LODF:
-            labels = self.branch_names
-            y = self.LODF
-            y_label = '(p.u.)'
-            title = 'Branch failure sensitivity'
-
-        elif result_type == ResultTypes.BranchActivePowerFrom:
-            title = 'Branch Sf'
-            labels = [title]
-            y = self.Sf
-            y_label = '(MW)'
-
-        elif result_type == ResultTypes.BranchLoading:
-            title = 'Branch loading'
-            labels = [title]
-            y = self.loading * 100.0
-            y_label = '(%)'
-
-        else:
-            labels = []
-            y = np.zeros(0)
-            y_label = ''
-            title = ''
-
-        # assemble model
-        mdl = ResultsTable(data=y,
-                           index=self.branch_names,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label,
-                           units=y_label)
-        return mdl
-
-
-class LinearAnalysisOptions:
-
-    def __init__(self, distribute_slack=True, correct_values=True):
-        """
-        Power Transfer Distribution Factors' options
-        :param distribute_slack:
-        """
-        self.distribute_slack = distribute_slack
-        self.correct_values = correct_values
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
 
 class LinearAnalysisDriver(DriverTemplate):
@@ -227,14 +102,25 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real
+
         elif self.engine == bs.EngineType.Bentayga:
 
-            lin_mat = bentayga_linear_matrices(self.grid, distributed_slack=self.options.distribute_slack)
+            lin_mat = bentayga_linear_matrices(circuit=self.grid, distributed_slack=self.options.distribute_slack)
             self.results.PTDF = lin_mat.PTDF
             self.results.LODF = lin_mat.LODF
             self.results.Sf = lin_mat.get_flows(lin_mat.Pbus * self.grid.Sbase)
             self.results.loading = self.results.Sf / (lin_mat.rates + 1e-20)
             self.results.Sbus = lin_mat.Pbus * self.grid.Sbase
+
+        elif self.engine == bs.EngineType.NewtonPA:
+
+            lin_mat = newton_pa_linear_matrices(circuit=self.grid, distributed_slack=self.options.distribute_slack)
+            self.results.PTDF = lin_mat.PTDF
+            self.results.LODF = lin_mat.LODF
+            self.results.Sbus = self.grid.get_Pbus()
+            rates = self.grid.get_branch_rates_wo_hvdc()
+            self.results.Sf = np.dot(lin_mat.PTDF, self.results.Sbus)
+            self.results.loading = self.results.Sf / (rates + 1e-20)
 
         end = time.time()
         self.elapsed = end - start
