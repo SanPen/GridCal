@@ -21,6 +21,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.basic_structures as bs
+import GridCal.Engine.Core.topology as tp
 
 class DummySignal:
 
@@ -104,10 +105,15 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             self.time_indices = self.grid.time_profile
             self.sampled_probabilities = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
 
-        self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
-
     def get_topologic_groups(self) -> Dict[int, List[int]]:
-        return self.grid.get_topologic_group_dict()
+        """
+        Get numerical circuit time groups
+        :return: Dictionary with the time: [array of times] represented by the index, for instance
+                 {0: [0, 1, 2, 3, 4], 5: [5, 6, 7, 8]}
+                 This means that [0, 1, 2, 3, 4] are represented by the topology of 0
+                 and that [5, 6, 7, 8] are represented by the topology of 5
+        """
 
-    def set_topologic_groups(self):
-        self.topologic_groups = self.get_topologic_groups()
+        return tp.find_different_states(
+            states_array=self.grid.get_branch_active_time_array()[self.time_indices]
+        )

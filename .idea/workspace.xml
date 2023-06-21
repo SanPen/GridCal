@@ -27,9 +27,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="merged with refactor_2023&#10; - Gui working">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="changed time_indices">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/driver_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/driver_template.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1140,20 +1141,6 @@
       <workItem from="1687009468597" duration="9000" />
       <workItem from="1687272870647" duration="5887000" />
     </task>
-    <task id="LOCAL-00346" summary="Added losses % to the power flow time series&#10;Minor refactors of the GUI">
-      <created>1662042947521</created>
-      <option name="number" value="00346" />
-      <option name="presentableId" value="LOCAL-00346" />
-      <option name="project" value="LOCAL" />
-      <updated>1662042947521</updated>
-    </task>
-    <task id="LOCAL-00347" summary="csc sparse branch derivatives">
-      <created>1662061867029</created>
-      <option name="number" value="00347" />
-      <option name="presentableId" value="LOCAL-00347" />
-      <option name="project" value="LOCAL" />
-      <updated>1662061867029</updated>
-    </task>
     <task id="LOCAL-00348" summary="removed newton1 engine&#10;Fixed issue with PSSe shunts not generating a proper UUID">
       <created>1675240999588</created>
       <option name="number" value="00348" />
@@ -1483,7 +1470,21 @@
       <option name="project" value="LOCAL" />
       <updated>1687356780286</updated>
     </task>
-    <option name="localTasksCounter" value="395" />
+    <task id="LOCAL-00395" summary="linear_analysis_ts_driver">
+      <created>1687357074465</created>
+      <option name="number" value="00395" />
+      <option name="presentableId" value="LOCAL-00395" />
+      <option name="project" value="LOCAL" />
+      <updated>1687357074465</updated>
+    </task>
+    <task id="LOCAL-00396" summary="changed time_indices">
+      <created>1687357558909</created>
+      <option name="number" value="00396" />
+      <option name="presentableId" value="LOCAL-00396" />
+      <option name="project" value="LOCAL" />
+      <updated>1687357558909</updated>
+    </task>
+    <option name="localTasksCounter" value="397" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1525,8 +1526,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added contingency planner" />
-    <MESSAGE value="Added investment classes" />
     <MESSAGE value="Fixed issues with the merge" />
     <MESSAGE value="early colouring the slippy map" />
     <MESSAGE value="early colouring the slippy map (working)" />
@@ -1550,7 +1549,9 @@
     <MESSAGE value="Fixed critical bug that switched the from and to virtual taps&#10;Added virtual taps for lines&#10;Fixed clipboard migration issues" />
     <MESSAGE value="Fixed raw import of problematic lines" />
     <MESSAGE value="merged with refactor_2023&#10; - Gui working" />
-    <option name="LAST_COMMIT_MESSAGE" value="merged with refactor_2023&#10; - Gui working" />
+    <MESSAGE value="linear_analysis_ts_driver" />
+    <MESSAGE value="changed time_indices" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed time_indices" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

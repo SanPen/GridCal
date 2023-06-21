@@ -17,9 +17,7 @@
 
 
 import time
-import pandas as pd
-import numpy as np
-from typing import Dict, Union
+from typing import Dict, Union, List
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
@@ -31,7 +29,7 @@ from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringR
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
-    name = 'Linear analysis time series'
+    name = 'Time Series Linear Analysis '
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
     def __init__(
@@ -41,11 +39,12 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
-        TimeSeries constructor
+        TimeSeries Analysis constructor
         :param grid: MultiCircuit instance
         :param options: LinearAnalysisOptions instance
         :param clustering_results: ClusteringResults instance
         """
+
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
@@ -57,9 +56,10 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.drivers: Dict[int, LinearAnalysis] = dict()
         self.results: Dict[int, LinearAnalysisTimeSeriesResults] = dict()
 
-    def get_steps(self):
+    def get_steps(self) -> List:
         """
         Get time steps list of strings
+        :return:
         """
 
         return [self.grid.time_profile[l].strftime('%d-%m-%Y %H:%M') for l in self.time_indices]
@@ -67,7 +67,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
     def run(self):
         """
         Run the time series simulation
-        @return:
+        :return:
         """
 
         tm_ = time.time()
@@ -84,26 +84,20 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             bus_types=self.grid.get_bus_default_types(),
             branch_names=self.grid.get_branches_wo_hvdc_names(),
         )
-        # Compute bus injections
-        Sbus = self.grid.get_Sbus() / self.grid.Sbase
 
-        # Initialize branch flows
-        Sf = np.zeros(shape=(len(self.time_indices), self.grid.get_branch_number_wo_hvdc()), dtype=float)
+        # Compute bus injections
+        self.results.S = self.grid.get_Sbus()
 
         # Compute different topologies to consider
-        self.set_topologic_groups()
+        tpg = self.get_topologic_groups()
 
-        contingency_dict = self.grid.get_contingency_group_dict()
-        branch_dict = self.grid.get_branches_wo_hvdc_dict()
-
-
-        for it, t in enumerate(self.topologic_groups.keys()):
+        for it, t in enumerate(tpg.keys()):
 
             self.progress_text.emit('Processing topology group ' + str(self.grid.time_profile[t]))
-            self.progress_signal.emit((it + 1) / len(self.topologic_groups.keys()) * 100)
+            self.progress_signal.emit((it + 1) / len(tpg.keys()) * 100)
 
             # time indices with same topology
-            t_idx = self.topologic_groups[t]
+            time_indices_ = tpg[t]
 
             nc = compile_numerical_circuit_at(
                 circuit=self.grid,
@@ -118,12 +112,12 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             driver_.run()
 
-            # store main linear drivers
-            self.drivers[t] = driver_
+            Sf = driver_.get_flows(Sbus=self.results.S[time_indices_, :])
 
-        # Store results
-        self.results.Sbus = Sbus
-        self.results.Sf = Sf
-        self.results.loading = Sf / (self.grid.get_branch_rates_wo_hvdc()[time_indices, :] + 1e-9)
+            self.results.Sf[time_indices_, :] = Sf
+
+        rates = self.grid.get_branch_rates_wo_hvdc()
+        self.results.loading = self.results.Sf / (rates + 1e-9)
+
         self.elapsed = time.time() - tm_
 
