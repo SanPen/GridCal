@@ -97,12 +97,12 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         DriverTemplate.__init__(self, grid=grid)
 
         if clustering_results:
-            self.indices = clustering_results.time_indices
+            self.time_indices = clustering_results.time_indices
             self.sampled_probabilities = clustering_results.sampled_probabilities
 
         else:
-            self.indices = self.grid.time_profile
-            self.sampled_probabilities = np.ones(shape=len(self.indices)) / len(self.indices)
+            self.time_indices = self.grid.time_profile
+            self.sampled_probabilities = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
 
         self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 

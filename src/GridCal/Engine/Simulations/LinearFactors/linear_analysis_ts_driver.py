@@ -44,8 +44,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         TimeSeries constructor
         :param grid: MultiCircuit instance
         :param options: LinearAnalysisOptions instance
-        :param start_: first time index to consider
-        :param end_: last time index to consider
+        :param clustering_results: ClusteringResults instance
         """
         TimeSeriesDriverTemplate.__init__(
             self,
@@ -55,7 +54,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.options: LinearAnalysisOptions = options
 
-        # self.nc_dict: Union[Dict[int, NumericalCircuit], None] = None
         self.drivers: Dict[int, LinearAnalysis] = dict()
         self.results: Dict[int, LinearAnalysisTimeSeriesResults] = dict()
 
@@ -64,7 +62,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         Get time steps list of strings
         """
 
-        return [l.strftime('%d-%m-%Y %H:%M') for l in self.indices]
+        return [self.grid.time_profile[l].strftime('%d-%m-%Y %H:%M') for l in self.time_indices]
 
     def run(self):
         """
@@ -78,14 +76,10 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.__cancel__ = False
 
-        time_indices = self.get_time_indices()
-
-        self.indices = pd.to_datetime(self.grid.time_profile[time_indices])
-
         self.results = LinearAnalysisTimeSeriesResults(
             n=self.grid.get_bus_number(),
             m=self.grid.get_branch_number_wo_hvdc(),
-            time_array=self.grid.time_profile[time_indices],
+            time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             bus_types=self.grid.get_bus_default_types(),
             branch_names=self.grid.get_branches_wo_hvdc_names(),
@@ -94,7 +88,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         Sbus = self.grid.get_Sbus() / self.grid.Sbase
 
         # Initialize branch flows
-        Sf = np.zeros(shape=(len(time_indices), self.grid.get_branch_number_wo_hvdc()), dtype=float)
+        Sf = np.zeros(shape=(len(self.time_indices), self.grid.get_branch_number_wo_hvdc()), dtype=float)
 
         # Compute different topologies to consider
         self.set_topologic_groups()
