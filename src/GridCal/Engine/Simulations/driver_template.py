@@ -24,6 +24,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
 
+
 class DummySignal:
 
     def __init__(self, tpe=str):
@@ -37,18 +38,15 @@ class DummySignal:
 
 
 class DriverTemplate:
-
     tpe = SimulationTypes.TemplateDriver
     name = 'Template'
 
-    def __init__(
-            self,
-            grid: MultiCircuit,
-            engine: bs.EngineType = bs.EngineType.GridCal
-    ):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 engine: bs.EngineType = bs.EngineType.GridCal):
         """
-
-        :param grid: Multicircuit instance
+        Constructor
+        :param grid: MultiCircuit instance
         :param engine: EngineType
         """
         self.progress_signal = DummySignal()

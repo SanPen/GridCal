@@ -67,7 +67,7 @@ class ClusteringDriver(DriverTemplate):
         Get variations list of strings
         """
         if self.results is not None:
-            return [v for v in self.results.time_indices]
+            return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.results.time_indices]
         else:
             return list()
 

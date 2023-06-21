@@ -481,8 +481,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
 
-        # self.ui.actionClustering_time_series.triggered.connect(self.run_clustering_time_series)
-
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
@@ -493,11 +491,9 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
 
-        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(
-            lambda: self.run_opf_ntc_ts(with_clustering=False))
+        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
 
-        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(
-            lambda: self.run_opf_ntc_ts(with_clustering=True))
+        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(self.run_opf_ntc_ts)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -545,7 +541,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
 
-        # self.ui.actionSync.triggered.connect(self.file_sync_toggle)
+        self.ui.actionClustering.triggered.connect(self.run_clustering)
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
@@ -2786,6 +2782,80 @@ class MainGUI(QMainWindow):
 
             self.ui.profiles_tableView.setModel(mdl)
 
+    def get_clustering_results(self) -> Union[sim.ClusteringResults, None]:
+        """
+        Get the clustering results if available
+        :return: ClusteringResults or None
+        """
+        if self.ui.actionUse_clustering.isChecked():
+            _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
+            if clustering_results is not None:
+                n = len(clustering_results.time_indices)
+
+                if n != self.ui.cluster_number_spinBox.value():
+                    error_msg("The number of clusters in the stored results is different from the specified :(\n"
+                              "Run another clustering analysis.")
+
+                    return None
+                else:
+                    # all ok
+                    return clustering_results
+            else:
+                # no results ...
+                warning_msg("There are no clustering results.")
+                self.ui.actionUse_clustering.setChecked(False)
+                return None
+
+        else:
+            # not marked ...
+            return None
+
+    def run_clustering(self):
+        """
+        Run a clustering analysis
+        """
+        if self.circuit.get_bus_number() > 0 and self.circuit.get_time_number() > 0:
+
+            if not self.session.is_this_running(sim.SimulationTypes.ClusteringAnalysis_run):
+
+                self.add_simulation(sim.SimulationTypes.ClusteringAnalysis_run)
+
+                self.LOCK()
+
+                # get the power flow options from the GUI
+                options = sim.ClusteringAnalysisOptions(n_points=self.ui.cluster_number_spinBox.value())
+
+                drv = sim.ClusteringDriver(grid=self.circuit,
+                                           options=options)
+                self.session.run(drv,
+                                 post_func=self.post_clustering,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another clustering is being executed now...')
+        else:
+            pass
+
+    def post_clustering(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        # update the results in the circuit structures
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+        self.remove_simulation(sim.SimulationTypes.ClusteringAnalysis_run)
+        if results is not None:
+
+            self.update_available_results()
+        else:
+            error_msg('Something went wrong, There are no power short circuit results.')
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
     def get_selected_power_flow_options(self):
         """
         Gather power flow run options
@@ -3133,13 +3203,10 @@ class MainGUI(QMainWindow):
 
                     options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                    # try to get the clustering results
-                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
-
                     drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
                                                              options=options,
                                                              time_indices=self.get_time_indices(),
-                                                             clustering_results=clustering_results)
+                                                             clustering_results=self.get_clustering_results())
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis_ts,
@@ -3516,13 +3583,10 @@ class MainGUI(QMainWindow):
                                                                    use_clustering=use_clustering,
                                                                    cluster_number=cluster_number)
 
-                    # try to get the clustering results
-                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
-
                     drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
                                                                         options=options,
                                                                         time_indices=self.get_time_indices(),
-                                                                        clustering_results=clustering_results)
+                                                                        clustering_results=self.get_clustering_results())
 
                     self.session.run(drv,
                                      post_func=self.post_available_transfer_capacity_ts,
@@ -3785,14 +3849,11 @@ class MainGUI(QMainWindow):
 
                     options = self.get_selected_power_flow_options()
 
-                    # try to get the clustering results
-                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
-
                     drv = sim.PowerFlowTimeSeries(grid=self.circuit,
                                                   options=options,
                                                   time_indices=self.get_time_indices(),
                                                   opf_time_series_results=opf_time_series_results,
-                                                  clustering_results=clustering_results,
+                                                  clustering_results=self.get_clustering_results(),
                                                   engine=self.get_preferred_engine())
 
                     self.session.run(drv,
@@ -4217,15 +4278,12 @@ class MainGUI(QMainWindow):
                                                           unit_commitment=unit_commitment
                                                           )
 
-                    # try to get the clustering results
-                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
-
                     # create the OPF time series instance
                     # if non_sequential:
                     drv = sim.OptimalPowerFlowTimeSeries(grid=self.circuit,
                                                          options=options,
                                                          time_indices=self.get_time_indices(),
-                                                         clustering_results=clustering_results)
+                                                         clustering_results=self.get_clustering_results())
 
                     drv.engine = self.get_preferred_engine()
 
@@ -4574,14 +4632,11 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
                 QtGui.QGuiApplication.processEvents()
 
-                # try to get the clustering results
-                _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
-
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
                                                                      options=options,
                                                                      time_indices=self.get_time_indices(),
-                                                                     clustering_results=clustering_results)
+                                                                     clustering_results=self.get_clustering_results())
 
                 self.LOCK()
                 self.session.run(drv,
@@ -5067,7 +5122,8 @@ class MainGUI(QMainWindow):
                  SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
                  SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
                  SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
-                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg', }
+                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
+                 SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg', }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
         lst.reverse()  # this is to show the latest simulation first

@@ -56,7 +56,7 @@ class ClusteringResults(ResultsTemplate):
         if result_type == ResultTypes.ClusteringReport:
             index = pd.to_datetime(self.time_array[self.time_indices])
             labels = ['Probability']
-            y = self.sampled_probabilities
+            y = np.array(self.sampled_probabilities)
             y_label = ''
             title = 'Clustering report'
 

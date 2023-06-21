@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/clustering_use.svg</file>
     <file>icons/clustering.svg</file>
     <file>icons/zoom_out.svg</file>
     <file>icons/zoom_in.svg</file>

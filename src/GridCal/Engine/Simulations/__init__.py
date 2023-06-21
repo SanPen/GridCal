@@ -34,3 +34,4 @@ from GridCal.Engine.Simulations.NTC import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.Clustering import *
