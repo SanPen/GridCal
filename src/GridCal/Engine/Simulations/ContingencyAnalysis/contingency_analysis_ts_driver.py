@@ -16,19 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import time
-import datetime
 import numpy as np
 import pandas as pd
 from numba import jit, prange
 from typing import Union
+
+import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisOptions
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, ContingencyAnalysisDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-import GridCal.Engine.basic_structures as bs
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 @jit(nopython=True, parallel=False, cache=True)
@@ -120,20 +120,19 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
-            start_: int = 0,
-            end_: Union[int, None] = None
+            clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
-        N - k class constructor
-        @param grid: MultiCircuit Object
-        @param options: N-k options
-        @:param pf_options: power flow options
+        Contingecny analysis constructor
+        :param grid: Multicircuit instance
+        :param options: ContingencyAnalysisOptions instance
+        :param clustering_results: ClusteringResults instance
         """
+
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            start_=start_,
-            end_=end_
+            clustering_results=clustering_results,
         )
 
         # Options to use
