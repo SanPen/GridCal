@@ -161,6 +161,9 @@ class ResultTypes(Enum):
     TsCriticalBranches = 'Time series critical branches report', DeviceType.BranchDevice
     TsContingencyBranches = 'Time series contingency branches report', DeviceType.BranchDevice
 
+    # Clustering
+    ClusteringReport = 'Clustering time series report', DeviceType.NoDevice
+
     # inputs analysis
     ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
     CountryAnalysis = 'Country analysis', DeviceType.NoDevice

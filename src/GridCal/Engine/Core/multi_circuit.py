@@ -20,6 +20,7 @@ import sys
 import cmath
 import numpy as np
 import pandas as pd
+from nptyping import NDArray
 from typing import List, Dict, Tuple, Union
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
@@ -32,7 +33,7 @@ import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
 
 
-def get_system_user():
+def get_system_user() -> str:
     """
     Get the system mac + user name
     :return: string with the system mac address and the current user
@@ -74,14 +75,20 @@ class MultiCircuit:
     generators, batteries, etc. This simplifies enormously the management of element
     when adding, associating and deleting.
 
-    .. code:: ipython3
+    .. code:: python3
 
         from GridCal.Engine.Core.multi_circuit import MultiCircuit
         grid = MultiCircuit(name="My grid")
 
     """
 
-    def __init__(self, name='', Sbase=100, fbase=50.0, idtag=None):
+    def __init__(
+            self,
+            name: str = '',
+            Sbase: float = 100,
+            fbase: float = 50.0,
+            idtag: Union[str, None] = None,
+    ):
         """
         class constructor
         :param name: name of the circuit
@@ -90,26 +97,26 @@ class MultiCircuit:
         :param idtag: unique identifier
         """
 
-        self.name = name
+        self.name: str = name
 
         if idtag is None:
-            self.idtag = uuid4().hex
+            self.idtag: str = uuid4().hex
         else:
-            self.idtag = idtag
+            self.idtag: str = idtag
 
-        self.comments = ''
+        self.comments: str = ''
 
         # this is a number that serves
-        self.model_version = 2
+        self.model_version: int = 2
 
         # user mane
-        self.user_name = get_system_user()
+        self.user_name: str = get_system_user()
 
         # Base power (MVA)
-        self.Sbase = Sbase
+        self.Sbase: float = Sbase
 
         # Base frequency in Hz
-        self.fBase = fbase
+        self.fBase: float = fbase
 
         # Should be able to accept Branches, Lines and Transformers alike
         # self.branches = list()
@@ -133,13 +140,13 @@ class MultiCircuit:
         self.windings: List[dev.Winding] = list()
 
         # array of branch indices in the master circuit
-        self.branch_original_idx = list()
+        self.branch_original_idx: List[int] = list()
 
         # Should accept buses
         self.buses: List[dev.Bus] = list()
 
         # array of bus indices in the master circuit
-        self.bus_original_idx = list()
+        self.bus_original_idx: List[int] = list()
 
         # Dictionary relating the bus object to its index. Updated upon compilation
         self.buses_dict: Dict[dev.Bus, int] = dict()
@@ -160,43 +167,45 @@ class MultiCircuit:
         self.transformer_types: List[dev.TransformerType] = list()
 
         # list of substations
-        self.default_substation = dev.Substation('Default substation')
+        self.default_substation: dev.Substation = dev.Substation('Default substation')
         self.substations: List[dev.Substation] = [self.default_substation]
 
         # list of areas
-        self.default_area = dev.Area('Default area')
+        self.default_area: dev.Area = dev.Area('Default area')
         self.areas: List[dev.Area] = [self.default_area]
 
         # list of zones
-        self.default_zone = dev.Zone('Default zone')
+        self.default_zone: dev.Zone = dev.Zone('Default zone')
         self.zones: List[dev.Zone] = [self.default_zone]
 
         # list of countries
-        self.default_country = dev.Country('Default country')
+        self.default_country: dev.Country = dev.Country('Default country')
         self.countries: List[dev.Country] = [self.default_country]
 
         # logger of events
-        self.logger = bs.Logger()
+        self.logger: bs.Logger = bs.Logger()
 
         # Object with the necessary inputs for a power flow study
-        self.numerical_circuit = None
+        # todo: ¿se puede borrar?
+        self.numerical_circuit: Union["NumericalCircuit", None] = None
 
         # Bus-Branch graph
         self.graph = None
 
         # dictionary of bus objects -> bus indices
-        self.bus_dictionary = dict()
+        self.bus_dictionary: Dict[str, dev.Bus] = dict()
 
         # dictionary of branch objects -> branch indices
-        self.branch_dictionary = dict()
+        self.branch_dictionary: Dict[str, dev.Branch] = dict()
 
         # names of the buses
-        self.bus_names = None
+        self.bus_names: Union[List[str], None] = None
 
         # names of the branches
-        self.branch_names = None
+        self.branch_names: Union[List[str], None]  = None
 
         # master time profile
+        # todo typing this
         self.time_profile = None
 
         # contingencies
@@ -215,31 +224,32 @@ class MultiCircuit:
         self.technologies: List[dev.Technology] = list()
 
         # objects with profiles
-        self.objects_with_profiles = [dev.Bus(),
-                                      dev.Load(),
-                                      dev.StaticGenerator(),
-                                      dev.ExternalGrid(),
-                                      dev.Generator(),
-                                      dev.Battery(),
-                                      dev.Shunt(),
-                                      dev.Line(None, None),
-                                      dev.DcLine(None, None),
-                                      dev.Transformer2W(None, None),
-                                      dev.Winding(None, None),
-                                      dev.Transformer3W(),
-                                      dev.HvdcLine(None, None),
-                                      dev.VSC(None, None),
-                                      dev.UPFC(None, None),
-                                      dev.Substation(),
-                                      dev.Zone(),
-                                      dev.Area(),
-                                      dev.Country(),
-                                      dev.Technology(),
-                                      dev.ContingencyGroup(),
-                                      dev.Contingency(),
-                                      dev.InvestmentsGroup(),
-                                      dev.Investment()
-                                      ]
+        self.objects_with_profiles = [
+            dev.Bus(),
+            dev.Load(),
+            dev.StaticGenerator(),
+            dev.ExternalGrid(),
+            dev.Generator(),
+            dev.Battery(),
+            dev.Shunt(),
+            dev.Line(None, None),
+            dev.DcLine(None, None),
+            dev.Transformer2W(None, None),
+            dev.Winding(None, None),
+            dev.Transformer3W(),
+            dev.HvdcLine(None, None),
+            dev.VSC(None, None),
+            dev.UPFC(None, None),
+            dev.Substation(),
+            dev.Zone(),
+            dev.Area(),
+            dev.Country(),
+            dev.Technology(),
+            dev.ContingencyGroup(),
+            dev.Contingency(),
+            dev.InvestmentsGroup(),
+            dev.Investment(),
+        ]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -303,7 +313,7 @@ class MultiCircuit:
         """
         return len(self.buses)
 
-    def get_bus_default_types(self) -> np.ndarray:
+    def get_bus_default_types(self) -> NDArray[int]:
         """
         Return an array of bus types
         :return: number
@@ -315,12 +325,14 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines,
-                self.dc_lines,
-                self.transformers2w,
-                self.windings,
-                self.vsc_devices,
-                self.upfc_devices]
+        return [
+            self.lines,
+            self.dc_lines,
+            self.transformers2w,
+            self.windings,
+            self.vsc_devices,
+            self.upfc_devices
+        ]
 
     def get_branch_names_wo_hvdc(self) -> List[str]:
         """
@@ -333,7 +345,7 @@ class MultiCircuit:
                 names.append(elm.name)
         return names
 
-    def get_branch_lists(self):
+    def get_branch_lists(self) -> List[Union[dev.Branch, dev.HvdcLine]]:
         """
         GEt list of the branch lists
         :return:
@@ -382,7 +394,7 @@ class MultiCircuit:
         else:
             return 0
 
-    def get_contingency_number(self):
+    def get_contingency_number(self) -> int:
         """
         Get number of contingencies
         :return:
@@ -486,10 +498,10 @@ class MultiCircuit:
 
         self.contingencies = list()
 
-    def get_buses(self):
+    def get_buses(self) -> List[dev.Bus]:
         return self.buses
 
-    def get_bus_names(self):
+    def get_bus_names(self) -> List[str]:
         return [e.name for e in self.buses]
 
     def get_branches_wo_hvdc(self) -> List[dev.Branch]:
@@ -499,10 +511,10 @@ class MultiCircuit:
         """
         return self.lines + self.dc_lines + self.transformers2w + self.windings + self.vsc_devices + self.upfc_devices + self.switch_devices
 
-    def get_branches_wo_hvdc_names(self):
+    def get_branches_wo_hvdc_names(self) -> List[str]:
         return [e.name for e in self.get_branches_wo_hvdc()]
 
-    def get_branches(self):
+    def get_branches(self) -> List[dev.Branch]:
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
@@ -577,7 +589,7 @@ class MultiCircuit:
             lst = lst + bus.loads
         return lst
 
-    def get_loads_number(self) -> List[dev.Load]:
+    def get_loads_number(self) -> int:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -586,7 +598,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_load_names(self):
+    def get_load_names(self) -> NDArray[str]:
         """
         Returns a list of :ref:`Load<load>` names.
         """
@@ -607,7 +619,7 @@ class MultiCircuit:
             lst = lst + bus.external_grids
         return lst
 
-    def get_external_grid_names(self):
+    def get_external_grid_names(self) -> NDArray[str]:
         """
         Returns a list of :ref:`ExternalGrid<external_grid>` names.
         """
@@ -628,7 +640,7 @@ class MultiCircuit:
             lst = lst + bus.static_generators
         return lst
 
-    def get_static_generators_names(self):
+    def get_static_generators_names(self) -> NDArray[str]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` names.
         """
@@ -667,7 +679,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_calculation_load_names(self):
+    def get_calculation_load_names(self) -> NDArray[str]:
         """
         Returns a list of :ref:`Load<load>` names.
         """

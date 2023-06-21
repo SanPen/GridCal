@@ -1068,6 +1068,21 @@ class MainGUI(QMainWindow):
                                     'app': self,
                                     'circuit': self.circuit})
 
+    def get_time_indices(self) -> np.ndarray:
+        """
+        Get an array of indices of the time steps selected within the start-end interval
+        :return: np.array[int]
+        """
+
+        start = self.ui.profile_start_slider.value()
+        end = self.ui.profile_end_slider.value()
+
+        if start > end:
+            self.ui.profile_end_slider.setValue(start)
+            end = start
+
+        return np.arange(start, end + 1)
+
     def create_map(self):
         """
         Create the map widget

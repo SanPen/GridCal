@@ -102,7 +102,8 @@ dependencies = ['setuptools>=41.0.1',
                 'pyarrow',
                 'ortools',
                 "darkdetect",
-                "pyqtdarktheme"
+                "pyqtdarktheme",
+                "nptyping",
                 ]
 
 extras_require = {
