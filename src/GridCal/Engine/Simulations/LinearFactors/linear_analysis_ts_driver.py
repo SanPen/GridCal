@@ -15,28 +15,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import json
+
 import time
 import pandas as pd
 import numpy as np
-import scipy.sparse as sp
-from scipy.sparse.linalg import spsolve, factorized
-from typing import Dict, Union, List
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_table import ResultsTable
+from typing import Dict, Union
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions, LinearAnalysisResults
-from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
-
-
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -47,9 +38,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: LinearAnalysisOptions,
-            start_: int = 0,
-            end_: Union[int, None] = None,
-            use_clustering: bool = False,
+            clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
         TimeSeries constructor
@@ -61,9 +50,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            start_=start_,
-            end_=end_,
-            use_clustering=use_clustering,
+            clustering_results=clustering_results,
         )
 
         self.options: LinearAnalysisOptions = options
@@ -92,9 +79,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.__cancel__ = False
 
         time_indices = self.get_time_indices()
-
-        if self.use_clustering:
-            self.apply_cluster_indices()
 
         self.indices = pd.to_datetime(self.grid.time_profile[time_indices])
 
@@ -139,16 +123,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             )
 
             driver_.run()
-
-            if with_flows:
-                Sf[t_idx, :] = driver_.get_flows(Sbus=Sbus[t_idx, :])
-
-            if with_nx:
-                driver_.lodf_nx = driver_.make_lodfnx(
-                    lodf=driver_.LODF,
-                    contingencies_dict=contingency_dict,
-                    branches_dict=branch_dict
-                )
 
             # store main linear drivers
             self.drivers[t] = driver_
