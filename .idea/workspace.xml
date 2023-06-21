@@ -26,11 +26,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Replaced most start_, end_ at classes that deal with time by time indices and the clustering results as optional">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Corrected some linear analysis indexing and array dimensions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -187,7 +188,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalGui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.update_gui_file (1)">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -473,8 +474,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.jfgkjghk" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update_gui_all" />
@@ -1155,14 +1156,7 @@
       <workItem from="1687291640452" duration="5000" />
       <workItem from="1687330038822" duration="817000" />
       <workItem from="1687335084245" duration="22000" />
-      <workItem from="1687340305362" duration="7372000" />
-    </task>
-    <task id="LOCAL-00355" summary="Improvements coupling Newton">
-      <created>1676922446185</created>
-      <option name="number" value="00355" />
-      <option name="presentableId" value="LOCAL-00355" />
-      <option name="project" value="LOCAL" />
-      <updated>1676922446185</updated>
+      <workItem from="1687340305362" duration="9553000" />
     </task>
     <task id="LOCAL-00356" summary="Improvements coupling Newton (unit commitment checkbox)">
       <created>1677520363892</created>
@@ -1500,7 +1494,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687362884504</updated>
     </task>
-    <option name="localTasksCounter" value="404" />
+    <task id="LOCAL-00404" summary="Corrected some linear analysis indexing and array dimensions">
+      <created>1687365072207</created>
+      <option name="number" value="00404" />
+      <option name="presentableId" value="LOCAL-00404" />
+      <option name="project" value="LOCAL" />
+      <updated>1687365072207</updated>
+    </task>
+    <option name="localTasksCounter" value="405" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1542,7 +1543,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="4.7.0" />
     <MESSAGE value="4.7.2" />
     <MESSAGE value="4.7.3&#10;- minor raw parsing bug" />
     <MESSAGE value="fixed export of the results&#10;Fixed short circuit representation" />
@@ -1567,7 +1567,8 @@
     <MESSAGE value="Renamed the multicircuit functions to reflect that they provide profiles&#10;Added newton engine to the linear analysis" />
     <MESSAGE value="changed linear results names to PTDF and LODF" />
     <MESSAGE value="Replaced most start_, end_ at classes that deal with time by time indices and the clustering results as optional" />
-    <option name="LAST_COMMIT_MESSAGE" value="Replaced most start_, end_ at classes that deal with time by time indices and the clustering results as optional" />
+    <MESSAGE value="Corrected some linear analysis indexing and array dimensions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Corrected some linear analysis indexing and array dimensions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2007,7 +2008,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ac_opf_ts.coverage" NAME="ac_opf_ts Coverage Results" MODIFIED="1602519616038" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1648727453125" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_py.coverage" NAME="Nosetests in test_api.py Coverage Results" MODIFIED="1598803532944" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__1_.coverage" NAME="update_gui_file (1) Coverage Results" MODIFIED="1687330843630" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__1_.coverage" NAME="update_gui_file (1) Coverage Results" MODIFIED="1687366452106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$pulp.coverage" NAME="pulp Coverage Results" MODIFIED="1642610724509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_time_series_py.coverage" NAME="Nosetests in test_time_series.py Coverage Results" MODIFIED="1634139775407" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research_py.coverage" NAME="Nosetests in ACPTDF_research.py Coverage Results" MODIFIED="1601970337931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
@@ -2027,7 +2028,7 @@
     <SUITE FILE_PATH="coverage/GridCal$example1.coverage" NAME="example1 Coverage Results" MODIFIED="1634669660909" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$models_dialogue.coverage" NAME="models_dialogue Coverage Results" MODIFIED="1674384262662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research2.coverage" NAME="ACPTDF_research2 Coverage Results" MODIFIED="1601972012772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1687364864928" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1687366284329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$MainWindow.coverage" NAME="MainWindow Coverage Results" MODIFIED="1649780110971" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$short_circuit_driver.coverage" NAME="short_circuit_driver Coverage Results" MODIFIED="1660563199034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies" />

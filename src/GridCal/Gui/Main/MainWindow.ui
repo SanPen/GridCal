@@ -6227,7 +6227,7 @@ p, li { white-space: pre-wrap; }
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/pf_ts_cluster.svg</pixmap>
+                  <pixmap resource="icons.qrc">:/Icons/icons/clustering.svg</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -8920,7 +8920,6 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
-    <addaction name="actionClustering_time_series"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
@@ -8933,7 +8932,6 @@ QProgressBar::chunk{
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
-    <addaction name="actionOptimal_NTC_time_series_clustering"/>
     <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
@@ -8946,7 +8944,6 @@ QProgressBar::chunk{
     <addaction name="actionOTDF_time_series"/>
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
-    <addaction name="actionATC_clustering"/>
    </widget>
    <widget class="QMenu" name="menuModel">
     <property name="title">
@@ -9022,8 +9019,8 @@ QProgressBar::chunk{
    <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
+   <addaction name="actionClustering"/>
    <addaction name="actionPower_flow_Stochastic"/>
-   <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
    <addaction name="actionPTDF_time_series"/>
@@ -9038,7 +9035,6 @@ QProgressBar::chunk{
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
-   <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
@@ -9869,6 +9865,24 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionClustering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/clustering.svg</normaloff>:/Icons/icons/clustering.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clustering</string>
+   </property>
+   <property name="toolTip">
+    <string>Clustering of the time series</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
    </property>
   </action>
  </widget>
