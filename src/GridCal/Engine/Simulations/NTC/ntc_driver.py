@@ -110,10 +110,12 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         # declare the linear analysis
         linear = LinearAnalysis(
-            grid=self.grid,
+            numerical_circuit=numerical_circuit,
             distributed_slack=False,
             correct_values=False,
             with_nx=self.options.consider_nx_contingencies,
+            branch_dict=self.grid.get_branches_wo_hvdc_dict(),
+            contingency_group_dict=self.grid.get_contingency_group_dict(),
         )
 
         linear.run()

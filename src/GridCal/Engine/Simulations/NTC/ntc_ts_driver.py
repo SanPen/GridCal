@@ -133,7 +133,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             print('Computing linear analysis...')
 
         linear = LinearAnalysis(
-            grid=self.grid,
+            nc=nc,
             distributed_slack=False,
             correct_values=False,
             with_nx=self.options.consider_nx_contingencies,

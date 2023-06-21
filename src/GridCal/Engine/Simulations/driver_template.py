@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List
 
 import numpy as np
+from typing import List, Dict, Union
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.basic_structures as bs
-
 
 class DummySignal:
 
@@ -40,11 +39,15 @@ class DriverTemplate:
     tpe = SimulationTypes.TemplateDriver
     name = 'Template'
 
-    def __init__(self, grid: MultiCircuit, engine: bs.EngineType = bs.EngineType.GridCal):
+    def __init__(
+            self,
+            grid: MultiCircuit,
+            engine: bs.EngineType = bs.EngineType.GridCal
+    ):
         """
 
-        :param grid:
-        :param engine:
+        :param grid: Multicircuit instance
+        :param engine: EngineType
         """
         self.progress_signal = DummySignal()
         self.progress_text = DummySignal(str)
@@ -80,25 +83,31 @@ class DriverTemplate:
 
 class TimeSeriesDriverTemplate(DriverTemplate):
 
-    def __init__(self, grid: MultiCircuit, start_=0, end_=None):
+    def __init__(
+            self,
+            grid: MultiCircuit,
+            clustering_results: Union["ClusteringResults", None] = None,
+    ):
+        """
+        Time Series driver constructor
+        :param grid: Multicircuit instance
+        :param clustering_results: ClusteringResults object (optional)
+        """
 
         DriverTemplate.__init__(self, grid=grid)
 
-        self.start_ = start_
+        if clustering_results:
+            self.indices = clustering_results.time_indices
+            self.sampled_probabilities = clustering_results.sampled_probabilities
 
-        self.indices = self.grid.time_profile
-
-        if end_ is not None:
-            self.end_ = end_
         else:
-            self.end_ = len(self.grid.time_profile)
+            self.indices = self.grid.time_profile
+            self.sampled_probabilities = np.ones(shape=len(self.indices)) / len(self.indices)
 
-    def get_time_indices(self):
-        """
-        Get an array of indices of the time steps selected within the start-end interval
-        :return: np.array[int]
-        """
-        if self.end_ is None:
-            self.end_ = len(self.grid.time_profile)
+        self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 
-        return np.arange(self.start_, self.end_ + 1)
+    def get_topologic_groups(self) -> Dict[int, List[int]]:
+        return self.grid.get_topologic_group_dict()
+
+    def set_topologic_groups(self):
+        self.topologic_groups = self.get_topologic_groups()

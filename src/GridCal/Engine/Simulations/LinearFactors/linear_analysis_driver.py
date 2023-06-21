@@ -17,7 +17,9 @@
 import time
 import multiprocessing
 import numpy as np
+from typing import Union, Dict
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -36,21 +38,22 @@ class LinearAnalysisDriver(DriverTemplate):
     def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
-        Power Transfer Distribution Factors class constructor
-        @param grid: MultiCircuit Object
-        @param options: OPF options
+        Linear analysis driver constructor
+        :param numerical_circuit: NumericalCircuit instance
+        :param options: LinearAnalysisOptions instance
+        :param engine: EngineType enum
         """
         DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
-        self.options = options
+        self.options: LinearAnalysisOptions = options
 
-        self.engine = engine
+        self.engine: bs.EngineType = engine
 
-        # OPF results
-        self.results: LinearAnalysisResults = None
+        # Results
+        self.results: Union[LinearAnalysisResults, None] = None
 
-        self.all_solved = True
+        self.all_solved: bool = True
 
     def run(self):
         """
@@ -64,25 +67,33 @@ class LinearAnalysisDriver(DriverTemplate):
         br_names = self.grid.get_branches_wo_hvdc_names()
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
-            self.results = LinearAnalysisResults(n_br=len(br_names),
-                                                 n_bus=len(bus_names),
-                                                 br_names=br_names,
-                                                 bus_names=bus_names,
-                                                 bus_types=bus_types)
+            self.results = LinearAnalysisResults(
+                n_br=len(br_names),
+                n_bus=len(bus_names),
+                br_names=br_names,
+                bus_names=bus_names,
+                bus_types=bus_types
+            )
+
         except MemoryError as e:
             self.logger.add_error(str(e))
             return
 
         # Run Analysis
-        NEWTON_AVAILBALE = False
         if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
             self.engine = bs.EngineType.GridCal
-            self.logger.add_warning('Failed back to GridCal')
+            self.logger.add_warning('Failed, back to GridCal')
+
+        if self.engine == bs.EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed, back to GridCal')
 
         if self.engine == bs.EngineType.GridCal:
-            analysis = LinearAnalysis(grid=self.grid,
-                                      distributed_slack=self.options.distribute_slack,
-                                      correct_values=self.options.correct_values)
+            nc = compile_numerical_circuit_at(grid=self.grid)
+            analysis = LinearAnalysis(
+                numerical_circuit=nc,
+                distributed_slack=self.options.distribute_slack,
+                correct_values=self.options.correct_values)
 
             analysis.run()
             self.logger += analysis.logger
@@ -95,10 +106,11 @@ class LinearAnalysisDriver(DriverTemplate):
             # compose the HVDC power injections
             bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
-                                                                                        bus_dict,
-                                                                                        theta=np.zeros(nbus))
-
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
+                self.grid,
+                bus_dict,
+                theta=np.zeros(nbus)
+            )
             self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real

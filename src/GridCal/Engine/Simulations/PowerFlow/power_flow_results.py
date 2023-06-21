@@ -18,27 +18,32 @@
 from typing import List
 import numpy as np
 import pandas as pd
+from typing import Union
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-# from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class NumericPowerFlowResults:
 
-    def __init__(self, V,
-                 converged,
-                 norm_f,
-                 Scalc,
-                 ma=None,
-                 theta=None,
-                 Beq=None,
-                 Ybus=None,
-                 Yf=None,
-                 Yt=None,
-                 iterations=0,
-                 elapsed=0.0,
-                 method=None):
+    def __init__(
+            self,
+            V,
+            converged,
+            norm_f,
+            Scalc,
+            ma=None,
+            theta=None,
+            Beq=None,
+            Ybus=None,
+            Yf=None,
+            Yt=None,
+            iterations=0,
+            elapsed=0.0,
+            method=None
+    ):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -71,14 +76,17 @@ class NumericPowerFlowResults:
 
 class PowerFlowResults(ResultsTemplate):
 
-    def __init__(self, n: int,
-                 m: int,
-                 n_hvdc: int,
-                 bus_names: np.ndarray,
-                 branch_names: np.ndarray,
-                 hvdc_names: np.ndarray,
-                 bus_types: np.ndarray,
-                 area_names=None):
+    def __init__(
+            self,
+            n: int,
+            m: int,
+            n_hvdc: int,
+            bus_names: np.ndarray,
+            branch_names: np.ndarray,
+            hvdc_names: np.ndarray,
+            bus_types: np.ndarray,
+            area_names: Union[np.ndarray, None] = None
+    ):
         """
         A **PowerFlowResults** object is create as an attribute of the
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
@@ -92,65 +100,75 @@ class PowerFlowResults(ResultsTemplate):
         :param bus_types: array of bus types
         """
 
-        ResultsTemplate.__init__(self,
-                                 name='Power flow',
-                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
-                                                                             ResultTypes.BusVoltageAngle,
-                                                                             ResultTypes.BusActivePower,
-                                                                             ResultTypes.BusReactivePower],
+        ResultsTemplate.__init__(
+            self,
+            name='Power flow',
+            available_results={
+                ResultTypes.BusResults: [
+                    ResultTypes.BusVoltageModule,
+                    ResultTypes.BusVoltageAngle,
+                    ResultTypes.BusActivePower,
+                    ResultTypes.BusReactivePower
+                ],
+                ResultTypes.BranchResults: [
+                    ResultTypes.BranchActivePowerFrom,
+                    ResultTypes.BranchReactivePowerFrom,
+                    ResultTypes.BranchActivePowerTo,
+                    ResultTypes.BranchReactivePowerTo,
 
-                                                    ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
-                                                                                ResultTypes.BranchReactivePowerFrom,
-                                                                                ResultTypes.BranchActivePowerTo,
-                                                                                ResultTypes.BranchReactivePowerTo,
+                    ResultTypes.BranchActiveCurrentFrom,
+                    ResultTypes.BranchReactiveCurrentFrom,
+                    ResultTypes.BranchActiveCurrentTo,
+                    ResultTypes.BranchReactiveCurrentTo,
 
-                                                                                ResultTypes.BranchActiveCurrentFrom,
-                                                                                ResultTypes.BranchReactiveCurrentFrom,
-                                                                                ResultTypes.BranchActiveCurrentTo,
-                                                                                ResultTypes.BranchReactiveCurrentTo,
+                    ResultTypes.BranchTapModule,
+                    ResultTypes.BranchTapAngle,
+                    ResultTypes.BranchBeq,
 
-                                                                                ResultTypes.BranchTapModule,
-                                                                                ResultTypes.BranchTapAngle,
-                                                                                ResultTypes.BranchBeq,
-
-                                                                                ResultTypes.BranchLoading,
-                                                                                ResultTypes.BranchActiveLosses,
-                                                                                ResultTypes.BranchReactiveLosses,
-                                                                                ResultTypes.BranchActiveLossesPercentage,
-                                                                                ResultTypes.BranchVoltage,
-                                                                                ResultTypes.BranchAngles],
-
-                                                    ResultTypes.HvdcResults: [ResultTypes.HvdcLosses,
-                                                                              ResultTypes.HvdcPowerFrom,
-                                                                              ResultTypes.HvdcPowerTo],
-
-                                                    ResultTypes.AreaResults: [ResultTypes.InterAreaExchange,
-                                                                              ResultTypes.ActivePowerFlowPerArea,
-                                                                              ResultTypes.LossesPerArea,
-                                                                              ResultTypes.LossesPercentPerArea,
-                                                                              ResultTypes.LossesPerGenPerArea]},
-                                 data_variables=['bus_types',
-                                                 'bus_names',
-                                                 'branch_names',
-                                                 'transformer_names',
-                                                 'hvdc_names',
-                                                 'Sbus',
-                                                 'voltage',
-                                                 'Sf',
-                                                 'St',
-                                                 'If',
-                                                 'It',
-                                                 'tap_module',
-                                                 'theta',
-                                                 'Beq',
-                                                 'Vbranch',
-                                                 'loading',
-                                                 'losses',
-                                                 'hvdc_losses',
-                                                 'hvdc_Pf',
-                                                 'hvdc_Pt',
-                                                 'hvdc_loading']
-                                 )
+                    ResultTypes.BranchLoading,
+                    ResultTypes.BranchActiveLosses,
+                    ResultTypes.BranchReactiveLosses,
+                    ResultTypes.BranchActiveLossesPercentage,
+                    ResultTypes.BranchVoltage,
+                    ResultTypes.BranchAngles
+                ],
+                ResultTypes.HvdcResults: [
+                    ResultTypes.HvdcLosses,
+                    ResultTypes.HvdcPowerFrom,
+                    ResultTypes.HvdcPowerTo
+                ],
+                ResultTypes.AreaResults: [
+                    ResultTypes.InterAreaExchange,
+                    ResultTypes.ActivePowerFlowPerArea,
+                    ResultTypes.LossesPerArea,
+                    ResultTypes.LossesPercentPerArea,
+                    ResultTypes.LossesPerGenPerArea
+                ]
+            },
+            data_variables=[
+                'bus_types',
+                'bus_names',
+                'branch_names',
+                'transformer_names',
+                'hvdc_names',
+                'Sbus',
+                'voltage',
+                'Sf',
+                'St',
+                'If',
+                'It',
+                'tap_module',
+                'theta',
+                'Beq',
+                'Vbranch',
+                'loading',
+                'losses',
+                'hvdc_losses',
+                'hvdc_Pf',
+                'hvdc_Pt',
+                'hvdc_loading'
+            ]
+        )
 
         self.n = n
         self.m = m
@@ -202,7 +220,7 @@ class PowerFlowResults(ResultsTemplate):
 
         self.convergence_reports = list()
 
-    def apply_new_rates(self, nc: "SnapshotData"):
+    def apply_new_rates(self, nc: NumericalCircuit):
         """
 
         :param nc:
@@ -211,7 +229,7 @@ class PowerFlowResults(ResultsTemplate):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
-    def fill_circuit_info(self, grid: "MultiCircuit"):
+    def fill_circuit_info(self, grid: MultiCircuit):
         """
 
         :param grid:
@@ -292,7 +310,12 @@ class PowerFlowResults(ResultsTemplate):
 
         return val
 
-    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx):
+    def apply_from_island(
+            self,
+            results: "PowerFlowResults",
+            b_idx: np.ndarray,
+            br_idx: np.ndarray,
+    ):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -346,9 +369,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return df
 
-
-
-    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
 
         :param result_type:

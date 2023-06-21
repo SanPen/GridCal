@@ -16,10 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
 import numpy as np
+from typing import Union
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisOptions
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, \
     compute_atc_list, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -27,7 +28,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling
+from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -44,15 +45,19 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         :param contingency_rates:
         :param nt:
         """
-        ResultsTemplate.__init__(self,
-                                 name='ATC Results',
-                                 available_results=[
-                                     ResultTypes.AvailableTransferCapacityReport
-                                 ],
-                                 data_variables=['reports',
-                                                 'branch_names',
-                                                 'bus_names',
-                                                 'time_array'])
+        ResultsTemplate.__init__(
+            self,
+            name='ATC Results',
+            available_results=[
+                ResultTypes.AvailableTransferCapacityReport
+            ],
+            data_variables=[
+                'reports',
+                'branch_names',
+                'bus_names',
+                'time_array'
+            ]
+        )
 
         self.time_array = time_array
         self.branch_names = np.array(br_names, dtype=object)
@@ -73,20 +78,23 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         :return:
         """
-        self.report_headers = ['Time',
-                               'Branch',
-                               'Base flow',
-                               'Rate',
-                               'Alpha',
-                               'ATC normal',
-                               'Limiting contingency branch',
-                               'Limiting contingency flow',
-                               'Contingency rate',
-                               'Beta',
-                               'Contingency ATC',
-                               'ATC',
-                               'Base exchange flow',
-                               'NTC']
+        self.report_headers = [
+            'Time',
+            'Branch',
+            'Base flow',
+            'Rate',
+            'Alpha',
+            'ATC normal',
+            'Limiting contingency branch',
+            'Limiting contingency flow',
+            'Contingency rate',
+            'Beta',
+            'Contingency ATC',
+            'ATC',
+            'Base exchange flow',
+            'NTC'
+        ]
+
         self.report = np.empty((len(self.raw_report), len(self.report_headers)), dtype=object)
 
         rep = np.array(self.raw_report)
@@ -176,11 +184,14 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsTable(data=data,
-                           index=index,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label)
+        mdl = ResultsTable(
+            data=data,
+            index=index,
+            columns=labels,
+            title=title,
+            ylabel=y_label
+        )
+
         return mdl
 
 
@@ -198,11 +209,14 @@ class AvailableTransferCapacityClusteringResults(AvailableTransferCapacityTimeSe
         :param sampled_time_idx:
         :param sampled_probabilities:
         """
-        AvailableTransferCapacityTimeSeriesResults.__init__(self, br_names=br_names,
-                                                            bus_names=bus_names,
-                                                            rates=rates,
-                                                            contingency_rates=contingency_rates,
-                                                            time_array=time_array)
+        AvailableTransferCapacityTimeSeriesResults.__init__(
+            self,
+            br_names=br_names,
+            bus_names=bus_names,
+            rates=rates,
+            contingency_rates=contingency_rates,
+            time_array=time_array
+        )
 
         # self.available_results.append(ResultTypes.P)
 
@@ -214,27 +228,39 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions, start_=0, end_=None):
+    def __init__(
+            self, grid: MultiCircuit,
+            options: AvailableTransferCapacityOptions,
+            start_: Union[int, None] = 0,
+            end_: Union[int, None] = None
+    ):
+
         """
         Power Transfer Distribution Factors class constructor
-        @param grid: MultiCircuit Object
-        @param options: OPF options
-        @:param pf_results: PowerFlowResults, this is to get the Sf
+        :param grid: MultiCircuit Object
+        :param options: OPF options
+        :param start_: first time index to consider
+        :param end_: last time index to consider
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          start_=start_,
-                                          end_=end_)
+
+        TimeSeriesDriverTemplate.__init__(
+            self,
+            grid=grid,
+            start_=start_,
+            end_=end_
+        )
 
         # Options to use
         self.options = options
 
         # OPF results
-        self.results = AvailableTransferCapacityTimeSeriesResults(br_names=[],
-                                                                  bus_names=[],
-                                                                  rates=[],
-                                                                  contingency_rates=[],
-                                                                  time_array=[])
+        self.results = AvailableTransferCapacityTimeSeriesResults(
+            br_names=[],
+            bus_names=[],
+            rates=[],
+            contingency_rates=[],
+            time_array=[]
+        )
 
     def run(self):
         """
@@ -243,29 +269,40 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         start = time.time()
 
         self.progress_signal.emit(0)
-        nc = compile_numerical_circuit_at(self.grid, t_idx=0)  # TODO: Fix this
-        nt = self.grid.get_time_number()
+
         time_indices = self.get_time_indices()
 
         # declare the linear analysis
         self.progress_text.emit('Analyzing...')
-        linear_analysis = la.LinearAnalysis(grid=self.grid,
-                                            distributed_slack=self.options.distributed_slack,
-                                            correct_values=self.options.correct_values)
-        linear_analysis.run()
+
+        la_options = LinearAnalysisOptions(
+            distribute_slack=self.options.distributed_slack,
+            correct_values=self.options.correct_values,
+        )
+
+        la_driver = LinearAnalysisTimeSeriesDriver(
+            grid=self.grid,
+            options=la_options,
+            start_=self.start_,
+            end_=self.end_,
+        )
+
+        la_driver.run()
 
         # get the branch indices to analyze
+        nc = compile_numerical_circuit_at(self.grid)
         br_idx = nc.branch_data.get_monitor_enabled_indices()
         con_br_idx = nc.branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results = AvailableTransferCapacityTimeSeriesResults(
-            br_names=linear_analysis.numerical_circuit.branch_names,
-            bus_names=linear_analysis.numerical_circuit.bus_names,
+            br_names=nc.branch_names,
+            bus_names=nc.bus_names,
             rates=nc.Rates,
             contingency_rates=nc.ContingencyRates,
             time_array=self.grid.time_profile[time_indices]
         )
+
 
         if self.options.use_clustering:
             self.progress_text.emit('Clustering...')
@@ -273,8 +310,10 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             X = X[:, time_indices].real.T
 
             # cluster and re-assign the time indices
-            time_indices, sampled_probabilities = kmeans_approximate_sampling(
-                X, n_points=self.options.cluster_number)
+            time_indices, sampled_probabilities = kmeans_sampling(
+                X=X,
+                n_points=self.options.cluster_number
+            )
 
         # get the power injections
         P = self.grid.get_Pbus_prof().T  # these are in p.u.
@@ -289,7 +328,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 raise Exception(msg)
         else:
             # compute the base Sf
-            flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
+            flows = linear_analysis.get_flows(P)  # will be converted to MW internally
 
         # transform the contingency rates and the normal rates
         rates = self.grid.get_branch_rates_prof_wo_hvdc()

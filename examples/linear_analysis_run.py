@@ -7,7 +7,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1
 main_circuit = FileOpen(fname).open()
 
 options_ = LinearAnalysisOptions()
-ptdf_driver = LinearAnalysisTimeSeries(grid=main_circuit, options=options_)
+ptdf_driver = LinearAnalysisTimeSeriesDriver(grid=main_circuit, options=options_)
 ptdf_driver.run()
 
 pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)

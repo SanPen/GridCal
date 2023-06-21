@@ -15,16 +15,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-import json
-import pandas as pd
 import numpy as np
 import time
-import multiprocessing
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
 
 
-def kmeans_sampling(X, n_points=10):
+def kmeans_sampling(X:np.ndarray, n_points: int = 10):
+    """
+    K-Means clustering, fit to the closest points
+    :param X: matrix to evaluate (time, params)
+    :param n_points: number of clusters
+    :return: indices of the closest to the cluster centers, deviation of the closest representatives
+    """
     os.environ['OPENBLAS_NUM_THREADS'] = '12'
 
     tm0 = time.time()
@@ -54,7 +57,7 @@ def kmeans_sampling(X, n_points=10):
     return centroid_idx, probabilities
 
 
-def kmeans_approximate_sampling(X, n_points=10):
+def kmeans_approximate_sampling(X: np.ndarray, n_points: int = 10):
     """
     K-Means clustering, corrected to the closest points
     :param X: injections matrix (time, bus)
@@ -97,7 +100,7 @@ def kmeans_approximate_sampling(X, n_points=10):
     return closest_idx, closest_prob
 
 
-def spectral_approximate_sampling(X, n_points=10):
+def spectral_approximate_sampling(X:np.ndarray, n_points: int =10):
     """
     K-Means clustering, corrected to the closest points
     :param X: injections matrix (time, bus)

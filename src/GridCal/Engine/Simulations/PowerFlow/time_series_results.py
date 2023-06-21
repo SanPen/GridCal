@@ -15,31 +15,34 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import time
 import json
 import pandas as pd
 import numpy as np
-import time
-from typing import List
+from typing import Union
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-import GridCal.Engine.basic_structures as bs
+
 
 
 class PowerFlowTimeSeriesResults(PowerFlowResults):
 
-    def __init__(self,
-                 n: int,
-                 m: int,
-                 n_hvdc: int,
-                 bus_names: List[str],
-                 branch_names: List[str],
-                 hvdc_names: List[str],
-                 time_array: np.ndarray,
-                 bus_types: np.ndarray,
-                 area_names=None):
+    def __init__(
+            self,
+            n: int,
+            m: int,
+            n_hvdc: int,
+            bus_names: np.ndarray,
+            branch_names: np.ndarray,
+            hvdc_names: np.ndarray,
+            time_array: np.ndarray,
+            bus_types: np.ndarray,
+            area_names: Union[np.ndarray, None] = None
+    ):
         """
         TimeSeriesResults constructor
         :param n: number of buses
@@ -51,45 +54,53 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         :param time_array:
         :param bus_types:
         """
-        PowerFlowResults.__init__(self,
-                                  n=n,
-                                  m=m,
-                                  n_hvdc=n_hvdc,
-                                  bus_names=bus_names,
-                                  branch_names=branch_names,
-                                  hvdc_names=hvdc_names,
-                                  bus_types=bus_types,
-                                  area_names=area_names)
+        PowerFlowResults.__init__(
+            self,
+            n=n,
+            m=m,
+            n_hvdc=n_hvdc,
+            bus_names=bus_names,
+            branch_names=branch_names,
+            hvdc_names=hvdc_names,
+            bus_types=bus_types,
+            area_names=area_names
+        )
 
         self.data_variables.append('time')  # this is missing from the base class
 
         # results available (different from the base class)
-        self.available_results = {ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
-                                                           ResultTypes.BusVoltageAngle,
-                                                           ResultTypes.BusActivePower,
-                                                           ResultTypes.BusReactivePower],
-
-                                  ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
-                                                              ResultTypes.BranchReactivePowerFrom,
-                                                              ResultTypes.BranchLoading,
-                                                              ResultTypes.BranchActiveLosses,
-                                                              ResultTypes.BranchReactiveLosses,
-                                                              ResultTypes.BranchActiveLossesPercentage,
-                                                              ResultTypes.BranchVoltage,
-                                                              ResultTypes.BranchAngles],
-
-
-                                  ResultTypes.HvdcResults: [ResultTypes.HvdcLosses,
-                                                            ResultTypes.HvdcPowerFrom,
-                                                            ResultTypes.HvdcPowerTo],
-
-                                  ResultTypes.AreaResults: [ResultTypes.InterAreaExchange,
-                                                            ResultTypes.ActivePowerFlowPerArea,
-                                                            ResultTypes.LossesPerArea,
-                                                            ResultTypes.LossesPercentPerArea],
-
-                                  ResultTypes.InfoResults: [ResultTypes.SimulationError]
-                                  }
+        self.available_results = {
+            ResultTypes.BusResults: [
+                ResultTypes.BusVoltageModule,
+                ResultTypes.BusVoltageAngle,
+                ResultTypes.BusActivePower,
+                ResultTypes.BusReactivePower
+            ],
+            ResultTypes.BranchResults: [
+                ResultTypes.BranchActivePowerFrom,
+                ResultTypes.BranchReactivePowerFrom,
+                ResultTypes.BranchLoading,
+                ResultTypes.BranchActiveLosses,
+                ResultTypes.BranchReactiveLosses,
+                ResultTypes.BranchActiveLossesPercentage,
+                ResultTypes.BranchVoltage,
+                ResultTypes.BranchAngles
+            ],
+            ResultTypes.HvdcResults: [
+                ResultTypes.HvdcLosses,
+                ResultTypes.HvdcPowerFrom,
+                ResultTypes.HvdcPowerTo
+            ],
+            ResultTypes.AreaResults: [
+                ResultTypes.InterAreaExchange,
+                ResultTypes.ActivePowerFlowPerArea,
+                ResultTypes.LossesPerArea,
+                ResultTypes.LossesPercentPerArea
+            ],
+            ResultTypes.InfoResults: [
+                ResultTypes.SimulationError
+            ]
+        }
 
         self.name = 'Time series'
         self.nt = len(time_array)
@@ -126,7 +137,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-    def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
+    def apply_new_time_series_rates(self, nc: NumericalCircuit):
         """
         Recompute the loading with new rates
         :param nc: NumericalCircuit instance
@@ -175,7 +186,14 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         return df
 
-    def apply_from_island(self, results, b_idx, br_idx, t_index, grid_idx):
+    def apply_from_island(
+            self,
+            results: "PowerFlowResults",
+            b_idx: np.ndarray,
+            br_idx: np.ndarray,
+            t_index: np.ndarray,
+            grid_idx: np.ndarray
+    ):
         """
         Apply results from another island circuit to the circuit results represented here
         :param results: PowerFlowResults

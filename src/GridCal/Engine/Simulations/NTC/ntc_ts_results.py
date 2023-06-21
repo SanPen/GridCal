@@ -18,7 +18,7 @@
 import time
 import numpy as np
 import pandas as pd
-from typing import Dict
+from typing import Dict, Union
 
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -27,20 +27,22 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self,
-                 bus_names,
-                 branch_names,
-                 generator_names,
-                 load_names,
-                 rates,
-                 contingency_rates,
-                 time_array,
-                 time_indices,
-                 sampled_probabilities=None,
-                 loading_threshold_to_report=0.98,
-                 reversed_sort_loading=True,
-                 trm=0,
-                 ntc_load_rule=100):
+    def __init__(
+            self,
+            bus_names: np.ndarray,
+            branch_names: np.ndarray,
+            generator_names: np.ndarray,
+            load_names: np.ndarray,
+            rates: np.ndarray,
+            contingency_rates: np.ndarray,
+            time_array: np.ndarray,
+            time_indices: np.ndarray,
+            sampled_probabilities: Union[np.ndarray, None] = None,
+            loading_threshold_to_report: float = 0.98,
+            reversed_sort_loading: bool = True,
+            trm: float = 0,
+            ntc_load_rule: float = 100,
+    ):
 
         """
 
@@ -118,7 +120,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.loading_threshold_to_report = loading_threshold_to_report
         self.reversed_sort_loading = reversed_sort_loading
 
-        self.results_dict = dict()
+        self.results_dict: Dict[int, OptimalNetTransferCapacityResults] = dict()
         self.reports: Dict[str, ResultsTable] = dict()
 
     def get_alpha_report(self):

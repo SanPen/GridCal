@@ -15,6 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisTimeSeriesResults
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions, LinearAnalysisDriver, LinearAnalysisResults
+
+class ClusteringAnalysisOptions:
+
+    def __init__(self, n_points):
+        """
+        Power Transfer Distribution Factors' options
+        :param distribute_slack:
+        """
+        self.n_points = n_points

@@ -17,6 +17,7 @@
 
 import json
 import numpy as np
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -35,37 +36,36 @@ class ContingencyAnalysisResults(ResultsTemplate):
         :param bus_types: bus types array
         :param con_names: contingency names
         """
-        ResultsTemplate.__init__(self,
-                                 name='Contingency Analysis Results',
-                                 available_results=[ResultTypes.BusActivePower,
-                                                    ResultTypes.BranchActivePowerFrom,
-                                                    ResultTypes.BranchLoading,
-                                                    ],
-                                 data_variables=['bus_types',
-                                                 'branch_names',
-                                                 'bus_names',
-                                                 'voltage',
-                                                 'S',
-                                                 'Sf',
-                                                 'loading'])
+        ResultsTemplate.__init__(
+            self,
+            name='Contingency Analysis Results',
+            available_results=[
+                ResultTypes.BusActivePower,
+                ResultTypes.BranchActivePowerFrom,
+                ResultTypes.BranchLoading,
+            ],
+            data_variables=[
+                'bus_types',
+                'branch_names',
+                'bus_names',
+                'voltage',
+                'S',
+                'Sf',
+                'loading'
+            ]
+        )
 
         self.branch_names = branch_names
-
         self.bus_names = bus_names
-
         self.bus_types = bus_types
-
         self.con_names = con_names
 
         self.voltage = np.ones((ncon, nbus), dtype=complex)
-
         self.S = np.zeros((ncon, nbus), dtype=complex)
-
         self.Sf = np.zeros((ncon, nbr), dtype=complex)
-
         self.loading = np.zeros((ncon, nbr), dtype=complex)
 
-    def apply_new_rates(self, nc: "SnapshotData"):
+    def apply_new_rates(self, nc: NumericalCircuit):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
@@ -77,13 +77,15 @@ class ContingencyAnalysisResults(ResultsTemplate):
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'Vm': np.abs(self.voltage).tolist(),
-                'Va': np.angle(self.voltage).tolist(),
-                'P': self.S.real.tolist(),
-                'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sf.real.tolist(),
-                'Sbr_imag': self.Sf.imag.tolist(),
-                'loading': np.abs(self.loading).tolist()}
+        data = {
+            'Vm': np.abs(self.voltage).tolist(),
+            'Va': np.angle(self.voltage).tolist(),
+            'P': self.S.real.tolist(),
+            'Q': self.S.imag.tolist(),
+            'Sbr_real': self.Sf.real.tolist(),
+            'Sbr_imag': self.Sf.imag.tolist(),
+            'loading': np.abs(self.loading).tolist()
+        }
         return data
 
     def mdl(self, result_type: ResultTypes):
@@ -134,10 +136,13 @@ class ContingencyAnalysisResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsTable(data=data,
-                           index=index,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label)
+        mdl = ResultsTable(
+            data=data,
+            index=index,
+            columns=labels,
+            title=title,
+            ylabel=y_label
+        )
+
         return mdl
 

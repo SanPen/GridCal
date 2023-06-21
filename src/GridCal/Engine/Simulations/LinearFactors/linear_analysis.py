@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
+
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
+from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
 
+import GridCal.Engine.Devices as dev
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
@@ -27,7 +29,16 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 
 
-def compute_acptdf(Ybus, Yf, F, T, V, pq, pv, distribute_slack: bool = False):
+def compute_acptdf(
+        Ybus: np.ndarray,
+        Yf: np.ndarray,
+        F: np.ndarray,
+        T: np.ndarray,
+        V: np.ndarray,
+        pq: np.ndarray,
+        pv: np.ndarray,
+        distribute_slack: bool = False
+):
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
@@ -73,7 +84,12 @@ def compute_acptdf(Ybus, Yf, F, T, V, pq, pv, distribute_slack: bool = False):
     return PTDF
 
 
-def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
+def make_ptdf(
+        Bbus: np.ndarray,
+        Bf: np.ndarray,
+        pqpv: np.ndarray,
+        distribute_slack: bool = True
+) -> np.ndarray:
     """
     Build the PTDF matrix
     :param Bbus: DC-linear susceptance matrix
@@ -113,7 +129,13 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     return H
 
 
-def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
+def make_lodf(
+        Cf: np.ndarray,
+        Ct: np.ndarray,
+        PTDF: np.ndarray,
+        correct_values: bool = False,
+        numerical_zero: float = 1e-10,
+) -> np.ndarray:
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
@@ -143,31 +165,21 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
     for i in range(nl):
         LODF[i, i] = - 1.0
 
-    if correct_values:  # TODO check more efficient way
-
-        # correct stupid values
-        i1, j1 = np.where(LODF > 1.2)
-        for i, j in zip(i1, j1):
-            LODF[i, j] = 0
-
-        i2, j2 = np.where(LODF < -1.2)
-        for i, j in zip(i2, j2):
-            LODF[i, j] = 0
-
-        # ensure +-1 values
-        i1, j1 = np.where(LODF > 1)
-        for i, j in zip(i1, j1):
-            LODF[i, j] = 1
-
-        i2, j2 = np.where(LODF < -1)
-        for i, j in zip(i2, j2):
-            LODF[i, j] = -1
+    if correct_values:
+        LODF[LODF > 1.2] = 0
+        LODF[LODF < -1.2] = 0
+        # LODF[LODF > 1.] = 1.
+        # LODF[LODF < -1.] = 1.
 
     return LODF
 
 
 @nb.njit(cache=True)
-def make_otdf(ptdf, lodf, j):
+def make_otdf(
+        ptdf: np.ndarray,
+        lodf: np.ndarray,
+        j: int
+) -> np.ndarray:
     """
     Outage sensitivity of the branches when transferring power from the bus j to the slack
         LODF: outage transfer distribution factors
@@ -188,7 +200,10 @@ def make_otdf(ptdf, lodf, j):
 
 
 @nb.njit(parallel=True)
-def make_otdf_max(ptdf, lodf):
+def make_otdf_max(
+        ptdf: np.ndarray,
+        lodf: np.ndarray,
+) -> np.ndarray:
     """
     Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
@@ -219,7 +234,10 @@ def make_otdf_max(ptdf, lodf):
 
 
 @nb.njit(cache=True)
-def make_contingency_flows(lodf, flows):
+def make_contingency_flows(
+        lodf: np.ndarray,
+        flows: np.ndarray,
+):
     """
     Make contingency Sf matrix
     :param lodf: line outage distribution factors
@@ -238,7 +256,11 @@ def make_contingency_flows(lodf, flows):
 
 
 @nb.njit(cache=True)
-def make_transfer_limits(ptdf, flows, rates):
+def make_transfer_limits(
+        ptdf: np.ndarray,
+        flows: np.ndarray,
+        rates: np.ndarray,
+) -> np.ndarray:
     """
     Compute the maximum transfer limits of each branch in normal operation
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
@@ -264,12 +286,18 @@ def make_transfer_limits(ptdf, flows, rates):
 
 
 @nb.njit(parallel=True)
-def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
+def make_contingency_transfer_limits(
+        otdf_max: np.ndarray,
+        lodf: np.ndarray,
+        flows: np.ndarray,
+        rates: np.ndarray,
+) -> np.ndarray:
     """
     Compute the maximum transfer limits after contingency of each branch
     :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
                      from any bus to the slack  (n-branch, n-branch)
-    :param omw: contingency Sf matrix (n-branch, n-branch)
+    :param lodf:
+    :param flows:
     :param rates: array of branch rates
     :return: Max transfer limits matrix  (n-branch, n-branch)
     """
@@ -306,90 +334,86 @@ def make_worst_contingency_transfer_limits(tmc):
 
 
 # @nb.njit(cache=True)
-def make_lodf_nx(circuit: MultiCircuit, lodf):
+def make_lodfnx(
+        lodf: np.ndarray,
+        contingencies_dict: Dict[str, List[dev.Contingency]],
+        branches_dict: Dict[str, dev.Branch]
+) -> Dict[str, np.ndarray]:
     """
-    Make the LODF with any contingency combination using the
-    declared contingencies
-    :param circuit: MultiCircuit
+    Make the LODF with any contingency combination using the declared contingency objects
     :param lodf: original LODF matrix (nbr, nbus)
-    :return: List[(list of indices of contingencies, LODF matching)]
+    :param contingencies_dict: Dictionary of contingency group_objects Dict['key', object]
+    :param branches_dict: Dictionary of branch devices. Dict['key', obj]
+    :return: Dict[str, lodf_nx]
     """
 
-    lodf_nx_list = list()
+    lodf_nx = dict()
 
-    # Create dictionaries to speed up the access
-    cg_dict = {cg.idtag: cg for cg in circuit.contingency_groups}
-    idx_dict = {e.idtag: i for i, e in enumerate(circuit.get_branches())}
+    for key, cg in contingencies_dict.items():
 
-    # Initialize c_idx list for each contingency groups
-    for cg in circuit.contingency_groups:
-        cg.c_idx = list()
-
-    # Loop for contingencies to fill group c_idx
-    for c in circuit.contingencies:
-        cg_dict[c.group.idtag].c_idx.append(idx_dict[c.device_idtag])
-
-    for cg in circuit.contingency_groups:
-
-        # Sort unique c_idx
-        cg.c_idx = list(sorted(set(cg.c_idx), reverse=False))
+        # Get unique contingency device indices list
+        c_idx = list(sorted(set([branches_dict[c.device_idtag] for c in cg]), reverse=False))
 
         # Compute LODF vector
-        L = lodf[:, cg.c_idx]  # Take the columns of the LODF associated with the contingencies
+        L = lodf[:, c_idx]  # Take the columns of the LODF associated with the contingencies
 
         # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-        M = np.ones((len(cg.c_idx), len(cg.c_idx)))
-        for i in range(len(cg.c_idx)):
-            for j in range(len(cg.c_idx)):
+        M = np.ones((len(c_idx), len(c_idx)))
+        for i in range(len(c_idx)):
+            for j in range(len(c_idx)):
                 if not (i == j):
-                    M[i, j] = -lodf[cg.c_idx[i], cg.c_idx[j]]
+                    M[i, j] = -lodf[c_idx[i], c_idx[j]]
 
         # Compute LODF_NX
-        lodf_nx = np.matmul(L, np.linalg.inv(M))
+        lodf_ = np.matmul(L, np.linalg.inv(M))
 
-        # store tuple (c_idx, lodf_nx)
-        lodf_nx_list.append(
-            (cg.c_idx, lodf_nx)  # TODO: cg.c_idx -> pensar si esto tiene sentido
-        )
+        # store value
+        lodf_nx[key] = lodf_
 
-    return lodf_nx_list
+    return lodf_nx
 
 
-class LinearAnalysis2:
+class LinearAnalysis:
+    # Todo: replace usages of LinearAnalysis to LinearAnalysisDriver
 
-    def __init__(self, numerical_circuit: NumericalCircuit, distributed_slack=True, correct_values=True, with_nx=False):
+    def __init__(
+            self,
+            numerical_circuit: NumericalCircuit,
+            distributed_slack: bool = True,
+            correct_values: bool = False,
+    ):
         """
-
-        :param grid:
-        :param distributed_slack:
+        Linear Analysis constructor
+        :param numerical_circuit: numerical circuit instance
+        :param distributed_slack: boolean to distribute slack
+        :param correct_values: boolean to fix out layer values
         """
-
-        self.distributed_slack = distributed_slack
-
-        self.correct_values = correct_values
-
-        self.with_nx = with_nx
 
         self.numerical_circuit: NumericalCircuit = numerical_circuit
+        self.distributed_slack: bool = distributed_slack
+        self.correct_values: bool = correct_values
 
-        self.PTDF = None
+        self.PTDF: Union[np.ndarray, None] = None
+        self.LODF: Union[np.ndarray, None] = None
+        self.lodf_nx: Union[Dict[str, np.ndarray], None] = None
+        self.__OTDF: Union[np.ndarray, None] = None
 
-        self.LODF = None
+        self.logger: Logger = Logger()
 
-        self.__OTDF = None
-
-        self.logger = Logger()
-
-    def run(self):
+    def run(self, with_nx=True):
         """
         Run the PTDF and LODF
+        :param with_nx: Boolean to compute lodf n-x sensibilities
         """
+
         # self.numerical_circuit = compile_snapshot_circuit(self.grid)
         islands = self.numerical_circuit.split_into_islands()
         n_br = self.numerical_circuit.nbr
         n_bus = self.numerical_circuit.nbus
+
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
+        self.lodf_nx: Union[Dict[str, np.ndarray], None] = None
 
         # compute the PTDF per islands
         if len(islands) > 0:
@@ -400,43 +424,51 @@ class LinearAnalysis2:
                     if len(island.pqpv) > 0:
 
                         # compute the PTDF of the island
-                        ptdf_island = make_ptdf(Bbus=island.Bbus,
-                                                Bf=island.Bf,
-                                                pqpv=island.pqpv,
-                                                distribute_slack=self.distributed_slack)
+                        ptdf_island = make_ptdf(
+                            Bbus=island.Bbus,
+                            Bf=island.Bf,
+                            pqpv=island.pqpv,
+                            distribute_slack=self.distributed_slack
+                        )
 
                         # assign the PTDF to the matrix
                         self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                         # compute the island LODF
-                        lodf_island = make_lodf(Cf=island.Cf,
-                                                Ct=island.Ct,
-                                                PTDF=ptdf_island,
-                                                correct_values=self.correct_values)
+                        lodf_island = make_lodf(
+                            Cf=island.Cf,
+                            Ct=island.Ct,
+                            PTDF=ptdf_island,
+                            correct_values=self.correct_values
+                        )
 
                         # assign the LODF to the matrix
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+
                 elif len(island.vd) == 0:
                     self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
+
                 else:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
             # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bbus=islands[0].Bbus,
-                                  Bf=islands[0].Bf,
-                                  pqpv=islands[0].pqpv,
-                                  distribute_slack=self.distributed_slack)
+            self.PTDF = make_ptdf(
+                Bbus=islands[0].Bbus,
+                Bf=islands[0].Bf,
+                pqpv=islands[0].pqpv,
+                distribute_slack=self.distributed_slack
+            )
 
             # compute the LODF upon the PTDF
-            self.LODF = make_lodf(Cf=islands[0].Cf,
-                                  Ct=islands[0].Ct,
-                                  PTDF=self.PTDF,
-                                  correct_values=self.correct_values)
-
-
+            self.LODF = make_lodf(
+                Cf=islands[0].Cf,
+                Ct=islands[0].Ct,
+                PTDF=self.PTDF,
+                correct_values=self.correct_values
+            )
 
     @property
     def OTDF(self):
@@ -450,64 +482,91 @@ class LinearAnalysis2:
 
         return self.__OTDF
 
-    def get_transfer_limits(self, flows):
+    def get_transfer_limits(self, flows: np.ndarray):
         """
         compute the normal transfer limits
         :param flows: base Sf in MW
         :return: Max transfer limits vector (n-branch)
         """
-        return make_transfer_limits(self.PTDF, flows, self.numerical_circuit.Rates)
+        return make_transfer_limits(
+            ptdf=self.PTDF,
+            flows=flows,
+            rates=self.numerical_circuit.Rates
+        )
 
-    def get_contingency_transfer_limits(self, flows):
+    def get_contingency_transfer_limits(self, flows: np.ndarray):
         """
         Compute the contingency transfer limits
         :param flows: base Sf in MW
         :return: Max transfer limits matrix (n-branch, n-branch)
         """
-        return make_contingency_transfer_limits(self.OTDF, self.LODF, flows, self.numerical_circuit.Rates)
+        return make_contingency_transfer_limits(
+            otdf=self.OTDF,
+            ldof=self.LODF,
+            flows=flows,
+            rates=self.numerical_circuit.Rates
+        )
 
-    def get_flows(self, Sbus):
+    def get_flows(self, Sbus: np.array):
         """
         Compute the time series branch Sf using the PTDF
         :param Sbus: Power injections time series array
         :return: branch active power Sf time series
         """
+        if len(Sbus.shape) == 1:
+            return np.dot(Sbus.real, self.PTDF.T) * self.numerical_circuit.Sbase
+        elif len(Sbus.shape) == 2:
+            return np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
+        else:
+            raise Exception(f'Sbus has wrong dimensions: {Sbus.shape}')
 
-        # option 2: call the power directly
-        Pbr = np.dot(self.PTDF, Sbus.real) * self.numerical_circuit.Sbase
-
-        return Pbr
-
-    def get_flows_time_series(self, Sbus):
+    def make_lodfnx(
+            self,
+            lodf: np.ndarray,
+            contingencies_dict: Dict[str, List[dev.Contingency]],
+            branches_dict: Dict[str, dev.Branch]
+    ) -> Dict[str, np.ndarray]:
         """
-        Compute the time series branch Sf using the PTDF
-        :param Sbus: Power injections time series array
-        :return: branch active power Sf time series
+        Make the LODF with any contingency combination using the declared contingency objects
+        :param lodf: original LODF matrix (nbr, nbus)
+        :param contingencies_dict: Dictionary of contingency group_objects Dict['key', object]
+        :param branches_dict: Dictionary of branch devices. Dict['key', obj]
+        :return: Dict[str, lodf_nx]
         """
+        return make_lodfnx(
+            lodf=lodf,
+            contingencies_dict=contingencies_dict,
+            branches_dict=branches_dict,
+        )
 
-        # option 2: call the power directly
-        Pbr = np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
 
-        return Pbr
+# Todo: delete this
+# class LinearAnalysisMultiCircuit(LinearAnalysis):
+#
+#     def __init__(
+#             self,
+#             grid: MultiCircuit,
+#             distributed_slack: bool = True,
+#             correct_values: bool = True,
+#     ):
+#         """
+#         Linear Analysis constructor
+#         :param grid: Multicircuit instance
+#         :param distributed_slack: boolean to distribute slack
+#         :param correct_values: boolean to fix out layer values
+#         """
+#
+#         self.grid = grid
+#
+#         self.nc = compile_numerical_circuit_at(
+#             circuit=grid,
+#             t_idx=None
+#         )
+#
+#         LinearAnalysis.__init__(
+#             self,
+#             numerical_circuit=self.nc,
+#             distributed_slack=distributed_slack,
+#             correct_values=correct_values,
+#         )
 
-
-class LinearAnalysis(LinearAnalysis2):
-
-    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True, with_nx=False):
-        """
-
-        :param grid:
-        :param distributed_slack:
-        """
-        LinearAnalysis2.__init__(self,
-                                 numerical_circuit=compile_numerical_circuit_at(grid, t_idx=None),
-                                 distributed_slack=distributed_slack,
-                                 correct_values=correct_values,
-                                 with_nx=with_nx)
-        self.grid = grid
-
-        if self.with_nx:
-            self.LODF_NX = make_lodf_nx(
-                circuit=self.grid,
-                lodf=self.LODF,
-            )

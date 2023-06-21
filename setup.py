@@ -70,7 +70,9 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "fastparquet",
                 "pyqtdarktheme",
                 "ortools",
-                "pytest>=3.8"]
+                "pytest>=3.8",
+                "nptyping",
+                ]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.

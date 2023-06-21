@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
-import datetime
-import numpy as np
-from itertools import combinations
 
+import time
+import numpy as np
+from typing import Union
+from itertools import combinations
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power, multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
-
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
 def enumerate_states_n_k(m, k=1):
     """
@@ -57,14 +57,16 @@ def enumerate_states_n_k(m, k=1):
 
 class ContingencyAnalysisOptions:
 
-    def __init__(self,
-                 distributed_slack=True,
-                 correct_values=True,
-                 use_provided_flows=False,
-                 Pf=None,
-                 pf_results=None,
-                 engine=bs.ContingencyEngine.PowerFlow,
-                 pf_options=PowerFlowOptions(SolverType.DC)):
+    def __init__(
+            self,
+            distributed_slack: bool = True,
+            correct_values: bool = True,
+            use_provided_flows: bool = False,
+            Pf=None,
+            pf_results=None,
+            engine=bs.ContingencyEngine.PowerFlow,
+            pf_options=PowerFlowOptions(SolverType.DC)
+    ):
         """
 
         :param distributed_slack:
@@ -107,11 +109,15 @@ class ContingencyAnalysisDriver(DriverTemplate):
         self.options = options
 
         # N-K results
-        self.results = ContingencyAnalysisResults(ncon=0, nbus=0, nbr=0,
-                                                  bus_names=(),
-                                                  branch_names=(),
-                                                  bus_types=(),
-                                                  con_names=())
+        self.results = ContingencyAnalysisResults(
+            ncon=0,
+            nbus=0,
+            nbr=0,
+            bus_names=(),
+            branch_names=(),
+            bus_types=(),
+            con_names=()
+        )
 
     def get_steps(self):
         """
@@ -201,7 +207,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def n_minus_k_nl(self, t=None):
+    def n_minus_k_nl(self, t: Union[int, None] = None):
         """
         Run N-1 simulation in series with HELM, non-linear solution
         :param t: time index, if None the snapshot is used
@@ -209,24 +215,29 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
 
         self.progress_text.emit('Analyzing outage distribution factors in a non-linear fashion...')
-        nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
-                                               distributed_slack=self.options.distributed_slack,
-                                               correct_values=self.options.correct_values,
-                                               pf_options=self.options.pf_options,
-                                               t_idx=t)
+        nonlinear_analysis = NonLinearAnalysis(
+            grid=self.grid,
+            distributed_slack=self.options.distributed_slack,
+            correct_values=self.options.correct_values,
+            pf_options=self.options.pf_options,
+            t_idx=t
+        )
+
         nonlinear_analysis.run()
 
         # set the numerical circuit
         numerical_circuit = nonlinear_analysis.numerical_circuit
 
         # declare the results
-        results = ContingencyAnalysisResults(ncon=len(self.grid.contingency_groups),
-                                             nbr=numerical_circuit.nbr,
-                                             nbus=numerical_circuit.nbus,
-                                             branch_names=numerical_circuit.branch_names,
-                                             bus_names=numerical_circuit.bus_names,
-                                             bus_types=numerical_circuit.bus_types,
-                                             con_names=self.grid.get_contingency_group_names())
+        results = ContingencyAnalysisResults(
+            ncon=len(self.grid.contingency_groups),
+            nbr=numerical_circuit.nbr,
+            nbus=numerical_circuit.nbus,
+            branch_names=numerical_circuit.branch_names,
+            bus_names=numerical_circuit.bus_names,
+            bus_types=numerical_circuit.bus_types,
+            con_names=self.grid.get_contingency_group_names()
+        )
 
         # get the contingency branch indices
         br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
@@ -270,7 +281,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.results = self.n_minus_k()
 
         elif self.options.engine == bs.ContingencyEngine.PTDF:
-            raise Exception('Not implemented')
+
+            linear = LinearAnalysis(
+                grid=self.grid, )
+            self.results = self.n_minus_k_ptdf(numerical_circuit=nc)
 
         elif self.options.engine == bs.ContingencyEngine.HELM:
             self.results = self.n_minus_k_nl()

@@ -19,3 +19,4 @@ wcwidth==0.1.7
 zipp==0.5.2
 numba>=0.46
 Cython
+nptyping
