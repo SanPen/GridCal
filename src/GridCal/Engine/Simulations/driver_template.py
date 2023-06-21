@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+import nptyping as npt
 from typing import List, Dict, Union
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
@@ -87,7 +88,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
     def __init__(
             self,
             grid: MultiCircuit,
-            time_indices: np.ndarray,
+            time_indices: npt.NDArray[npt.Shape['*'], npt.Int],
             clustering_results: Union["ClusteringResults", None] = None,
             engine: bs.EngineType = bs.EngineType.GridCal):
         """

@@ -17,7 +17,8 @@
 
 import numpy as np
 import time
-from typing import Dict, Union, List
+import nptyping as npt
+from typing import Dict, Union
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
@@ -36,14 +37,15 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: LinearAnalysisOptions,
-            time_indices: np.ndarray,
+            time_indices: npt.NDArray[npt.Shape['*'], npt.Int],
             clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
         TimeSeries Analysis constructor
         :param grid: MultiCircuit instance
         :param options: LinearAnalysisOptions instance
-        :param clustering_results: ClusteringResults instance
+        :param time_indices: array of time indices to simulate
+        :param clustering_results: ClusteringResults instance (optional)
         """
 
         TimeSeriesDriverTemplate.__init__(

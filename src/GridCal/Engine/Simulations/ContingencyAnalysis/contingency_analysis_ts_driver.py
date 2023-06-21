@@ -16,10 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import time
+
+import nptyping
 import numpy as np
-import pandas as pd
 from numba import jit, prange
 from typing import Union
+import nptyping as npt
 
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -120,19 +122,22 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
-            time_indices: np.ndarray,
+            time_indices: npt.NDArray[npt.Shape['*'], npt.Int],
+            clustering_results: Union["ClusteringResults", None] = None,
     ):
         """
         Contingecny analysis constructor
         :param grid: Multicircuit instance
         :param options: ContingencyAnalysisOptions instance
-        :param clustering_results: ClusteringResults instance
+        :param time_indices: array of time indices to simulate
+        :param clustering_results: ClusteringResults instance (optional)
         """
 
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            time_indices=time_indices
+            time_indices=time_indices,
+            clustering_results=clustering_results,
         )
 
         # Options to use
@@ -150,7 +155,10 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             con_names=()
         )
 
-        self.branch_names: np.array = np.empty(shape=grid.get_branch_number_wo_hvdc())
+        self.branch_names: npt.NDArray[nptyping.Shape['*'], npt.String] = np.empty(
+            shape=grid.get_branch_number_wo_hvdc(),
+            dtype=str,
+        )
 
     def n_minus_k(self):
         """
