@@ -301,7 +301,7 @@ def add_linear_battery_formulation(t: Union[int, None],
 class OpfDcTimeSeries:
 
     def __init__(self, grid: MultiCircuit,
-                 time_indices: List[int],
+                 time_indices: np.ndarray,
                  solver_type: MIPSolvers = MIPSolvers.CBC,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  skip_generation_limits=False,

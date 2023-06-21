@@ -481,7 +481,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
 
-        self.ui.actionClustering_time_series.triggered.connect(self.run_clustering_time_series)
+        # self.ui.actionClustering_time_series.triggered.connect(self.run_clustering_time_series)
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
@@ -3132,12 +3132,14 @@ class MainGUI(QMainWindow):
                     self.LOCK()
 
                     options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
-                    start_ = self.ui.profile_start_slider.value()
-                    end_ = self.ui.profile_end_slider.value()
+
+                    # try to get the clustering results
+                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
                     drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
                                                              options=options,
-                                                             start_=start_,
-                                                             end_=end_)
+                                                             time_indices=self.get_time_indices(),
+                                                             clustering_results=clustering_results)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis_ts,
@@ -3514,12 +3516,13 @@ class MainGUI(QMainWindow):
                                                                    use_clustering=use_clustering,
                                                                    cluster_number=cluster_number)
 
-                    start_ = self.ui.profile_start_slider.value()
-                    end_ = self.ui.profile_end_slider.value()
+                    # try to get the clustering results
+                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
                     drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
                                                                         options=options,
-                                                                        start_=start_,
-                                                                        end_=end_)
+                                                                        time_indices=self.get_time_indices(),
+                                                                        clustering_results=clustering_results)
 
                     self.session.run(drv,
                                      post_func=self.post_available_transfer_capacity_ts,
@@ -3781,15 +3784,16 @@ class MainGUI(QMainWindow):
                         opf_time_series_results = None
 
                     options = self.get_selected_power_flow_options()
-                    start = self.ui.profile_start_slider.value()
-                    end = self.ui.profile_end_slider.value() + 1
-                    engine = self.get_preferred_engine()
-                    drv = sim.TimeSeries(grid=self.circuit,
-                                         options=options,
-                                         opf_time_series_results=opf_time_series_results,
-                                         start_=start,
-                                         end_=end,
-                                         engine=engine)
+
+                    # try to get the clustering results
+                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
+                    drv = sim.PowerFlowTimeSeries(grid=self.circuit,
+                                                  options=options,
+                                                  time_indices=self.get_time_indices(),
+                                                  opf_time_series_results=opf_time_series_results,
+                                                  clustering_results=clustering_results,
+                                                  engine=self.get_preferred_engine())
 
                     self.session.run(drv,
                                      post_func=self.post_time_series,
@@ -3822,83 +3826,6 @@ class MainGUI(QMainWindow):
 
         else:
             warning_msg('No results for the time series simulation.')
-
-        if not self.session.is_anything_running():
-            self.UNLOCK()
-
-    def run_clustering_time_series(self):
-        """
-        Run a time series power flow simulation in a separated thread from the gui
-        @return:
-        """
-        if len(self.circuit.buses) > 0:
-            if not self.session.is_this_running(sim.SimulationTypes.ClusteringTimeSeries_run):
-                if self.valid_time_series():
-                    self.LOCK()
-
-                    self.add_simulation(sim.SimulationTypes.ClusteringTimeSeries_run)
-
-                    self.ui.progress_label.setText('Compiling the grid...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
-
-                    if use_opf_vals:
-
-                        drv, opf_time_series_results = self.session.get_driver_results(
-                            SimulationTypes.OPFTimeSeries_run)
-
-                        if opf_time_series_results is None:
-                            if use_opf_vals:
-                                info_msg('There are no OPF time series, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-
-                    else:
-                        opf_time_series_results = None
-
-                    options = self.get_selected_power_flow_options()
-                    start = self.ui.profile_start_slider.value()
-                    end = self.ui.profile_end_slider.value() + 1
-                    cluster_number = self.ui.cluster_number_spinBox.value()
-                    drv = sim.TimeSeriesClustering(grid=self.circuit,
-                                                   options=options,
-                                                   opf_time_series_results=opf_time_series_results,
-                                                   start_=start,
-                                                   end_=end,
-                                                   cluster_number=cluster_number)
-
-                    self.session.run(drv,
-                                     post_func=self.post_clustering_time_series,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
-
-                else:
-                    warning_msg('There are no time series.', 'Time series')
-            else:
-                warning_msg('Another time series power flow is being executed now...')
-        else:
-            pass
-
-    def post_clustering_time_series(self):
-        """
-        Events to do when the time series simulation has finished
-        @return:
-        """
-
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringTimeSeries_run)
-
-        if results is not None:
-
-            self.remove_simulation(sim.SimulationTypes.ClusteringTimeSeries_run)
-
-            self.update_available_results()
-
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
-
-        else:
-            warning_msg('No results for the clustering time series simulation.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4290,15 +4217,16 @@ class MainGUI(QMainWindow):
                                                           unit_commitment=unit_commitment
                                                           )
 
-                    start = self.ui.profile_start_slider.value()
-                    end = self.ui.profile_end_slider.value() + 1
+                    # try to get the clustering results
+                    _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
 
                     # create the OPF time series instance
                     # if non_sequential:
                     drv = sim.OptimalPowerFlowTimeSeries(grid=self.circuit,
                                                          options=options,
-                                                         start_=start,
-                                                         end_=end)
+                                                         time_indices=self.get_time_indices(),
+                                                         clustering_results=clustering_results)
+
                     drv.engine = self.get_preferred_engine()
 
                     self.session.run(drv,
@@ -4646,18 +4574,14 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
                 QtGui.QGuiApplication.processEvents()
 
-                start_ = self.ui.profile_start_slider.value()
-                end_ = self.ui.profile_end_slider.value()
-                cluster_number = self.ui.cluster_number_spinBox.value()
+                # try to get the clustering results
+                _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
 
                 # set optimal net transfer capacity driver instance
-                drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
-                    grid=self.circuit,
-                    options=options,
-                    start_=start_,
-                    end_=end_,
-                    use_clustering=with_clustering,
-                    cluster_number=cluster_number)
+                drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                     options=options,
+                                                                     time_indices=self.get_time_indices(),
+                                                                     clustering_results=clustering_results)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -5241,7 +5165,7 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        elif current_study == sim.TimeSeries.tpe.value:
+        elif current_study == sim.PowerFlowTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
 
             return plot_function(circuit=self.circuit,

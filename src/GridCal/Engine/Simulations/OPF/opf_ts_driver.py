@@ -17,7 +17,7 @@
 import numpy as np
 import pandas as pd
 import time
-
+from typing import Dict, Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -25,13 +25,12 @@ from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf, \
-    translate_newton_pa_opf_results
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 import GridCal.Engine.basic_structures as bs
 
 
@@ -39,13 +38,19 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
     name = 'Optimal power flow time series'
     tpe = SimulationTypes.OPFTimeSeries_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
+    def __init__(self, grid: MultiCircuit,
+                 options: OptimalPowerFlowOptions,
+                 time_indices: np.ndarray,
+                 clustering_results: Union[ClusteringResults, None] = None,):
         """
         PowerFlowDriver class constructor
-        @param grid: MultiCircuit Object
-        @param options: OPF options
+        :param grid: MultiCircuit Object
+        :param options: OPF options
+        :param time_indices: array of time indices to simulate
         """
-        TimeSeriesDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
+        TimeSeriesDriverTemplate.__init__(self, grid=grid,
+                                          time_indices=time_indices,
+                                          clustering_results=clustering_results)
 
         # Options to use
         self.options = options
@@ -79,11 +84,9 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         """
         return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
 
-    def opf(self, start_, end_, remote=False, batteries_energy_0=None):
+    def opf(self, remote=False, batteries_energy_0=None):
         """
         Run a power flow for every circuit
-        :param start_: start index
-        :param end_: end index
         :param remote: is this function being called from the time series?
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         :return: OptimalPowerFlowResults object
@@ -96,9 +99,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_,
-                                      end_idx=end_,
+            problem = OpfDcTimeSeries(grid=self.grid,
+                                      time_indices=self.time_indices,
                                       solver_type=self.options.mip_solver,
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
@@ -109,20 +111,11 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       buses_areas_1=self.options.area_from_bus_idx,
                                       buses_areas_2=self.options.area_to_bus_idx)
 
-        elif self.options.solver == SolverType.AC_OPF:
-
-            # AC optimal power flow
-            problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_,
-                                      end_idx=end_,
-                                      solver_type=self.options.mip_solver)
-
         elif self.options.solver == SolverType.Simple_OPF:
 
             # AC optimal power flow
-            problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
-                                          start_idx=start_, end_idx=end_,
-                                          solver_type=self.options.mip_solver,
+            problem = OpfSimpleTimeSeries(grid=self.grid,
+                                          time_indices=self.time_indices,
                                           text_prog=self.progress_text.emit,
                                           prog_func=self.progress_signal.emit)
 
@@ -139,24 +132,22 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         status = problem.solve()
         print("Status:", status)
 
-        a = start_
-        b = end_
-        self.results.voltage[a:b, :] = problem.get_voltage()
-        self.results.bus_shadow_prices[a:b, :] = problem.get_shadow_prices()
-        self.results.load_shedding[a:b, :] = problem.get_load_shedding()
-        self.results.battery_power[a:b, :] = problem.get_battery_power()
-        self.results.battery_energy[a:b, :] = problem.get_battery_energy()
-        self.results.generator_power[a:b, :] = problem.get_generator_power()
-        self.results.Sf[a:b, :] = problem.get_branch_power_from()
-        self.results.St[a:b, :] = problem.get_branch_power_to()
-        self.results.overloads[a:b, :] = problem.get_overloads()
-        self.results.loading[a:b, :] = problem.get_loading()
+        self.results.voltage[self.time_indices, :] = problem.get_voltage()
+        self.results.bus_shadow_prices[self.time_indices, :] = problem.get_shadow_prices()
+        self.results.load_shedding[self.time_indices, :] = problem.get_load_shedding()
+        self.results.battery_power[self.time_indices, :] = problem.get_battery_power()
+        self.results.battery_energy[self.time_indices, :] = problem.get_battery_energy()
+        self.results.generator_power[self.time_indices, :] = problem.get_generator_power()
+        self.results.Sf[self.time_indices, :] = problem.get_branch_power_from()
+        self.results.St[self.time_indices, :] = problem.get_branch_power_to()
+        self.results.overloads[self.time_indices, :] = problem.get_overloads()
+        self.results.loading[self.time_indices, :] = problem.get_loading()
 
-        self.results.Sbus[a:b, :] = problem.get_power_injections()
-        self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
-        self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:,
-                                                                           a:b].transpose()
-        self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
+        self.results.Sbus[self.time_indices, :] = problem.get_power_injections()
+        self.results.hvdc_Pf[self.time_indices, :] = problem.get_hvdc_flows()
+        self.results.hvdc_loading[self.time_indices, :] = self.results.hvdc_Pf[self.time_indices, :] / self.numerical_circuit.hvdc_data.rate[:,
+                                                                           self.time_indices].transpose()
+        self.results.phase_shift[self.time_indices, :] = problem.get_phase_shifts()
 
         self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
         self.results.contingency_indices_list += problem.contingency_indices_list
@@ -190,7 +181,9 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
             if start_ >= self.start_ and end_ <= self.end_:
                 # run an opf for the group interval only if the group is within the start:end boundaries
-                self.opf(start_=start_, end_=end_ + 1, remote=True, batteries_energy_0=energy_0)
+                self.opf(start_=start_, end_=end_ + 1,
+                         remote=True,
+                         batteries_energy_0=energy_0)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
@@ -229,21 +222,21 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 a = self.start_
                 b = self.end_
-                self.results.voltage[a:b, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_angle)
-                self.results.bus_shadow_prices[a:b, :] = npa_res.nodal_shadow_prices
-                self.results.load_shedding[a:b, :] = npa_res.load_shedding
-                self.results.battery_power[a:b, :] = npa_res.battery_power
-                self.results.battery_energy[a:b, :] = npa_res.battery_energy
-                self.results.generator_power[a:b, :] = npa_res.generator_power
-                self.results.Sf[a:b, :] = npa_res.branch_flows
-                self.results.St[a:b, :] = -npa_res.branch_flows
-                self.results.overloads[a:b, :] = npa_res.branch_overloads
-                self.results.loading[a:b, :] = npa_res.branch_loading
-                self.results.phase_shift[a:b, :] = npa_res.branch_tap_angle
+                self.results.voltage[self.time_indices, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_angle)
+                self.results.bus_shadow_prices[self.time_indices, :] = npa_res.nodal_shadow_prices
+                self.results.load_shedding[self.time_indices, :] = npa_res.load_shedding
+                self.results.battery_power[self.time_indices, :] = npa_res.battery_power
+                self.results.battery_energy[self.time_indices, :] = npa_res.battery_energy
+                self.results.generator_power[self.time_indices, :] = npa_res.generator_power
+                self.results.Sf[self.time_indices, :] = npa_res.branch_flows
+                self.results.St[self.time_indices, :] = -npa_res.branch_flows
+                self.results.overloads[self.time_indices, :] = npa_res.branch_overloads
+                self.results.loading[self.time_indices, :] = npa_res.branch_loading
+                self.results.phase_shift[self.time_indices, :] = npa_res.branch_tap_angle
 
-                # self.results.Sbus[a:b, :] = problem.get_power_injections()
-                self.results.hvdc_Pf[a:b, :] = npa_res.hvdc_flows
-                self.results.hvdc_loading[a:b, :] = npa_res.hvdc_loading
+                # self.results.Sbus[self.time_indices, :] = problem.get_power_injections()
+                self.results.hvdc_Pf[self.time_indices, :] = npa_res.hvdc_flows
+                self.results.hvdc_loading[self.time_indices, :] = npa_res.hvdc_loading
 
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')
@@ -254,24 +247,23 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                   opfopt=self.options,
                                                   time_series=True,
                                                   tidx=t_idx)
-                a = self.start_
-                b = self.end_
-                self.results.voltage[a:b, :] = npa_res.voltage
-                self.results.Sbus[a:b, :] = npa_res.Scalc
-                self.results.bus_shadow_prices[a:b, :] = npa_res.bus_shadow_prices
-                self.results.load_shedding[a:b, :] = npa_res.load_shedding
-                self.results.battery_power[a:b, :] = npa_res.battery_p
-                # self.results.battery_energy[a:b, :] = npa_res.battery_energy
-                self.results.generator_power[a:b, :] = npa_res.generator_p
-                self.results.Sf[a:b, :] = npa_res.Sf
-                self.results.St[a:b, :] = npa_res.St
-                self.results.overloads[a:b, :] = npa_res.branch_overload
-                self.results.loading[a:b, :] = npa_res.Loading
-                # self.results.phase_shift[a:b, :] = npa_res.branch_tap_angle
+            
+                self.results.voltage[self.time_indices, :] = npa_res.voltage
+                self.results.Sbus[self.time_indices, :] = npa_res.Scalc
+                self.results.bus_shadow_prices[self.time_indices, :] = npa_res.bus_shadow_prices
+                self.results.load_shedding[self.time_indices, :] = npa_res.load_shedding
+                self.results.battery_power[self.time_indices, :] = npa_res.battery_p
+                # self.results.battery_energy[self.time_indices, :] = npa_res.battery_energy
+                self.results.generator_power[self.time_indices, :] = npa_res.generator_p
+                self.results.Sf[self.time_indices, :] = npa_res.Sf
+                self.results.St[self.time_indices, :] = npa_res.St
+                self.results.overloads[self.time_indices, :] = npa_res.branch_overload
+                self.results.loading[self.time_indices, :] = npa_res.Loading
+                # self.results.phase_shift[self.time_indices, :] = npa_res.branch_tap_angle
 
-                # self.results.Sbus[a:b, :] = problem.get_power_injections()
-                self.results.hvdc_Pf[a:b, :] = npa_res.hvdc_Pf
-                self.results.hvdc_loading[a:b, :] = npa_res.hvdc_loading
+                # self.results.Sbus[self.time_indices, :] = problem.get_power_injections()
+                self.results.hvdc_Pf[self.time_indices, :] = npa_res.hvdc_Pf
+                self.results.hvdc_loading[self.time_indices, :] = npa_res.hvdc_loading
 
         end = time.time()
         self.elapsed = end - start

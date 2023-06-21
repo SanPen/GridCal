@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+import os
 import numpy as np
 import time
-import os
+from typing import Union
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCal.Engine.basic_structures import Logger
 
 try:
@@ -39,33 +40,31 @@ except ModuleNotFoundError:
     print('ORTOOLS not found :(')
 
 
-
 class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     tpe = SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, start_=0, end_=None,
-                 use_clustering=False, cluster_number=100):
+    def __init__(self, grid: MultiCircuit,
+                 options: OptimalNetTransferCapacityOptions,
+                 time_indices: np.ndarray,
+                 clustering_results: Union[ClusteringResults, None] = None):
         """
 
         :param grid: MultiCircuit Object
         :param options: Optimal net transfer capacity options
-        :param start_: time index to start (optional)
-        :param end_: time index to end (optional)
+        :param time_indices: time index to start (optional)
+        :param clustering_results: ClusteringResults (optional)
         """
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            start_=start_,
-            end_=end_)
+            time_indices=time_indices,
+            clustering_results=clustering_results)
 
         # Options to use
 
         self.options = options
         self.unresolved_counter = 0
-
-        self.use_clustering = use_clustering
-        self.cluster_number = cluster_number
 
         self.logger = Logger()
 

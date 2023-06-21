@@ -30,7 +30,7 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.time_series_results import PowerFlowTimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 
 try:
     import power_grid_model as pgm

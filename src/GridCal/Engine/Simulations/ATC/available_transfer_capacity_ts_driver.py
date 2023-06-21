@@ -29,6 +29,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -231,23 +232,22 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(
             self, grid: MultiCircuit,
             options: AvailableTransferCapacityOptions,
-            start_: Union[int, None] = 0,
-            end_: Union[int, None] = None
+            time_indices: np.ndarray,
+            clustering_results: Union[ClusteringResults, None] = None,
     ):
 
         """
         Power Transfer Distribution Factors class constructor
         :param grid: MultiCircuit Object
         :param options: OPF options
-        :param start_: first time index to consider
-        :param end_: last time index to consider
+        :param time_indices: array of time indices to simulate
         """
 
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            start_=start_,
-            end_=end_
+            time_indices=time_indices,
+            clustering_results=clustering_results
         )
 
         # Options to use
@@ -270,8 +270,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.progress_signal.emit(0)
 
-        time_indices = self.get_time_indices()
-
         # declare the linear analysis
         self.progress_text.emit('Analyzing...')
 
@@ -283,8 +281,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         la_driver = LinearAnalysisTimeSeriesDriver(
             grid=self.grid,
             options=la_options,
-            start_=self.start_,
-            end_=self.end_,
+            time_indices=self.time_indices
         )
 
         la_driver.run()
@@ -300,14 +297,14 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             bus_names=nc.bus_names,
             rates=nc.Rates,
             contingency_rates=nc.ContingencyRates,
-            time_array=self.grid.time_profile[time_indices]
+            time_array=self.grid.time_profile[self.time_indices]
         )
 
 
         if self.options.use_clustering:
             self.progress_text.emit('Clustering...')
             X = nc.Sbus
-            X = X[:, time_indices].real.T
+            X = X[:, self.time_indices].real.T
 
             # cluster and re-assign the time indices
             time_indices, sampled_probabilities = kmeans_sampling(

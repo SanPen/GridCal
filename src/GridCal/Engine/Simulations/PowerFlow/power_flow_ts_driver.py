@@ -15,18 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import json
-import pandas as pd
 import numpy as np
 import time
-
-from GridCal.Engine.Simulations.PowerFlow.time_series_results import PowerFlowTimeSeriesResults
+from typing import Union
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
@@ -34,18 +31,26 @@ from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 
-class TimeSeries(DriverTemplate):
+class PowerFlowTimeSeries(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.TimeSeries_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
-                 start_=0, end_=None, engine: bs.EngineType = bs.EngineType.GridCal):
+    def __init__(self, grid: MultiCircuit,
+                 options: PowerFlowOptions,
+                 time_indices: np.ndarray,
+                 opf_time_series_results=None,
+                 clustering_results: Union[ClusteringResults, None] = None,
+                 engine: bs.EngineType = bs.EngineType.GridCal):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
         @param options: PowerFlowOptions instance
         """
-        DriverTemplate.__init__(self, grid, engine=engine)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          time_indices=time_indices,
+                                          clustering_results=clustering_results,
+                                          engine=engine)
 
         # reference the grid directly
         # self.grid = grid
@@ -53,16 +58,6 @@ class TimeSeries(DriverTemplate):
         self.options = options
 
         self.opf_time_series_results = opf_time_series_results
-
-        self.start_ = start_
-
-        self.end_ = end_
-
-    def get_steps(self):
-        """
-        Get time steps list of strings
-        """
-        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
 
     def run_single_thread(self, time_indices) -> PowerFlowTimeSeriesResults:
         """
@@ -103,19 +98,19 @@ class TimeSeries(DriverTemplate):
                                                areas_dict=areas_dict)
 
             # gather results
-            time_series_results.voltage[t, :] = pf_res.voltage
-            time_series_results.S[t, :] = pf_res.Sbus
-            time_series_results.Sf[t, :] = pf_res.Sf
-            time_series_results.St[t, :] = pf_res.St
-            time_series_results.Vbranch[t, :] = pf_res.Vbranch
-            time_series_results.loading[t, :] = pf_res.loading
-            time_series_results.losses[t, :] = pf_res.losses
-            time_series_results.hvdc_losses[t, :] = pf_res.hvdc_losses
-            time_series_results.hvdc_Pf[t, :] = pf_res.hvdc_Pf
-            time_series_results.hvdc_Pt[t, :] = pf_res.hvdc_Pt
-            time_series_results.hvdc_loading[t, :] = pf_res.hvdc_loading
-            time_series_results.error_values[t] = pf_res.error
-            time_series_results.converged_values[t] = pf_res.converged
+            time_series_results.voltage[it, :] = pf_res.voltage
+            time_series_results.S[it, :] = pf_res.Sbus
+            time_series_results.Sf[it, :] = pf_res.Sf
+            time_series_results.St[it, :] = pf_res.St
+            time_series_results.Vbranch[it, :] = pf_res.Vbranch
+            time_series_results.loading[it, :] = pf_res.loading
+            time_series_results.losses[it, :] = pf_res.losses
+            time_series_results.hvdc_losses[it, :] = pf_res.hvdc_losses
+            time_series_results.hvdc_Pf[it, :] = pf_res.hvdc_Pf
+            time_series_results.hvdc_Pt[it, :] = pf_res.hvdc_Pt
+            time_series_results.hvdc_loading[it, :] = pf_res.hvdc_loading
+            time_series_results.error_values[it] = pf_res.error
+            time_series_results.converged_values[it] = pf_res.converged
 
             if self.__cancel__:
                 return time_series_results
@@ -198,12 +193,8 @@ class TimeSeries(DriverTemplate):
 
         a = time.time()
 
-        if self.end_ is None:
-            self.end_ = len(self.grid.time_profile)
-        time_indices = np.arange(self.start_, self.end_)
-
         if self.engine == bs.EngineType.GridCal:
-            self.results = self.run_single_thread(time_indices=time_indices)
+            self.results = self.run_single_thread(time_indices=self.time_indices)
 
         elif self.engine == bs.EngineType.Bentayga:
             self.progress_text.emit('Running Bentayga... ')
@@ -211,7 +202,7 @@ class TimeSeries(DriverTemplate):
 
         elif self.engine == bs.EngineType.NewtonPA:
             self.progress_text.emit('Running Newton power analytics... ')
-            self.results = self.run_newton_pa(time_indices=time_indices)
+            self.results = self.run_newton_pa(time_indices=self.time_indices)
 
         elif self.engine == bs.EngineType.PGM:
             self.progress_text.emit('Running Power Grid Model... ')
