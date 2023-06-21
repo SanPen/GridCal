@@ -80,7 +80,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         )
 
         # Compute bus injections
-        self.results.S = self.grid.get_Sbus()
+        Pbus = self.grid.get_Pbus_prof()
 
         # Compute different topologies to consider
         tpg = self.get_topologic_groups()
@@ -106,12 +106,13 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             driver_.run()
 
-            Sf = driver_.get_flows(Sbus=self.results.S[time_indices_, :])
+            Sf = driver_.get_flows(Sbus=Pbus[time_indices_, :])
 
             self.results.Sf[time_indices_, :] = Sf
 
         rates = self.grid.get_branch_rates_wo_hvdc()
         self.results.loading = self.results.Sf / (rates + 1e-9)
+        self.results.S = Pbus[self.time_indices, :]
 
         self.elapsed = time.time() - tm_
 

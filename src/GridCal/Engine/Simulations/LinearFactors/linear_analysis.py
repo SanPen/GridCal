@@ -513,9 +513,9 @@ class LinearAnalysis:
         :return: branch active power Sf time series
         """
         if len(Sbus.shape) == 1:
-            return np.dot(Sbus.real, self.PTDF.T) * self.numerical_circuit.Sbase
+            return np.dot(Sbus.real, self.PTDF.T)
         elif len(Sbus.shape) == 2:
-            return np.dot(self.PTDF, Sbus.real).T * self.numerical_circuit.Sbase
+            return np.dot(self.PTDF, Sbus.real.T).T
         else:
             raise Exception(f'Sbus has wrong dimensions: {Sbus.shape}')
 

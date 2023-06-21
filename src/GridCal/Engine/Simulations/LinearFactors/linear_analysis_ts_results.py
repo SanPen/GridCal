@@ -114,7 +114,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
         if result_type == ResultTypes.BusActivePower:
             labels = self.bus_names
-            data = self.S
+            data = self.S.real
             y_label = '(MW)'
             title = 'Bus active power '
 
@@ -126,7 +126,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
-            data = self.loading * 100
+            data = np.abs(self.loading) * 100
             y_label = '(%)'
             title = 'Branch loading '
 
@@ -138,7 +138,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BusVoltageModule:
             labels = self.bus_names
-            data = self.voltage
+            data = np.abs(self.voltage)
             y_label = '(p.u.)'
             title = 'Bus voltage'
 

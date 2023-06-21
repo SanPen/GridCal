@@ -5188,29 +5188,6 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        elif current_study == sim.TimeSeriesClustering.tpe.value:
-            drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringTimeSeries_run)
-
-            return plot_function(circuit=self.circuit,
-                                 Sbus=results.S[current_step, :],
-                                 Sf=results.Sf[current_step, :],
-                                 St=results.St[current_step, :],
-                                 voltages=results.voltage[current_step, :],
-                                 loadings=np.abs(results.loading[current_step, :]),
-                                 types=results.bus_types,
-                                 losses=results.losses[current_step, :],
-                                 failed_br_idx=None,
-                                 hvdc_Pf=results.hvdc_Pf[current_step, :],
-                                 hvdc_Pt=results.hvdc_Pt[current_step, :],
-                                 hvdc_losses=results.hvdc_losses[current_step, :],
-                                 hvdc_loading=results.hvdc_loading[current_step, :],
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
-
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
 
