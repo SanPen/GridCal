@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringR
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
-    name = 'Time Series Linear Analysis '
+    name = 'Linear Analysis Time Series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
     def __init__(
