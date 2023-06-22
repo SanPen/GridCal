@@ -103,8 +103,12 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             self.sampled_probabilities: Vec = clustering_results.sampled_probabilities
 
         else:
-            self.time_indices: IntVec = time_indices
-            self.sampled_probabilities: Vec = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
+            if time_indices is None:
+                self.time_indices = None
+                self.sampled_probabilities = None
+            else:
+                self.time_indices: IntVec = time_indices
+                self.sampled_probabilities: Vec = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
 
         self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 

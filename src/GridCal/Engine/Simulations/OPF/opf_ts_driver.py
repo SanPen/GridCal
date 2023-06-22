@@ -34,13 +34,14 @@ from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringR
 import GridCal.Engine.basic_structures as bs
 
 
-class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
+class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     name = 'Optimal power flow time series'
     tpe = SimulationTypes.OPFTimeSeries_run
 
-    def __init__(self, grid: MultiCircuit,
+    def __init__(self,
+                 grid: MultiCircuit,
                  options: OptimalPowerFlowOptions,
-                 time_indices: np.ndarray,
+                 time_indices: Union[bs.IntVec, None],
                  clustering_results: Union[ClusteringResults, None] = None,):
         """
         PowerFlowDriver class constructor
@@ -48,7 +49,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         :param options: OPF options
         :param time_indices: array of time indices to simulate
         """
-        TimeSeriesDriverTemplate.__init__(self, grid=grid,
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
                                           time_indices=time_indices,
                                           clustering_results=clustering_results)
 
@@ -203,13 +205,11 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         if self.engine == bs.EngineType.GridCal:
 
             if self.options.grouping == TimeGrouping.NoGrouping:
-                self.opf(start_=self.start_, end_=self.end_)
+                self.opf()
             else:
                 self.opf_by_groups()
 
         elif self.engine == bs.EngineType.NewtonPA:
-
-            t_idx = list(range(self.start_, self.end_))
 
             if self.options.solver == SolverType.DC_OPF:
                 self.progress_text.emit('Running Linear OPF with Newton...')
@@ -218,10 +218,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                opf_options=self.options,
                                                pf_opt=PowerFlowOptions(),
                                                time_series=True,
-                                               time_indices=t_idx)
+                                               time_indices=self.time_indices)
 
-                a = self.start_
-                b = self.end_
                 self.results.voltage[self.time_indices, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_angle)
                 self.results.bus_shadow_prices[self.time_indices, :] = npa_res.nodal_shadow_prices
                 self.results.load_shedding[self.time_indices, :] = npa_res.load_shedding
@@ -246,7 +244,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                   pf_opt=self.pf_options,
                                                   opf_opt=self.options,
                                                   time_series=True,
-                                                  time_indices=t_idx)
+                                                  time_indices=self.time_indices)
             
                 self.results.voltage[self.time_indices, :] = npa_res.voltage
                 self.results.Sbus[self.time_indices, :] = npa_res.Scalc
