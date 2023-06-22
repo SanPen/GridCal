@@ -50,7 +50,7 @@ class ClusteringDriver(DriverTemplate):
         self.progress_signal.emit(0)
 
         time_indices, sampled_probabilities = kmeans_sampling(
-            X=self.grid.get_Pbus_prof(),
+            x_input=self.grid.get_Pbus_prof(),
             n_points=self.options.n_points,
         )
         self.results = ClusteringResults(

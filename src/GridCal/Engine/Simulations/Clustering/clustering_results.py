@@ -20,15 +20,17 @@ import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 
 
 class ClusteringResults(ResultsTemplate):
 
-    def __init__(self, time_indices: np.ndarray, sampled_probabilities: np.ndarray, time_array: np.ndarray):
+    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec):
         """
         Clustering Results constructor
         :param time_indices: number of branches
         :param sampled_probabilities: number of buses
+        :param time_array: Array of time values (all of them, because this array is sliced with time_indices)
         """
         ResultsTemplate.__init__(
             self,

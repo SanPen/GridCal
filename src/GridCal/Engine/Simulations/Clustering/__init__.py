@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Simulations.Clustering.clustering import SpectralClustering, kmeans_approximate_sampling
 from GridCal.Engine.Simulations.Clustering.clustering_driver import ClusteringDriver
 from GridCal.Engine.Simulations.Clustering.clustering_options import ClusteringAnalysisOptions
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults

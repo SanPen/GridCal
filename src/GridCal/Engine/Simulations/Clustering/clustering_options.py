@@ -20,7 +20,7 @@ class ClusteringAnalysisOptions:
 
     def __init__(self, n_points):
         """
-        Power Transfer Distribution Factors' options
-        :param distribute_slack:
+        Clustering options
+        :param n_points: number of points
         """
         self.n_points = n_points

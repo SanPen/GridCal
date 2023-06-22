@@ -308,7 +308,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # cluster and re-assign the time indices
             time_indices, sampled_probabilities = kmeans_sampling(
-                X=X,
+                x_input=X,
                 n_points=self.options.cluster_number
             )
 

@@ -160,7 +160,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # cluster and re-assign the time indices
             tm1 = time.time()
             time_indices, sampled_probabilities = kmeans_sampling(
-                X=X,
+                x_input=X,
                 n_points=self.cluster_number,
             )
 

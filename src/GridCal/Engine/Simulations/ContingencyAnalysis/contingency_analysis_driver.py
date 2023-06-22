@@ -22,6 +22,7 @@ from itertools import combinations
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 import GridCal.Engine.basic_structures as bs
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -30,7 +31,8 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_powe
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
-def enumerate_states_n_k(m, k=1):
+
+def enumerate_states_n_k(m: int, k: int = 1):
     """
     Enumerates the states to produce the so called N-k failures
     :param m: number of branches
@@ -62,7 +64,7 @@ class ContingencyAnalysisOptions:
             distributed_slack: bool = True,
             correct_values: bool = True,
             use_provided_flows: bool = False,
-            Pf=None,
+            Pf: Vec = None,  # TODO: Consider moving this to the only place where it is used: ContingencyAnalysisDriver
             pf_results=None,
             engine=bs.ContingencyEngine.PowerFlow,
             pf_options=PowerFlowOptions(SolverType.DC)
@@ -83,7 +85,7 @@ class ContingencyAnalysisOptions:
 
         self.use_provided_flows = use_provided_flows
 
-        self.Pf = Pf
+        self.Pf: Vec = Pf
 
         self.pf_results = pf_results
 
