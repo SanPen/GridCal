@@ -18,6 +18,7 @@
 import numpy as np
 import nptyping as npt
 from typing import List, Dict, Union
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -86,7 +87,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
     def __init__(
             self,
             grid: MultiCircuit,
-            time_indices: npt.NDArray[npt.Shape['*'], npt.Int],
+            time_indices: IntVec,
             clustering_results: Union["ClusteringResults", None] = None,
             engine: bs.EngineType = bs.EngineType.GridCal):
         """
@@ -99,12 +100,12 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         if clustering_results:
-            self.time_indices = clustering_results.time_indices
-            self.sampled_probabilities = clustering_results.sampled_probabilities
+            self.time_indices: IntVec = clustering_results.time_indices
+            self.sampled_probabilities: Vec = clustering_results.sampled_probabilities
 
         else:
-            self.time_indices = time_indices
-            self.sampled_probabilities = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
+            self.time_indices: IntVec = time_indices
+            self.sampled_probabilities: Vec = np.ones(shape=len(self.time_indices)) / len(self.time_indices)
 
         self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 

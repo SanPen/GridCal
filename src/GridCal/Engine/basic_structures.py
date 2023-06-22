@@ -20,8 +20,20 @@ from enum import Enum
 import pandas as pd
 import numpy as np
 import datetime
+import nptyping as npt
 
 from GridCal.Gui.plot_config import LINEWIDTH, plt
+
+
+DateVec = npt.NDArray[npt.Shape['*'], npt.Datetime64]
+IntVec = npt.NDArray[npt.Shape['*'], npt.Int]
+Vec = npt.NDArray[npt.Shape['*'], npt.Double]
+CxVec = npt.NDArray[npt.Shape['*'], npt.Complex]
+StrVec = npt.NDArray[npt.Shape['*'], npt.String]
+Mat = npt.NDArray[npt.Shape['*, *'], npt.Double]
+CxMat = npt.NDArray[npt.Shape['*, *'], npt.Complex]
+IntMat = npt.NDArray[npt.Shape['*, *'], npt.Int]
+StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
 
 
 class BusMode(Enum):

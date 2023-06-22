@@ -20,7 +20,6 @@ import sys
 import cmath
 import numpy as np
 import pandas as pd
-import nptyping as npt
 from typing import List, Dict, Tuple, Union
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
@@ -28,6 +27,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 import GridCal.Engine.Devices as dev
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
@@ -185,10 +185,6 @@ class MultiCircuit:
         # logger of events
         self.logger: bs.Logger = bs.Logger()
 
-        # Object with the necessary inputs for a power flow study
-        # todo: ¿se puede borrar?
-        self.numerical_circuit: Union["NumericalCircuit", None] = None
-
         # Bus-Branch graph
         self.graph = None
 
@@ -205,8 +201,7 @@ class MultiCircuit:
         self.branch_names: Union[List[str], None]  = None
 
         # master time profile
-        # todo typing this
-        self.time_profile = None
+        self.time_profile: DateVec = None
 
         # contingencies
         self.contingencies: List[dev.Contingency] = list()
@@ -313,7 +308,7 @@ class MultiCircuit:
         """
         return len(self.buses)
 
-    def get_bus_default_types(self) -> npt.NDArray[npt.Shape['*'], npt.Int]:
+    def get_bus_default_types(self) -> IntVec:
         """
         Return an array of bus types
         :return: number
@@ -345,7 +340,7 @@ class MultiCircuit:
                 names.append(elm.name)
         return names
 
-    def get_branch_lists(self) -> List[Union[dev.Branch, dev.HvdcLine]]:
+    def get_branch_lists(self) -> List[Union[List[dev.Branch], List[dev.HvdcLine]]]:
         """
         GEt list of the branch lists
         :return:
@@ -408,7 +403,7 @@ class MultiCircuit:
         """
         return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
 
-    def get_branch_active_time_array(self) -> npt.NDArray[npt.Shape['*, *'], npt.Int]:
+    def get_branch_active_time_array(self) -> IntMat:
         """
         Get branch active matrix
         :return: array with branch active status
@@ -479,9 +474,6 @@ class MultiCircuit:
 
         # List of transformer types
         self.transformer_types = list()
-
-        # Object with the necessary inputs for a power flow study
-        self.numerical_circuit = None
 
         # Bus-Branch graph
         self.graph = None
@@ -598,7 +590,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_load_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
+    def get_load_names(self) -> StrVec:
         """
         Returns a list of :ref:`Load<load>` names.
         """
@@ -619,7 +611,7 @@ class MultiCircuit:
             lst = lst + bus.external_grids
         return lst
 
-    def get_external_grid_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
+    def get_external_grid_names(self) -> StrVec:
         """
         Returns a list of :ref:`ExternalGrid<external_grid>` names.
         """
@@ -640,7 +632,7 @@ class MultiCircuit:
             lst = lst + bus.static_generators
         return lst
 
-    def get_static_generators_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
+    def get_static_generators_names(self) -> StrVec:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` names.
         """
@@ -679,7 +671,7 @@ class MultiCircuit:
             val = val + len(bus.loads)
         return val
 
-    def get_calculation_load_names(self) -> npt.NDArray[npt.Shape['*'], npt.String]:
+    def get_calculation_load_names(self) -> StrVec:
         """
         Returns a list of :ref:`Load<load>` names.
         """
@@ -969,8 +961,6 @@ class MultiCircuit:
         cpy.bus_original_idx = self.bus_original_idx.copy()
 
         cpy.time_profile = self.time_profile.copy()
-
-        # cpy.numerical_circuit = self.numerical_circuit.copy()
 
         return cpy
 
@@ -2907,7 +2897,7 @@ class MultiCircuit:
 
         return logger
 
-    def get_voltage_guess(self) -> npt.NDArray[npt.Shape['*'], npt.Complex]:
+    def get_voltage_guess(self) -> CxVec:
         """
         Get the buses stored voltage guess
         :return: array of complex voltages per bus
@@ -2920,7 +2910,7 @@ class MultiCircuit:
 
         return v
 
-    def get_Sbus(self) -> npt.NDArray[npt.Shape['*'], npt.Complex]:
+    def get_Sbus(self) -> CxVec:
         """
         Get the complex bus power injections
         :return: (ntime, nbus) [MW + j MVAr]
@@ -2932,19 +2922,7 @@ class MultiCircuit:
 
         return val
 
-    def get_Sbus_prof(self) -> npt.NDArray[npt.Shape['*, *'], npt.Complex]:
-        """
-        Get the complex bus power injections
-        :return: (ntime, nbus) [MW + j MVAr]
-        """
-        val = np.zeros(self.get_bus_number(), dtype=complex)
-
-        for i, bus in enumerate(self.buses):
-            val[i] = bus.get_Sbus()
-
-        return val
-
-    def get_Sbus_prof(self) -> np.ndarray:
+    def get_Sbus_prof(self) -> CxMat:
         """
         Get the complex bus power injections
         :return: (ntime, nbus) [MW + j MVAr]
@@ -2956,13 +2934,13 @@ class MultiCircuit:
 
         return val
 
-    def get_Pbus(self):
+    def get_Pbus(self) -> Vec:
         return self.get_Sbus().real
 
-    def get_Pbus_prof(self):
+    def get_Pbus_prof(self) -> Mat:
         return self.get_Sbus_prof().real
 
-    def get_branch_rates_prof_wo_hvdc(self) -> np.ndarray:
+    def get_branch_rates_prof_wo_hvdc(self) -> Mat:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2974,7 +2952,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_rates_wo_hvdc(self) -> np.ndarray:
+    def get_branch_rates_wo_hvdc(self) -> Vec:
         """
         Get the complex bus power injections
         :return: (nbr) [MVA]
@@ -2986,7 +2964,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_contingency_rates_prof_wo_hvdc(self) -> np.ndarray:
+    def get_branch_contingency_rates_prof_wo_hvdc(self) -> Mat:
         """
         Get the complex bus power injections
         :return: (ntime, nbr) [MVA]
@@ -2998,7 +2976,7 @@ class MultiCircuit:
 
         return val
 
-    def get_branch_contingency_rates_wo_hvdc(self) -> np.ndarray:
+    def get_branch_contingency_rates_wo_hvdc(self) -> Vec:
         """
         Get the complex bus power injections
         :return: (nbr) [MVA]

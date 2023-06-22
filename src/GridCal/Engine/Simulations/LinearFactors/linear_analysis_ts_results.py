@@ -18,6 +18,7 @@
 import numpy as np
 import nptyping as npt
 import GridCal.Engine.basic_structures as bs
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -30,10 +31,10 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             self,
             n: int,
             m: int,
-            time_array: npt.NDArray[npt.Shape['*'], npt.Datetime64],
-            bus_names: npt.NDArray[npt.Shape['*'], npt.String],
-            bus_types: npt.NDArray[npt.Shape['*'], npt.Int],
-            branch_names: npt.NDArray[npt.Shape['*'], npt.String],
+            time_array: DateVec,
+            bus_names: StrVec,
+            bus_types: IntVec,
+            branch_names: StrVec,
     ):
         """
         Constructor
@@ -68,25 +69,25 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         self.nt: int = len(time_array)
         self.m: int = m
         self.n: int = n
-        self.time: npt.NDArray[npt.Shape['*'], npt.Datetime64] = time_array
+        self.time: DateVec = time_array
 
-        self.bus_names: npt.NDArray[npt.Shape['*'], npt.String] = bus_names
+        self.bus_names: StrVec = bus_names
 
-        self.bus_types: npt.NDArray[npt.Shape['*'], npt.Int] = bus_types
+        self.bus_types: IntVec = bus_types
 
-        self.branch_names: npt.NDArray[npt.Shape['*'], npt.String] = branch_names
+        self.branch_names: StrVec = branch_names
 
-        self.voltage: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.ones((self.nt, n), dtype=complex)
+        self.voltage: CxVec = np.ones((self.nt, n), dtype=complex)
 
-        self.S: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.zeros((self.nt, n), dtype=complex)
+        self.S: CxVec = np.zeros((self.nt, n), dtype=complex)
 
-        self.Sf: npt.NDArray[npt.Shape['*, *'], npt.Complex] = np.zeros((self.nt, m), dtype=complex)
+        self.Sf: CxVec = np.zeros((self.nt, m), dtype=complex)
 
-        self.loading: npt.NDArray[npt.Shape['*, *'], npt.Float] = np.zeros((self.nt, m), dtype=float)
+        self.loading: Vec = np.zeros((self.nt, m), dtype=float)
 
-        self.losses: npt.NDArray[npt.Shape['*, *'], npt.Float] = np.zeros((self.nt, m), dtype=float)
+        self.losses: CxVec = np.zeros((self.nt, m), dtype=float)
 
-    def apply_new_time_series_rates(self, nc: NumericalCircuit) -> npt.NDArray[npt.Shape['*, *'], npt.Float]:
+    def apply_new_time_series_rates(self, nc: NumericalCircuit) -> Mat:
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
 

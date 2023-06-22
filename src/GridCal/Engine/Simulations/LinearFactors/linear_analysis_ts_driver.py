@@ -17,8 +17,8 @@
 
 import numpy as np
 import time
-import nptyping as npt
 from typing import Dict, Union
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
@@ -37,7 +37,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self,
             grid: MultiCircuit,
             options: LinearAnalysisOptions,
-            time_indices: npt.NDArray[npt.Shape['*'], npt.Int],
+            time_indices: IntVec,
             clustering_results: Union[ClusteringResults, None] = None,
     ):
         """
