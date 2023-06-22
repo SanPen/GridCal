@@ -216,9 +216,9 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
                                                opf_options=self.options,
-                                               pfopt=PowerFlowOptions(),
+                                               pf_opt=PowerFlowOptions(),
                                                time_series=True,
-                                               tidx=t_idx)
+                                               time_indices=t_idx)
 
                 a = self.start_
                 b = self.end_
@@ -243,10 +243,10 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
                 # pack the results
                 npa_res = newton_pa_nonlinear_opf(circuit=self.grid,
-                                                  pfopt=self.pf_options,
-                                                  opfopt=self.options,
+                                                  pf_opt=self.pf_options,
+                                                  opf_opt=self.options,
                                                   time_series=True,
-                                                  tidx=t_idx)
+                                                  time_indices=t_idx)
             
                 self.results.voltage[self.time_indices, :] = npa_res.voltage
                 self.results.Sbus[self.time_indices, :] = npa_res.Scalc
