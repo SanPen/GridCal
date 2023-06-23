@@ -1,16 +1,11 @@
 import os
-import string
 import sys
-from random import randint
-from enum import Enum
-from difflib import SequenceMatcher
-import numpy as np
 import pandas as pd
 from PySide6 import QtGui, QtCore, QtWidgets
-from typing import List, Dict
+from typing import List
 from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
-from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Gui.GridEditorWidget.messages import error_msg
 
 

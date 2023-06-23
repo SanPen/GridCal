@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.IO.pack_unpack import create_data_frames, get_objects_dictionary
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
@@ -627,7 +627,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
     else:
         circuit.logger.add_warning('No transformer_types in the file!')
 
-    # Add the branches #############################################################################################
+    # Add the Branches #############################################################################################
     if 'branch' in data.keys():
         lst = data['branch']
 
@@ -661,7 +661,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
-        circuit.logger.add_warning('No branches in the file!')
+        circuit.logger.add_warning('No Branches in the file!')
 
     # Other actions ################################################################################################
     circuit.logger += circuit.apply_all_branch_types()
@@ -1086,7 +1086,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
     else:
         circuit.logger.add_warning('No transformer_types in the file!')
 
-    # Add the branches #############################################################################################
+    # Add the Branches #############################################################################################
     if 'branch' in data.keys():
         df = data['branch']
 
@@ -1135,7 +1135,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 circuit.logger.add_info('Updated template', template_name)
 
     else:
-        circuit.logger.add_warning('No branches in the file!')
+        circuit.logger.add_warning('No Branches in the file!')
 
     # Other actions ################################################################################################
     circuit.logger += circuit.apply_all_branch_types()

@@ -27,7 +27,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
     Arguments:
 
-        **Sbus**: bus power injections
+        **Sbus**: bus power Injections
 
         **voltage**: bus voltages
 

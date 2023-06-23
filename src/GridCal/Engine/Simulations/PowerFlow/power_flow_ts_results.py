@@ -45,7 +45,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         """
         TimeSeriesResults constructor
         :param n: number of buses
-        :param m: number of branches
+        :param m: number of Branches
         :param n_hvdc:
         :param bus_names:
         :param branch_names:

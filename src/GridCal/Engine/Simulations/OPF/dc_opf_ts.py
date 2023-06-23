@@ -33,7 +33,7 @@ from GridCal.Engine.Core.DataStructures.load_data import LoadData
 from GridCal.Engine.Core.DataStructures.branch_data import BranchData
 from GridCal.Engine.basic_structures import Logger
 import GridCal.ThirdParty.ortools.ortools_extra as pl
-from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
     GenerationNtcFormulation
 
 

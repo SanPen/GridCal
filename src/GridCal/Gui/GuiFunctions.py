@@ -25,7 +25,7 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
+from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import CDF
 

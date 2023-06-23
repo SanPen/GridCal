@@ -57,10 +57,10 @@ class PowerFlowOptions:
         **control_p** (bool, False): Control active power (optimization dispatch)
 
         **apply_temperature_correction** (bool, False): Apply the temperature
-        correction to the resistance of the branches?
+        correction to the resistance of the Branches?
 
         **branch_impedance_tolerance_mode** (BranchImpedanceMode,
-        BranchImpedanceMode.Specified): Type of modification of the branches impedance
+        BranchImpedanceMode.Specified): Type of modification of the Branches impedance
 
         **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the
         :ref:`ReactivePowerControlMode<q_control>` iterative control

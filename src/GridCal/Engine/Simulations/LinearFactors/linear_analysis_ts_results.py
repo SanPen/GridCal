@@ -39,7 +39,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         """
         Constructor
         :param n: number of buses
-        :param m: number of branches
+        :param m: number of Branches
         :param time_array: array of time steps
         :param bus_names: array of bus names
         :param bus_types: array of bus types

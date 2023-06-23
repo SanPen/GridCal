@@ -9,15 +9,15 @@ Author: Santiago Peñate Vera (September 2018)
 import numpy as np
 import pandas as pd
 from GridCal.Engine import *
-from GridCal.Engine.Devices.branch import Branch, BranchTemplate
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Core.Devices import Branch, BranchTemplate
+from GridCal.Engine.Core.Devices import Bus
+from GridCal.Engine.Core.Devices import Generator
+from GridCal.Engine.Core.Devices import Load
+from GridCal.Engine.Core.Devices import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import PowerFlowTimeSeries
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeries
 
 
 def main():

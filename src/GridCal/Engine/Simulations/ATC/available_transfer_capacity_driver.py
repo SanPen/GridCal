@@ -45,7 +45,7 @@ class AvailableTransferMode(Enum):
 def get_proportional_deltas_sensed(P, idx, dP=1.0):
     """
 
-    :param P: all power injections
+    :param P: all power Injections
     :param idx: bus indices of the sending region
     :param dP: Power amount
     :return:
@@ -104,7 +104,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
     Compute line sensitivity to power transfer
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
     :param lodf: Optional. Line outage distribution factor (n-branch, n-branch). Needed to compute alpha n-1.
-    :param P0: all bus injections [p.u.]
+    :param P0: all bus Injections [p.u.]
     :param Pinstalled: bus generation installed power [p.u.]
     :param Pgen: bus generation current power [p.u.]
     :param Pload: bus load power [p.u.]
@@ -168,9 +168,9 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
 #     :param contingency_br_idx: array of branch indices to fail
 #     :param lodf: Line outage distribution factors (n-branch, n-outage branch)
 #     :param alpha: Branch sensitivities to the exchange [p.u.]
-#     :param flows: branches power injected at the "from" side [MW]
-#     :param rates: all branches rates vector
-#     :param contingency_rates: all branches contingency rates vector
+#     :param flows: Branches power injected at the "from" side [MW]
+#     :param rates: all Branches rates vector
+#     :param contingency_rates: all Branches contingency rates vector
 #     :param threshold: value that determines if a line is studied for the ATC calculation
 #     :return:
 #              beta_mat: Matrix of beta values (branch, contingency_branch)
@@ -257,9 +257,9 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
     :param contingency_br_idx: array of branch indices to fail
     :param lodf: Line outage distribution factors (n-branch, n-outage branch)
     :param alpha: Branch sensitivities to the exchange [p.u.]
-    :param flows: branches power injected at the "from" side [MW]
-    :param rates: all branches rates vector
-    :param contingency_rates: all branches contingency rates vector
+    :param flows: Branches power injected at the "from" side [MW]
+    :param rates: all Branches rates vector
+    :param contingency_rates: all Branches contingency rates vector
     :param base_exchange: amount already exchanges between areas
     :param threshold: value that determines if a line is studied for the ATC calculation
     :param time_idx: time index of the calculation
@@ -617,7 +617,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                 self.logger.add_error(msg)
                 raise Exception(msg)
         else:
-            # compose the HVDC power injections
+            # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
                                                                                         bus_dict,

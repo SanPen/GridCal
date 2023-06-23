@@ -22,7 +22,7 @@ import numba as nb
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_contingencies
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 
 
 @nb.njit()
@@ -395,7 +395,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 area_id = str(jentry['area']) if 'area' in jentry.keys() else ''
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
-                substation_id = str(jentry['substation']) if 'substation' in jentry.keys() else ''
+                substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
 
                 if area_id in areas_dict.keys():
@@ -979,7 +979,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
 
                 area_id = str(jentry['area']) if 'area' in jentry.keys() else ''
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
-                substation_id = str(jentry['substation']) if 'substation' in jentry.keys() else ''
+                substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
 
                 if area_id in areas_dict.keys():
@@ -1226,7 +1226,7 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
                         key=device.device_type.value)
             add_to_dict2(d=units_dict, d2=device.get_units_dict(), key=device.device_type.value)
 
-    # branches
+    # Branches
     for branch_list in circuit.get_branch_lists():
         for elm in branch_list:
             # pack the branch data into a dictionary

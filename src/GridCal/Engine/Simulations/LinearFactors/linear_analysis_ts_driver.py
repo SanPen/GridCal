@@ -81,7 +81,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             branch_names=self.grid.get_branches_wo_hvdc_names(),
         )
 
-        # Compute bus injections
+        # Compute bus Injections
         Pbus = self.grid.get_Pbus_prof()
 
         # Compute different topologies to consider

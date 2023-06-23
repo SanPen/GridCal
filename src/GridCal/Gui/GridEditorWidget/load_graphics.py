@@ -14,13 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
-from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform, QPolygonF, QPolygon
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, QGraphicsItemGroup, QComboBox
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
-from GridCal.Engine.Devices.load import Load
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.generic_graphics import Polygon

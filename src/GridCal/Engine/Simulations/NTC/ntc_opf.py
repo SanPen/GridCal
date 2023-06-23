@@ -23,7 +23,7 @@ from enum import Enum
 from typing import List, Tuple
 import numpy as np
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.basic_structures import Logger
 
@@ -165,8 +165,8 @@ def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
 
 def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     """
-    Get the branches that join two areas
-    :param nbr: Number of branches
+    Get the Branches that join two areas
+    :param nbr: Number of Branches
     :param F: Array of From node indices
     :param T: Array of To node indices
     :param buses_areas_1: Area from
@@ -768,13 +768,13 @@ def formulate_monitorization_logic(
     # Branch load without exchange
     branch_zero_exchange_load = base_flows * (1 - max_alpha) / rates
 
-    # Exclude branches with not enough sensibility to exchange
+    # Exclude Branches with not enough sensibility to exchange
     if monitor_only_sensitive_branches:
         monitor_by_sensitivity = max_alpha > branch_sensitivity_threshold
     else:
         monitor_by_sensitivity = np.ones(len(base_flows), dtype=bool)
 
-    # Avoid unrealistic ntc && Exclude branches with 'interchange zero' flows over CEP rule limit
+    # Avoid unrealistic ntc && Exclude Branches with 'interchange zero' flows over CEP rule limit
     if monitor_only_ntc_load_rule_branches:
         monitor_by_unrealistic_ntc = branch_ntc_load_rule <= structural_ntc
         monitor_by_zero_exchange = branch_zero_exchange_load >= (1 - ntc_load_rule)
@@ -835,7 +835,7 @@ def formulate_angles_shifters(solver: pywraplp.Solver, nbr, branch_active, branc
     """
 
     :param solver: Solver instance to which add the equations
-    :param nbr: number of branches
+    :param nbr: number of Branches
     :param nbr: number of buses
     :param branch_active: array of branch active states
     :param branch_names: array of branch names
@@ -871,7 +871,7 @@ def formulate_angles_shifters(solver: pywraplp.Solver, nbr, branch_active, branc
 def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation, Cload, load_power,
                                logger: Logger):
     """
-    Formulate the power injections
+    Formulate the power Injections
     :param solver: Solver instance to which add the equations
     :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
     :param generation: Array of generation LP variables
@@ -881,7 +881,7 @@ def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation, Cload,
     :param Sbase: Base power (i.e. 100 MVA)
     :param logger: logger instance
     :return:
-        - power injections array
+        - power Injections array
     """
     gen_injections_per_bus = lpExpand(Cgen, generation)
     load_fixed_injections = Cload * load_power
@@ -896,7 +896,7 @@ def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_acti
     :param solver: Solver instance to which add the equations
     :param Bbus: Susceptance matrix in CSC format
     :param angles: Array of voltage angles LP variables
-    :param Pinj: Array of power injections per bus (mix of values and LP variables)
+    :param Pinj: Array of power Injections per bus (mix of values and LP variables)
     :param bus_active: Array of bus active status
     :param bus_names: Array of bus names.
     :param logger: logger instance
@@ -925,8 +925,8 @@ def formulate_branches_flow(
     """
 
     :param solver: Solver instance to which add the equations
-    :param nbr: number of branches
-    :param nbus: number of branches
+    :param nbr: number of Branches
+    :param nbus: number of Branches
     :param Rates: array of branch rates
     :param branch_active: array of branch active states
     :param branch_names: array of branch names
@@ -1002,7 +1002,7 @@ def formulate_branches_flow(
             #     'branch_angle_constraint_max_{0}:{1}'.format(branch_names[m], m)
             # )
 
-            # add the shifter injections matching the flow
+            # add the shifter Injections matching the flow
             Ptau = bk * tau[m]
 
             Pinj_tau[_f] = -Ptau
@@ -1026,7 +1026,7 @@ def formulate_contingency_old(solver: pywraplp.Solver, ContingencyRates, Sbase, 
     :param LODF: LODF matrix
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
-    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter Branches out)
     :param flow_f: Array of formulated branch flows (LP variables)
     :param alpha: Power transfer sensibility matrix
     :param alpha_n1: Power transfer sensibility matrix (n-1)
@@ -1037,7 +1037,7 @@ def formulate_contingency_old(solver: pywraplp.Solver, ContingencyRates, Sbase, 
     """
     rates = ContingencyRates / Sbase
 
-    # get the indices of the branches marked for contingency
+    # get the indices of the Branches marked for contingency
     con_br_idx = contingency_enabled_indices
     mon_br_idx = np.where(monitor == True)[0]
 
@@ -1110,7 +1110,7 @@ def formulate_contingency(
     :param LODF: LODF matrix
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
-    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter Branches out)
     :param flow_f: Array of formulated branch flows (LP variables)
     :param alpha: Power transfer sensibility matrix
     :param alpha_n1: Power transfer sensibility matrix (n-1)
@@ -1121,7 +1121,7 @@ def formulate_contingency(
     """
     rates = ContingencyRates / Sbase
 
-    # get the indices of the branches marked for contingency
+    # get the indices of the Branches marked for contingency
     con_br_idx = contingency_enabled_indices
     mon_br_idx = np.where(monitor == True)[0]
 
@@ -1389,7 +1389,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, ang
     :param dispatchable: Array of HVDC dispatchable status (True/False)
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
-    :param Pinj: Array of power injections (Mix of values and LP variables)
+    :param Pinj: Array of power Injections (Mix of values and LP variables)
     :param Sbase: Base power (i.e. 100 MVA)
     :param inf: Value representing the infinite (i.e. 1e20)
     :param logger: logger instance
@@ -1435,11 +1435,11 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, ang
                 )
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
-                # simple injections model: The power is set by the user
+                # simple Injections model: The power is set by the user
                 flow_f[i] = P0
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
-                # simple injections model, the power is a variable and it is optimized
+                # simple Injections model, the power is a variable and it is optimized
                 P0 = solver.NumVar(
                     -rates[i],
                     rates[i],
@@ -1447,7 +1447,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, ang
                 )
                 flow_f[i] = P0
 
-            # add the injections matching the flow
+            # add the Injections matching the flow
             Pinj[_f] -= flow_f[i]
             Pinj[_t] += flow_f[i]
 
@@ -1493,7 +1493,7 @@ def formulate_hvdc_flow_old(solver: pywraplp.Solver, nhvdc, names, rate, angles,
     :param dispatchable: Array of HVDC dispatchable status (True/False)
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
-    :param Pinj: Array of power injections (Mix of values and LP variables)
+    :param Pinj: Array of power Injections (Mix of values and LP variables)
     :param Sbase: Base power (i.e. 100 MVA)
     :param inf: Value representing the infinite (i.e. 1e20)
     :param logger: logger instance
@@ -1540,11 +1540,11 @@ def formulate_hvdc_flow_old(solver: pywraplp.Solver, nhvdc, names, rate, angles,
                 )
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
-                # simple injections model: The power is set by the user
+                # simple Injections model: The power is set by the user
                 flow_f[i] = P0
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
-                # simple injections model, the power is a variable and it is optimized
+                # simple Injections model, the power is a variable and it is optimized
                 P0 = solver.NumVar(
                     -rates[i],
                     rates[i],
@@ -1552,7 +1552,7 @@ def formulate_hvdc_flow_old(solver: pywraplp.Solver, nhvdc, names, rate, angles,
                 )
                 flow_f[i] = P0
 
-            # add the injections matching the flow
+            # add the Injections matching the flow
             Pinj[_f] -= flow_f[i]
             Pinj[_t] += flow_f[i]
 
@@ -1807,9 +1807,9 @@ class OpfNTC():
         :param LODF_NX: LODF matrix for n-x contingencies
         :param solver_type: type of linear solver
         :param generation_formulation: type of generation formulation
-        :param monitor_only_sensitive_branches: Monitor the loading of the sensitive branches
-        :param monitor_only_sensitive_branches: Monitor the loading of branches over ntc load rule
-        :param branch_sensitivity_threshold: branch sensitivity used to filter out the branches whose sensitivity is under the threshold
+        :param monitor_only_sensitive_branches: Monitor the loading of the sensitive Branches
+        :param monitor_only_sensitive_branches: Monitor the loading of Branches over ntc load rule
+        :param branch_sensitivity_threshold: branch sensitivity used to filter out the Branches whose sensitivity is under the threshold
         :param ntc load rule
         :param skip_generation_limits: Skip the generation limits?
         :param consider_contingencies: Consider contingencies?
@@ -2001,7 +2001,7 @@ class OpfNTC():
 
         load_cost = self.numerical_circuit.load_data.cost[:, t]
 
-        # get the inter-area branches and their sign
+        # get the inter-area Branches and their sign
         inter_area_branches = get_inter_areas_branches(
             nbr=m,
             F=self.numerical_circuit.branch_data.F,
@@ -2083,7 +2083,7 @@ class OpfNTC():
         else:
             raise Exception('Unknown generation mode')
 
-        # formulate the power injections
+        # formulate the power Injections
         Pinj = formulate_power_injections(
             solver=self.solver,
             Cgen=Cgen,
@@ -2394,7 +2394,7 @@ class OpfNTC():
 
         load_cost = self.numerical_circuit.load_data.cost[:, t]
 
-        # get the inter-area branches and their sign
+        # get the inter-area Branches and their sign
         inter_area_branches = get_inter_areas_branches(
             nbr=m,
             F=self.numerical_circuit.branch_data.F,
@@ -2476,7 +2476,7 @@ class OpfNTC():
         else:
             raise Exception('Unknown generation mode')
 
-        # formulate the power injections
+        # formulate the power Injections
         Pinj = formulate_power_injections(
             solver=self.solver,
             Cgen=Cgen,

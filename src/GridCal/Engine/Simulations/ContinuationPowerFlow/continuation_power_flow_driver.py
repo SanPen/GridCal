@@ -103,7 +103,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         """
         ContinuationPowerFlowResults instance
         :param nbus: number of buses
-        :param nbr: number of branches
+        :param nbr: number of Branches
         :param bus_names: names of the buses
         """
         ResultsTemplate.__init__(self,
@@ -172,7 +172,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         Apply the results of an island to this ContinuationPowerFlowResults instance
         :param results: CpfNumericResults instance of the island
         :param bus_original_idx: indices of the buses in the complete grid
-        :param branch_original_idx: indices of the branches in the complete grid
+        :param branch_original_idx: indices of the Branches in the complete grid
         """
 
         nval = np.arange(len(results))

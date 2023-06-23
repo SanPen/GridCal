@@ -34,7 +34,7 @@ class LinearAnalysisResults(ResultsTemplate):
     def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
         """
         PTDF and LODF results class
-        :param n_br: number of branches
+        :param n_br: number of Branches
         :param n_bus: number of buses
         :param br_names: branch names
         :param bus_names: bus names
@@ -53,12 +53,12 @@ class LinearAnalysisResults(ResultsTemplate):
                                                  'LODF',
                                                  'Sf',
                                                  'loading'])
-        # number of branches
+        # number of Branches
         self.n_br = n_br
 
         self.n_bus = n_bus
 
-        # names of the branches
+        # names of the Branches
         self.branch_names = br_names
 
         self.bus_names = bus_names

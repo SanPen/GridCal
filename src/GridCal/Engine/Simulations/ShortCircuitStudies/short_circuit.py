@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
-from GridCal.Engine.Devices.enumerations import FaultType
+from GridCal.Engine.Core.Devices.enumerations import FaultType
 
 
 def short_circuit_3p(bus_idx, Ybus, Vbus, Zf, baseMVA):

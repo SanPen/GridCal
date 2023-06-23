@@ -21,7 +21,7 @@ import numpy as np
 from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
-from GridCal.Engine.Devices import Bus, Generator, Branch, Load, GeneratorTechnologyType, BranchType
+from GridCal.Engine.Core.Devices import Bus, Generator, Branch, Load, GeneratorTechnologyType, BranchType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
@@ -597,7 +597,7 @@ class PlexosModel:
                 elm = PlexosRegion(name=row['name'])
                 self.regions[elm.name] = elm
 
-        # store the branches by type
+        # store the Branches by type
         self.branches_by_type['Line'] = self.lines
         self.branches_by_type['Transformer'] = self.transformers
 
@@ -734,7 +734,7 @@ class PlexosModel:
 
     def get_all_branches_dictionary(self):
         """
-        Returns a dictionary with all the branches by the name
+        Returns a dictionary with all the Branches by the name
         :return: dictionary name -> object
         """
         z = self.lines.copy()  # start with x's keys and values
@@ -760,7 +760,7 @@ class PlexosModel:
         M11-12
         """
 
-        # merge the max rating profiles for each of the branches with profiles
+        # merge the max rating profiles for each of the Branches with profiles
         df = None
         for name, branch in self.get_all_branches_dictionary().items():
 

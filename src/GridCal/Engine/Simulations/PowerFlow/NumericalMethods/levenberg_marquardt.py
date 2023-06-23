@@ -41,10 +41,10 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     @Author: Santiago Peñate Vera
     :param Ybus: Admittance matrix
-    :param S0: Array of nodal power injections (ZIP)
+    :param S0: Array of nodal power Injections (ZIP)
     :param V0: Array of nodal voltages (initial solution)
-    :param I0: Array of nodal current injections (ZIP)
-    :param Y0: Array of nodal admittance injections (ZIP)
+    :param I0: Array of nodal current Injections (ZIP)
+    :param Y0: Array of nodal admittance Injections (ZIP)
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
     :param Qmin: array of lower reactive power limits per bus

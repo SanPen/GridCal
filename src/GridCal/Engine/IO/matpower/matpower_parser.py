@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.IO.matpower.matpower_branch_definitions as matpower_branches
 import GridCal.Engine.IO.matpower.matpower_bus_definitions as matpower_buses
 import GridCal.Engine.IO.matpower.matpower_gen_definitions as matpower_gen
@@ -500,7 +500,7 @@ def interpret_data_v1(circuit: MultiCircuit, data, logger: bs.Logger) -> MultiCi
     # parse generators
     parse_generators(circuit, data, bus_idx_dict, logger)
 
-    # parse branches
+    # parse Branches
     parse_branches_data(circuit, data, bus_idx_dict, logger)
 
     # add the profiles

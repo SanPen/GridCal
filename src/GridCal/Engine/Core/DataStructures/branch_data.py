@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
-from GridCal.Engine.Devices.enumerations import WindingsConnection
+from GridCal.Engine.Core.Devices.enumerations import WindingsConnection
 
 
 def get_bus_indices(C_branch_bus):
@@ -231,7 +231,7 @@ class BranchData:
     def get_linear_series_admittance(self):
         """
         Get the linear version of the series admittance for ACDC systems
-        :return: Array of the length of the number of branches with 1/X or 1/R depending whether if it is AC or DC
+        :return: Array of the length of the number of Branches with 1/X or 1/R depending whether if it is AC or DC
         """
         dc = self.get_dc_indices()
         ac = self.get_ac_indices()
@@ -241,10 +241,10 @@ class BranchData:
             # even if conceptually we only want the susceptance
             b = np.zeros(self.nelm)
             active = self.active
-            b[ac] = 1.0 / (m_abs[ac] * self.X[ac] * active[ac] + 1e-20)  # for ac branches
-            b[dc] = 1.0 / (m_abs[dc] * self.R[dc] * active[dc] + 1e-20)  # for dc branches
+            b[ac] = 1.0 / (m_abs[ac] * self.X[ac] * active[ac] + 1e-20)  # for ac Branches
+            b[dc] = 1.0 / (m_abs[dc] * self.R[dc] * active[dc] + 1e-20)  # for dc Branches
         else:
-            b = 1.0 / (m_abs * self.X * self.active + 1e-20)  # for ac branches
+            b = 1.0 / (m_abs * self.X * self.active + 1e-20)  # for ac Branches
 
         return b
 
@@ -264,7 +264,7 @@ class BranchData:
 
     def to_df(self):
         """
-        Create DataFrame with the compiled branches information
+        Create DataFrame with the compiled Branches information
         :return: Pandas DataFrame
         """
         data = {

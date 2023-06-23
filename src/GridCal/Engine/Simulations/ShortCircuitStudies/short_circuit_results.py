@@ -21,7 +21,7 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.results_table import ResultsTable
-from GridCal.Engine.Devices.enumerations import FaultType
+from GridCal.Engine.Core.Devices.enumerations import FaultType
 
 
 class ShortCircuitResults(ResultsTemplate):

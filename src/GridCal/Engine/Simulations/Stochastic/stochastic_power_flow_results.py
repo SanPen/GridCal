@@ -32,7 +32,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
         """
         Constructor
         @param n: number of nodes
-        @param m: number of branches
+        @param m: number of Branches
         @param p: number of points (rows)
         """
         ResultsTemplate.__init__(self,
@@ -199,7 +199,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
         """
         Fantastic function that allows to query the voltage from the sampled points without having to run power Sf
         Args:
-            power_array: power injections vector
+            power_array: power Injections vector
 
         Returns: Interpolated voltages vector
         """

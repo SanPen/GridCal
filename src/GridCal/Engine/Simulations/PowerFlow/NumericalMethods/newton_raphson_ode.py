@@ -86,16 +86,16 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
     Solves the power flow using a full Newton's method with the backtrack improvement algorithm
     Args:
         Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
+        Sbus: Array of nodal power Injections
         V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
+        Ibus: Array of nodal current Injections
         pv: Array with the indices of the PV buses
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
         robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
-        Voltage solution, converged?, error, calculated power injections
+        Voltage solution, converged?, error, calculated power Injections
 
     @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera

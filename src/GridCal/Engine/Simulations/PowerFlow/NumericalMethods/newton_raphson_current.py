@@ -60,16 +60,16 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_par
     Solves the power flow using a full Newton's method in current equations with current mismatch with line search
     Args:
         Ybus: Admittance matrix
-        Sbus_sp: Array of nodal specified power injections
+        Sbus_sp: Array of nodal specified power Injections
         V0: Array of nodal voltages (initial solution)
-        Ibus_sp: Array of nodal specified current injections
+        Ibus_sp: Array of nodal specified current Injections
         pv: Array with the indices of the PV buses
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
         acceleration_parameter: value used to correct bad iterations
     Returns:
-        Voltage solution, converged?, error, calculated power injections
+        Voltage solution, converged?, error, calculated power Injections
 
     @Author: Santiago Penate Vera
     """

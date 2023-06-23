@@ -15,11 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtCore
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu
-from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_buses
@@ -30,7 +30,7 @@ from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGenerat
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
-from GridCal.Engine.Devices.enumerations import DeviceType, FaultType
+from GridCal.Engine.Core.Devices.enumerations import DeviceType, FaultType
 
 
 class BusGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -506,7 +506,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             # change the bus state (snapshot)
             self.api_object.active = not self.api_object.active
 
-            # change the branches state (snapshot)
+            # change the Branches state (snapshot)
             for host in self.terminal.hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
@@ -521,7 +521,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                     # change the bus state (time series)
                     self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
 
-                    # change the branches state (time series)
+                    # change the Branches state (time series)
                     for host in self.terminal.hosting_connections:
                         if host.api_object is not None:
                             self.diagramScene.set_active_status_to_profile(host.api_object, override_question=True)

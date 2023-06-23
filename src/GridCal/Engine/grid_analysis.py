@@ -78,7 +78,7 @@ class TimeSeriesResultsAnalysis:
 
             branches_over = np.where(branch_loading > 1.0)[0]
 
-            # get the buses from the selected branches
+            # get the buses from the selected Branches
             flow_dir = self.res.Sf[t, branches_over].real
 
             branches_w_from = np.where(flow_dir > 0)[0]
@@ -87,7 +87,7 @@ class TimeSeriesResultsAnalysis:
             buses_f = self.numerical_circuit.F[branches_w_from]
             buses_t = self.numerical_circuit.T[branches_w_to]
 
-            # branches
+            # Branches
             self.branch_overload_frequency[branches_over] += 1
             self.bus_under_voltage_frequency[buses_under] += 1
             self.bus_over_voltage_frequency[buses_over] += 1

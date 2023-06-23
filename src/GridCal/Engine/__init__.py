@@ -17,7 +17,6 @@
 
 # from GridCal.Engine.Replacements import *
 from GridCal.Engine.basic_structures import *
-from GridCal.Engine.Devices import *
 from GridCal.Engine.grid_analysis import *
 from GridCal.Engine.Simulations import *
 from GridCal.Engine.IO import *

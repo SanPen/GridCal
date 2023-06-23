@@ -23,7 +23,7 @@ from scipy.sparse import lil_matrix, diags, csc_matrix
 
 def dSbus_dV(Ybus, V):
     """
-    Derivatives of the power injections w.r.t the voltage
+    Derivatives of the power Injections w.r.t the voltage
     :param Ybus: Admittance matrix
     :param V: complex voltage arrays
     :return: dSbus_dVa, dSbus_dVm
@@ -204,13 +204,13 @@ def dSbus_dV_csr(Ybus, V):
 def dSbr_dV_matpower(Yf, Yt, V, F, T, Cf, Ct):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
-    :param Yf: Admittances matrix of the branches with the "from" buses
-    :param Yt: Admittances matrix of the branches with the "to" buses
+    :param Yf: Admittances matrix of the Branches with the "from" buses
+    :param Yt: Admittances matrix of the Branches with the "to" buses
     :param V: Array of voltages
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
-    :param Cf: Connectivity matrix of the branches with the "from" buses
-    :param Ct: Connectivity matrix of the branches with the "to" buses
+    :param Cf: Connectivity matrix of the Branches with the "from" buses
+    :param Ct: Connectivity matrix of the Branches with the "to" buses
     :return: dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
     """
     Yfc = np.conj(Yf)
@@ -247,10 +247,10 @@ def dSbr_dV_matpower(Yf, Yt, V, F, T, Cf, Ct):
 def dSf_dV_matpower(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     """
     Derivatives of the branch power "from" w.r.t the branch voltage modules and angles
-    :param Yf: Admittances matrix of the branches with the "from" buses
+    :param Yf: Admittances matrix of the Branches with the "from" buses
     :param V: Array of voltages
     :param F: Array of branch "from" bus indices
-    :param Cf: Connectivity matrix of the branches with the "from" buses
+    :param Cf: Connectivity matrix of the Branches with the "from" buses
     :param Vc: array of conjugate voltages
     :param diagVc: diagonal matrix of conjugate voltages
     :param diagE: diagonal matrix of normalized voltages
@@ -277,10 +277,10 @@ def dSf_dV_matpower(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
 def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     """
     Derivatives of the branch power "to" w.r.t the branch voltage modules and angles
-    :param Yt: Admittances matrix of the branches with the "to" buses
+    :param Yt: Admittances matrix of the Branches with the "to" buses
     :param V: Array of voltages
     :param T: Array of branch "to" bus indices
-    :param Ct: Connectivity matrix of the branches with the "to" buses
+    :param Ct: Connectivity matrix of the Branches with the "to" buses
     :param Vc: array of conjugate voltages
     :param diagVc: diagonal matrix of conjugate voltages
     :param diagE: diagonal matrix of normalized voltages
@@ -348,7 +348,7 @@ def dSf_dV_numba(Yf_nrows, Yf_nnz, Yf_data, V, F, T, idx_f, idx_t):
     """
     dSf_dVm = np.zeros(Yf_nnz, dtype=nb.complex128)
     dSf_dVa = np.zeros(Yf_nnz, dtype=nb.complex128)
-    for k in range(Yf_nrows):  # number of branches (rows), actually k is the branch index
+    for k in range(Yf_nrows):  # number of Branches (rows), actually k is the branch index
         f = F[k]
         t = T[k]
         kf = idx_f[k]
@@ -384,7 +384,7 @@ def dSt_dV_numba(Yt_nrows, Yt_nnz, Yt_data, V, F, T, idx_f, idx_t):
     """
     dSt_dVm = np.zeros(Yt_nnz, dtype=nb.complex128)
     dSt_dVa = np.zeros(Yt_nnz, dtype=nb.complex128)
-    for k in range(Yt_nrows):  # number of branches (rows), actually k is the branch index
+    for k in range(Yt_nrows):  # number of Branches (rows), actually k is the branch index
         f = F[k]
         t = T[k]
         kf = idx_f[k]
@@ -474,8 +474,8 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
     :param nb: number of buses
-    :param nl: number of branches
-    :param iPxsh: array of indices {iPfsh or iPfdp}, this is the indices of the phase shifting branches
+    :param nl: number of Branches
+    :param iPxsh: array of indices {iPfsh or iPfdp}, this is the indices of the phase shifting Branches
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
@@ -599,7 +599,7 @@ def derivatives_sh_csc_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
     :param nb: number of buses
-    :param nl: number of branches
+    :param nl: number of Branches
     :param iPxsh: array of indices {iPfsh or iPfdp}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -632,7 +632,7 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> wih iXxma=iVtma
 
     :param nb: Number of buses
-    :param nl: Number of branches
+    :param nl: Number of Branches
     :param iXxma: Array of indices {iQfma, iQtma, iVtma}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -771,7 +771,7 @@ def derivatives_ma_csc_fast(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> wih iXxma=iVtma
 
     :param nb: Number of buses
-    :param nl: Number of branches
+    :param nl: Number of Branches
     :param iXxma: Array of indices {iQfma, iQtma, iVtma}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -809,7 +809,7 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> iBeqx=iBeqv
 
     :param nb: Number of buses
-    :param nl: Number of branches
+    :param nl: Number of Branches
     :param iBeqx: array of indices {iBeqz, iBeqv}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -882,7 +882,7 @@ def derivatives_Beq_csc_numba(iBeqx, F, V, ma, k2):
 
     for k, idx in enumerate(iBeqx):
         # k: 0, 1, 2, 3, 4, ...
-        # idx: actual branch index in the general branches schema
+        # idx: actual branch index in the general Branches schema
 
         f = F[idx]
 
@@ -923,7 +923,7 @@ def derivatives_Beq_csc_fast(nb, nl, iBeqx, F, T, V, ma, k2):
     - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> iBeqx=iBeqv
 
     :param nb: Number of buses
-    :param nl: Number of branches
+    :param nl: Number of Branches
     :param iBeqx: array of indices {iBeqz, iBeqv}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices

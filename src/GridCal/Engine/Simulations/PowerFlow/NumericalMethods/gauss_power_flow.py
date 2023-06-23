@@ -31,9 +31,9 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50,
     """
     Gauss-Seidel Power flow
     :param Ybus: Admittance matrix
-    :param S0: Power injections array
-    :param I0: Current injections array
-    :param Y0: Admittance injections array
+    :param S0: Power Injections array
+    :param I0: Current Injections array
+    :param Y0: Admittance Injections array
     :param V0: Voltage seed solution array
     :param pv: array of pv-node indices
     :param pq: array of pq-node indices

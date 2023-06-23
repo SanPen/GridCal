@@ -18,7 +18,7 @@ def dSbus_dV(Ybus, V):
     """Computes partial derivatives of power injection w.r.t. voltage.
 
     Returns two matrices containing partial derivatives of the complex bus
-    power injections w.r.t voltage magnitude and voltage angle respectively
+    power Injections w.r.t voltage magnitude and voltage angle respectively
     (for all buses). If C{Ybus} is a sparse matrix, the return values will be
     also. The following explains the expressions used to form the matrices::
 
@@ -290,10 +290,10 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
     :param Ybus: Admittance matrix
-    :param Yf: Admittance matrix of the from branches
-    :param Yt: Admittance matrix of the to branches
-    :param f: array with the from bus indices of all the branches
-    :param t: array with the to bus indices of all the branches
+    :param Yf: Admittance matrix of the from Branches
+    :param Yt: Admittance matrix of the to Branches
+    :param f: array with the from bus indices of all the Branches
+    :param t: array with the to bus indices of all the Branches
     :param se_input: state estimation input instance (contains the measurements)
     :param ref: array of slack node indices
     :param pq: array of pq node indices

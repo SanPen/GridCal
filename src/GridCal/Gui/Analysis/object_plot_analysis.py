@@ -24,7 +24,7 @@ from PySide6 import QtWidgets, QtGui
 
 from GridCal.Engine.basic_structures import LogSeverity
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 
 

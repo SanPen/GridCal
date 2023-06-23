@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6 import QtWidgets, QtGui, QtCore
-from GridCal.Engine.Devices.battery import Battery, DeviceType
+from GridCal.Engine.Core.Devices.Injections.battery import Battery, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question

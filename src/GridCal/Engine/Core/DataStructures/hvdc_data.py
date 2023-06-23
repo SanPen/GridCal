@@ -17,7 +17,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
-from GridCal.Engine.Devices.enumerations import HvdcControlType
+from GridCal.Engine.Core.Devices.enumerations import HvdcControlType
 
 
 class HvdcData:

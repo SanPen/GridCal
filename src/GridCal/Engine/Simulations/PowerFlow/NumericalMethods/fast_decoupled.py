@@ -13,8 +13,8 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
-    :param Sbus: array of power injections
-    :param Ibus: array of current injections
+    :param Sbus: array of power Injections
+    :param Ibus: array of current Injections
     :param Ybus: Admittance matrix
     :param B1: B' matrix for the fast decoupled algorithm
     :param B2: B'' matrix for the fast decoupled algorithm

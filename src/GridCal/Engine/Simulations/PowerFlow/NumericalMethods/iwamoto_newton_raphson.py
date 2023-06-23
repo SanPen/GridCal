@@ -73,16 +73,16 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
         Ybus: Admittance matrix
-        S0: Array of nodal power injections
+        S0: Array of nodal power Injections
         V0: Array of nodal voltages (initial solution)
-        I0: Array of nodal current injections
+        I0: Array of nodal current Injections
         pv_: Array with the indices of the PV buses
         pq_: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
         robust: use of the Iwamoto optimal step factor?.
     Returns:
-        Voltage solution, converged?, error, calculated power injections
+        Voltage solution, converged?, error, calculated power Injections
 
     @Author: Santiago Penate Vera
     """

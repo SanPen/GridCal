@@ -103,7 +103,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
 
-            # compose the HVDC power injections
+            # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(

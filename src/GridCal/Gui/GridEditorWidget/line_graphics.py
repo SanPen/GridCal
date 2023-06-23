@@ -26,8 +26,8 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, F
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
-from GridCal.Engine.Devices.branch import BranchType
+from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, Tower, UndergroundLineType
+from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 

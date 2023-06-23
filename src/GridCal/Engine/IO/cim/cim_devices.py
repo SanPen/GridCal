@@ -902,10 +902,10 @@ class ConnectivityNode(IdentifiedObject):
                                            'covers two cases:  '
                                            'if the Boundary point is placed on a '
                                            'tie-line the attribute is used for exchange '
-                                           'of the geographical name of the substation '
+                                           'of the geographical name of the Substation '
                                            'to which the From side of the tie-line is '
                                            'connected to.  if the Boundary point is '
-                                           'placed in a substation the attribute is '
+                                           'placed in a Substation the attribute is '
                                            'used for exchange of the name of the element'
                                            ' (e.g. PowerTransformer, ACLineSegment, '
                                            'Switch, etc) to which the From side of the '
@@ -969,9 +969,9 @@ class ConnectivityNode(IdentifiedObject):
                                            "two cases:  if the Boundary point is placed "
                                            "on a tie-line the attribute is used for "
                                            "exchange of the geographical name of the "
-                                           "substation to which the “To” side of the "
+                                           "Substation to which the “To” side of the "
                                            "tie-line is connected to. if the Boundary "
-                                           "point is placed in a substation the attribute "
+                                           "point is placed in a Substation the attribute "
                                            "is used for exchange of the name of the "
                                            "element (e.g. PowerTransformer, "
                                            "ACLineSegment, Switch, etc) to which the “To” "
@@ -1093,10 +1093,10 @@ class TopologicalNode(IdentifiedObject):
                                            'covers two cases:  '
                                            'if the Boundary point is placed on a '
                                            'tie-line the attribute is used for exchange '
-                                           'of the geographical name of the substation '
+                                           'of the geographical name of the Substation '
                                            'to which the From side of the tie-line is '
                                            'connected to.  if the Boundary point is '
-                                           'placed in a substation the attribute is '
+                                           'placed in a Substation the attribute is '
                                            'used for exchange of the name of the element'
                                            ' (e.g. PowerTransformer, ACLineSegment, '
                                            'Switch, etc) to which the From side of the '
@@ -1155,9 +1155,9 @@ class TopologicalNode(IdentifiedObject):
                                            "two cases:  if the Boundary point is placed "
                                            "on a tie-line the attribute is used for "
                                            "exchange of the geographical name of the "
-                                           "substation to which the “To” side of the "
+                                           "Substation to which the “To” side of the "
                                            "tie-line is connected to. if the Boundary "
-                                           "point is placed in a substation the attribute "
+                                           "point is placed in a Substation the attribute "
                                            "is used for exchange of the name of the "
                                            "element (e.g. PowerTransformer, "
                                            "ACLineSegment, Switch, etc) to which the “To” "
@@ -1247,7 +1247,7 @@ class BusbarSection(IdentifiedObject):
                                unit=UnitSymbol.A,
                                description="Maximum allowable peak short-circuit current of "
                                            "busbar (Ipmax in the IEC 60909-0). Mechanical "
-                                           "limit of the busbar in the substation itself. "
+                                           "limit of the busbar in the Substation itself. "
                                            "Used for short circuit data exchange according "
                                            "to IEC 60909")
 
@@ -1305,7 +1305,7 @@ class Substation(IdentifiedObject):
                                multiplier=UnitMultiplier.none,
                                unit=UnitSymbol.none,
                                description="The SubGeographicalRegion "
-                                           "containing the substation.")
+                                           "containing the Substation.")
 
 
 class OperationalLimitSet(IdentifiedObject):

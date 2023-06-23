@@ -160,7 +160,7 @@ def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_acti
     Compute the adjacency matrix
     :param C_branch_bus_f: Branch-bus_from connectivity matrix
     :param C_branch_bus_t: Branch-bus_to connectivity matrix
-    :param branch_active: array of branches availability
+    :param branch_active: array of Branches availability
     :param bus_active: array of buses availability
     :return: Adjacency matrix
     """
@@ -227,7 +227,7 @@ nb.njit(cache=True)
 def compile_types(Sbus, types):
     """
     Compile the types.
-    :param Sbus: array of power injections per node
+    :param Sbus: array of power Injections per node
     :param types: array of tentative node types
     :return: ref, pq, pv, pqpv
     """

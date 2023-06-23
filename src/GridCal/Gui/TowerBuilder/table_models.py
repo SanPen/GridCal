@@ -17,8 +17,8 @@
 
 
 from PySide6 import QtCore
-from GridCal.Engine.Devices.wire import Wire
-from GridCal.Engine.Devices.tower import Tower, WireInTower
+from GridCal.Engine.Core.Devices.Branches.wire import Wire
+from GridCal.Engine.Core.Devices.Branches.tower import Tower, WireInTower
 
 """
 Equations source:

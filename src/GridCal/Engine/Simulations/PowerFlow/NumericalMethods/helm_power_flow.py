@@ -266,7 +266,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
-    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param Ysh0: vector of shunt admittances (including the shunts of the Branches)
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
@@ -334,7 +334,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
 
-    # get the current injections that appear due to the slack buses reduction
+    # get the current Injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
 
     valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[
@@ -431,7 +431,7 @@ def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, 
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
-    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param Ysh0: vector of shunt admittances (including the shunts of the Branches)
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
@@ -543,7 +543,7 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
     :param Yseries: Admittance matrix of the series elements
     :param V0:
     :param S0: 
-    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param Ysh0: vector of shunt admittances (including the shunts of the Branches)
     :param AY: admittance matrix considering the disconnection of a branch
     :param pq: 
     :param pv: 
@@ -570,7 +570,7 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
     valor = np.zeros(npqpv, dtype=complex)
 
-    # get the current injections that appear due to the slack buses reduction
+    # get the current Injections that appear due to the slack buses reduction
     I_inj_slack = Yslack[pqpv_, :] * Vslack
     AIred = AYred @ U[0, :]
 
@@ -645,7 +645,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
-    :param Ysh0: vector of shunt admittances (including the shunt "legs" of the pi branches)
+    :param Ysh0: vector of shunt admittances (including the shunt "legs" of the pi Branches)
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes

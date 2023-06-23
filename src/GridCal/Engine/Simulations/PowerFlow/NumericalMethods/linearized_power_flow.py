@@ -34,9 +34,9 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> Num
     :param Ybus: Normal circuit admittance matrix
     :param Bpqpv: Susceptance matrix reduced
     :param Bref: Susceptane matrix sliced for the slack node
-    :param Btheta: Susceptance matrix of the branches to nodes (used to include the phase shifters)
-    :param S0: Complex power injections at all the nodes
-    :param I0: Complex current injections at all the nodes
+    :param Btheta: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
+    :param S0: Complex power Injections at all the nodes
+    :param I0: Complex current Injections at all the nodes
     :param V0: Array of complex seed voltage (it contains the ref voltages)
     :param theta: Array of branch angles
     :param ref: array of the indices of the slack nodes
@@ -57,8 +57,8 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> Num
         # initialize result vector
         Va = np.empty(len(V0))
 
-        # compose the reduced power injections
-        # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
+        # compose the reduced power Injections
+        # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
         # We also need to account for the effect of the phase shifters
         Pps = Btheta * theta
         Pinj = S0[pvpq].real + (- Bref * Va_ref + I0[pvpq].real) * Vm[pvpq] - Pps[pvpq]
@@ -100,7 +100,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
     Args:
         Ybus: Admittance matrix
         Ys: Admittance matrix of the series elements
-        S0: Power injections vector of all the nodes
+        S0: Power Injections vector of all the nodes
         Vset: Set voltages of all the nodes (used for the slack and PV nodes)
         pq: list of indices of the pq nodes
         pv: list of indices of the pv nodes

@@ -23,7 +23,7 @@ import numpy as np
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import Logger
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 
 
 def interpret_line(line, splitter=','):
@@ -464,7 +464,7 @@ class PowerWorldParser:
         expected_sections = ['title',
                              'comments',
                              'solution parameters',
-                             'substation data',
+                             'Substation data',
                              'bus data',
                              'branch data',
                              'transformer data',
@@ -532,8 +532,8 @@ class PowerWorldParser:
 
         data_dict = self.read_and_split()
 
-        if 'substation data' in data_dict.keys():
-            substations_dict = parse_substations(data_dict['substation data']['data'])
+        if 'Substation data' in data_dict.keys():
+            substations_dict = parse_substations(data_dict['Substation data']['data'])
             grid.substations = list(substations_dict.values())
         else:
             substations_dict = None

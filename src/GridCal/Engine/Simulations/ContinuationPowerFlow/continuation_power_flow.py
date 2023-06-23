@@ -244,7 +244,7 @@ def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     :param Ibus:
     :param lam: scalar lambda value at current solution
     :param Ybus: complex bus admittance matrix
-    :param Sxfr: complex vector of scheduled transfers (difference between bus injections in base and target cases)
+    :param Sxfr: complex vector of scheduled transfers (difference between bus Injections in base and target cases)
     :param pv: vector of indices of PV buses
     :param pq: vector of indices of PQ buses
     :param step: continuation step length
@@ -327,7 +327,7 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
      the number of iterations performed, and the final lambda.
 
     :param Ybus: Admittance matrix (CSC sparse)
-    :param Sbus: Bus power injections
+    :param Sbus: Bus power Injections
     :param V0:  Bus initial voltages
     :param pv: list of pv nodes
     :param pq: list of pq nodes
@@ -488,8 +488,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
     :param Ybus: Admittance matrix
-    :param Cf: Connectivity matrix of the branches and the "from" nodes
-    :param Ct: Connectivity matrix of the branches and the "to" nodes
+    :param Cf: Connectivity matrix of the Branches and the "from" nodes
+    :param Ct: Connectivity matrix of the Branches and the "to" nodes
     :param Yf: Admittance matrix of the "from" nodes
     :param Yt: Admittance matrix of the "to" nodes
     :param branch_rates: array of branch rates to check the overload condition

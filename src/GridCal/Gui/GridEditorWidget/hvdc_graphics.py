@@ -23,8 +23,8 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem, QGrap
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.hvdc_line import HvdcLine
-from GridCal.Engine.Devices.branch import BranchType
+from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 

@@ -22,7 +22,7 @@ from typing import Set, Dict, List, Tuple
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as gcdev
+import GridCal.Engine.Core.Devices as gcdev
 import GridCal.Engine.IO.cim.cim_devices as cimdev
 from GridCal.Engine.IO.cim.cim_circuit import CIMCircuit
 
@@ -176,7 +176,7 @@ class CIMExport:
         base_voltages = set()
         base_voltages_dict = dict()
 
-        # dictionary of substation given a bus
+        # dictionary of Substation given a bus
         substation_bus = dict()
 
         # buses sweep to gather previous data (base voltages, etc..)
@@ -187,7 +187,7 @@ class CIMExport:
             # add the nominal voltage to the set of bus_voltages
             base_voltages.add(Vnom)
 
-            # if the substation was not accounted for, create the list of voltage levels
+            # if the Substation was not accounted for, create the list of voltage levels
             if bus.substation not in substation_bus.keys():
                 substation_bus[bus.substation] = dict()
 

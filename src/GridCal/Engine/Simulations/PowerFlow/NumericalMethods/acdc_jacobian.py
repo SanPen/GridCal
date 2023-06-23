@@ -128,22 +128,22 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
     :param i4:
     :param ni4:
     :param i4_lookup:
-    :param iPfsh: indices of the Pf controlled branches
+    :param iPfsh: indices of the Pf controlled Branches
     :param nPfsh:
     :param iPfsh_lookup:
-    :param iQtma: Indices of the Qt controlled branches
+    :param iQtma: Indices of the Qt controlled Branches
     :param nQtma:
     :param iQtma_lookup:
-    :param iQfma: indices of the Qf controlled branches
+    :param iQfma: indices of the Qf controlled Branches
     :param nQfma:
-    :param iVtma: Indices of the Vt controlled branches
+    :param iVtma: Indices of the Vt controlled Branches
     :param nVtma:
-    :param iPfdp: indices of the droop controlled branches
+    :param iPfdp: indices of the droop controlled Branches
     :param nPfdp:
     :param iPfdp_lookup:
-    :param iBeqz: Indices of the Qf controlled branches
+    :param iBeqz: Indices of the Qf controlled Branches
     :param nBeqz:
-    :param iBeqv: Indices of the Vf Controlled branches
+    :param iBeqv: Indices of the Vf Controlled Branches
     :param nBeqv:
     :param F: Array of "from" bus indices
     :param T: Array of "to" bus indices
@@ -676,13 +676,13 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
     :param nb: number of buses
     :param nl: Number of lines
-    :param iPfsh: indices of the Pf controlled with the shunt susceptance branches
-    :param iPfdp: indices of the Pf-droop controlled branches
-    :param iQfma: indices of the Qf controlled with ma branches
-    :param iQtma: Indices of the Qt controlled with ma branches
-    :param iVtma: Indices of the Vt controlled with ma branches
-    :param iBeqz: Indices of the Qf made zero with the equivalent susceptance branches
-    :param iBeqv: Indices of the Vf Controlled with the equivalent susceptance branches
+    :param iPfsh: indices of the Pf controlled with the shunt susceptance Branches
+    :param iPfdp: indices of the Pf-droop controlled Branches
+    :param iQfma: indices of the Qf controlled with ma Branches
+    :param iQtma: Indices of the Qt controlled with ma Branches
+    :param iVtma: Indices of the Vt controlled with ma Branches
+    :param iBeqz: Indices of the Qf made zero with the equivalent susceptance Branches
+    :param iBeqv: Indices of the Vf Controlled with the equivalent susceptance Branches
     :param F: Array of "from" bus indices
     :param T: Array of "to" bus indices
     :param Ys: Array of branch series admittances
@@ -694,10 +694,10 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     :param Kdp: Array of branch converter droop constants
     :param V: Array of complex bus voltages
     :param Ybus: Admittance matrix
-    :param Yf: Admittances matrix of the branches with the "from" buses
-    :param Yt: Admittances matrix of the branches with the "to" buses
-    :param Cf: Connectivity matrix of the branches with the "from" buses
-    :param Ct: Connectivity matrix of the branches with the "to" buses
+    :param Yf: Admittances matrix of the Branches with the "from" buses
+    :param Yt: Admittances matrix of the Branches with the "to" buses
+    :param Cf: Connectivity matrix of the Branches with the "from" buses
+    :param Ct: Connectivity matrix of the Branches with the "to" buses
     :param pvpq: Array of pv and then pq bus indices (not sorted)
     :param pq: Array of PQ bus indices
     :return: FUBM Jacobian matrix
@@ -722,7 +722,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     ni4 = len(i4)
     E = V / np.abs(V)
 
-    # compose the derivatives of the power injections w.r.t Va and Vm
+    # compose the derivatives of the power Injections w.r.t Va and Vm
     dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm

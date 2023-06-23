@@ -218,8 +218,8 @@ def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F
     :param Qtset: Array of Qt set values per branch
     :param Vmfset: Array of Vf module set values per branch
     :param Kdp: Array of branch droop value per branch
-    :param F: Array of from bus indices of the branches
-    :param T: Array of to bus indices of the branches
+    :param F: Array of from bus indices of the Branches
+    :param T: Array of to bus indices of the Branches
     :param pvpq: Array of pv|pq bus indices
     :param pq: Array of pq indices
     :param iPfsh:

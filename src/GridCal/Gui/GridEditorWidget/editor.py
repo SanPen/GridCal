@@ -22,21 +22,20 @@ from typing import List
 import networkx as nx
 from warnings import warn
 
-from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt, QPoint, QLineF, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, QDataStream
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QImage, QPainter, QStandardItemModel, QStandardItem
+from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, QDataStream
+from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.line import Line
-from GridCal.Engine.Devices.dc_line import DcLine
-from GridCal.Engine.Devices.transformer import Transformer2W
-from GridCal.Engine.Devices.vsc import VSC
-from GridCal.Engine.Devices.upfc import UPFC
-from GridCal.Engine.Devices.hvdc_line import HvdcLine
-from GridCal.Engine.Devices.transformer3w import Transformer3W
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCal.Engine.Core.Devices.Branches.line import Line
+from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
+from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
+from GridCal.Engine.Core.Devices.Branches.vsc import VSC
+from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
+from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
@@ -274,7 +273,7 @@ class DiagramScene(QGraphicsScene):
     def plot_bus(self, i, api_object):
         """
         Plot branch results
-        :param i: branch index (not counting HVDC lines because those are not real branches)
+        :param i: branch index (not counting HVDC lines because those are not real Branches)
         :param api_object: API object
         :return:
         """
@@ -298,7 +297,7 @@ class DiagramScene(QGraphicsScene):
                             if key == SimulationTypes.TimeSeries_run:
                                 voltage[key] = np.abs(driver.results.voltage[:, i])
 
-                # injections
+                # Injections
                 if len(power_data.keys()):
                     df = pd.DataFrame(data=power_data, index=x)
                     ax_1.set_title('Power', fontsize=14)
@@ -322,7 +321,7 @@ class DiagramScene(QGraphicsScene):
     def plot_branch(self, i, api_object):
         """
         Plot branch results
-        :param i: branch index (not counting HVDC lines because those are not real branches)
+        :param i: branch index (not counting HVDC lines because those are not real Branches)
         :param api_object: API object
         :return:
         """

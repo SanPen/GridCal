@@ -106,7 +106,7 @@ class ShuntData:
 
     def get_injections_per_bus(self):
         """
-        Get injections per bus
+        Get Injections per bus
         :return:
         """
         return self.C_bus_elm * (self.admittance * self.active)

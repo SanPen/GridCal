@@ -62,7 +62,7 @@ def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:
 def kmeans_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:
     """
     K-Means clustering, corrected to the closest points
-    :param x_input: injections matrix (time, bus)
+    :param x_input: Injections matrix (time, bus)
     :param n_points: number of clusters
     :return: indices of the closest to the cluster centers, deviation of the closest representatives
     """
@@ -105,7 +105,7 @@ def kmeans_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVe
 def spectral_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, int]:
     """
     K-Means clustering, corrected to the closest points
-    :param x_input: injections matrix (time, bus)
+    :param x_input: Injections matrix (time, bus)
     :param n_points: number of clusters
     :return: indices of the closest to the cluster centers, deviation of the closest representatives
     """

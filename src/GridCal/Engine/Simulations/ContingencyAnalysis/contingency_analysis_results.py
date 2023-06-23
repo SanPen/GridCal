@@ -30,7 +30,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         ContingencyAnalysisResults
         :param ncon: number of contingencies
         :param nbus: number of buses
-        :param nbr: number of branches
+        :param nbr: number of Branches
         :param bus_names: bus names
         :param branch_names: branch names
         :param bus_types: bus types array

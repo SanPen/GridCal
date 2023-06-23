@@ -21,7 +21,7 @@ import scipy.sparse as sp
 from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
 
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
@@ -43,13 +43,13 @@ def compute_acptdf(
     Compute the AC-PTDF
     :param Ybus: admittance matrix
     :param Yf: Admittance matrix of the buses "from"
-    :param F: array if branches "from" bus indices
-    :param T: array if branches "to" bus indices
+    :param F: array if Branches "from" bus indices
+    :param T: array if Branches "to" bus indices
     :param V: voltages array
     :param pq: array of pq node indices
     :param pv: array of pv node indices
     :param distribute_slack: distribute slack?
-    :return: AC-PTDF matrix (branches, buses)
+    :return: AC-PTDF matrix (Branches, buses)
     """
     n = len(V)
     pvpq = np.r_[pv, pq]
@@ -96,7 +96,7 @@ def make_ptdf(
     :param Bf: Bus-branch "from" susceptance matrix
     :param pqpv: array of sorted pq and pv node indices
     :param distribute_slack: distribute the slack?
-    :return: PTDF matrix. It is a full matrix of dimensions branches x buses
+    :return: PTDF matrix. It is a full matrix of dimensions Branches x buses
     """
 
     n = Bbus.shape[0]
@@ -140,10 +140,10 @@ def make_lodf(
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
     :param Ct: Branch "to" -bus connectivity matrix
-    :param PTDF: PTDF matrix in numpy array form (branches, buses)
+    :param PTDF: PTDF matrix in numpy array form (Branches, buses)
     :param correct_values: correct values out of the interval
     :param numerical_zero: value considered zero in numerical terms (i.e. 1e-10)
-    :return: LODF matrix of dimensions (branches, branches)
+    :return: LODF matrix of dimensions (Branches, Branches)
     """
     nl = PTDF.shape[0]
 
@@ -181,7 +181,7 @@ def make_otdf(
         j: int
 ) -> np.ndarray:
     """
-    Outage sensitivity of the branches when transferring power from the bus j to the slack
+    Outage sensitivity of the Branches when transferring power from the bus j to the slack
         LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
@@ -205,7 +205,7 @@ def make_otdf_max(
         lodf: np.ndarray,
 ) -> np.ndarray:
     """
-    Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+    Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
@@ -294,7 +294,7 @@ def make_contingency_transfer_limits(
 ) -> np.ndarray:
     """
     Compute the maximum transfer limits after contingency of each branch
-    :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
+    :param otdf_max: Maximum Outage sensitivity of the Branches when transferring power
                      from any bus to the slack  (n-branch, n-branch)
     :param lodf:
     :param flows:
@@ -472,7 +472,7 @@ class LinearAnalysis:
     @property
     def OTDF(self):
         """
-        Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+        Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
         :return: Maximum LODF matrix (n-branch, n-branch)
         """
@@ -509,7 +509,7 @@ class LinearAnalysis:
     def get_flows(self, Sbus: np.array):
         """
         Compute the time series branch Sf using the PTDF
-        :param Sbus: Power injections time series array
+        :param Sbus: Power Injections time series array
         :return: branch active power Sf time series
         """
         if len(Sbus.shape) == 1:

@@ -20,7 +20,7 @@ import numpy as np
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
-from GridCal.Engine.Devices import DeviceType
+from GridCal.Engine.Core.Devices import DeviceType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
@@ -98,7 +98,7 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     """
     all_events = list()
 
-    # branches
+    # Branches
     all_events += get_reliability_events(horizon,
                                          nc.branch_data.branch_mttf,
                                          nc.branch_data.branch_mttr,

@@ -24,7 +24,7 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.editable_device import DeviceType
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 import GridCal.Gui.Visualization.palettes as palettes
 
 
@@ -89,7 +89,7 @@ def colour_sub_schematic(Sbase,
     Color objects based on the results passed
     :param Sbase:
     :param buses: list of matching bus objects
-    :param branches: list of branches without HVDC
+    :param branches: list of Branches without HVDC
     :param hvdc_lines: list of HVDC lines
     :param Sbus:  Buses power
     :param Sf: Branches power from the "from" bus
@@ -101,7 +101,7 @@ def colour_sub_schematic(Sbase,
     :param hvdc_Pf:
     :param hvdc_losses:
     :param hvdc_loading:
-    :param failed_br_idx: failed branches
+    :param failed_br_idx: failed Branches
     :param loading_label:
     :return:
     """
@@ -184,7 +184,7 @@ def colour_sub_schematic(Sbase,
             else:
                 bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
 
-    # color branches
+    # color Branches
     if Sf is not None:
         if len(Sf) > 0:
             lnorm = np.abs(loadings)
@@ -352,7 +352,7 @@ def colour_the_schematic(circuit: MultiCircuit,
     :param hvdc_Pt:
     :param hvdc_losses:
     :param hvdc_loading:
-    :param failed_br_idx: failed branches
+    :param failed_br_idx: failed Branches
     :param loading_label:
     :param ma:
     :param theta:

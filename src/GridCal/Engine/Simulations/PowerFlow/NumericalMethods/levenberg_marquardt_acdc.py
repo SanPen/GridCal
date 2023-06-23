@@ -110,8 +110,8 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                            virtual_tap_to=nc.branch_data.virtual_tap_t)
 
         #  compute branch power Sf
-        If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
-        It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+        If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches
+        It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service Branches
         Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
         St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
@@ -241,8 +241,8 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                                virtual_tap_to=nc.branch_data.virtual_tap_t)
 
             #  compute branch power Sf
-            If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
-            It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+            If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches
+            It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service Branches
             Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
             St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 

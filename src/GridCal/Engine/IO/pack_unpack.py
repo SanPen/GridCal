@@ -20,8 +20,8 @@ import pandas as pd
 import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
-from GridCal.Engine.Devices import DeviceType
+import GridCal.Engine.Core.Devices as dev
+from GridCal.Engine.Core.Devices import DeviceType
 
 
 def get_objects_dictionary():
@@ -33,7 +33,7 @@ def get_objects_dictionary():
 
                     'zone': dev.Zone(),
 
-                    'substation': dev.Substation(),
+                    'Substation': dev.Substation(),
 
                     'country': dev.Country(),
 
@@ -451,7 +451,7 @@ def data_frames_to_circuit(data: Dict):
                 for i in range(df.shape[0]):
                     devices[i].ensure_profiles_exist(circuit.time_profile)
 
-            # add the objects to the circuit (buses, branches ot template types)
+            # add the objects to the circuit (buses, Branches ot template types)
             if template_elm.device_type == DeviceType.BusDevice:
                 circuit.buses = devices
 

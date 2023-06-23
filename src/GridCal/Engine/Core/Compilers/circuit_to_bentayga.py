@@ -20,8 +20,8 @@ from GridCal.Engine.basic_structures import Logger
 
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
-import GridCal.Engine.Devices as dev
+from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
+import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults

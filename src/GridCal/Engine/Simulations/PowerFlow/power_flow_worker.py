@@ -27,9 +27,9 @@ from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Devices.enumerations import HvdcControlType
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.groupings import Area
+from GridCal.Engine.Core.Devices.enumerations import HvdcControlType
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCal.Engine.Core.Devices.Aggregation.area import Area
 
 
 def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
@@ -40,8 +40,8 @@ def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.Conve
     :param options: PowerFlow options
     :param report: Convergence report to fill in
     :param V0: Array of initial voltages
-    :param S0: Array of power injections
-    :param I0: Array of current injections
+    :param S0: Array of power Injections
+    :param I0: Array of current Injections
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
     :param ref: Array of slack nodes
@@ -313,8 +313,8 @@ def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
     :param circuit: CalculationInputs instance
     :param options:
     :param voltage_solution: vector of initial voltages
-    :param Sbus: vector of power injections
-    :param Ibus: vector of current injections
+    :param Sbus: vector of power Injections
+    :param Ibus: vector of current Injections
     :param branch_rates:
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
@@ -394,7 +394,7 @@ def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
                                  Qmax=Qmax,
                                  logger=logger)
 
-    # Compute the branches power and the slack buses power
+    # Compute the Branches power and the slack buses power
     Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=circuit,
                                                                                Sbus=solution.Scalc,
                                                                                V=solution.V,
@@ -435,7 +435,7 @@ def outer_loop_power_flow(circuit: NumericalCircuit, options: PowerFlowOptions,
 def power_flow_post_process(calculation_inputs: NumericalCircuit, Sbus, V, branch_rates, Yf=None, Yt=None,
                             method: bs.SolverType = None):
     """
-    Compute the power Sf trough the branches.
+    Compute the power Sf trough the Branches.
     Arguments:
         **calculation_inputs**: instance of Circuit
         **V**: Voltage solution array for the circuit buses
@@ -617,7 +617,7 @@ def multi_island_pf_nc(
         bus_types=nc.bus_data.bus_types,
     )
 
-    # compose the HVDC power injections
+    # compose the HVDC power Injections
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
         Sbase=nc.Sbase,
         theta=np.zeros(nc.nbus),

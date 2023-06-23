@@ -121,7 +121,7 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # shunt
     CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.shunt_active[:, t], tol, 'ShuntData', 'active')
     CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.shunt_admittance[:, t], tol, 'ShuntData', 'S')
-    CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, t], tol, 'ShuntData', 'injections per bus')
+    CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, t], tol, 'ShuntData', 'Injections per bus')
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare arrays and data
@@ -233,7 +233,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # shunt
     err_count += CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.active[:, 0], tol, 'ShuntData', 'active')
     err_count += CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.admittance[:, 0], tol, 'ShuntData', 'S')
-    err_count += CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, 0], tol, 'ShuntData', 'injections per bus')
+    err_count += CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, 0], tol, 'ShuntData', 'Injections per bus')
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare arrays and data

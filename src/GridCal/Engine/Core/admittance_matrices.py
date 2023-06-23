@@ -19,7 +19,7 @@
 import numpy as np
 import scipy.sparse as sp
 
-from GridCal.Engine.Devices.enumerations import WindingsConnection
+from GridCal.Engine.Core.Devices.enumerations import WindingsConnection
 
 
 def compute_connectivity(branch_active, Cf_, Ct_):
@@ -46,13 +46,13 @@ def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t,
     :param X: array of branch reactance (p.u.)
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
-    :param k: array of converter values: 1 for regular branches, sqrt(3) / 2 for VSC
-    :param tap_module: array of tap modules (for all branches, regardless of their type)
+    :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
+    :param tap_module: array of tap modules (for all Branches, regardless of their type)
     :param vtap_f: array of virtual taps at the "from" side
     :param vtap_t: array of virtual taps at the "to" side
-    :param tap_angle: array of tap angles (for all branches, regardless of their type)
+    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
-    :param If: Array of currents "from" in all the branches
+    :param If: Array of currents "from" in all the Branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param G0sw:
@@ -137,8 +137,8 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
     :param ys: array of branch series admittances
     :param B: array of branch susceptances
     :param Sbase: base power (i.e. 100 MVA)
-    :param tap_module: array of tap modules (for all branches, regardless of their type)
-    :param tap_angle: array of tap angles (for all branches, regardless of their type)
+    :param tap_module: array of tap modules (for all Branches, regardless of their type)
+    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
     :param Gsw: Array of branch (converter) losses
     :param virtual_tap_from: array of virtual taps at the "from" side
@@ -178,13 +178,13 @@ def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, 
     :param X: array of branch reactance (p.u.)
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
-    :param k: array of converter values: 1 for regular branches, sqrt(3) / 2 for VSC
-    :param m: array of tap modules (for all branches, regardless of their type)
+    :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
+    :param m: array of tap modules (for all Branches, regardless of their type)
     :param mf: array of virtual taps at the "from" side
     :param mt: array of virtual taps at the "to" side
-    :param theta: array of tap angles (for all branches, regardless of their type)
+    :param theta: array of tap angles (for all Branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
-    :param If: Array of currents "from" in all the branches
+    :param If: Array of currents "from" in all the Branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param G0:
@@ -224,7 +224,7 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     Compute the admittance matrices for the fast decoupled method
     :param X: array of branch reactance (p.u.)
     :param B: array of branch susceptance (p.u.)
-    :param m: array of tap modules (for all branches, regardless of their type)
+    :param m: array of tap modules (for all Branches, regardless of their type)
     :param mf: array of virtual taps at the "from" side
     :param mt: array of virtual taps at the "to" side
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -254,15 +254,15 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
 def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
-    :param nbr: Number of branches
+    :param nbr: Number of Branches
     :param X: array of branch reactance (p.u.)
     :param R: array of branch resistance (p.u.)
-    :param m: array of tap modules (for all branches, regardless of their type)
+    :param m: array of tap modules (for all Branches, regardless of their type)
     :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param ac: array of ac branches indices
-    :param dc: array of dc branches indices
+    :param ac: array of ac Branches indices
+    :param dc: array of dc Branches indices
     :return: Bbus, Bf, Btheta
     """
 
@@ -271,10 +271,10 @@ def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac branches
-        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc branches
+        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac Branches
+        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc Branches
     else:
-        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac branches
+        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac Branches
 
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct

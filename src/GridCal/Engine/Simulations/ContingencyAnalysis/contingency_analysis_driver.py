@@ -35,7 +35,7 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnaly
 def enumerate_states_n_k(m: int, k: int = 1):
     """
     Enumerates the states to produce the so called N-k failures
-    :param m: number of branches
+    :param m: number of Branches
     :param k: failure level
     :return: binary array (number of states, m)
     """
@@ -184,7 +184,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # apply the contingencies
             for cnt in contingencies:
 
-                # search for the contingency in the branches
+                # search for the contingency in the Branches
                 if cnt.device_idtag in branches_dict:
                     br_idx = branches_dict[cnt.device_idtag]
 

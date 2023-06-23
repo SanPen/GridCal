@@ -25,11 +25,11 @@ from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_worker import 
     short_circuit_unbalanced
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Devices import Branch, Bus
+from GridCal.Engine.Core.Devices import Branch, Bus
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Devices.enumerations import FaultType
+from GridCal.Engine.Core.Devices.enumerations import FaultType
 
 
 ########################################################################################################################
@@ -139,7 +139,7 @@ class ShortCircuitDriver(DriverTemplate):
         :param fault_position: per unit distance measured from the "from" bus (0 ~ 1)
         :param r_fault: Fault resistance in p.u.
         :param x_fault: Fault reactance in p.u.
-        :return: the two new branches and the mid short circuited bus
+        :return: the two new Branches and the mid short circuited bus
         """
 
         assert (0.0 < fault_position < 1.0)
@@ -152,7 +152,7 @@ class ShortCircuitDriver(DriverTemplate):
         # deactivate the current branch
         branch.active = False
 
-        # Each of the branches will have the proportional impedance
+        # Each of the Branches will have the proportional impedance
         # Bus_from           Middle_bus            Bus_To
         # o----------------------o--------------------o
         #   >-------- x -------->|

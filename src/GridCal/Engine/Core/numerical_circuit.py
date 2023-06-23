@@ -25,16 +25,15 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 import GridCal.Engine.Core.topology as tp
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import Jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 from GridCal.Engine.Core.topology import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
-from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType
 import GridCal.Engine.Core.DataStructures as ds
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.groupings import Area
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCal.Engine.Core.Devices.Aggregation.area import Area
 
 sparse_type = get_sparse_type()
 
@@ -79,8 +78,8 @@ def compose_generator_voltage_profile(
     :param hvdc_status: array of hvdc status (nhvdc)
     :param hvdc_vf: array of hvdc voltage from set points (nhvdc)
     :param hvdc_vt: array of hvdc voltage to set points (nhvdc)
-    :param iBeqv: indices of the branches when controlling Vf with Beq
-    :param iVtma: indices of the branches when controlling Vt with ma
+    :param iBeqv: indices of the Branches when controlling Vf with Beq
+    :param iVtma: indices of the Branches when controlling Vt with ma
     :param VfBeqbus: indices of the buses where Vf is controlled by Beq
     :param Vtmabus: indices of the buses where Vt is controlled by ma
     :param branch_status: array of brach status (nbr)
@@ -120,7 +119,7 @@ def compose_generator_voltage_profile(
                 used[to_idx] = 1
 
     # branch - from
-    for i in iBeqv:  # branches controlling Vf
+    for i in iBeqv:  # Branches controlling Vf
         from_idx = VfBeqbus[i]
         if branch_status[i] != 0:
             if used[from_idx] == 0:
@@ -128,7 +127,7 @@ def compose_generator_voltage_profile(
                 used[from_idx] = 1
 
     # branch - to
-    for i in iVtma:  # branches controlling Vt
+    for i in iVtma:  # Branches controlling Vt
         from_idx = Vtmabus[i]
         if branch_status[i] != 0:
             if used[from_idx] == 0:
@@ -145,7 +144,7 @@ def get_inter_areas_branch(
         buses_in_a2: np.ndarray,
 ):
     """
-    Get the branches that join two areas
+    Get the Branches that join two areas
     :param F: Array indices of branch bus from indices
     :param T: Array of branch bus to indices
     :param buses_in_a1: Array of bus indices belonging area from
@@ -245,7 +244,7 @@ class NumericalCircuit:
         """
         Numerical circuit
         :param nbus: Number of calculation buses
-        :param nbr: Number of calculation branches
+        :param nbr: Number of calculation Branches
         :param nhvdc: Number of calculation hvdc devices
         :param nload:  Number of calculation load devices
         :param ngen:  Number of calculation generator devices
@@ -267,12 +266,12 @@ class NumericalCircuit:
         self.Sbase: float = sbase
 
         self.any_control: bool = False
-        self.iPfsh: List = list()  # indices of the branches controlling Pf flow with theta sh
-        self.iQfma: List = list()  # indices of the branches controlling Qf with ma
-        self.iBeqz: List = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv: List = list()  # indices of the branches when controlling Vf with Beq
-        self.iVtma: List = list()  # indices of the branches when controlling Vt with ma
-        self.iQtma: List = list()  # indices of the branches controlling the Qt flow with ma
+        self.iPfsh: List = list()  # indices of the Branches controlling Pf flow with theta sh
+        self.iQfma: List = list()  # indices of the Branches controlling Qf with ma
+        self.iBeqz: List = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv: List = list()  # indices of the Branches when controlling Vf with Beq
+        self.iVtma: List = list()  # indices of the Branches when controlling Vt with ma
+        self.iQtma: List = list()  # indices of the Branches controlling the Qt flow with ma
         self.iPfdp: List = list()  # indices of the drop-Vm converters controlling the power flow with theta sh
         self.iPfdp_va: List = list()  # indices of the drop-Va converters controlling the power flow with theta sh
         self.iVscL: List = list()  # indices of the converters
@@ -337,7 +336,7 @@ class NumericalCircuit:
     def get_injections(self, normalize=True):
         """
         Compute the power
-        :return: return the array of power injections in MW if normalized is false, in p.u. otherwise
+        :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise
         """
 
         # load
@@ -414,9 +413,9 @@ class NumericalCircuit:
         """
         Fast admittance recombination
         :param tap_module: transformer taps (if idx is provided, must have the same length as idx,
-                           otherwise the length must be the number of branches)
-        :param idx: Indices of the branches where the tap belongs,
-                    if None assumes that the tap sizes is equal to the number of branches
+                           otherwise the length must be the number of Branches)
+        :param idx: Indices of the Branches where the tap belongs,
+                    if None assumes that the tap sizes is equal to the number of Branches
         :return:
         """
         if idx is None:
@@ -475,12 +474,12 @@ class NumericalCircuit:
         """
 
         # indices in the global branch scheme
-        self.iPfsh = list()  # indices of the branches controlling Pf flow with theta sh
-        self.iQfma = list()  # indices of the branches controlling Qf with ma
-        self.iBeqz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv = list()  # indices of the branches when controlling Vf with Beq
-        self.iVtma = list()  # indices of the branches when controlling Vt with ma
-        self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
+        self.iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
+        self.iQfma = list()  # indices of the Branches controlling Qf with ma
+        self.iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv = list()  # indices of the Branches when controlling Vf with Beq
+        self.iVtma = list()  # indices of the Branches when controlling Vt with ma
+        self.iQtma = list()  # indices of the Branches controlling the Qt flow with ma
         self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
         self.iVscL = list()  # indices of the converters
         self.iPfdp_va = list()
@@ -653,8 +652,8 @@ class NumericalCircuit:
     @property
     def Sbus(self):
         """
-        Returns the power injections in per-unit
-        :return: array of power injections (p.u.)
+        Returns the power Injections in per-unit
+        :return: array of power Injections (p.u.)
         """
 
         if self.Sbus_ is None:
@@ -782,7 +781,7 @@ class NumericalCircuit:
     @property
     def ac_indices(self):
         """
-        Array of indices of the AC branches
+        Array of indices of the AC Branches
         :return: array of indices
         """
         if self.ac_ is None:
@@ -793,7 +792,7 @@ class NumericalCircuit:
     @property
     def dc_indices(self):
         """
-        Array of indices of the DC branches
+        Array of indices of the DC Branches
         :return: array of indices
         """
         if self.dc_ is None:
@@ -883,7 +882,7 @@ class NumericalCircuit:
     @property
     def Yf(self):
         """
-        Admittance matrix of the "from" nodes with the branches
+        Admittance matrix of the "from" nodes with the Branches
         :return: CSC matrix
         """
         if self.Admittances is None:
@@ -894,7 +893,7 @@ class NumericalCircuit:
     @property
     def Yt(self):
         """
-        Admittance matrix of the "to" nodes with the branches
+        Admittance matrix of the "to" nodes with the Branches
         :return: CSC matrix
         """
         if self.Admittances is None:
@@ -905,7 +904,7 @@ class NumericalCircuit:
     @property
     def Yseries(self):
         """
-        Admittance matrix of the series elements of the pi model of the branches
+        Admittance matrix of the series elements of the pi model of the Branches
         :return: CSC matrix
         """
         # compute admittances on demand
@@ -936,7 +935,7 @@ class NumericalCircuit:
     @property
     def Yshunt(self):
         """
-        Array of shunt admittances of the pi model of the branches (used in HELM mostly)
+        Array of shunt admittances of the pi model of the Branches (used in HELM mostly)
         :return: Array of complex values
         """
         if self.Yshunt_ is None:
@@ -1005,7 +1004,7 @@ class NumericalCircuit:
     @property
     def Bf(self):
         """
-        Susceptance matrix of the "from" nodes to the branches
+        Susceptance matrix of the "from" nodes to the Branches
         :return:
         """
         if self.Bf_ is None:
@@ -1139,7 +1138,7 @@ class NumericalCircuit:
 
     def get_inter_areas_branches(self, buses_areas_1, buses_areas_2):
         """
-        Get the branches that join two areas
+        Get the Branches that join two areas
         :param buses_areas_1: Area from
         :param buses_areas_2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
@@ -1148,7 +1147,7 @@ class NumericalCircuit:
 
     def get_inter_areas_hvdc(self, buses_areas_1, buses_areas_2):
         """
-        Get the branches that join two areas
+        Get the Branches that join two areas
         :param buses_areas_1: Area from
         :param buses_areas_2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)

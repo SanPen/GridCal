@@ -35,7 +35,7 @@ def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
-        Ibus: Array of nodal current injections
+        Ibus: Array of nodal current Injections
         pq: Array with the indices of the PQ buses
         pvpq: Array with the indices of the PV and PQ buses
 
@@ -62,16 +62,16 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
     :param Ybus: Admittance matrix
-    :param S0: Array of nodal power injections
+    :param S0: Array of nodal power Injections
     :param V0: Array of nodal voltages (initial solution)
-    :param I0: Array of nodal current injections
+    :param I0: Array of nodal current Injections
     :param pv: Array with the indices of the PV buses
     :param pq: Array with the indices of the PQ buses
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param acceleration_parameter: parameter used to correct the "bad" iterations, typically 0.5
     :param error_registry: list to store the error for plotting
-    :return: Voltage solution, converged?, error, calculated power injections
+    :return: Voltage solution, converged?, error, calculated power Injections
     """
 
     start = time.time()

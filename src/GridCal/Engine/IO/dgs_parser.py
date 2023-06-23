@@ -19,7 +19,7 @@ GridCal
 """
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import math
 import numpy as np
 import pandas as pd
@@ -742,7 +742,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             # BUSES[bus1, bd.QD] += external['qgini'].values[i]
 
     ####################################################################################################################
-    # Lines (branches)
+    # Lines (Branches)
     ####################################################################################################################
     # print('Parsing lines')
 

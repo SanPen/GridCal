@@ -18,7 +18,7 @@ from pytest import approx
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+from GridCal.Engine.Core.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, PowerFlowDriver
 

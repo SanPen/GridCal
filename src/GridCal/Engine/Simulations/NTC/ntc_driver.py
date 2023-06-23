@@ -179,7 +179,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                         base_problems = True
 
             if base_problems:
-                # get the inter-area branches and their sign
+                # get the inter-area Branches and their sign
                 inter_area_branches = get_inter_areas_branches(
                     nbr=numerical_circuit.nbr,
                     F=numerical_circuit.branch_data.F,

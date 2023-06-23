@@ -66,9 +66,9 @@ class CascadingResults:
 
     def get_failed_idx(self):
         """
-        Return the array of all failed branches
+        Return the array of all failed Branches
         Returns:
-            array of all failed branches
+            array of all failed Branches
         """
         res = None
         for i in range(len(self.events)):
@@ -135,7 +135,7 @@ class Cascading(DriverTemplate):
     @staticmethod
     def remove_elements(circuit: MultiCircuit, loading_vector, idx=None):
         """
-        Remove branches based on loading
+        Remove Branches based on loading
         Returns:
             Nothing
         """
@@ -148,7 +148,7 @@ class Cascading(DriverTemplate):
                 criteria = 'Loading'
                 idx = np.where(load >= load.max())[0]
 
-        # disable the selected branches
+        # disable the selected Branches
         # print('Removing:', idx, load[idx])
         branches = circuit.get_branches()
         for i in idx:
@@ -162,7 +162,7 @@ class Cascading(DriverTemplate):
                                  max_val,
                                  min_prob):
         """
-        Remove branches based on their chance of overload
+        Remove Branches based on their chance of overload
         :param numerical_circuit:
         :param results:
         :param max_val:
@@ -199,7 +199,7 @@ class Cascading(DriverTemplate):
                 indices.append(idx_val)
             else:
                 indices = []
-                criteria = 'No branches'
+                criteria = 'No Branches'
 
         return indices, criteria
 
@@ -290,7 +290,7 @@ class Cascading(DriverTemplate):
             # For every circuit, run the model (time series, lhs, or whatever)
             model_simulator.run()
 
-            # remove grid elements (branches)
+            # remove grid elements (Branches)
             idx, criteria = self.remove_probability_based(nc, model_simulator.results,
                                                           max_val=1.0, min_prob=0.1)
 
@@ -313,9 +313,9 @@ class Cascading(DriverTemplate):
 
     def get_failed_idx(self):
         """
-        Return the array of all failed branches
+        Return the array of all failed Branches
         Returns:
-            array of all failed branches
+            array of all failed Branches
         """
         return self.results.get_failed_idx()
 

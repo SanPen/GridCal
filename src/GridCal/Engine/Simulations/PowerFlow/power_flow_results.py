@@ -50,9 +50,9 @@ class NumericPowerFlowResults:
         :param converged: converged?
         :param norm_f: error
         :param Scalc: Calculated power vector
-        :param ma: Tap modules vector for all the branches
-        :param theta: Tap angles vector for all the branches
-        :param Beq: Equivalent susceptance vector for all the branches
+        :param ma: Tap modules vector for all the Branches
+        :param theta: Tap angles vector for all the Branches
+        :param Beq: Equivalent susceptance vector for all the Branches
         :param Ybus: Admittance matrix
         :param Yf: Admittance matrix of the "from" buses
         :param Yt: Admittance matrix of the "to" buses
@@ -92,7 +92,7 @@ class PowerFlowResults(ResultsTemplate):
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
         provides access to the simulation results through its class attributes.
         :param n: number of nodes
-        :param m: number of branches
+        :param m: number of Branches
         :param n_hvdc: number of HVDC devices
         :param bus_names: list of bus names
         :param branch_names: list of branch names

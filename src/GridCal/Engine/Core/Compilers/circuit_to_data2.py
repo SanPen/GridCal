@@ -1,11 +1,11 @@
-from typing import List, Dict, Union
+from typing import Dict, Union
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.groupings import Area
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCal.Engine.Core.Devices.Aggregation.area import Area
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
+from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
 import GridCal.Engine.Core.DataStructures as ds
 
 

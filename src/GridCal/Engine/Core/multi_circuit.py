@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
 
@@ -57,7 +57,7 @@ def get_system_user() -> str:
 class MultiCircuit:
     """
     The concept of circuit should be easy enough to understand. It represents a set of
-    nodes (:ref:`buses<Bus>`) and :ref:`branches<Branch>` (lines, transformers or other
+    nodes (:ref:`buses<Bus>`) and :ref:`Branches<Branch>` (lines, transformers or other
     impedances).
 
     The :ref:`MultiCircuit<multicircuit>` class is the main object in **GridCal**. It
@@ -70,7 +70,7 @@ class MultiCircuit:
     **GridCal** uses an object oriented approach for the data management. This allows
     to group the data in a smart way. In **GridCal** there are only two types of object
     directly declared in a **Circuit** or :ref:`MultiCircuit<multicircuit>` object.
-    These are the :ref:`Bus<bus>` and the :ref:`Branch<branch>`. The branches connect
+    These are the :ref:`Bus<bus>` and the :ref:`Branch<branch>`. The Branches connect
     the buses and the buses contain all the other possible devices like loads,
     generators, batteries, etc. This simplifies enormously the management of element
     when adding, associating and deleting.
@@ -119,7 +119,7 @@ class MultiCircuit:
         self.fBase: float = fbase
 
         # Should be able to accept Branches, Lines and Transformers alike
-        # self.branches = list()
+        # self.Branches = list()
 
         self.lines: List[dev.Line] = list()
 
@@ -167,7 +167,7 @@ class MultiCircuit:
         self.transformer_types: List[dev.TransformerType] = list()
 
         # list of substations
-        self.default_substation: dev.Substation = dev.Substation('Default substation')
+        self.default_substation: dev.Substation = dev.Substation('Default Substation')
         self.substations: List[dev.Substation] = [self.default_substation]
 
         # list of areas
@@ -197,7 +197,7 @@ class MultiCircuit:
         # names of the buses
         self.bus_names: Union[List[str], None] = None
 
-        # names of the branches
+        # names of the Branches
         self.branch_names: Union[List[str], None]  = None
 
         # master time profile
@@ -349,7 +349,7 @@ class MultiCircuit:
 
     def get_branch_number(self) -> int:
         """
-        return the number of branches (of all types)
+        return the number of Branches (of all types)
         :return: number
         """
         m = 0
@@ -371,7 +371,7 @@ class MultiCircuit:
 
     def get_branch_number_wo_hvdc(self) -> int:
         """
-        return the number of branches (of all types)
+        return the number of Branches (of all types)
         :return: number
         """
         count = 0
@@ -398,7 +398,7 @@ class MultiCircuit:
 
     def get_dimensions(self):
         """
-        Get the three dimensions of the circuit: number of buses, number of branches, number of time steps
+        Get the three dimensions of the circuit: number of buses, number of Branches, number of time steps
         :return: (nbus, nbranch, ntime)
         """
         return self.get_bus_number(), self.get_branch_number(), self.get_time_number()
@@ -1261,7 +1261,7 @@ class MultiCircuit:
             **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
 
-        # remove associated branches in reverse order
+        # remove associated Branches in reverse order
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
@@ -1761,14 +1761,14 @@ class MultiCircuit:
 
     def add_substation(self, obj: dev.Substation):
         """
-        Add substation
+        Add Substation
         :param obj: Substation object
         """
         self.substations.append(obj)
 
     def delete_substation(self, i):
         """
-        Delete substation
+        Delete Substation
         :param i: index
         """
         self.substations.pop(i)
@@ -2242,7 +2242,7 @@ class MultiCircuit:
     def average_separation(self):
         """
         Average separation of the buses
-        :param branches: list of Branch elements
+        :param Branches: list of Branch elements
         :return: average separation
         """
         separation = 0.0
@@ -2689,7 +2689,7 @@ class MultiCircuit:
 
     def get_inter_area_branches(self, a1: dev.Area, a2: dev.Area):
         """
-        Get the inter-area branches
+        Get the inter-area Branches
         :param a1: Area from
         :param a2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
@@ -2704,7 +2704,7 @@ class MultiCircuit:
 
     def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
-        Get the inter-area branches. HVDC branches are not considered
+        Get the inter-area Branches. HVDC Branches are not considered
         :param a1: Area from
         :param a2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
@@ -2719,7 +2719,7 @@ class MultiCircuit:
 
     def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
-        Get the inter-area branches
+        Get the inter-area Branches
         :param a1: Area from
         :param a2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
@@ -2734,7 +2734,7 @@ class MultiCircuit:
 
     def get_inter_zone_branches(self, z1: dev.Zone, z2: dev.Zone) -> List[Tuple[int, object, float]]:
         """
-        Get the inter-area branches
+        Get the inter-area Branches
         :param z1: Zone from
         :param z2: Zone to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
@@ -2752,7 +2752,7 @@ class MultiCircuit:
         Get the inter area connectivity matrix
         :param a1: list of sending areas
         :param a2: list of receiving areas
-        :return: Connectivity of the branches to each sending or receiving area groups (branches, 2)
+        :return: Connectivity of the Branches to each sending or receiving area groups (Branches, 2)
         """
         area_dict = {a: i for i, a in enumerate(self.areas)}
 
@@ -2785,7 +2785,7 @@ class MultiCircuit:
         """
         Sbase_old = self.Sbase
 
-        # get all the branches with impedance
+        # get all the Branches with impedance
         elms = self.get_branches_wo_hvdc()
 
         # change the base at each element
@@ -2912,7 +2912,7 @@ class MultiCircuit:
 
     def get_Sbus(self) -> CxVec:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (ntime, nbus) [MW + j MVAr]
         """
         val = np.zeros(self.get_bus_number(), dtype=complex)
@@ -2924,7 +2924,7 @@ class MultiCircuit:
 
     def get_Sbus_prof(self) -> CxMat:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (ntime, nbus) [MW + j MVAr]
         """
         val = np.zeros((self.get_time_number(), self.get_bus_number()), dtype=complex)
@@ -2942,7 +2942,7 @@ class MultiCircuit:
 
     def get_branch_rates_prof_wo_hvdc(self) -> Mat:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
         val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
@@ -2954,7 +2954,7 @@ class MultiCircuit:
 
     def get_branch_rates_wo_hvdc(self) -> Vec:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
         val = np.zeros(self.get_branch_number_wo_hvdc())
@@ -2966,7 +2966,7 @@ class MultiCircuit:
 
     def get_branch_contingency_rates_prof_wo_hvdc(self) -> Mat:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
         val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
@@ -2978,7 +2978,7 @@ class MultiCircuit:
 
     def get_branch_contingency_rates_wo_hvdc(self) -> Vec:
         """
-        Get the complex bus power injections
+        Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
         val = np.zeros(self.get_branch_number_wo_hvdc())

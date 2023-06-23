@@ -30,7 +30,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         """
         OPF Time Series results constructor
         :param n: number of buses
-        :param m: number of branches
+        :param m: number of Branches
         :param nt: number of time steps
         :param ngen:
         :param nbat:

@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Devices.measurement import MeasurementType
+from GridCal.Engine.Core.Devices.measurement import MeasurementType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
@@ -54,16 +54,16 @@ class StateEstimationInput:
         # nodes without power injection measurements
         self.p_inj_idx = list()
 
-        # branches without power measurements
+        # Branches without power measurements
         self.p_flow_idx = list()
 
         # nodes without reactive power injection measurements
         self.q_inj_idx = list()
 
-        # branches without reactive power measurements
+        # Branches without reactive power measurements
         self.q_flow_idx = list()
 
-        # branches without current measurements
+        # Branches without current measurements
         self.i_flow_idx = list()
 
         # nodes without voltage module measurements
@@ -175,7 +175,7 @@ class StateEstimation(DriverTemplate):
         branches = circuit.get_branches()
         for i in branch_idx:
 
-            # branch = circuit.branches[i]
+            # branch = circuit.Branches[i]
 
             for m in branches[i].measurements:
 
@@ -242,7 +242,7 @@ class StateEstimation(DriverTemplate):
                        elapsed=solution.elapsed,
                        iterations=solution.iterations)
 
-            # Compute the branches power and the slack buses power
+            # Compute the Branches power and the slack buses power
             Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=island,
                                                                                        Sbus=island.Sbus,
                                                                                        V=solution.V,

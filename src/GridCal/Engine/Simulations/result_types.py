@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from enum import Enum
-from GridCal.Engine.Devices import DeviceType
+from GridCal.Engine.Core.Devices import DeviceType
 
 
 class ResultTypes(Enum):
@@ -158,8 +158,8 @@ class ResultTypes(Enum):
     TsAlphaReport = 'Time series sensitivity to the exchange report', DeviceType.NoDevice
     TsWorstAlphaN1Report = 'Time series worst sensitivity to the exchange report (N-1)', DeviceType.NoDevice
     TsBranchMonitoring = 'Time series branch monitoring logic report', DeviceType.BranchDevice
-    TsCriticalBranches = 'Time series critical branches report', DeviceType.BranchDevice
-    TsContingencyBranches = 'Time series contingency branches report', DeviceType.BranchDevice
+    TsCriticalBranches = 'Time series critical Branches report', DeviceType.BranchDevice
+    TsContingencyBranches = 'Time series contingency Branches report', DeviceType.BranchDevice
 
     # Clustering
     ClusteringReport = 'Clustering time series report', DeviceType.NoDevice

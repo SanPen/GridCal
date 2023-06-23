@@ -25,7 +25,7 @@ from PySide6 import QtGui
 from GridCal.Engine.basic_structures import Logger, SyncIssueType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 from PySide6.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
@@ -201,7 +201,7 @@ def detect_changes_and_conflicts(current_circuit: MultiCircuit, file_circuit: Mu
     issues += compare_devices_lists(dev_list1=current_circuit.buses,
                                     dev_list2=file_circuit.buses)
 
-    # branches
+    # Branches
     issues += compare_devices_lists(dev_list1=current_circuit.lines,
                                     dev_list2=file_circuit.lines)
 

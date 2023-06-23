@@ -51,7 +51,7 @@ if len(idx_to) == 0:
     print('The area "to" has no buses!')
 
 if len(idx_br) == 0:
-    print('There are no inter-area branches!')
+    print('There are no inter-area Branches!')
 
 options = OptimalNetTransferCapacityOptions(
     area_from_bus_idx=idx_from,

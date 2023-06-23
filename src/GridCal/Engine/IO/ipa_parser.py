@@ -1,6 +1,6 @@
 import json
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 
 
 def load_iPA(file_name) -> MultiCircuit:
@@ -103,7 +103,7 @@ def load_iPA(file_name) -> MultiCircuit:
                 if r > 1e-5:
                     branch_type = dev.BranchType.Line
                 else:
-                    # mark as "generic branch" the branches with very low resistance
+                    # mark as "generic branch" the Branches with very low resistance
                     branch_type = dev.BranchType.Branch
 
                 elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=branch_type)

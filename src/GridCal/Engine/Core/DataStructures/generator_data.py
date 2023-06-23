@@ -167,7 +167,7 @@ class GeneratorData:
 
     def get_injections_per_bus(self):
         """
-        Get generator injections per bus
+        Get generator Injections per bus
         :return:
         """
         return self.C_bus_elm * (self.get_injections() * self.active)

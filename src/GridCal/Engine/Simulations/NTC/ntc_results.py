@@ -5,7 +5,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
-from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType
 
 
 def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,
@@ -184,7 +184,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
     OPF results.
     Arguments:
-        **Sbus**: bus power injections
+        **Sbus**: bus power Injections
         **voltage**: bus voltages
         **load_shedding**: load shedding values
         **Sf**: branch power values
@@ -393,7 +393,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         """
         Initialize the arrays
         @param n: number of buses
-        @param m: number of branches
+        @param m: number of Branches
         @return:
         """
         self.Sbus = np.zeros(n, dtype=complex)
@@ -573,7 +573,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             trm=self.trm,
         )
 
-        # Add interarea branches data
+        # Add interarea Branches data
         y, columns = add_inter_area_branches_data(
             y=y,
             columns=columns,
@@ -582,7 +582,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             names=self.branch_names,
         )
 
-        # Add hvdc branches data
+        # Add hvdc Branches data
         y, columns = add_hvdc_data(
             y=y,
             columns=columns,
@@ -680,7 +680,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             ntc_load_rule=self.ntc_load_rule,
         )
 
-        # Add interarea branches data
+        # Add interarea Branches data
         y, columns = add_inter_area_branches_data(
             y=y,
             columns=columns,
@@ -689,7 +689,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             names=self.branch_names,
         )
 
-        # Add hvdc branches data
+        # Add hvdc Branches data
         y, columns = add_hvdc_data(
             y=y,
             columns=columns,
@@ -789,7 +789,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             ntc_load_rule=self.ntc_load_rule,
         )
 
-        # Add interarea branches data
+        # Add interarea Branches data
         y, columns = add_inter_area_branches_data(
             y=y,
             columns=columns,
@@ -798,7 +798,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             names=self.branch_names,
         )
 
-        # Add hvdc branches data
+        # Add hvdc Branches data
         y, columns = add_hvdc_data(
             y=y,
             columns=columns,
@@ -898,7 +898,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             ntc_load_rule=self.ntc_load_rule,
         )
 
-        # Add interarea branches data
+        # Add interarea Branches data
         y, columns = add_inter_area_branches_data(
             y=y,
             columns=columns,
@@ -907,7 +907,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             names=self.branch_names,
         )
 
-        # Add hvdc branches data
+        # Add hvdc Branches data
         y, columns = add_hvdc_data(
             y=y,
             columns=columns,
@@ -1017,7 +1017,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param y: report data matrix
         :param columns: report column names
         :param controlled_shifters: Tuple (idx, name) for each controlled shifter
-        :param phase_shift: branches phase shift
+        :param phase_shift: Branches phase shift
         :return:
         """
 
@@ -1363,10 +1363,10 @@ def add_hvdc_data(y, columns, hvdc_Pf, hvdc_names):
 
 def add_inter_area_branches_data(y, columns, inter_area_branches, names, Sf):
     """
-    Add inter area branches data into y, columns from report
+    Add inter area Branches data into y, columns from report
     :param y: report data matrix
     :param columns: report column names
-    :param inter_area_branches: inter area branches
+    :param inter_area_branches: inter area Branches
     :param Sf: Branch powers from
     :param names: branch names
     :return:

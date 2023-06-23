@@ -36,7 +36,7 @@ import qdarktheme
 
 # Engine imports
 import GridCal.Engine.Core as core
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Gui.Session.export_results_driver as exprtdrv
 import GridCal.Gui.Session.file_handler as filedrv
 import GridCal.Gui.Session.synchronization_driver as syncdrv
@@ -1293,25 +1293,25 @@ class MainGUI(QMainWindow):
         print('\tapp.session.power_flow.current:\t the branch currents in per unit')
         print('\tapp.session.power_flow.loading:\t the branch loading in %')
         print('\tapp.session.power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.session.power_flow.power:\t the nodal power injections in per unit')
-        print('\tapp.session.power_flow.Sf:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.session.power_flow.St:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.power_flow.power:\t the nodal power Injections in per unit')
+        print('\tapp.session.power_flow.Sf:\t the branch power Injections in per unit at the "from" side')
+        print('\tapp.session.power_flow.St:\t the branch power Injections in per unit at the "to" side')
 
         print('\n\nShort circuit results:')
         print('\tapp.session.short_circuit.voltage:\t the nodal voltages in per unit')
         print('\tapp.session.short_circuit.current:\t the branch currents in per unit')
         print('\tapp.session.short_circuit.loading:\t the branch loading in %')
         print('\tapp.session.short_circuit.losses:\t the branch losses in per unit')
-        print('\tapp.session.short_circuit.power:\t the nodal power injections in per unit')
-        print('\tapp.session.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.session.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.short_circuit.power:\t the nodal power Injections in per unit')
+        print('\tapp.session.short_circuit.power_from:\t the branch power Injections in per unit at the "from" side')
+        print('\tapp.session.short_circuit.power_to:\t the branch power Injections in per unit at the "to" side')
         print('\tapp.session.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
         print('\n\nOptimal power flow results:')
         print('\tapp.session.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
         print('\tapp.session.optimal_power_flow.load_shedding:\t the branch loading in %')
         print('\tapp.session.optimal_power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.session.optimal_power_flow.Sbus:\t the nodal power injections in MW')
+        print('\tapp.session.optimal_power_flow.Sbus:\t the nodal power Injections in MW')
         print('\tapp.session.optimal_power_flow.Sf:\t the branch power Sf')
 
         print('\n\nTime series power flow results:')
@@ -1319,9 +1319,9 @@ class MainGUI(QMainWindow):
         print('\tapp.session.power_flow_ts.load_profiles:\t Load profiles matrix (row: time, col: node)')
         print('\tapp.session.power_flow_ts.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
         print('\tapp.session.power_flow_ts.voltages:\t nodal voltages results matrix (row: time, col: node)')
-        print('\tapp.session.power_flow_ts.currents:\t branches currents results matrix (row: time, col: branch)')
-        print('\tapp.session.power_flow_ts.loadings:\t branches loadings results matrix (row: time, col: branch)')
-        print('\tapp.session.power_flow_ts.losses:\t branches losses results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.currents:\t Branches currents results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.loadings:\t Branches loadings results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.losses:\t Branches losses results matrix (row: time, col: branch)')
 
         print('\n\nVoltage stability power flow results:')
         print('\tapp.session.continuation_power_flow.voltage:\t Voltage values for every power multiplication factor.')
@@ -2107,7 +2107,7 @@ class MainGUI(QMainWindow):
 
     def auto_rate_branches(self):
         """
-        Rate the branches that do not have rate
+        Rate the Branches that do not have rate
         """
 
         branches = self.circuit.get_branches()
@@ -2132,11 +2132,11 @@ class MainGUI(QMainWindow):
                 info_msg('Run a power flow simulation first.\nThe results are needed in this function.')
 
         else:
-            warning_msg('There are no branches!')
+            warning_msg('There are no Branches!')
 
     def detect_transformers(self):
         """
-        Detect which branches are transformers
+        Detect which Branches are transformers
         """
         if len(self.circuit.lines) > 0:
 
@@ -2152,7 +2152,7 @@ class MainGUI(QMainWindow):
                     pass  # is a line
 
         else:
-            warning_msg('There are no branches!')
+            warning_msg('There are no Branches!')
 
     def create_objects_model(self, elements, elm_type):
 
@@ -3446,7 +3446,7 @@ class MainGUI(QMainWindow):
                     return
 
                 if len(idx_br) == 0:
-                    error_msg('There are no inter-area branches!')
+                    error_msg('There are no inter-area Branches!')
                     return
 
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
@@ -3561,7 +3561,7 @@ class MainGUI(QMainWindow):
                         return
 
                     if len(idx_br) == 0:
-                        error_msg('There are no inter-area branches!')
+                        error_msg('There are no inter-area Branches!')
                         return
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
@@ -3762,7 +3762,7 @@ class MainGUI(QMainWindow):
 
                             pf_drv.run_at(start_idx)
 
-                            # get the power injections array to get the initial and end points
+                            # get the power Injections array to get the initial and end points
                             nc = core.compile_time_circuit(circuit=self.circuit)
                             Sprof = nc.Sbus
                             vc_inputs = sim.ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
@@ -4047,7 +4047,7 @@ class MainGUI(QMainWindow):
             if idx is None:
                 idx = n - 1
 
-            # Accumulate all the failed branches
+            # Accumulate all the failed Branches
             br_idx = np.zeros(0, dtype=int)
             for i in range(idx):
                 br_idx = np.r_[br_idx, results.events[i].removed_idx]
@@ -4183,7 +4183,7 @@ class MainGUI(QMainWindow):
 
             if not results.converged:
                 warning_msg('Some islands did not solve.\n'
-                            'Check that all branches have rating and \n'
+                            'Check that all Branches have rating and \n'
                             'that the generator bounds are ok.\n'
                             'You may also use the diagnostic tool (F8)', 'OPF')
 
@@ -4422,7 +4422,7 @@ class MainGUI(QMainWindow):
                     return
 
                 if len(idx_br) == 0:
-                    error_msg('There are no inter-area branches!')
+                    error_msg('There are no inter-area Branches!')
                     return
 
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
@@ -4564,7 +4564,7 @@ class MainGUI(QMainWindow):
                     return
 
                 if len(idx_br) == 0:
-                    error_msg('There are no inter-area branches!')
+                    error_msg('There are no inter-area Branches!')
                     return
 
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
@@ -4681,7 +4681,7 @@ class MainGUI(QMainWindow):
 
     def reduce_grid(self):
         """
-        Reduce grid by removing branches and nodes according to the selected options
+        Reduce grid by removing Branches and nodes according to the selected options
         """
 
         if len(self.circuit.buses) > 0:
@@ -4709,7 +4709,7 @@ class MainGUI(QMainWindow):
                                                            rx_threshold=rx_threshold,
                                                            selected_types=selected_types)
 
-                    # find which branches to remove
+                    # find which Branches to remove
                     br_to_remove = sim.select_branches_to_reduce(circuit=self.circuit,
                                                                  rx_criteria=options.rx_criteria,
                                                                  rx_threshold=options.rx_threshold,
@@ -4741,7 +4741,7 @@ class MainGUI(QMainWindow):
                         else:
                             pass
                     else:
-                        info_msg('There were no branches identified', 'Topological grid reduction')
+                        info_msg('There were no Branches identified', 'Topological grid reduction')
                 else:
                     warning_msg('Select at least one reduction option in the topology settings',
                                 'Topological grid reduction')
@@ -6125,7 +6125,7 @@ class MainGUI(QMainWindow):
 
     def process_templates(self):
         """
-        Process all branches templates
+        Process all Branches templates
         """
         if self.circuit is not None:
             logger = self.circuit.apply_all_branch_types()
@@ -6558,7 +6558,7 @@ class MainGUI(QMainWindow):
 
     def correct_branch_monitoring(self, max_loading=1.0):
         """
-        The NTC optimization and other algorithms will not work if we have overloaded branches in DC monitored
+        The NTC optimization and other algorithms will not work if we have overloaded Branches in DC monitored
         We can try to not monitor those to try to get it working
         """
         res = self.session.power_flow
@@ -6730,7 +6730,7 @@ class MainGUI(QMainWindow):
                                              dev.DeviceType.SwitchDevice,
                                              dev.DeviceType.VscDevice,
                                              dev.DeviceType.UpfcDevice]:
-                        # branches
+                        # Branches
                         buses = list()
                         values = list()
                         for br in objects:
@@ -7186,7 +7186,7 @@ class MainGUI(QMainWindow):
         :return: success?,
                  list of tuples bus idx, Bus in the areas from,
                  list of tuples bus idx, Bus in the areas to,
-                 List of inter area branches (branch index, branch object, flow sense w.r.t the area exchange),
+                 List of inter area Branches (branch index, branch object, flow sense w.r.t the area exchange),
                  List of inter area HVDC (branch index, branch object, flow sense w.r.t the area exchange),
                  List of areas from,
                  List of areas to

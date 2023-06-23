@@ -229,7 +229,7 @@ class InputsAnalysisResults(ResultsTemplate):
             ne = len(self.grid.countries)
 
         else:
-            raise Exception('Unknown aggregation. Possible aggregations are Zone, Area, Substation, Country')
+            raise Exception('Unknown Aggregation. Possible aggregations are Zone, Area, Substation, Country')
 
         nt = self.grid.get_time_number()
         x = np.zeros((nt, ne))

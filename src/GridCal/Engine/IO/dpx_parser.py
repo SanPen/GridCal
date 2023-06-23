@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -537,7 +537,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
         else:
             logger.add_error('Not recognised under Nodes', tpe)
 
-    # create branches
+    # create Branches
     for tpe in data_structures['Branches']:
 
         # Condenser series or shunt

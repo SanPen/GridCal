@@ -404,7 +404,7 @@ def control_taps_iterative(voltage, T, bus_to_regulated_idx, tap_position, tap_m
 
         **T** (list): array of indices of the "to" buses of each branch
 
-        **bus_to_regulated_idx** (list): array with the indices of the branches that regulate the bus "to"
+        **bus_to_regulated_idx** (list): array with the indices of the Branches that regulate the bus "to"
 
         **tap_position** (list): array of branch tap positions
 
@@ -430,7 +430,7 @@ def control_taps_iterative(voltage, T, bus_to_regulated_idx, tap_position, tap_m
     """
 
     stable = True
-    for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
+    for i in bus_to_regulated_idx:  # traverse the indices of the Branches that are regulated at the "to" bus
 
         j = T[i]  # get the index of the "to" bus of the branch "i"
         v = np.abs(voltage[j])
@@ -520,7 +520,7 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
 
         **T** (list): array of indices of the "to" buses of each branch
 
-        **bus_to_regulated_idx** (list): array with the indices of the branches
+        **bus_to_regulated_idx** (list): array with the indices of the Branches
         that regulate the bus "to"
 
         **tap_position** (list): array of branch tap positions
@@ -547,7 +547,7 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     """
     stable = True
 
-    # traverse the indices of the branches that are regulated at the "to" bus
+    # traverse the indices of the Branches that are regulated at the "to" bus
     for k, bus_idx in enumerate(bus_to_regulated_idx):
 
         j = T[bus_idx]  # get the index of the "to" bus of the branch "i"

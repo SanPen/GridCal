@@ -106,21 +106,21 @@ class LoadData:
 
     def get_injections_per_bus(self):
         """
-        Get injections per bus with sign
+        Get Injections per bus with sign
         :return:
         """
         return - self.C_bus_elm * self.get_effective_load()
 
     def get_current_injections_per_bus(self):
         """
-        Get current injections per bus with sign
+        Get current Injections per bus with sign
         :return:
         """
         return - self.C_bus_elm * (self.I * self.active)
 
     def get_admittance_injections_per_bus(self):
         """
-        Get admittance injections per bus with sign
+        Get admittance Injections per bus with sign
         :return:
         """
         return - self.C_bus_elm * (self.Y * self.active)

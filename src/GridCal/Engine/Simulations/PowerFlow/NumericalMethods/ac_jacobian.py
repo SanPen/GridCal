@@ -442,7 +442,7 @@ def Jacobian(Ybus, V, Ibus, pq, pvpq):
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
-        Ibus: Array of nodal current injections
+        Ibus: Array of nodal current Injections
         pq: Array with the indices of the PQ buses
         pvpq: Array with the indices of the PV and PQ buses
 
@@ -470,7 +470,7 @@ def Jacobian_cartesian(Ybus, V, Ibus, pq, pvpq):
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
-        Ibus: Array of nodal current injections
+        Ibus: Array of nodal current Injections
         pq: Array with the indices of the PQ buses
         pvpq: Array with the indices of the PV and PQ buses
 
@@ -508,7 +508,7 @@ def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
-        Ibus: Array of nodal current injections
+        Ibus: Array of nodal current Injections
         pq: Array with the indices of the PQ buses
         pvpq: Array with the indices of the PV and PQ buses
 

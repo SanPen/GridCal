@@ -25,8 +25,8 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import Normalizer
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import BranchType
-from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Core.Devices.Branches.branch import BranchType
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -38,10 +38,10 @@ pd.set_option('display.width', 1000)
 
 def get_branches_of_bus(B, j):
     """
-    Get the indices of the branches connected to the bus j
+    Get the indices of the Branches connected to the bus j
     :param B: Branch-bus CSC matrix
     :param j: bus index
-    :return: list of branches in the bus
+    :return: list of Branches in the bus
     """
     return [B.indices[k] for k in range(B.indptr[j], B.indptr[j + 1])]
 
@@ -49,10 +49,10 @@ def get_branches_of_bus(B, j):
 def select_branches_to_reduce(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
                               selected_types=BranchType.Branch):
     """
-    Find branches to remove
+    Find Branches to remove
     Args:
         circuit: Circuit to modify in-place
-        rx_criteria: use the r+x threshold to select branches?
+        rx_criteria: use the r+x threshold to select Branches?
         rx_threshold: r+x threshold
         selected_types: branch types to select
     """
@@ -130,7 +130,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
 
     if n_paths == 1:  # if there is only one path, merge the buses
 
-        # get the branches that are connected to the bus f
+        # get the Branches that are connected to the bus f
         adjacent_br_idx = get_branches_of_bus(C, f)
 
         for k, modified_branch in enumerate(adjacent_br_idx):  # for each adjacent branch, reassign the removed bus
@@ -148,7 +148,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
             # copy the state of the removed branch
             modified_branch.active = branches[removed_br_idx].active
 
-            # remember the updated branches
+            # remember the updated Branches
             updated_branches.append(modified_branch)
 
         # merge buses
@@ -289,9 +289,9 @@ class TopologyReduction(DriverTemplate):
         @return:
         """
         self.progress_signal.emit(0.0)
-        self.progress_text.emit('Detecting which branches to remove...')
+        self.progress_text.emit('Detecting which Branches to remove...')
 
-        # sort the branches in reverse order
+        # sort the Branches in reverse order
         self.br_to_remove.sort(reverse=True)
 
         total = len(self.br_to_remove)
@@ -347,7 +347,7 @@ class DeleteAndReduce(DriverTemplate):
         """
         self._is_running = True
         self.progress_signal.emit(0.0)
-        self.progress_text.emit('Detecting which branches to remove...')
+        self.progress_text.emit('Detecting which Branches to remove...')
 
         # get the selected buses
         buses = [self.objects[idx.row()] for idx in self.sel_idx]

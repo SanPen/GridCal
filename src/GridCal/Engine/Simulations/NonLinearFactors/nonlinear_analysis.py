@@ -32,10 +32,10 @@ def calc_V_outage(branch_data, If, Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv
     The main novelty is the introduction of s.AY, thus delaying it
     Use directly V from HELM, do not go for Pade, may need more time for not much benefit
 
-    :param branch_data: branch data for all branches to disconnect
+    :param branch_data: branch data for all Branches to disconnect
     :param If: from currents of the initial power flow
     :param Ybus: original admittance matrix
-    :param Yseries: admittance matrix with only series branches
+    :param Yseries: admittance matrix with only series Branches
     :param V0: initial voltage array
     :param S0: vector of powers
     :param Ysh0: array of shunt admittances
@@ -219,7 +219,7 @@ def calc_lodf_from_V(V_cont, Yf, Cf, Pini, correct_values=True):
 @nb.njit(cache=True)
 def make_otdf(ptdf, lodf, j):
     """
-    Outage sensitivity of the branches when transferring power from the bus j to the slack
+    Outage sensitivity of the Branches when transferring power from the bus j to the slack
         LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
@@ -240,7 +240,7 @@ def make_otdf(ptdf, lodf, j):
 @nb.njit(parallel=True)
 def make_otdf_max(ptdf, lodf):
     """
-    Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+    Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
@@ -317,7 +317,7 @@ def make_transfer_limits(ptdf, flows, rates):
 def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
     """
     Compute the maximum transfer limits after contingency of each branch
-    :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
+    :param otdf_max: Maximum Outage sensitivity of the Branches when transferring power
                      from any bus to the slack  (n-branch, n-branch)
     :param omw: contingency Sf matrix (n-branch, n-branch)
     :param rates: array of branch rates
@@ -406,7 +406,7 @@ class NonLinearAnalysis:
         self.LODF = np.zeros((n_br, n_br))
         self.V_cont = np.zeros((n_bus, n_br), dtype=complex)
 
-        # compose the HVDC power injections
+        # compose the HVDC power Injections
         Shvdc, Losses_hvdc, \
             Pf_hvdc, Pt_hvdc, \
             loading_hvdc, \
@@ -527,7 +527,7 @@ class NonLinearAnalysis:
     @property
     def OTDF(self):
         """
-        Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+        Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
         :return: Maximum LODF matrix (n-branch, n-branch)
         """
@@ -555,7 +555,7 @@ class NonLinearAnalysis:
     def get_flows(self, Sbus):
         """
         Compute the time series branch Sf using the PTDF
-        :param Sbus: Power injections time series array
+        :param Sbus: Power Injections time series array
         :return: branch active power Sf time series
         """
 
@@ -567,7 +567,7 @@ class NonLinearAnalysis:
     def get_flows_time_series(self, Sbus):
         """
         Compute the time series branch Sf using the PTDF
-        :param Sbus: Power injections time series array
+        :param Sbus: Power Injections time series array
         :return: branch active power Sf time series
         """
 

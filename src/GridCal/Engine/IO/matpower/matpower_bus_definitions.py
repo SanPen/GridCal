@@ -211,7 +211,7 @@ def bustypes(bus, gen, storage, Sbus, storage_dispatch_mode=StorageDispatchMode.
             ref = [pv[0]]    # use the first PV bus
             pv = pv[1:]      # take it off PV list
         else:
-            # look for positive power injections to take the largest as the slack
+            # look for positive power Injections to take the largest as the slack
             positive_power_injections = Sbus.real[where(Sbus.real > 0)[0]]
             if len(positive_power_injections) > 0:
                 idx = where(Sbus.real == max(positive_power_injections))[0]

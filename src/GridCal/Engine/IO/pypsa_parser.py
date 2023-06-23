@@ -12,15 +12,14 @@ except ImportError:
     PYPSA_AVAILABLE = False
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
-from GridCal.Engine.Devices.hvdc_line import HvdcLine
-from GridCal.Engine.Devices.enumerations import BuildStatus
-from GridCal.Engine.Devices.line import SequenceLineType, Line
-from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.shunt import Shunt
-from GridCal.Engine.Devices.groupings import Country
+from GridCal.Engine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
+from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCal.Engine.Core.Devices.enumerations import BuildStatus
+from GridCal.Engine.Core.Devices.Branches.line import SequenceLineType, Line
+from GridCal.Engine.Core.Devices.Injections.load import Load
+from GridCal.Engine.Core.Devices.Injections.generator import Generator
+from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCal.Engine.Core.Devices.Aggregation.country import Country
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 BUS_X_SCALE_FACTOR = 720

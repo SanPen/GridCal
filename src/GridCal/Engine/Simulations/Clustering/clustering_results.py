@@ -28,7 +28,7 @@ class ClusteringResults(ResultsTemplate):
     def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec):
         """
         Clustering Results constructor
-        :param time_indices: number of branches
+        :param time_indices: number of Branches
         :param sampled_probabilities: number of buses
         :param time_array: Array of time values (all of them, because this array is sliced with time_indices)
         """

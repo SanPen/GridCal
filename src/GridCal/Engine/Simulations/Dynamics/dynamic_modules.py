@@ -295,7 +295,7 @@ class SynchronousMachineOrder4:
 
     def calc_currents(self, Vbus, Ibus):
         """
-        Calculate machine current injections (in network reference frame)
+        Calculate machine current Injections (in network reference frame)
         :param vt: complex initial voltage
         :return:
         """
@@ -533,7 +533,7 @@ class SynchronousMachineOrder6SauerPai:
 
     def calc_currents(self, vt):
         """
-        Calculate machine current injections (in network reference frame)
+        Calculate machine current Injections (in network reference frame)
         """
 
         # Calculate terminal voltage in dq reference frame
@@ -668,7 +668,7 @@ class VoltageSourceConverterAverage:
 
     def calc_currents(self, vt):
         """
-        Solve grid current injections (in network reference frame)
+        Solve grid current Injections (in network reference frame)
         :param vt: complex voltage
         :return:
         """
@@ -758,7 +758,7 @@ class ExternalGrid:
 
     def calc_currents(self, vt):
         """
-        Solve grid current injections (in network reference frame)
+        Solve grid current Injections (in network reference frame)
         """
 
         self.P = np.abs(vt) * self.Eq * np.sin(self.delta - np.angle(vt)) / self.Xdp
@@ -896,7 +896,7 @@ class SingleCageAsynchronousMotor:
 
     def calc_currents(self, vt):
         """
-        Calculate machine current injections (in network reference frame)
+        Calculate machine current Injections (in network reference frame)
         """
 
         if self.start == 1:
@@ -1070,7 +1070,7 @@ class DoubleCageAsynchronousMotor:
 
     def calc_currents(self, vt):
         """
-        Calculate machine current injections (in network reference frame)
+        Calculate machine current Injections (in network reference frame)
         """
 
         if self.start == 1:

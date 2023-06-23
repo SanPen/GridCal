@@ -312,7 +312,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 n_points=self.options.cluster_number
             )
 
-        # get the power injections
+        # get the power Injections
         P = self.grid.get_Pbus_prof().T  # these are in p.u.
 
         # get flow

@@ -27,7 +27,7 @@ bus5 = Bus('Bus 5', vnom=20)
 grid.add_bus(bus5)
 grid.add_load(bus5, Load('load 5', P=50, Q=20))
 
-# add branches (Lines in this case)
+# add Branches (Lines in this case)
 grid.add_line(Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
 grid.add_line(Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
 grid.add_line(Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))

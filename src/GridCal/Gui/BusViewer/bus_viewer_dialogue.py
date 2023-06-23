@@ -10,7 +10,7 @@ from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.GridEditorWidget import GridEditor
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
@@ -118,7 +118,7 @@ class BusViewerGUI(QMainWindow):
         # get max expansion level
         max_level = self.ui.levelSpinBox.value()
 
-        # get all branches
+        # get all Branches
         all_branches = self.circuit.get_branches()
         branch_dict = {b: i for i, b in enumerate(all_branches)}
 
@@ -156,7 +156,7 @@ class BusViewerGUI(QMainWindow):
                     else:
                         pass
 
-        # sort branches
+        # sort Branches
         lines = list()
         dc_lines = list()
         transformers2w = list()

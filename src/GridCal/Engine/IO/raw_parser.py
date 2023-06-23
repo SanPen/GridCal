@@ -21,7 +21,7 @@ import re
 from typing import List, AnyStr, Dict, Union
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-import GridCal.Engine.Devices as dev
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 
 
@@ -194,7 +194,7 @@ class PSSeGrid:
                     logger.add_warning('The RAW file has a repeated transformer and it is omitted from the model',
                                        branch.idtag)
 
-        # Go through the branches
+        # Go through the Branches
         for psse_branch in self.branches:
             # get the object
             branch = psse_branch.get_object(psse_bus_dict, self.SBASE, logger)
@@ -2499,7 +2499,7 @@ class PSSeParser:
 
                         # interpret each line of the object and store into data.
                         # data is a vector of vectors with data definitions
-                        # for the buses, branches, loads etc. data contains 1 vector,
+                        # for the buses, Branches, loads etc. data contains 1 vector,
                         # for the transformers data contains 4 vectors
                         # data = [interpret_line(object_lines[k]) for k in range(lines_per_object)]
 
