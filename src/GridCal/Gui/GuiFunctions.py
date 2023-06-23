@@ -121,12 +121,17 @@ class ComboDelegate(QtWidgets.QItemDelegate):
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
         val = index.model().data(index, role=QtCore.Qt.DisplayRole)
-        idx = self.object_names.index(val)
-        editor.setCurrentIndex(idx)
-        editor.blockSignals(False)
+        try:
+            idx = self.object_names.index(val)
+            editor.setCurrentIndex(idx)
+            editor.blockSignals(False)
+        except ValueError:
+            pass
 
     def setModelData(self, editor, model, index):
-        model.setData(index, self.objects[editor.currentIndex()])
+        if len(self.objects) > 0:
+            if editor.currentIndex() < len(self.objects):
+                model.setData(index, self.objects[editor.currentIndex()])
 
 
 class TextDelegate(QtWidgets.QItemDelegate):
@@ -602,7 +607,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                          DeviceType.CountryDevice,
                          DeviceType.Technology,
                          DeviceType.ContingencyGroupDevice,
-                         DeviceType.InvestmentsGroupDevice]:
+                         DeviceType.InvestmentsGroupDevice,
+                         DeviceType.FuelDevice,
+                         DeviceType.EmissionGasDevice,
+                         DeviceType.GeneratorDevice]:
 
                 objects = self.dictionary_of_lists[tpe.value]
                 values = [x.name for x in objects]

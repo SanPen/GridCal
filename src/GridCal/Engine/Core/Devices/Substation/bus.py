@@ -148,7 +148,7 @@ class Bus(EditableDevice):
                                                   'country': GCProp('', DeviceType.CountryDevice, 'Country of the bus'),
                                                   'area': GCProp('', DeviceType.AreaDevice, 'Area of the bus'),
                                                   'zone': GCProp('', DeviceType.ZoneDevice, 'Zone of the bus'),
-                                                  'Substation': GCProp('', DeviceType.SubstationDevice,
+                                                  'substation': GCProp('', DeviceType.SubstationDevice,
                                                                        'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},

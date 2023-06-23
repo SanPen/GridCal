@@ -17,11 +17,14 @@
 
 import numpy as np
 import pandas as pd
+from typing import Union
 from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.basic_structures import Logger, Vec, IntVec
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, BuildStatus
 from GridCal.Engine.Core.Devices.Aggregation.technology import Technology
+from GridCal.Engine.Core.Devices.Aggregation.fuel import Fuel
+from GridCal.Engine.Core.Devices.Aggregation.emission_gas import EmissionGas
 
 
 def make_default_q_curve(Snom, Qmin, Qmax, n=3):
@@ -143,14 +146,44 @@ class Generator(EditableDevice):
         **use_reactive_power_curve**: Use the reactive power curve? otherwise use the plain old limits
     """
 
-    def __init__(self, name='gen', idtag=None, code='', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
-                 Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
-                 Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
-                 mttf=0.0, mttr=0.0, technology: Technology = None,
-                 q_points=None, use_reactive_power_curve=False,
-                 r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned,
-                 Cost2_prof=None,Cost0_prof=None):
+    def __init__(self, name='gen',
+                 idtag: Union[str, None] = None,
+                 code: str = '',
+                 active_power: float = 0.0,
+                 power_factor: float = 0.8,
+                 voltage_module: float = 1.0,
+                 is_controlled=True,
+                 Qmin: float = -9999,
+                 Qmax: float = 9999,
+                 Snom: float = 9999,
+                 power_prof: Union[Vec, None] = None,
+                 power_factor_prof: Union[Vec, None] = None,
+                 vset_prof: Union[Vec, None] = None,
+                 active_prof: Union[Vec, None] = None,
+                 active: bool = True,
+                 p_min: float = 0.0,
+                 p_max: float = 9999.0,
+                 Cost: float = 1.0,
+                 Sbase: float = 100,
+                 enabled_dispatch=True,
+                 mttf: float = 0.0,
+                 mttr: float = 0.0,
+                 technology: Technology = None,
+                 q_points=None,
+                 use_reactive_power_curve=False,
+                 r1: float = 1e-20,
+                 x1: float = 1e-20,
+                 r0: float = 1e-20,
+                 x0: float = 1e-20,
+                 r2: float = 1e-20,
+                 x2: float = 1e-20,
+                 capex: float = 0,
+                 opex: float = 0,
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 Cost_prof: Union[Vec, None] = None,
+                 Cost2_prof: Union[Vec, None] = None,
+                 Cost0_prof: Union[Vec, None] = None,
+                 ):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -203,8 +236,7 @@ class Generator(EditableDevice):
                                                   'build_status': GCProp('', BuildStatus, 'Branch build status. Used in expansion planning.'),
                                                   'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'technology': GCProp('', DeviceType.Technology, 'Generator technology')
+                                                  'mttr': GCProp('h', float, 'Mean time to recovery')
                                                   },
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
@@ -217,7 +249,7 @@ class Generator(EditableDevice):
 
         self.bus = None
 
-        self.active_prof = None
+        self.active_prof = active_prof
 
         self.mttf = mttf
 
@@ -292,7 +324,7 @@ class Generator(EditableDevice):
             self.custom_q_points = False
 
         self.Cost2 = 0.0  # Cost of operation €/MW²
-        self.Cost = op_cost  # Cost of operation €/MW
+        self.Cost = Cost  # Cost of operation €/MW
         self.Cost0 = 0.0  # Cost of operation €/MW
 
         self.StartupCost = 0.0

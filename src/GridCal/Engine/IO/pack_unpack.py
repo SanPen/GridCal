@@ -33,11 +33,15 @@ def get_objects_dictionary():
 
                     'zone': dev.Zone(),
 
-                    'Substation': dev.Substation(),
+                    'substation': dev.Substation(),
 
                     'country': dev.Country(),
 
                     'technology': dev.Technology(),
+
+                    'fuel': dev.Fuel(),
+
+                    'emission': dev.EmissionGas(),
 
                     'bus': dev.Bus(),
 
@@ -86,6 +90,13 @@ def get_objects_dictionary():
                     'investments_group': dev.InvestmentsGroup(),
 
                     'investment': dev.Investment(),
+
+                    'generator_technology': dev.GeneratorTechnology(),
+
+                    'generator_fuel': dev.GeneratorFuel(),
+
+                    'generator_emission': dev.GeneratorEmission(),
+
                     }
 
     return object_types
@@ -319,6 +330,9 @@ def data_frames_to_circuit(data: Dict):
                                            DeviceType.Technology,
                                            DeviceType.ContingencyGroupDevice,
                                            DeviceType.InvestmentsGroupDevice,
+                                           DeviceType.FuelDevice,
+                                           DeviceType.EmissionGasDevice,
+                                           DeviceType.GeneratorDevice,
                                            ]:
 
                                 """
@@ -515,17 +529,32 @@ def data_frames_to_circuit(data: Dict):
             elif template_elm.device_type == DeviceType.Technology:
                 circuit.technologies = devices
 
-            if template_elm.device_type == DeviceType.ContingencyGroupDevice:
+            elif template_elm.device_type == DeviceType.ContingencyGroupDevice:
                 circuit.contingency_groups = devices
 
-            if template_elm.device_type == DeviceType.ContingencyDevice:
+            elif template_elm.device_type == DeviceType.ContingencyDevice:
                 circuit.contingencies = devices
 
-            if template_elm.device_type == DeviceType.InvestmentsGroupDevice:
+            elif template_elm.device_type == DeviceType.InvestmentsGroupDevice:
                 circuit.investments_groups = devices
 
-            if template_elm.device_type == DeviceType.InvestmentDevice:
+            elif template_elm.device_type == DeviceType.InvestmentDevice:
                 circuit.investments = devices
+
+            elif template_elm.device_type == DeviceType.FuelDevice:
+                circuit.fuels = devices
+
+            elif template_elm.device_type == DeviceType.EmissionGasDevice:
+                circuit.emission_gases = devices
+
+            elif template_elm.device_type == DeviceType.GeneratorTechnologyAssociation:
+                circuit.generators_technologies = devices
+
+            elif template_elm.device_type == DeviceType.GeneratorFuelAssociation:
+                circuit.generators_fuels = devices
+
+            elif template_elm.device_type == DeviceType.GeneratorEmissionAssociation:
+                circuit.generators_emissions = devices
 
         else:
             circuit.logger.add_error('The data does not contain information about the type', str(key))

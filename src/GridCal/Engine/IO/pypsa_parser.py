@@ -101,7 +101,7 @@ class PyPSAParser:
                                   p_min=data['p_nom_min'],
                                   p_max=data['p_nom_max'],
                                   opex=data['marginal_cost'],
-                                  op_cost=data['marginal_cost'],
+                                  Cost=data['marginal_cost'],
                                   capex=data['capital_cost'] * data['p_nom'])
             self.dest.add_generator(bus, generator)
             try:

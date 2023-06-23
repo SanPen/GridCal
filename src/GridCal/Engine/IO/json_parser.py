@@ -216,7 +216,7 @@ def parse_json_data(data) -> MultiCircuit:
                                     active=element['active'],
                                     p_min=0.0,
                                     p_max=element['Snom'],
-                                    op_cost=1.0)
+                                    Cost=1.0)
                 bus.generators.append(elm)
 
             elif element["type"] == "static_gen":
@@ -469,7 +469,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                     active=bool(jentry['active']),
                                     p_min=float(jentry['pmin']),
                                     p_max=float(jentry['pmax']),
-                                    op_cost=float(jentry['cost'] if "cost" in jentry else 1.0),
+                                    Cost=float(jentry['cost'] if "cost" in jentry else 1.0),
                                     )
 
                 if has_profiles:
@@ -505,7 +505,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                   active=bool(jentry['active']),
                                   p_min=float(jentry['pmin']),
                                   p_max=float(jentry['pmax']),
-                                  op_cost=float(jentry['cost']),
+                                  Cost=float(jentry['cost']),
                                   )
 
                 if has_profiles:
@@ -1040,7 +1040,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                     active=bool(jentry['active']),
                                     p_min=float(jentry['pmin']),
                                     p_max=float(jentry['pmax']),
-                                    op_cost=float(jentry['cost']),
+                                    Cost=float(jentry['cost']),
                                     )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_generator(gen.bus, gen)
@@ -1060,7 +1060,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                   active=bool(jentry['active']),
                                   p_min=float(jentry['pmin']),
                                   p_max=float(jentry['pmax']),
-                                  op_cost=float(jentry['cost']),
+                                  Cost=float(jentry['cost']),
                                   )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_battery(gen.bus, gen)

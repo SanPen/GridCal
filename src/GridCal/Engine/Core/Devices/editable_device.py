@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import uuid
 import numpy as np
-from typing import List, Dict, AnyStr, Any, Optional
+from typing import List, Dict, AnyStr, Any, Optional, Union
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame
 
 
@@ -45,11 +45,14 @@ class GCProp:
 
 class EditableDevice:
 
-    def __init__(self, name, active: bool, device_type: DeviceType,
+    def __init__(self, name,
+                 active: bool,
+                 device_type: DeviceType,
                  editable_headers: Dict[str, GCProp],
                  non_editable_attributes: List[str],
                  properties_with_profile: Dict[str, Optional[Any]],
-                 idtag=None, code=''):
+                 idtag: Union[str, None] = None,
+                 code: str = ''):
         """
         Class to generalize any editable device
         :param name: Asset's name
@@ -75,7 +78,7 @@ class EditableDevice:
 
         self.type_name = device_type.value
 
-        self.device_type = device_type
+        self.device_type: DeviceType = device_type
 
         # associated graphic object
         self._graphic_obj = None

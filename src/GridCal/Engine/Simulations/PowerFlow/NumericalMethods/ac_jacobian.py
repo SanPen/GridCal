@@ -31,11 +31,11 @@
 import numba as nb
 from numba import jit, njit
 from numpy import conj, abs
-from numpy import complex128, float64, int32
+from numpy import float64, int32
 from numpy.core.multiarray import zeros, empty
 import numpy as np
 import scipy.sparse as sp
-from scipy.sparse import csr_matrix, csc_matrix, diags
+from scipy.sparse import csr_matrix, csc_matrix
 import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
 
 

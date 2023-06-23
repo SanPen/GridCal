@@ -215,9 +215,15 @@ class MultiCircuit:
         # emission gasses
         self.emission_gases: List[dev.EmissionGas] = list()
 
+        self.generators_technologies: List[dev.GeneratorTechnology] = list()
+
+        self.generators_fuels: List[dev.GeneratorFuel] = list()
+
+        self.generators_emissions: List[dev.GeneratorEmission] = list()
+
         # objects with profiles
         self.objects_with_profiles = {
-            "Substation" : [
+            "Substation": [
                 dev.Bus(),
                 dev.Substation(),
                 dev.Zone(),
@@ -242,16 +248,21 @@ class MultiCircuit:
                 dev.VSC(None, None),
                 dev.UPFC(None, None),
             ],
-            "Studies": [
+            "Tags": [
                 dev.Technology(),
+                dev.Fuel(),
+                dev.EmissionGas(),
                 dev.ContingencyGroup(),
                 dev.Contingency(),
                 dev.InvestmentsGroup(),
                 dev.Investment(),
-                dev.Fuel(),
-                dev.EmissionGas()
             ],
-            "Templates": [
+            "Associations": [
+                dev.GeneratorTechnology(),
+                dev.GeneratorFuel(),
+                dev.GeneratorEmission(),
+            ],
+            "Catalogue": [
                 dev.Wire(),
                 dev.OverheadLineType(),
                 dev.UndergroundLineType(),
@@ -900,6 +911,129 @@ class MultiCircuit:
 
         elif element_type == dev.DeviceType.EmissionGasDevice:
             return self.emission_gases
+
+        elif element_type == dev.DeviceType.GeneratorTechnologyAssociation:
+            return self.generators_technologies
+
+        elif element_type == dev.DeviceType.GeneratorFuelAssociation:
+            return self.generators_fuels
+
+        elif element_type == dev.DeviceType.GeneratorEmissionAssociation:
+            return self.generators_emissions
+
+        else:
+            raise Exception('Element type not understood ' + str(element_type))
+
+    def delete_elements_by_type(self, obj: dev.EditableDevice):
+        """
+        Get set of elements and their parent nodes
+        :param obj: device object to delete
+        :return: List of elements, it raises an exception if the elements are unknown
+        """
+
+        element_type = obj.device_type
+
+        if element_type == dev.DeviceType.LoadDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.StaticGeneratorDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.GeneratorDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.BatteryDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.ShuntDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.ExternalGridDevice:
+            raise Exception(element_type.value + ' cannot be deleted by index')
+
+        elif element_type == dev.DeviceType.LineDevice:
+            return self.delete_line(obj)
+
+        elif element_type == dev.DeviceType.Transformer2WDevice:
+            return self.delete_transformer2w(obj)
+
+        elif element_type == dev.DeviceType.Transformer3WDevice:
+            return self.delete_transformer3w(obj)
+
+        elif element_type == dev.DeviceType.WindingDevice:
+            return self.delete_winding(obj)
+
+        elif element_type == dev.DeviceType.HVDCLineDevice:
+            return self.delete_hvdc_line(obj)
+
+        elif element_type == dev.DeviceType.UpfcDevice:
+            return self.delete_upfc_converter(obj)
+
+        elif element_type == dev.DeviceType.VscDevice:
+            return self.delete_vsc_converter(obj)
+
+        elif element_type == dev.DeviceType.BusDevice:
+            return self.delete_bus(obj, False)
+
+        elif element_type == dev.DeviceType.OverheadLineTypeDevice:
+            return self.delete_overhead_line(obj)
+
+        elif element_type == dev.DeviceType.TransformerTypeDevice:
+            return self.delete_transformer_type(obj)
+
+        elif element_type == dev.DeviceType.UnderGroundLineDevice:
+            return self.delete_underground_line(obj)
+
+        elif element_type == dev.DeviceType.SequenceLineDevice:
+            return self.delete_sequence_line(obj)
+
+        elif element_type == dev.DeviceType.WireDevice:
+            return self.delete_wire(obj)
+
+        elif element_type == dev.DeviceType.DCLineDevice:
+            return self.delete_dc_line(obj)
+
+        elif element_type == dev.DeviceType.SubstationDevice:
+            return self.delete_substation(obj)
+
+        elif element_type == dev.DeviceType.AreaDevice:
+            return self.delete_area(obj)
+
+        elif element_type == dev.DeviceType.ZoneDevice:
+            return self.delete_zone(obj)
+
+        elif element_type == dev.DeviceType.CountryDevice:
+            return self.delete_country(obj)
+
+        elif element_type == dev.DeviceType.ContingencyDevice:
+            return self.delete_contingency(obj)
+
+        elif element_type == dev.DeviceType.ContingencyGroupDevice:
+            return self.delete_contingency_group(obj)
+
+        elif element_type == dev.DeviceType.Technology:
+            return self.delete_technology(obj)
+
+        elif element_type == dev.DeviceType.InvestmentDevice:
+            return self.delete_investment(obj)
+
+        elif element_type == dev.DeviceType.InvestmentsGroupDevice:
+            return self.delete_investment_groups(obj)
+
+        elif element_type == dev.DeviceType.FuelDevice:
+            return self.delete_fuel(obj)
+
+        elif element_type == dev.DeviceType.EmissionGasDevice:
+            return self.delete_emission_gas(obj)
+
+        elif element_type == dev.DeviceType.GeneratorTechnologyAssociation:
+            return self.delete_generator_technology(obj)
+
+        elif element_type == dev.DeviceType.GeneratorFuelAssociation:
+            return self.delete_generator_fuel(obj)
+
+        elif element_type == dev.DeviceType.GeneratorEmissionAssociation:
+            return self.delete_generator_emission(obj)
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1681,19 +1815,13 @@ class MultiCircuit:
             else:
                 print('The template is not a wire!')
 
-    def delete_wire(self, i, catalogue_to_check=None):
+    def delete_wire(self, obj: dev.Wire):
         """
         Delete wire from the collection
-        :param i: index
-        :param catalogue_to_check: list of catalogue types to check this deletion
+        :param obj:
         """
-
-        if catalogue_to_check is not None:
-            if self.wire_types[i] in catalogue_to_check:
-                return False  # do not delete
-
-        self.wire_types.pop(i)
-        return True
+        # TODO: remove dependencies
+        self.wire_types.remove(obj)
 
     def add_overhead_line(self, obj: dev.OverheadLineType):
         """
@@ -1706,19 +1834,15 @@ class MultiCircuit:
             else:
                 print('The template is not an overhead line!')
 
-    def delete_overhead_line(self, i, catalogue_to_check=None):
+    def delete_overhead_line(self, obj: dev.OverheadLineType):
         """
         Delete tower from the collection
-        :param i: index
-        :param catalogue_to_check: list of catalogue types to check this deletion
+        :param obj: OverheadLineType
         """
 
-        if catalogue_to_check is not None:
-            if self.overhead_line_types[i] in catalogue_to_check:
-                return False  # do not delete
+        # TODO: remove dependencies
 
-        self.overhead_line_types.pop(i)
-        return True
+        self.overhead_line_types.remove(obj)
 
     def add_underground_line(self, obj: dev.UndergroundLineType):
         """
@@ -1731,18 +1855,13 @@ class MultiCircuit:
             else:
                 print('The template is not an underground line!')
 
-    def delete_underground_line(self, i, catalogue_to_check=None):
+    def delete_underground_line(self, obj):
         """
         Delete underground line
-        :param i: index
-        :param catalogue_to_check: list of catalogue types to check this deletion
+        :param obj:
         """
-        if catalogue_to_check is not None:
-            if self.underground_cable_types[i] in catalogue_to_check:
-                return False  # do not delete
-
-        self.underground_cable_types.pop(i)
-        return True
+        # TODO: remove dependencies
+        self.underground_cable_types.remove(obj)
 
     def add_sequence_line(self, obj: dev.SequenceLineType):
         """
@@ -1755,17 +1874,14 @@ class MultiCircuit:
             else:
                 print('The template is not a sequence line!')
 
-    def delete_sequence_line(self, i, catalogue_to_check=None):
+    def delete_sequence_line(self, obj):
         """
         Delete sequence line from the collection
-        :param i: index
-        :param catalogue_to_check: list of catalogue types to check this deletion
+        :param obj:
         """
-        if catalogue_to_check is not None:
-            if self.sequence_line_types[i] in catalogue_to_check:
-                return False  # do not delete
+        # todo: remove dependencies
 
-        self.sequence_line_types.pop(i)
+        self.sequence_line_types.remove(obj)
         return True
 
     def add_transformer_type(self, obj: dev.TransformerType):
@@ -1779,18 +1895,13 @@ class MultiCircuit:
             else:
                 print('The template is not a transformer!')
 
-    def delete_transformer_type(self, i, catalogue_to_check):
+    def delete_transformer_type(self, obj):
         """
         Delete transformer type from the collection
-        :param i: index
-        :param catalogue_to_check: list of catalogue types to check this deletion
+        :param obj
         """
-        if catalogue_to_check is not None:
-            if self.transformer_types[i] in catalogue_to_check:
-                return False  # do not delete
-
-        self.transformer_types.pop(i)
-        return True
+        # TODO: Remove dependencies
+        self.transformer_types.remove(obj)
 
     def apply_all_branch_types(self):
         """
@@ -1814,12 +1925,13 @@ class MultiCircuit:
         """
         self.substations.append(obj)
 
-    def delete_substation(self, i):
+    def delete_substation(self, obj):
         """
         Delete Substation
         :param i: index
         """
-        self.substations.pop(i)
+        # todo: Remove dependencies
+        self.substations.remove(obj)
 
     def add_area(self, obj: dev.Area):
         """
@@ -1828,12 +1940,13 @@ class MultiCircuit:
         """
         self.areas.append(obj)
 
-    def delete_area(self, i):
+    def delete_area(self, obj: dev.Area):
         """
         Delete area
-        :param i: index
+        :param obj: Area
         """
-        self.areas.pop(i)
+        # todo: delete dependencies
+        self.areas.remove(obj)
 
     def add_zone(self, obj: dev.Zone):
         """
@@ -1845,12 +1958,12 @@ class MultiCircuit:
     def add_contingency_group(self, obj: dev.ContingencyGroup):
         self.contingency_groups.append(obj)
 
-    def delete_contingency_group(self, i):
+    def delete_contingency_group(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.contingency_groups.pop(i)
+        self.contingency_groups.remove(obj)
 
     def get_contingency_group_names(self):
         """
@@ -1880,12 +1993,12 @@ class MultiCircuit:
     def add_contingency(self, obj: dev.Contingency):
         self.contingencies.append(obj)
 
-    def delete_contingency(self, i):
+    def delete_contingency(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.contingencies.pop(i)
+        self.contingencies.remove(obj)
 
     def add_investments_group(self, obj: dev.InvestmentsGroup):
         """
@@ -1894,12 +2007,12 @@ class MultiCircuit:
         """
         self.investments_groups.append(obj)
 
-    def delete_investment_groups(self, i):
+    def delete_investment_groups(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.investments_groups.pop(i)
+        self.investments_groups.remove(obj)
 
     def add_investment(self, obj: dev.Investment):
         """
@@ -1908,12 +2021,12 @@ class MultiCircuit:
         """
         self.investments.append(obj)
 
-    def delete_investment(self, i):
+    def delete_investment(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.investments.pop(i)
+        self.investments.remove(obj)
 
     def add_technology(self, obj: dev.Technology):
         """
@@ -1922,19 +2035,20 @@ class MultiCircuit:
         """
         self.technologies.append(obj)
 
-    def delete_technology(self, i):
+    def delete_technology(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.technologies.pop(i)
+        # todo: remove dependencies
+        self.technologies.remove(obj)
 
-    def delete_zone(self, i):
+    def delete_zone(self, obj):
         """
         Delete zone
-        :param i: index
+        :param obj: index
         """
-        self.zones.pop(i)
+        self.zones.remove(obj)
 
     def add_country(self, obj: dev.Country):
         """
@@ -1943,12 +2057,86 @@ class MultiCircuit:
         """
         self.countries.append(obj)
 
-    def delete_country(self, i):
+    def delete_country(self, obj):
         """
         Delete country
-        :param i: index
+        :param obj: index
         """
-        self.countries.pop(i)
+        self.countries.remove(obj)
+
+    def add_fuel(self, obj: dev.Fuel):
+        """
+        Add Fuel
+        :param obj: Fuel object
+        """
+        self.fuels.append(obj)
+
+    def delete_fuel(self, obj):
+        """
+        Delete Fuel
+        :param obj: index
+        """
+        self.fuels.remove(obj)
+
+    def add_emission_gas(self, obj: dev.EmissionGas):
+        """
+        Add EmissionGas
+        :param obj: EmissionGas object
+        """
+        self.emission_gases.append(obj)
+
+    def delete_emission_gas(self, obj):
+        """
+        Delete Substation
+        :param obj: index
+        """
+        # todo: delete dependencies
+        self.emission_gases.remove(obj)
+
+    def add_generator_technology(self, obj: dev.GeneratorTechnology):
+        """
+        Add GeneratorTechnology
+        :param obj: GeneratorTechnology object
+        """
+        self.generators_technologies.append(obj)
+
+    def delete_generator_technology(self, obj: dev.GeneratorTechnology):
+        """
+        Delete GeneratorTechnology
+        :param obj: GeneratorTechnology
+        """
+        # todo: delete dependencies
+        self.generators_technologies.remove(obj)
+
+    def add_generator_fuel(self, obj: dev.GeneratorFuel):
+        """
+        Add GeneratorFuel
+        :param obj: GeneratorFuel object
+        """
+        self.generators_fuels.append(obj)
+
+    def delete_generator_fuel(self, obj: dev.GeneratorFuel):
+        """
+        Delete GeneratorFuel
+        :param obj: GeneratorFuel
+        """
+        # todo: delete dependencies
+        self.generators_fuels.remove(obj)
+
+    def add_generator_emission(self, obj: dev.GeneratorEmission):
+        """
+        Add GeneratorFuel
+        :param obj: GeneratorFuel object
+        """
+        self.generators_emissions.append(obj)
+
+    def delete_generator_emission(self, obj: dev.GeneratorEmission):
+        """
+        Delete GeneratorFuel
+        :param obj: GeneratorFuel
+        """
+        # todo: delete dependencies
+        self.generators_emissions.remove(obj)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """

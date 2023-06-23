@@ -639,7 +639,7 @@ class GridEditor(QSplitter):
         # set the objects list
         self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
 
-        self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
+        # self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
 
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)

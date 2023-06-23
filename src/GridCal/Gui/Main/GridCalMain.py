@@ -339,8 +339,6 @@ class MainGUI(QMainWindow):
 
         self.add_default_catalogue()
 
-        self.ui.catalogueDataStructuresListView.setModel(gf.get_list_model(self.grid_editor.catalogue_types))
-
         self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(core.NumericalCircuit.available_structures))
 
         self.schematic_list_steps = list()
@@ -353,12 +351,7 @@ class MainGUI(QMainWindow):
         self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
         self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
 
-        # 4:1
-        self.ui.templatesSplitter.setStretchFactor(0, 4)
-        self.ui.templatesSplitter.setStretchFactor(1, 1)
-
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
-        self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
         self.ui.results_splitter.setStretchFactor(0, 2)
         self.ui.results_splitter.setStretchFactor(1, 4)
@@ -632,17 +625,7 @@ class MainGUI(QMainWindow):
 
         self.ui.plot_time_series_pushButton.clicked.connect(self.plot_profiles)
 
-        self.ui.catalogue_add_pushButton.clicked.connect(self.add_to_catalogue)
-
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
-
-        self.ui.catalogue_delete_pushButton.clicked.connect(self.delete_from_catalogue)
-
-        self.ui.viewTemplatesButton.clicked.connect(self.view_template_toggle)
-
-        self.ui.assignTemplateButton.clicked.connect(self.assign_template)
-
-        self.ui.processTemplatesPushButton.clicked.connect(self.process_templates)
 
         self.ui.compute_simulation_data_pushButton.clicked.connect(self.update_islands_to_display)
 
@@ -717,8 +700,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-        self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
-
         # tree-view clicks
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
@@ -776,10 +757,6 @@ class MainGUI(QMainWindow):
 
         # this is the contingency planner tab, invisible until done
         self.ui.tabWidget_3.setTabVisible(4, True)
-
-        # template
-        self.view_templates(False)
-        self.view_template_controls(False)
 
         self.view_cascade_menu()
 
@@ -1207,40 +1184,6 @@ class MainGUI(QMainWindow):
         if val in self.stuff_running_now:
             self.stuff_running_now.remove(val)
 
-    def view_templates(self, value=True):
-        """
-        View the frame
-        Args:
-            value:
-
-        Returns:
-
-        """
-        self.ui.templatesFrame.setVisible(value)
-
-        # fill the catalogue
-        if value:
-            self.fill_catalogue_tree_view()
-
-    def view_template_controls(self, value=True):
-        """
-        View the buttons
-        Args:
-            value:
-
-        Returns:
-
-        """
-        self.ui.viewTemplatesButton.setVisible(value)
-        self.ui.processTemplatesPushButton.setVisible(value)
-
-    def view_template_toggle(self):
-
-        if self.ui.templatesFrame.isVisible():
-            self.view_templates(False)
-        else:
-            self.view_templates(True)
-
     def view_cascade_menu(self):
         """
         show/hide the cascade simulation menu
@@ -1473,8 +1416,6 @@ class MainGUI(QMainWindow):
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict(),
                                                                   top='Objects'))
         self.expand_object_tree_nodes()
-
-        self.ui.dataStructuresTreeView.expandRecursively(0)
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -2172,8 +2113,6 @@ class MainGUI(QMainWindow):
 
         elif elm_type == dev.DeviceType.BranchDevice.value:
 
-            self.fill_catalogue_tree_view()
-
             elm = dev.Branch(None, None)
             elements = list()
 
@@ -2187,7 +2126,9 @@ class MainGUI(QMainWindow):
 
         elif elm_type == dev.DeviceType.GeneratorDevice.value:
             elm = dev.Generator()
-            dictionary_of_lists = {dev.DeviceType.Technology.value: self.circuit.technologies, }
+            dictionary_of_lists = {dev.DeviceType.Technology.value: self.circuit.technologies,
+                                   dev.DeviceType.FuelDevice.value: self.circuit.fuels,
+                                   dev.DeviceType.EmissionGasDevice.value: self.circuit.emission_gases,}
 
         elif elm_type == dev.DeviceType.BatteryDevice.value:
             elm = dev.Battery()
@@ -2273,6 +2214,22 @@ class MainGUI(QMainWindow):
         elif elm_type == dev.DeviceType.TransformerTypeDevice.value:
             elm = dev.TransformerType()
 
+        elif elm_type == dev.DeviceType.GeneratorTechnologyAssociation.value:
+            elm = dev.GeneratorTechnology()
+            dictionary_of_lists = {dev.DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   dev.DeviceType.Technology.value: self.circuit.technologies,}
+
+        elif elm_type == dev.DeviceType.GeneratorFuelAssociation.value:
+            elm = dev.GeneratorFuel()
+            dictionary_of_lists = {dev.DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   dev.DeviceType.FuelDevice.value: self.circuit.fuels, }
+
+        elif elm_type == dev.DeviceType.GeneratorEmissionAssociation.value:
+            elm = dev.GeneratorEmission()
+            dictionary_of_lists = {dev.DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   dev.DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
+
+
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
@@ -2315,8 +2272,6 @@ class MainGUI(QMainWindow):
 
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
-            self.view_template_controls(False)
-
             elements = self.circuit.get_elements_by_type(element_type=dev.DeviceType(elm_type))
 
             mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
@@ -2325,38 +2280,9 @@ class MainGUI(QMainWindow):
             self.ui.dataStructureTableView.setModel(mdl)
             self.ui.property_comboBox.clear()
             self.ui.property_comboBox.addItems(mdl.attributes)
-            self.view_templates(False)
         else:
             self.ui.dataStructureTableView.setModel(None)
             self.ui.property_comboBox.clear()
-
-    def fill_catalogue_tree_view(self):
-        """
-        Fill the Catalogue tree view with the catalogue types
-        """
-
-        catalogue_dict = self.circuit.get_catalogue_dict(branches_only=True)
-
-        model = QtGui.QStandardItemModel()
-
-        model.setHorizontalHeaderLabels(['Template'])
-
-        for key in catalogue_dict.keys():
-            # add parent node
-            parent1 = QtGui.QStandardItem(str(key))
-            parent1.setEditable(False)
-
-            # add children to parent
-            for elm in catalogue_dict[key]:
-                child1 = QtGui.QStandardItem(str(elm))
-                child1.setEditable(False)
-                parent1.appendRow([child1])
-
-            # add parent to the model
-            model.appendRow(parent1)
-
-        # set the model to the tree
-        self.ui.catalogueTreeView.setModel(model)
 
     def view_simulation_objects_data(self):
         """
@@ -5200,13 +5126,10 @@ class MainGUI(QMainWindow):
         self.ui.map_time_horizontalSlider.setMinimum(0)
         self.ui.map_time_horizontalSlider.setMaximum(0)
 
-        self.ui.catalogueTableView.setModel(None)
-
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
         self.ui.resultsTableView.setModel(None)
         self.ui.dataStructureTableView.setModel(None)
-        self.ui.catalogueTreeView.setModel(None)
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
@@ -5862,79 +5785,21 @@ class MainGUI(QMainWindow):
                 t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
                 self.ui.profile_label.setText(str(t1) + ' -> ' + str(t2))
 
-    def add_to_catalogue(self):
-        """
-        Add object to the catalogue
-        """
-        something_happened = False
-        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
-
-            # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-
-            if tpe == 'Overhead lines':
-
-                obj = dev.OverheadLineType()
-                obj.frequency = self.circuit.fBase
-                obj.tower_name = 'Tower_' + str(len(self.circuit.overhead_line_types))
-                self.circuit.add_overhead_line(obj)
-                something_happened = True
-
-            elif tpe == 'Underground lines':
-
-                name = 'Cable_' + str(len(self.circuit.underground_cable_types))
-                obj = dev.UndergroundLineType(name=name)
-                self.circuit.add_underground_line(obj)
-                something_happened = True
-
-            elif tpe == 'Sequence lines':
-
-                name = 'SequenceLine_' + str(len(self.circuit.sequence_line_types))
-                obj = dev.SequenceLineType(name=name)
-                self.circuit.add_sequence_line(obj)
-                something_happened = True
-
-            elif tpe == 'Wires':
-
-                name = 'Wire_' + str(len(self.circuit.wire_types))
-                obj = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
-                self.circuit.add_wire(obj)
-                something_happened = True
-
-            elif tpe == 'Transformers':
-
-                name = 'XFormer_type_' + str(len(self.circuit.transformer_types))
-                obj = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
-                                          copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
-                                          short_circuit_voltage=0.1,
-                                          gr_hv1=0.5, gx_hv1=0.5, name=name)
-                self.circuit.add_transformer_type(obj)
-                something_happened = True
-
-            else:
-                pass
-
-        else:
-            pass
-
-        if something_happened:
-            self.catalogue_element_selected()
-
     def edit_from_catalogue(self):
         """
         Edit catalogue element
         """
-        something_happened = False
-        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
+        model = self.ui.dataStructureTableView.model()
+        sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
+        elm_type = sel_item.data(role=QtCore.Qt.DisplayRole)
 
-            # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        if model is not None:
 
             # get the selected index
-            idx = self.ui.catalogueTableView.currentIndex().row()
+            idx = self.ui.dataStructureTableView.currentIndex().row()
 
             if idx > -1:
-                if tpe == 'Overhead lines':
+                if elm_type == dev.DeviceType.OverheadLineTypeDevice.value:
 
                     # pick the object
                     tower = self.circuit.overhead_line_types[idx]
@@ -5947,214 +5812,14 @@ class MainGUI(QMainWindow):
                     self.tower_builder_window.exec()
                     self.collect_memory()
 
-                    something_happened = True
-
-                elif tpe == 'Wires':
-
-                    warning_msg('No editor available.\nThe values can be changes from within the table.', 'Wires')
-
-                elif tpe == 'Transformers':
+                else:
 
                     warning_msg('No editor available.\nThe values can be changes from within the table.',
                                 'Transformers')
-
-                else:
-                    pass
             else:
-                info_msg('Select an element from the table')
+                info_msg('Choose an element from the table')
         else:
             info_msg('Select a catalogue element and then a catalogue object')
-
-        if something_happened:
-            self.catalogue_element_selected()
-
-    def delete_from_catalogue(self):
-        """
-        Delete element from catalogue
-        """
-        something_happened = False
-        preserved = 0
-
-        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
-
-            # get the object type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-
-            rows = list(set([idx.row() for idx in self.ui.catalogueTableView.selectedIndexes()]))
-
-            if len(rows) > 0:
-
-                # sort the rows in reverse order to uses pop properly
-                rows.sort(reverse=True)
-
-                # get the templates in use
-                used_templates = self.circuit.get_used_templates()
-
-                for row in rows:
-
-                    deleted = True  # guilty assumption
-
-                    if tpe == 'Overhead lines':
-
-                        deleted = self.circuit.delete_overhead_line(row, catalogue_to_check=used_templates)
-                        something_happened = True
-
-                    elif tpe == 'Underground lines':
-
-                        deleted = self.circuit.delete_underground_line(row, catalogue_to_check=used_templates)
-                        something_happened = True
-
-                    elif tpe == 'Sequence lines':
-
-                        deleted = self.circuit.delete_sequence_line(row, catalogue_to_check=used_templates)
-                        something_happened = True
-
-                    elif tpe == 'Wires':
-
-                        deleted = self.circuit.delete_wire(row, catalogue_to_check=used_templates)
-                        something_happened = True
-
-                    elif tpe == 'Transformers':
-
-                        deleted = self.circuit.delete_transformer_type(row, catalogue_to_check=used_templates)
-                        something_happened = True
-
-                    else:
-                        pass
-
-                    if not deleted:
-                        preserved += 1
-
-        else:
-            info_msg('Select a catalogue element and then a catalogue object')
-
-        if something_happened:
-            self.catalogue_element_selected()
-
-        if preserved > 0:
-            info_msg(str(preserved) + 'elements were not deleted because they are in use',
-                     'Delete template elements')
-
-    def catalogue_element_selected(self):
-        """
-        Catalogue element clicked
-        """
-
-        if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
-
-            # get the clicked type
-            tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-
-            if tpe == 'Overhead lines':
-                elm = dev.OverheadLineType()
-                mdl = gf.ObjectsModel(self.circuit.overhead_line_types,
-                                      elm.editable_headers,
-                                      parent=self.ui.catalogueTableView, editable=True,
-                                      non_editable_attributes=elm.non_editable_attributes,
-                                      check_unique=['name'])
-
-            elif tpe == 'Underground lines':
-                elm = dev.UndergroundLineType()
-                mdl = gf.ObjectsModel(self.circuit.underground_cable_types,
-                                      elm.editable_headers,
-                                      parent=self.ui.catalogueTableView, editable=True,
-                                      non_editable_attributes=elm.non_editable_attributes,
-                                      check_unique=['name'])
-
-            elif tpe == 'Sequence lines':
-                elm = dev.SequenceLineType()
-                mdl = gf.ObjectsModel(self.circuit.sequence_line_types,
-                                      elm.editable_headers,
-                                      parent=self.ui.catalogueTableView, editable=True,
-                                      non_editable_attributes=elm.non_editable_attributes,
-                                      check_unique=['name'])
-            elif tpe == 'Wires':
-                elm = dev.Wire(name='', gmr=0, r=0, x=0)
-                mdl = gf.ObjectsModel(self.circuit.wire_types,
-                                      elm.editable_headers,
-                                      parent=self.ui.catalogueTableView, editable=True,
-                                      non_editable_attributes=elm.non_editable_attributes,
-                                      check_unique=['name'])
-
-            elif tpe == 'Transformers':
-                elm = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=10, nominal_power=10,
-                                          copper_losses=0, iron_losses=0, no_load_current=0.1,
-                                          short_circuit_voltage=0.1,
-                                          gr_hv1=0.5, gx_hv1=0.5)
-                mdl = gf.ObjectsModel(self.circuit.transformer_types,
-                                      elm.editable_headers,
-                                      parent=self.ui.catalogueTableView, editable=True,
-                                      non_editable_attributes=elm.non_editable_attributes,
-                                      check_unique=['name'])
-
-            else:
-                mdl = None
-
-            # Set model
-            self.ui.catalogueTableView.setModel(mdl)
-
-        else:
-            pass
-
-    def assign_template(self):
-        """
-        Assign the selected branch templates
-        """
-        logger = bs.Logger()
-
-        if len(self.ui.catalogueTreeView.selectedIndexes()) > 0:
-
-            # tree parent (category, i.e. Transformers)
-            type_class = self.ui.catalogueTreeView.selectedIndexes()[0].parent().data(role=QtCore.Qt.DisplayRole)
-
-            if type_class is not None:
-
-                # template object name
-                tpe_name = self.ui.catalogueTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-
-                # get the compatible BRanch Type that matches the type class
-                compatible_types = {'Wires': None,
-                                    'Overhead lines': dev.BranchType.Line,
-                                    'Underground lines': dev.BranchType.Line,
-                                    'Sequence lines': dev.BranchType.Line,
-                                    'Transformers': dev.BranchType.Transformer}
-                compatible_type = compatible_types[type_class]
-
-                # get catalogue dictionary of the selected type
-                branch_type_dict = self.circuit.get_catalogue_dict_by_name(type_class=type_class)
-
-                # is the name in the catalogue?
-                if tpe_name in branch_type_dict.keys():
-
-                    # get the actual object from the types dictionary
-                    branch_type = branch_type_dict[tpe_name]
-
-                    # for each unique row index
-                    unique_rows = set([i.row() for i in self.ui.dataStructureTableView.selectedIndexes()])
-                    for i in unique_rows:
-
-                        # if the template and the branch types match...
-                        if self.circuit.get_branches()[i].branch_type == compatible_type:
-
-                            # apply the branch type
-                            self.circuit.get_branches()[i].apply_template(branch_type, Sbase=self.circuit.Sbase)
-
-                        else:
-                            logger.add_error('The branch does not match the type ' + str(branch_type),
-                                             self.circuit.get_branches()[i].name)
-
-                    if len(logger) > 0:
-                        dlg = LogsDialogue('Assign branch template', logger)
-                        dlg.exec_()
-
-                else:
-                    warning_msg(tpe_name + ' is not in the types', 'Assign branch type')
-                    # update catalogue displayed
-
-            else:
-                info_msg("Choose a type from the catalogue not the generic category", 'Assign branch type')
-        else:
-            info_msg('Choose a type from the catalogue', 'Assign branch type')
 
     def process_templates(self):
         """
@@ -6524,7 +6189,8 @@ class MainGUI(QMainWindow):
                             # graphical items too, and for loads and generators it deletes them properly
                             objects[r].graphic_obj.remove(ask=False)
                         else:
-                            objects.pop(r)
+                            # objects.pop(r)
+                            self.circuit.delete_elements_by_type(obj=objects[r])
 
                     # update the view
                     self.display_filter(objects)
@@ -6541,7 +6207,7 @@ class MainGUI(QMainWindow):
         """
         Delete small islands, disconnected stuff and other garbage
         """
-        numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False, )
+        numerical_circuit_ = core.compile_numerical_circuit_at(circuit=self.circuit, )
         islands = numerical_circuit_.split_into_islands()
         logger = bs.Logger()
         buses_to_delete = list()
@@ -6648,6 +6314,67 @@ class MainGUI(QMainWindow):
             elif elm_type == dev.DeviceType.Technology.value:
                 tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
                 self.circuit.add_technology(tech)
+
+            elif elm_type == dev.DeviceType.OverheadLineTypeDevice.value:
+
+                obj = dev.OverheadLineType()
+                obj.frequency = self.circuit.fBase
+                obj.tower_name = 'Tower ' + str(len(self.circuit.overhead_line_types))
+                self.circuit.add_overhead_line(obj)
+
+            elif elm_type == dev.DeviceType.UnderGroundLineDevice.value:
+
+                name = 'Cable ' + str(len(self.circuit.underground_cable_types))
+                obj = dev.UndergroundLineType(name=name)
+                self.circuit.add_underground_line(obj)
+
+            elif elm_type == dev.DeviceType.SequenceLineDevice.value:
+
+                name = 'Sequence line ' + str(len(self.circuit.sequence_line_types))
+                obj = dev.SequenceLineType(name=name)
+                self.circuit.add_sequence_line(obj)
+
+            elif elm_type == dev.DeviceType.WireDevice.value:
+
+                name = 'Wire ' + str(len(self.circuit.wire_types))
+                obj = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
+                self.circuit.add_wire(obj)
+
+            elif elm_type == dev.DeviceType.TransformerTypeDevice.value:
+
+                name = 'Transformer type ' + str(len(self.circuit.transformer_types))
+                obj = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
+                                          copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
+                                          short_circuit_voltage=0.1,
+                                          gr_hv1=0.5, gx_hv1=0.5, name=name)
+                self.circuit.add_transformer_type(obj)
+
+            elif elm_type == dev.DeviceType.FuelDevice.value:
+
+                name = 'Fuel ' + str(len(self.circuit.fuels))
+                obj = dev.Fuel(name=name)
+                self.circuit.add_fuel(obj)
+
+            elif elm_type == dev.DeviceType.EmissionGasDevice.value:
+
+                name = 'Gas ' + str(len(self.circuit.emission_gases))
+                obj = dev.EmissionGas(name=name)
+                self.circuit.add_emission_gas(obj)
+
+            elif elm_type == dev.DeviceType.GeneratorTechnologyAssociation.value:
+
+                obj = dev.GeneratorTechnology()
+                self.circuit.add_generator_technology(obj)
+
+            elif elm_type == dev.DeviceType.GeneratorFuelAssociation.value:
+
+                obj = dev.GeneratorFuel()
+                self.circuit.add_generator_fuel(obj)
+
+            elif elm_type == dev.DeviceType.GeneratorEmissionAssociation.value:
+
+                obj = dev.GeneratorEmission()
+                self.circuit.add_generator_emission(obj)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")

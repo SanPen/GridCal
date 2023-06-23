@@ -252,6 +252,10 @@ class DeviceType(Enum):
     FuelDevice = 'Fuel'
     EmissionGasDevice = 'Emission'
 
+    GeneratorEmissionAssociation = 'Generator Emission'
+    GeneratorFuelAssociation = 'Generator Fuel'
+    GeneratorTechnologyAssociation = 'Generator Technology'
+
     def __str__(self):
         return self.value
 
