@@ -43,9 +43,9 @@ def test_opf_ts():
                                           time_grouping=TimeGrouping.Daily)
     s = 23
     e = 143
-    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit,
-                                        options=opf_options,
-                                        start_=0, end_=e+20)
+    opf_ts = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
+                                              options=opf_options,
+                                              start_=0, end_=e+20)
     opf_ts.run()
 
     data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),

@@ -148,9 +148,9 @@ class PowerFlowTimeSeries(TimeSeriesDriverTemplate):
     def run_newton_pa(self, time_indices=None):
 
         res = newton_pa_pf(circuit=self.grid,
-                           opt=self.options,
+                           pf_opt=self.options,
                            time_series=True,
-                           tidx=time_indices)
+                           time_indices=time_indices)
 
         results = PowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
                                              m=self.grid.get_branch_number_wo_hvdc(),

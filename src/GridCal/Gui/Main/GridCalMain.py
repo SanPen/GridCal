@@ -4159,7 +4159,10 @@ class MainGUI(QMainWindow):
                 self.LOCK()
 
                 # set power flow object instance
-                drv = sim.OptimalPowerFlow(self.circuit, options, pf_options)
+                drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                           options=options,
+                                                           time_indices=None,
+                                                           clustering_results=None)
 
                 self.session.run(drv,
                                  post_func=self.post_opf,
@@ -4280,10 +4283,10 @@ class MainGUI(QMainWindow):
 
                     # create the OPF time series instance
                     # if non_sequential:
-                    drv = sim.OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                         options=options,
-                                                         time_indices=self.get_time_indices(),
-                                                         clustering_results=self.get_clustering_results())
+                    drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                               options=options,
+                                                               time_indices=self.get_time_indices(),
+                                                               clustering_results=self.get_clustering_results())
 
                     drv.engine = self.get_preferred_engine()
 
@@ -5311,7 +5314,7 @@ class MainGUI(QMainWindow):
         #                          max_bus_width=max_bus_width,
         #                          cmap=cmap)
 
-        elif current_study == sim.OptimalPowerFlowTimeSeries.tpe.value:
+        elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
 
             return plot_function(circuit=self.circuit,

@@ -100,7 +100,7 @@ class PowerFlowDriver(DriverTemplate):
 
         elif self.engine == bs.EngineType.NewtonPA:
 
-            res = newton_pa_pf(circuit=self.grid, opt=self.options, time_series=False)
+            res = newton_pa_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),

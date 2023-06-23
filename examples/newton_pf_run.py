@@ -7,7 +7,7 @@ _grid = FileOpen(fname).open()
 
 # _newton_grid = to_newton_pa(circuit=_grid, time_series=False)
 _options = PowerFlowOptions()
-_res = newton_pa_pf(circuit=_grid, opt=_options, time_series=True)
+_res = newton_pa_pf(circuit=_grid, pf_opt=_options, time_series=True)
 
 _res2 = translate_newton_pa_pf_results(_grid, _res)
 

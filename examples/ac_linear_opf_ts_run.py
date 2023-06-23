@@ -24,10 +24,10 @@ end = len(main_circuit.time_profile)
 
 # create the OPF time series instance
 # if non_sequential:
-optimal_power_flow_time_series = OptimalPowerFlowTimeSeries(grid=main_circuit,
-                                                            options=options,
-                                                            start_=start,
-                                                            end_=end)
+optimal_power_flow_time_series = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
+                                                                  options=options,
+                                                                  start_=start,
+                                                                  end_=end)
 
 optimal_power_flow_time_series.run()
 
