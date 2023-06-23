@@ -18,7 +18,7 @@
 
 from PySide6 import QtCore
 from GridCal.Engine.Core.Devices.Branches.wire import Wire
-from GridCal.Engine.Core.Devices.Branches.tower import Tower, WireInTower
+from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 
 """
 Equations source:
@@ -232,7 +232,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
 
 class TowerModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None, edit_callback=None, tower: Tower=None):
+    def __init__(self, parent=None, edit_callback=None, tower: OverheadLineType=None):
         """
 
         :param parent:
@@ -243,7 +243,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self)
 
         if tower is None:
-            self.tower = Tower()
+            self.tower = OverheadLineType()
         else:
             self.tower = tower
 

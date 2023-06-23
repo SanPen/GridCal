@@ -58,7 +58,7 @@ class WireInTower:
         self.device_type = DeviceType.WireDevice
 
 
-class Tower(EditableDevice):
+class OverheadLineType(EditableDevice):
 
     def __init__(self,  name='Tower', tpe=BranchType.Branch, idtag=None):
         """
@@ -70,7 +70,7 @@ class Tower(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 active=True,
-                                device_type=DeviceType.TowerDevice,
+                                device_type=DeviceType.OverheadLineTypeDevice,
                                 editable_headers={'name': GCProp('', str, "Tower name"),
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'earth_resistivity': GCProp('Ohm/m3', float, "Earth resistivity"),

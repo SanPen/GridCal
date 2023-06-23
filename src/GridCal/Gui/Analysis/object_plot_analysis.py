@@ -241,7 +241,7 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
 
     # declare logs
 
-    for template_elm in circuit.objects_with_profiles:
+    for template_elm in circuit.get_objects_with_profiles_list():
 
         # get the device type of the prototype object
         object_type = template_elm.device_type

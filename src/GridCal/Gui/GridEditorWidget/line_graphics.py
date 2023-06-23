@@ -26,7 +26,7 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, F
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, Tower, UndergroundLineType
+from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
@@ -102,7 +102,7 @@ class LineEditor(QDialog):
                             X = self.current_template.X
                             B = self.current_template.B
 
-                        elif isinstance(self.current_template, Tower):
+                        elif isinstance(self.current_template, OverheadLineType):
                             I = self.current_template.rating
                             R = self.current_template.R1
                             X = self.current_template.X1
@@ -234,7 +234,7 @@ class LineEditor(QDialog):
 
             self.selected_template = template
 
-        elif isinstance(template, Tower):
+        elif isinstance(template, OverheadLineType):
             self.i_spinner.setValue(template.rating)
             self.r_spinner.setValue(template.R1)
             self.x_spinner.setValue(template.X1)

@@ -229,7 +229,7 @@ class DeviceType(Enum):
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
-    TowerDevice = 'Tower'
+    OverheadLineTypeDevice = 'Tower'
     TransformerTypeDevice = 'Transformer type'
     SwitchDevice = 'Switch'
 

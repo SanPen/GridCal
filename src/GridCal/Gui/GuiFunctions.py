@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import pandas as pd
-from typing import Dict, List
+from typing import Dict, List, Union, Any
 from PySide6 import QtWidgets
 from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
@@ -27,7 +27,7 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.basic_structures import CDF
+from GridCal.Engine.basic_structures import IntVec, Vec, Mat
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
@@ -1319,7 +1319,7 @@ def get_list_model(lst, checks=False, check_value=False):
     return list_model
 
 
-def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> List[int]:
+def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
     """
     Get a list of the selected indices in a QStandardItemModel
     :param mdl:
@@ -1334,8 +1334,10 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> List[int]:
     return np.array(idx)
 
 
-
-def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None):
+def fill_model_from_dict(parent: QtGui.QStandardItem,
+                         d: Dict[str, Union[Dict[str, Any], List[str]]],
+                         editable=False,
+                         icons: Dict[str, str] = None):
     """
     Fill TreeViewModel from dictionary
     :param parent: Parent QStandardItem
@@ -1376,9 +1378,17 @@ def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None
 
 
 def get_tree_model(d, top='Results', icons: Dict[str, str] = None):
+    """
+
+    :param d:
+    :param top:
+    :param icons:
+    :return:
+    """
     model = QtGui.QStandardItemModel()
     model.setHorizontalHeaderLabels([top])
     fill_model_from_dict(model.invisibleRootItem(), d=d, editable=False, icons=icons)
+
     return model
 
 
@@ -1397,8 +1407,13 @@ def get_tree_item_path(item: QtGui.QStandardItem):
     path.reverse()
     return path
 
-def fast_data_to_numpy_text(data):
 
+def fast_data_to_numpy_text(data: np.ndarray):
+    """
+    Convert numpy to text
+    :param data: numpy array
+    :return:
+    """
     if len(data.shape) == 1:
         txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
 

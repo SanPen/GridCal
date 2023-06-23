@@ -191,7 +191,7 @@ def main():
     Vre = pf.results.voltage.real
     Vim = pf.results.voltage.imag
     data = np.c_[Vm, Va, Vre, Vim]
-    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+    v_df = pd.DataFrame(data=data, columns=headers, index=grid.get_bus_names())
     # print('\n', v_df)
     v_df.to_excel(writer, sheet_name='V')
 
@@ -201,7 +201,7 @@ def main():
     current = np.abs(pf.results.If)
     power = np.abs(pf.results.Sf)
     data = np.c_[loading, current, power]
-    br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
+    br_df = pd.DataFrame(data=data, columns=headers, index=grid.get_branch_names_wo_hvdc())
     br_df.to_excel(writer, sheet_name='Br')
 
     # Finally the execution metrics
@@ -231,7 +231,7 @@ def main():
     print('Time series')
     print('-' * 200)
     print('Voltage time series')
-    df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.bus_names, index=grid.time_profile)
+    df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.get_bus_names(), index=grid.time_profile)
     df_voltage.to_excel(writer, sheet_name='Vts')
     writer.close()
 

@@ -135,7 +135,7 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
     :param use_secondary_key: Use the secondary key ("code") to match
     """
     # for each list of devices with profiles...
-    for dev_template in main_grid.objects_with_profiles:
+    for dev_template in main_grid.get_objects_with_profiles_list():
 
         # get the device type
         device_type = dev_template.device_type

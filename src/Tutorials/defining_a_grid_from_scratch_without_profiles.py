@@ -156,7 +156,7 @@ def main():
     Vre = pf.results.voltage.real
     Vim = pf.results.voltage.imag
     data = np.c_[Vm, Va, Vre, Vim]
-    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+    v_df = pd.DataFrame(data=data, columns=headers, index=grid.get_bus_names())
     print('\n', v_df)
 
     # Let's do the same for the branch results
@@ -165,7 +165,7 @@ def main():
     current = np.abs(pf.results.If)
     power = np.abs(pf.results.Sf)
     data = np.c_[loading, current, power]
-    br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
+    br_df = pd.DataFrame(data=data, columns=headers, index=grid.get_branch_names_wo_hvdc())
     print('\n', br_df)
 
     # Finally the execution metrics

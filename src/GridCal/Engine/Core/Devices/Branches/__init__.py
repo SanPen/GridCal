@@ -21,7 +21,7 @@ from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
 from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
 from GridCal.Engine.Core.Devices.Branches.switch import Switch
-from GridCal.Engine.Core.Devices.Branches.tower import Tower
+from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Engine.Core.Devices.Branches.underground_line import UndergroundLineType

@@ -24,7 +24,7 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, O
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Core.Devices.Branches.line import SequenceLineType, Tower, UndergroundLineType
+from GridCal.Engine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
@@ -93,7 +93,7 @@ class DcLineEditor(QDialog):
                             I = self.current_template.rating
                             R = self.current_template.R
 
-                        elif isinstance(self.current_template, Tower):
+                        elif isinstance(self.current_template, OverheadLineType):
                             I = self.current_template.rating
                             R = self.current_template.R1
 
@@ -207,7 +207,7 @@ class DcLineEditor(QDialog):
 
             self.selected_template = template
 
-        elif isinstance(template, Tower):
+        elif isinstance(template, OverheadLineType):
             self.i_spinner.setValue(template.rating)
             self.r_spinner.setValue(template.R1)
 

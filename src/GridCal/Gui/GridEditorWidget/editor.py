@@ -637,7 +637,7 @@ class GridEditor(QSplitter):
             self.libraryModel.appendRow(i)
 
         # set the objects list
-        self.object_types = [dev.device_type.value for dev in circuit.objects_with_profiles]
+        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
 
         self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
 

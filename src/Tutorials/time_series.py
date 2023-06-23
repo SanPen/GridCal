@@ -162,7 +162,7 @@ Va = np.angle(pf.results.voltage, deg=True)
 Vre = pf.results.voltage.real
 Vim = pf.results.voltage.imag
 data = np.c_[Vm, Va, Vre, Vim]
-v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+v_df = pd.DataFrame(data=data, columns=headers, index=grid.get_bus_names())
 # print('\n', v_df)
 v_df.to_excel(writer, sheet_name='V')
 
@@ -171,7 +171,7 @@ headers = ['Loading (%)', 'Power from (MVA)']
 loading = np.abs(pf.results.loading) * 100
 power = np.abs(pf.results.Sf)
 data = np.c_[loading, power]
-br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
+br_df = pd.DataFrame(data=data, columns=headers, index=grid.get_branch_names())
 br_df.to_excel(writer, sheet_name='Br')
 
 # Finally the execution metrics
@@ -195,7 +195,7 @@ print('-' * 200)
 print('Time series')
 print('-' * 200)
 print('Voltage time series')
-df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.bus_names, index=grid.time_profile)
+df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.get_bus_names(), index=grid.time_profile)
 df_voltage.to_excel(writer, sheet_name='Vts')
 print(df_voltage)
 

@@ -152,7 +152,7 @@ class MultiCircuit:
         self.buses_dict: Dict[dev.Bus, int] = dict()
 
         # List of overhead line objects
-        self.overhead_line_types: List[dev.Tower] = list()
+        self.overhead_line_types: List[dev.OverheadLineType] = list()
 
         # list of wire types
         self.wire_types: List[dev.Wire] = list()
@@ -191,15 +191,6 @@ class MultiCircuit:
         # dictionary of bus objects -> bus indices
         self.bus_dictionary: Dict[str, dev.Bus] = dict()
 
-        # dictionary of branch objects -> branch indices
-        self.branch_dictionary: Dict[str, dev.Branch] = dict()
-
-        # names of the buses
-        self.bus_names: Union[List[str], None] = None
-
-        # names of the Branches
-        self.branch_names: Union[List[str], None]  = None
-
         # master time profile
         self.time_profile: DateVec = None
 
@@ -218,33 +209,56 @@ class MultiCircuit:
         # technologies
         self.technologies: List[dev.Technology] = list()
 
+        # fuels
+        self.fuels: List[dev.Fuel] = list()
+
+        # emission gasses
+        self.emission_gases: List[dev.EmissionGas] = list()
+
         # objects with profiles
-        self.objects_with_profiles = [
-            dev.Bus(),
-            dev.Load(),
-            dev.StaticGenerator(),
-            dev.ExternalGrid(),
-            dev.Generator(),
-            dev.Battery(),
-            dev.Shunt(),
-            dev.Line(None, None),
-            dev.DcLine(None, None),
-            dev.Transformer2W(None, None),
-            dev.Winding(None, None),
-            dev.Transformer3W(),
-            dev.HvdcLine(None, None),
-            dev.VSC(None, None),
-            dev.UPFC(None, None),
-            dev.Substation(),
-            dev.Zone(),
-            dev.Area(),
-            dev.Country(),
-            dev.Technology(),
-            dev.ContingencyGroup(),
-            dev.Contingency(),
-            dev.InvestmentsGroup(),
-            dev.Investment(),
-        ]
+        self.objects_with_profiles = {
+            "Substation" : [
+                dev.Bus(),
+                dev.Substation(),
+                dev.Zone(),
+                dev.Area(),
+                dev.Country(),
+            ],
+            "Injections": [
+                dev.Generator(),
+                dev.Battery(),
+                dev.Load(),
+                dev.StaticGenerator(),
+                dev.ExternalGrid(),
+                dev.Shunt(),
+            ],
+            "Branches": [
+                dev.Line(None, None),
+                dev.DcLine(None, None),
+                dev.Transformer2W(None, None),
+                dev.Winding(None, None),
+                dev.Transformer3W(),
+                dev.HvdcLine(None, None),
+                dev.VSC(None, None),
+                dev.UPFC(None, None),
+            ],
+            "Studies": [
+                dev.Technology(),
+                dev.ContingencyGroup(),
+                dev.Contingency(),
+                dev.InvestmentsGroup(),
+                dev.Investment(),
+                dev.Fuel(),
+                dev.EmissionGas()
+            ],
+            "Templates": [
+                dev.Wire(),
+                dev.OverheadLineType(),
+                dev.UndergroundLineType(),
+                dev.SequenceLineType(),
+                dev.TransformerType()
+            ]
+        }
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -256,13 +270,14 @@ class MultiCircuit:
 
         self.properties_with_profile = ['Y']
         '''
-        for elm in self.objects_with_profiles:
-            if elm.properties_with_profile is not None:
-                key = str(elm.device_type.value)
-                profile_attr = list(elm.properties_with_profile.keys())
-                profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
-                self.profile_magnitudes[key] = (profile_attr, profile_types)
-                self.device_type_name_dict[key] = elm.device_type
+        for key, elm_list in self.objects_with_profiles.items():
+            for elm in elm_list:
+                if elm.properties_with_profile is not None:
+                    key = str(elm.device_type.value)
+                    profile_attr = list(elm.properties_with_profile.keys())
+                    profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
+                    self.profile_magnitudes[key] = (profile_attr, profile_types)
+                    self.device_type_name_dict[key] = elm.device_type
 
     def __str__(self):
         return str(self.name)
@@ -270,6 +285,27 @@ class MultiCircuit:
     @property
     def has_time_series(self) -> bool:
         return self.time_profile is not None
+
+    def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
+        """
+        get objects_with_profiles in the form of list
+        :return: List[dev.EditableDevice]
+        """
+        lst = list()
+        for key, elm_list in self.objects_with_profiles.items():
+            for elm in elm_list:
+                lst.append(elm)
+        return lst
+
+    def get_objects_with_profiles_str_dict(self) -> Dict[str, List[str]]:
+        """
+        get objects_with_profiles as a strings dictionary
+        :return:
+        """
+        d = dict()
+        for key, elm_list in self.objects_with_profiles.items():
+            d[key] = [o.device_type.value for o in elm_list]
+        return d
 
     def get_zones(self):
         return self.zones
@@ -447,6 +483,8 @@ class MultiCircuit:
         self.contingency_groups = list()
         self.investments = list()
         self.investments_groups = list()
+        self.fuels = list()
+        self.emission_gases = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -479,12 +517,6 @@ class MultiCircuit:
         self.graph = None
 
         self.bus_dictionary = dict()
-
-        self.branch_dictionary = dict()
-
-        self.bus_names = None
-
-        self.branch_names = None
 
         self.time_profile = None
 
@@ -818,7 +850,7 @@ class MultiCircuit:
         elif element_type == dev.DeviceType.BusDevice:
             return self.buses
 
-        elif element_type == dev.DeviceType.TowerDevice:
+        elif element_type == dev.DeviceType.OverheadLineTypeDevice:
             return self.overhead_line_types
 
         elif element_type == dev.DeviceType.TransformerTypeDevice:
@@ -863,17 +895,30 @@ class MultiCircuit:
         elif element_type == dev.DeviceType.InvestmentsGroupDevice:
             return self.investments_groups
 
+        elif element_type == dev.DeviceType.FuelDevice:
+            return self.fuels
+
+        elif element_type == dev.DeviceType.EmissionGasDevice:
+            return self.emission_gases
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_elements_dict_by_type(self, element_type: dev.DeviceType, use_secondary_key=False):
+    def get_elements_dict_by_type(self, element_type: dev.DeviceType,
+                                  use_secondary_key=False) -> Dict[str, dev.EditableDevice]:
+        """
+        Get dictionary of elements
+        :param element_type: element type (Bus, Line, etc...)
+        :param use_secondary_key: use the code as dictionary key? otherwise the idtag is used
+        :return: Dict[str, dev.EditableDevice]
+        """
 
         if use_secondary_key:
             return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
-    def get_node_elements_by_type2(self, element_type: dev.DeviceType):
+    def get_node_elements_by_type2(self, element_type: dev.DeviceType) -> List[dev.EditableDevice]:
         """
         Get set of elements and their parent nodes
         :param element_type: DeviceTYpe instance
@@ -1123,19 +1168,22 @@ class MultiCircuit:
 
             **current_flow** (list): power_flow.results.If object
         """
-        self.graph_real_power_flow = nx.DiGraph()
+        graph_real_power_flow = nx.DiGraph()
 
         current_flow_direction = np.real(current_flow) > 0
+        bus_dictionary = self.get_elements_dict_by_type(element_type=dev.DeviceType.BusDevice,
+                                                        use_secondary_key=False)
 
         for branch_list in self.get_branch_lists():
             for direction, branch in zip(current_flow_direction, branch_list):
-                f = self.bus_dictionary[branch.bus_from.idtag]
-                t = self.bus_dictionary[branch.bus_to.idtag]
+                f = bus_dictionary[branch.bus_from.idtag]
+                t = bus_dictionary[branch.bus_to.idtag]
                 if direction:
-                    self.graph_real_power_flow.add_edge(f, t)
+                    graph_real_power_flow.add_edge(f, t)
                 else:
-                    self.graph_real_power_flow.add_edge(t, f)
-        return self.graph_real_power_flow
+                    graph_real_power_flow.add_edge(t, f)
+
+        return graph_real_power_flow
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -1647,13 +1695,13 @@ class MultiCircuit:
         self.wire_types.pop(i)
         return True
 
-    def add_overhead_line(self, obj: dev.Tower):
+    def add_overhead_line(self, obj: dev.OverheadLineType):
         """
         Add overhead line (tower) template to the collection
         :param obj: Tower instance
         """
         if obj is not None:
-            if type(obj) == dev.Tower:
+            if type(obj) == dev.OverheadLineType:
                 self.overhead_line_types.append(obj)
             else:
                 print('The template is not an overhead line!')
@@ -2027,8 +2075,8 @@ class MultiCircuit:
         if power_flow_results is not None:
             df_bus, df_branch = power_flow_results.export_all()
 
-            df_bus.index = self.bus_names
-            df_branch.index = self.branch_names
+            df_bus.index = self.get_bus_names()
+            df_branch.index = self.get_branch_names_wo_hvdc()
 
             with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
                 df_bus.to_excel(writer, 'Bus results')
@@ -2407,7 +2455,7 @@ class MultiCircuit:
                 val.add(obj)
 
                 # if it is a tower, add the wire templates too
-                if obj.device_type == dev.DeviceType.TowerDevice:
+                if obj.device_type == dev.DeviceType.OverheadLineTypeDevice:
                     for wire in obj.wires_in_tower:
                         val.add(wire)
 

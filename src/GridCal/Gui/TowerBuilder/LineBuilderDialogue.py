@@ -29,7 +29,7 @@ from GridCal.Engine.basic_structures import Logger
 
 class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower: dev.Tower = None, wires_catalogue=list()):
+    def __init__(self, parent=None, tower: dev.OverheadLineType = None, wires_catalogue=list()):
         """
 
         :param parent:

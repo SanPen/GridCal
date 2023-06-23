@@ -25,7 +25,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Core.Devices.Branches.underground_line import UndergroundLineType
-from GridCal.Engine.Core.Devices.Branches.tower import Tower
+from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
@@ -503,7 +503,7 @@ class Line(EditableDevice):
 
         """
 
-        if type(obj) is Tower:
+        if type(obj) is OverheadLineType:
 
             if self.branch_type == BranchType.Line:
                 Vn = self.bus_to.Vnom

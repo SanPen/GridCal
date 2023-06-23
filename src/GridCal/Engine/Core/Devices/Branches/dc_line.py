@@ -24,7 +24,7 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
-from GridCal.Engine.Core.Devices.Branches.tower import Tower
+from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCal.Engine.Core.Devices.Branches.line import LineTemplate, SequenceLineType, UndergroundLineType
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
@@ -277,7 +277,7 @@ class DcLine(EditableDevice):
 
         return b
 
-    def apply_template(self, obj: Tower, Sbase, logger=Logger()):
+    def apply_template(self, obj: OverheadLineType, Sbase, logger=Logger()):
         """
         Apply a branch template to this object
 
@@ -291,7 +291,7 @@ class DcLine(EditableDevice):
 
         """
 
-        if type(obj) is Tower:
+        if type(obj) is OverheadLineType:
 
             if self.branch_type == BranchType.Line:
                 Vn = self.bus_to.Vnom

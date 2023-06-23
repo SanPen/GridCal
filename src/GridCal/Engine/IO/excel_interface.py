@@ -569,7 +569,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         lst = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
             for tower_name in lst['tower_name'].unique():
-                tower = dev.Tower()
+                tower = dev.OverheadLineType()
                 vals = lst[lst['tower_name'] == tower_name].values
 
                 # set the tower values
@@ -1014,7 +1014,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         df = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
             for tower_name in df['tower_name'].unique():
-                obj = dev.Tower()
+                obj = dev.OverheadLineType()
                 dft = df[df['tower_name'] == tower_name]
                 vals = dft.values
 

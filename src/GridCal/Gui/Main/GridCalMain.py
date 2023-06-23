@@ -334,8 +334,8 @@ class MainGUI(QMainWindow):
         # create diagram editor object
         self.grid_editor = GridEditor(self.circuit)
 
-        self.ui.dataStructuresListView.setModel(gf.get_list_model([o.device_type.value
-                                                                   for o in self.circuit.objects_with_profiles]))
+        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
+        self.expand_object_tree_nodes()
 
         self.add_default_catalogue()
 
@@ -713,7 +713,7 @@ class MainGUI(QMainWindow):
 
         # list clicks
 
-        self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
+        self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
@@ -1470,7 +1470,11 @@ class MainGUI(QMainWindow):
 
         self.grid_editor.clear()
 
-        self.ui.dataStructuresListView.setModel(gf.get_list_model(self.grid_editor.object_types))
+        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict(),
+                                                                  top='Objects'))
+        self.expand_object_tree_nodes()
+
+        self.ui.dataStructuresTreeView.expandRecursively(0)
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -2248,6 +2252,27 @@ class MainGUI(QMainWindow):
         elif elm_type == dev.DeviceType.Technology.value:
             elm = dev.Technology()
 
+        elif elm_type == dev.DeviceType.FuelDevice.value:
+            elm = dev.Fuel()
+
+        elif elm_type == dev.DeviceType.EmissionGasDevice.value:
+            elm = dev.EmissionGas()
+
+        elif elm_type == dev.DeviceType.WireDevice.value:
+            elm = dev.Wire()
+
+        elif elm_type == dev.DeviceType.OverheadLineTypeDevice.value:
+            elm = dev.OverheadLineType()
+
+        elif elm_type == dev.DeviceType.SequenceLineDevice.value:
+            elm = dev.SequenceLineType()
+
+        elif elm_type == dev.DeviceType.UnderGroundLineDevice.value:
+            elm = dev.UndergroundLineType()
+
+        elif elm_type == dev.DeviceType.TransformerTypeDevice.value:
+            elm = dev.TransformerType()
+
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
@@ -2286,19 +2311,24 @@ class MainGUI(QMainWindow):
         """
         On click, display the objects properties
         """
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:  # if the clicked element has a valid parent
 
-        self.view_template_controls(False)
+            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
-        elements = self.circuit.get_elements_by_type(element_type=dev.DeviceType(elm_type))
+            self.view_template_controls(False)
 
-        mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
+            elements = self.circuit.get_elements_by_type(element_type=dev.DeviceType(elm_type))
 
-        self.type_objects_list = elements
-        self.ui.dataStructureTableView.setModel(mdl)
-        self.ui.property_comboBox.clear()
-        self.ui.property_comboBox.addItems(mdl.attributes)
-        self.view_templates(False)
+            mdl = self.create_objects_model(elements=elements, elm_type=elm_type)
+
+            self.type_objects_list = elements
+            self.ui.dataStructureTableView.setModel(mdl)
+            self.ui.property_comboBox.clear()
+            self.ui.property_comboBox.addItems(mdl.attributes)
+            self.view_templates(False)
+        else:
+            self.ui.dataStructureTableView.setModel(None)
+            self.ui.property_comboBox.clear()
 
     def fill_catalogue_tree_view(self):
         """
@@ -5844,7 +5874,7 @@ class MainGUI(QMainWindow):
 
             if tpe == 'Overhead lines':
 
-                obj = dev.Tower()
+                obj = dev.OverheadLineType()
                 obj.frequency = self.circuit.fBase
                 obj.tower_name = 'Tower_' + str(len(self.circuit.overhead_line_types))
                 self.circuit.add_overhead_line(obj)
@@ -6016,7 +6046,7 @@ class MainGUI(QMainWindow):
             tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             if tpe == 'Overhead lines':
-                elm = dev.Tower()
+                elm = dev.OverheadLineType()
                 mdl = gf.ObjectsModel(self.circuit.overhead_line_types,
                                       elm.editable_headers,
                                       parent=self.ui.catalogueTableView, editable=True,
@@ -6580,7 +6610,7 @@ class MainGUI(QMainWindow):
         Add default objects objects
         """
         model = self.ui.dataStructureTableView.model()
-        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
         if model is not None:
 
@@ -7339,8 +7369,8 @@ class MainGUI(QMainWindow):
 
     def structure_analysis_plot(self):
 
-        if len(self.ui.dataStructuresListView.selectedIndexes()) > 0:
-            elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
+            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
             object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
             plt.show()
@@ -7724,6 +7754,14 @@ class MainGUI(QMainWindow):
                 data = json.load(f)
                 self.apply_gui_config(data=data)
                 self.change_theme_mode()
+
+    def expand_object_tree_nodes(self):
+
+        proxy = self.ui.dataStructuresTreeView.model()
+
+        for row in range(proxy.rowCount()):
+            index = proxy.index(row, 0)
+            self.ui.dataStructuresTreeView.expand(index)
 
 
 def run():

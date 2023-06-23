@@ -53,7 +53,7 @@ def get_objects_dictionary():
 
                     'wires': dev.Wire(),
 
-                    'overhead_line_types': dev.Tower(),
+                    'overhead_line_types': dev.OverheadLineType(),
 
                     'underground_cable_types': dev.UndergroundLineType(),
 
@@ -382,7 +382,7 @@ def data_frames_to_circuit(data: Dict):
 
                             elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
                                            DeviceType.SequenceLineDevice,
-                                           DeviceType.TowerDevice,
+                                           DeviceType.OverheadLineTypeDevice,
                                            DeviceType.WindingDevice]:
 
                                 if df[object_property_name].values[i] in elements_dict[dtype].keys():
@@ -497,7 +497,7 @@ def data_frames_to_circuit(data: Dict):
                     dev.correct_buses_connection()
                 circuit.vsc_devices = devices
 
-            elif template_elm.device_type == DeviceType.TowerDevice:
+            elif template_elm.device_type == DeviceType.OverheadLineTypeDevice:
                 circuit.overhead_line_types = devices
 
             elif template_elm.device_type == DeviceType.TransformerTypeDevice:
@@ -538,10 +538,10 @@ def data_frames_to_circuit(data: Dict):
             tower_name = df['tower_name'].values[i]
             wire_name = df['wire_name'].values[i]
 
-            if (tower_name in elements_dict[DeviceType.TowerDevice].keys()) and \
+            if (tower_name in elements_dict[DeviceType.OverheadLineTypeDevice].keys()) and \
                     (wire_name in elements_dict[DeviceType.WireDevice].keys()):
 
-                tower = elements_dict[DeviceType.TowerDevice][tower_name]
+                tower = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
                 wire = elements_dict[DeviceType.WireDevice][wire_name]
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
