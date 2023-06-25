@@ -282,13 +282,13 @@ class NumericalCircuit:
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
         self.bus_data: ds.BusData = ds.BusData(nbus=nbus)
-        self.branch_data: ds.BranchData  = ds.BranchData(nelm=nbr, nbus=nbus)
+        self.branch_data: ds.BranchData = ds.BranchData(nelm=nbr, nbus=nbus)
         self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
-        self.load_data: ds.Load = ds.LoadData(nelm=nload, nbus=nbus)
+        self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
         self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus)
-        self.generator_data: ds.BatteryData = ds.GeneratorData(nelm=ngen, nbus=nbus)
-        self.shunt_data: ds.BatteryData= ds.ShuntData(nelm=nshunt, nbus=nbus)
+        self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
+        self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed

@@ -89,7 +89,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.logger.add_warning('Failed, back to GridCal')
 
         if self.engine == bs.EngineType.GridCal:
-            nc = compile_numerical_circuit_at(grid=self.grid)
+            nc = compile_numerical_circuit_at(circuit=self.grid)
             analysis = LinearAnalysis(
                 numerical_circuit=nc,
                 distributed_slack=self.options.distribute_slack,

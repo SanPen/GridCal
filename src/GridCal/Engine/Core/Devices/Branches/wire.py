@@ -19,7 +19,10 @@ from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceTy
 
 
 class Wire(EditableDevice):
-
+    """
+    This class represents a wire (an actual wire)
+    to compose towers
+    """
     def __init__(self, name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1):
         """
         Wire definition

@@ -333,3 +333,13 @@ class ParentBranch(EditableDevice):
         V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
         per = V1 / V2
         return per < (1.0 - branch_connection_voltage_tolerance)
+
+    def apply_template(self, obj, Sbase, logger: Logger):
+        """
+        Virtual function to apply template
+        :param obj:
+        :param Sbase
+        :param logger
+        :return:
+        """
+        pass

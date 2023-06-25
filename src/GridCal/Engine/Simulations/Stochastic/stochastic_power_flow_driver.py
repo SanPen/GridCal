@@ -295,11 +295,9 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
-                                   n_tr=0,
                                    n_hvdc=numerical_circuit.nhvdc,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
-                                   transformer_names=[],
                                    hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 

@@ -177,7 +177,7 @@ class Transformer2W(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=Cost_prof,
-                              device_type=DeviceType.LineDevice,
+                              device_type=DeviceType.Transformer2WDevice,
                               branch_type=BranchType.Transformer)
 
         # set the high and low voltage values

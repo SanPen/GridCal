@@ -714,7 +714,7 @@ class MultiCircuit:
         """
         val = 0
         for bus in self.buses:
-            val = val + len(bus.loads)
+            val = val + len(bus.loads) + len(bus.external_grids) + len(bus.static_generators)
         return val
 
     def get_calculation_load_names(self) -> StrVec:
@@ -725,6 +725,13 @@ class MultiCircuit:
         for bus in self.buses:
             for elm in bus.loads:
                 lst.append(elm.name)
+
+            for elm in bus.external_grids:
+                lst.append(elm.name)
+
+            for elm in bus.static_generators:
+                lst.append(elm.name)
+
         return np.array(lst)
 
     def get_shunts(self) -> List[dev.Shunt]:

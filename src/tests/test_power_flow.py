@@ -74,6 +74,11 @@ def test_ieee_grids():
 
             df = pd.DataFrame(data=np.c_[v_gc, v_psse], columns=['GridCal', 'PSSe'])
 
+            if not v_ok:
+                print('power flow voltages test for {} failed'.format(fname))
+            if not flow_ok:
+                print('power flow flows test for {} failed'.format(fname))
+
             assert v_ok
             assert flow_ok
 

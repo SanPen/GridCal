@@ -55,16 +55,6 @@ class InvestmentsGroup(EditableDevice):
 
         self.register(key='category', units='', tpe=str, definition='Some tag to category the contingency group')
 
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, val: str):
-        self._name = val
-        if self.graphic_obj is not None:
-            self.graphic_obj.set_label(self._name)
-
     def get_properties_dict(self):
         """
         Get json dictionary

@@ -37,7 +37,7 @@ def test_unbalanced_short_circuit():
     pf = PowerFlowDriver(grid, pf_options)
     pf.run()
 
-    sc_options = ShortCircuitOptions(bus_index=[2], fault_type=FaultType.LG)
+    sc_options = ShortCircuitOptions(bus_index=2, fault_type=FaultType.LG)
     sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
     sc.run()
 

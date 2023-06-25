@@ -34,6 +34,10 @@ SQRT3 = np.sqrt(3.0)
 
 
 class BranchTemplate:
+    """
+    This is the template for a branch
+    This class only exists for legacy reasons
+    """
 
     def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
 
@@ -56,11 +60,9 @@ class BranchTemplate:
     def get_save_data(self):
 
         dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
+        for p in self.edit_headers:
+            dta.append(getattr(self, p))
         return dta
-
-
 
 
 class Branch(ParentBranch):
@@ -358,43 +360,6 @@ class Branch(ParentBranch):
             self.tap_changer.set_tap(self.tap_module)
         else:
             self.tap_module = self.tap_changer.get_tap()
-
-    def get_virtual_taps(self):
-        """
-        Get the branch virtual taps
-
-        The virtual taps generate when a transformer nominal winding voltage differs
-        from the bus nominal voltage.
-
-        Returns:
-
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-
-        """
-        if self.branch_type == BranchType.Transformer and type(self.template) == TransformerType:
-            # resolve how the transformer is actually connected and set the virtual taps
-            bus_f_v = self.bus_from.Vnom
-            bus_t_v = self.bus_to.Vnom
-
-            dhf = abs(self.template.HV - bus_f_v)
-            dht = abs(self.template.HV - bus_t_v)
-
-            if dhf < dht:
-                # the HV side is on the from side
-                tpe_f_v = self.template.HV
-                tpe_t_v = self.template.LV
-            else:
-                # the HV side is on the to side
-                tpe_t_v = self.template.HV
-                tpe_f_v = self.template.LV
-
-            tap_f = tpe_f_v / bus_f_v
-            tap_t = tpe_t_v / bus_t_v
-            return tap_f, tap_t
-        else:
-            return 1.0, 1.0
 
     def get_save_data(self):
         """

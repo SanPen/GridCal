@@ -19,6 +19,7 @@ import time
 
 import numpy as np
 
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -28,9 +29,9 @@ from GridCal.Engine.basic_structures import ReactivePowerControlMode
 import GridCal.Engine.Simulations.sparse_solve as gcsp
 
 
-def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
+def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
-               verbose=False, t=0, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
+               verbose=False, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
     :param nc: SnapshotData instance
@@ -47,7 +48,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     # initialize the variables
     nb = nc.nbus
-    nl = nc.nelm
+    nl = nc.nbr
     V = Vbus
 
     Va = np.angle(V)
@@ -55,16 +56,16 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
-    Vmfset = nc.branch_data.vf_set[:, t]
-    m = nc.branch_data.tap_module[:, t].copy()
-    theta = nc.branch_data.tap_angle[:, t].copy()
-    Beq = nc.branch_data.Beq[:, t].copy()
-    Gsw = nc.branch_data.G0sw[:, t]
-    Pfset = nc.branch_data.Pfset[:, t] / nc.Sbase
-    Qfset = nc.branch_data.Qfset[:, t] / nc.Sbase
-    Qtset = nc.branch_data.Qfset[:, t] / nc.Sbase
-    Qmin = nc.Qmin_bus[t, :]
-    Qmax = nc.Qmax_bus[t, :]
+    Vmfset = nc.branch_data.vf_set
+    m = nc.branch_data.tap_module.copy()
+    theta = nc.branch_data.tap_angle.copy()
+    Beq = nc.branch_data.Beq.copy()
+    Gsw = nc.branch_data.G0sw
+    Pfset = nc.branch_data.Pfset / nc.Sbase
+    Qfset = nc.branch_data.Qfset / nc.Sbase
+    Qtset = nc.branch_data.Qfset / nc.Sbase
+    Qmin = nc.Qmin_bus
+    Qmax = nc.Qmax_bus
     Kdp = nc.branch_data.Kdp
     k2 = nc.branch_data.k
     Cf = nc.Cf.tocsc()
@@ -106,8 +107,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                        C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                       shunt_admittance=nc.shunt_data.admittance[:, 0],
-                                       shunt_active=nc.shunt_data.active[:, 0],
+                                       shunt_admittance=nc.shunt_data.admittance,
+                                       shunt_active=nc.shunt_data.active,
                                        ys=Ys,
                                        B=Bc,
                                        Sbase=nc.Sbase,
@@ -210,8 +211,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                 # compute admittances
                 Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                                    C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                                   shunt_admittance=nc.shunt_data.admittance[:, 0],
-                                                   shunt_active=nc.shunt_data.active[:, 0],
+                                                   shunt_admittance=nc.shunt_data.admittance,
+                                                   shunt_active=nc.shunt_data.active,
                                                    ys=Ys,
                                                    B=Bc,
                                                    Sbase=nc.Sbase,
@@ -273,9 +274,9 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                 elapsed = end - start
 
                 # set the state for the next solver_type
-                nc.branch_data.tap_module[:, 0] = m
-                nc.branch_data.tap_angle[:, 0] = theta
-                nc.branch_data.Beq[:, 0] = Beq
+                nc.branch_data.tap_module = m
+                nc.branch_data.tap_angle = theta
+                nc.branch_data.Beq = Beq
 
                 return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
             else:

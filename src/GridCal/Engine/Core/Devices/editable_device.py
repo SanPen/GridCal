@@ -95,49 +95,6 @@ class EditableDevice:
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
         self.register(key='active', units='', tpe=bool, definition='Is active?')
 
-    def print_register(self):
-
-        def tpe_convert(tpe):
-            if tpe == str:
-                return 'str'
-            elif tpe == bool:
-                return 'bool'
-            elif tpe == int:
-                return 'int'
-            elif tpe == float:
-                return 'float'
-            elif isinstance(tpe, DeviceType):
-                return "DeviceType.{}Device".format(tpe.value)
-            elif tpe == BuildStatus:
-                return "BuildStatus"
-            elif tpe == ExternalGridMode:
-                return "ExternalGridMode"
-            elif tpe == WindingsConnection:
-                return "WindingsConnection"
-
-            elif tpe == TransformerControlType:
-                return "TransformerControlType"
-            elif tpe == HvdcControlType:
-                return "HvdcControlType"
-            elif tpe == ConverterControlType:
-                return "ConverterControlType"
-
-            else:
-                raise Exception()
-        print()
-        print(self.device_type.value)
-        for key, prop in self.editable_headers.items():
-
-            template = "self.register(key='{0}', units='{1}', tpe={2}, definition='{3}', profile_name='{4}', editable={5})"
-
-            s = template.format(key,
-                                prop.units,
-                                tpe_convert(prop.tpe),
-                                prop.definition.replace("\n", ""),
-                                self.properties_with_profile.get(key, ""),
-                                key not in self.non_editable_attributes)
-            print(s)
-
     def register(self,
                  key: str,
                  units: str,
@@ -348,10 +305,25 @@ class EditableDevice:
             setattr(self, magnitude, profile[t])
 
     def get_properties_dict(self, version=3):
+        """
+
+        :param version:
+        :return:
+        """
         return dict()
 
     def get_units_dict(self, version=3):
+        """
+
+        :param version:
+        :return:
+        """
         return dict()
 
     def get_profiles_dict(self, version=3):
+        """
+
+        :param version:
+        :return:
+        """
         return dict()

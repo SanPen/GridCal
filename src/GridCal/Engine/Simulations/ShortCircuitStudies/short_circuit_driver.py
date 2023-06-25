@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-
+from typing import Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -32,15 +32,17 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Devices.enumerations import FaultType
 
 
-########################################################################################################################
-# Short circuit classes
-########################################################################################################################
-
 
 class ShortCircuitOptions:
-
-    def __init__(self, bus_index=None, fault_type=FaultType.ph3, branch_index=None, branch_fault_locations=None,
-                 branch_fault_impedance=None, branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+    """
+    Short circuit options
+    """
+    def __init__(self, bus_index: Union[int, None] = 0,
+                 fault_type=FaultType.ph3,
+                 branch_index: Union[int, None] = None,
+                 branch_fault_locations=None,
+                 branch_fault_impedance=None,
+                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  verbose=False):
         """
 
