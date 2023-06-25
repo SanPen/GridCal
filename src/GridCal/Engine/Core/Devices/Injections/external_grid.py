@@ -68,31 +68,9 @@ class ExternalGrid(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code='',
                                 active=active,
-                                device_type=DeviceType.ExternalGridDevice,
-                                editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                                  'active': GCProp('', bool, 'Is the load active?'),
-                                                  'mode': GCProp('', ExternalGridMode,
-                                                                 'Operation mode of the external grid (voltage or load)'),
-                                                  'Vm': GCProp('p.u.', float, 'Active power'),
-                                                  'Va': GCProp('radians', float, 'Reactive power'),
-                                                  'P': GCProp('MW', float, 'Active power'),
-                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of not served energy. Used in OPF.')
-                                                  },
-                                non_editable_attributes=['bus', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'Vm': 'Vm_prof',
-                                                         'Va': 'Va_prof',
-                                                         'P': 'P_prof',
-                                                         'Q': 'Q_prof',
-                                                         'Cost': 'Cost_prof'
-                                                         })
+                                device_type=DeviceType.ExternalGridDevice)
 
         self.bus = None
 
@@ -117,6 +95,19 @@ class ExternalGrid(EditableDevice):
 
         self.Cost = cost
         self.Cost_prof = None
+
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
+        self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
+        self.register(key='mode', units='', tpe=ExternalGridMode,
+                      definition='Operation mode of the external grid (voltage or load)')
+        self.register(key='Vm', units='p.u.', tpe=float, definition='Active power', profile_name='Vm_prof')
+        self.register(key='Va', units='radians', tpe=float, definition='Reactive power', profile_name='Va_prof')
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
+        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
+        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
+                      profile_name='Cost_prof')
 
     def copy(self):
 

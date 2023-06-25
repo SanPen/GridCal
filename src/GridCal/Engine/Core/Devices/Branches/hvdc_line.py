@@ -269,72 +269,7 @@ class HvdcLine(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 active=active,
-                                device_type=DeviceType.HVDCLineDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the line.'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the line.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the line.'),
-                                                  'active': GCProp('', bool, 'Is the line active?'),
-
-                                                  'dispatchable': GCProp('', bool, 'Is the line power optimizable?'),
-
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
-
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-
-                                                  'control_mode': GCProp('-', HvdcControlType, 'Control type.'),
-
-                                                  'Pset': GCProp('MW', float, 'Set power flow.'),
-
-                                                  'r': GCProp('Ohm', float, 'line resistance.'),
-
-                                                  'angle_droop': GCProp('MW/deg', float, 'Power/angle rate control'),
-
-                                                  'Vset_f': GCProp('p.u.', float, 'Set voltage at the from side'),
-                                                  'Vset_t': GCProp('p.u.', float, 'Set voltage at the to side'),
-
-                                                  'min_firing_angle_f': GCProp('rad', float,
-                                                                               'minimum firing angle at the '
-                                                                               '"from" side.'),
-                                                  'max_firing_angle_f': GCProp('rad', float,
-                                                                               'maximum firing angle at the '
-                                                                               '"from" side.'),
-                                                  'min_firing_angle_t': GCProp('rad', float,
-                                                                               'minimum firing angle at the '
-                                                                               '"to" side.'),
-                                                  'max_firing_angle_t': GCProp('rad', float,
-                                                                               'maximum firing angle at the '
-                                                                               '"to" side.'),
-
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                             'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                             'used in reliability studies.'),
-
-                                                  'length': GCProp('km', float, 'Length of the branch '
-                                                                                '(not used for calculation)'),
-
-                                                  'overload_cost': GCProp('e/MWh', float,
-                                                                          'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  },
-                                non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'Pset': 'Pset_prof',
-                                                         'Vset_f': 'Vset_f_prof',
-                                                         'Vset_t': 'Vset_t_prof',
-                                                         'angle_droop': 'angle_droop_prof',
-                                                         'overload_cost': 'overload_cost_prof'})
+                                device_type=DeviceType.HVDCLineDevice)
 
         # connectivity
         self.bus_from = bus_from
@@ -401,6 +336,47 @@ class HvdcLine(EditableDevice):
         self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
         self.contingency_factor_prof = contingency_factor_prof
+
+        self.register(key='name', units='', tpe=str, definition='Name of the line.')
+        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
+        self.register(key='bus_from', units='', tpe=DeviceType.BusDevice,
+                      definition='Name of the bus at the "from" side of the line.', editable=False)
+        self.register(key='bus_to', units='', tpe=DeviceType.BusDevice,
+                      definition='Name of the bus at the "to" side of the line.', editable=False)
+        self.register(key='active', units='', tpe=bool, definition='Is the line active?', profile_name='active_prof')
+        self.register(key='dispatchable', units='', tpe=bool, definition='Is the line power optimizable?')
+        self.register(key='rate', units='MVA', tpe=float, definition='Thermal rating power of the line.',
+                      profile_name='rate_prof')
+        self.register(key='contingency_factor', units='p.u.', tpe=float,
+                      definition='Rating multiplier for contingencies.', profile_name='contingency_factor_prof')
+        self.register(key='control_mode', units='-', tpe=HvdcControlType, definition='Control type.')
+        self.register(key='Pset', units='MW', tpe=float, definition='Set power flow.', profile_name='Pset_prof')
+        self.register(key='r', units='Ohm', tpe=float, definition='line resistance.')
+        self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
+                      profile_name='angle_droop_prof')
+        self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
+                      profile_name='Vset_f_prof')
+        self.register(key='Vset_t', units='p.u.', tpe=float, definition='Set voltage at the to side',
+                      profile_name='Vset_t_prof')
+        self.register(key='min_firing_angle_f', units='rad', tpe=float,
+                      definition='minimum firing angle at the "from" side.')
+        self.register(key='max_firing_angle_f', units='rad', tpe=float,
+                      definition='maximum firing angle at the "from" side.')
+        self.register(key='min_firing_angle_t', units='rad', tpe=float,
+                      definition='minimum firing angle at the "to" side.')
+        self.register(key='max_firing_angle_t', units='rad', tpe=float,
+                      definition='maximum firing angle at the "to" side.')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure, used in reliability studies.')
+        self.register(key='mttr', units='h', tpe=float,
+                      definition='Mean time to recovery, used in reliability studies.')
+        self.register(key='length', units='km', tpe=float, definition='Length of the branch (not used for calculation)')
+        self.register(key='overload_cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
+                      profile_name='overload_cost_prof')
+        self.register(key='capex', units='e/MW', tpe=float,
+                      definition='Cost of investment. Used in expansion planning.')
+        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """

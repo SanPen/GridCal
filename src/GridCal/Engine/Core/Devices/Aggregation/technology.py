@@ -38,20 +38,15 @@ class Technology(EditableDevice):
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=DeviceType.Technology,
-                                editable_headers={'idtag': GCProp('', str, 'Unique ID'),
-                                                  'code': GCProp('', str, 'Secondary ID in another system.'),
-                                                  'name': GCProp('', str, 'Name of the technology'),
-                                                  'name2': GCProp('', str, 'Name 2 of the technology'),
-                                                  'name3': GCProp('', str, 'Name 3 of the technology'),
-                                                  'name4': GCProp('', str, 'Name 4 of the technology'),
-                                                  },
-                                non_editable_attributes=['idtag'],
-                                properties_with_profile={})
+                                device_type=DeviceType.Technology)
 
         self.name2 = ""
         self.name3 = ""
         self.name4 = ""
+
+        self.register(key='name2', units='', tpe=str, definition='Name 2 of the technology')
+        self.register(key='name3', units='', tpe=str, definition='Name 3 of the technology')
+        self.register(key='name4', units='', tpe=str, definition='Name 4 of the technology')
 
     def get_properties_dict(self):
 

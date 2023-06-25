@@ -71,35 +71,7 @@ class Load(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 active=active,
-                                device_type=DeviceType.LoadDevice,
-                                editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID', True),
-                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                                  'active': GCProp('', bool, 'Is the load active?'),
-                                                  'P': GCProp('MW', float, 'Active power'),
-                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
-                                                  'Ir': GCProp('MW', float,
-                                                               'Active power of the current component at V=1.0 p.u.'),
-                                                  'Ii': GCProp('MVAr', float,
-                                                               'Reactive power of the current component at V=1.0 p.u.'),
-                                                  'G': GCProp('MW', float,
-                                                              'Active power of the impedance component at V=1.0 p.u.'),
-                                                  'B': GCProp('MVAr', float,
-                                                              'Reactive power of the impedance component at V=1.0 p.u.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of not served energy. Used in OPF.')},
-                                non_editable_attributes=['bus', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'P': 'P_prof',
-                                                         'Q': 'Q_prof',
-                                                         'Ir': 'Ir_prof',
-                                                         'Ii': 'Ii_prof',
-                                                         'G': 'G_prof',
-                                                         'B': 'B_prof',
-                                                         'Cost': 'Cost_prof'})
+                                device_type=DeviceType.LoadDevice)
 
         self.bus = None
 
@@ -126,6 +98,23 @@ class Load(EditableDevice):
         self.Ii_prof = Ii_prof
         self.P_prof = P_prof
         self.Q_prof = Q_prof
+
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
+        self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
+        self.register(key='Ir', units='MW', tpe=float, definition='Active power of the current component at V=1.0 p.u.',
+                      profile_name='Ir_prof')
+        self.register(key='Ii', units='MVAr', tpe=float,
+                      definition='Reactive power of the current component at V=1.0 p.u.', profile_name='Ii_prof')
+        self.register(key='G', units='MW', tpe=float,
+                      definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
+        self.register(key='B', units='MVAr', tpe=float,
+                      definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
+        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
+        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
+                      profile_name='Cost_prof')
 
     def copy(self):
 

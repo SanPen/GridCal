@@ -39,20 +39,17 @@ class GeneratorFuel(EditableDevice):
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=DeviceType.GeneratorFuelAssociation,
-                                editable_headers={'idtag': GCProp('', str, 'Unique ID'),
-                                                  'generator': GCProp('', DeviceType.GeneratorDevice, 'Generator'),
-                                                  'fuel': GCProp('', DeviceType.FuelDevice, 'Fuel'),
-                                                  'rate': GCProp('t/MWh', float, 'Emissions rate'),
-                                                  },
-                                non_editable_attributes=['idtag'],
-                                properties_with_profile={})
+                                device_type=DeviceType.GeneratorFuelAssociation)
 
         self.generator = generator
 
         self.fuel = fuel
 
         self.rate = rate
+
+        self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator')
+        self.register(key='fuel', units='', tpe=DeviceType.FuelDevice, definition='Fuel')
+        self.register(key='rate', units='t/MWh', tpe=float, definition='Emissions rate')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

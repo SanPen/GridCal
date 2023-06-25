@@ -39,16 +39,15 @@ class GenericAreaGroup(EditableDevice):
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=device_type,
-                                editable_headers={'name': GCProp('', str, 'Name of the bus'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'longitude': GCProp('deg', float, 'longitude of the bus.'),
-                                                  'latitude': GCProp('deg', float, 'latitude of the bus.')},
-                                non_editable_attributes=['idtag'],
-                                properties_with_profile={})
+                                device_type=device_type)
 
         self.latitude = latitude
         self.longitude = longitude
+
+        self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='',
+                      editable=False)
+        self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='',
+                      editable=False)
 
     def get_properties_dict(self, version=3):
 

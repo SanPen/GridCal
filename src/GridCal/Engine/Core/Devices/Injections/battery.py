@@ -124,51 +124,6 @@ class Battery(Generator):
         # type of this device
         self.device_type = DeviceType.BatteryDevice
 
-        # manually modify the editable headers
-        self.editable_headers = {'name': GCProp('', str, 'Name of the battery'),
-                                 'idtag': GCProp('', str, 'Unique ID'),
-                                 'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                 'active': GCProp('', bool, 'Is the battery active?'),
-                                 'is_controlled': GCProp('', bool, 'Is this battery voltage-controlled?'),
-                                 'P': GCProp('MW', float, 'Active power'),
-                                 'Pf': GCProp('', float,
-                                              'Power factor (cos(fi)). This is used for non-controlled batteries.'),
-                                 'Vset': GCProp('p.u.', float, 'Set voltage. This is used for controlled batteries.'),
-                                 'Snom': GCProp('MVA', float, 'Nomnial power.'),
-                                 'Enom': GCProp('MWh', float, 'Nominal energy capacity.'),
-                                 'max_soc': GCProp('p.u.', float, 'Minimum state of charge.'),
-                                 'min_soc': GCProp('p.u.', float, 'Maximum state of charge.'),
-                                 'soc_0': GCProp('p.u.', float, 'Initial state of charge.'),
-                                 'charge_efficiency': GCProp('p.u.', float, 'Charging efficiency.'),
-                                 'discharge_efficiency': GCProp('p.u.', float, 'Discharge efficiency.'),
-                                 'discharge_per_cycle': GCProp('p.u.', float, ''),
-                                 'Qmin': GCProp('MVAr', float, 'Minimum reactive power.'),
-                                 'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
-                                 'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
-                                 'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
-
-                                 'R1': GCProp('p.u.', float, 'Total positive sequence resistance.'),
-                                 'X1': GCProp('p.u.', float, 'Total positive sequence reactance.'),
-
-                                 'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
-                                 'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
-
-                                 'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
-                                 'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-
-                                 'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
-                                 'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
-                                 'Cost0': GCProp('e/h', float, 'Generation constant cost. Used in OPF.'),
-                                 'capex': GCProp('e/MW', float,
-                                                 'Cost of investment. Used in expansion planning.'),
-                                 'opex': GCProp('e/MWh', float,
-                                                'Cost of operation. Used in expansion planning.'),
-                                 'build_status': GCProp('', BuildStatus,
-                                                        'Branch build status. Used in expansion planning.'),
-                                 'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
-                                 'mttf': GCProp('h', float, 'Mean time to failure'),
-                                 'mttr': GCProp('h', float, 'Mean time to recovery')}
-
         self.charge_efficiency = charge_efficiency
 
         self.discharge_efficiency = discharge_efficiency
@@ -196,6 +151,14 @@ class Battery(Generator):
         self.energy_array = None
 
         self.power_array = None
+
+        self.register(key='Enom', units='MWh', tpe=float, definition='Nominal energy capacity.')
+        self.register(key='max_soc', units='p.u.', tpe=float, definition='Minimum state of charge.')
+        self.register(key='min_soc', units='p.u.', tpe=float, definition='Maximum state of charge.')
+        self.register(key='soc_0', units='p.u.', tpe=float, definition='Initial state of charge.')
+        self.register(key='charge_efficiency', units='p.u.', tpe=float, definition='Charging efficiency.')
+        self.register(key='discharge_efficiency', units='p.u.', tpe=float, definition='Discharge efficiency.')
+        self.register(key='discharge_per_cycle', units='p.u.', tpe=float, definition='')
 
     def copy(self):
         """

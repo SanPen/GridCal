@@ -53,35 +53,7 @@ class Shunt(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 active=active,
-                                device_type=DeviceType.ShuntDevice,
-                                editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                                  'active': GCProp('', bool, 'Is the shunt active?'),
-                                                  'is_controlled': GCProp('', bool, 'Is the shunt controllable?'),
-                                                  'G': GCProp('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
-                                                  'B': GCProp('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
-                                                  'G0': GCProp('MW', float, 'Zero sequence active power of the impedance component at V=1.0 p.u.'),
-                                                  'B0': GCProp('MVAr', float, 'Zero sequence reactive power of the impedance component at V=1.0 p.u.'),
-                                                  'Bmin': GCProp('MVAr', float, 'Reactive power min control value at V=1.0 p.u.'),
-                                                  'Bmax': GCProp('MVAr', float, 'Reactive power max control value at V=1.0 p.u.'),
-                                                  'Vset': GCProp('p.u.', float,
-                                                                 'Set voltage. '
-                                                                 'This is used for controlled shunts.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  },
-                                non_editable_attributes=['bus', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'G': 'G_prof',
-                                                         'B': 'B_prof'})
+                                device_type=DeviceType.ShuntDevice)
 
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
@@ -114,6 +86,29 @@ class Shunt(EditableDevice):
         self.opex = opex
 
         self.build_status = build_status
+
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
+        self.register(key='active', units='', tpe=bool, definition='Is the shunt active?', profile_name='active_prof')
+        self.register(key='is_controlled', units='', tpe=bool, definition='Is the shunt controllable?')
+        self.register(key='G', units='MW', tpe=float,
+                      definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
+        self.register(key='B', units='MVAr', tpe=float,
+                      definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
+        self.register(key='G0', units='MW', tpe=float,
+                      definition='Zero sequence active power of the impedance component at V=1.0 p.u.')
+        self.register(key='B0', units='MVAr', tpe=float,
+                      definition='Zero sequence reactive power of the impedance component at V=1.0 p.u.')
+        self.register(key='Bmin', units='MVAr', tpe=float, definition='Reactive power min control value at V=1.0 p.u.')
+        self.register(key='Bmax', units='MVAr', tpe=float, definition='Reactive power max control value at V=1.0 p.u.')
+        self.register(key='Vset', units='p.u.', tpe=float,
+                      definition='Set voltage. This is used for controlled shunts.')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
+        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
+        self.register(key='capex', units='e/MW', tpe=float,
+                      definition='Cost of investment. Used in expansion planning.')
+        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')
 
     def copy(self):
         """

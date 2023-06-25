@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from numpy import sqrt
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -23,289 +22,13 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, TransformerControlType, WindingsConnection, BuildStatus
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.Branches.templates.transformer_type import TransformerType
+from GridCal.Engine.Core.Devices.Branches.tap_changer import TapChanger
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
-
-class TransformerType(EditableDevice):
-    """
-    Arguments:
-
-        **hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`)
-
-        **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`)
-
-        **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA
-
-        **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power)
-
-        **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power)
-
-        **no_load_current** (float, 0.0): No load current in %
-
-        **short_circuit_voltage** (float, 0.0): Short circuit voltage in %
-
-        **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **name** (str, "TransformerType"): Name of the type
-
-        **tpe** (BranchType, BranchType.Transformer): Device type enumeration
-
-    """
-
-    def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0.001, copper_losses=0, iron_losses=0,
-                 no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
-                 name='TransformerType', tpe=BranchType.Transformer, idtag=None):
-        """
-        Transformer template from the short circuit study
-        :param hv_nominal_voltage: Nominal voltage of the high voltage side in kV
-        :param lv_nominal_voltage: Nominal voltage of the low voltage side in kV
-        :param nominal_power: Nominal power of the machine in MVA
-        :param copper_losses: Copper losses in kW
-        :param iron_losses: Iron losses in kW
-        :param no_load_current: No load current in %
-        :param short_circuit_voltage: Short circuit voltage in %
-        :param gr_hv1: proportion of the resistance in the HV side (i.e. 0.5)
-        :param gx_hv1: proportion of the reactance in the HV side (i.e. 0.5)
-        :param name: Name of the device template
-        :param tpe: Kind of template
-        """
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=True,
-                                device_type=DeviceType.TransformerTypeDevice,
-                                editable_headers={'name': GCProp('', str, "Name of the transformer type"),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'HV': GCProp('kV', float, "Nominal voltage al the high voltage side"),
-                                                  'LV': GCProp('kV', float, "Nominal voltage al the low voltage side"),
-                                                  'rating': GCProp('MVA', float, "Nominal power"),
-                                                  'Pcu': GCProp('kW', float, "Copper losses"),
-                                                  'Pfe': GCProp('kW', float, "Iron losses"),
-                                                  'I0': GCProp('%', float, "No-load current"),
-                                                  'Vsc': GCProp('%', float, "Short-circuit voltage")},
-                                non_editable_attributes=list(),
-                                properties_with_profile={})
-
-        self.tpe = tpe
-
-        self.HV = hv_nominal_voltage
-
-        self.LV = lv_nominal_voltage
-
-        self.rating = nominal_power
-
-        self.Pcu = copper_losses
-
-        self.Pfe = iron_losses
-
-        self.I0 = no_load_current
-
-        self.Vsc = short_circuit_voltage
-
-        self.GR_hv1 = gr_hv1
-
-        self.GX_hv1 = gx_hv1
-
-    def get_impedances(self, VH, VL, Sbase):
-        """
-        Compute the branch parameters of a transformer from the short circuit test
-        values.
-        :param VH: High voltage bus nominal voltage in kV
-        :param VL: Low voltage bus nominal voltage in kV
-        :param Sbase: Base power in MVA (normally 100 MVA)
-        :return: Zseries and Yshunt in system per unit
-        """
-
-        Sn = self.rating  # Nominal power (MVA)
-        Pcu = self.Pcu    # Copper losses, AKA resistive losses (kW)
-        Pfe = self.Pfe    # Iron losses, AKA magnetic losses (kW)
-        I0 = self.I0      # No-load current (%)
-        Vsc = self.Vsc    # Short circuit voltage(%)
-
-        # Series impedance
-        zsc = Vsc / 100.0
-        rsc = (Pcu / 1000.0) / Sn
-        if rsc < zsc:
-            xsc = sqrt(zsc ** 2 - rsc ** 2)
-        else:
-            xsc = 0.0
-
-        # series impedance in p.u. of the machine
-        zs = rsc + 1j * xsc
-
-        # Shunt impedance (leakage)
-        if Pfe > 0.0 and I0 > 0.0:
-
-            rfe = Sn / (Pfe / 1000.0)
-            zm = 1.0 / (I0 / 100.0)
-            val = (1.0 / (zm ** 2)) - (1.0 / (rfe ** 2))
-            if val > 0:
-                xm = 1.0 / sqrt(val)
-                rm = sqrt(xm * xm - zm * zm)
-            else:
-                xm = 0.0
-                rm = 0.0
-
-        else:
-
-            rm = 0.0
-            xm = 0.0
-
-        # shunt impedance in p.u. of the machine
-        zsh = rm + 1j * xm
-
-        # convert impedances from machine per unit to ohms
-        ZbaseHv = (self.HV * self.HV) / Sn
-        ZbaseLv = (self.LV * self.LV) / Sn
-
-        ZseriesHv = zs * self.GR_hv1 * ZbaseHv  # Ohm
-        ZseriesLv = zs * (1 - self.GR_hv1) * ZbaseLv  # Ohm
-        ZshuntHv = zsh * self.GR_hv1 * ZbaseHv  # Ohm
-        ZshuntLv = zsh * (1 - self.GR_hv1) * ZbaseLv  # Ohm
-
-        # convert impedances from ohms to system per unit
-        ZbaseHvSys = (VH * VH) / Sbase
-        ZbaseLvSys = (VL * VL) / Sbase
-
-        Zseries = ZseriesHv / ZbaseHvSys + ZseriesLv / ZbaseLvSys
-        Zshunt = ZshuntHv / ZbaseHvSys + ZshuntLv / ZbaseLvSys
-
-        if Zshunt != 0:
-            Yshunt = 1 / Zshunt
-        else:
-            Yshunt = 0j
-
-        return Zseries, Yshunt
-
-
-class TapChanger:
-    """
-    The **TapChanger** class defines a transformer's tap changer, either onload or
-    offload. It needs to be attached to a predefined transformer (i.e. a
-    :ref:`Branch<branch>` object).
-
-    The following example shows how to attach a tap changer to a transformer tied to a
-    voltage regulated :ref:`bus`:
-
-    .. code:: ipython3
-
-        from GridCal.Engine.Core.multi_circuit import MultiCircuit
-        from GridCal.Engine.Core.Devices import *
-        from GridCal.Engine.device_types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      bus_to_regulated=True,
-                      vset=1.05)
-
-        # Attach tap changer
-        X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
-        X_C3.tap_changer.set_tap(X_C3.tap_module)
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Arguments:
-
-        **taps_up** (int, 5): Number of taps position up
-
-        **taps_down** (int, 5): Number of tap positions down
-
-        **max_reg** (float, 1.1): Maximum regulation up i.e 1.1 -> +10%
-
-        **min_reg** (float, 0.9): Maximum regulation down i.e 0.9 -> -10%
-
-    Additional Properties:
-
-        **tap** (int, 0): Current tap position
-
-    """
-
-    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
-        self.max_tap = taps_up
-
-        self.min_tap = -taps_down
-
-        self.inc_reg_up = (max_reg - 1.0) / taps_up
-
-        self.inc_reg_down = (1.0 - min_reg) / taps_down
-
-        self.tap = 0
-
-    def tap_up(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap + 1 <= self.max_tap:
-            self.tap += 1
-
-    def tap_down(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap - 1 >= self.min_tap:
-            self.tap -= 1
-
-    def get_tap(self):
-        """
-        Get the tap voltage regulation module
-        """
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
-
-    def set_tap(self, tap_module):
-        """
-        Set the integer tap position corresponding to a tap value
-
-        Attribute:
-
-            **tap_module** (float): Tap module centered around 1.0
-
-        """
-        if tap_module == 1.0:
-            self.tap = 0
-        elif tap_module > 1:
-            self.tap = round((tap_module - 1.0) / self.inc_reg_up)
-        elif tap_module < 1:
-            self.tap = -round((1.0 - tap_module) / self.inc_reg_down)
-
-
-class Transformer2W(EditableDevice):
+class Transformer2W(ParentBranch):
     """
     The **Branch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
@@ -433,109 +156,29 @@ class Transformer2W(EditableDevice):
                  conn: WindingsConnection = WindingsConnection.GG,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=active,
-                                code=code,
-                                device_type=DeviceType.Transformer2WDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'HV': GCProp('kV', float, 'High voltage rating'),
-                                                  'LV': GCProp('kV', float, 'Low voltage rating'),
-
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
-
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-                                                  'contingency_enabled': GCProp('', bool,
-                                                                                'Consider this transformer for contingencies.'),
-                                                  'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-
-                                                  'R': GCProp('p.u.', float, 'Total positive sequence resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total positive sequence reactance.'),
-                                                  'G': GCProp('p.u.', float, 'Total positive sequence shunt conductance.'),
-                                                  'B': GCProp('p.u.', float, 'Total positive sequence shunt susceptance.'),
-
-                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
-                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
-                                                  'G0': GCProp('p.u.', float, 'Total zero sequence shunt conductance.'),
-                                                  'B0': GCProp('p.u.', float, 'Total zero sequence shunt susceptance.'),
-
-                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
-                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-                                                  'G2': GCProp('p.u.', float, 'Total negative sequence shunt conductance.'),
-                                                  'B2': GCProp('p.u.', float, 'Total negative sequence shunt susceptance.'),
-
-                                                  'conn': GCProp('', WindingsConnection, "Windings connection (from, to):\n"
-                                                                                         "G: grounded star\n"
-                                                                                         "S: ungrounded star\n"
-                                                                                         "D: delta"),
-
-                                                  'tolerance': GCProp('%', float,
-                                                                      'Tolerance expected for the impedance values\n'
-                                                                      '7% is expected for transformers\n'
-                                                                      '0% for lines.'),
-                                                  'tap_module': GCProp('', float,
-                                                                       'Tap changer module, it a value close to 1.0'),
-                                                  'tap_module_max': GCProp('', float,
-                                                                           'Tap changer module max value'),
-                                                  'tap_module_min': GCProp('', float,
-                                                                           'Tap changer module min value'),
-                                                  'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
-                                                  'angle_max': GCProp('rad', float, 'Max angle.'),
-                                                  'angle_min': GCProp('rad', float, 'Min angle.'),
-                                                  'control_mode': GCProp('', TransformerControlType,
-                                                                         'Control type of the transformer'),
-                                                  # 'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
-                                                  'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
-                                                                 'the bus when regulating the tap.'),
-                                                  'Pset': GCProp('p.u.', float, 'Objective power at the "from" side of '
-                                                                                'when regulating the angle.'),
-                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                      'measured.'),
-                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
-                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                  'around a reference temperature\n'
-                                                                  'using a linear approximation.\n'
-                                                                  'For example:\n'
-                                                                  'Copper @ 20ºC: 0.004041,\n'
-                                                                  'Copper @ 75ºC: 0.00323,\n'
-                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                  'Aluminum @ 20ºC: 0.004308,\n'
-                                                                  'Aluminum @ 75ºC: 0.00330'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  'template': GCProp('', DeviceType.TransformerTypeDevice, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'tap_module': 'tap_module_prof',
-                                                         'angle': 'angle_prof',
-                                                         'temp_oper': 'temp_oper_prof',
-                                                         'Cost': 'Cost_prof'})
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              Cost_prof=Cost_prof,
+                              device_type=DeviceType.LineDevice,
+                              branch_type=BranchType.Transformer)
 
         # set the high and low voltage values
         self.HV = 0
@@ -565,22 +208,6 @@ class Transformer2W(EditableDevice):
         self.B2 = b2
 
         self.conn = conn 
-
-        self.mttf = mttf
-
-        self.mttr = mttr
-
-        self.Cost = cost
-
-        self.Cost_prof = Cost_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.active_prof = active_prof
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
@@ -612,17 +239,6 @@ class Transformer2W(EditableDevice):
         self.angle_max = theta_max
         self.angle_min = theta_min
 
-        # branch rating in MVA
-        self.rate = rate
-        self.contingency_factor = contingency_factor
-        self.contingency_enabled: bool = contingency_enabled
-        self.monitor_loading: bool = monitor_loading
-        self.rate_prof = rate_prof
-        self.contingency_factor_prof = contingency_factor_prof
-
-        # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.Transformer
-
         # type template
         self.template = template
 
@@ -645,6 +261,48 @@ class Transformer2W(EditableDevice):
                      'reactance': BranchType.Reactance}
 
         self.inv_conv = {val: key for key, val in self.conv.items()}
+
+        self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
+        self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
+
+        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
+        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
+        self.register(key='G', units='p.u.', tpe=float, definition='Total positive sequence shunt conductance.')
+        self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
+        self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
+        self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
+        self.register(key='G0', units='p.u.', tpe=float, definition='Total zero sequence shunt conductance.')
+        self.register(key='B0', units='p.u.', tpe=float, definition='Total zero sequence shunt susceptance.')
+        self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
+        self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
+        self.register(key='G2', units='p.u.', tpe=float, definition='Total negative sequence shunt conductance.')
+        self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
+        self.register(key='conn', units='', tpe=WindingsConnection,
+                      definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
+        self.register(key='tolerance', units='%', tpe=float,
+                      definition='Tolerance expected for the impedance values7% is expected for transformers0% for lines.')
+        self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
+                      profile_name='tap_module_prof')
+        self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
+        self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value')
+        self.register(key='angle', units='rad', tpe=float, definition='Angle shift of the tap changer.',
+                      profile_name='angle_prof')
+        self.register(key='angle_max', units='rad', tpe=float, definition='Max angle.')
+        self.register(key='angle_min', units='rad', tpe=float, definition='Min angle.')
+        self.register(key='control_mode', units='', tpe=TransformerControlType,
+                      definition='Control type of the transformer')
+        self.register(key='vset', units='p.u.', tpe=float,
+                      definition='Objective voltage at the "to" side of the bus when regulating the tap.')
+        self.register(key='Pset', units='p.u.', tpe=float,
+                      definition='Objective power at the "from" side of when regulating the angle.')
+        self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
+        self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
+                      profile_name='temp_oper_prof')
+        self.register(key='alpha', units='1/ºC', tpe=float,
+                      definition='Thermal coefficient to modify R,around a reference temperatureusing a linear '
+                                 'approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
+                                 'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
+        self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
 
     def set_hv_and_lv(self, HV, LV):
         """

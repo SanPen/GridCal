@@ -51,36 +51,7 @@ class Transformer3W(EditableDevice):
                                 idtag=idtag,
                                 active=active,
                                 code=code,
-                                device_type=DeviceType.Transformer3WDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus0': GCProp('', DeviceType.BusDevice, 'Middle point connection bus.'),
-                                                  'bus1': GCProp('', DeviceType.BusDevice, 'Bus 1.'),
-                                                  'bus2': GCProp('', DeviceType.BusDevice, 'Bus 2.'),
-                                                  'bus3': GCProp('', DeviceType.BusDevice, 'Bus 3.'),
-                                                  'winding1': GCProp('', DeviceType.WindingDevice, 'Winding 1.'),
-                                                  'winding2': GCProp('', DeviceType.WindingDevice, 'Winding 2.'),
-                                                  'winding3': GCProp('', DeviceType.WindingDevice, 'Winding 3.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'V1': GCProp('kV', float, 'Side 1 rating'),
-                                                  'V2': GCProp('kV', float, 'Side 2 rating'),
-                                                  'V3': GCProp('kV', float, 'Side 3 rating'),
-                                                  'r12': GCProp('p.u.', float, 'Resistance measured from 1->2'),
-                                                  'r23': GCProp('p.u.', float, 'Resistance measured from 2->3'),
-                                                  'r31': GCProp('p.u.', float, 'Resistance measured from 3->1'),
-                                                  'x12': GCProp('p.u.', float, 'Reactance measured from 1->2'),
-                                                  'x23': GCProp('p.u.', float, 'Reactance measured from 2->3'),
-                                                  'x31': GCProp('p.u.', float, 'Reactance measured from 3->1'),
-                                                  'rate12': GCProp('MVA', float, 'Rating measured from 1->2'),
-                                                  'rate23': GCProp('MVA', float, 'Rating measured from 2->3'),
-                                                  'rate31': GCProp('MVA', float, 'Rating measured from 3->1'),
-                                                  'x': GCProp('px', float, 'x position'),
-                                                  'y': GCProp('px', float, 'y position'),
-                                                  },
-                                non_editable_attributes=['bus0', 'bus1', 'bus2', 'bus3',
-                                                         'winding1', 'winding2', 'winding3'],
-                                properties_with_profile={'active': 'active_prof'})
+                                device_type=DeviceType.Transformer3WDevice)
 
         self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y, is_tr_bus=True)
 
@@ -110,6 +81,31 @@ class Transformer3W(EditableDevice):
 
         self.x = x
         self.y = y
+
+        self.register(key='bus0', units='', tpe=DeviceType.BusDevice, definition='Middle point connection bus.',
+                      editable=False)
+        self.register(key='bus1', units='', tpe=DeviceType.BusDevice, definition='Bus 1.', editable=False)
+        self.register(key='bus2', units='', tpe=DeviceType.BusDevice, definition='Bus 2.', editable=False)
+        self.register(key='bus3', units='', tpe=DeviceType.BusDevice, definition='Bus 3.', editable=False)
+
+        self.register(key='winding1', units='', tpe=DeviceType.WindingDevice, definition='Winding 1.', editable=False)
+        self.register(key='winding2', units='', tpe=DeviceType.WindingDevice, definition='Winding 2.', editable=False)
+        self.register(key='winding3', units='', tpe=DeviceType.WindingDevice, definition='Winding 3.', editable=False)
+
+        self.register(key='V1', units='kV', tpe=float, definition='Side 1 rating')
+        self.register(key='V2', units='kV', tpe=float, definition='Side 2 rating')
+        self.register(key='V3', units='kV', tpe=float, definition='Side 3 rating')
+        self.register(key='r12', units='p.u.', tpe=float, definition='Resistance measured from 1->2')
+        self.register(key='r23', units='p.u.', tpe=float, definition='Resistance measured from 2->3')
+        self.register(key='r31', units='p.u.', tpe=float, definition='Resistance measured from 3->1')
+        self.register(key='x12', units='p.u.', tpe=float, definition='Reactance measured from 1->2')
+        self.register(key='x23', units='p.u.', tpe=float, definition='Reactance measured from 2->3')
+        self.register(key='x31', units='p.u.', tpe=float, definition='Reactance measured from 3->1')
+        self.register(key='rate12', units='MVA', tpe=float, definition='Rating measured from 1->2')
+        self.register(key='rate23', units='MVA', tpe=float, definition='Rating measured from 2->3')
+        self.register(key='rate31', units='MVA', tpe=float, definition='Rating measured from 3->1')
+        self.register(key='x', units='px', tpe=float, definition='x position')
+        self.register(key='y', units='px', tpe=float, definition='y position')
 
     def all_connected(self):
         """

@@ -52,24 +52,7 @@ class Contingency(EditableDevice):
             code=code,
             active=True,
             name=name,
-            device_type=DeviceType.ContingencyDevice,
-            editable_headers={
-                'idtag': GCProp('', str, 'Unique ID'),
-                'device_idtag': GCProp('', str, 'Unique ID'),
-                'name': GCProp('', str, 'Name of the contingency'),
-                'code': GCProp('', str, 'Some code to further identify the contingency'),
-                'prop': GCProp('', str, 'Name of the object property to change'),
-                'value': GCProp('', float, 'Property value'),
-                'group': GCProp('', DeviceType.ContingencyGroupDevice, 'Contingency group'),
-                'category': GCProp('', str, 'Group category'),
-            },
-            non_editable_attributes=[
-                'idtag',
-                'device_idtag',
-                'category',
-                'code',
-            ],
-            properties_with_profile=dict()
+            device_type=DeviceType.ContingencyDevice
         )
 
         # Contingency type
@@ -77,6 +60,12 @@ class Contingency(EditableDevice):
         self._prop = prop
         self._value = value
         self._group: ContingencyGroup = group
+
+        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
+        self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
+        self.register(key='prop', units='', tpe=str, definition='Name of the object property to change')
+        self.register(key='value', units='', tpe=float, definition='Property value')
+        self.register(key='group', units='', tpe=DeviceType.ContingencyGroupDevice, definition='Contingency group')
 
     @property
     def name(self):

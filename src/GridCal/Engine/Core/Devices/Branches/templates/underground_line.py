@@ -39,29 +39,9 @@ class UndergroundLineType(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code='',
                                 active=True,
-                                device_type=DeviceType.UnderGroundLineDevice,
-                                editable_headers={'name': GCProp('', str, "Name of the line template"),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'rating': GCProp('kA', float, "Current rating of the cable"),
-                                                  'R': GCProp('Ohm/km', float, "Positive-sequence "
-                                                                               "resistance per km"),
-                                                  'X': GCProp('Ohm/km', float, "Positive-sequence "
-                                                                               "reactance per km"),
-                                                  'G': GCProp('S/km', float, "Positive-sequence "
-                                                                             "shunt conductance per km"),
-                                                  'B': GCProp('S/km', float, "Positive-sequence "
-                                                                             "shunt susceptance per km"),
-                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                                                "resistance per km"),
-                                                  'X0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                                                "reactance per km"),
-                                                  'G0': GCProp('S/km', float, "Zero-sequence "
-                                                                              "shunt conductance per km"),
-                                                  'B0': GCProp('S/km', float, "Zero-sequence "
-                                                                              "shunt susceptance per km")},
-                                non_editable_attributes=list(),
-                                properties_with_profile={})
+                                device_type=DeviceType.UnderGroundLineDevice)
 
         self.tpe = BranchType.Line
 
@@ -77,6 +57,16 @@ class UndergroundLineType(EditableDevice):
         self.X0 = X0
         self.G0 = G0
         self.B0 = B0
+
+        self.register(key='rating', units='kA', tpe=float, definition='Current rating of the cable')
+        self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance per km')
+        self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance per km')
+        self.register(key='G', units='S/km', tpe=float, definition='Positive-sequence shunt conductance per km')
+        self.register(key='B', units='S/km', tpe=float, definition='Positive-sequence shunt susceptance per km')
+        self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance per km')
+        self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero-sequence reactance per km')
+        self.register(key='G0', units='S/km', tpe=float, definition='Zero-sequence shunt conductance per km')
+        self.register(key='B0', units='S/km', tpe=float, definition='Zero-sequence shunt susceptance per km')
 
     def z_series(self):
         """

@@ -21,11 +21,11 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, ConverterControlType, BuildStatus
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
-
-class VSC(EditableDevice):
+class VSC(ParentBranch):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, code='', active=True,
                  r1=0.0001, x1=0.05,
@@ -78,92 +78,34 @@ class VSC(EditableDevice):
         :param active_prof:
         """
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=active,
-                                code=code,
-                                device_type=DeviceType.VscDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "DC" side of the branch.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "AC" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
-
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-                                                  'contingency_enabled': GCProp('', bool,
-                                                                                'Consider this VSC for contingencies.'),
-                                                  'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for '
-                                                                            'optimization, NTC or contingency studies.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-
-                                                  'R1': GCProp('p.u.', float, 'Resistive positive sequence losses.'),
-                                                  'X1': GCProp('p.u.', float, 'Magnetic positive sequence losses.'),
-
-                                                  'R0': GCProp('p.u.', float, 'Resistive zero sequence losses.'),
-                                                  'X0': GCProp('p.u.', float, 'Magnetic zero sequence losses.'),
-
-                                                  'R2': GCProp('p.u.', float, 'Resistive negative sequence losses.'),
-                                                  'X2': GCProp('p.u.', float, 'Magnetic negative sequence losses.'),
-
-                                                  'G0sw': GCProp('p.u.', float, 'Inverter losses.'),
-
-                                                  'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
-                                                  'Beq_max': GCProp('p.u.', float, 'Max total shunt susceptance.'),
-                                                  'Beq_min': GCProp('p.u.', float, 'Min total shunt susceptance.'),
-
-                                                  'm': GCProp('', float, 'Tap changer module, it a value close to 1.0'),
-                                                  'm_max': GCProp('', float, 'Max tap changer module'),
-                                                  'm_min': GCProp('', float, 'Min tap changer module'),
-
-                                                  'theta': GCProp('rad', float, 'Converter firing angle.'),
-                                                  'theta_max': GCProp('rad', float, 'Max converter firing angle.'),
-                                                  'theta_min': GCProp('rad', float, 'Min converter firing angle.'),
-
-                                                  'alpha1': GCProp('', float,
-                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
-                                                  'alpha2': GCProp('', float,
-                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
-                                                  'alpha3': GCProp('', float,
-                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
-
-                                                  'k': GCProp('p.u./p.u.', float, 'Converter factor, typically 0.866.'),
-
-                                                  'control_mode': GCProp('', ConverterControlType,
-                                                                         'Converter control mode'),
-
-                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power/Voltage slope.'),
-                                                  'Pdc_set': GCProp('MW', float, 'DC power set point.'),
-                                                  'Qac_set': GCProp('MVAr', float, 'AC Reactive power set point.'),
-                                                  'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
-                                                  'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
-                                                  'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  },
-                                non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'Cost': 'Cost_prof'})
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              Cost_prof=cost_prof,
+                              device_type=DeviceType.VscDevice,
+                              branch_type=BranchType.VSC)
 
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it
         # from -> DC
-        # to   -> ACG0G0G0G0G0G0
+        # to   -> AC
         # assert(bus_from.is_dc != bus_to.is_dc)
         if bus_to is not None and bus_from is not None:
             # connectivity:
@@ -218,31 +160,38 @@ class VSC(EditableDevice):
         self.alpha2 = alpha2
         self.alpha3 = alpha3
 
-        self.Cost = cost
-        self.Cost_prof = cost_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.mttf = mttf
-        self.mttr = mttr
-
-        self.active = active
-        self.active_prof = active_prof
-
-        # branch rating in MVA
-        self.rate = rate
-        self.contingency_factor = contingency_factor
-        self.contingency_enabled: bool = contingency_enabled
-        self.monitor_loading: bool = monitor_loading
-        self.rate_prof = rate_prof
-        self.contingency_factor_prof = contingency_factor_prof
-
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.VSC
+
+        self.register(key='R1', units='p.u.', tpe=float, definition='Resistive positive sequence losses.')
+        self.register(key='X1', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.')
+        self.register(key='R0', units='p.u.', tpe=float, definition='Resistive zero sequence losses.')
+        self.register(key='X0', units='p.u.', tpe=float, definition='Magnetic zero sequence losses.')
+        self.register(key='R2', units='p.u.', tpe=float, definition='Resistive negative sequence losses.')
+        self.register(key='X2', units='p.u.', tpe=float, definition='Magnetic negative sequence losses.')
+        self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
+        self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
+        self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
+        self.register(key='Beq_min', units='p.u.', tpe=float, definition='Min total shunt susceptance.')
+        self.register(key='m', units='', tpe=float, definition='Tap changer module, it a value close to 1.0')
+        self.register(key='m_max', units='', tpe=float, definition='Max tap changer module')
+        self.register(key='m_min', units='', tpe=float, definition='Min tap changer module')
+        self.register(key='theta', units='rad', tpe=float, definition='Converter firing angle.')
+        self.register(key='theta_max', units='rad', tpe=float, definition='Max converter firing angle.')
+        self.register(key='theta_min', units='rad', tpe=float, definition='Min converter firing angle.')
+        self.register(key='alpha1', units='', tpe=float,
+                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+        self.register(key='alpha2', units='', tpe=float,
+                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+        self.register(key='alpha3', units='', tpe=float,
+                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+        self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
+        self.register(key='control_mode', units='', tpe=ConverterControlType, definition='Converter control mode')
+        self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
+        self.register(key='Pdc_set', units='MW', tpe=float, definition='DC power set point.')
+        self.register(key='Qac_set', units='MVAr', tpe=float, definition='AC Reactive power set point.')
+        self.register(key='Vac_set', units='p.u.', tpe=float, definition='AC voltage set point.')
+        self.register(key='Vdc_set', units='p.u.', tpe=float, definition='DC voltage set point.')
 
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)

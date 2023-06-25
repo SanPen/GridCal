@@ -16,26 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCal.Engine.Core.Devices.editable_device import DeviceType, GCProp
-from GridCal.Engine.Core.Devices.Aggregation.area import GenericAreaGroup
-
-
-class Substation(GenericAreaGroup):
-
-    def __init__(self, name='Substation', idtag=None, code='', latitude=0.0, longitude=0.0):
-        """
-
-        :param name:
-        :param idtag:
-        :param latitude:
-        :param longitude:
-        """
-        GenericAreaGroup.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  device_type=DeviceType.SubstationDevice,
-                                  latitude=latitude,
-                                  longitude=longitude)
-
-
+from GridCal.Engine.Core.Devices.Branches.templates.transformer_type import TransformerType
+from GridCal.Engine.Core.Devices.Branches.templates.line_template import LineTemplate
+from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType
+from GridCal.Engine.Core.Devices.Branches.templates.transformer_type import TransformerType
+from GridCal.Engine.Core.Devices.Branches.templates.underground_line import UndergroundLineType

@@ -43,21 +43,17 @@ class InvestmentsGroup(EditableDevice):
 
         EditableDevice.__init__(
             self,
-            idtag=idtag,
             name=name,
+            idtag=idtag,
+            code='',
             active=True,
-            device_type=DeviceType.InvestmentsGroupDevice,
-            editable_headers={
-                'idtag': GCProp('', str, 'Unique ID'),
-                'name': GCProp('', str, 'Name of the contingency group'),
-                'category': GCProp('', str, 'Some tag to category the contingency group'),
-            },
-            non_editable_attributes=['idtag'],
-            properties_with_profile=dict()
+            device_type=DeviceType.InvestmentsGroupDevice
         )
 
         # Contingency type
         self.category = category
+
+        self.register(key='category', units='', tpe=str, definition='Some tag to category the contingency group')
 
     @property
     def name(self):

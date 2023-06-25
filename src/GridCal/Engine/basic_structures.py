@@ -27,6 +27,7 @@ from GridCal.Gui.plot_config import LINEWIDTH, plt
 IntList = List[int]
 DateVec = npt.NDArray[npt.Shape['*'], npt.Datetime64]
 IntVec = npt.NDArray[npt.Shape['*'], npt.Int]
+BoolVec = npt.NDArray[npt.Shape['*'], npt.Bool]
 Vec = npt.NDArray[npt.Shape['*'], npt.Double]
 CxVec = npt.NDArray[npt.Shape['*'], npt.Complex]
 StrVec = npt.NDArray[npt.Shape['*'], npt.String]

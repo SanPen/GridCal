@@ -18,15 +18,15 @@
 
 from GridCal.Engine.Core.Devices.Branches.branch import Branch, BranchTemplate
 from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
+from GridCal.Engine.Core.Devices.Branches.line import Line
 from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
 from GridCal.Engine.Core.Devices.Branches.switch import Switch
-from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
-from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
+from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
 from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCal.Engine.Core.Devices.Branches.underground_line import UndergroundLineType
 from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
 from GridCal.Engine.Core.Devices.Branches.vsc import VSC
 from GridCal.Engine.Core.Devices.Branches.winding import Winding
 from GridCal.Engine.Core.Devices.Branches.wire import Wire
+from GridCal.Engine.Core.Devices.Branches.tap_changer import TapChanger
 
+from GridCal.Engine.Core.Devices.Branches.templates import *

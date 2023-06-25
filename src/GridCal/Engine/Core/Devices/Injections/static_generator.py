@@ -51,30 +51,7 @@ class StaticGenerator(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 active=active,
-                                device_type=DeviceType.StaticGeneratorDevice,
-                                editable_headers={'name': GCProp('', str, ''),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus': GCProp('', DeviceType.BusDevice, ''),
-                                                  'active': GCProp('', bool, ''),
-                                                  'P': GCProp('MW', float, 'Active power'),
-                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of not served energy. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  },
-                                non_editable_attributes=['bus', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'P': 'P_prof',
-                                                         'Q': 'Q_prof',
-                                                         'Cost': 'Cost_prof'})
+                                device_type=DeviceType.StaticGeneratorDevice)
 
         self.bus = None
 
@@ -100,6 +77,20 @@ class StaticGenerator(EditableDevice):
         self.opex = opex
 
         self.build_status = build_status
+
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='', editable=False)
+        self.register(key='active', units='', tpe=bool, definition='', profile_name='active_prof')
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
+        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
+        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
+                      profile_name='Cost_prof')
+        self.register(key='capex', units='e/MW', tpe=float,
+                      definition='Cost of investment. Used in expansion planning.')
+        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')
 
     def copy(self):
         """

@@ -34,23 +34,20 @@ class Wire(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code='',
                                 active=True,
-                                device_type=DeviceType.WireDevice,
-                                editable_headers={'name': GCProp('', str, "Name of the conductor"),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'r': GCProp('Ohm/km', float, "resistance of the conductor"),
-                                                  'x': GCProp('Ohm/km', float, "reactance of the conductor"),
-                                                  'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),
-                                                  'max_current': GCProp('kA', float, "Maximum current of the conductor")
-                                                  },
-                                non_editable_attributes=list(),
-                                properties_with_profile={})
+                                device_type=DeviceType.WireDevice)
 
         # self.wire_name = name
         self.r = r
         self.x = x
         self.gmr = gmr
         self.max_current = max_current
+
+        self.register(key='r', units='Ohm/km', tpe=float, definition='resistance of the conductor')
+        self.register(key='x', units='Ohm/km', tpe=float, definition='reactance of the conductor')
+        self.register(key='gmr', units='m', tpe=float, definition='Geometric Mean Radius of the conductor')
+        self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
 
     def copy(self):
         """

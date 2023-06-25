@@ -16,17 +16,23 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import uuid
 import numpy as np
-from typing import List, Dict, AnyStr, Any, Optional, Union
-from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame
+from typing import List, Dict, AnyStr, Any, Optional, Union, Type
+from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType
+from GridCal.Engine.basic_structures import ExternalGridMode
 
 
 class GCProp:
 
-    def __init__(self, units, tpe, definition, profile_name='', display=True):
+    def __init__(self,
+                 units: str,
+                 tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
+                 definition: str,
+                 profile_name: str = '',
+                 display: bool = True):
         """
         GridCal property
         :param units: units of the property
-        :param tpe: data type (int, complex, float, etc...)
+        :param tpe: data type [Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]]
         :param definition: Definition of the property
         :param profile_name: name of the associated profile property
         :param display: Display the property in the GUI
@@ -45,22 +51,17 @@ class GCProp:
 
 class EditableDevice:
 
-    def __init__(self, name,
+    def __init__(self,
+                 name: str,
+                 idtag: Union[str, None],
+                 code: str,
                  active: bool,
-                 device_type: DeviceType,
-                 editable_headers: Dict[str, GCProp],
-                 non_editable_attributes: List[str],
-                 properties_with_profile: Dict[str, Optional[Any]],
-                 idtag: Union[str, None] = None,
-                 code: str = ''):
+                 device_type: DeviceType):
         """
         Class to generalize any editable device
         :param name: Asset's name
         :param active: is active
-        :param editable_headers: dictionary of header properties {'magnitude': (unit, type)}
         :param device_type: DeviceType instance
-        :param non_editable_attributes: list of non editable magnitudes
-        :param properties_with_profile: dictionary of profile properties {'magnitude': profile_magnitude}
         :param idtag: unique ID, if not provided it is generated
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
@@ -83,16 +84,100 @@ class EditableDevice:
         # associated graphic object
         self._graphic_obj = None
 
-        self.editable_headers = editable_headers
+        self.editable_headers: Dict[str, GCProp] = dict()
 
-        self.non_editable_attributes = non_editable_attributes
+        self.non_editable_attributes: List[str] = list()
 
-        self.properties_with_profile = properties_with_profile
+        self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
+        self.register(key='name', units='', tpe=str, definition='Name of the branch.')
+        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
+        self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='active', units='', tpe=bool, definition='Is active?')
 
+    def print_register(self):
+
+        def tpe_convert(tpe):
+            if tpe == str:
+                return 'str'
+            elif tpe == bool:
+                return 'bool'
+            elif tpe == int:
+                return 'int'
+            elif tpe == float:
+                return 'float'
+            elif isinstance(tpe, DeviceType):
+                return "DeviceType.{}Device".format(tpe.value)
+            elif tpe == BuildStatus:
+                return "BuildStatus"
+            elif tpe == ExternalGridMode:
+                return "ExternalGridMode"
+            elif tpe == WindingsConnection:
+                return "WindingsConnection"
+
+            elif tpe == TransformerControlType:
+                return "TransformerControlType"
+            elif tpe == HvdcControlType:
+                return "HvdcControlType"
+            elif tpe == ConverterControlType:
+                return "ConverterControlType"
+
+            else:
+                raise Exception()
+        print()
+        print(self.device_type.value)
+        for key, prop in self.editable_headers.items():
+
+            template = "self.register(key='{0}', units='{1}', tpe={2}, definition='{3}', profile_name='{4}', editable={5})"
+
+            s = template.format(key,
+                                prop.units,
+                                tpe_convert(prop.tpe),
+                                prop.definition.replace("\n", ""),
+                                self.properties_with_profile.get(key, ""),
+                                key not in self.non_editable_attributes)
+            print(s)
+
+    def register(self,
+                 key: str,
+                 units: str,
+                 tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
+                 definition: str,
+                 profile_name: str = '',
+                 display: bool = True,
+                 editable: bool = True):
+        """
+        Register property
+        The property must exist, and if provided, the profile_name property must exist too
+        :param key: key (this is the displayed name)
+        :param units: string with the declared units
+        :param tpe: type of the attribute [Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]]
+        :param definition: Definition of the property
+        :param profile_name: name of the profile property (if any)
+        :param display: display this property?
+        :param editable: is this editable?
+        """
+        assert (hasattr(self, key))  # the property must exist, this avoids bugs in registering
+
+        self.editable_headers[key] = GCProp(units=units,
+                                            tpe=tpe,
+                                            definition=definition,
+                                            profile_name=profile_name,
+                                            display=display)
+
+        if profile_name != '':
+            assert (hasattr(self, profile_name)) # the property must exist, this avoids bugs in registering
+            self.properties_with_profile[key] = profile_name
+
+        if not editable:
+            self.non_editable_attributes.append(key)
 
     @property
     def graphic_obj(self):
+        """
+        Get the associated graphical object (if any)
+        :return: graphical object
+        """
         return self._graphic_obj
 
     @graphic_obj.setter
@@ -100,6 +185,9 @@ class EditableDevice:
         self._graphic_obj = obj
 
     def generate_uuid(self):
+        """
+        Generate new UUID for the idtag property
+        """
         self.idtag = uuid.uuid4().hex
 
     def __str__(self) -> AnyStr:
@@ -126,7 +214,10 @@ class EditableDevice:
             return False
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """
+        Name of the object
+        """
         return self._name
 
     @name.setter

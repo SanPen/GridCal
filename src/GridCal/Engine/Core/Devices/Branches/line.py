@@ -16,109 +16,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import pandas as pd
 import numpy as np
-from typing import Tuple
-from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
-from GridCal.Engine.Core.Devices.Branches.underground_line import UndergroundLineType
-from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCal.Engine.Core.Devices.Branches.templates.underground_line import UndergroundLineType
+from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType
+from GridCal.Engine.Core.Devices.Branches.templates.line_template import LineTemplate
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
 
-class SequenceLineType(EditableDevice):
-
-    def __init__(self, name='SequenceLine', idtag=None, rating=1,
-                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
-        """
-        Constructor
-        :param name: name of the model
-        :param rating: Line rating in kA
-        :param R: Resistance of positive sequence in Ohm/km
-        :param X: Reactance of positive sequence in Ohm/km
-        :param G: Conductance of positive sequence in Ohm/km
-        :param B: Susceptance of positive sequence in Ohm/km
-        :param R0: Resistance of zero sequence in Ohm/km
-        :param X0: Reactance of zero sequence in Ohm/km
-        :param G0: Conductance of zero sequence in Ohm/km
-        :param B0: Susceptance of zero sequence in Ohm/km
-        """
-
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=True,
-                                device_type=DeviceType.SequenceLineDevice,
-                                editable_headers={'name': GCProp('', str, "Name of the line template"),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'rating': GCProp('kA', float, "Current rating of the line"),
-                                                  'R': GCProp('Ohm/km', float, "Positive-sequence "
-                                                                               "resistance per km"),
-                                                  'X': GCProp('Ohm/km', float, "Positive-sequence "
-                                                                               "reactance per km"),
-                                                  'G': GCProp('S/km', float, "Positive-sequence "
-                                                                             "shunt conductance per km"),
-                                                  'B': GCProp('S/km', float, "Positive-sequence "
-                                                                             "shunt susceptance per km"),
-                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                                                "resistance per km"),
-                                                  'X0': GCProp('Ohm/km', float, "Zero-sequence "
-                                                                                "reactance per km"),
-                                                  'G0': GCProp('S/km', float, "Zero-sequence "
-                                                                              "shunt conductance per km"),
-                                                  'B0': GCProp('S/km', float, "Zero-sequence "
-                                                                              "shunt susceptance per km"),
-                                                  },
-                                non_editable_attributes=list(),
-                                properties_with_profile={})
-
-        self.tpe = tpe
-
-        self.rating = rating
-
-        # impudence and admittance per unit of length
-        self.R = R
-        self.X = X
-        self.G = G
-        self.B = B
-
-        self.R0 = R0
-        self.X0 = X0
-        self.G0 = G0
-        self.B0 = B0
-
-
-class LineTemplate:
-
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch, idtag=None):
-        self.idtag = idtag
-
-        self.name = name
-
-        self.tpe = tpe
-
-        self.device_type = DeviceType.LineTypeDevice
-
-        self.edit_headers = []
-        self.units = []
-        self.non_editable_indices = []
-        self.edit_types = {}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-        dta = list()
-        for property in self.edit_headers:
-            dta.append(getattr(self, property))
-        return dta
-
-
-class Line(EditableDevice):
+class Line(ParentBranch):
     """
     The **Line** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
@@ -235,92 +147,29 @@ class Line(EditableDevice):
                  r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=active,
-                                device_type=DeviceType.LineDevice,
-                                code=code,
-                                editable_headers={'name': GCProp('', str, 'Name of the line.'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the line.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the line.'),
-                                                  'active': GCProp('', bool, 'Is the line active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-                                                  'contingency_enabled': GCProp('', bool,
-                                                                                'Consider this line for contingencies.'),
-                                                  'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                             'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                             'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total positive sequence resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total positive sequence reactance.'),
-                                                  'B': GCProp('p.u.', float,
-                                                              'Total positive sequence shunt susceptance.'),
-
-                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
-                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
-                                                  'B0': GCProp('p.u.', float, 'Total zero sequence shunt susceptance.'),
-
-                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
-                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-                                                  'B2': GCProp('p.u.', float,
-                                                               'Total negative sequence shunt susceptance.'),
-
-                                                  'tolerance': GCProp('%', float,
-                                                                      'Tolerance expected for the impedance values\n'
-                                                                      '7% is expected for transformers\n'
-                                                                      '0% for lines.'),
-                                                  'length': GCProp('km', float, 'Length of the line '
-                                                                                '(not used for calculation)'),
-                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                                   'measured.'),
-                                                  'temp_oper': GCProp('ºC', float,
-                                                                      'Operation temperature to modify R.'),
-                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                                 'around a reference temperature\n'
-                                                                                 'using a linear approximation.\n'
-                                                                                 'For example:\n'
-                                                                                 'Copper @ 20ºC: 0.004041,\n'
-                                                                                 'Copper @ 75ºC: 0.00323,\n'
-                                                                                 'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                                 'Aluminum @ 20ºC: 0.004308,\n'
-                                                                                 'Aluminum @ 75ºC: 0.00330'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                                   'Used in short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                                   'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float,
-                                                                      'Per-unit positioning of the fault:\n'
-                                                                      '0 would be at the "from" side,\n'
-                                                                      '1 would be at the "to" side,\n'
-                                                                      'therefore 0.5 is at the middle.'),
-                                                  'template': GCProp('', DeviceType.SequenceLineDevice, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'temp_oper': 'temp_oper_prof',
-                                                         'Cost': 'Cost_prof'})
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              Cost_prof=Cost_prof,
+                              device_type=DeviceType.LineDevice,
+                              branch_type=BranchType.Line)
 
         # List of measurements
         self.measurements = list()
@@ -336,10 +185,6 @@ class Line(EditableDevice):
         self.x_fault = x_fault
         self.fault_pos = fault_pos
 
-        self.contingency_enabled: bool = contingency_enabled
-
-        self.monitor_loading: bool = monitor_loading
-
         # total impedance and admittance in p.u.
         self.R = r
         self.X = x
@@ -353,22 +198,6 @@ class Line(EditableDevice):
         self.X2 = x2
         self.B2 = b2
 
-        self.mttf = mttf
-
-        self.mttr = mttr
-
-        self.Cost = cost
-
-        self.Cost_prof = Cost_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.active_prof = active_prof
-
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
@@ -378,18 +207,43 @@ class Line(EditableDevice):
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
-        # line rating in MVA
-        self.rate = rate
-        self.rate_prof = rate_prof
-
-        self.contingency_factor = contingency_factor
-        self.contingency_factor_prof = contingency_factor_prof
-
         # line type: Line, Transformer, etc...
         self.branch_type = BranchType.Line
 
         # type template
         self.template = template
+
+        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
+        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
+        self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
+        self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
+        self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
+        self.register(key='B0', units='p.u.', tpe=float, definition='Total zero sequence shunt susceptance.')
+        self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
+        self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
+        self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
+        self.register(key='tolerance', units='%', tpe=float,
+                      definition='Tolerance expected for the impedance values7% is expected for transformers0% for lines.')
+        self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
+        self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
+        self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
+                      profile_name='temp_oper_prof')
+        self.register(key='alpha', units='1/ºC', tpe=float,
+                      definition='Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
+        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
+                      profile_name='Cost_prof')
+        self.register(key='capex', units='e/MW', tpe=float,
+                      definition='Cost of investment. Used in expansion planning.')
+        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')
+        self.register(key='r_fault', units='p.u.', tpe=float,
+                      definition='Resistance of the mid-line fault.Used in short circuit studies.')
+        self.register(key='x_fault', units='p.u.', tpe=float,
+                      definition='Reactance of the mid-line fault.Used in short circuit studies.')
+        self.register(key='fault_pos', units='p.u.', tpe=float,
+                      definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.')
+        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='')
 
     @property
     def R_corrected(self):
@@ -411,45 +265,6 @@ class Line(EditableDevice):
 
     def get_weight(self):
         return np.sqrt(self.R * self.R + self.X * self.X)
-
-    def get_max_bus_nominal_voltage(self):
-        """
-        GEt the maximum nominal voltage
-        :return:
-        """
-        return max(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_min_bus_nominal_voltage(self):
-        """
-        Get the minimum nominal voltage
-        :return:
-        """
-        return min(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_virtual_taps(self) -> Tuple[float, float]:
-        """
-        Get the branch virtual taps
-
-        The virtual taps generate when a line nominal voltage ate the two connection buses differ
-
-        Returns:
-
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-
-        """
-        # resolve how the transformer is actually connected and set the virtual taps
-        bus_f_v = self.bus_from.Vnom
-        bus_t_v = self.bus_to.Vnom
-
-        if bus_f_v == bus_t_v:
-            return 1.0, 1.0
-        else:
-            if bus_f_v > 0.0 and bus_t_v > 0.0:
-                return 1.0, bus_f_v / bus_t_v
-            else:
-                return 1.0, 1.0
 
     def copy(self, bus_dict=None):
         """
@@ -696,48 +511,6 @@ class Line(EditableDevice):
                 'base_temperature': 'ºC',
                 'operational_temperature': 'ºC',
                 'alpha': '1/ºC'}
-
-    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
-        """
-        Plot the time series results of this object
-        :param time_series: TimeSeries Instance
-        :param my_index: index of this object in the simulation
-        :param show_fig: Show the figure?
-        """
-
-        if time_series is not None:
-            fig = plt.figure(figsize=(12, 8))
-
-            ax_1 = fig.add_subplot(211)
-            ax_2 = fig.add_subplot(212, sharex=ax_1)
-
-            x = time_series.results.time
-
-            # loading
-            y = time_series.results.loading.real * 100.0
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_1.set_title('Loading', fontsize=14)
-            ax_1.set_ylabel('Loading [%]', fontsize=11)
-            df.plot(ax=ax_1)
-
-            # losses
-            y = np.abs(time_series.results.losses)
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_2.set_title('Losses', fontsize=14)
-            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-            df.plot(ax=ax_2)
-
-            plt.legend()
-            fig.suptitle(self.name, fontsize=20)
-
-        if show_fig:
-            plt.show()
-
-    def get_coordinates(self):
-        """
-        Get the line defining coordinates
-        """
-        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
     def convertible_to_vsc(self):
         """

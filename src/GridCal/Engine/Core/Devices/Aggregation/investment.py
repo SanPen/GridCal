@@ -52,19 +52,7 @@ class Investment(EditableDevice):
             code=code,
             active=True,
             name=name,
-            device_type=DeviceType.InvestmentDevice,
-            editable_headers={
-                'idtag': GCProp('', str, 'Unique ID'),
-                'device_idtag': GCProp('', str, 'Unique ID'),
-                'name': GCProp('', str, 'Name of the contingency'),
-                'code': GCProp('', str, 'Some code to further identify the contingency'),
-                'CAPEX': GCProp('M€', float, 'Capital expenditures. This is the initial investment.'),
-                'OPEX': GCProp('M€', float, 'Operation expenditures. Maintenance costs among other recurrent costs.'),
-                'group': GCProp('', DeviceType.InvestmentsGroupDevice, 'Investment group'),
-                'category': GCProp('', str, 'Investment group category'),
-            },
-            non_editable_attributes=['idtag', 'category'],
-            properties_with_profile=dict()
+            device_type=DeviceType.InvestmentDevice
         )
 
         # Contingency type
@@ -72,6 +60,13 @@ class Investment(EditableDevice):
         self.CAPEX = CAPEX
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
+
+        self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
+        self.register(key='CAPEX', units='M€', tpe=float,
+                      definition='Capital expenditures. This is the initial investment.')
+        self.register(key='OPEX', units='M€', tpe=float,
+                      definition='Operation expenditures. Maintenance costs among other recurrent costs.')
+        self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition = 'Investment group')
 
     @property
     def name(self):

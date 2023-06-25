@@ -41,17 +41,14 @@ class EmissionGas(EditableDevice):
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=device_type,
-                                editable_headers={'name': GCProp('', str, 'Name of the bus'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'cost': GCProp('€/t', float, 'Cost of emissions (currency / ton)'),
-                                                  },
-                                non_editable_attributes=['idtag'],
-                                properties_with_profile={'cost': 'cost_prof'})
+                                device_type=device_type)
 
         self.cost = cost
 
         self.cost_prof = cost_prof
+
+        self.register(key='cost', units='€/t', tpe=float, definition='Cost of emissions (currency / ton)',
+                      profile_name='cost_prof')
 
     def get_properties_dict(self, version=3):
 

@@ -190,62 +190,7 @@ class Generator(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 active=active,
-                                device_type=DeviceType.GeneratorDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the generator'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                                  'active': GCProp('', bool, 'Is the generator active?'),
-                                                  'is_controlled': GCProp('', bool,
-                                                                          'Is this generator voltage-controlled?'),
-                                                  'P': GCProp('MW', float, 'Active power'),
-                                                  'Pf': GCProp('', float,
-                                                               'Power factor (cos(fi)). '
-                                                               'This is used for non-controlled generators.'),
-                                                  'Vset': GCProp('p.u.', float,
-                                                                 'Set voltage. '
-                                                                 'This is used for controlled generators.'),
-                                                  'Snom': GCProp('MVA', float, 'Nomnial power.'),
-                                                  'Qmin': GCProp('MVAr', float, 'Minimum reactive power.'),
-                                                  'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
-                                                  'use_reactive_power_curve': GCProp('', bool, 'Use the reactive power capability curve?'),
-                                                  'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
-                                                  'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
-
-                                                  'R1': GCProp('p.u.', float, 'Total positive sequence resistance.'),
-                                                  'X1': GCProp('p.u.', float, 'Total positive sequence reactance.'),
-
-                                                  'R0': GCProp('p.u.', float, 'Total zero sequence resistance.'),
-                                                  'X0': GCProp('p.u.', float, 'Total zero sequence reactance.'),
-
-                                                  'R2': GCProp('p.u.', float, 'Total negative sequence resistance.'),
-                                                  'X2': GCProp('p.u.', float, 'Total negative sequence reactance.'),
-
-                                                  'Cost2': GCProp('e/MWh²', float, 'Generation quadratic cost. Used in OPF.'),
-                                                  'Cost': GCProp('e/MWh', float, 'Generation linear cost. Used in OPF.'),
-                                                  'Cost0': GCProp('e/h', float, 'Generation constant cost. Used in OPF.'),
-
-                                                  'StartupCost': GCProp('e/h', float, 'Generation start-up cost. Used in OPF.'),
-                                                  'ShutdownCost': GCProp('e/h', float, 'Generation shut-down cost. Used in OPF.'),
-                                                  'MinTimeUp': GCProp('h', float, 'Minimum time that the generator has to be on when started. Used in OPF.'),
-                                                  'MinTimeDown': GCProp('h', float, 'Minimum time that the generator has to be off when shut down. Used in OPF.'),
-                                                  'RampUp': GCProp('MW/h', float, 'Maximum amount of generation increase per hour.'),
-                                                  'RampDown': GCProp('MW/h', float, 'Maximum amount of generation decrease per hour.'),
-                                                  'capex': GCProp('e/MW', float, 'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float, 'Cost of maintenance. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus, 'Branch build status. Used in expansion planning.'),
-                                                  'enabled_dispatch': GCProp('', bool, 'Enabled for dispatch? Used in OPF.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery')
-                                                  },
-                                non_editable_attributes=['bus', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'P': 'P_prof',
-                                                         'Pf': 'Pf_prof',
-                                                         'Vset': 'Vset_prof',
-                                                         'Cost2': 'Cost2_prof',
-                                                         'Cost': 'Cost_prof',
-                                                         'Cost0': 'Cost0_prof'})
+                                device_type=DeviceType.GeneratorDevice)
 
         self.bus = None
 
@@ -363,6 +308,58 @@ class Generator(EditableDevice):
 
         # system base power MVA
         self.Sbase = Sbase
+
+        self.register(key='name', units='', tpe=str, definition='Name of the generator')
+        self.register(key='idtag', units='', tpe=str, definition='Unique ID', )
+        self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name')
+        self.register(key='active', units='', tpe=bool, definition='Is the generator active?',
+                      profile_name='active_prof')
+        self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Pf', units='', tpe=float,
+                      definition='Power factor (cos(fi)). This is used for non-controlled generators.',
+                      profile_name='Pf_prof')
+        self.register(key='Vset', units='p.u.', tpe=float,
+                      definition='Set voltage. This is used for controlled generators.', profile_name='Vset_prof')
+        self.register(key='Snom', units='MVA', tpe=float, definition='Nomnial power.')
+        self.register(key='Qmin', units='MVAr', tpe=float, definition='Minimum reactive power.')
+        self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
+        self.register(key='use_reactive_power_curve', units='', tpe=bool,
+                      definition='Use the reactive power capability curve?')
+        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
+        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+        self.register(key='R1', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
+        self.register(key='X1', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
+        self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
+        self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
+        self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
+        self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
+        self.register(key='Cost2', units='e/MWh²', tpe=float, definition='Generation quadratic cost. Used in OPF.',
+                      profile_name='Cost2_prof')
+        self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
+                      profile_name='Cost_prof')
+        self.register(key='Cost0', units='e/h', tpe=float, definition='Generation constant cost. Used in OPF.',
+                      profile_name='Cost0_prof')
+        self.register(key='StartupCost', units='e/h', tpe=float, definition='Generation start-up cost. Used in OPF.')
+        self.register(key='ShutdownCost', units='e/h', tpe=float, definition='Generation shut-down cost. Used in OPF.')
+        self.register(key='MinTimeUp', units='h', tpe=float,
+                      definition='Minimum time that the generator has to be on when started. Used in OPF.')
+        self.register(key='MinTimeDown', units='h', tpe=float,
+                      definition='Minimum time that the generator has to be off when shut down. Used in OPF.')
+        self.register(key='RampUp', units='MW/h', tpe=float,
+                      definition='Maximum amount of generation increase per hour.')
+        self.register(key='RampDown', units='MW/h', tpe=float,
+                      definition='Maximum amount of generation decrease per hour.')
+        self.register(key='capex', units='e/MW', tpe=float,
+                      definition='Cost of investment. Used in expansion planning.')
+        self.register(key='opex', units='e/MWh', tpe=float,
+                      definition='Cost of maintenance. Used in expansion planning.')
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')
+        self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
+        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
+        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
 
     def copy(self):
         """

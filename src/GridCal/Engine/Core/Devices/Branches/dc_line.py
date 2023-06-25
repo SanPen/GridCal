@@ -24,12 +24,13 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
-from GridCal.Engine.Core.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCal.Engine.Core.Devices.Branches.line import LineTemplate, SequenceLineType, UndergroundLineType
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
 
-class DcLine(EditableDevice):
+class DcLine(ParentBranch):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Dc Line', idtag=None, code='', r=1e-20,
                  rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
@@ -63,80 +64,29 @@ class DcLine(EditableDevice):
         :param active_prof:
         :param temp_oper_prof:
         """
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.DCLineDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the line.'),
-                                                  'idtag': GCProp('', str, 'Unique ID', False),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the line.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the line.'),
-                                                  'active': GCProp('', bool, 'Is the line active?'),
-
-                                                  'rate': GCProp('MW', float, 'Thermal rating power of the line.'),
-
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-                                                  'contingency_enabled': GCProp('', bool,
-                                                                                'Consider this line for contingencies.'),
-                                                  'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'tolerance': GCProp('%', float,
-                                                                      'Tolerance expected for the impedance values\n'
-                                                                      '7% is expected for transformers\n'
-                                                                      '0% for lines.'),
-                                                  'length': GCProp('km', float, 'Length of the line '
-                                                                   '(not used for calculation)'),
-                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                      'measured.'),
-                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
-                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                  'around a reference temperature\n'
-                                                                  'using a linear approximation.\n'
-                                                                  'For example:\n'
-                                                                  'Copper @ 20ºC: 0.004041,\n'
-                                                                  'Copper @ 75ºC: 0.00323,\n'
-                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                  'Aluminum @ 20ºC: 0.004308,\n'
-                                                                  'Aluminum @ 75ºC: 0.00330'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float,
-                                                                      'Per-unit positioning of the fault:\n'
-                                                                      '0 would be at the "from" side,\n'
-                                                                      '1 would be at the "to" side,\n'
-                                                                      'therefore 0.5 is at the middle.'),
-                                                  'template': GCProp('', DeviceType.SequenceLineDevice, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'temp_oper': 'temp_oper_prof',
-                                                         'Cost': 'Cost_prof'})
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              Cost_prof=Cost_prof,
+                              device_type=DeviceType.DCLineDevice,
+                              branch_type=BranchType.DCLine)
 
         # List of measurements
         self.measurements = list()
@@ -155,22 +105,6 @@ class DcLine(EditableDevice):
         # total impedance and admittance in p.u.
         self.R = r
 
-        self.mttf = mttf
-
-        self.mttr = mttr
-
-        self.Cost = cost
-
-        self.Cost_prof = Cost_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.active_prof = active_prof
-
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
@@ -180,19 +114,20 @@ class DcLine(EditableDevice):
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
-        # line rating in MW
-        self.rate = rate
-        self.contingency_factor = contingency_factor
-        self.contingency_enabled: bool = contingency_enabled
-        self.monitor_loading: bool = monitor_loading
-        self.rate_prof = rate_prof
-        self.contingency_factor_prof = contingency_factor_prof
-
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.DCLine
 
         # type template
         self.template = template
+
+        self.register(key='r_fault', units='p.u.', tpe=float,
+                      definition='Resistance of the mid-line fault.Used in short circuit studies.')
+        self.register(key='x_fault', units='p.u.', tpe=float,
+                      definition='Reactance of the mid-line fault.Used in short circuit studies.')
+        self.register(key='fault_pos', units='p.u.', tpe=float,
+                      definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would '
+                                 'be at the "to" side,therefore 0.5 is at the middle.')
+        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
 
     @property
     def R_corrected(self):

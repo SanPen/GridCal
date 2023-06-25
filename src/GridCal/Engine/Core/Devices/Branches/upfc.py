@@ -21,11 +21,11 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
-
-class UPFC(EditableDevice):
+class UPFC(ParentBranch):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
@@ -56,67 +56,29 @@ class UPFC(EditableDevice):
         :param active_prof:
         """
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                active=active,
-                                code=code,
-                                device_type=DeviceType.UpfcDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'code': GCProp('', str, 'Secondary ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
-
-                                                  'contingency_factor': GCProp('p.u.', float,
-                                                                               'Rating multiplier for contingencies.'),
-                                                  'contingency_enabled': GCProp('', bool,
-                                                                                'Consider this UPFC for contingencies.'),
-                                                  'monitor_loading': GCProp('', bool,
-                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-
-                                                  'Rs': GCProp('p.u.', float, 'Series positive sequence resistance.'),
-                                                  'Xs': GCProp('p.u.', float, 'Series positive sequence reactance.'),
-                                                  'Rsh': GCProp('p.u.', float, 'Shunt positive sequence resistance.'),
-                                                  'Xsh': GCProp('p.u.', float, 'Shunt positive sequence resistance.'),
-
-                                                  'Rs0': GCProp('p.u.', float, 'Series zero sequence resistance.'),
-                                                  'Xs0': GCProp('p.u.', float, 'Series zero sequence reactance.'),
-                                                  'Rsh0': GCProp('p.u.', float, 'Shunt zero sequence resistance.'),
-                                                  'Xsh0': GCProp('p.u.', float, 'Shunt zero sequence resistance.'),
-
-                                                  'Rs2': GCProp('p.u.', float, 'Series negative sequence resistance.'),
-                                                  'Xs2': GCProp('p.u.', float, 'Series negative sequence reactance.'),
-                                                  'Rsh2': GCProp('p.u.', float, 'Shunt negative sequence resistance.'),
-                                                  'Xsh2': GCProp('p.u.', float, 'Shunt negative sequence resistance.'),
-
-                                                  'Vsh': GCProp('p.u.', float, 'Shunt voltage set point.'),
-                                                  'Pfset': GCProp('MW', float, 'Active power set point.'),
-                                                  'Qfset': GCProp('MVAr', float, 'Active power set point.'),
-                                                  'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
-                                                  'capex': GCProp('e/MW', float,
-                                                                  'Cost of investment. Used in expansion planning.'),
-                                                  'opex': GCProp('e/MWh', float,
-                                                                 'Cost of operation. Used in expansion planning.'),
-                                                  'build_status': GCProp('', BuildStatus,
-                                                                         'Branch build status. Used in expansion planning.'),
-                                                  },
-                                non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'contingency_factor': 'contingency_factor_prof',
-                                                         'Cost': 'Cost_prof'})
-
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              Cost_prof=cost_prof,
+                              device_type=DeviceType.UpfcDevice,
+                              branch_type=BranchType.UPFC)
 
         # List of measurements
         self.measurements = list()
@@ -141,31 +103,24 @@ class UPFC(EditableDevice):
         self.Pfset = Pset
         self.Qfset = Qset
 
-        self.Cost = cost
-        self.Cost_prof = cost_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.mttf = mttf
-        self.mttr = mttr
-
-        self.active = active
-        self.active_prof = active_prof
-
-        # branch rating in MVA
-        self.rate = rate
-        self.contingency_factor = contingency_factor
-        self.contingency_enabled: bool = contingency_enabled
-        self.monitor_loading: bool = monitor_loading
-        self.rate_prof = rate_prof
-        self.contingency_factor_prof = contingency_factor_prof
-
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
+
+        self.register(key='Rs', units='p.u.', tpe=float, definition='Series positive sequence resistance.')
+        self.register(key='Xs', units='p.u.', tpe=float, definition='Series positive sequence reactance.')
+        self.register(key='Rsh', units='p.u.', tpe=float, definition='Shunt positive sequence resistance.')
+        self.register(key='Xsh', units='p.u.', tpe=float, definition='Shunt positive sequence resistance.')
+        self.register(key='Rs0', units='p.u.', tpe=float, definition='Series zero sequence resistance.')
+        self.register(key='Xs0', units='p.u.', tpe=float, definition='Series zero sequence reactance.')
+        self.register(key='Rsh0', units='p.u.', tpe=float, definition='Shunt zero sequence resistance.')
+        self.register(key='Xsh0', units='p.u.', tpe=float, definition='Shunt zero sequence resistance.')
+        self.register(key='Rs2', units='p.u.', tpe=float, definition='Series negative sequence resistance.')
+        self.register(key='Xs2', units='p.u.', tpe=float, definition='Series negative sequence reactance.')
+        self.register(key='Rsh2', units='p.u.', tpe=float, definition='Shunt negative sequence resistance.')
+        self.register(key='Xsh2', units='p.u.', tpe=float, definition='Shunt negative sequence resistance.')
+        self.register(key='Vsh', units='p.u.', tpe=float, definition='Shunt voltage set point.')
+        self.register(key='Pfset', units='MW', tpe=float, definition='Active power set point.')
+        self.register(key='Qfset', units='MVAr', tpe=float, definition='Active power set point.')
 
     def get_ysh1(self):
         return 1.0 / complex(self.Rsh, self.Xsh)

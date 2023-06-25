@@ -40,20 +40,17 @@ class GeneratorTechnology(EditableDevice):
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=DeviceType.GeneratorTechnologyAssociation,
-                                editable_headers={'idtag': GCProp('', str, 'Unique ID'),
-                                                  'generator': GCProp('', DeviceType.GeneratorDevice, 'Generator'),
-                                                  'technology': GCProp('', DeviceType.Technology, 'Technology'),
-                                                  'proportion': GCProp('p.u.', float, 'Emissions rate'),
-                                                  },
-                                non_editable_attributes=['idtag'],
-                                properties_with_profile={})
+                                device_type=DeviceType.GeneratorTechnologyAssociation)
 
         self.generator = generator
 
         self.technology = technology
 
         self.proportion = proportion
+
+        self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator')
+        self.register(key='technology', units='', tpe=DeviceType.Technology, definition='Technology')
+        self.register(key='proportion', units='p.u.', tpe=float, definition='Emissions rate')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

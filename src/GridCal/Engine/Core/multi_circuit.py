@@ -290,6 +290,9 @@ class MultiCircuit:
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
 
+        # for e in self.get_objects_with_profiles_list():
+        #     e.print_register()
+
     def __str__(self):
         return str(self.name)
 

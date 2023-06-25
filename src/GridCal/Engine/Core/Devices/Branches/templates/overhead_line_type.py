@@ -69,23 +69,9 @@ class OverheadLineType(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code='',
                                 active=True,
-                                device_type=DeviceType.OverheadLineTypeDevice,
-                                editable_headers={'name': GCProp('', str, "Tower name"),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'earth_resistivity': GCProp('Ohm/m3', float, "Earth resistivity"),
-                                                  'frequency': GCProp('Hz', float, "Frequency"),
-                                                  'R1': GCProp('Ohm/km', float, "Positive sequence resistance"),
-                                                  'X1': GCProp('Ohm/km', float, "Positive sequence reactance"),
-                                                  'Gsh1': GCProp('S/km', float, "Positive sequence shunt conductance"),
-                                                  'Bsh1': GCProp('S/km', float, "Positive sequence shunt susceptance"),
-                                                  'R0': GCProp('Ohm/km', float, "Zero-sequence resistance"),
-                                                  'X0': GCProp('Ohm/km', float, "Zero sequence reactance"),
-                                                  'Gsh0': GCProp('S/km', float, "Zero sequence shunt conductance"),
-                                                  'Bsh0': GCProp('S/km', float, "Zero sequence shunt susceptance"),
-                                                  'rating': GCProp('kA', float, "Current rating of the tower")},
-                                non_editable_attributes=['tower_name'],
-                                properties_with_profile={})
+                                device_type=DeviceType.OverheadLineTypeDevice)
 
         self.tpe = tpe
 
@@ -134,6 +120,18 @@ class OverheadLineType(EditableDevice):
         self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase'}
         self.converter = {0: str, 1: float, 2: float, 3: int}
         self.editable_wire = [False, True, True, True]
+
+        self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
+        self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
+        self.register(key='R1', units='Ohm/km', tpe=float, definition='Positive sequence resistance')
+        self.register(key='X1', units='Ohm/km', tpe=float, definition='Positive sequence reactance')
+        self.register(key='Gsh1', units='S/km', tpe=float, definition='Positive sequence shunt conductance')
+        self.register(key='Bsh1', units='S/km', tpe=float, definition='Positive sequence shunt susceptance')
+        self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance')
+        self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero sequence reactance')
+        self.register(key='Gsh0', units='S/km', tpe=float, definition='Zero sequence shunt conductance')
+        self.register(key='Bsh0', units='S/km', tpe=float, definition='Zero sequence shunt susceptance')
+        self.register(key='rating', units='kA', tpe=float, definition='Current rating of the tower')
 
     def z_series(self):
         """

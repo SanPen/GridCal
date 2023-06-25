@@ -16,26 +16,30 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCal.Engine.Core.Devices.editable_device import DeviceType, GCProp
-from GridCal.Engine.Core.Devices.Aggregation.area import GenericAreaGroup
+from GridCal.Engine.Core.Devices.enumerations import BranchType
+from GridCal.Engine.Core.Devices.editable_device import DeviceType
 
 
-class Substation(GenericAreaGroup):
+class LineTemplate:
 
-    def __init__(self, name='Substation', idtag=None, code='', latitude=0.0, longitude=0.0):
-        """
+    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch, idtag=None):
+        self.idtag = idtag
 
-        :param name:
-        :param idtag:
-        :param latitude:
-        :param longitude:
-        """
-        GenericAreaGroup.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  device_type=DeviceType.SubstationDevice,
-                                  latitude=latitude,
-                                  longitude=longitude)
+        self.name = name
 
+        self.tpe = tpe
 
+        self.device_type = DeviceType.LineTypeDevice
+
+        self.edit_headers = []
+        self.units = []
+        self.non_editable_indices = []
+        self.edit_types = {}
+
+    def __str__(self):
+        return self.name
+
+    def get_save_data(self):
+        dta = list()
+        for property in self.edit_headers:
+            dta.append(getattr(self, property))

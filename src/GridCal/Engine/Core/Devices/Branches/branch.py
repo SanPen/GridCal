@@ -21,7 +21,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
-from GridCal.Engine.Core.Devices.enumerations import BranchType
+from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCal.Engine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCal.Engine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCal.Engine.Core.Devices.Branches.line import Line
 
@@ -59,131 +61,9 @@ class BranchTemplate:
         return dta
 
 
-class TapChanger:
-    """
-    The **TapChanger** class defines a transformer's tap changer, either onload or
-    offload. It needs to be attached to a predefined transformer (i.e. a
-    :ref:`Branch<branch>` object).
-
-    The following example shows how to attach a tap changer to a transformer tied to a
-    voltage regulated :ref:`bus`:
-
-    .. code:: ipython3
-
-        from GridCal.Engine.Core.multi_circuit import MultiCircuit
-        from GridCal.Engine.Core.Devices import *
-        from GridCal.Engine.device_types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      bus_to_regulated=True,
-                      vset=1.05)
-
-        # Attach tap changer
-        X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
-        X_C3.tap_changer.set_tap(X_C3.tap_module)
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Arguments:
-
-        **taps_up** (int, 5): Number of taps position up
-
-        **taps_down** (int, 5): Number of tap positions down
-
-        **max_reg** (float, 1.1): Maximum regulation up i.e 1.1 -> +10%
-
-        **min_reg** (float, 0.9): Maximum regulation down i.e 0.9 -> -10%
-
-    Additional Properties:
-
-        **tap** (int, 0): Current tap position
-
-    """
-
-    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
-        self.max_tap = taps_up
-
-        self.min_tap = -taps_down
-
-        self.inc_reg_up = (max_reg - 1.0) / taps_up
-
-        self.inc_reg_down = (1.0 - min_reg) / taps_down
-
-        self.tap = 0
-
-    def tap_up(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap + 1 <= self.max_tap:
-            self.tap += 1
-
-    def tap_down(self):
-        """
-        Go to the next upper tap position
-        """
-        if self.tap - 1 >= self.min_tap:
-            self.tap -= 1
-
-    def get_tap(self):
-        """
-        Get the tap voltage regulation module
-        """
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
-
-    def set_tap(self, tap_module):
-        """
-        Set the integer tap position corresponding to a tap value
-
-        Attribute:
-
-            **tap_module** (float): Tap module centered around 1.0
-
-        """
-        if tap_module == 1.0:
-            self.tap = 0
-        elif tap_module > 1:
-            self.tap = round((tap_module - 1.0) / self.inc_reg_up)
-        elif tap_module < 1:
-            self.tap = -round((1.0 - tap_module) / self.inc_reg_down)
 
 
-class Branch(EditableDevice):
+class Branch(ParentBranch):
     """
     * This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
     The **Branch** class represents the connections between nodes (i.e.
@@ -298,74 +178,29 @@ class Branch(EditableDevice):
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
-
-        EditableDevice.__init__(self,
-                                idtag=idtag,
-                                name=name,
-                                active=active,
-                                device_type=DeviceType.BranchDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
-                                                  'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
-                                                  'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
-                                                  'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
-                                                  'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'X': GCProp('p.u.', float, 'Total reactance.'),
-                                                  'G': GCProp('p.u.', float, 'Total shunt conductance.'),
-                                                  'B': GCProp('p.u.', float, 'Total shunt susceptance.'),
-                                                  'tolerance': GCProp('%', float,
-                                                                      'Tolerance expected for the impedance values\n'
-                                                                      '7% is expected for transformers\n'
-                                                                      '0% for lines.'),
-                                                  'length': GCProp('km', float, 'Length of the branch '
-                                                                   '(not used for calculation)'),
-                                                  'tap_module': GCProp('', float, 'Tap changer module, '
-                                                                       'it a value close to 1.0'),
-                                                  'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
-                                                  'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
-                                                  'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
-                                                                 'the bus when regulating the tap.'),
-                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                      'measured.'),
-                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
-                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                  'around a reference temperature\n'
-                                                                  'using a linear approximation.\n'
-                                                                  'For example:\n'
-                                                                  'Copper @ 20ºC: 0.004041,\n'
-                                                                  'Copper @ 75ºC: 0.00323,\n'
-                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                  'Aluminum @ 20ºC: 0.004308,\n'
-                                                                  'Aluminum @ 75ºC: 0.00330'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
-                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float,
-                                                                      'Per-unit positioning of the fault:\n'
-                                                                      '0 would be at the "from" side,\n'
-                                                                      '1 would be at the "to" side,\n'
-                                                                      'therefore 0.5 is at the middle.'),
-                                                  'branch_type': GCProp('', BranchType, ''),
-                                                  'template': GCProp('', BranchTemplate, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
-                                properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof',
-                                                         'temp_oper': 'temp_oper_prof',
-                                                         'Cost': 'Cost_prof'})
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code="",
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              active=active,
+                              active_prof=None,
+                              rate=rate,
+                              rate_prof=None,
+                              contingency_factor=1.0,
+                              contingency_factor_prof=None,
+                              contingency_enabled=True,
+                              monitor_loading=True,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=BuildStatus.Commissioned,
+                              capex=0.0,
+                              opex=0.0,
+                              Cost=cost,
+                              Cost_prof=None,
+                              device_type=DeviceType.LineDevice,
+                              branch_type=BranchType.Branch)
 
         # List of measurements
         self.measurements = list()
@@ -386,16 +221,6 @@ class Branch(EditableDevice):
         self.X = x
         self.G = g
         self.B = b
-
-        self.mttf = mttf
-
-        self.mttr = mttr
-
-        self.Cost = cost
-
-        self.Cost_prof = None
-
-        self.active_prof = None
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
