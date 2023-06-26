@@ -1658,14 +1658,6 @@ def compile_numerical_circuit_at(
         use_stored_guess=use_stored_guess,
     )
 
-    nc.load_data = gc_compiler2.get_load_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        t_idx=t_idx,
-        time_series=time_series,
-        opf_results=opf_results,
-    )
-
     nc.generator_data = gc_compiler2.get_generator_data(
         circuit=circuit,
         bus_dict=bus_dict,
@@ -1697,6 +1689,18 @@ def compile_numerical_circuit_at(
         time_series=time_series,
         Vbus=nc.bus_data.Vbus,
         logger=logger,
+        use_stored_guess=use_stored_guess,
+    )
+
+    nc.load_data = gc_compiler2.get_load_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        Vbus=nc.bus_data.Vbus,
+        bus_data=nc.bus_data,
+        logger=logger,
+        t_idx=t_idx,
+        time_series=time_series,
+        opf_results=opf_results,
         use_stored_guess=use_stored_guess,
     )
 

@@ -19,7 +19,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode, Vec, CxVec
+from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode, Vec, CxVec, ExternalGridMode
 from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
 import GridCal.Engine.Core.DataStructures as ds
 
@@ -69,18 +69,26 @@ def get_bus_data(circuit: MultiCircuit,
 
 def get_load_data(circuit: MultiCircuit,
                   bus_dict: Dict[Bus, int],
+                  Vbus: CxVec,
+                  bus_data: ds.BusData,
+                  logger: Logger,
                   t_idx=-1,
                   opf_results: Union["OptimalPowerFlowResults", None] = None,
                   time_series=False,
-                  opf=False) -> ds.LoadData:
+                  opf=False,
+                  use_stored_guess=False) -> ds.LoadData:
     """
 
     :param circuit:
     :param bus_dict:
+    :param Vbus:
+    :param bus_data:
+    :param logger:
     :param t_idx:
     :param opf_results:
     :param time_series:
     :param opf:
+    :param use_stored_guess:
     :return:
     """
 
@@ -160,6 +168,27 @@ def get_load_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
 
+        # change stuff depending on the modes
+        if elm.mode == ExternalGridMode.VD:
+            bus_data.bus_types[i] = 3  # set as Slack
+
+        elif elm.mode == ExternalGridMode.PV:
+            if bus_data.bus_types[i] != 3:  # if it is not Slack
+                bus_data.bus_types[i] = 2  # set as PV
+
+                if not use_stored_guess:
+
+                    if time_series:
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vm_prof[t_idx], 0)
+                        elif elm.Vm_prof[t_idx] != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vm_prof[t_idx], Vbus[i])
+                    else:
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vm, 0)
+                        elif elm.Vm != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vm, Vbus[i])
+
         if time_series:
             if opf_results is not None:
                 data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
@@ -168,9 +197,6 @@ def get_load_data(circuit: MultiCircuit,
 
             data.active[ii] = elm.active_prof[t_idx]
 
-            if opf:
-                data.cost[ii] = elm.Cost_prof[t_idx]
-
         else:
             if opf_results is not None:
                 data.S[ii] = complex(elm.P, elm.Q)
@@ -178,9 +204,6 @@ def get_load_data(circuit: MultiCircuit,
                 data.S[ii] = complex(elm.P, elm.Q)
 
             data.active[ii] = elm.active
-
-            if opf:
-                data.cost[ii] = elm.Cost
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -239,7 +262,7 @@ def get_shunt_data(circuit: MultiCircuit,
 
 def get_generator_data(circuit: MultiCircuit,
                        bus_dict,
-                       Vbus,
+                       Vbus: CxVec,
                        logger: Logger,
                        bus_data: ds.BusData,
                        opf_results: Union["OptimalPowerFlowResults", None] = None,
