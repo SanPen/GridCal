@@ -31,10 +31,12 @@ from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 from GridCal.Engine.Core.DataStructures.battery_data import BatteryData
 from GridCal.Engine.Core.DataStructures.load_data import LoadData
 from GridCal.Engine.Core.DataStructures.branch_data import BranchData
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.Core.DataStructures.hvdc_data import HvdcData
+from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec
 import GridCal.ThirdParty.ortools.ortools_extra as pl
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
     GenerationNtcFormulation
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
 
 def join(init: str, vals: List[int], sep="_"):
@@ -48,37 +50,106 @@ def join(init: str, vals: List[int], sep="_"):
     return init + sep.join([str(x) for x in vals])
 
 
+class BusVars:
+    """
+    Struct to store the bus related vars
+    """
+
+    def __init__(self, nt, n_elm):
+        """
+        BusVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.theta = np.zeros((nt, n_elm), dtype=object)
+        self.Pinj_tau = np.zeros((nt, n_elm), dtype=object)
+
+
+class LoadVars:
+    """
+    Struct to store the load related vars
+    """
+
+    def __init__(self, nt, n_elm):
+        """
+        LoadVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.shedding = np.zeros((nt, n_elm), dtype=object)
+
+
 class GenerationVars:
     """
     Struct to store the generation vars
     """
-    def __init__(self, nt, ng):
+
+    def __init__(self, nt, n_elm):
         """
         GenerationVars structure
         :param nt: Number of time steps
-        :param ng: Number og generators
+        :param n_elm: Number of generators
         """
-        self.p = np.zeros((nt, ng), dtype=object)
-        self.shedding = np.zeros((nt, ng), dtype=object)
-        self.producing = np.zeros((nt, ng), dtype=object)
-        self.starting_up = np.zeros((nt, ng), dtype=object)
-        self.shutting_down = np.zeros((nt, ng), dtype=object)
+        self.p = np.zeros((nt, n_elm), dtype=object)
+        self.shedding = np.zeros((nt, n_elm), dtype=object)
+        self.producing = np.zeros((nt, n_elm), dtype=object)
+        self.starting_up = np.zeros((nt, n_elm), dtype=object)
+        self.shutting_down = np.zeros((nt, n_elm), dtype=object)
 
 
 class BatteryVars(GenerationVars):
     """
     struct extending the generation vars to handle the battery vars
     """
-    def __init__(self, nt, nb):
-        GenerationVars.__init__(self, nt=nt, ng=nb)
-        self.e = np.zeros((nt, nb), dtype=object)
+
+    def __init__(self, nt, n_elm):
+        """
+        BatteryVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        GenerationVars.__init__(self, nt=nt, n_elm=n_elm)
+        self.e = np.zeros((nt, n_elm), dtype=object)
+
+
+class BranchVars:
+    """
+    Struct to store the branch related vars
+    """
+
+    def __init__(self, nt, n_elm):
+        """
+        BranchVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.flows = np.zeros((nt, n_elm), dtype=object)
+        self.flow_slacks_pos = np.zeros((nt, n_elm), dtype=object)
+        self.flow_slacks_neg = np.zeros((nt, n_elm), dtype=object)
+        self.tap_angles = np.zeros((nt, n_elm), dtype=object)
+        self.flow_constraints_ub = np.zeros((nt, n_elm), dtype=object)
+        self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
+
+
+class HvdcVars:
+    """
+    Struct to store the generation vars
+    """
+
+    def __init__(self, nt, n_elm):
+        """
+        GenerationVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.flows = np.zeros((nt, n_elm), dtype=object)
 
 
 def add_linear_generation_formulation(t: Union[int, None],
                                       Sbase: float,
                                       time_array: List[int],
                                       gen_data_t: GeneratorData,
-                                      gen: GenerationVars,
+                                      gen_vars: GenerationVars,
                                       prob: pywraplp.Solver,
                                       f_obj: pywraplp.LinearConstraint,
                                       unit_commitment: bool,
@@ -90,7 +161,7 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param Sbase: base power (100 MVA)
     :param time_array: complete time array
     :param gen_data_t: GeneratorData structure
-    :param gen: GenerationVars structure
+    :param gen_vars: GenerationVars structure
     :param prob: ORTools problem
     :param f_obj: objective function
     :param unit_commitment: formulate unit commitment?
@@ -107,44 +178,44 @@ def add_linear_generation_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # operational cost (linear...)
-                    f_obj += gen_data_t.cost_1[k] * gen.p[t, k] + gen_data_t.cost_0[k] * gen.producing[t, k]
+                    f_obj += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
 
                     # start-up cost
-                    f_obj += gen_data_t.startup_cost[k] * gen.starting_up[t, k]
+                    f_obj += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(gen.p[t, k] >= (
-                                gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen.producing[t, k]),
+                        prob.Add(gen_vars.p[t, k] >= (
+                                gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
                                  join("gen>=Pmin", [t, k], "_"))
-                        prob.Add(gen.p[t, k] <= (
-                                gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen.producing[t, k]),
+                        prob.Add(gen_vars.p[t, k] <= (
+                                gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
                                  join("gen<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(gen.starting_up[t, k] - gen.shutting_down[t, k] == gen.producing[t, k] - float(
+                            prob.Add(gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] == gen_vars.producing[t, k] - float(
                                 gen_data_t.active[k]),
                                      join("binary_alg1_", [t, k], "_"))
-                            prob.Add(gen.starting_up[t, k] + gen.shutting_down[t, k] <= 1,
+                            prob.Add(gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.Add(
-                                gen.starting_up[t, k] - gen.shutting_down[t, k] == gen.producing[t, k] - gen.producing[
+                                gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] == gen_vars.producing[t, k] - gen_vars.producing[
                                     t - 1, k],
                                 join("binary_alg3_", [t, k], "_"))
-                            prob.Add(gen.starting_up[t, k] + gen.shutting_down[t, k] <= 1,
+                            prob.Add(gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg4_", [t, k], "_"))
                 else:
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    f_obj += (gen_data_t.cost_1[k] * gen.p[t, k]) + gen_data_t.cost_0[k]
+                    f_obj += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        gen.p[t, k].SetLb(gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase)
-                        gen.p[t, k].SetUb(gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
+                        gen_vars.p[t, k].SetLb(gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase)
+                        gen_vars.p[t, k].SetUb(gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
 
                 # add the ramp constraints
                 if ramp_constraints and t is not None:
@@ -154,42 +225,42 @@ def add_linear_generation_formulation(t: Union[int, None],
                             dt = (time_array[t] - time_array[t - 1]) / 3600.0  # time increment in hours
 
                             # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
-                            prob.Add(-gen_data_t.ramp_down[k] / Sbase * dt <= gen.p[t, k] - gen.p[t - 1, k])
-                            prob.Add(gen.p[t, k] - gen.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt)
+                            prob.Add(-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k])
+                            prob.Add(gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt)
             else:
 
                 # it is NOT dispatchable
 
                 # Operational cost (linear...)
-                f_obj += (gen_data_t.cost_1[k] * gen.p[t, k]) + gen_data_t.cost_0[k]
+                f_obj += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                 # the generator is not dispatchable at time step
                 if gen_data_t.p[k] > 0:
-                    prob.Add(gen.p[t, k] == gen_data_t.p[k] / Sbase - gen.shedding[t, k],
+                    prob.Add(gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
                              join("gen==PG-PGslack", [t, k], "_"))
-                    gen.shedding[t, k].SetLb(0.0)
-                    gen.shedding[t, k].SetUb(gen_data_t.p[k] / Sbase)
+                    gen_vars.shedding[t, k].SetLb(0.0)
+                    gen_vars.shedding[t, k].SetUb(gen_data_t.p[k] / Sbase)
                 else:
-                    prob.Add(gen.p[t, k] == gen_data_t.p[k] / Sbase + gen.shedding[t, k],
+                    prob.Add(gen_vars.p[t, k] == gen_data_t.p[k] / Sbase + gen_vars.shedding[t, k],
                              join("gen==PG+PGslack", [t, k], "_"))
-                    gen.shedding[t, k].SetLb(0.0)
-                    gen.shedding[t, k].SetUb(
+                    gen_vars.shedding[t, k].SetLb(0.0)
+                    gen_vars.shedding[t, k].SetUb(
                         -gen_data_t.p[k] / Sbase)  # the negative sign is because P is already negative here
 
-                gen.producing[t, k].SetBounds(0.0, 0.0)
-                gen.shutting_down[t, k].SetBounds(0.0, 0.0)
-                gen.starting_up[t, k].SetBounds(0.0, 0.0)
+                gen_vars.producing[t, k].SetBounds(0.0, 0.0)
+                gen_vars.shutting_down[t, k].SetBounds(0.0, 0.0)
+                gen_vars.starting_up[t, k].SetBounds(0.0, 0.0)
 
         else:
             # the generator is not available at time step
-            gen.p[t, k].SetBounds(0.0, 0.0)
+            gen_vars.p[t, k].SetBounds(0.0, 0.0)
 
 
 def add_linear_battery_formulation(t: Union[int, None],
                                    Sbase: float,
                                    time_array: List[int],
                                    batt_data_t: BatteryData,
-                                   batt: BatteryVars,
+                                   batt_vars: BatteryVars,
                                    prob: pywraplp.Solver,
                                    f_obj: pywraplp.LinearConstraint,
                                    unit_commitment: bool,
@@ -201,7 +272,7 @@ def add_linear_battery_formulation(t: Union[int, None],
     :param Sbase: base power (100 MVA)
     :param time_array: complete time array
     :param batt_data_t: BatteryData structure
-    :param batt: BatteryVars structure
+    :param batt_vars: BatteryVars structure
     :param prob: ORTools problem
     :param f_obj: objective function
     :param unit_commitment: formulate unit commitment?
@@ -218,44 +289,45 @@ def add_linear_battery_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt.p[t, k] + batt_data_t.cost_0[k] * batt.producing[t, k]
+                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[t, k]
 
                     # start-up cost
-                    f_obj += batt_data_t.startup_cost[k] * batt.starting_up[t, k]
+                    f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(batt.p[t, k] >= (
-                                batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] >= (
+                                batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k]),
                                  join("batt>=Pmin", [t, k], "_"))
-                        prob.Add(batt.p[t, k] <= (
-                                batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] <= (
+                                batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k]),
                                  join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(batt.starting_up[t, k] - batt.shutting_down[t, k] == batt.producing[t, k] - float(
+                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] - float(
                                 batt_data_t.active[k]),
                                      join("binary_alg1_", [t, k], "_"))
-                            prob.Add(batt.starting_up[t, k] + batt.shutting_down[t, k] <= 1,
+                            prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.Add(
-                                batt.starting_up[t, k] - batt.shutting_down[t, k] == batt.producing[t, k] - batt.producing[
+                                batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] -
+                                batt_vars.producing[
                                     t - 1, k],
                                 join("binary_alg3_", [t, k], "_"))
-                            prob.Add(batt.starting_up[t, k] + batt.shutting_down[t, k] <= 1,
+                            prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg4_", [t, k], "_"))
                 else:
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt.p[t, k]) + batt_data_t.cost_0[k]
+                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        batt.p[t, k].SetLb(batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase)
-                        batt.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
+                        batt_vars.p[t, k].SetLb(batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase)
+                        batt_vars.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
 
                 if t is not None:
                     if t > 0:
@@ -263,263 +335,317 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                         # add the ramp constraints
                         if ramp_constraints:
-                            if batt_data_t.ramp_up[k] < batt_data_t.pmax[k] and batt_data_t.ramp_down[k] < batt_data_t.pmax[k]:
+                            if batt_data_t.ramp_up[k] < batt_data_t.pmax[k] and batt_data_t.ramp_down[k] < \
+                                    batt_data_t.pmax[k]:
                                 # if the ramp is actually sufficiently restrictive...
                                 # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
-                                prob.Add(-batt_data_t.ramp_down[k] / Sbase * dt <= batt.p[t, k] - batt.p[t - 1, k])
-                                prob.Add(batt.p[t, k] - batt.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
+                                prob.Add(-batt_data_t.ramp_down[k] / Sbase * dt <= batt_vars.p[t, k] - batt_vars.p[t - 1, k])
+                                prob.Add(batt_vars.p[t, k] - batt_vars.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
 
                         # set the energy  value Et = E(t - 1) + dt * Pb / eff
-                        batt.e[t, k].SetBounds(batt_data_t.Emin[k] / Sbase, batt_data_t.Emax[k] / Sbase)
-                        prob.Add(batt.e[t, k] == batt.e[t-1, k] + dt * batt_data_t.efficiency[k] * batt.p[t, k])
+                        batt_vars.e[t, k].SetBounds(batt_data_t.e_min[k] / Sbase, batt_data_t.e_max[k] / Sbase)
+                        prob.Add(batt_vars.e[t, k] == batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k])
 
             else:
 
                 # it is NOT dispatchable
 
                 # Operational cost (linear...)
-                f_obj += (batt_data_t.cost_1[k] * batt.p[t, k]) + batt_data_t.cost_0[k]
+                f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
 
                 # the generator is not dispatchable at time step
                 if batt_data_t.p[k] > 0:
-                    prob.Add(batt.p[t, k] == batt_data_t.p[k] / Sbase - batt.shedding[t, k],
+                    prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase - batt_vars.shedding[t, k],
                              join("batt==PB-PBslack", [t, k], "_"))
-                    batt.shedding[t, k].SetLb(0.0)
-                    batt.shedding[t, k].SetUb(batt_data_t.p[k] / Sbase)
+                    batt_vars.shedding[t, k].SetLb(0.0)
+                    batt_vars.shedding[t, k].SetUb(batt_data_t.p[k] / Sbase)
                 else:
-                    prob.Add(batt.p[t, k] == batt_data_t.p[k] / Sbase + batt.shedding[t, k],
+                    prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
                              join("batt==PB+PBslack", [t, k], "_"))
-                    batt.shedding[t, k].SetLb(0.0)
-                    batt.shedding[t, k].SetUb(
+                    batt_vars.shedding[t, k].SetLb(0.0)
+                    batt_vars.shedding[t, k].SetUb(
                         -batt_data_t.p[k] / Sbase)  # the negative sign is because P is already negative here
 
-                batt.producing[t, k].SetBounds(0.0, 0.0)
-                batt.shutting_down[t, k].SetBounds(0.0, 0.0)
-                batt.starting_up[t, k].SetBounds(0.0, 0.0)
+                batt_vars.producing[t, k].SetBounds(0.0, 0.0)
+                batt_vars.shutting_down[t, k].SetBounds(0.0, 0.0)
+                batt_vars.starting_up[t, k].SetBounds(0.0, 0.0)
 
         else:
             # the generator is not available at time step
-            batt.p[t, k].SetBounds(0.0, 0.0)
+            batt_vars.p[t, k].SetBounds(0.0, 0.0)
+
+
+def add_linear_branches_formulation(t: int,
+                                    Sbase: float,
+                                    branch_data_t: BranchData,
+                                    branch_vars: BranchVars,
+                                    vars_bus: BusVars,
+                                    prob: pywraplp.Solver,
+                                    f_obj: pywraplp.LinearConstraint,
+                                    add_contingencies: bool,
+                                    LODF: Union[Mat, None],
+                                    lodf_threshold: float,
+                                    inf=1e20):
+    """
+
+    :param t:
+    :param Sbase:
+    :param branch_data_t:
+    :param branch_vars:
+    :param vars_bus:
+    :param prob:
+    :param f_obj:
+    :param add_contingencies:
+    :param LODF:
+    :param lodf_threshold:
+    :param inf:
+    :return:
+    """
+
+    if add_contingencies:
+        assert LODF is not None
+
+    # for each branch
+    for m in range(branch_data_t.nelm):
+        fr = branch_data_t.F[m]
+        to = branch_data_t.T[m]
+
+        if branch_data_t.active[m]:
+
+            # declare the flow LPVar
+            branch_vars.flows[t, m] = prob.NumVar(lb=-inf, ub=inf, name=join("flow_", [t, m], "_"))
+
+            # compute the branch susceptance
+            if branch_data_t.X[m] == 0.0:
+                if branch_data_t.R[m] != 0.0:
+                    bk = -1.0 / branch_data_t.R[m]
+                else:
+                    bk = 1e-20
+            else:
+                bk = -1.0 / branch_data_t.X[m]
+
+            # compute the flow
+            if branch_data_t.control_mode[m] == TransformerControlType.Pt:
+
+                # add angle
+                branch_vars.tap_angles[t, m] = prob.NumVar(lb=branch_data_t.tap_angle_min[m],
+                                                           ub=branch_data_t.tap_angle_max[m],
+                                                           name=join("flow_", [t, m], "_"))
+
+                # is a phase shifter device (like phase shifter transformer or VSC with P control)
+                flow_ctr = branch_vars.flows[t, m] == bk * (
+                        vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
+
+                # power injected and subtracted due to the phase shift
+                vars_bus.Pinj_tau[fr] = -bk * branch_vars.tap_angles[t, m]
+                vars_bus.Pinj_tau[to] = bk * branch_vars.tap_angles[t, m]
+
+            else:  # rest of the branches
+                # is a phase shifter device (like phase shifter transformer or VSC with P control)
+                flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to])
+                prob.Add(flow_ctr, name=join("Branch_flow_set_", [t, m], "_"))
+
+            # add the flow constraint if monitored
+            if branch_data_t.monitor_loading[m]:
+                branch_vars.flow_slacks_pos[t, m] = prob.NumVar(0, inf, name=join("flow_slack_pos_", [t, m], "_"))
+                branch_vars.flow_slacks_neg[t, m] = prob.NumVar(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
+
+                # add upper rate constraint
+                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[
+                    t, m] <= branch_data_t.rates[m] / Sbase
+                prob.Add(branch_vars.flow_constraints_ub[t, m])
+
+                # add lower rate constraint
+                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[
+                    t, m] >= -branch_data_t.rates[m] / Sbase
+                prob.Add(branch_vars.flow_constraints_lb[t, m])
+
+                # add to the objective function
+                f_obj += branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m]
+
+                if add_contingencies:
+
+                    for c in range(branch_data_t.nelm):
+
+                        if abs(LODF[m, c]) > lodf_threshold:
+                            # TODO : think about the contingencies integration here
+                            pass
+
+
+def add_linear_hvdc_formulation(t: int,
+                                Sbase: float,
+                                hvdc_data_t: HvdcData,
+                                hvdc_vars: HvdcVars,
+                                vars_bus: BusVars,
+                                prob: pywraplp.Solver):
+    """
+
+    :param t:
+    :param Sbase:
+    :param hvdc_data_t:
+    :param hvdc_vars:
+    :param vars_bus:
+    :param prob:
+    :return:
+    """
+    for m in range(hvdc_data_t.nelm):
+
+        fr = hvdc_data_t.F[m]
+        to = hvdc_data_t.T[m]
+
+        if hvdc_data_t.active[m]:
+
+            # declare the flow var
+            hvdc_vars.flows[t, m] = prob.NumVar(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
+                                                name=join("hvdc_flow_", [t, m], "_"))
+
+            if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
+
+                # set the flow based on the angular difference
+                P0 = hvdc_data_t.Pset[m] / Sbase
+                prob.Add(hvdc_vars.flows[m, t] == P0 + hvdc_data_t.angle_droop[m] * (
+                        vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                         name=join("hvdc_flow_cst_", [t, m], "_"))
+
+                # add the injections matching the flow
+                vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
+                vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+
+            elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
+
+                if hvdc_data_t.dispatchable[m]:
+
+                    # add the injections matching the flow
+                    vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+
+                else:
+
+                    if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
+                        P0 = hvdc_data_t.rate[m] / Sbase
+                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
+                        P0 = -hvdc_data_t.rate[m] / Sbase
+                    else:
+                        P0 = hvdc_data_t.Pset[m] / Sbase
+
+                    hvdc_vars.flows[t, m].SetBounds(P0, P0)  # make the flow equal to P0
+
+                    # add the injections matching the flow
+                    vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+            else:
+                raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
+        else:
+            # not active, therefore the flow is exactly zero
+            hvdc_vars.flows[t, m].SetBounds(0, 0)
 
 
 class OpfDcTimeSeries:
 
-    def __init__(self, grid: MultiCircuit,
-                 time_indices: np.ndarray,
+    def __init__(self, circuit: MultiCircuit,
+                 time_indices: IntVec,
                  solver_type: MIPSolvers = MIPSolvers.CBC,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  skip_generation_limits=False,
                  consider_contingencies=False,
-                 LODF=None,
-                 lodf_tolerance=0.001,
+                 unit_Commitment=False,
+                 ramp_constraints=False,
+                 add_contingencies=False,
+                 lodf_threshold=0.001,
                  maximize_inter_area_flow=False,
                  buses_areas_1=None,
                  buses_areas_2=None):
-        """
-        DC time series linear optimal power flow
-        :param grid: MultiCircuit instance
-        :param start_idx: start index of the time series
-        :param end_idx: end index of the time series
-        :param solver_type: MIP solver_type to use
-        :param zonal_grouping:
-        :param skip_generation_limits:
-        :param consider_contingencies:
-        :param LODF:
-        :param lodf_tolerance:
-        :param maximize_inter_area_flow:
-        :param buses_areas_1:
-        :param buses_areas_2:
-        """
-
         self.logger = Logger()
 
-        self.grid: MultiCircuit = grid
+        self.grid: MultiCircuit = circuit
         self.time_indices = time_indices
         self.solver_type = solver_type
 
         nt = len(time_indices) if len(time_indices) > 0 else 1
-        n = grid.get_bus_number()
-        nbr = grid.get_branch_number_wo_hvdc()
-        ng = grid.get_generators_number()
-        nb = grid.get_batteries_number()
-        nl = grid.get_calculation_loads_number()
-        n_hvdc = grid.get_hvdc_number()
+        n = circuit.get_bus_number()
+        nbr = circuit.get_branch_number_wo_hvdc()
+        ng = circuit.get_generators_number()
+        nb = circuit.get_batteries_number()
+        nl = circuit.get_calculation_loads_number()
+        n_hvdc = circuit.get_hvdc_number()
 
-        self.theta = np.zeros((nt, n))
-        self.Pinj = np.zeros((nt, n))
-        self.nodal_restrictions = np.zeros((nt, n), dtype=object)
+        prob = pywraplp.Solver.CreateSolver("SCIP")
 
-        self.Pg = np.zeros((nt, ng))
-        self.gen_shedding = np.zeros((nt, ng))
+        bus_vars = BusVars(nt=nt, n_elm=n)
+        load_vars = LoadVars(nt=nt, n_elm=nl)
+        gen_vars = GenerationVars(nt=nt, n_elm=ng)
+        batt_vars = BatteryVars(nt=nt, n_elm=nb)
+        branch_vars = BranchVars(nt=nt, n_elm=nbr)
+        hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
 
-        self.Pb = np.zeros((nt, nb))
-        self.E = np.zeros((nt, nb))
+        bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
+        areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
+        f_obj: pywraplp.LinearConstraint = 0
 
-        self.Pl = np.zeros((nt, nl))
-        self.load_shedding = np.zeros((nt, nl))
+        for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
-        self.hvdc_flow = np.zeros(nt, n_hvdc)
+            # compile the circuit at the master time index -------------------------------------------------------------
+            nc = compile_numerical_circuit_at(circuit=circuit,
+                                              t_idx=t,  # yes, this is not a bug
+                                              bus_dict=bus_dict,
+                                              areas_dict=areas_dict)
 
-        self.phase_shift = np.zeros((nt, nbr))
-        self.s_from = np.zeros((nt, nbr))
-        self.s_to = np.zeros((nt, nbr))
-        self.overloads = np.zeros((nt, nbr))
-        self.rating = grid.get_branch_rates_prof_wo_hvdc()
-
-        self.contingency_flows_list = list()
-        self.contingency_indices_list = list()  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = list()
-
-        self.zonal_grouping = zonal_grouping
-        self.skip_generation_limits = skip_generation_limits
-        self.consider_contingencies = consider_contingencies
-        self.LODF = LODF
-        self.lodf_tolerance = lodf_tolerance
-
-        self.maximize_inter_area_flow = maximize_inter_area_flow
-        self.buses_areas_1: List[int] = buses_areas_1
-        self.buses_areas_2: List[int] = buses_areas_2
-
-    def formulate_step(self, t_idx):
-
-        nc = compile_numerical_circuit_at(self.grid, t_idx=t_idx)
-
-    def formulate(self, batteries_energy_0=None):
-        """
-        Formulate the DC OPF time series in the non-sequential fashion (all to the solver_type at once)
-        :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
-        :return: PuLP Problem instance
-        """
-
-        if len(self.time_indices) == 0:
-            self.formulate_step(t_idx=None)
-        else:
-            for t_idx in self.time_indices:
-                self.formulate_step(t_idx=t_idx)
-
-    def extract_list(self, lst):
-        val = np.zeros(len(lst))
-        for i in range(val.shape[0]):
-            if isinstance(lst[i], int) or isinstance(lst[i], float):
-                val[i] = lst[i]
+            if add_contingencies:
+                ls = LinearAnalysis(numerical_circuit=nc,
+                                    distributed_slack=False,
+                                    correct_values=True)
+                ls.run(with_nx=False)
+                LODF = ls.LODF
             else:
-                val[i] = lst[i].value()
-        return val
+                LODF = None
 
-    def get_voltage(self):
-        """
-        return the complex voltages (time, device)
-        :return: 2D array
-        """
-        angles = self.extract2D(self.theta)
-        return np.ones_like(angles) * np.exp(-1j * angles)
+            # formulate generation -------------------------------------------------------------------------------------
+            add_linear_generation_formulation(t=t_idx,
+                                              Sbase=nc.Sbase,
+                                              time_array=circuit.time_profile,
+                                              gen_data_t=nc.generator_data,
+                                              gen_vars=gen_vars,
+                                              prob=prob,
+                                              f_obj=f_obj,
+                                              unit_commitment=unit_Commitment,
+                                              ramp_constraints=ramp_constraints,
+                                              skip_generation_limits=skip_generation_limits)
 
-    def get_overloads(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.overloads)
+            # formulate batteries --------------------------------------------------------------------------------------
+            add_linear_battery_formulation(t=t_idx,
+                                           Sbase=nc.Sbase,
+                                           time_array=circuit.time_profile,
+                                           batt_data_t=nc.battery_data,
+                                           batt_vars=batt_vars,
+                                           prob=prob,
+                                           f_obj=f_obj,
+                                           unit_commitment=unit_Commitment,
+                                           ramp_constraints=ramp_constraints,
+                                           skip_generation_limits=skip_generation_limits)
 
-    def get_loading(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.s_from, make_abs=False) / (self.rating + 1e-20)
+            # formulate branches ---------------------------------------------------------------------------------------
+            add_linear_branches_formulation(t=t_idx,
+                                            Sbase=nc.Sbase,
+                                            branch_data_t=nc.branch_data,
+                                            branch_vars=branch_vars,
+                                            vars_bus=bus_vars,
+                                            prob=prob,
+                                            f_obj=f_obj,
+                                            add_contingencies=add_contingencies,
+                                            LODF=LODF,
+                                            lodf_threshold=lodf_threshold,
+                                            inf=1e20)
 
-    def get_power_injections(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pinj) * self.numerical_circuit.Sbase
+            # formulate hvdc -------------------------------------------------------------------------------------------
+            add_linear_hvdc_formulation(t=t_idx,
+                                        Sbase=nc.Sbase,
+                                        hvdc_data_t=nc.hvdc_data,
+                                        hvdc_vars=hvdc_vars,
+                                        vars_bus=bus_vars,
+                                        prob=prob)
 
-    def get_phase_shifts(self):
-        """
-        return the branch phase_shifts (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.phase_shift)
+            # production equals demand ---------------------------------------------------------------------------------
+            P_load_bus: Vec = nc.load_data.get_linear_injections_per_bus() / nc.Sbase
 
-    def get_hvdc_flows(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.hvdc_flow) * self.numerical_circuit.Sbase
-
-    def get_branch_power_from(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
-
-    def get_branch_power_to(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.s_to, make_abs=False) * self.numerical_circuit.Sbase
-
-    def get_battery_power(self):
-        """
-        return the battery dispatch (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pb) * self.numerical_circuit.Sbase
-
-    def get_battery_energy(self):
-        """
-        return the battery energy (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.E) * self.numerical_circuit.Sbase
-
-    def get_generator_power(self):
-        """
-        return the generator dispatch (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pg) * self.numerical_circuit.Sbase
-
-    def get_load_shedding(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.load_shedding) * self.numerical_circuit.Sbase
-
-    def get_load_power(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.Pl) * self.numerical_circuit.Sbase
-
-    def get_contingency_flows_list(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract_list(self.contingency_flows_list) * self.numerical_circuit.Sbase
-
-    def get_contingency_flows_slacks_list(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.extract_list(self.contingency_flows_slacks_list) * self.numerical_circuit.Sbase
-
-    def get_shadow_prices(self):
-        """
-        Extract values fro the 2D array of LP variables
-        :return: 2D numpy array
-        """
-        val = np.zeros(self.nodal_restrictions.shape)
-        for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            if self.nodal_restrictions[i, j] is not None:
-                if self.nodal_restrictions[i, j].pi is not None:
-                    val[i, j] = - self.nodal_restrictions[i, j].pi
-        return val.transpose()
+            demand_t = P_load_bus.sum()

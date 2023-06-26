@@ -26,7 +26,6 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 
 
 class LinearAnalysisResults(ResultsTemplate):

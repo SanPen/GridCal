@@ -38,6 +38,8 @@ class BatteryData(GeneratorData):
         )
 
         self.enom: np.ndarray = np.zeros(nelm)
+        self.e_min: np.ndarray = np.zeros(nelm)
+        self.e_max: np.ndarray = np.zeros(nelm)
         self.min_soc: np.ndarray = np.zeros(nelm)
         self.max_soc: np.ndarray = np.ones(nelm)
         self.soc_0: np.ndarray = np.ones(nelm)
@@ -58,6 +60,8 @@ class BatteryData(GeneratorData):
         data = super().slice(elm_idx, bus_idx)
 
         data.enom = self.enom[elm_idx]
+        data.e_min = self.e_min[elm_idx]
+        data.e_max = self.e_max[elm_idx]
         data.min_soc = self.min_soc[elm_idx]
         data.max_soc = self.max_soc[elm_idx]
         data.soc_0 = self.soc_0[elm_idx]

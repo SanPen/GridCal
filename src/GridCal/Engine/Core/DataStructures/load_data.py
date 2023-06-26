@@ -17,41 +17,38 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.basic_structures import Vec, CxVec, IntVec, StrVec
 
 
 class LoadData:
+    """
+    Structure to host the load calculation information
+    """
 
-    def __init__(
-            self,
-            nelm: int,
-            nbus: int,
-    ):
+    def __init__(self, nelm: int, nbus: int):
         """
         Load data arrays
         :param nelm: number of load
         :param nbus: number of buses
-        :param ntime: time index
         """
         self.nelm: int = nelm
 
-        self.names: np.ndarray = np.empty(nelm, dtype=object)
+        self.names: StrVec = np.empty(nelm, dtype=object)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.S: np.ndarray = np.zeros(nelm, dtype=complex)
-        self.I: np.ndarray = np.zeros(nelm, dtype=complex)
-        self.Y: np.ndarray = np.zeros(nelm, dtype=complex)
+        self.active: IntVec = np.zeros(nelm, dtype=bool)
+        self.S: Vec = np.zeros(nelm, dtype=complex)
+        self.I: Vec = np.zeros(nelm, dtype=complex)
+        self.Y: Vec = np.zeros(nelm, dtype=complex)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
-        self.cost: np.ndarray = np.zeros(nelm, dtype=float)
+        self.cost: Vec = np.zeros(nelm, dtype=float)  # load shedding cost
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(
-            self,
-            elm_idx: np.ndarray,
-            bus_idx: np.ndarray,
-    ):
+    def slice(self,
+              elm_idx: IntVec,
+              bus_idx: IntVec):
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
@@ -59,10 +56,8 @@ class LoadData:
         :return: new LoadData instance
         """
 
-        data = LoadData(
-            nelm=len(elm_idx),
-            nbus=len(bus_idx)
-        )
+        data = LoadData(nelm=len(elm_idx),
+                        nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
 
@@ -79,10 +74,7 @@ class LoadData:
 
         return data
 
-    def get_island(
-            self,
-            bus_idx: np.ndarray,
-    ):
+    def get_island(self, bus_idx: IntVec):
         """
         Get the array of load indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -97,28 +89,42 @@ class LoadData:
         else:
             return np.zeros(0, dtype=int)
 
-    def get_effective_load(self):
+    def get_effective_load(self) -> CxVec:
         """
         Get effective load
         :return:
         """
         return self.S * self.active
 
-    def get_injections_per_bus(self):
+    def get_linear_effective_load(self) -> Vec:
+        """
+        Get effective load
+        :return:
+        """
+        return self.S.real * self.active
+
+    def get_injections_per_bus(self) -> CxVec:
         """
         Get Injections per bus with sign
         :return:
         """
         return - self.C_bus_elm * self.get_effective_load()
 
-    def get_current_injections_per_bus(self):
+    def get_linear_injections_per_bus(self) -> Vec:
+        """
+        Get Injections per bus with sign
+        :return:
+        """
+        return - self.C_bus_elm * self.get_linear_effective_load()
+
+    def get_current_injections_per_bus(self) -> CxVec:
         """
         Get current Injections per bus with sign
         :return:
         """
         return - self.C_bus_elm * (self.I * self.active)
 
-    def get_admittance_injections_per_bus(self):
+    def get_admittance_injections_per_bus(self) -> CxVec:
         """
         Get admittance Injections per bus with sign
         :return:
@@ -127,4 +133,3 @@ class LoadData:
 
     def __len__(self):
         return self.nelm
-

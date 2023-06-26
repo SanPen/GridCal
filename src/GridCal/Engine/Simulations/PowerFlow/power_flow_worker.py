@@ -30,6 +30,7 @@ from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Core.Devices.enumerations import HvdcControlType
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
+from GridCal.Engine.basic_structures import Vec, CxVec
 
 
 def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,
@@ -544,65 +545,16 @@ def single_island_pf(circuit: NumericalCircuit, Vbus, Sbus, Ibus, Yloadbus, ma, 
     return results
 
 
-def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
-    Shvdc = np.zeros(len(multi_circuit.buses))
-    Losses_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
-    Pf_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
-    Pt_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
-    loading_hvdc = np.zeros(len(multi_circuit.hvdc_lines))
-    n_free = 0  # number of free hvdc lines that nee PF recalculation
-
-    for k, elm in enumerate(multi_circuit.hvdc_lines):
-
-        _from = bus_dict[elm.bus_from]
-        _to = bus_dict[elm.bus_to]
-
-        if t is None:
-            if elm.active:
-                if elm.control_mode == HvdcControlType.type_0_free:
-                    n_free += int(elm.active)  # count only if active
-
-                Pf, Pt, losses = elm.get_from_and_to_power(theta_f=theta[_from], theta_t=theta[_to],
-                                                           Sbase=multi_circuit.Sbase, in_pu=True)
-                loading_hvdc[k] = Pf / elm.rate
-            else:
-                Pf = 0
-                Pt = 0
-                losses = 0
-        else:
-            if elm.active_prof[t]:
-                if elm.control_mode == HvdcControlType.type_0_free:
-                    n_free += int(elm.active_prof[t])  # count only if active
-
-                Pf, Pt, losses = elm.get_from_and_to_power_at(t=t, theta_f=theta[_from], theta_t=theta[_to],
-                                                              Sbase=multi_circuit.Sbase, in_pu=True)
-                loading_hvdc[k] = Pf / elm.rate_prof[t]
-            else:
-                Pf = 0
-                Pt = 0
-                losses = 0
-
-        Shvdc[_from] += Pf
-        Shvdc[_to] += Pt
-        Losses_hvdc[k] = losses
-        Pf_hvdc[k] = Pf
-        Pt_hvdc[k] = Pt
-
-    return Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
-
-
-def multi_island_pf_nc(
-        nc: NumericalCircuit,
-        options: PowerFlowOptions,
-        logger=bs.Logger(),
-        V_guess=None
-) -> "PowerFlowResults":
+def multi_island_pf_nc(nc: NumericalCircuit,
+                       options: PowerFlowOptions,
+                       logger=bs.Logger(),
+                       V_guess: Union[CxVec, None] = None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
     :param options: PowerFlowOptions instance
     :param logger: logger
-    :param V_guess:
+    :param V_guess: voltage guess
     :return: PowerFlowResults instance
     """
 
@@ -744,15 +696,13 @@ def multi_island_pf_nc(
     return results
 
 
-def multi_island_pf(
-        multi_circuit: MultiCircuit,
-        options: PowerFlowOptions,
-        opf_results: Union[OptimalPowerFlowResults, None] = None,
-        t: Union[int, None] = None,
-        logger: bs.Logger = bs.Logger(),
-        bus_dict: Union[Dict[Bus, int], None] = None,
-        areas_dict: Union[Dict[Area, int], None] = None
-) -> "PowerFlowResults":
+def multi_island_pf(multi_circuit: MultiCircuit,
+                    options: PowerFlowOptions,
+                    opf_results: Union[OptimalPowerFlowResults, None] = None,
+                    t: Union[int, None] = None,
+                    logger: bs.Logger = bs.Logger(),
+                    bus_dict: Union[Dict[Bus, int], None] = None,
+                    areas_dict: Union[Dict[Area, int], None] = None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance

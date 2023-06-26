@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results
 from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power, multi_island_pf_nc
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 

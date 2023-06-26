@@ -1,10 +1,25 @@
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Dict, Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode, Vec, CxVec
 from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
 import GridCal.Engine.Core.DataStructures as ds
 
@@ -334,8 +349,8 @@ def get_generator_data(circuit: MultiCircuit,
 
 
 def get_battery_data(circuit: MultiCircuit,
-                     bus_dict,
-                     Vbus,
+                     bus_dict: Dict[Bus, int],
+                     Vbus: CxVec,
                      logger: Logger,
                      bus_data: ds.BusData,
                      opf_results: Union["OptimalPowerFlowResults", None] = None,
@@ -402,6 +417,8 @@ def get_battery_data(circuit: MultiCircuit,
                 data.min_time_down[k] = elm.MinTimeDown
 
                 data.enom[k] = elm.Enom
+                data.e_min[k] = elm.Enom * elm.min_soc
+                data.e_max[k] = elm.Enom * elm.max_soc
                 data.min_soc[k] = elm.min_soc
                 data.max_soc[k] = elm.max_soc
                 data.soc_0[k] = elm.soc_0

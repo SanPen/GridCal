@@ -115,7 +115,7 @@ def make_ptdf(
     # solve for change in voltage angles
     dTheta = np.zeros((nb, nbi))
     Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = spsolve(Bref,  dP[noslack, :])
+    dtheta_ref = spsolve(Bref, dP[noslack, :])
 
     if sp.issparse(dtheta_ref):
         dTheta[noref, :] = dtheta_ref.toarray()
@@ -323,7 +323,6 @@ def make_contingency_transfer_limits(
 
 
 def make_worst_contingency_transfer_limits(tmc):
-
     nbr = tmc.shape[0]
     wtmc = np.zeros((nbr, 2))
 
@@ -374,13 +373,13 @@ def make_lodfnx(
 
 
 class LinearAnalysis:
-
-    def __init__(
-            self,
-            numerical_circuit: NumericalCircuit,
-            distributed_slack: bool = True,
-            correct_values: bool = False,
-    ):
+    """
+    Linear Analysis
+    """
+    def __init__(self,
+                 numerical_circuit: NumericalCircuit,
+                 distributed_slack: bool = True,
+                 correct_values: bool = False):
         """
         Linear Analysis constructor
         :param numerical_circuit: numerical circuit instance
@@ -423,23 +422,19 @@ class LinearAnalysis:
                     if len(island.pqpv) > 0:
 
                         # compute the PTDF of the island
-                        ptdf_island = make_ptdf(
-                            Bbus=island.Bbus,
-                            Bf=island.Bf,
-                            pqpv=island.pqpv,
-                            distribute_slack=self.distributed_slack
-                        )
+                        ptdf_island = make_ptdf(Bbus=island.Bbus,
+                                                Bf=island.Bf,
+                                                pqpv=island.pqpv,
+                                                distribute_slack=self.distributed_slack)
 
                         # assign the PTDF to the matrix
                         self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                         # compute the island LODF
-                        lodf_island = make_lodf(
-                            Cf=island.Cf,
-                            Ct=island.Ct,
-                            PTDF=ptdf_island,
-                            correct_values=self.correct_values
-                        )
+                        lodf_island = make_lodf(Cf=island.Cf,
+                                                Ct=island.Ct,
+                                                PTDF=ptdf_island,
+                                                correct_values=self.correct_values)
 
                         # assign the LODF to the matrix
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
@@ -454,20 +449,16 @@ class LinearAnalysis:
         else:
 
             # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(
-                Bbus=islands[0].Bbus,
-                Bf=islands[0].Bf,
-                pqpv=islands[0].pqpv,
-                distribute_slack=self.distributed_slack
-            )
+            self.PTDF = make_ptdf(Bbus=islands[0].Bbus,
+                                  Bf=islands[0].Bf,
+                                  pqpv=islands[0].pqpv,
+                                  distribute_slack=self.distributed_slack)
 
             # compute the LODF upon the PTDF
-            self.LODF = make_lodf(
-                Cf=islands[0].Cf,
-                Ct=islands[0].Ct,
-                PTDF=self.PTDF,
-                correct_values=self.correct_values
-            )
+            self.LODF = make_lodf(Cf=islands[0].Cf,
+                                  Ct=islands[0].Ct,
+                                  PTDF=self.PTDF,
+                                  correct_values=self.correct_values)
 
     @property
     def OTDF(self):
@@ -538,7 +529,6 @@ class LinearAnalysis:
             branches_dict=branches_dict,
         )
 
-
 # Todo: delete this
 # class LinearAnalysisMultiCircuit(LinearAnalysis):
 #
@@ -568,4 +558,3 @@ class LinearAnalysis:
 #             distributed_slack=distributed_slack,
 #             correct_values=correct_values,
 #         )
-

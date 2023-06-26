@@ -19,8 +19,8 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import BusMode, ExternalGridMode
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.basic_structures import BusMode, ExternalGridMode, Vec, CxVec
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCal.Engine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCal.Engine.Core.Devices.Substation.substation import Substation
 
@@ -957,49 +957,49 @@ class Bus(EditableDevice):
 
     def get_Sbus(self) -> complex:
         """
-        Compute the complex power Injections
-        :return:
+        Compute the complex power Injections, includes the active effect
+        :return: complex bus power injection (snapshot value)
         """
         val = 0.0j
 
         for elm in self.generators:
-            val += elm.P
+            val += elm.P * elm.active
 
         for elm in self.batteries:
-            val += elm.P
+            val += elm.P * elm.active
 
         for elm in self.static_generators:
-            val += elm.P + 1j * elm.Q
+            val += (elm.P + 1j * elm.Q) * elm.active
 
         for elm in self.external_grids:
-            val += elm.P + 1j * elm.Q
+            val += (elm.P + 1j * elm.Q) * elm.active
 
         for elm in self.loads:
-            val -= elm.P + 1j * elm.Q
+            val -= (elm.P + 1j * elm.Q) * elm.active
 
         return val
 
-    def get_Sbus_prof(self) -> np.ndarray:
+    def get_Sbus_prof(self) -> CxVec:
         """
-        Compute the complex power Injections
-        :return:
+        Compute the complex power Injections, includes the active effect
+        :return: vector of complex nodal injections
         """
         nt = len(self.active_prof)
         val = np.zeros(nt, dtype=complex)
 
         for elm in self.generators:
-            val += elm.P_prof
+            val += elm.P_prof * elm.active_prof
 
         for elm in self.batteries:
-            val += elm.P_prof
+            val += elm.P_prof * elm.active_prof
 
         for elm in self.static_generators:
-            val += elm.P_prof + 1j * elm.Q_prof
+            val += (elm.P_prof + 1j * elm.Q_prof) * elm.active_prof
 
         for elm in self.external_grids:
-            val += elm.P_prof + 1j * elm.Q_prof
+            val += (elm.P_prof + 1j * elm.Q_prof) * elm.active_prof
 
         for elm in self.loads:
-            val -= elm.P_prof + 1j * elm.Q_prof
+            val -= (elm.P_prof + 1j * elm.Q_prof) * elm.active_prof
 
         return val

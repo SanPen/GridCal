@@ -26,7 +26,6 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_linear_matrices
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import get_hvdc_power
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
@@ -106,8 +105,7 @@ class LinearAnalysisDriver(DriverTemplate):
             # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
-                self.grid,
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = self.grid.get_hvdc_power(
                 bus_dict,
                 theta=np.zeros(nbus)
             )

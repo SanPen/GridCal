@@ -101,7 +101,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfDcTimeSeries(grid=self.grid,
+            problem = OpfDcTimeSeries(circuit=self.grid,
                                       time_indices=self.time_indices,
                                       solver_type=self.options.mip_solver,
                                       zonal_grouping=self.options.zonal_grouping,

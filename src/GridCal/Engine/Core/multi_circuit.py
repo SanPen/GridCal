@@ -3046,7 +3046,7 @@ class MultiCircuit:
 
         return conn.tocsc()
 
-    def change_base(self, Sbase_new):
+    def change_base(self, Sbase_new: float):
         """
         Change the elements base impedance
         :param Sbase_new: new base impedance in MVA
@@ -3181,7 +3181,7 @@ class MultiCircuit:
     def get_Sbus(self) -> CxVec:
         """
         Get the complex bus power Injections
-        :return: (ntime, nbus) [MW + j MVAr]
+        :return: (nbus) [MW + j MVAr]
         """
         val = np.zeros(self.get_bus_number(), dtype=complex)
 
@@ -3255,3 +3255,57 @@ class MultiCircuit:
             val[i] = branch.rate_prof * branch.contingency_factor
 
         return val
+
+    def get_hvdc_power(self, bus_dict: Dict[dev.Bus, int],
+                       theta: Vec, t: Union[int, None] = None) -> Tuple[Vec, Vec, Vec, Vec, Vec, int]:
+        """
+        Get the HVDC injections at at certain time
+        :param bus_dict: Bus to bus index dictionary
+        :param theta: nodal angles vector [rad]
+        :param t: time index, if None the snapshot is used
+        :return: P_hvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
+        """
+        P_hvdc = np.zeros(len(self.buses))
+        Losses_hvdc = np.zeros(len(self.hvdc_lines))
+        Pf_hvdc = np.zeros(len(self.hvdc_lines))
+        Pt_hvdc = np.zeros(len(self.hvdc_lines))
+        loading_hvdc = np.zeros(len(self.hvdc_lines))
+        n_free = 0  # number of free hvdc lines that need PF recalculation
+
+        for k, elm in enumerate(self.hvdc_lines):
+
+            _from = bus_dict[elm.bus_from]
+            _to = bus_dict[elm.bus_to]
+
+            if t is None:
+                if elm.active:
+                    if elm.control_mode == dev.HvdcControlType.type_0_free:
+                        n_free += int(elm.active)  # count only if active
+
+                    Pf, Pt, losses = elm.get_from_and_to_power(theta_f=theta[_from], theta_t=theta[_to],
+                                                               Sbase=self.Sbase, in_pu=True)
+                    loading_hvdc[k] = Pf / elm.rate
+                else:
+                    Pf = 0
+                    Pt = 0
+                    losses = 0
+            else:
+                if elm.active_prof[t]:
+                    if elm.control_mode == dev.HvdcControlType.type_0_free:
+                        n_free += int(elm.active_prof[t])  # count only if active
+
+                    Pf, Pt, losses = elm.get_from_and_to_power_at(t=t, theta_f=theta[_from], theta_t=theta[_to],
+                                                                  Sbase=self.Sbase, in_pu=True)
+                    loading_hvdc[k] = Pf / elm.rate_prof[t]
+                else:
+                    Pf = 0
+                    Pt = 0
+                    losses = 0
+
+            P_hvdc[_from] += Pf
+            P_hvdc[_to] += Pt
+            Losses_hvdc[k] = losses
+            Pf_hvdc[k] = Pf
+            Pt_hvdc[k] = Pt
+
+        return P_hvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
