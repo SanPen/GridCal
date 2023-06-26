@@ -548,12 +548,13 @@ def get_ac_lines_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, in
         return block
 
 
-def parse_ac_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+def parse_ac_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any], logger: Logger):
     """
 
     :param circuit:
     :param block:
     :param buses_dict:
+    :param logger
     :return:
     """
     # "ibus", "jbus", "ckt", "rpu", "xpu", "bpu", "name",
@@ -587,7 +588,7 @@ def parse_ac_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dic
         elm.X = data['xpu']
         elm.B = data['bpu']
 
-        circuit.add_line(elm)
+        circuit.add_line(elm, logger=logger)
 
         # add the lie compensations as shunt devices
 
@@ -1070,7 +1071,7 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 parse_generators(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'acline':
-                parse_ac_lines(circuit=circuit, block=block, buses_dict=bus_dict)
+                parse_ac_lines(circuit=circuit, block=block, buses_dict=bus_dict, logger=logger)
 
             elif entry == 'sysswd':
                 pass

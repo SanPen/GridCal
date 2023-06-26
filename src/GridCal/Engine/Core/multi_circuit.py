@@ -1467,15 +1467,21 @@ class MultiCircuit:
             print('Deleted', obj.name)
             self.buses.remove(obj)
 
-    def add_line(self, obj: dev.Line):
+    def add_line(self, obj: dev.Line, logger: bs.Logger = bs.Logger()):
         """
         Add a line object
         :param obj: Line instance
+        :param logger: Logger to record events
         """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.lines.append(obj)
+        if obj.should_this_be_a_transformer():
+            tr = obj.get_equivalent_transformer()
+            self.add_transformer2w(tr)
+            # print('Converted {} ({}) to a transformer'.format(obj.name, obj.idtag))
+            logger.add_warning("Converted to transformer", device=obj.idtag)
+        else:
+            if self.time_profile is not None:
+                obj.create_profiles(self.time_profile)
+            self.lines.append(obj)
 
     def add_dc_line(self, obj: dev.DcLine):
         """

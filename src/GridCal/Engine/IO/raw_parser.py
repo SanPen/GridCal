@@ -215,7 +215,7 @@ class PSSeGrid:
                 if branch.idtag not in branches_already_there:
 
                     # Add to the circuit
-                    circuit.add_line(branch)
+                    circuit.add_line(branch, logger=logger)
                     branches_already_there.add(branch.idtag)
 
                 else:

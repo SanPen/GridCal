@@ -627,7 +627,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     elm.active_prof = decompress_array(profile_entry['active'])
                     elm.rate_prof = decompress_array(profile_entry['rate'])
 
-                circuit.add_line(elm)
+                circuit.add_line(elm, logger=logger)
 
         if "DC line" in devices.keys():
 
@@ -1101,7 +1101,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                active=entry['active'],
                                length=float(entry['length']),
                                )
-                circuit.add_line(elm)
+                circuit.add_line(elm, logger=logger)
 
         if "Transformer" in devices.keys() or "Transformer2w" in devices.keys():
 

@@ -55,14 +55,14 @@ def main():
     ####################################################################################################################
     # I will define this bus with all the properties so you see
     bus1 = Bus(name='Bus1',
-               vnom=10,   # Nominal voltage in kV
+               vnom=10,  # Nominal voltage in kV
                vmin=0.9,  # Bus minimum voltage in per unit
                vmax=1.1,  # Bus maximum voltage in per unit
-               xpos=0,    # Bus x position in pixels
-               ypos=0,    # Bus y position in pixels
+               xpos=0,  # Bus x position in pixels
+               ypos=0,  # Bus y position in pixels
                height=0,  # Bus height in pixels
-               width=0,   # Bus width in pixels
-               active=True,   # Is the bus active?
+               width=0,  # Bus width in pixels
+               active=True,  # Is the bus active?
                is_slack=False,  # Is this bus a slack bus?
                area=a1,  # Area (for grouping purposes only)
                zone=z1,  # Zone (for grouping purposes only)
@@ -124,31 +124,26 @@ def main():
     # Add the lines
     ####################################################################################################################
 
-    br1 = Branch(bus_from=bus1,
-                 bus_to=bus2,
-                 name='Line 1-2',
-                 r=0.05,  # resistance of the pi model in per unit
-                 x=0.11,  # reactance of the pi model in per unit
-                 g=1e-20,  # conductance of the pi model in per unit
-                 b=0.02,  # susceptance of the pi model in per unit
-                 rate=50,  # Rate in MVA
-                 tap=1.0,  # Tap value (value close to 1)
-                 shift_angle=0,  # Tap angle in radians
-                 active=True,  # is the branch active?
-                 mttf=0,  # Mean time to failure
-                 mttr=0,  # Mean time to recovery
-                 branch_type=BranchType.Line,  # Branch type tag
-                 length=1,  # Length in km (to be used with templates)
-                 template=BranchTemplate()  # Branch template (The default one is void)
-                 )
-    grid.add_branch(br1)
+    br1 = Line(bus_from=bus1,
+               bus_to=bus2,
+               name='Line 1-2',
+               r=0.05,  # resistance of the pi model in per unit
+               x=0.11,  # reactance of the pi model in per unit
+               b=0.02,  # susceptance of the pi model in per unit
+               rate=50,  # Rate in MVA
+               active=True,  # is the branch active?
+               mttf=0,  # Mean time to failure
+               mttr=0,  # Mean time to recovery
+               length=1,  # Length in km (to be used with templates)
+               )
+    grid.add_line(br1)
 
-    grid.add_branch(Line(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
-    grid.add_branch(Line(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
-    grid.add_branch(Line(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
-    grid.add_branch(Line(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
-    grid.add_branch(Line(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
-    grid.add_branch(Line(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
+    grid.add_line(Line(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
+    grid.add_line(Line(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
+    grid.add_line(Line(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+    grid.add_line(Line(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
+    grid.add_line(Line(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
+    grid.add_line(Line(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
     FileSave(grid, 'lynn5node.gridcal').save()
 
@@ -211,8 +206,6 @@ def main():
     # print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
     # print()
     # print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
-
-
 
     ####################################################################################################################
     # Run a time series power flow simulation

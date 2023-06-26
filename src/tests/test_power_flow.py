@@ -69,10 +69,13 @@ def test_ieee_grids():
             p_gc = power_flow.results.Sf.real
             p_psse = df_p.values[:, 0]
 
+            # br_codes = [e.code for e in main_circuit.get_branches_wo_hvdc()]
+            # p_gc_df = pd.DataFrame(data=p_gc, columns=[0], index=br_codes)
+            # pf_diff_df = p_gc_df - df_p
+
             v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
             flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
-
-            df = pd.DataFrame(data=np.c_[v_gc, v_psse], columns=['GridCal', 'PSSe'])
+            # flow_ok = (np.abs(pf_diff_df.values) < 1e-3).all()
 
             if not v_ok:
                 print('power flow voltages test for {} failed'.format(fname))

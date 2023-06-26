@@ -419,13 +419,14 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                       b=table[i, matpower_branches.BR_B],
                                       rate=table[i, matpower_branches.RATE_A],
                                       active=bool(table[i, matpower_branches.BR_STATUS]))
-                    circuit.add_line(branch)
+                    circuit.add_line(branch, logger=logger)
                     logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
         else:
 
-            if f.Vnom != t.Vnom or (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or \
-                    table[i, matpower_branches.SHIFT] != 0.0:
+            if f.Vnom != t.Vnom or \
+                    (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or \
+                     table[i, matpower_branches.SHIFT] != 0.0:
 
                 branch = dev.Transformer2W(bus_from=f,
                                            bus_to=t,
@@ -450,7 +451,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                   b=table[i, matpower_branches.BR_B],
                                   rate=table[i, matpower_branches.RATE_A],
                                   active=bool(table[i, matpower_branches.BR_STATUS]))
-                circuit.add_line(branch)
+                circuit.add_line(branch, logger=logger)
                 logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
     # convert normal lines into DC-lines if needed
