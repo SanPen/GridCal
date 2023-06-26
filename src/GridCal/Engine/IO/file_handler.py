@@ -97,7 +97,7 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = data_frames_to_circuit(data_dictionary)
+                            self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
@@ -114,7 +114,7 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary)
+                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -127,7 +127,7 @@ class FileOpen:
                                                                    progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary)
+                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None

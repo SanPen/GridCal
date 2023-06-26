@@ -375,7 +375,7 @@ class NumericalCircuit:
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
         self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
-        self.battery_data.C_bus_elm= self.battery_data.C_bus_elm.tocsr()
+        self.battery_data.C_bus_elm = self.battery_data.C_bus_elm.tocsr()
         self.generator_data.C_bus_elm = self.generator_data.C_bus_elm.tocsr()
         self.shunt_data.C_bus_elm = self.shunt_data.C_bus_elm.tocsr()
 
@@ -1052,10 +1052,7 @@ class NumericalCircuit:
         :return:
         """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(
-                Sbus=self.Sbus,
-                types=self.bus_data.bus_types
-            )
+            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Pbus=self.Sbus.real, types=self.bus_data.bus_types)
 
         return self.vd_
 

@@ -15,18 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import numpy as np
 import numba as nb
 from scipy.sparse import csc_matrix, diags
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.basic_structures import BusMode, IntVec, Vec, Mat, CxVec
 
 
 # @nb.jit(cache=True)
-def find_islands_numba(node_number, indptr, indices, active: np.ndarray):
+def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[List[int]]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
+    :param node_number:
+    :param indptr: index pointers in the CSC scheme
+    :param indices: column indices in the CSCS scheme
+    :param active: array of node active
     :return: list of islands, where each element is a list of the node indices of the island
     """
 
@@ -91,13 +95,18 @@ def find_islands_numba(node_number, indptr, indices, active: np.ndarray):
 
 
 @nb.njit(cache=True)
-def get_elements_of_the_island_numba(n_rows, indptr, indices, island, active):
+def get_elements_of_the_island_numba(n_rows: int,
+                                     indptr: IntVec,
+                                     indices: IntVec,
+                                     island: IntVec,
+                                     active: IntVec) -> IntVec:
     """
     Get the element indices of the island
     :param n_rows: Number of rows of the connectivity matrix
     :param indptr: CSC index pointers of the element-node connectivity matrix
     :param indices: CSC indices of the element-node connectivity matrix
     :param island: island node indices
+    :param active: Array of bus active
     :return: array of indices of the elements that match that island
     """
 
@@ -124,7 +133,7 @@ def get_elements_of_the_island_numba(n_rows, indptr, indices, island, active):
     return elm_idx
 
 
-def find_islands(adj: csc_matrix, active: np.ndarray):
+def find_islands(adj: csc_matrix, active: IntVec) -> List[List[int]]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
@@ -136,11 +145,12 @@ def find_islands(adj: csc_matrix, active: np.ndarray):
                               active=active)
 
 
-def get_elements_of_the_island(C_element_bus, island, active):
+def get_elements_of_the_island(C_element_bus: csc_matrix, island: IntVec, active: IntVec) -> IntVec:
     """
     Get the branch indices of the island
     :param C_element_bus: CSC elements-buses connectivity matrix with the dimensions: elements x buses
     :param island: array of bus indices of the island
+    :param active: Array of bus active
     :return: array of indices of the elements that match that island
     """
 
@@ -155,7 +165,8 @@ def get_elements_of_the_island(C_element_bus, island, active):
                                             active=active)
 
 
-def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_active):
+def get_adjacency_matrix(C_branch_bus_f: csc_matrix, C_branch_bus_t: csc_matrix,
+                         branch_active: IntVec, bus_active: IntVec) -> csc_matrix:
     """
     Compute the adjacency matrix
     :param C_branch_bus_f: Branch-bus_from connectivity matrix
@@ -177,7 +188,8 @@ def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_acti
 
     return C_bus_bus
 
-def find_different_states(states_array, force_all=False) -> Dict[int, List[int]]:
+
+def find_different_states(states_array: IntVec, force_all=False) -> Dict[int, List[int]]:
     """
     Find the different branch states in time that may lead to different islands
     :param states_array: bool array indicating the different grid states (time, device)
@@ -223,17 +235,18 @@ def find_different_states(states_array, force_all=False) -> Dict[int, List[int]]
         return states
 
 
-nb.njit(cache=True)
-def compile_types(Sbus, types):
+@nb.njit(cache=True)
+def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
     """
     Compile the types.
-    :param Sbus: array of power Injections per node
-    :param types: array of tentative node types
+    :param Pbus: array of real power Injections per node used to choose the slack as
+                 the node with greater generation if no slack is provided
+    :param types: array of tentative node types (it may be modified internally)
     :return: ref, pq, pv, pqpv
     """
 
     # check that Sbus is a 1D array
-    assert (len(Sbus.shape) == 1)
+    assert (len(Pbus.shape) == 1)
 
     pq = np.where(types == BusMode.PQ.value)[0]
     pv = np.where(types == BusMode.PV.value)[0]
@@ -245,10 +258,10 @@ def compile_types(Sbus, types):
             pass
         else:  # select the first PV generator as the slack
 
-            mx = max(Sbus[pv])
+            mx = max(Pbus[pv])
             if mx > 0:
                 # find the generator that is injecting the most
-                i = np.where(Sbus == mx)[0][0]
+                i = np.where(Pbus == mx)[0][0]
 
             else:
                 # all the generators are injecting zero, pick the first pv
@@ -256,14 +269,14 @@ def compile_types(Sbus, types):
 
             # delete the selected pv bus from the pv list and put it in the slack list
             pv = np.delete(pv, np.where(pv == i)[0])
-            ref = [i]
+            ref = np.array([i])
 
-        ref = np.ndarray.flatten(np.array(ref))
-        types[ref] = BusMode.Slack.value
+        for r in ref:
+            types[r] = BusMode.Slack.value
     else:
         pass  # no problem :)
 
-    pqpv = np.r_[pq, pv]
+    pqpv = np.concatenate((pq, pv))
     pqpv.sort()
 
     return ref, pq, pv, pqpv

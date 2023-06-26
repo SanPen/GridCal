@@ -29,6 +29,9 @@ def get_objects_dictionary():
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
     """
+
+    # this list must be sorted in dependency order so that the
+    # loading algorithm is able to find the object substitutions
     object_types = {'area': dev.Area(),
 
                     'zone': dev.Zone(),
@@ -219,10 +222,11 @@ def create_data_frames(circuit: MultiCircuit):
     return dfs
 
 
-def data_frames_to_circuit(data: Dict):
+def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
     """
     Interpret data dictionary
     :param data: dictionary of data frames
+    :param logger: Logger to register events
     :return: MultiCircuit instance
     """
     # create circuit
@@ -486,7 +490,9 @@ def data_frames_to_circuit(data: Dict):
                     circuit.add_branch(d)  # each branch needs to be converted accordingly
 
             elif template_elm.device_type == DeviceType.LineDevice:
-                circuit.lines = devices
+                for d in devices:
+                    circuit.add_line(d, logger=logger)  # this is done to detect those lines that should be transformers
+                # circuit.lines = devices
 
             elif template_elm.device_type == DeviceType.DCLineDevice:
                 circuit.dc_lines = devices

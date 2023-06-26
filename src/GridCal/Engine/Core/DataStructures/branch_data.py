@@ -19,11 +19,16 @@ import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.Devices.enumerations import WindingsConnection
+from GridCal.Engine.basic_structures import Vec, IntVec, StrVec, ObjVec
 
 
-def get_bus_indices(C_branch_bus):
+def get_bus_indices(C_branch_bus: sp.csc_matrix):
+    """
 
-    # todo: add assertion of type
+    :param C_branch_bus: 
+    :return: 
+    """
+    assert (isinstance(C_branch_bus, sp.csc_matrix))
     F = np.zeros(C_branch_bus.shape[0], dtype=int)
 
     for j in range(C_branch_bus.shape[1]):
@@ -35,12 +40,11 @@ def get_bus_indices(C_branch_bus):
 
 
 class BranchData:
+    """
+    Structure to host all branches data for calculation
+    """
 
-    def __init__(
-            self,
-            nelm:int,
-            nbus:int
-    ):
+    def __init__(self, nelm: int, nbus: int):
         """
         Branch data arrays
         :param nelm: number of elements
@@ -48,83 +52,81 @@ class BranchData:
         """
         self.nelm: int = nelm
 
-        self.names: np.ndarray = np.empty(self.nelm, dtype=object)
+        self.names: StrVec = np.empty(self.nelm, dtype=object)
 
-        self.dc: np.ndarray = np.zeros(self.nelm, dtype=int)
+        self.dc: IntVec = np.zeros(self.nelm, dtype=int)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=int)
-        self.rates: np.ndarray = np.zeros(nelm, dtype=float)
-        self.contingency_rates: np.ndarray = np.zeros(nelm, dtype=float)
+        self.active: IntVec = np.zeros(nelm, dtype=int)
+        self.rates: Vec = np.zeros(nelm, dtype=float)
+        self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
 
-        self.F: np.ndarray = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
-        self.T: np.ndarray = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
+        self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
+        self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
         # composite losses curve (a * x^2 + b * x + c)
-        self.a: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.b: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.c: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.a: Vec = np.zeros(self.nelm, dtype=float)
+        self.b: Vec = np.zeros(self.nelm, dtype=float)
+        self.c: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.R: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.X: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.G: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.B: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.R: Vec = np.zeros(self.nelm, dtype=float)
+        self.X: Vec = np.zeros(self.nelm, dtype=float)
+        self.G: Vec = np.zeros(self.nelm, dtype=float)
+        self.B: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.R0: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.X0: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.G0: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.B0: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.R0: Vec = np.zeros(self.nelm, dtype=float)
+        self.X0: Vec = np.zeros(self.nelm, dtype=float)
+        self.G0: Vec = np.zeros(self.nelm, dtype=float)
+        self.B0: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.R2: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.X2: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.G2: np.ndarray = np.zeros(self.nelm, dtype=float)
-        self.B2: np.ndarray = np.zeros(self.nelm, dtype=float)
+        self.R2: Vec = np.zeros(self.nelm, dtype=float)
+        self.X2: Vec = np.zeros(self.nelm, dtype=float)
+        self.G2: Vec = np.zeros(self.nelm, dtype=float)
+        self.B2: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.conn: np.ndarray = np.array([WindingsConnection.GG] * self.nelm)
+        self.conn: ObjVec = np.array([WindingsConnection.GG] * self.nelm)
 
-        self.k: np.ndarray = np.ones(nelm, dtype=float)
+        self.k: Vec = np.ones(nelm, dtype=float)
 
-        self.tap_module: np.ndarray = np.ones(nelm, dtype=float)
-        self.tap_module_min: np.ndarray = np.full(nelm, fill_value=0.1, dtype=float)
-        self.tap_module_max: np.ndarray = np.full(nelm, fill_value=1.5, dtype=float)
-        self.tap_angle: np.ndarray = np.zeros(nelm, dtype=float)
-        self.tap_angle_min: np.ndarray = np.full(nelm, fill_value=-6.28, dtype=float)
-        self.tap_angle_max: np.ndarray = np.full(nelm, fill_value=6.28, dtype=float)
-        self.Beq: np.ndarray = np.zeros(nelm, dtype=float)
-        self.G0sw: np.ndarray = np.zeros(nelm, dtype=float)
+        self.tap_module: Vec = np.ones(nelm, dtype=float)
+        self.tap_module_min: Vec = np.full(nelm, fill_value=0.1, dtype=float)
+        self.tap_module_max: Vec = np.full(nelm, fill_value=1.5, dtype=float)
+        self.tap_angle: Vec = np.zeros(nelm, dtype=float)
+        self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
+        self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
+        self.Beq: Vec = np.zeros(nelm, dtype=float)
+        self.G0sw: Vec = np.zeros(nelm, dtype=float)
 
-        self.virtual_tap_t: np.ndarray = np.ones(self.nelm, dtype=float)
-        self.virtual_tap_f: np.ndarray = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
-        self.Pfset: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Qfset: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Qtset: np.ndarray = np.zeros(nelm, dtype=float)
-        self.vf_set: np.ndarray = np.ones(nelm, dtype=float)
-        self.vt_set: np.ndarray = np.ones(nelm, dtype=float)
+        self.Pfset: Vec = np.zeros(nelm, dtype=float)
+        self.Qfset: Vec = np.zeros(nelm, dtype=float)
+        self.Qtset: Vec = np.zeros(nelm, dtype=float)
+        self.vf_set: Vec = np.ones(nelm, dtype=float)
+        self.vt_set: Vec = np.ones(nelm, dtype=float)
 
-        self.Kdp: np.ndarray = np.ones(self.nelm, dtype=float)
-        self.Kdp_va: np.ndarray = np.ones(self.nelm, dtype=float)
-        self.alpha1: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
-        self.alpha2: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
-        self.alpha3: np.ndarray = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
-        self.control_mode: np.ndarray = np.zeros(self.nelm, dtype=object)
+        self.Kdp: Vec = np.ones(self.nelm, dtype=float)
+        self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
+        self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
+        self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
+        self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
+        self.control_mode: Vec = np.zeros(self.nelm, dtype=object)
 
-        self.contingency_enabled: np.ndarray = np.ones(self.nelm, dtype=int)
-        self.monitor_loading: np.ndarray = np.ones(self.nelm, dtype=int)
+        self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
+        self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
 
         self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
                                                            dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
                                                            dtype=int)  # connectivity branch with their "to" bus
 
-        self.overload_cost: np.ndarray = np.zeros(nelm, dtype=float)
+        self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
-        self.original_idx = np.zeros(nelm, dtype=int)
+        self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
-    def slice(
-            self,
-            elm_idx:np.ndarray,
-            bus_idx:np.ndarray
-    ):
+    def slice(self,
+              elm_idx: IntVec,
+              bus_idx: IntVec):
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -188,8 +190,8 @@ class BranchData:
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
-        data.F = get_bus_indices(data.C_branch_bus_f)
-        data.T = get_bus_indices(data.C_branch_bus_t)
+        data.F = get_bus_indices(data.C_branch_bus_f.tocsc())
+        data.T = get_bus_indices(data.C_branch_bus_t.tocsc())
 
         data.overload_cost = self.overload_cost[elm_idx]
 
@@ -197,20 +199,16 @@ class BranchData:
 
         return data
 
-    def get_island(
-            self,
-            bus_idx: np.ndarray
-    ):
+    def get_island(self, bus_idx: Vec) -> IntVec:
         """
         Get the array of branch indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(
-                self.C_branch_bus_f + self.C_branch_bus_t,
-                island=bus_idx,
-                active=self.active)
+            return tp.get_elements_of_the_island(C_element_bus=self.C_branch_bus_f + self.C_branch_bus_t,
+                                                 island=bus_idx,
+                                                 active=self.active)
         else:
             return np.zeros(0, dtype=int)
 

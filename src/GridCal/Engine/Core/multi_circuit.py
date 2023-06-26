@@ -439,6 +439,13 @@ class MultiCircuit:
         else:
             return 0
 
+    def get_all_time_indices(self) -> IntVec:
+        """
+        Get array with all the time steps
+        :return: IntVec
+        """
+        return np.arange(0, self.get_time_number())
+
     def get_contingency_number(self) -> int:
         """
         Get number of contingencies
@@ -537,9 +544,17 @@ class MultiCircuit:
         self.contingencies = list()
 
     def get_buses(self) -> List[dev.Bus]:
+        """
+        List of buses
+        :return:
+        """
         return self.buses
 
     def get_bus_names(self) -> List[str]:
+        """
+        List of bus names
+        :return:
+        """
         return [e.name for e in self.buses]
 
     def get_branches_wo_hvdc(self) -> List[dev.Branch]:
@@ -1477,7 +1492,8 @@ class MultiCircuit:
             tr = obj.get_equivalent_transformer()
             self.add_transformer2w(tr)
             # print('Converted {} ({}) to a transformer'.format(obj.name, obj.idtag))
-            logger.add_warning("Converted to transformer", device=obj.idtag)
+            logger.add_warning("Converted line to transformer due to excessive nominal voltage difference",
+                               device=obj.idtag)
         else:
             if self.time_profile is not None:
                 obj.create_profiles(self.time_profile)

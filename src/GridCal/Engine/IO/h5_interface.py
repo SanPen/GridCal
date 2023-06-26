@@ -54,12 +54,13 @@ def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None
     return logger
 
 
-def open_h5(file_path, text_func=None, prog_func=None):
+def open_h5(file_path, text_func=None, prog_func=None, logger: Logger = Logger()):
     """
 
     :param file_path:
     :param text_func:
     :param prog_func:
+    :param logger:
     :return:
     """
     store = pd.HDFStore(file_path)
@@ -80,7 +81,7 @@ def open_h5(file_path, text_func=None, prog_func=None):
 
     store.close()
 
-    circuit = data_frames_to_circuit(dfs)
+    circuit = data_frames_to_circuit(dfs, logger=logger)
 
     return circuit
 

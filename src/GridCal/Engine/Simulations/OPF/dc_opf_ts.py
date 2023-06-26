@@ -49,7 +49,9 @@ def join(init: str, vals: List[int], sep="_"):
 
 
 class GenerationVars:
-
+    """
+    Struct to store the generation vars
+    """
     def __init__(self, nt, ng):
         """
         GenerationVars structure
@@ -64,7 +66,9 @@ class GenerationVars:
 
 
 class BatteryVars(GenerationVars):
-
+    """
+    struct extending the generation vars to handle the battery vars
+    """
     def __init__(self, nt, nb):
         GenerationVars.__init__(self, nt=nt, ng=nb)
         self.e = np.zeros((nt, nb), dtype=object)

@@ -676,7 +676,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
                 Sxfr = Sbus_target - Sbus  # TODO: really?
 
-                vd, pq, pv, pqpv = compile_types(Sbus, types_new)
+                vd, pq, pv, pqpv = compile_types(Pbus=Sbus.real, types=types_new)
             else:
                 if verbose:
                     print('Q controls Ok')

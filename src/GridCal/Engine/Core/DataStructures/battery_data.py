@@ -18,13 +18,13 @@ import numpy as np
 from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 from typing import Union
 
-class BatteryData(GeneratorData):
 
-    def __init__(
-            self,
-            nelm:int,
-            nbus:int
-    ):
+class BatteryData(GeneratorData):
+    """
+    Structure to host the battery compiled data
+    """
+
+    def __init__(self, nelm: int, nbus: int):
         """
         Battery data arrays
         :param nelm: number of batteries
@@ -39,21 +39,19 @@ class BatteryData(GeneratorData):
 
         self.enom: np.ndarray = np.zeros(nelm)
         self.min_soc: np.ndarray = np.zeros(nelm)
-        self.max_soc: np.ndarray = np.zeros(nelm)
-        self.soc_0: np.ndarray = np.zeros(nelm)
-        self.discharge_efficiency: np.ndarray = np.zeros(nelm)
-        self.charge_efficiency: np.ndarray = np.zeros(nelm)
+        self.max_soc: np.ndarray = np.ones(nelm)
+        self.soc_0: np.ndarray = np.ones(nelm)
+        self.discharge_efficiency: np.ndarray = np.ones(nelm)
+        self.charge_efficiency: np.ndarray = np.ones(nelm)
+        self.efficiency: np.ndarray = np.ones(nelm)
 
-    def slice(
-            self,
-            elm_idx: np.ndarray,
-            bus_idx: np.ndarray,
-            time_idx: Union[int, None] = None):
+    def slice(self,
+              elm_idx: np.ndarray,
+              bus_idx: np.ndarray):
         """
         Slice battery data by given indices
         :param elm_idx: array of element indices
         :param bus_idx: array of bus indices
-        :param time_idx: array of time indices
         :return: new BatteryData instance
         """
 
@@ -65,6 +63,6 @@ class BatteryData(GeneratorData):
         data.soc_0 = self.soc_0[elm_idx]
         data.discharge_efficiency = self.discharge_efficiency[elm_idx]
         data.charge_efficiency = self.charge_efficiency[elm_idx]
+        data.efficiency = self.efficiency[elm_idx]
 
         return data
-

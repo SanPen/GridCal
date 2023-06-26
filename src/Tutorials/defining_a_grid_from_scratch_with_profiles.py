@@ -214,8 +214,7 @@ def main():
     ts = PowerFlowTimeSeries(grid=grid,
                              options=pf_options,
                              opf_time_series_results=None,
-                             start_=0,
-                             end_=None)
+                             time_indices=grid.get_all_time_indices())
 
     ts.run()
 
