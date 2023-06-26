@@ -29,6 +29,7 @@ from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
+from GridCal.Gui.GridEditorWidget.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, FaultType
 
@@ -396,7 +397,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         ra5.setIcon(ra5_icon)
         ra5.triggered.connect(self.assign_status_to_profile)
 
-
         ra3 = menu.addAction('Delete all the connections')
         del2_icon = QIcon()
         del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
@@ -446,6 +446,12 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
         ab.setIcon(ab_icon)
         ab.triggered.connect(self.add_battery)
+
+        aeg = menu.addAction('External grid')
+        aeg_icon = QIcon()
+        aeg_icon.addPixmap(QPixmap(":/Icons/icons/add_external_grid.svg"))
+        aeg.setIcon(aeg_icon)
+        aeg.triggered.connect(self.add_external_grid)
 
         menu.exec_(event.screenPos())
 
@@ -632,7 +638,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Add load object to bus
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_load(self.api_object)
+            api_obj = self.diagramScene.circuit.add_load(bus=self.api_object)
 
         _grph = LoadGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -646,7 +652,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_shunt(self.api_object)
+            api_obj = self.diagramScene.circuit.add_shunt(bus=self.api_object)
 
         _grph = ShuntGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -660,7 +666,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_generator(self.api_object)
+            api_obj = self.diagramScene.circuit.add_generator(bus=self.api_object)
 
         _grph = GeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -674,7 +680,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_static_generator(self.api_object)
+            api_obj = self.diagramScene.circuit.add_static_generator(bus=self.api_object)
 
         _grph = StaticGeneratorGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
@@ -688,10 +694,23 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.diagramScene.circuit.add_battery(self.api_object)
+            api_obj = self.diagramScene.circuit.add_battery(bus=self.api_object)
 
         _grph = BatteryGraphicItem(self, api_obj, self.diagramScene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
 
+    def add_external_grid(self, api_obj=None):
+        """
+
+        Returns:
+
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.diagramScene.circuit.add_external_grid(bus=self.api_object)
+
+        _grph = ExternalGridGraphicItem(self, api_obj, self.diagramScene)
+        api_obj.graphic_obj = _grph
+        self.shunt_children.append(_grph)
+        self.arrange_children()

@@ -63,7 +63,7 @@ class ExternalGrid(EditableDevice):
 
     def __init__(self, name='External grid', idtag=None, active=True,
                  Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
-                  mttf=0.0, mttr=0.0, cost=1200.0, mode: ExternalGridMode = ExternalGridMode.PQ):
+                 mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -93,9 +93,6 @@ class ExternalGrid(EditableDevice):
         self.P_prof = P_prof
         self.Q_prof = Q_prof
 
-        self.Cost = cost
-        self.Cost_prof = None
-
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
         self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
         self.register(key='mode', units='', tpe=ExternalGridMode,
@@ -106,8 +103,6 @@ class ExternalGrid(EditableDevice):
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
         self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
         self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
-                      profile_name='Cost_prof')
 
     def copy(self):
 

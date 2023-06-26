@@ -61,8 +61,12 @@ class BusMode(Enum):
 
 
 class ExternalGridMode(Enum):
-    PQ = 1
-    VD = 2
+    """
+    Modes of operation of external grids
+    """
+    PQ = "PQ"
+    PV = "PV"
+    VD = "VD"
 
     def __str__(self):
         return self.value

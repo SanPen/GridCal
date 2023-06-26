@@ -1790,7 +1790,7 @@ class MultiCircuit:
         if api_obj.name == 'External grid':
             api_obj.name += '@' + bus.name
 
-        bus.loads.append(api_obj)
+        bus.external_grids.append(api_obj)
 
         return api_obj
 
