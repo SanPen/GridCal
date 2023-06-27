@@ -27,19 +27,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the way External grids are integrated in the data compiler">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added typing and improved the docstrings">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/ntc_pruebas.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ntc_pruebas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/editable_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/editable_device.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/levenberg_marquardt_acdc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/levenberg_marquardt_acdc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/vsc_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/vsc_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/pySlipQt/pySlipQt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/pySlipQt/pySlipQt.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1167,14 +1157,7 @@
       <workItem from="1687760769808" duration="24533000" />
       <workItem from="1687804392549" duration="94000" />
       <workItem from="1687804720435" duration="1042000" />
-      <workItem from="1687847037404" duration="5467000" />
-    </task>
-    <task id="LOCAL-00367" summary="Fixed issue with linear transfer capacity calculation">
-      <created>1678787211752</created>
-      <option name="number" value="00367" />
-      <option name="presentableId" value="LOCAL-00367" />
-      <option name="project" value="LOCAL" />
-      <updated>1678787211753</updated>
+      <workItem from="1687847037404" duration="6932000" />
     </task>
     <task id="LOCAL-00368" summary="Added newton save">
       <created>1681476059778</created>
@@ -1512,7 +1495,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687805510425</updated>
     </task>
-    <option name="localTasksCounter" value="416" />
+    <task id="LOCAL-00416" summary="Added typing and improved the docstrings">
+      <created>1687853842967</created>
+      <option name="number" value="00416" />
+      <option name="presentableId" value="LOCAL-00416" />
+      <option name="project" value="LOCAL" />
+      <updated>1687853842967</updated>
+    </task>
+    <option name="localTasksCounter" value="417" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1554,7 +1544,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Several pylint errors detected and fixed" />
     <MESSAGE value="Fixed more pylint errors" />
     <MESSAGE value="fixed numba deprecations" />
     <MESSAGE value="Fixed newton export bug" />
@@ -1579,7 +1568,8 @@
     <MESSAGE value="Moved get_hvdc_power to the MultiCircuit to avoid circular dependencies&#10;Further development of the OPF" />
     <MESSAGE value="Added external grid graphic object" />
     <MESSAGE value="Improved the way External grids are integrated in the data compiler" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the way External grids are integrated in the data compiler" />
+    <MESSAGE value="Added typing and improved the docstrings" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added typing and improved the docstrings" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
