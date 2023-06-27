@@ -52,9 +52,8 @@ except ImportError as e:
 
 import platform
 if platform.python_version_tuple()[0] != '3':
-    msg = ('You must run pySlipQt with python 3.x, you are running version %s.x.'
-            % platform.python_version_tuple()[0])
-    log(msg)
+    msg = ('You must run pySlipQt with python 3.x, you are running version %s.x.' % platform.python_version_tuple()[0])
+    # log(msg)
     print(msg)
     sys.exit(1)
 

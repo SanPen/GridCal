@@ -28,7 +28,8 @@ class GCProp:
                  tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
                  definition: str,
                  profile_name: str = '',
-                 display: bool = True):
+                 display: bool = True,
+                 editable: bool = True):
         """
         GridCal property
         :param units: units of the property
@@ -36,6 +37,7 @@ class GCProp:
         :param definition: Definition of the property
         :param profile_name: name of the associated profile property
         :param display: Display the property in the GUI
+        :param editable: Is this editable?
         """
 
         self.units = units
@@ -48,8 +50,13 @@ class GCProp:
 
         self.display = display
 
+        self.editable = editable
+
 
 class EditableDevice:
+    """
+    This is the main device class from which all inherit
+    """
 
     def __init__(self,
                  name: str,
@@ -93,7 +100,7 @@ class EditableDevice:
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
-        self.register(key='active', units='', tpe=bool, definition='Is active?')
+        self.register(key='active', units='', tpe=bool, definition='Is active?') # this one is overriden if active_prof is present
 
     def register(self,
                  key: str,
@@ -114,16 +121,17 @@ class EditableDevice:
         :param display: display this property?
         :param editable: is this editable?
         """
-        assert (hasattr(self, key))  # the property must exist, this avoids bugs in registering
+        assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
         self.editable_headers[key] = GCProp(units=units,
                                             tpe=tpe,
                                             definition=definition,
                                             profile_name=profile_name,
-                                            display=display)
+                                            display=display,
+                                            editable=editable)
 
         if profile_name != '':
-            assert (hasattr(self, profile_name)) # the property must exist, this avoids bugs in registering
+            assert (hasattr(self, profile_name))  # the property must exist, this avoids bugs in registering
             self.properties_with_profile[key] = profile_name
 
         if not editable:

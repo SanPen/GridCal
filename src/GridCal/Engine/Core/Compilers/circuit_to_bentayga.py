@@ -572,19 +572,12 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
     for btg_data in btg_data_lst:
 
         data = NumericalCircuit(nbus=0,
-                                nline=0,
-                                ndcline=0,
-                                ntr=0,
-                                nvsc=0,
-                                nupfc=0,
                                 nhvdc=0,
                                 nload=0,
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
-                                nstagen=0,
-                                sbase=0,
-                                ntime=1)
+                                sbase=0)
 
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
@@ -618,8 +611,8 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.vd_ = btg_data.bus_types_data.vd
         data.pqpv_ = btg_data.bus_types_data.pqpv
 
-        data.original_bus_idx = btg_data.bus_data.original_indices
-        data.original_branch_idx = btg_data.branch_data.original_indices
+        data.bus_data.original_idx = btg_data.bus_data.original_indices
+        data.branch_data.original_idx = btg_data.branch_data.original_indices
 
         data.Qmax_bus_ = btg_data.Qmax_bus
         data.Qmin_bus_ = btg_data.Qmin_bus

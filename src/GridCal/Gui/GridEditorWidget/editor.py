@@ -737,9 +737,9 @@ class GridEditor(QSplitter):
                                           bus_to=self.started_branch.bus_to.api_object,
                                           name=name)
 
-                                obj.graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                 toPort=self.started_branch.toPort,
-                                                                 diagramScene=self.diagramScene,
+                                obj.graphic_obj = VscGraphicItem(from_port=self.started_branch.fromPort,
+                                                                 to_port=self.started_branch.toPort,
+                                                                 diagram_scene=self.diagramScene,
                                                                  branch=obj)
 
                             elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:

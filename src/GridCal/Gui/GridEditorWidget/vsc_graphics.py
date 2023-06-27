@@ -28,156 +28,16 @@ from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brut
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 
-class VscEditor(QDialog):
-
-    def __init__(self, branch: VSC, Sbase=100):
-        """
-        Line Editor constructor
-        :param branch: Branch object to update
-        :param Sbase: Base power in MVA
-        """
-        super(VscEditor, self).__init__()
-
-        # keep pointer to the line object
-        self.branch = branch
-
-        self.Sbase = Sbase
-
-        self.setObjectName("self")
-
-        self.setContextMenuPolicy(Qt.NoContextMenu)
-
-        self.layout = QVBoxLayout(self)
-
-        # ------------------------------------------------------------------------------------------
-        # Set the object values
-        # ------------------------------------------------------------------------------------------
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1 / Zbase
-
-        R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        G = self.branch.G * Ybase
-        B = self.branch.B * Ybase
-
-        I = self.branch.rate / Vf  # current in kA
-
-        # ------------------------------------------------------------------------------------------
-
-        # line length
-        self.l_spinner = QDoubleSpinBox()
-        self.l_spinner.setMinimum(0)
-        self.l_spinner.setMaximum(9999999)
-        self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(1)
-
-        # Max current
-        self.i_spinner = QDoubleSpinBox()
-        self.i_spinner.setMinimum(0)
-        self.i_spinner.setMaximum(9999999)
-        self.i_spinner.setDecimals(2)
-        self.i_spinner.setValue(I)
-
-        # R
-        self.r_spinner = QDoubleSpinBox()
-        self.r_spinner.setMinimum(0)
-        self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setDecimals(6)
-        self.r_spinner.setValue(R)
-
-        # X
-        self.x_spinner = QDoubleSpinBox()
-        self.x_spinner.setMinimum(0)
-        self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setDecimals(6)
-        self.x_spinner.setValue(X)
-
-        # G
-        self.g_spinner = QDoubleSpinBox()
-        self.g_spinner.setMinimum(0)
-        self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setDecimals(6)
-        self.g_spinner.setValue(G)
-
-        # B
-        self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # labels
-
-        # add all to the GUI
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
-        self.layout.addWidget(self.l_spinner)
-
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
-        self.layout.addWidget(self.i_spinner)
-
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
-        self.layout.addWidget(self.r_spinner)
-
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
-
-        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
-        self.layout.addWidget(self.g_spinner)
-
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle('Line editor')
-
-    def accept_click(self):
-        """
-        Set the values
-        :return:
-        """
-        l = self.l_spinner.value()
-        I = self.i_spinner.value()
-        R = self.r_spinner.value() * l
-        X = self.x_spinner.value() * l
-        G = self.g_spinner.value() * l
-        B = self.b_spinner.value() * l
-
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1.0 / Zbase
-
-        self.branch.R = np.round(R / Zbase, 6)
-        self.branch.X = np.round(X / Zbase, 6)
-        self.branch.G = np.round(G / Ybase, 6)
-        self.branch.B = np.round(B / Ybase, 6)
-        self.branch.rate = Sn
-
-        self.accept()
-
-
 class VscGraphicItem(QGraphicsLineItem):
-
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: VSC = None):
+    """
+    Graphics item for the VSC converter
+    """
+    def __init__(self, from_port: TerminalItem, to_port: TerminalItem, diagram_scene, width=5, branch: VSC = None):
         """
 
-        :param fromPort:
-        :param toPort:
-        :param diagramScene:
+        :param from_port:
+        :param to_port:
+        :param diagram_scene:
         :param width:
         :param branch:
         """
@@ -204,13 +64,13 @@ class VscGraphicItem(QGraphicsLineItem):
         self.pos2 = None
         self.fromPort = None
         self.toPort = None
-        self.diagramScene = diagramScene
+        self.diagramScene = diagram_scene
 
-        if fromPort:
-            self.setFromPort(fromPort)
+        if from_port:
+            self.setFromPort(from_port)
 
-        if toPort:
-            self.setToPort(toPort)
+        if to_port:
+            self.setToPort(to_port)
 
         # add transformer circles
         h = 48
@@ -222,7 +82,7 @@ class VscGraphicItem(QGraphicsLineItem):
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
 
-        if fromPort and toPort:
+        if from_port and to_port:
             self.redraw()
 
     def recolour_mode(self):
@@ -290,16 +150,16 @@ class VscGraphicItem(QGraphicsLineItem):
         else:
             self.symbol.setBrush(QBrush(Qt.white))
 
-    def setToolTipText(self, toolTip: str):
+    def setToolTipText(self, tool_tip: str):
         """
         Set branch tool tip text
         Args:
-            toolTip: text
+            tool_tip: text
         """
-        self.setToolTip(toolTip)
+        self.setToolTip(tool_tip)
 
         if self.symbol is not None:
-            self.symbol.setToolTip(toolTip)
+            self.symbol.setToolTip(tool_tip)
 
     def contextMenuEvent(self, event):
         """
@@ -326,14 +186,6 @@ class VscGraphicItem(QGraphicsLineItem):
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
-
-            menu.addSeparator()
-
-            ra3 = menu.addAction('Edit')
-            edit_icon = QIcon()
-            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            ra3.setIcon(edit_icon)
-            ra3.triggered.connect(self.edit)
 
             menu.addSeparator()
 
@@ -388,12 +240,7 @@ class VscGraphicItem(QGraphicsLineItem):
         :return:
         """
 
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-            # trigger the editor
-            self.edit()
-        elif self.api_object.branch_type is BranchType.Switch:
-            # change state
-            self.enable_disable_toggle()
+        pass
 
     def remove(self, ask=True):
         """
@@ -614,25 +461,3 @@ class VscGraphicItem(QGraphicsLineItem):
 
         if self.symbol is not None:
             self.symbol.setPen(pen)
-
-    def edit(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = VscEditor(self.api_object, Sbase)
-        if dlg.exec_():
-            pass
-
-    def add_to_templates(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = VscEditor(self.api_object, Sbase)
-        if dlg.exec_():
-            pass

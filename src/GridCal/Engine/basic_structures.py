@@ -39,6 +39,9 @@ StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
 
 
 class BusMode(Enum):
+    """
+    Emumetarion of bus modes
+    """
     PQ = 1
     PV = 2
     Slack = 3
@@ -83,6 +86,9 @@ class ExternalGridMode(Enum):
 
 
 class BranchImpedanceMode(Enum):
+    """
+    Enumeration of branch impedance modes
+    """
     Specified = 0
     Upper = 1
     Lower = 2
@@ -297,6 +303,9 @@ class TapsControlMode(Enum):
 
 
 class SyncIssueType(Enum):
+    """
+    Sync issues enumeration
+    """
     Added = 'Added'
     Deleted = 'Deleted'
     Conflict = 'Conflict'
@@ -316,6 +325,9 @@ class SyncIssueType(Enum):
 
 
 class EngineType(Enum):
+    """
+    Available engines enumeration
+    """
     GridCal = 'GridCal'
     Bentayga = 'Bentayga'
     NewtonPA = 'Newton Power Analytics'
@@ -556,6 +568,9 @@ class StatisticalCharacterization:
 
 
 class MIPSolvers(Enum):
+    """
+    MIP solvers enumeration
+    """
     GLOP = "GLOP"
     CBC = 'CBC'
     HiGS = 'HiGS'
@@ -579,6 +594,9 @@ class MIPSolvers(Enum):
 
 
 class TimeGrouping(Enum):
+    """
+    Time groupings enumeration
+    """
     NoGrouping = 'No grouping'
     Monthly = 'Monthly'
     Weekly = 'Weekly'
@@ -600,6 +618,9 @@ class TimeGrouping(Enum):
 
 
 class ZonalGrouping(Enum):
+    """
+    Zonal groupings enumeration
+    """
     NoGrouping = 'No grouping'
     Area = 'Area'
     All = 'All (copper plate)'
@@ -619,6 +640,9 @@ class ZonalGrouping(Enum):
 
 
 class ContingencyEngine(Enum):
+    """
+    Enumeratio of contingency calculation engines
+    """
     PowerFlow = 'Power flow'
     HELM = 'HELM'
     PTDF = 'PTDF'
@@ -637,8 +661,7 @@ class ContingencyEngine(Enum):
             return s
 
 
-
-def classify_by_hour(t: pd.DatetimeIndex):
+def classify_by_hour(t: pd.DatetimeIndex) -> List[int]:
     """
     Passes an array of TimeStamps to an array of arrays of indices
     classified by hour of the year
@@ -662,7 +685,7 @@ def classify_by_hour(t: pd.DatetimeIndex):
     return arr
 
 
-def classify_by_day(t: pd.DatetimeIndex):
+def classify_by_day(t: pd.DatetimeIndex) -> List[int]:
     """
     Passes an array of TimeStamps to an array of arrays of indices
     classified by day of the year
@@ -686,7 +709,7 @@ def classify_by_day(t: pd.DatetimeIndex):
     return arr
 
 
-def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
+def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping) -> List[int]:
     """
     Get the indices delimiting a number of groups
     :param t_array: DatetimeIndex object containing dates
@@ -729,6 +752,9 @@ def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
 
 
 class LogSeverity(Enum):
+    """
+    Enumeration of logs severities
+    """
     Error = 'Error'
     Warning = 'Warning'
     Information = 'Information'
@@ -749,9 +775,11 @@ class LogSeverity(Enum):
 
 
 class LogEntry:
+    """
+    Logger entry
+    """
 
     def __init__(self, msg="", severity: LogSeverity = LogSeverity.Information, device="", value="", expected_value=""):
-
         self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
         self.msg = str(msg)
         self.severity = severity
@@ -759,7 +787,11 @@ class LogEntry:
         self.value = value
         self.expected_value = str(expected_value)
 
-    def to_list(self):
+    def to_list(self) -> List[Any]:
+        """
+        Get list representation of this entry
+        :return:
+        """
         return [self.time, self.severity.value, self.msg, self.device, self.value, self.expected_value]
 
     def __str__(self):
@@ -772,6 +804,9 @@ class LogEntry:
 
 
 class Logger:
+    """
+    Logger class
+    """
 
     def __init__(self):
 
@@ -780,22 +815,30 @@ class Logger:
         self.debug_entries: List[str] = list()
 
     def add_debug(self, *args):
+        """
+        Add debug entry
+        :param args:
+        :return:
+        """
         self.debug_entries.append(" ".join([str(x) for x in args]))
 
     def append(self, txt: str):
         """
-
-        :param txt:
-        :return:
+        simple text log
+        :param txt: some message text
         """
         self.entries.append(LogEntry(txt))
 
     def has_logs(self):
+        """
+        Are there any logs?
+        :return: True / False
+        """
         return len(self.entries) > 0
 
     def add_info(self, msg: str, device="", value="", expected_value=""):
         """
-
+        Add info entry
         :param msg:
         :param device:
         :param value:
@@ -806,7 +849,7 @@ class Logger:
 
     def add_warning(self, msg, device="", value="", expected_value=""):
         """
-
+        Add warning entry
         :param msg:
         :param device:
         :param value:
@@ -817,7 +860,7 @@ class Logger:
 
     def add_error(self, msg, device="", value="", expected_value=""):
         """
-
+        Add error entry
         :param msg:
         :param device:
         :param value:
@@ -828,7 +871,7 @@ class Logger:
 
     def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
         """
-
+        Add divergence entry
         :param msg:
         :param device:
         :param value:
@@ -841,7 +884,7 @@ class Logger:
 
     def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
         """
-
+        Add general entry
         :param msg:
         :param severity:
         :param device:
@@ -885,9 +928,17 @@ class Logger:
         return df
 
     def to_csv(self, fname):
+        """
+        Save to CSV
+        :param fname: file name
+        """
         self.to_df().to_csv(fname)
 
     def to_xlsx(self, fname):
+        """
+        To Excel
+        :param fname: file name
+        """
         self.to_df().to_excel(fname)
 
     def __str__(self):
@@ -928,11 +979,18 @@ class Logger:
     def __len__(self):
         return len(self.entries)
 
-    def size(self):
+    def size(self) -> int:
+        """
+        Number of logs
+        :return: size
+        """
         return len(self.entries)
 
 
 class ConvergenceReport:
+    """
+    Convergence report
+    """
 
     def __init__(self):
         self.methods_ = list()
@@ -978,7 +1036,12 @@ class ConvergenceReport:
         return df
 
 
-def get_list_dim(a):
+def get_list_dim(a: List[Any]) -> int:
+    """
+    Get the dimensions of a List, this is for the case were a matrix is represented by lists of lists
+    :param a: some List
+    :return: Dimensions
+    """
     if not type(a) == list:
         return 0
     else:
@@ -995,6 +1058,7 @@ class CompressedJsonStruct:
     """
     Compressed json block
     """
+
     def __init__(self, fields: List[str] = None, data: List[Any] = None):
         self.__fields: List[str] = list()
         self.__data: List[Any] = list() if data is None else data
@@ -1074,4 +1138,3 @@ class CompressedJsonStruct:
         """
         j = self.get_col_index(prop=col_name)
         self.__data[i][j] = val
-

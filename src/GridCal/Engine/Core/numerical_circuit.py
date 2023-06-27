@@ -23,7 +23,7 @@ from typing import List, Tuple, Dict, Union
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BranchImpedanceMode
+from GridCal.Engine.basic_structures import BranchImpedanceMode, Vec, IntVec, CxVec
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 from GridCal.Engine.Core.topology import compile_types
@@ -39,29 +39,27 @@ sparse_type = get_sparse_type()
 
 
 @nb.njit(cache=True)
-def compose_generator_voltage_profile(
-        nbus: int,
-        gen_bus_indices: np.ndarray,
-        gen_vset: np.ndarray,
-        gen_status: np.ndarray,
-        gen_is_controlled: np.ndarray,
-        bat_bus_indices: np.ndarray,
-        bat_vset: np.ndarray,
-        bat_status: np.ndarray,
-        bat_is_controlled: np.ndarray,
-        hvdc_bus_f: np.ndarray,
-        hvdc_bus_t: np.ndarray,
-        hvdc_status: np.ndarray,
-        hvdc_vf: np.ndarray,
-        hvdc_vt: np.ndarray,
-        iBeqv: np.ndarray,
-        iVtma: np.ndarray,
-        VfBeqbus: np.ndarray,
-        Vtmabus: np.ndarray,
-        branch_status: np.ndarray,
-        br_vf: np.ndarray,
-        br_vt: np.ndarray,
-):
+def compose_generator_voltage_profile(nbus: int,
+                                      gen_bus_indices: np.ndarray,
+                                      gen_vset: np.ndarray,
+                                      gen_status: np.ndarray,
+                                      gen_is_controlled: np.ndarray,
+                                      bat_bus_indices: np.ndarray,
+                                      bat_vset: np.ndarray,
+                                      bat_status: np.ndarray,
+                                      bat_is_controlled: np.ndarray,
+                                      hvdc_bus_f: np.ndarray,
+                                      hvdc_bus_t: np.ndarray,
+                                      hvdc_status: np.ndarray,
+                                      hvdc_vf: np.ndarray,
+                                      hvdc_vt: np.ndarray,
+                                      iBeqv: np.ndarray,
+                                      iVtma: np.ndarray,
+                                      VfBeqbus: np.ndarray,
+                                      Vtmabus: np.ndarray,
+                                      branch_status: np.ndarray,
+                                      br_vf: np.ndarray,
+                                      br_vt: np.ndarray):
     """
     Get the array of voltage set points per bus
     :param nbus: number of buses
@@ -137,12 +135,10 @@ def compose_generator_voltage_profile(
     return V
 
 
-def get_inter_areas_branch(
-        F: np.ndarray,
-        T: np.ndarray,
-        buses_in_a1: np.ndarray,
-        buses_in_a2: np.ndarray,
-):
+def get_inter_areas_branch(F: np.ndarray,
+                           T: np.ndarray,
+                           buses_in_a1: np.ndarray,
+                           buses_in_a2: np.ndarray):
     """
     Get the Branches that join two areas
     :param F: Array indices of branch bus from indices
@@ -161,18 +157,17 @@ def get_inter_areas_branch(
     return lst
 
 
-def get_devices_per_areas(
-        Cdev: np.ndarray,
-        buses_in_a1: np.ndarray,
-        buses_in_a2: np.ndarray,
-):
+def get_devices_per_areas(Cdev: sp.csc_matrix,
+                          buses_in_a1: IntVec,
+                          buses_in_a2: IntVec):
     """
     Get the devices that belong to the Area 1, Area 2 and the rest of areas
-    :param Cdev: Array of bus indices of the device
+    :param Cdev: CSC connectivity matrix (bus, elm)
     :param buses_in_a1: Array of bus indices belonging area from
     :param buses_in_a2: Array of bus indices belonging area to
     :return: Tree lists: (devs_in_a1, devs_in_a2, devs_out) each of the lists contains (bus index, device index) tuples
     """
+    assert isinstance(Cdev, sp.csc_matrix)
     devs_in_a1 = list()
     devs_in_a2 = list()
     devs_out = list()
@@ -190,6 +185,9 @@ def get_devices_per_areas(
 
 
 class NumericalCircuit:
+    """
+    Class storing the calculation information of the devices
+    """
     available_structures = [
         'Vbus',
         'Sbus',
@@ -229,18 +227,16 @@ class NumericalCircuit:
         'Vtmabus'
     ]
 
-    def __init__(
-            self,
-            nbus: int,
-            nbr: int,
-            nhvdc: int,
-            nload: int,
-            ngen: int,
-            nbatt: int,
-            nshunt: int,
-            sbase: float,
-            t_idx: int = 0,
-    ):
+    def __init__(self,
+                 nbus: int,
+                 nbr: int,
+                 nhvdc: int,
+                 nload: int,
+                 ngen: int,
+                 nbatt: int,
+                 nshunt: int,
+                 sbase: float,
+                 t_idx: int = 0):
         """
         Numerical circuit
         :param nbus: Number of calculation buses
@@ -266,17 +262,17 @@ class NumericalCircuit:
         self.Sbase: float = sbase
 
         self.any_control: bool = False
-        self.iPfsh: List = list()  # indices of the Branches controlling Pf flow with theta sh
-        self.iQfma: List = list()  # indices of the Branches controlling Qf with ma
-        self.iBeqz: List = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv: List = list()  # indices of the Branches when controlling Vf with Beq
-        self.iVtma: List = list()  # indices of the Branches when controlling Vt with ma
-        self.iQtma: List = list()  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp: List = list()  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va: List = list()  # indices of the drop-Va converters controlling the power flow with theta sh
-        self.iVscL: List = list()  # indices of the converters
-        self.VfBeqbus: List = list()  # indices of the buses where Vf is controlled by Beq
-        self.Vtmabus: List = list()  # indices of the buses where Vt is controlled by ma
+        self.iPfsh: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Pf flow with theta sh
+        self.iQfma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Qf with ma
+        self.iBeqz: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vf with Beq
+        self.iVtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vt with ma
+        self.iQtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling the Qt flow with ma
+        self.iPfdp: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
+        self.iVscL: IntVec = np.zeros(0, dtype=int)  # indices of the converters
+        self.VfBeqbus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vf is controlled by Beq
+        self.Vtmabus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vt is controlled by ma
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
@@ -294,20 +290,20 @@ class NumericalCircuit:
         # Internal variables filled on demand, to be ready to consume once computed
         # --------------------------------------------------------------------------------------------------------------
 
-        self.Cf_ = None
-        self.Ct_ = None
-        self.A_ = None
+        self.Cf_: Union[sp.csc_matrix, None] = None
+        self.Ct_: Union[sp.csc_matrix, None] = None
+        self.A_: Union[sp.csc_matrix, None] = None
 
-        self.Vbus_ = None
-        self.Sbus_ = None
-        self.Ibus_ = None
-        self.YloadBus_ = None
-        self.Yshunt_from_devices_ = None
+        self.Vbus_: CxVec = None
+        self.Sbus_: CxVec = None
+        self.Ibus_: CxVec = None
+        self.YloadBus_: CxVec = None
+        self.Yshunt_from_devices_: CxVec = None
 
-        self.Qmax_bus_ = None
-        self.Qmin_bus_ = None
-        self.Bmax_bus_ = None
-        self.Bmin_bus_ = None
+        self.Qmax_bus_: Vec = None
+        self.Qmin_bus_: Vec = None
+        self.Bmax_bus_: Vec = None
+        self.Bmin_bus_: Vec = None
 
         self.Admittances = None
 
@@ -474,15 +470,15 @@ class NumericalCircuit:
         """
 
         # indices in the global branch scheme
-        self.iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
-        self.iQfma = list()  # indices of the Branches controlling Qf with ma
-        self.iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv = list()  # indices of the Branches when controlling Vf with Beq
-        self.iVtma = list()  # indices of the Branches when controlling Vt with ma
-        self.iQtma = list()  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
-        self.iVscL = list()  # indices of the converters
-        self.iPfdp_va = list()
+        iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
+        iQfma = list()  # indices of the Branches controlling Qf with ma
+        iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        iBeqv = list()  # indices of the Branches when controlling Vf with Beq
+        iVtma = list()  # indices of the Branches when controlling Vt with ma
+        iQtma = list()  # indices of the Branches controlling the Qt flow with ma
+        iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
+        iVscL = list()  # indices of the converters
+        iPfdp_va = list()
 
         self.any_control = False
 
@@ -492,95 +488,93 @@ class NumericalCircuit:
                 pass
 
             elif tpe == TransformerControlType.Pt:
-                self.iPfsh.append(k)
+                iPfsh.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
-                self.iQtma.append(k)
+                iQtma.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
-                self.iPfsh.append(k)
-                self.iQtma.append(k)
+                iPfsh.append(k)
+                iQtma.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
-                self.iVtma.append(k)
+                iVtma.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
-                self.iPfsh.append(k)
-                self.iVtma.append(k)
+                iPfsh.append(k)
+                iVtma.append(k)
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
             elif tpe == ConverterControlType.type_0_free:  # 1a:Free
-                self.iBeqz.append(k)
-
-                self.iVscL.append(k)
+                iBeqz.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_1:  # 1:Vac
-                self.iVtma.append(k)
-                self.iBeqz.append(k)
-
-                self.iVscL.append(k)
+                iVtma.append(k)
+                iBeqz.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
 
-                self.iPfsh.append(k)
-                self.iQtma.append(k)
-                self.iBeqz.append(k)
+                iPfsh.append(k)
+                iQtma.append(k)
+                iBeqz.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                self.iPfsh.append(k)
-                self.iVtma.append(k)
-                self.iBeqz.append(k)
+                iPfsh.append(k)
+                iVtma.append(k)
+                iBeqz.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                self.iBeqv.append(k)
-                self.iQtma.append(k)
+                iBeqv.append(k)
+                iQtma.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                self.iBeqv.append(k)
-                self.iVtma.append(k)
+                iBeqv.append(k)
+                iVtma.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
-                self.iPfdp.append(k)
-                self.iQtma.append(k)
+                iPfdp.append(k)
+                iQtma.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
-                self.iPfdp.append(k)
-                self.iVtma.append(k)
+                iPfdp.append(k)
+                iVtma.append(k)
 
-                self.iVscL.append(k)
+                iVscL.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
-                self.iBeqv.append(k)
-                self.iVscL.append(k)
+                iBeqv.append(k)
+                iVscL.append(k)
 
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
-                self.iPfsh.append(k)
-                self.iBeqz.append(k)
+                iPfsh.append(k)
+                iBeqz.append(k)
 
                 self.any_control = True
 
@@ -604,15 +598,15 @@ class NumericalCircuit:
         #  (Converters and Transformers)
         self.Vtmabus = self.T[self.iVtma]
 
-        self.iPfsh = np.array(self.iPfsh, dtype=int)
-        self.iQfma = np.array(self.iQfma, dtype=int)
-        self.iBeqz = np.array(self.iBeqz, dtype=int)
-        self.iBeqv = np.array(self.iBeqv, dtype=int)
-        self.iVtma = np.array(self.iVtma, dtype=int)
-        self.iQtma = np.array(self.iQtma, dtype=int)
-        self.iPfdp = np.array(self.iPfdp, dtype=int)
-        self.iPfdp_va = np.array(self.iPfdp_va, dtype=int)
-        self.iVscL = np.array(self.iVscL, dtype=int)
+        self.iPfsh = np.array(iPfsh, dtype=int)
+        self.iQfma = np.array(iQfma, dtype=int)
+        self.iBeqz = np.array(iBeqz, dtype=int)
+        self.iBeqv = np.array(iBeqv, dtype=int)
+        self.iVtma = np.array(iVtma, dtype=int)
+        self.iQtma = np.array(iQtma, dtype=int)
+        self.iPfdp = np.array(iPfdp, dtype=int)
+        self.iPfdp_va = np.array(iPfdp_va, dtype=int)
+        self.iVscL = np.array(iVscL, dtype=int)
 
     def get_branch_df(self):
         return self.branch_data.to_df()
@@ -915,14 +909,14 @@ class NumericalCircuit:
                 G=self.branch_data.G,
                 B=self.branch_data.B,
                 k=self.branch_data.k,
-                m=self.branch_data.tap_module,
-                mf=self.branch_data.virtual_tap_f,
-                mt=self.branch_data.virtual_tap_t,
-                theta=self.branch_data.tap_angle,
+                tap_module=self.branch_data.tap_module,
+                vtap_f=self.branch_data.virtual_tap_f,
+                vtap_t=self.branch_data.virtual_tap_t,
+                tap_angle=self.branch_data.tap_angle,
                 Beq=self.branch_data.Beq,
                 Cf=self.Cf,
                 Ct=self.Ct,
-                G0=self.branch_data.G0sw,
+                G0sw=self.branch_data.G0sw,
                 If=np.zeros(len(self.branch_data)),
                 a=self.branch_data.a,
                 b=self.branch_data.b,
@@ -957,9 +951,9 @@ class NumericalCircuit:
             self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(
                 X=self.branch_data.X,
                 B=self.branch_data.B,
-                m=self.branch_data.tap_module,
-                mf=self.branch_data.vf_set,
-                mt=self.branch_data.vt_set,
+                tap_module=self.branch_data.tap_module,
+                vtap_f=self.branch_data.vf_set,
+                vtap_t=self.branch_data.vt_set,
                 Cf=self.Cf,
                 Ct=self.Ct,
             )
@@ -988,7 +982,7 @@ class NumericalCircuit:
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
-                m=self.branch_data.tap_module,
+                tap_modules=self.branch_data.tap_module,
                 active=self.branch_data.active,
                 Cf=self.Cf,
                 Ct=self.Ct,
@@ -1176,10 +1170,10 @@ class NumericalCircuit:
         :return: Tree lists: (batteries_in_a1, batteries_in_a2, batteries_out)
                  each of the lists contains (bus index, generator index) tuples
         """
-        if isinstance(self.battery_data.C_bus_batt, sp.csc_matrix):
-            Cgen = self.battery_data.C_bus_batt
+        if isinstance(self.battery_data.C_bus_elm, sp.csc_matrix):
+            Cgen = self.battery_data.C_bus_elm
         else:
-            Cgen = self.battery_data.C_bus_batt.tocsc()
+            Cgen = self.battery_data.C_bus_elm.tocsc()
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 

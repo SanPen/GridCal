@@ -18,7 +18,6 @@
 import time
 
 import numpy as np
-import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
@@ -26,14 +25,21 @@ from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.basic_structures import Vec, CxVec
 
 
-def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
+def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
             tolerance=1e-6, max_iter=4, verbose=False) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
 
+    :param verbose:
+    :param Y0:
+    :param I0:
+    :param S0:
+    :param Vbus:
     :param nc: SnapshotData instance
     :param tolerance: maximum error allowed
     :param max_iter: maximum number of iterations
@@ -43,7 +49,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     # initialize the variables
     nb = nc.nbus
-    nl = nc.nelm
+    nl = nc.nbr
     V = Vbus
 
     Va = np.angle(V)
@@ -51,14 +57,14 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
 
     Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
-    Vmfset = nc.branch_data.vf_set[:, 0]
-    m = nc.branch_data.tap_module[:, 0].copy()
-    theta = nc.branch_data.tap_angle[:, 0].copy()
-    Beq = nc.branch_data.Beq[:, 0].copy()
-    Gsw = nc.branch_data.G0sw[:, 0]
-    Pfset = nc.branch_data.Pfset[:, 0] / nc.Sbase
-    Qfset = nc.branch_data.Qfset[:, 0] / nc.Sbase
-    Qtset = nc.branch_data.Qfset[:, 0] / nc.Sbase
+    Vmfset = nc.branch_data.vf_set
+    m = nc.branch_data.tap_module.copy()
+    theta = nc.branch_data.tap_angle.copy()
+    Beq = nc.branch_data.Beq.copy()
+    Gsw = nc.branch_data.G0sw
+    Pfset = nc.branch_data.Pfset / nc.Sbase
+    Qfset = nc.branch_data.Qfset / nc.Sbase
+    Qtset = nc.branch_data.Qfset / nc.Sbase
     Kdp = nc.branch_data.Kdp
     k2 = nc.branch_data.k
     Cf = nc.Cf
@@ -100,8 +106,8 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                            C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                           shunt_admittance=nc.shunt_data.admittance[:, 0],
-                                           shunt_active=nc.shunt_data.active[:, 0],
+                                           shunt_admittance=nc.shunt_data.admittance,
+                                           shunt_active=nc.shunt_data.active,
                                            ys=Ys,
                                            B=Bc,
                                            Sbase=nc.Sbase,
@@ -229,10 +235,11 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                 nu *= 2.0
 
             # compute initial admittances
-            Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
+            Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf,
+                                               Ct=Ct,
                                                C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                               shunt_admittance=nc.shunt_data.admittance[:, 0],
-                                               shunt_active=nc.shunt_data.active[:, 0],
+                                               shunt_admittance=nc.shunt_data.admittance,
+                                               shunt_active=nc.shunt_data.active,
                                                ys=Ys,
                                                B=Bc,
                                                Sbase=nc.Sbase,

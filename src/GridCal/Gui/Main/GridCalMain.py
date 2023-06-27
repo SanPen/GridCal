@@ -1966,7 +1966,7 @@ class MainGUI(QMainWindow):
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
 
-            numerical_circuit = core.compile_numerical_circuit(circuit=self.circuit)
+            numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
             calculation_inputs = numerical_circuit.split_into_islands()
 
             with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated
