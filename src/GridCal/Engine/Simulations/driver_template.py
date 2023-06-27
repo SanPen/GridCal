@@ -26,18 +26,28 @@ import GridCal.Engine.Core.topology as tp
 
 
 class DummySignal:
+    """
+    Qt signal placeholder to not to import QT in the engine
+    """
 
-    def __init__(self, tpe=str):
+    def __init__(self, tpe: type = str) -> None:
         self.tpe = tpe
 
-    def emit(self, val=''):
+    def emit(self, val: str = '') -> None:
         pass
 
     def connect(self, val):
+        """
+
+        :param val:
+        """
         pass
 
 
 class DriverTemplate:
+    """
+    Base driver template
+    """
     tpe = SimulationTypes.TemplateDriver
     name = 'Template'
 
@@ -66,9 +76,16 @@ class DriverTemplate:
         self.__cancel__ = False
 
     def get_steps(self):
+        """
+        Get the number of steps in the simulation
+        :return:
+        """
         return list()
 
     def run(self):
+        """
+
+        """
         pass
 
     def cancel(self):
@@ -82,6 +99,9 @@ class DriverTemplate:
 
 
 class TimeSeriesDriverTemplate(DriverTemplate):
+    """
+    Time series driver template
+    """
 
     def __init__(
             self,

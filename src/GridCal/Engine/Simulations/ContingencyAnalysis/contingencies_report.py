@@ -18,6 +18,7 @@
 from typing import List, Dict, Union, Tuple, Any
 from GridCal.Engine.basic_structures import IntVec, StrMat, StrVec, Vec, CxVec
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.Devices import ContingencyGroup
 
 import numpy as np
 
@@ -234,14 +235,27 @@ class ContingencyResultsReport:
                 loading: Vec,
                 contingency_flows: Vec,
                 contingency_loadings: Vec,
-                contingency_idx,
-                contingency_group):
-
-        for m in mon_idx:
+                contingency_idx: int,
+                contingency_group: ContingencyGroup):
+        """
+        Analize contingency resuts and add them to the report
+        :param t: time index
+        :param mon_idx: array of monitored branch indices
+        :param calc_branches: array of calculation branches
+        :param numerical_circuit: NumericalCircuit
+        :param flows: base flows array
+        :param loading: base loading array
+        :param contingency_flows: flows array after the contingency
+        :param contingency_loadings: loading array after the contingency
+        :param contingency_idx: contingency group index
+        :param contingency_group: ContingencyGroup
+        """
+        for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
 
-            if c_flow > numerical_circuit.contingency_rates[m]:
+            if c_flow > numerical_circuit.contingency_rates[m]:  # if the contingency flow is greater than the rate ...
+
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],
                          base_uuid=calc_branches[m].idtag,

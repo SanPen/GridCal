@@ -20,11 +20,11 @@ import numpy as np
 from typing import Union
 from itertools import combinations
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCal.Engine.basic_structures import Vec
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
-from GridCal.Engine.Simulations.NonLinearFactors.nonlinear_analysis import NonLinearAnalysis
+from GridCal.Engine.Simulations.ContingencyAnalysis.helm_contingencies import HelmVariations
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
@@ -231,26 +231,22 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def n_minus_k_nl(self, t: Union[int, None] = None):
+    def n_minus_k_helm(self, t: Union[int, None] = None):
         """
         Run N-1 simulation in series with HELM, non-linear solution
         :param t: time index, if None the snapshot is used
         :return: returns the results
         """
 
-        self.progress_text.emit('Analyzing outage distribution factors in a non-linear fashion...')
-        nonlinear_analysis = NonLinearAnalysis(grid=self.grid,
-                                               distributed_slack=self.options.distributed_slack,
-                                               correct_values=self.options.correct_values,
-                                               pf_options=self.options.pf_options,
-                                               t_idx=t)
-
-        nonlinear_analysis.run()
-
-        calc_branches = self.grid.get_branches_wo_hvdc()
-
         # set the numerical circuit
-        numerical_circuit = nonlinear_analysis.numerical_circuit
+        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
+
+        if self.options.pf_options is None:
+            pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+                                       ignore_single_node_islands=True)
+
+        else:
+            pf_opts = self.options.pf_options
 
         # declare the results
         results = ContingencyAnalysisResults(ncon=len(self.grid.contingency_groups),
@@ -261,52 +257,76 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                              bus_types=numerical_circuit.bus_types,
                                              con_names=self.grid.get_contingency_group_names())
 
-        # get the contingency branch indices
-        br_idx = nonlinear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
-        mon_idx = nonlinear_analysis.numerical_circuit.branch_data.get_monitor_enabled_indices()
-        Pbus = numerical_circuit.get_injections(False).real
-        PTDF = nonlinear_analysis.PTDF
-        LODF = nonlinear_analysis.LODF
+        # get contingency groups dictionary
+        cg_dict = self.grid.get_contingency_group_dict()
 
-        # compute the branch Sf in "n"
-        if self.options.use_provided_flows:
-            flows_n = self.options.Pf
+        branches_dict = self.grid.get_branches_wo_hvdc_dict()
+        calc_branches = self.grid.get_branches_wo_hvdc()
+        mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
 
-            if self.options.Pf is None:
-                msg = 'The option to use the provided flows is enabled, but no flows are available'
-                self.logger.add_error(msg)
-                raise Exception(msg)
-        else:
-            flows_n = nonlinear_analysis.get_flows(numerical_circuit.Sbus)
+        # keep the original states
+        original_br_active = numerical_circuit.branch_data.active.copy()
+        original_gen_active = numerical_circuit.generator_data.active.copy()
+        original_gen_p = numerical_circuit.generator_data.p.copy()
 
-        self.progress_text.emit('Computing loading...')
+        # run 0
+        pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
+                                      options=pf_opts)
 
-        for ic, c in enumerate(br_idx):  # branch that fails (contingency)
-            results.Sf[mon_idx, c] = flows_n[mon_idx] + LODF[mon_idx, c] * flows_n[c]
-            results.loading[mon_idx, c] = results.Sf[mon_idx, c] / (numerical_circuit.ContingencyRates[mon_idx] + 1e-9)
-            results.S[c, :] = Pbus
+        helm_variations = HelmVariations(numerical_circuit=numerical_circuit)
 
+
+
+        # for each contingency group
+        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+
+            # get the group's contingencies
+            contingencies = cg_dict[contingency_group.idtag]
+
+            # apply the contingencies
+            contingency_br_indices = list()
+            for cnt in contingencies:
+
+                # search for the contingency in the Branches
+                if cnt.device_idtag in branches_dict:
+                    br_idx = branches_dict[cnt.device_idtag]
+
+                    if cnt.prop == 'active':
+                        contingency_br_indices.append(br_idx)
+                    else:
+                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                else:
+                    pass
+
+            # report progress
+            if t is None:
+                self.progress_text.emit(f'Contingency group: {contingency_group.name}')
+                self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
+
+            # run
+            V, Sf, loading = helm_variations.compute_variations(contingency_br_indices=contingency_br_indices)
+
+            results.Sf[ic, :] = Sf
+            results.S[ic, :] = numerical_circuit.Sbus
+            results.loading[ic, :] = loading
             results.report.analyze(t=t,
-                                   grid=self.grid,
-                                   numerical_circuit=numerical_circuit,
-                                   pf_res=results,
-                                   pf_res_0=pf_res_0,
-                                   contingency_group=contingency_group,
-                                   ic=ic)
-
-            results.report.analyze(t=t,
+                                   mon_idx=mon_idx,
                                    calc_branches=calc_branches,
                                    numerical_circuit=numerical_circuit,
-                                   flows=flows_n,
-                                   loading=flows_n / (numerical_circuit.branch_data.rates + 1e-9),
-                                   contingency_flows=results.Sf[:, c],
-                                   contingency_loadings=results.loading[:, c],
-                                   contingency_idx=c,
-                                   contingency_group=con)
+                                   flows=np.abs(pf_res_0.Sf),
+                                   loading=np.abs(pf_res_0.loading),
+                                   contingency_flows=np.abs(Sf),
+                                   contingency_loadings=np.abs(loading),
+                                   contingency_idx=ic,
+                                   contingency_group=contingency_group)
 
-            self.progress_signal.emit((ic + 1) / len(br_idx) * 100)
+            # revert the states for the next run
+            numerical_circuit.branch_data.active = original_br_active.copy()
+            numerical_circuit.generator_data.active = original_gen_active.copy()
+            numerical_circuit.generator_data.p = original_gen_p.copy()
 
-        results.lodf = LODF
+            if self.__cancel__:
+                return results
 
         return results
 
@@ -373,7 +393,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
 
             # apply the contingencies
-            if len(contingencies) == 1:
+            if len(contingencies) == 1:  # can only handle single contingencies ...
 
                 # apply the contingencies
                 for cnt in contingencies:
@@ -383,12 +403,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
                         br_idx = branches_dict[cnt.device_idtag]
 
                         if cnt.prop == 'active':
-                            numerical_circuit.branch_data.active[br_idx] = int(cnt.value)
-                            # already in MW
                             c_flow = flows_n[mon_idx] + linear_analysis.LODF[mon_idx, br_idx] * flows_n[br_idx]
                             c_loading = c_flow / (numerical_circuit.ContingencyRates[mon_idx] + 1e-9)
 
-                            results.Sf[ic, :] = c_flow
+                            results.Sf[ic, :] = c_flow  # already in MW
                             results.S[ic, :] = Pbus
                             results.loading[ic, :] = c_loading
                             results.report.analyze(t=t,
@@ -413,7 +431,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def run(self):
+    def run(self) -> None:
         """
 
         :return:
@@ -427,7 +445,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.results = self.n_minus_k_ptdf()
 
         elif self.options.engine == bs.ContingencyEngine.HELM:
-            self.results = self.n_minus_k_nl()
+            self.results = self.n_minus_k_helm()
 
         else:
             self.results = self.n_minus_k()

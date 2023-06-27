@@ -209,7 +209,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                 res_t = cdriver.n_minus_k_ptdf(t=t)
 
             elif self.options.engine == bs.ContingencyEngine.HELM:
-                res_t = cdriver.n_minus_k_nl(t=t)
+                res_t = cdriver.n_minus_k_helm(t=t)
 
             else:
                 res_t = cdriver.n_minus_k(t=t)

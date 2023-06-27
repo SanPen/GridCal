@@ -421,7 +421,30 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     return U, X, Q, V, iter_, converged
 
 
-def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, logger: Logger = None):
+class HelmPreparation:
+
+    def __init__(self, sys_mat_factorization, Uini, Xini, Yslack, Vslack,
+                 vec_P, vec_Q, Ysh, vec_W, pq, pv, pqpv, sl,
+                 npqpv, nbus):
+        self.sys_mat_factorization = sys_mat_factorization
+        self.Uini = Uini
+        self.Xini = Xini
+        self.Yslack = Yslack
+        self.Vslack = Vslack
+        self.vec_P = vec_P
+        self.vec_Q = vec_Q
+        self.Ysh = Ysh
+        self.vec_W = vec_W
+        self.pq = pq
+        self.pv = pv
+        self.sl = sl
+        self.pqpv = pqpv
+        self.npqpv = npqpv
+        self.nbus = nbus
+
+
+def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False,
+                        logger: Logger = None) -> HelmPreparation:
     """
     This function returns the constant objects to run many HELM simulations
 
@@ -444,7 +467,7 @@ def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, 
     npqpv = len(pqpv)
     npv = len(pv)
     nsl = len(sl)
-    n = Yseries.shape[0]
+    nbus = Yseries.shape[0]
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
 
@@ -461,9 +484,9 @@ def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, 
     vec_W = Vm0 * Vm0
 
     # indices 0 based in the internal scheme
-    nsl_counted = np.zeros(n, dtype=int)
+    nsl_counted = np.zeros(nbus, dtype=int)
     compt = 0
-    for i in range(n):
+    for i in range(nbus):
         if i in sl:
             compt += 1
         nsl_counted[i] = compt
@@ -499,11 +522,12 @@ def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False, 
     # solve
     mat_factorized = factorized(MAT)
 
-    return mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W, pq_, pv_, pqpv_, npqpv, n
+    return HelmPreparation(mat_factorized, Uini, Xini, Yslack, Vslack, vec_P, vec_Q, Ysh, vec_W,
+                           pq_, pv_, pqpv_, sl, npqpv, nbus)
 
 
-def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
-                         vec_W, V0, Vslack, pq_, pv_, pqpv_, npqpv, n, pqpv, pq, sl,
+def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+                         vec_W, V0, Vslack, pq, pv, pqpv, npqpv, nbus, sl,
                          tolerance=1e-6, max_coeff=10):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
@@ -513,7 +537,7 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
                         Rui Yao, Senior Member, IEEE, and Feng Qiu, Senior Member, IEEE
 
     :param dY:
-    :param mat_factorized: factorized HELM system matrix
+    :param sys_mat_factorization: factorized HELM system matrix
     :param Uini:
     :param Xini:
     :param Yslack:
@@ -525,35 +549,17 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
     :param vec_W:
     :param V0: vector of specified voltages
     :param Vslack:
-    :param pq_: reduced scheme list of pq nodes
-    :param pv_: reduced scheme list of pv nodes
-    :param pqpv_: reduced scheme list of pq|pv nodes
+    :param pq: reduced scheme list of pq nodes
+    :param pv: reduced scheme list of pv nodes
+    :param pqpv: reduced scheme list of pq|pv nodes
     :param npqpv: number of pq and pv nodes
-    :param n: number of nodes
+    :param nbus: number of nodes
     :param pqpv: sorted list of pq and pv nodes
     :param pq:list of pq nodes
     :param sl: list of slack nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :return: U, V, iter_, norm_f
-    """
-
-    """
-    
-    :param Yseries: Admittance matrix of the series elements
-    :param V0:
-    :param S0: 
-    :param Ysh0: vector of shunt admittances (including the shunts of the Branches)
-    :param AY: admittance matrix considering the disconnection of a branch
-    :param pq: 
-    :param pv: 
-    :param sl:
-    :param pqpv:
-    :param tolerance:
-    :param max_coeff:
-    :param verbose: print intermediate information
-    :param logger: Logger object to store the debug info
-    :return: U, X, Q, V, iterations
     """
 
     AYred = dY[np.ix_(pqpv, pqpv)]  # difference admittance matrix without slack buses
@@ -568,35 +574,32 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
     X[0, :] = Xini
 
     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
-    valor = np.zeros(npqpv, dtype=complex)
+    dval = np.zeros(npqpv, dtype=complex)
 
     # get the current Injections that appear due to the slack buses reduction
-    I_inj_slack = Yslack[pqpv_, :] * Vslack
+    I_inj_slack = Yslack[pqpv, :] * Vslack
     AIred = AYred @ U[0, :]
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[
-        0, pq_] * Ysh[pq_] - AIred[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_] - \
-                 AIred[pv_]
+    Ysl_sum = Yslack.sum(axis=1).A1
+
+    dval[pq] = I_inj_slack[pq] - Ysl_sum[pq] + (vec_P[pq] - vec_Q[pq] * 1j) * X[0, pq] - U[0, pq] * Ysh[pq] - AIred[pq]
+    dval[pv] = I_inj_slack[pv] - Ysl_sum[pv] + (vec_P[pv]) * X[0, pv] - U[0, pv] * Ysh[pv] - AIred[pv]
 
     # compose the right-hand side vector
-    RHS = np.r_[valor.real,
-    valor.imag,
-    vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
-    ]
+    RHS = np.r_[dval.real, dval.imag, vec_W[pv] - (U[0, pv] * U[0, pv]).real]  # vec_W[pv_] - 1.0
 
-    LHS = mat_factorized(RHS)
+    LHS = sys_mat_factorization(RHS)
 
     # update coefficients
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
-    Q[0, pv_] = LHS[2 * npqpv:]
+    Q[0, pv] = LHS[2 * npqpv:]
     X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
     c = 2
     converged = False
-    V = np.empty(n, dtype=complex)
+    V = np.empty(nbus, dtype=complex)
     V[sl] = V0[sl]
     V[pqpv] = U[:c, :].sum(axis=0)
     norm_f = 0.0
@@ -605,19 +608,17 @@ def helm_coefficients_dY(dY, mat_factorized, Uini, Xini, Yslack, Ysh, Ybus, vec_
 
         AIred = AYred * U[c - 1, :]
 
-        valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_] - AIred[pq_]
-        valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_] - AIred[pv_]
+        dval[pq] = (vec_P[pq] - vec_Q[pq] * 1j) * X[c - 1, pq] - U[c - 1, pq] * Ysh[pq] - AIred[pq]
+        dval[pv] = -1j * conv2(X, Q, c, pv) - U[c - 1, pv] * Ysh[pv] + X[c - 1, pv] * vec_P[pv] - AIred[pv]
 
-        RHS = np.r_[valor.real,
-        valor.imag,
-        -conv3(U, U, c, pv_).real]
+        RHS = np.r_[dval.real, dval.imag, -conv3(U, U, c, pv).real]
 
         # LHS = spsolve(MAT, RHS)
-        LHS = mat_factorized(RHS)
+        LHS = sys_mat_factorization(RHS)
 
         # update 
         U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
-        Q[c - 1, pv_] = LHS[2 * npqpv:]
+        Q[c - 1, pv] = LHS[2 * npqpv:]
         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
         # compute power mismatch
@@ -665,7 +666,15 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
         return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, None, None, None, 0, 0.0)
 
     # compute the series of coefficients
-    U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
+    U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=Ybus,
+                                                           Yseries=Yseries,
+                                                           V0=V0,
+                                                           S0=S0,
+                                                           Ysh0=Ysh0,
+                                                           pq=pq,
+                                                           pv=pv,
+                                                           sl=sl,
+                                                           pqpv=pqpv,
                                                            tolerance=tolerance,
                                                            max_coeff=max_coefficients,
                                                            verbose=verbose,
@@ -694,5 +703,3 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     elapsed = time.time() - start_time
 
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
-
-
