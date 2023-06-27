@@ -16,12 +16,29 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import List, Dict, Union, Tuple, Any
+from GridCal.Engine.basic_structures import IntVec, StrMat, StrVec, Vec, CxVec
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+
+import numpy as np
 
 
 class ContingencyTableEntry:
     """
     Entry of a contingency report
     """
+
+    __hdr__ = ["time index",
+               "base name",
+               "base uuid",
+               "base flow",
+               "base rating",
+               "base loading",
+               "contingency idx",
+               "contingency name",
+               "contingency uuid",
+               "post_contingency flow",
+               "contingency rating",
+               "post_contingency loading"]
 
     def __init__(self,
                  time_index: int,
@@ -37,7 +54,7 @@ class ContingencyTableEntry:
                  contingency_rating: float,
                  post_contingency_loading: float):
         """
-
+        ContingencyTableEntry constructor
         :param time_index:
         :param base_name:
         :param base_uuid:
@@ -67,6 +84,13 @@ class ContingencyTableEntry:
         self.contingency_rating: float = contingency_rating
         self.post_contingency_loading: float = post_contingency_loading
 
+    def get_headers(self) -> List[str]:
+        """
+        Get the headers
+        :return: list of header names
+        """
+        return self.__hdr__
+
     def to_list(self) -> List[Any]:
         """
         Get a list representation of this entry
@@ -91,6 +115,13 @@ class ContingencyTableEntry:
         :return: List[str]
         """
         return [str(a) for a in self.to_list()]
+
+    def to_array(self) -> StrVec:
+        """
+        Get array of string values
+        :return: StrVec
+        """
+        return np.array(self.to_string_list())
 
 
 class ContingencyResultsReport:
@@ -135,7 +166,6 @@ class ContingencyResultsReport:
         :param post_contingency_flow:
         :param contingency_rating:
         :param post_contingency_loading:
-        :return:
         """
         self.add_entry(ContingencyTableEntry(time_index=time_index,
                                              base_name=base_name,
@@ -149,3 +179,78 @@ class ContingencyResultsReport:
                                              post_contingency_flow=post_contingency_flow,
                                              contingency_rating=contingency_rating,
                                              post_contingency_loading=post_contingency_loading))
+
+    def merge(self, other: "ContingencyResultsReport"):
+        """
+        Add another ContingencyResultsReport in-place
+        :param other: ContingencyResultsReport instance
+        """
+        self.entries += other.entries
+
+    def size(self) -> int:
+        """
+        Get the size
+        :return: number of entries
+        """
+        return len(self.entries)
+
+    def n_cols(self) -> int:
+        """
+        Number of columns
+        :return: int
+        """
+        return len(self.get_headers())
+
+    @staticmethod
+    def get_headers() -> list[str]:
+        """
+        Get the headers
+        :return: List[str]
+        """
+        return ContingencyTableEntry.__hdr__
+
+    def get_index(self) -> IntVec:
+        """
+        Get the index
+        :return: IntVec
+        """
+        return np.arange(0, self.size())
+
+    def get_data(self) -> StrMat:
+        """
+        Get data as list of lists of strings
+        :return: List[List[str]]
+        """
+        data = np.empty((self.size(), self.n_cols()), dtype=object)
+        for i, e in enumerate(self.entries):
+            data[i, :] = e.to_array()
+        return data
+
+    def analyze(self, t: Union[None, int],
+                mon_idx: IntVec,
+                calc_branches: List[Any],
+                numerical_circuit: NumericalCircuit,
+                flows: Vec,
+                loading: Vec,
+                contingency_flows: Vec,
+                contingency_loadings: Vec,
+                contingency_idx,
+                contingency_group):
+
+        for m in mon_idx:
+
+            c_flow = abs(contingency_flows[m])
+
+            if c_flow > numerical_circuit.contingency_rates[m]:
+                self.add(time_index=t if t is not None else 0,
+                         base_name=numerical_circuit.branch_data.names[m],
+                         base_uuid=calc_branches[m].idtag,
+                         base_flow=abs(flows[m]),
+                         base_rating=numerical_circuit.branch_data.rates[m],
+                         base_loading=abs(loading[m] * 100.0),
+                         contingency_idx=contingency_idx,
+                         contingency_name=contingency_group.name,
+                         contingency_uuid=contingency_group.idtag,
+                         post_contingency_flow=c_flow,
+                         contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                         post_contingency_loading=abs(contingency_loadings[m]) * 100.0)

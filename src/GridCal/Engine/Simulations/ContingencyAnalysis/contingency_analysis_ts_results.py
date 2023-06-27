@@ -22,9 +22,13 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
+    """
+    Contingency analysis time series results
+    """
 
     def __init__(self, n, nbr, nc, time_array, bus_names, branch_names, bus_types, con_names):
         """
@@ -47,7 +51,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 ResultTypes.ContingencyRelativeFrequency,
                 ResultTypes.MaxOverloads,
                 ResultTypes.WorstContingencyFlows,
-                ResultTypes.WorstContingencyLoading
+                ResultTypes.WorstContingencyLoading,
+                ResultTypes.ContingencyAnalysisReport
             ],
             data_variables=[
                 'branch_names',
@@ -85,7 +90,14 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.max_overload = np.zeros(nbr)
 
+        self.report: ContingencyResultsReport = ContingencyResultsReport()
+
     def apply_new_time_series_rates(self, nc: NumericalCircuit):
+        """
+        Apply new rates
+        :param nc:
+        :return:
+        """
         rates = nc.Rates.T
         self.worst_loading = self.worst_flows / (rates + 1e-9)
 
@@ -95,12 +107,12 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
         data = {
-                'overload_count': self.overload_count.tolist(),
-                'relative_frequency': self.relative_frequency.tolist(),
-                'max_overload': self.max_overload.tolist(),
-                'worst_flows': self.worst_flows.tolist(),
-                'worst_loading': self.worst_loading.tolist(),
-                }
+            'overload_count': self.overload_count.tolist(),
+            'relative_frequency': self.relative_frequency.tolist(),
+            'max_overload': self.max_overload.tolist(),
+            'worst_flows': self.worst_flows.tolist(),
+            'worst_loading': self.worst_loading.tolist(),
+        }
         return data
 
     def mdl(self, result_type: ResultTypes):
@@ -145,6 +157,13 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             labels = self.branch_names
             index = pd.to_datetime(self.time_array)
 
+        elif result_type == ResultTypes.ContingencyAnalysisReport:
+            data = self.report.get_data()
+            y_label = ''
+            title = result_type.value
+            labels = self.report.get_headers()
+            index = self.report.get_index()
+
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
@@ -157,4 +176,3 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             ylabel=y_label
         )
         return mdl
-

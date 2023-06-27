@@ -869,7 +869,9 @@ class NumericalCircuit:
                 a=self.branch_data.a,
                 b=self.branch_data.b,
                 c=self.branch_data.c,
-                Yshunt_bus=self.Yshunt_from_devices
+                Yshunt_bus=self.Yshunt_from_devices,
+                conn=self.branch_data.conn,
+                seq=1
             )
         return self.Admittances.Ybus
 

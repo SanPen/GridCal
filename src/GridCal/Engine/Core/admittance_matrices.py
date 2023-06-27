@@ -142,7 +142,7 @@ def compute_admittances(R: Vec,
                         c: Vec,
                         Yshunt_bus: CxVec,
                         conn: ObjVec,
-                        seq: int = 1) -> Admittance:
+                        seq: int) -> Admittance:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
 

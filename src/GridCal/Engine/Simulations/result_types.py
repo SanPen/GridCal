@@ -120,6 +120,9 @@ class ResultTypes(Enum):
 
     OTDFSimulationError = 'Error', DeviceType.BranchDevice
 
+    # contingency analysis
+    ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
+
     # sigma
     SigmaReal = 'Sigma real', DeviceType.BusDevice
     SigmaImag = 'Sigma imaginary', DeviceType.BusDevice

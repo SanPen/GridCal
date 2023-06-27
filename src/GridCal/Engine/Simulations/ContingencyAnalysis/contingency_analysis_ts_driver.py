@@ -26,9 +26,12 @@ import nptyping as npt
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisOptions
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, ContingencyAnalysisDriver
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, \
+    LinearAnalysisOptions
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, \
+    ContingencyAnalysisDriver
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
+    ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
@@ -116,6 +119,9 @@ def compute_flows_numba(e, nt, contingency_branch_idx, LODF, Flows, rates, overl
 
 
 class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
+    """
+    Contingency Analysis Time Series
+    """
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
@@ -134,12 +140,10 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         :param clustering_results: ClusteringResults instance (optional)
         """
 
-        TimeSeriesDriverTemplate.__init__(
-            self,
-            grid=grid,
-            time_indices=time_indices,
-            clustering_results=clustering_results,
-        )
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          time_indices=time_indices,
+                                          clustering_results=clustering_results)
 
         # Options to use
         self.options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions] = options
@@ -179,10 +183,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             con_names=self.grid.get_contingency_group_names()
         )
 
-        cdriver = ContingencyAnalysisDriver(
-            grid=self.grid,
-            options=self.options,
-        )
+        cdriver = ContingencyAnalysisDriver(grid=self.grid,
+                                            options=self.options)
 
         contingency_count = None
 
@@ -204,10 +206,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                 res_t = cdriver.n_minus_k(t=t)
 
             elif self.options.engine == bs.ContingencyEngine.PTDF:
-                res_t = cdriver.n_minus_k_ptdf(
-                    t=t,
-                    linear=linear.drivers[t]
-                )
+                res_t = cdriver.n_minus_k_ptdf(t=t)
 
             elif self.options.engine == bs.ContingencyEngine.HELM:
                 res_t = cdriver.n_minus_k_nl(t=t)
@@ -225,6 +224,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             results.worst_flows[t, :] = res_t.Sf.real.max(axis=0)
             results.worst_loading[t, :] = np.abs(res_t.loading).max(axis=0)
             results.max_overload = np.maximum(results.max_overload, results.worst_loading[t, :])
+            results.report.merge(res_t.report)
 
             if self.__cancel__:
                 return results
@@ -244,4 +244,3 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-

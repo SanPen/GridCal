@@ -21,9 +21,13 @@ from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 
 
 class ContingencyAnalysisResults(ResultsTemplate):
+    """
+    Contingency analysis results
+    """
 
     def __init__(self, ncon, nbus, nbr, bus_names, branch_names, bus_types, con_names):
         """
@@ -43,6 +47,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 ResultTypes.BusActivePower,
                 ResultTypes.BranchActivePowerFrom,
                 ResultTypes.BranchLoading,
+                ResultTypes.ContingencyAnalysisReport
             ],
             data_variables=[
                 'bus_types',
@@ -65,12 +70,18 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.Sf = np.zeros((ncon, nbr), dtype=complex)
         self.loading = np.zeros((ncon, nbr), dtype=complex)
 
+        self.report: ContingencyResultsReport = ContingencyResultsReport()
+
     def apply_new_rates(self, nc: NumericalCircuit):
+        """
+        Apply new rates
+        :param nc: NumericalCircuit
+        """
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
     def get_steps(self):
-        return
+        return list()
 
     def get_results_dict(self):
         """
@@ -132,6 +143,13 @@ class ContingencyAnalysisResults(ResultsTemplate):
             labels = self.branch_names
             # index = self.branch_names
 
+        elif result_type == ResultTypes.ContingencyAnalysisReport:
+            data = self.report.get_data()
+            y_label = ''
+            title = result_type.value
+            labels = self.report.get_headers()
+            index = self.report.get_index()
+
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
@@ -145,4 +163,3 @@ class ContingencyAnalysisResults(ResultsTemplate):
         )
 
         return mdl
-

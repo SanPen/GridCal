@@ -2128,7 +2128,7 @@ class MainGUI(QMainWindow):
             elm = dev.Generator()
             dictionary_of_lists = {dev.DeviceType.Technology.value: self.circuit.technologies,
                                    dev.DeviceType.FuelDevice.value: self.circuit.fuels,
-                                   dev.DeviceType.EmissionGasDevice.value: self.circuit.emission_gases,}
+                                   dev.DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
 
         elif elm_type == dev.DeviceType.BatteryDevice.value:
             elm = dev.Battery()
@@ -2217,7 +2217,7 @@ class MainGUI(QMainWindow):
         elif elm_type == dev.DeviceType.GeneratorTechnologyAssociation.value:
             elm = dev.GeneratorTechnology()
             dictionary_of_lists = {dev.DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
-                                   dev.DeviceType.Technology.value: self.circuit.technologies,}
+                                   dev.DeviceType.Technology.value: self.circuit.technologies, }
 
         elif elm_type == dev.DeviceType.GeneratorFuelAssociation.value:
             elm = dev.GeneratorFuel()
@@ -2268,7 +2268,8 @@ class MainGUI(QMainWindow):
         """
         On click, display the objects properties
         """
-        if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:  # if the clicked element has a valid parent
+        if self.ui.dataStructuresTreeView.selectedIndexes()[
+            0].parent().row() > -1:  # if the clicked element has a valid parent
 
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
@@ -3307,7 +3308,9 @@ class MainGUI(QMainWindow):
                             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
                         )
 
-                        drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
+                        drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
+                                                                options=options,
+                                                                time_indices=self.get_time_indices())
 
                         self.session.run(drv,
                                          post_func=self.post_contingency_analysis_ts,
