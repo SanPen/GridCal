@@ -22,9 +22,11 @@ import numpy as np
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import \
+    AvailableTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
+    ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesResults
@@ -34,8 +36,10 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.Session.results_model import ResultsModel
 
@@ -48,7 +52,8 @@ def get_results_object_dictionary():
     lst = [(AvailableTransferCapacityResults([], [], [], []), SimulationTypes.NetTransferCapacity_run),
            (AvailableTransferCapacityTimeSeriesResults([], [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
            (ContingencyAnalysisResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysis_run),
-           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
+           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], []),
+            SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
            (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
            (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), ()), SimulationTypes.LinearAnalysis_TS_run),
@@ -64,6 +69,10 @@ def get_results_object_dictionary():
 
 
 class GcThread(QThread):
+    """
+    Generic GridCal Thread
+    this is used as a template for a Qt Thread
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -89,12 +98,19 @@ class GcThread(QThread):
     def get_steps(self):
         return list()
 
-    def run(self):
+    def run(self) -> None:
+        """
+        Run driver
+        """
         self.progress_signal.emit(0.0)
 
         self.driver.run()
 
-        self.progress_text.emit('Done!')
+        self.progress_signal.emit(0.0)
+        if self.__cancel__:
+            self.progress_text.emit('Cancelled!')
+        else:
+            self.progress_text.emit('Done!')
         self.done_signal.emit()
 
     def cancel(self):
@@ -105,12 +121,16 @@ class GcThread(QThread):
         # self.terminate()
         # self.quit()
         self.driver.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
+        # self.progress_signal.emit(0.0)
+        # self.progress_text.emit('Cancelled!')
+        # self.done_signal.emit()
 
 
 class SimulationSession:
+    """
+    The simulation session is the simulation manager
+    it serves to orchestrate the threads and to store the drivers and their results
+    """
 
     def __init__(self, name: str = 'Session', idtag: str = None):
         """
@@ -130,7 +150,7 @@ class SimulationSession:
     def __str__(self):
         return self.name
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Delete all the drivers
         """
@@ -153,6 +173,7 @@ class SimulationSession:
         :param text_func: Function to display text
         """
 
+        # create process
         thr = GcThread(driver)
         thr.progress_signal.connect(prog_func)
         thr.progress_text.connect(text_func)
@@ -235,7 +256,7 @@ class SimulationSession:
                 return self.drivers[driver_type]
         return None
 
-    def get_results_model_by_name(self, study_name, study_type):
+    def get_results_model_by_name(self, study_name: str, study_type: ResultTypes):
         """
         Get the results model given the study name and study type
         :param study_name: name of the study
@@ -252,7 +273,7 @@ class SimulationSession:
 
         return None
 
-    def register_driver_from_disk_data(self, grid, study_name: str, data_dict: dict):
+    def register_driver_from_disk_data(self, grid: MultiCircuit, study_name: str, data_dict: dict):
         """
         Create driver with the results
         :param grid: MultiCircuit instance
@@ -285,8 +306,8 @@ class SimulationSession:
     def is_this_running(self, sim_tpe: SimulationTypes):
         """
         Check if a simulation type is running
-        :param sim_tpe:
-        :return:
+        :param sim_tpe: SimulationTypes
+        :return: True / False
         """
         for driver_type, drv in self.threads.items():
             if drv is not None:
@@ -295,10 +316,10 @@ class SimulationSession:
                         return True
         return False
 
-    def is_anything_running(self):
+    def is_anything_running(self) -> bool:
         """
         Check if anything is running
-        :return:
+        :return: True / False
         """
 
         for driver_type, drv in self.threads.items():
@@ -309,68 +330,136 @@ class SimulationSession:
 
     @property
     def power_flow(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.PowerFlow_run)[1]
 
     @property
     def power_flow_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.TimeSeries_run)[1]
 
     @property
     def power_flow_cluster_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.ClusteringTimeSeries_run)[1]
 
     @property
     def optimal_power_flow(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.OPF_run)[1]
 
     @property
     def optimal_power_flow_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.OPFTimeSeries_run)[1]
 
     @property
     def short_circuit(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.ShortCircuit_run)[1]
 
     @property
     def linear_power_flow(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.LinearAnalysis_run)[1]
 
     @property
     def linear_power_flow_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.LinearAnalysis_TS_run)[1]
 
     @property
     def contingency(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.ContingencyAnalysis_run)[1]
 
     @property
     def contingency_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.ContingencyAnalysisTS_run)[1]
 
     @property
     def continuation_power_flow(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.ContinuationPowerFlow_run)[1]
 
     @property
     def net_transfer_capacity(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.NetTransferCapacity_run)[1]
 
     @property
     def net_transfer_capacity_ts(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.NetTransferCapacityTS_run)[1]
 
     @property
     def optimal_net_transfer_capacity(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.OPF_NTC_run)[1]
 
     @property
     def stochastic_power_flow(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.StochasticPowerFlow)[1]
 
     @property
     def sigma_analysis(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.SigmaAnalysis_run)[1]
 
     @property
     def cascade(self):
+        """
+
+        :return:
+        """
         return self.get_driver_results(SimulationTypes.Cascade_run)[1]

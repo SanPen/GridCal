@@ -125,25 +125,26 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
-    def __init__(
-            self,
-            grid: MultiCircuit,
-            options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
-            time_indices: IntVec,
-            clustering_results: Union["ClusteringResults", None] = None,
-    ):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
+                 time_indices: IntVec,
+                 clustering_results: Union["ClusteringResults", None] = None,
+                 engine: bs.EngineType = bs.EngineType.GridCal):
         """
         Contingecny analysis constructor
         :param grid: Multicircuit instance
         :param options: ContingencyAnalysisOptions instance
         :param time_indices: array of time indices to simulate
         :param clustering_results: ClusteringResults instance (optional)
+        :param engine: Calculation engine to use
         """
 
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
                                           time_indices=time_indices,
-                                          clustering_results=clustering_results)
+                                          clustering_results=clustering_results,
+                                          engine=engine)
 
         # Options to use
         self.options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions] = options
@@ -201,7 +202,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
             self.progress_signal.emit((it + 1) / len(self.time_indices) * 100)
 
-            # run contingency at t
+            # run contingency at t using the specified method
             if self.options.engine == bs.ContingencyEngine.PowerFlow:
                 res_t = cdriver.n_minus_k(t=t)
 
@@ -221,12 +222,15 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             else:
                 contingency_count += contingency.sum(axis=0)
 
-            results.worst_flows[t, :] = res_t.Sf.real.max(axis=0)
+            results.S[t, :] = res_t.S.real.max(axis=0)
+            results.worst_flows[t, :] = np.abs(res_t.Sf).max(axis=0)
             results.worst_loading[t, :] = np.abs(res_t.loading).max(axis=0)
             results.max_overload = np.maximum(results.max_overload, results.worst_loading[t, :])
             results.report.merge(res_t.report)
 
             if self.__cancel__:
+                results.overload_count = contingency_count
+                results.relative_frequency = contingency_count / len(self.time_indices)
                 return results
 
         results.overload_count = contingency_count

@@ -472,7 +472,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionVoltage_stability.triggered.connect(self.run_continuation_power_flow)
 
-        self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
+        self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_power_flow_time_series)
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
@@ -3129,16 +3129,16 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
-                self.colour_schematic()
-            else:
-                error_msg('Something went wrong, There are no PTDF results.')
+            self.update_available_results()
+            self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no PTDF results.')
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue('PTDF', drv.logger)
@@ -3184,35 +3184,22 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
+            self.update_available_results()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    if results.S.shape[0] > 0:
-                        # viz.colour_the_schematic(circuit=self.circuit,
-                        #                          Sbus=results.S.max(axis=0),
-                        #                          Sf=results.Sf.max(axis=0),
-                        #                          voltages=results.voltage.max(axis=0),
-                        #                          loadings=np.abs(results.loading).max(axis=0),
-                        #                          types=None,
-                        #                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                        #                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                        #                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                        #                          min_bus_width=self.ui.min_node_size_spinBox.value(),
-                        #                          max_bus_width=self.ui.max_node_size_spinBox.value()
-                        #                          )
-                        self.colour_schematic()
-                    else:
-                        info_msg('Cannot colour because the PTDF results have zero time steps :/')
+            if self.ui.draw_schematic_checkBox.isChecked():
+                if results.S.shape[0] > 0:
+                    self.colour_schematic()
+                else:
+                    info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
-
-            else:
-                error_msg('Something went wrong, There are no PTDF Time series results.')
+        else:
+            error_msg('Something went wrong, There are no PTDF Time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3266,23 +3253,23 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
+            self.update_available_results()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    self.colour_schematic()
-            else:
-                error_msg('Something went wrong, There are no contingency analysis results.')
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no contingency analysis results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_contingency_analysis_ts(self):
+    def run_contingency_analysis_ts(self) -> None:
         """
         Run a Power Transfer Distribution Factors analysis
         :return:
@@ -3310,7 +3297,9 @@ class MainGUI(QMainWindow):
 
                         drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
                                                                 options=options,
-                                                                time_indices=self.get_time_indices())
+                                                                time_indices=self.get_time_indices(),
+                                                                clustering_results=self.get_clustering_results(),
+                                                                engine=self.get_preferred_engine())
 
                         self.session.run(drv,
                                          post_func=self.post_contingency_analysis_ts,
@@ -3327,7 +3316,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_contingency_analysis_ts(self):
+    def post_contingency_analysis_ts(self) -> None:
         """
         Action performed after the short circuit.
         Returns:
@@ -3337,18 +3326,18 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring LODF results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
+            self.update_available_results()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    self.colour_schematic()
-            else:
-                error_msg('Something went wrong, There are no LODF results.')
+            if self.ui.draw_schematic_checkBox.isChecked():
+                self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no contingency time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3451,16 +3440,16 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.NetTransferCapacity_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring ATC results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring ATC results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
-                self.colour_schematic()
-            else:
-                error_msg('Something went wrong, There are no ATC results.')
+            self.update_available_results()
+            self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no ATC results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3578,16 +3567,16 @@ class MainGUI(QMainWindow):
         self.remove_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
+        # if not drv.__cancel__:
+        if results is not None:
 
-                self.ui.progress_label.setText('Colouring ATC time series results in the grid...')
-                QtGui.QGuiApplication.processEvents()
+            self.ui.progress_label.setText('Colouring ATC time series results in the grid...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.update_available_results()
-                self.colour_schematic()
-            else:
-                error_msg('Something went wrong, There are no ATC time series results.')
+            self.update_available_results()
+            self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no ATC time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3775,7 +3764,7 @@ class MainGUI(QMainWindow):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_time_series(self):
+    def run_power_flow_time_series(self):
         """
         Run a time series power flow simulation in a separated thread from the gui
         @return:
@@ -3816,7 +3805,7 @@ class MainGUI(QMainWindow):
                                                   engine=self.get_preferred_engine())
 
                     self.session.run(drv,
-                                     post_func=self.post_time_series,
+                                     post_func=self.post_power_flow_time_series,
                                      prog_func=self.ui.progressBar.setValue,
                                      text_func=self.ui.progress_label.setText)
 
@@ -3827,7 +3816,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_time_series(self):
+    def post_power_flow_time_series(self):
         """
         Events to do when the time series simulation has finished
         @return:
@@ -5007,7 +4996,7 @@ class MainGUI(QMainWindow):
             error_msg('Unrecognized option' + str(prop))
             return
 
-    def set_cancel_state(self):
+    def set_cancel_state(self) -> None:
         """
         Cancel what ever's going on that can be cancelled
         @return:
@@ -5042,7 +5031,7 @@ class MainGUI(QMainWindow):
 
         return lst
 
-    def update_available_results(self):
+    def update_available_results(self) -> None:
         """
         Update the results that are displayed in the results tab
         """

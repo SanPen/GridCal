@@ -14,11 +14,38 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from itertools import combinations
+import numpy as np
 from typing import List, Tuple
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
 from GridCal.Engine.Core.Devices.editable_device import DeviceType
+
+
+def enumerate_states_n_k(m: int, k: int = 1):
+    """
+    Enumerates the states to produce the so called N-k failures
+    :param m: number of Branches
+    :param k: failure level
+    :return: binary array (number of states, m)
+    """
+
+    # num = int(math.factorial(k) / math.factorial(m-k))
+    states = list()
+    indices = list()
+    arr = np.ones(m, dtype=int).tolist()
+
+    idx = list(range(m))
+    for k1 in range(k + 1):
+        for failed in combinations(idx, k1):
+            indices.append(failed)
+            arr2 = arr.copy()
+            for j in failed:
+                arr2[j] = 0
+            states.append(arr2)
+
+    return np.array(states), indices
 
 
 def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types):

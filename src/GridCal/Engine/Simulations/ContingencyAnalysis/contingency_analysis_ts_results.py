@@ -47,9 +47,9 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             self,
             name='N-1 time series',
             available_results=[
-                ResultTypes.ContingencyFrequency,
-                ResultTypes.ContingencyRelativeFrequency,
-                ResultTypes.MaxOverloads,
+                # ResultTypes.ContingencyFrequency,
+                # ResultTypes.ContingencyRelativeFrequency,
+                # ResultTypes.MaxOverloads,
                 ResultTypes.WorstContingencyFlows,
                 ResultTypes.WorstContingencyLoading,
                 ResultTypes.ContingencyAnalysisReport
@@ -122,28 +122,28 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return:
         """
 
-        if result_type == ResultTypes.ContingencyFrequency:
-            data = self.overload_count
-            y_label = '(#)'
-            title = 'Contingency count '
-            labels = self.branch_names
-            index = ['']
+        # if result_type == ResultTypes.ContingencyFrequency:
+        #     data = self.overload_count
+        #     y_label = '(#)'
+        #     title = 'Contingency count '
+        #     labels = self.branch_names
+        #     index = ['']
+        #
+        # elif result_type == ResultTypes.ContingencyRelativeFrequency:
+        #     data = self.relative_frequency
+        #     y_label = '(p.u.)'
+        #     title = 'Contingency relative frequency '
+        #     index = np.arange(0, len(data))
+        #     labels = self.branch_names
+        #
+        # elif result_type == ResultTypes.MaxOverloads:
+        #     data = self.max_overload
+        #     y_label = '(#)'
+        #     title = 'Maximum overloads '
+        #     labels = self.branch_names
+        #     index = np.arange(0, len(data))
 
-        elif result_type == ResultTypes.ContingencyRelativeFrequency:
-            data = self.relative_frequency
-            y_label = '(p.u.)'
-            title = 'Contingency relative frequency '
-            index = ['']
-            labels = self.branch_names
-
-        elif result_type == ResultTypes.MaxOverloads:
-            data = self.max_overload
-            y_label = '(#)'
-            title = 'Maximum overloads '
-            labels = self.branch_names
-            index = ['']
-
-        elif result_type == ResultTypes.WorstContingencyFlows:
+        if result_type == ResultTypes.WorstContingencyFlows:
             data = self.worst_flows
             y_label = '(MW)'
             title = 'Worst contingency Sf '

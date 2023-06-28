@@ -18,7 +18,6 @@
 import time
 import numpy as np
 from typing import Union
-from itertools import combinations
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 import GridCal.Engine.basic_structures as bs
@@ -30,31 +29,6 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-
-
-def enumerate_states_n_k(m: int, k: int = 1):
-    """
-    Enumerates the states to produce the so called N-k failures
-    :param m: number of Branches
-    :param k: failure level
-    :return: binary array (number of states, m)
-    """
-
-    # num = int(math.factorial(k) / math.factorial(m-k))
-    states = list()
-    indices = list()
-    arr = np.ones(m, dtype=int).tolist()
-
-    idx = list(range(m))
-    for k1 in range(k + 1):
-        for failed in combinations(idx, k1):
-            indices.append(failed)
-            arr2 = arr.copy()
-            for j in failed:
-                arr2[j] = 0
-            states.append(arr2)
-
-    return np.array(states), indices
 
 
 class ContingencyAnalysisOptions:
@@ -102,14 +76,16 @@ class ContingencyAnalysisDriver(DriverTemplate):
     name = 'Contingency Analysis'
     tpe = SimulationTypes.ContingencyAnalysis_run
 
-    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
+    def __init__(self, grid: MultiCircuit,
+                 options: ContingencyAnalysisOptions,
+                 engine: bs.EngineType = bs.EngineType.GridCal):
         """
-        N - k class constructor
-        @param grid: MultiCircuit Object
-        @param options: N-k options
-        @:param pf_options: power flow options
+        ContingencyAnalysisDriver constructor
+        :param grid: MultiCircuit Object
+        :param options: N-k options
+        :param engine Calculation engine to use
         """
-        DriverTemplate.__init__(self, grid=grid)
+        DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         # Options to use
         self.options = options
@@ -274,8 +250,6 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                       options=pf_opts)
 
         helm_variations = HelmVariations(numerical_circuit=numerical_circuit)
-
-
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.grid.contingency_groups):

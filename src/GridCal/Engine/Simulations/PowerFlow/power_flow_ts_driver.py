@@ -42,9 +42,13 @@ class PowerFlowTimeSeries(TimeSeriesDriverTemplate):
                  clustering_results: Union[ClusteringResults, None] = None,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
-        TimeSeries constructor
-        @param grid: MultiCircuit instance
-        @param options: PowerFlowOptions instance
+        PowerFlowTimeSeries constructor
+        :param grid: MultiCircuit instance
+        :param options: PowerFlowOptions instance
+        :param time_indices: array of time indices to simulate
+        :param opf_time_series_results: ClusteringResults instance (optional)
+        :param clustering_results: ClusteringResults instance (optional)
+        :param engine: Calculation engine to use
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,

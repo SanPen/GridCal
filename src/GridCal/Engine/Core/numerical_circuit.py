@@ -264,12 +264,15 @@ class NumericalCircuit:
         self.any_control: bool = False
         self.iPfsh: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Pf flow with theta sh
         self.iQfma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Qf with ma
-        self.iBeqz: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqz: IntVec = np.zeros(0,
+                                      dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
         self.iBeqv: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vf with Beq
         self.iVtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vt with ma
         self.iQtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
+        self.iPfdp: IntVec = np.zeros(0,
+                                      dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0,
+                                         dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
         self.iVscL: IntVec = np.zeros(0, dtype=int)  # indices of the converters
         self.VfBeqbus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vf is controlled by Beq
         self.Vtmabus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vt is controlled by ma
@@ -1581,10 +1584,7 @@ class NumericalCircuit:
         )
 
         # find the matching islands
-        idx_islands = tp.find_islands(
-            adj=A,
-            active=self.bus_data.active
-        )
+        idx_islands = tp.find_islands(adj=A, active=self.bus_data.active)
 
         circuit_islands = list()  # type: List[NumericalCircuit]
 
@@ -1600,15 +1600,14 @@ class NumericalCircuit:
         return circuit_islands
 
 
-def compile_numerical_circuit_at(
-        circuit: MultiCircuit,
-        t_idx: Union[int, None] = None,
-        apply_temperature=False,
-        branch_tolerance_mode=BranchImpedanceMode.Specified,
-        opf_results: Union["OptimalPowerFlowResults", None] = None,
-        use_stored_guess=False,
-        bus_dict: Union[Dict[Bus, int], None] = None,
-        areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
+def compile_numerical_circuit_at(circuit: MultiCircuit,
+                                 t_idx: Union[int, None] = None,
+                                 apply_temperature=False,
+                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                 opf_results: Union["OptimalPowerFlowResults", None] = None,
+                                 use_stored_guess=False,
+                                 bus_dict: Union[Dict[Bus, int], None] = None,
+                                 areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
     :param circuit: MultiCircuit instance

@@ -129,7 +129,7 @@ def get_elements_of_the_island_numba(n_rows: int,
 
     # resize vector
     elm_idx = elm_idx[:n_visited]
-
+    elm_idx.sort()
     return elm_idx
 
 
@@ -158,11 +158,13 @@ def get_elements_of_the_island(C_element_bus: csc_matrix, island: IntVec, active
         C_element_bus = C_element_bus.tocsc()
 
     # faster method
-    return get_elements_of_the_island_numba(n_rows=C_element_bus.shape[0],
-                                            indptr=C_element_bus.indptr,
-                                            indices=C_element_bus.indices,
-                                            island=np.array(island, dtype=int),
-                                            active=active)
+    indices = get_elements_of_the_island_numba(n_rows=C_element_bus.shape[0],
+                                               indptr=C_element_bus.indptr,
+                                               indices=C_element_bus.indices,
+                                               island=np.array(island, dtype=int),
+                                               active=active)
+
+    return indices
 
 
 def get_adjacency_matrix(C_branch_bus_f: csc_matrix, C_branch_bus_t: csc_matrix,
@@ -280,4 +282,3 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     pqpv.sort()
 
     return ref, pq, pv, pqpv
-

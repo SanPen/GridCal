@@ -27,7 +27,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
-from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat, ObjVec
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
@@ -628,8 +628,8 @@ class MultiCircuit:
     def get_hvdc_number(self) -> int:
         return len(self.hvdc_lines)
 
-    def get_hvdc_names(self) -> List[str]:
-        return [elm.name for elm in self.hvdc_lines]
+    def get_hvdc_names(self) -> ObjVec:
+        return np.array([elm.name for elm in self.hvdc_lines])
 
     def get_loads(self) -> List[dev.Load]:
         """

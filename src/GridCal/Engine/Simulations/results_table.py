@@ -26,10 +26,21 @@ class ResultsTable:
     """
     Class to populate a Qt table view with data from the results
     """
-    def __init__(self, data: np.ndarray, columns, index, palette=None, title='', xlabel='', ylabel='', units='',
-                 editable=False, editable_min_idx=-1, decimals=6):
-        """
 
+    def __init__(self,
+                 data: np.ndarray,
+                 columns: np.ndarray,
+                 index: np.ndarray,
+                 palette=None,
+                 title: str = '',
+                 xlabel: str = '',
+                 ylabel: str = '',
+                 units: str = '',
+                 editable=False,
+                 editable_min_idx: int = -1,
+                 decimals: float = 6):
+        """
+        ResultsTable constructor
         :param data:
         :param columns:
         :param index:
@@ -41,10 +52,21 @@ class ResultsTable:
         :param editable_min_idx:
         :param decimals:
         """
-        if len(data.shape) == 1:
+        if data.ndim == 1:
+            # assert compatible dimensions
+            assert len(data) == len(index)
+
             self.data_c = data.reshape(-1, 1)
-        else:
+
+        elif data.ndim == 2:
+            # assert compatible dimensions
+            assert data.shape[0] == len(index)
+            assert data.shape[1] == len(columns)
+
             self.data_c = data
+        else:
+            raise Exception("Usupported number of dimensions {}".format(data.ndim))
+
         self.cols_c = columns
         self.index_c = index
 
@@ -73,8 +95,8 @@ class ResultsTable:
         :return: Nothing
         """
         sliced_model = ResultsTable(data=self.data_c[:, col_idx],
-                                    columns=[self.cols_c[i] for i in col_idx],
-                                    index=self.index_c,
+                                    columns=np.array([self.cols_c[i] for i in col_idx]),
+                                    index=np.array(self.index_c),
                                     palette=None,
                                     title=self.title,
                                     xlabel=self.xlabel,
@@ -386,5 +408,3 @@ class ResultsTable:
             df.plot(ax=ax, legend=plot_legend, stacked=stacked)
         except TypeError:
             print('No numeric data to plot...')
-
-

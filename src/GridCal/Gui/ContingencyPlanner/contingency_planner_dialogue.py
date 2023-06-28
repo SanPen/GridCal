@@ -1,11 +1,20 @@
-import os
-import string
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
-from random import randint
-from enum import Enum
-import numpy as np
-from numpy.random import default_rng
-import networkx as nx
 from PySide6 import QtWidgets
 from typing import List
 
@@ -17,6 +26,9 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_plan import gene
 
 
 class ContingencyPlannerGUI(QtWidgets.QDialog):
+    """
+    ContingencyPlannerGUI
+    """
 
     def __init__(self, parent=None, grid: MultiCircuit = None):
         """
@@ -40,10 +52,10 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
                                             dev.DeviceType.BatteryDevice]
 
         self.ui.contingencyBranchTypesListView.setModel(gf.get_list_model(self.contingency_branch_types,
-                                                                       checks=True, check_value=True))
+                                                                          checks=True, check_value=True))
 
         self.ui.contingenctyInjectionsListView.setModel(gf.get_list_model(self.contingency_injection_types,
-                                                                       checks=True, check_value=True))
+                                                                          checks=True, check_value=True))
 
         # contingencies
         self.contingencies: List[dev.Contingency] = list()
@@ -101,10 +113,8 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = ContingencyPlannerGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
-
+    sys.exit(app.exec())
