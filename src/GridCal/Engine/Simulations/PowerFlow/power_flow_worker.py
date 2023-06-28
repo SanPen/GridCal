@@ -23,7 +23,7 @@ import GridCal.Engine.Simulations.PowerFlow as pflw
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
@@ -698,7 +698,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
 def multi_island_pf(multi_circuit: MultiCircuit,
                     options: PowerFlowOptions,
-                    opf_results: Union[OptimalPowerFlowResults, None] = None,
+                    opf_results: Union["OptimalPowerFlowResults", None] = None,
                     t: Union[int, None] = None,
                     logger: bs.Logger = bs.Logger(),
                     bus_dict: Union[Dict[Bus, int], None] = None,

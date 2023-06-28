@@ -20,7 +20,8 @@ from typing import Union
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, \
     compute_atc_list, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes

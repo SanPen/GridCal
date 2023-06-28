@@ -21,7 +21,7 @@ from typing import Dict, Union
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
+# from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -36,7 +36,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(
             self,
             grid: MultiCircuit,
-            options: LinearAnalysisOptions,
+            options: "LinearAnalysisOptions",
             time_indices: IntVec,
             clustering_results: Union[ClusteringResults, None] = None,
     ):
@@ -55,7 +55,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             clustering_results=clustering_results,
         )
 
-        self.options: LinearAnalysisOptions = options
+        self.options: "LinearAnalysisOptions" = options
 
         self.drivers: Dict[int, LinearAnalysis] = dict()
         self.results: Dict[int, LinearAnalysisTimeSeriesResults] = dict()

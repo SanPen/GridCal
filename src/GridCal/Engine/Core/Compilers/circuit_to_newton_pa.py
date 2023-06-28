@@ -28,8 +28,9 @@ from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerCon
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
+# from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
+# from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -1061,7 +1062,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
 
 
 def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
-                                        opf_opt: OptimalPowerFlowOptions) -> "npa.NonlinearOpfOptions":
+                                        opf_opt: "OptimalPowerFlowOptions") -> "npa.NonlinearOpfOptions":
     """
     Translate GridCal power flow options to Newton power flow options
     :param pf_opt: PowerFlowOptions instance
@@ -1092,7 +1093,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
                                    max_va=opf_opt.max_va)
 
 
-def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
+def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
                                      pf_opt: PowerFlowOptions,
                                      area_dict):
     """
@@ -1102,7 +1103,7 @@ def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
     :param area_dict:
     :return:
     """
-
+    from GridCal.Engine.Simulations.OPF.opf_options import ZonalGrouping
     solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
                    bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
                    bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
@@ -1179,8 +1180,53 @@ def newton_pa_pf(circuit: MultiCircuit,
     return pf_res
 
 
+def newton_pa_contingencies(circuit: MultiCircuit,
+                            pf_opt: PowerFlowOptions,
+                            con_opt: "ContingencyAnalysisOptions",
+                            time_series: bool = False,
+                            time_indices: Union[IntVec, None] = None) -> "npa.ContingencyAnalysisResults":
+    """
+    Newton power flow
+    :param circuit: MultiCircuit instance
+    :param pf_opt: Power Flow Options
+    :param con_opt: ContingencyAnalysisOptions
+    :param time_series: Compile with GridCal time series?
+    :param time_indices: Array of time indices
+    :return: Newton Power flow results object
+    """
+    npa_circuit, _ = to_newton_pa(circuit,
+                                  time_series=time_series,
+                                  time_indices=None,
+                                  override_branch_controls=pf_opt.override_branch_controls)
+
+    pf_options = get_newton_pa_pf_options(pf_opt)
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        if time_indices is None:
+            time_indices = [i for i in range(circuit.get_time_number())]
+        else:
+            time_indices = list(time_indices)
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    mode_dict = {npa.ContingencyAnalysisMode.Full,
+                 npa.ContingencyAnalysisMode.Hybrid,
+                 npa.ContingencyAnalysisMode.Full}
+
+    con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
+                                         pf_options=pf_options,
+                                         time_indices=time_indices,
+                                         mode=npa.ContingencyAnalysisMode.Full,
+                                         n_threads=n_threads)
+
+    return con_res
+
+
 def newton_pa_linear_opf(circuit: MultiCircuit,
-                         opf_options: OptimalPowerFlowOptions,
+                         opf_options: "OptimalPowerFlowOptions",
                          pf_opt: PowerFlowOptions,
                          time_series=False,
                          time_indices: Union[IntVec, None] = None) -> "npa.LinearOpfResults":
@@ -1222,7 +1268,7 @@ def newton_pa_linear_opf(circuit: MultiCircuit,
 
 def newton_pa_nonlinear_opf(circuit: MultiCircuit,
                             pf_opt: PowerFlowOptions,
-                            opf_opt: OptimalPowerFlowOptions,
+                            opf_opt: "OptimalPowerFlowOptions",
                             time_series=False,
                             time_indices: Union[IntVec, None] = None) -> "npa.NonlinearOpfResults":
     """
@@ -1349,14 +1395,14 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     return results
 
 
-def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfResults") -> OptimalPowerFlowResults:
+def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
     """
     Translate Newton OPF results to GridCal
     :param grid: MultiCircuit instance
     :param res: NonlinearOpfResults instance
     :return: OptimalPowerFlowResults instance
     """
-
+    from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     results = OptimalPowerFlowResults(bus_names=res.bus_names,
                                       branch_names=res.branch_names,
                                       load_names=res.load_names,

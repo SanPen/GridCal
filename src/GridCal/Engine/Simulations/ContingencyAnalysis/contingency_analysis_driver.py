@@ -29,44 +29,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-
-
-class ContingencyAnalysisOptions:
-    """
-    Contingency analysis options
-    """
-
-    def __init__(self,
-                 distributed_slack: bool = True,
-                 correct_values: bool = True,
-                 use_provided_flows: bool = False,
-                 Pf: Vec = None,
-                 pf_results=None,
-                 engine=bs.ContingencyEngine.PowerFlow,
-                 pf_options=PowerFlowOptions(SolverType.DC)):
-        """
-
-        :param distributed_slack:
-        :param correct_values:
-        :param use_provided_flows:
-        :param Pf:
-        :param pf_results:
-        :param engine:
-        :param pf_options:
-        """
-        self.distributed_slack = distributed_slack
-
-        self.correct_values = correct_values
-
-        self.use_provided_flows = use_provided_flows
-
-        self.Pf: Vec = Pf
-
-        self.pf_results = pf_results
-
-        self.engine = engine
-
-        self.pf_options = pf_options
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
 
 
 class ContingencyAnalysisDriver(DriverTemplate):

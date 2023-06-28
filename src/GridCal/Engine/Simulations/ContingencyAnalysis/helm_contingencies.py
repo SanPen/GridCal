@@ -26,8 +26,6 @@ from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, 
 from GridCal.Engine.Core.admittance_matrices import compute_admittances
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
     helm_preparation_dY, HelmPreparation
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 
 def calc_V_outage(nc: NumericalCircuit,

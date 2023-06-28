@@ -149,8 +149,12 @@ class PowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         return results
 
-    def run_newton_pa(self, time_indices=None):
-
+    def run_newton_pa(self, time_indices=None) -> PowerFlowTimeSeriesResults:
+        """
+        Run with Newton Power Analytics
+        :param time_indices: array of time indices
+        :return:
+        """
         res = newton_pa_pf(circuit=self.grid,
                            pf_opt=self.options,
                            time_series=True,

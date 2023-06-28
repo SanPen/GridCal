@@ -17,17 +17,15 @@
 
 import time
 
-import nptyping
 import numpy as np
 from numba import jit, prange
 from typing import Union
-import nptyping as npt
 
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, \
-    LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, \
     ContingencyAnalysisDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
@@ -35,6 +33,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_resu
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_contingencies
 
 
 @jit(nopython=True, parallel=False, cache=True)
@@ -163,9 +162,9 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.branch_names: StrVec = np.empty(shape=grid.get_branch_number_wo_hvdc(), dtype=str)
 
-    def n_minus_k(self):
+    def run_contingency_analysis(self) -> ContingencyAnalysisTimeSeriesResults:
         """
-        Run N-1 simulation in series
+        Run a contngency analysis in series
         :return: returns the results
         """
 
@@ -238,13 +237,70 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         return results
 
-    def run(self):
+    def run_newton_pa(self, time_indices=None) -> ContingencyAnalysisTimeSeriesResults:
         """
-
+        Run with Newton Power Analytics
+        :param time_indices: array of time indices
         :return:
         """
+        res = newton_pa_contingencies(circuit=self.grid,
+                                      pf_opt=self.options.pf_options,
+                                      con_opt=self.options,
+                                      time_series=True,
+                                      time_indices=time_indices)
+
+        nb = self.grid.get_bus_number()
+        results = ContingencyAnalysisTimeSeriesResults(
+            n=nb,
+            nbr=self.grid.get_branch_number_wo_hvdc(),
+            nc=self.grid.get_contingency_number(),
+            time_array=self.grid.time_profile,
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            bus_names=self.grid.get_bus_names(),
+            bus_types=np.ones(nb, dtype=int),
+            con_names=self.grid.get_contingency_group_names()
+        )
+
+        results.voltage = res.voltage
+        results.S = res.Scalc
+        results.Sf = res.Sf
+        results.St = res.St
+        results.loading = res.Loading
+        results.losses = res.Losses
+        # results.Vbranch = res.Vbranch
+        # results.If = res.If
+        # results.It = res.It
+        results.Beq = res.Beq
+        results.tap_module = res.tap_module
+        results.tap_angle = res.tap_angle
+        results.F = res.F
+        results.T = res.T
+        results.hvdc_F = res.hvdc_F
+        results.hvdc_T = res.hvdc_T
+        results.hvdc_Pf = res.hvdc_Pf
+        results.hvdc_Pt = res.hvdc_Pt
+        results.hvdc_loading = res.hvdc_loading
+        results.hvdc_losses = res.hvdc_losses
+        results.error_values = res.error
+
+        return results
+
+    def run(self) -> None:
+        """
+        Run contingency analysis time series
+        """
         start = time.time()
-        self.results = self.n_minus_k()
+
+        if self.engine == bs.EngineType.GridCal:
+            self.results = self.run_contingency_analysis()
+
+        elif self.engine == bs.EngineType.NewtonPA:
+            self.progress_text.emit('Running Newton power analytics... ')
+            self.results = self.run_newton_pa(time_indices=self.time_indices)
+
+        else:
+            # default to GridCal mode
+            self.results = self.run_contingency_analysis()
 
         end = time.time()
         self.elapsed = end - start
