@@ -261,27 +261,23 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             con_names=self.grid.get_contingency_group_names()
         )
 
-        results.voltage = res.voltage
-        results.S = res.Scalc
-        results.Sf = res.Sf
-        results.St = res.St
-        results.loading = res.Loading
-        results.losses = res.Losses
-        # results.Vbranch = res.Vbranch
-        # results.If = res.If
-        # results.It = res.It
-        results.Beq = res.Beq
-        results.tap_module = res.tap_module
-        results.tap_angle = res.tap_angle
-        results.F = res.F
-        results.T = res.T
-        results.hvdc_F = res.hvdc_F
-        results.hvdc_T = res.hvdc_T
-        results.hvdc_Pf = res.hvdc_Pf
-        results.hvdc_Pt = res.hvdc_Pt
-        results.hvdc_loading = res.hvdc_loading
-        results.hvdc_losses = res.hvdc_losses
-        results.error_values = res.error
+        # results.S[t, :] = res_t.S.real.max(axis=0)
+        results.worst_flows = np.abs(res.contingency_flows)
+        results.worst_loading = res.contingency_loading
+
+        for entry in res.report.entries:
+            results.report.add(time_index=entry.time_index,
+                               base_name=entry.base_name,
+                               base_uuid=entry.base_uuid,
+                               base_flow=np.abs(entry.base_flow),
+                               base_rating=entry.base_rating,
+                               base_loading=entry.base_loading,
+                               contingency_idx=entry.contingency_idx,
+                               contingency_name=entry.contingency_name,
+                               contingency_uuid=entry.contingency_uuid,
+                               post_contingency_flow=entry.post_contingency_flow,
+                               contingency_rating=entry.contingency_rating,
+                               post_contingency_loading=entry.post_contingency_loading)
 
         return results
 

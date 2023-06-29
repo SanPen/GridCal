@@ -1216,6 +1216,8 @@ def newton_pa_contingencies(circuit: MultiCircuit,
                  npa.ContingencyAnalysisMode.Hybrid,
                  npa.ContingencyAnalysisMode.Full}
 
+    # npa.FileHandler().save(npa_circuit, "whatever.newton")
+
     con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
                                          pf_options=pf_options,
                                          time_indices=time_indices,
