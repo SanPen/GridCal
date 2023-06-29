@@ -22,7 +22,7 @@ from numba import jit, prange
 from typing import Union
 
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCal.Engine.basic_structures import IntVec, StrVec
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
@@ -172,11 +172,13 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         nb = self.grid.get_bus_number()
 
+        time_array = self.grid.time_profile[self.time_indices]
+
         results = ContingencyAnalysisTimeSeriesResults(
             n=nb,
             nbr=self.grid.get_branch_number_wo_hvdc(),
             nc=self.grid.get_contingency_number(),
-            time_array=self.grid.time_profile,
+            time_array=time_array,
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             bus_types=np.ones(nb, dtype=int),
@@ -221,10 +223,10 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             else:
                 contingency_count += contingency.sum(axis=0)
 
-            results.S[t, :] = res_t.S.real.max(axis=0)
-            results.worst_flows[t, :] = np.abs(res_t.Sf).max(axis=0)
-            results.worst_loading[t, :] = np.abs(res_t.loading).max(axis=0)
-            results.max_overload = np.maximum(results.max_overload, results.worst_loading[t, :])
+            results.S[it, :] = res_t.S.real.max(axis=0)
+            results.worst_flows[it, :] = np.abs(res_t.Sf).max(axis=0)
+            results.worst_loading[it, :] = np.abs(res_t.loading).max(axis=0)
+            results.max_overload = np.maximum(results.max_overload, results.worst_loading[it, :])
             results.report.merge(res_t.report)
 
             if self.__cancel__:
@@ -237,24 +239,25 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         return results
 
-    def run_newton_pa(self, time_indices=None) -> ContingencyAnalysisTimeSeriesResults:
+    def run_newton_pa(self) -> ContingencyAnalysisTimeSeriesResults:
         """
         Run with Newton Power Analytics
-        :param time_indices: array of time indices
         :return:
         """
         res = newton_pa_contingencies(circuit=self.grid,
                                       pf_opt=self.options.pf_options,
                                       con_opt=self.options,
                                       time_series=True,
-                                      time_indices=time_indices)
+                                      time_indices=self.time_indices)
+
+        time_array = self.grid.time_profile[self.time_indices]
 
         nb = self.grid.get_bus_number()
         results = ContingencyAnalysisTimeSeriesResults(
             n=nb,
             nbr=self.grid.get_branch_number_wo_hvdc(),
             nc=self.grid.get_contingency_number(),
-            time_array=self.grid.time_profile,
+            time_array=time_array,
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             bus_types=np.ones(nb, dtype=int),
@@ -292,7 +295,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         elif self.engine == bs.EngineType.NewtonPA:
             self.progress_text.emit('Running Newton power analytics... ')
-            self.results = self.run_newton_pa(time_indices=self.time_indices)
+            self.results = self.run_newton_pa()
 
         else:
             # default to GridCal mode

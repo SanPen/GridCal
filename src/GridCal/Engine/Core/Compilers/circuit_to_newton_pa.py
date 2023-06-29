@@ -1214,9 +1214,12 @@ def newton_pa_contingencies(circuit: MultiCircuit,
 
     mode_dict = {npa.ContingencyAnalysisMode.Full,
                  npa.ContingencyAnalysisMode.Hybrid,
-                 npa.ContingencyAnalysisMode.Full}
+                 npa.ContingencyAnalysisMode.Linear}
 
     # npa.FileHandler().save(npa_circuit, "whatever.newton")
+
+    # print('time_indices')
+    # print(time_indices)
 
     con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
                                          pf_options=pf_options,
