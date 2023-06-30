@@ -21,4 +21,5 @@ from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeriesDriver, OpfSimpleTimeSeries
 from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeriesDriver, OpfSimpleTimeSeries
+from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowDriver
 

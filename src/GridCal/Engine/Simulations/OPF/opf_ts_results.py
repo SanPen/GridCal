@@ -58,7 +58,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                                   ResultTypes.GeneratorPower,
                                                                                   ResultTypes.BatteryPower,
                                                                                   ResultTypes.BatteryEnergy]
-                                                     },
+                                                    },
                                  data_variables=['bus_names',
                                                  'branch_names',
                                                  'load_names',

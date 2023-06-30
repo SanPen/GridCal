@@ -4107,10 +4107,9 @@ class MainGUI(QMainWindow):
                 self.LOCK()
 
                 # set power flow object instance
-                drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                           options=options,
-                                                           time_indices=None,
-                                                           clustering_results=None)
+                drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
+                                                 options=options,
+                                                 engine=self.get_preferred_engine())
 
                 self.session.run(drv,
                                  post_func=self.post_opf,
@@ -4137,11 +4136,6 @@ class MainGUI(QMainWindow):
                             'Check that all Branches have rating and \n'
                             'that the generator bounds are ok.\n'
                             'You may also use the diagnostic tool (F8)', 'OPF')
-
-            # print convergence reports on the console
-            # for report in drv.convergence_reports:
-            #     msg_ = 'Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
-            #     self.console_msg(msg_)
 
             self.update_available_results()
             if self.ui.draw_schematic_checkBox.isChecked():
@@ -5240,24 +5234,24 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        # elif current_study == sim.OptimalPowerFlow.tpe.value:
-        #     drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
-        #
-        #     return plot_function(circuit=self.circuit,
-        #                          voltages=results.voltage,
-        #                          loadings=results.loading,
-        #                          types=results.bus_types,
-        #                          Sf=results.Sf,
-        #                          Sbus=results.Sbus,
-        #                          hvdc_Pf=results.hvdc_Pf,
-        #                          hvdc_Pt=-results.hvdc_Pf,
-        #                          hvdc_loading=results.hvdc_loading,
-        #                          use_flow_based_width=use_flow_based_width,
-        #                          min_branch_width=min_branch_width,
-        #                          max_branch_width=max_branch_width,
-        #                          min_bus_width=min_bus_width,
-        #                          max_bus_width=max_bus_width,
-        #                          cmap=cmap)
+        elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+
+            return plot_function(circuit=self.circuit,
+                                 voltages=results.voltage[0, :],
+                                 loadings=results.loading[0, :],
+                                 types=results.bus_types,
+                                 Sf=results.Sf[0, :],
+                                 Sbus=results.Sbus[0, :],
+                                 hvdc_Pf=results.hvdc_Pf[0, :],
+                                 hvdc_Pt=-results.hvdc_Pf[0, :],
+                                 hvdc_loading=results.hvdc_loading[0, :],
+                                 use_flow_based_width=use_flow_based_width,
+                                 min_branch_width=min_branch_width,
+                                 max_branch_width=max_branch_width,
+                                 min_bus_width=min_bus_width,
+                                 max_bus_width=max_bus_width,
+                                 cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)

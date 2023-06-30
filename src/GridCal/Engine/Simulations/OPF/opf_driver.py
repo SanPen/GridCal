@@ -36,27 +36,24 @@ from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringR
 import GridCal.Engine.basic_structures as bs
 
 
-class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
+class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
     name = 'Optimal power flow time series'
-    tpe = SimulationTypes.OPFTimeSeries_run
+    tpe = SimulationTypes.OPF_run
 
     def __init__(self,
                  grid: MultiCircuit,
                  options: OptimalPowerFlowOptions,
-                 time_indices: Union[bs.IntVec, None],
-                 clustering_results: Union[ClusteringResults, None] = None,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit Object
         :param options: OPF options
-        :param time_indices: array of time indices to simulate
         :param engine: Calculation engine to use (if available)
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
-                                          time_indices=time_indices,
-                                          clustering_results=clustering_results,
+                                          time_indices=None,
+                                          clustering_results=None,
                                           engine=engine)
 
         # Options to use
@@ -154,8 +151,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.results.Sbus[self.time_indices, :] = problem.get_power_injections()
         self.results.hvdc_Pf[self.time_indices, :] = problem.get_hvdc_flows()
-        self.results.hvdc_loading[self.time_indices, :] = self.results.hvdc_Pf[self.time_indices, :] / self.numerical_circuit.hvdc_data.rate[:,
-                                                                           self.time_indices].transpose()
+        self.results.hvdc_loading[self.time_indices, :] = self.results.hvdc_Pf[self.time_indices,
+                                                          :] / self.numerical_circuit.hvdc_data.rate[:,
+                                                               self.time_indices].transpose()
         self.results.phase_shift[self.time_indices, :] = problem.get_phase_shifts()
 
         self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
@@ -255,7 +253,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                   opf_opt=self.options,
                                                   time_series=use_time_series,
                                                   time_indices=self.time_indices)
-            
+
                 self.results.voltage[ti, :] = npa_res.voltage
                 self.results.Sbus[ti, :] = npa_res.Scalc
                 self.results.bus_shadow_prices[ti, :] = npa_res.bus_shadow_prices
@@ -272,6 +270,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 # self.results.Sbus[ti, :] = problem.get_power_injections()
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_Pf
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
+                self.results.converged[ti] = npa_res.converged
 
         end = time.time()
         self.elapsed = end - start
