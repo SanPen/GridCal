@@ -1212,9 +1212,12 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         time_indices = [0]
         n_threads = 1
 
-    mode_dict = {npa.ContingencyAnalysisMode.Full,
-                 npa.ContingencyAnalysisMode.Hybrid,
-                 npa.ContingencyAnalysisMode.Linear}
+    if con_opt.engine == bs.ContingencyEngine.PTDF:
+        mode = npa.ContingencyAnalysisMode.Linear
+    elif con_opt.engine == bs.ContingencyEngine.PowerFlow:
+        mode = npa.ContingencyAnalysisMode.Full
+    else:
+        mode = npa.ContingencyAnalysisMode.Full
 
     # npa.FileHandler().save(npa_circuit, "whatever.newton")
 
@@ -1224,7 +1227,7 @@ def newton_pa_contingencies(circuit: MultiCircuit,
     con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
                                          pf_options=pf_options,
                                          time_indices=time_indices,
-                                         mode=npa.ContingencyAnalysisMode.Full,
+                                         mode=mode,
                                          n_threads=n_threads)
 
     return con_res
