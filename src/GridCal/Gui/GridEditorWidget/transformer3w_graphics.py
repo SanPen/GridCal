@@ -26,7 +26,7 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, F
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_buses
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
 
@@ -109,7 +109,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         self.winding_circles: List[QGraphicsEllipseItem] = list()
         self.terminals: List[TerminalItem] = list()
-        self.connection_lines: List[LineGraphicItem | None] = list()
+        self.connection_lines: List[WindingGraphicItem | None] = list()
 
         pen = QPen(self.color, self.pen_width, self.style)
 
@@ -226,10 +226,15 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.big_marker = None
 
     def change_size(self, w, h):
+        """
+
+        :param w:
+        :param h:
+        """
         # Keep for compatibility
         pass
 
-    def set_position(self, x, y):
+    def set_position(self, x: float, y: float) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
@@ -239,7 +244,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         y = 0 if np.isnan(y) else int(y)
         self.setPos(QPoint(int(x), int(y)))
 
-    def update_conn(self):
+    def update_conn(self) -> None:
         """
         Update the object
         """
@@ -263,7 +268,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         raise Exception("Unknown winding")
 
-    def set_connection(self, i: int, bus, conn: LineGraphicItem):
+    def set_connection(self, i: int, bus, conn: WindingGraphicItem):
         """
         Create the connection with a bus
         :param i: winding index 0-2
@@ -300,8 +305,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.update_conn()
         self.mousePressEvent(None)
 
-    def arrange_children(self):
-        # this function is necessary because this graphic item behaves like a bus
+    def arrange_children(self) -> None:
+        """
+        this function is necessary because this graphic item behaves like a bus,
+        but the the function itself does nothing
+        """
         pass
 
     def set_tile_color(self, brush: QColor):
@@ -344,7 +352,5 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         if ok:
             self.delete_all_connections()
-
             self.diagramScene.removeItem(self)
             self.diagramScene.circuit.delete_transformer3w(self.api_object)
-

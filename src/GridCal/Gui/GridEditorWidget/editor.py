@@ -24,7 +24,8 @@ from warnings import warn
 
 from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, QDataStream
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
+from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, \
+    QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -41,6 +42,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
@@ -77,6 +79,9 @@ def toQBytesArray(val: str):
 
 
 class EditorGraphicsView(QGraphicsView):
+    """
+    EditorGraphicsView (Handles the drag and drop)
+    """
 
     def __init__(self, scene, parent=None, editor=None):
         """
@@ -150,9 +155,8 @@ class EditorGraphicsView(QGraphicsView):
                 obj = Transformer3W(name=name)
                 elm = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=obj)
                 obj.graphic_obj = elm
-                self.scene_.circuit.add_transformer3w(
-                    obj)  # weird but it's the only way to have graphical-API communication
-                print('3w transformer dropped')
+                # weird but it's the only way to have graphical-API communication
+                self.scene_.circuit.add_transformer3w(obj)
 
             if elm is not None:
                 elm.setPos(self.mapToScene(event.pos()))
@@ -256,6 +260,9 @@ class LibraryModel(QStandardItemModel):
 
 
 class DiagramScene(QGraphicsScene):
+    """
+
+    """
 
     def __init__(self, parent=None, circuit: MultiCircuit = None):
         """
@@ -268,6 +275,11 @@ class DiagramScene(QGraphicsScene):
         self.results_dictionary = dict()
 
     def set_results_to_plot(self, all_threads):
+        """
+
+        :param all_threads:
+        :return:
+        """
         self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
 
     def plot_bus(self, i, api_object):
@@ -594,6 +606,9 @@ class DiagramScene(QGraphicsScene):
 
 
 class GridEditor(QSplitter):
+    """
+
+    """
 
     def __init__(self, circuit: MultiCircuit):
         """
@@ -806,9 +821,9 @@ class GridEditor(QSplitter):
                                                                        self.started_branch.toPort)
 
                             if obj.graphic_obj.connection_lines[i] is None:
-                                conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                       toPort=self.started_branch.toPort,
-                                                       diagramScene=self.diagramScene)
+                                conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
+                                                          toPort=self.started_branch.toPort,
+                                                          diagramScene=self.diagramScene)
 
                                 obj.graphic_obj.set_connection(i, bus, conn)
                                 self.started_branch.fromPort.update()
@@ -829,9 +844,9 @@ class GridEditor(QSplitter):
                                                                        self.started_branch.toPort)
 
                             if obj.graphic_obj.connection_lines[i] is None:
-                                conn = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                       toPort=self.started_branch.toPort,
-                                                       diagramScene=self.diagramScene)
+                                conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
+                                                          toPort=self.started_branch.toPort,
+                                                          diagramScene=self.diagramScene)
 
                                 obj.graphic_obj.set_connection(i, bus, conn)
                                 self.started_branch.fromPort.update()
@@ -1206,19 +1221,19 @@ class GridEditor(QSplitter):
         # add circuit pointer to the bus graphic element
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
-        conn1 = LineGraphicItem(fromPort=graphic_obj.terminals[0],
-                                toPort=elm.bus1.graphic_obj.terminal,
-                                diagramScene=self.diagramScene)
+        conn1 = WindingGraphicItem(fromPort=graphic_obj.terminals[0],
+                                   toPort=elm.bus1.graphic_obj.terminal,
+                                   diagramScene=self.diagramScene)
         graphic_obj.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
-        conn2 = LineGraphicItem(fromPort=graphic_obj.terminals[1],
-                                toPort=elm.bus2.graphic_obj.terminal,
-                                diagramScene=self.diagramScene)
+        conn2 = WindingGraphicItem(fromPort=graphic_obj.terminals[1],
+                                   toPort=elm.bus2.graphic_obj.terminal,
+                                   diagramScene=self.diagramScene)
         graphic_obj.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
-        conn3 = LineGraphicItem(fromPort=graphic_obj.terminals[2],
-                                toPort=elm.bus3.graphic_obj.terminal,
-                                diagramScene=self.diagramScene)
+        conn3 = WindingGraphicItem(fromPort=graphic_obj.terminals[2],
+                                   toPort=elm.bus3.graphic_obj.terminal,
+                                   diagramScene=self.diagramScene)
         graphic_obj.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
         graphic_obj.update_conn()

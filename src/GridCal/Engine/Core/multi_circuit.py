@@ -54,6 +54,7 @@ def get_system_user() -> str:
 
     return str(mac) + ':' + user
 
+
 class MultiCircuit:
     """
     The concept of circuit should be easy enough to understand. It represents a set of
@@ -1666,7 +1667,27 @@ class MultiCircuit:
         Delete winding
         :param obj: Winding instance
         """
-        self.windings.remove(obj)
+        for tr3 in self.transformers3w:
+
+            if obj == tr3.winding1:
+                tr3.bus1 = None
+                # tr3.winding1 = None
+                if tr3.graphic_obj is not None:
+                    tr3.graphic_obj.connection_lines[0] = None
+
+            elif obj == tr3.winding2:
+                tr3.bus2 = None
+                # tr3.winding2 = None
+                if tr3.graphic_obj is not None:
+                    tr3.graphic_obj.connection_lines[1] = None
+
+            if obj == tr3.winding3:
+                tr3.bus3 = None
+                # tr3.winding3 = None
+                if tr3.graphic_obj is not None:
+                    tr3.graphic_obj.connection_lines[2] = None
+
+        # self.windings.remove(obj)
 
     def delete_transformer3w(self, obj: dev.Transformer3W):
         """
