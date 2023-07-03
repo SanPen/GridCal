@@ -26,7 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
-from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
+from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -120,10 +120,11 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.Simple_OPF:
 
             # AC optimal power flow
-            problem = OpfSimpleTimeSeries(grid=self.grid,
-                                          time_indices=self.time_indices,
-                                          text_prog=self.progress_text.emit,
-                                          prog_func=self.progress_signal.emit)
+            Pl, Pg = run_simple_dispatch(grid=self.grid,
+                                         text_prog=self.progress_text.emit,
+                                         prog_func=self.progress_signal.emit)
+
+            self.results.generator_power = Pg
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))

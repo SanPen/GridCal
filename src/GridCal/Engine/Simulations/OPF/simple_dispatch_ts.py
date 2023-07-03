@@ -20,201 +20,93 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from typing import List, Union
+from typing import List, Union, Tuple
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import Vec, IntVec
 
 
-class OpfSimpleTimeSeries:
+def run_simple_dispatch(grid: MultiCircuit,
+                        text_prog=None,
+                        prog_func=None) -> Tuple[Vec, Vec]:
+    """
+    Simple generation dispatch for the snapshot
+    :param grid: MultiCircuit instance
+    :param text_prog: text report function
+    :param prog_func: progress report function
+    :return Pl, Pg
+    """
+    if text_prog is not None:
+        text_prog('Simple dispatch...')
 
-    def __init__(self,  grid: MultiCircuit,
-                 time_indices: np.ndarray,
-                 text_prog = None,
-                 prog_func = None):
-        """
-        DC time series linear optimal power flow
-        :param grid: NumericalCircuit instance
-        """
+    if prog_func is not None:
+        prog_func(0.0)
 
-        # build the formulation
-        self.grid = grid
+    ng = grid.get_generators_number()
+    nl = grid.get_calculation_loads_number()
+    Sbase = grid.Sbase
 
-        nt = len(time_indices) if len(time_indices) > 0 else 1
-        n = grid.get_bus_number()
-        nbr = grid.get_branch_number_wo_hvdc()
-        ng = grid.get_generators_number()
-        nb = grid.get_batteries_number()
-        nl = grid.get_calculation_loads_number()
-        n_hvdc = grid.get_hvdc_number()
+    Pl = np.zeros(nl)
+    Pavail = np.zeros(ng)
 
-        self.theta = np.zeros((nt, n))
-        self.Pinj = np.zeros((nt, n))
-        self.nodal_restrictions = np.zeros((nt, n))
+    # gather generation info
+    for i, gen in enumerate(grid.get_generators()):
+        Pavail[i] = gen.Pmax / Sbase * gen.active
 
-        self.Pg = np.zeros((nt, ng))
+    # gather load info
+    for i, load in enumerate(grid.get_loads()):
+        Pl[:, i] = load.P / Sbase * load.active
 
-        self.Pb = np.zeros((nt, nb))
-        self.E = np.zeros((nt, nb))
+    # generator share:
+    generation_share = Pavail / Pavail.sum()
 
-        self.Pl = np.zeros((nt, nl))
-        self.load_shedding = np.zeros((nt, nl))
+    Pg = Pl.sum() * generation_share
 
-        self.hvdc_flow = np.zeros((nt, n_hvdc))
-        self.hvdc_slacks = np.zeros((nt, n_hvdc))
+    if prog_func is not None:
+        prog_func(100.0)
 
-        self.phase_shift = np.zeros((nt, nbr))
-        self.s_from = np.zeros((nt, nbr))
-        self.s_to = np.zeros((nt, nbr))
-        self.overloads = np.zeros((nt, nbr))
-        self.rating = grid.get_branch_rates_prof_wo_hvdc() / grid.Sbase
+    return Pl, Pg
 
-    def solve(self, msg=False):
-        """
 
-        :param msg:
-        :return:
-        """
-        nc = self.numerical_circuit
+def run_simple_dispatch_ts(grid: MultiCircuit,
+                           time_indices: np.ndarray,
+                           text_prog=None,
+                           prog_func=None) -> Tuple[Vec, Vec]:
+    """
+    Simple generation dispatch for the time series
+    :param grid: MultiCircuit instance
+    :param time_indices: grid time indices where to simulate
+    :param text_prog: text report function
+    :param prog_func: progress report function
+    :return Pl, Pg
+    """
+    if text_prog is not None:
+        text_prog('Simple dispatch...')
 
-        # general indices
-        n = nc.nbus
-        m = nc.nelm
-        ng = nc.nelm
-        nb = nc.nbatt
-        nl = nc.nelm
-        nt = self.end_idx - self.start_idx
-        a = self.start_idx
-        b = self.end_idx
-        Sbase = nc.Sbase
+    nt = len(time_indices)
+    ng = grid.get_generators_number()
+    nl = grid.get_calculation_loads_number()
+    Sbase = grid.Sbase
 
-        # battery
-        # Capacity = nc.battery_Enom / Sbase
-        # minSoC = nc.battery_min_soc
-        # maxSoC = nc.battery_max_soc
-        # if batteries_energy_0 is None:
-        #     SoC0 = nc.battery_soc_0
-        # else:
-        #     SoC0 = (batteries_energy_0 / Sbase) / Capacity
-        # Pb_max = nc.battery_pmax / Sbase
-        # Pb_min = nc.battery_pmin / Sbase
-        # Efficiency = (nc.battery_discharge_efficiency + nc.battery_charge_efficiency) / 2.0
-        # cost_b = nc.battery_cost_profile[a:b, :].transpose()
+    Pg = np.zeros((nt, ng))
 
-        # generator
-        Pg_max = nc.pmax / Sbase
-        Pg_min = nc.pmin / Sbase
-        P_profile = nc.generator_p[a:b, :] / Sbase
-        cost_g = nc.cost_1[a:b, :]
-        enabled_for_dispatch = nc.generator_active
+    Pl = np.zeros((nt, nl))
+    Pavail = np.zeros(ng)
 
-        # load
-        Pl = np.zeros((nt, nl))
-        Pg = np.zeros((nt, ng))
-        Pb = np.zeros((nt, nb))
-        E = np.zeros((nt, nb))
-        theta = np.zeros((nt, n))
-        for i, t in enumerate(range(a, b)):
+    # gather generation info
+    for i, gen in enumerate(grid.get_generators()):
+        Pavail[i] = gen.Pmax / Sbase * gen.active_prof[time_indices]
 
-            # generator share:
-            Pavail = (Pg_max * nc.generator_active[:, t])
-            Gshare = Pavail / Pavail.sum()
+    # gather load info
+    for i, load in enumerate(grid.get_loads()):
+        Pl[:, i] = load.P_prof[time_indices] / Sbase * load.active_prof[time_indices]
 
-            Pl[i] = (nc.load_active[:, t] * nc.load_s.real[:, t]) / Sbase
+    for t_idx, t in enumerate(time_indices):
+        # generator share:
+        generation_share_at_t = Pavail / Pavail.sum()
 
-            Pg[i] = Pl[i].sum() * Gshare
+        Pg[t_idx, :] = Pl[t_idx, :].sum() * generation_share_at_t
 
-            if self.text_prog is not None:
-                self.text_prog('Solving ' + str(nc.time_array[t]))
-            if self.prog_func is not None:
-                self.prog_func((i + 1) / nt * 100.0)
+        if prog_func is not None:
+            prog_func((t_idx + 1) / nt * 100.0)
 
-        # Assign variables to keep
-        # transpose them to be in the format of GridCal: time, device
-        self.theta = theta
-        self.Pg = Pg
-        self.Pb = Pb
-        self.Pl = Pl
-        self.E = E
-
-        self.Pinj = self.numerical_circuit.Sbus.transpose().real
-        self.hvdc_flow = np.zeros((nt, self.numerical_circuit.nelm))
-        self.hvdc_slacks = np.zeros((nt, self.numerical_circuit.nelm))
-        self.phase_shift = np.zeros((nt, m))
-
-        self.load_shedding = np.zeros((nt, nl))
-        self.s_from = np.zeros((nt, m))
-        self.s_to = np.zeros((nt, m))
-        self.overloads = np.zeros((nt, m))
-        self.rating = nc.branch_rates[a:b, :] / Sbase
-        self.nodal_restrictions = np.zeros((nt, n))
-
-        return True
-
-    def get_voltage(self):
-        """
-        return the complex voltages (time, device)
-        :return: 2D array
-        """
-        return np.ones_like(self.theta) * np.exp(-1j * self.theta)
-
-    def get_overloads(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.overloads
-
-    def get_loading(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.s_from / (self.rating + 1e-9)
-
-    def get_branch_power_from(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.s_from * self.grid.Sbase
-
-    def get_battery_power(self):
-        """
-        return the battery dispatch (time, device)
-        :return: 2D array
-        """
-        return self.Pb * self.grid.Sbase
-
-    def get_battery_energy(self):
-        """
-        return the battery energy (time, device)
-        :return: 2D array
-        """
-        return self.E * self.grid.Sbase
-
-    def get_generator_power(self):
-        """
-        return the generator dispatch (time, device)
-        :return: 2D array
-        """
-        return self.Pg * self.grid.Sbase
-
-    def get_load_shedding(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.load_shedding * self.grid.Sbase
-
-    def get_load_power(self):
-        """
-        return the load shedding (time, device)
-        :return: 2D array
-        """
-        return self.Pl * self.grid.Sbase
-
-    def get_shadow_prices(self):
-        """
-        Extract values fro the 2D array of LP variables
-        :return: 2D numpy array
-        """
-        return self.nodal_restrictions
+    return Pl, Pg
