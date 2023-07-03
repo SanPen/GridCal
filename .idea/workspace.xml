@@ -27,11 +27,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="implemented the OpfResults for the snapshot">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed bug with compute_zip_power having to conjugate Y0" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1181,14 +1177,7 @@
       <workItem from="1688133783351" duration="4909000" />
       <workItem from="1688145673381" duration="371000" />
       <workItem from="1688328773559" duration="2091000" />
-      <workItem from="1688365877527" duration="5180000" />
-    </task>
-    <task id="LOCAL-00378" summary="Added new grid examples">
-      <created>1682176448632</created>
-      <option name="number" value="00378" />
-      <option name="presentableId" value="LOCAL-00378" />
-      <option name="project" value="LOCAL" />
-      <updated>1682176448632</updated>
+      <workItem from="1688365877527" duration="5524000" />
     </task>
     <task id="LOCAL-00379" summary="4.7.0">
       <created>1682180026691</created>
@@ -1526,7 +1515,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688368530597</updated>
     </task>
-    <option name="localTasksCounter" value="427" />
+    <task id="LOCAL-00427" summary="Fixed bug with compute_zip_power having to conjugate Y0">
+      <created>1688374423336</created>
+      <option name="number" value="00427" />
+      <option name="presentableId" value="LOCAL-00427" />
+      <option name="project" value="LOCAL" />
+      <updated>1688374423336</updated>
+    </task>
+    <option name="localTasksCounter" value="428" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1568,7 +1564,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Renamed the multicircuit functions to reflect that they provide profiles&#10;Added newton engine to the linear analysis" />
     <MESSAGE value="changed linear results names to PTDF and LODF" />
     <MESSAGE value="Replaced most start_, end_ at classes that deal with time by time indices and the clustering results as optional" />
     <MESSAGE value="Corrected some linear analysis indexing and array dimensions" />
@@ -1593,7 +1588,8 @@
     <MESSAGE value="Implemented mode for contingency analysis in newton" />
     <MESSAGE value="Improved tr3 graphical integration" />
     <MESSAGE value="implemented the OpfResults for the snapshot" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented the OpfResults for the snapshot" />
+    <MESSAGE value="Fixed bug with compute_zip_power having to conjugate Y0" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug with compute_zip_power having to conjugate Y0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
