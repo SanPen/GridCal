@@ -24,7 +24,9 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
-
+    """
+    Optimal power flow time series results
+    """
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
                  n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=()):
         """

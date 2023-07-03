@@ -44,16 +44,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
-                 battery_power=None, controlled_generation_power=None,
-                 Sf=None, St=None, overloads=None, loading=None, losses=None,
-                 hvdc_names=None, hvdc_power=None, hvdc_loading=None,
-                 phase_shift=None, bus_shadow_prices=None,
-                 contingency_flows_list=None, contingency_indices_list=None,
-                 contingency_flows_slacks_list=None,
-                 rates=None, contingency_rates=None,
-                 converged=None, bus_types=None, area_names=None):
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, bus_types=None, area_names=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -107,56 +99,43 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'generator_power',
                                                  'converged'])
 
-        nbus = len(bus_names)
-        nbr = len(branch_names)
-
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
 
-        self.Sbus = Sbus
-
-        self.voltage = voltage
-
-        self.load_shedding = load_shedding
-
-        self.Sf = Sf
-
-        self.St = St
-
+        self.Sbus = np.zeros(n, dtype=complex)
+        self.voltage = np.zeros(n, dtype=complex)
+        self.bus_shadow_prices = np.zeros(n, dtype=float)
         self.bus_types = bus_types
 
-        self.overloads = overloads if overloads is not None else np.zeros(nbr, dtype=complex)
+        self.load_shedding = np.zeros(nload, dtype=float)
 
-        self.loading = loading if loading is not None else np.zeros(nbr, dtype=complex)
-
-        self.losses = losses if losses is not None else np.zeros(nbr, dtype=complex)
+        self.Sf = np.zeros(m, dtype=float)
+        self.St = np.zeros(m, dtype=float)
+        self.overloads = np.zeros(m, dtype=float)
+        self.loading = np.zeros(m, dtype=float)
+        self.losses = np.zeros(m, dtype=float)
+        self.phase_shift = np.zeros(m, dtype=float)
+        self.rates = np.zeros(m, dtype=float)
+        self.contingency_rates = np.zeros(m, dtype=float)
 
         self.hvdc_names = hvdc_names
-        self.hvdc_Pf = hvdc_power
-        self.hvdc_loading = hvdc_loading
-        self.hvdc_losses = np.zeros_like(self.hvdc_Pf)
+        self.hvdc_Pf = np.zeros(nhvdc, dtype=float)
+        self.hvdc_loading = np.zeros(nhvdc, dtype=float)
+        self.hvdc_losses = np.zeros(nhvdc, dtype=float)
 
-        self.phase_shift = phase_shift if phase_shift is not None else np.zeros(nbr, dtype=complex)
+        self.battery_power = np.zeros(nbat, dtype=float)
 
-        self.battery_power = battery_power
+        self.generator_shedding = np.zeros(ngen, dtype=float)
+        self.generator_power = np.zeros(ngen, dtype=float)
 
-        self.generator_shedding = generator_shedding
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
 
-        self.generator_power = controlled_generation_power
-
-        self.bus_shadow_prices = bus_shadow_prices
-
-        self.contingency_flows_list = contingency_flows_list
-        self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = contingency_flows_slacks_list
-
-        self.rates = rates
-        self.contingency_rates = contingency_rates
-
-        self.converged = converged
+        self.converged = False
 
         # vars for the inter-area computation
         self.F = None
@@ -168,7 +147,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.plot_bars_limit = 100
 
-    def apply_new_rates(self, nc: "SnapshotData"):
+    def apply_new_rates(self, nc: "NumericalCircuit"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
@@ -393,8 +372,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
             title = 'Battery power'
 
         mdl = ResultsTable(data=y,
-                           index=labels,
-                           columns=columns,
+                           index=np.array(labels),
+                           columns=np.array(columns),
                            title=title,
                            ylabel=y_label,
                            xlabel='',

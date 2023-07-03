@@ -332,8 +332,19 @@ class MultiCircuit:
         """
         return len(self.zones)
 
-    def get_areas(self):
+    def get_areas(self) -> List[dev.Area]:
+        """
+        Get list of areas
+        :return:
+        """
         return self.areas
+
+    def get_area_names(self) -> StrVec:
+        """
+        Get array of area names
+        :return:
+        """
+        return np.array([a.name for a in self.areas])
 
     def get_area_number(self) -> int:
         """

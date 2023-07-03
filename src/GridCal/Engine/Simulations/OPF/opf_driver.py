@@ -27,7 +27,7 @@ from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
-from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -65,7 +65,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         nt = len(self.time_indices) if self.time_indices is not None else 1
 
         # OPF results
-        self.results: OptimalPowerFlowTimeSeriesResults = OptimalPowerFlowTimeSeriesResults(
+        self.results: OptimalPowerFlowResults = OptimalPowerFlowResults(
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             load_names=self.grid.get_load_names(),
@@ -79,8 +79,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             nbat=self.grid.get_batteries_number(),
             nload=self.grid.get_loads_number(),
             nhvdc=self.grid.get_hvdc_number(),
-            time=self.grid.time_profile if self.time_indices is not None else [datetime.datetime.now()],
-            bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
+            bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
+            area_names=self.grid.get_area_names())
 
         self.all_solved = True
 
@@ -228,21 +228,22 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                                time_series=use_time_series,
                                                time_indices=self.time_indices)
 
-                self.results.voltage[ti, :] = npa_res.voltage_module * np.exp(1j * npa_res.voltage_angle)
-                self.results.bus_shadow_prices[ti, :] = npa_res.nodal_shadow_prices
-                self.results.load_shedding[ti, :] = npa_res.load_shedding
-                self.results.battery_power[ti, :] = npa_res.battery_power
-                self.results.battery_energy[ti, :] = npa_res.battery_energy
-                self.results.generator_power[ti, :] = npa_res.generator_power
-                self.results.Sf[ti, :] = npa_res.branch_flows
-                self.results.St[ti, :] = -npa_res.branch_flows
-                self.results.overloads[ti, :] = npa_res.branch_overloads
-                self.results.loading[ti, :] = npa_res.branch_loading
-                self.results.phase_shift[ti, :] = npa_res.branch_tap_angle
+                self.results.voltage = npa_res.voltage_module[0, :] * np.exp(1j * npa_res.voltage_angle[0, :])
+                self.results.bus_shadow_prices = npa_res.nodal_shadow_prices[0, :]
+                self.results.load_shedding = npa_res.load_shedding[0, :]
+                self.results.battery_power = npa_res.battery_power[0, :]
+                # self.results.battery_energy = npa_res.battery_energy[0, :]
+                self.results.generator_power = npa_res.generator_power[0, :]
+                self.results.Sf = npa_res.branch_flows[0, :]
+                self.results.St = -npa_res.branch_flows[0, :]
+                self.results.overloads = npa_res.branch_overloads[0, :]
+                self.results.loading = npa_res.branch_loading[0, :]
+                self.results.phase_shift = npa_res.branch_tap_angle[0, :]
 
-                # self.results.Sbus[ti, :] = problem.get_power_injections()
-                self.results.hvdc_Pf[ti, :] = npa_res.hvdc_flows
-                self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
+                # self.results.Sbus = npa_res.
+                self.results.hvdc_Pf = npa_res.hvdc_flows[0, :]
+                self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
+                self.results.converged = True
 
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')
@@ -254,23 +255,22 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                                   time_series=use_time_series,
                                                   time_indices=self.time_indices)
 
-                self.results.voltage[ti, :] = npa_res.voltage
-                self.results.Sbus[ti, :] = npa_res.Scalc
-                self.results.bus_shadow_prices[ti, :] = npa_res.bus_shadow_prices
-                self.results.load_shedding[ti, :] = npa_res.load_shedding
-                self.results.battery_power[ti, :] = npa_res.battery_p
-                # self.results.battery_energy[ti, :] = npa_res.battery_energy
-                self.results.generator_power[ti, :] = npa_res.generator_p
-                self.results.Sf[ti, :] = npa_res.Sf
-                self.results.St[ti, :] = npa_res.St
-                self.results.overloads[ti, :] = npa_res.branch_overload
-                self.results.loading[ti, :] = npa_res.Loading
-                # self.results.phase_shift[ti, :] = npa_res.branch_tap_angle
+                self.results.voltage = npa_res.voltage[0, :]
+                self.results.Sbus = npa_res.Scalc[0, :]
+                self.results.bus_shadow_prices = npa_res.bus_shadow_prices[0, :]
+                self.results.load_shedding = npa_res.load_shedding[0, :]
+                self.results.battery_power = npa_res.battery_p[0, :]
+                # self.results.battery_energy = npa_res.battery_energy[0, :]
+                self.results.generator_power = npa_res.generator_p[0, :]
+                self.results.Sf = npa_res.Sf[0, :]
+                self.results.St = npa_res.St[0, :]
+                self.results.overloads = npa_res.branch_overload[0, :]
+                self.results.loading = npa_res.Loading[0, :]
+                self.results.phase_shift = npa_res.tap_angle[0, :]
 
-                # self.results.Sbus[ti, :] = problem.get_power_injections()
-                self.results.hvdc_Pf[ti, :] = npa_res.hvdc_Pf
-                self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
-                self.results.converged[ti] = npa_res.converged
+                self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
+                self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
+                self.results.converged = npa_res.converged
 
         end = time.time()
         self.elapsed = end - start
