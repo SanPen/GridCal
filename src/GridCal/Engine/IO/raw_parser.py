@@ -26,12 +26,18 @@ import GridCal.Engine.basic_structures as bs
 
 
 class PSSeObject:
+    """
+    Abstract PSSe object
+    """
 
     def __init__(self):
         self.REV = 33
 
 
 class PSSeGrid:
+    """
+    Collection of PSSe objects represnting a grid
+    """
 
     def __init__(self, data):
         """
@@ -199,7 +205,8 @@ class PSSeGrid:
             # get the object
             branch = psse_branch.get_object(psse_bus_dict, self.SBASE, logger)
 
-            if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance):  # detect if this branch is actually a transformer
+            if branch.should_this_be_a_transformer(
+                    branch_connection_voltage_tolerance):  # detect if this branch is actually a transformer
 
                 logger.add_error(msg="Converted line to transformer due to excessive voltage difference",
                                  device=str(branch.idtag))
@@ -418,7 +425,7 @@ class PSSeLoad(PSSeObject):
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
-            logger.add_error('Voltage equal to zero in shunt conversion', name)
+            logger.add_error('Voltage equal to zero in load conversion', name)
 
         # self.SCALEs means if the load is scalable, so omit it
         g = self.YP

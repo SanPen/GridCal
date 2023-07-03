@@ -17,54 +17,18 @@
 
 import numba as nb
 import numpy as np
-import scipy.sparse as sp
 from scipy.sparse import csc_matrix
+from typing import Tuple, Union
+from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
 
-# @nb.njit("c16[:](i8, i4[:], i4[:], c16[:], c16[:], c16[:], i8)", parallel=True)
 @nb.njit(cache=True)
-def calc_power_csr_numba(n, Yp, Yj, Yx, V, I, n_par=500):
+def csc_diagonal_from_array(m, array) -> Tuple[IntVec, IntVec, Union[Vec, CxVec, IntVec]]:
     """
-    Compute the power vector from the CSR admittance matrix
-    :param m: number of rows
-    :param n: number of columns
-    :param Yp: pointers
-    :param Yj: indices
-    :param Yx: data
-    :param V: vector x (n)
-    :param I
-    :param n_par: Number upon which the computation is done in parallel
-    :return: vector y (m)
-    """
-
-    assert n == V.shape[0]
-    S = np.zeros(n, dtype=nb.complex128)
-
-    if n < n_par:
-        # serial version
-        for i in range(n):  # for every row
-            s = complex(0, 0)
-            for p in range(Yp[i], Yp[i+1]):  # for every column
-                s += Yx[p] * V[Yj[p]]
-            S[i] = V[i] * np.conj(s - I[i])
-    else:
-        # parallel version
-        for i in nb.prange(n):  # for every row
-            s = complex(0, 0)
-            for p in range(Yp[i], Yp[i+1]):  # for every column
-                s += Yx[p] * V[Yj[p]]
-            S[i] = V[i] * np.conj(s - I[i])
-    return S
-
-
-# @nb.njit("Tuple((i4[:], i4[:], c16[:]))(i8, c16[:])")
-@nb.njit(cache=True)
-def csc_diagonal_from_array(m, array):
-    """
-
-    :param m:
-    :param array:
-    :return:
+    Generate CSC sparse diagonal matrix from array
+    :param m: Size of array
+    :param array: Array
+    :return: indices, indptr, data
     """
     indptr = np.empty(m + 1, dtype=nb.int32)
     indices = np.empty(m, dtype=nb.int32)
@@ -78,11 +42,11 @@ def csc_diagonal_from_array(m, array):
     return indices, indptr, data
 
 
-def diag(x):
+def diag(x) -> csc_matrix:
     """
     CSC diagonal matrix from array
     :param x:
-    :return:
+    :return: csc_matrix
     """
     m = x.shape[0]
     indices, indptr, data = csc_diagonal_from_array(m, x)
@@ -90,58 +54,59 @@ def diag(x):
 
 
 @nb.njit(cache=True, fastmath=True)
-def polar_to_rect(Vm, Va):
+def polar_to_rect(Vm, Va) -> CxVec:
+    """
+    Convert polar to rectangular corrdinates
+    :param Vm: Module
+    :param Va: Angle in radians
+    :return: Polar vector
+    """
     return Vm * np.exp(1.0j * Va)
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_zip_power(S0, I0, Y0, Vm):
+def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
+    """
+    Compute the equivalent power injection
+    :param S0: Base power (P + jQ)
+    :param I0: Base current (Ir + jIi)
+    :param Y0: Base admittance (G + jB)
+    :param Vm: voltage module
+    :return: complex power injection
     """
 
-    :param S0:
-    :param I0:
-    :param Y0:
-    :param Vm:
-    :return:
+    # in case of Y0 -> S = V · conj(Y) = V · conj(G + jB), hence conj(Y0)
+
+    return S0 + I0 * Vm + np.conj(Y0) * np.power(Vm, 2)
+
+
+def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     """
-    return S0 + I0 * Vm + Y0 * np.power(Vm, 2)
-
-
-def compute_power(Ybus, V):
+    Compute the power from the admittance matrix and the voltage
+    :param Ybus: Admittance matrix
+    :param V: Voltage vector
+    :return: Calculated power injections
     """
-
-    :param Ybus:
-    :param V:
-    :return:
-    """
-
-    # with warnings.catch_warnings():
-    #     warnings.filterwarnings('error')
-    #
-    #     try:
-    #         return V * np.conj(Ybus * V)
-    #     except Warning as e:
-    #         print()
-
     return V * np.conj(Ybus * V)
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_fx(Scalc, Sbus, pvpq, pq):
+def compute_fx(Scalc: CxVec, Sbus: CxVec, pvpq: IntVec, pq: IntVec) -> Vec:
     """
-
-    :param Scalc:
-    :param Sbus:
-    :param pvpq:
-    :param pq:
-    :return:
+    Compute the NR-like error function
+    f = [∆P(pqpv), ∆Q(pq)]
+    :param Scalc: Calculated power injections
+    :param Sbus: Specified power injections
+    :param pvpq: Array pf pq and pv node indices
+    :param pq: Array of pq node indices
+    :return: error
     """
     # dS = Scalc - Sbus  # compute the mismatch
     # return np.r_[dS[pvpq].real, dS[pq].imag]
 
     n = len(pvpq) + len(pq)
 
-    fx = np.empty(n)
+    fx = np.empty(n, dtype=float)
 
     k = 0
     for i in pvpq:
@@ -159,17 +124,24 @@ def compute_fx(Scalc, Sbus, pvpq, pq):
     return fx
 
 
-def compute_fx_error(fx):
+def compute_fx_error(fx) -> float:
     """
-
-    :param fx:
-    :return:
+    Compute the infinite norm of fx
+    this is the same as max(abs(fx))
+    :param fx: vector
+    :return: infinite norm
     """
     return np.linalg.norm(fx, np.inf)
 
 
 @nb.jit(nopython=True, cache=True, fastmath=True)
-def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
+def compute_converter_losses(V: CxVec,
+                             It: CxVec,
+                             F: IntVec,
+                             alpha1: Vec,
+                             alpha2: Vec,
+                             alpha3: Vec,
+                             iVscL: IntVec) -> Vec:
     """
     Compute the converter losses according to the IEC 62751-2
     :param V: array of voltages
@@ -206,8 +178,26 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
 
 
 @nb.jit(nopython=True, cache=True, fastmath=True)
-def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
-                    pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
+def compute_acdc_fx(Vm: Vec,
+                    Sbus: CxVec,
+                    Scalc: CxVec,
+                    Sf: CxVec,
+                    St: CxVec,
+                    Pfset: Vec,
+                    Qfset: Vec,
+                    Qtset: Vec,
+                    Vmfset: Vec,
+                    Kdp: Vec,
+                    F: IntVec,
+                    pvpq: IntVec,
+                    pq: IntVec,
+                    iPfsh: IntVec,
+                    iQfma: IntVec,
+                    iBeqz: IntVec,
+                    iQtma: IntVec,
+                    iPfdp: IntVec,
+                    VfBeqbus: IntVec,
+                    Vtmabus: IntVec) -> Vec:
     """
     Compute the increments vector
     :param Vm: Voltages module array
@@ -219,7 +209,6 @@ def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F
     :param Vmfset: Array of Vf module set values per branch
     :param Kdp: Array of branch droop value per branch
     :param F: Array of from bus indices of the Branches
-    :param T: Array of to bus indices of the Branches
     :param pvpq: Array of pv|pq bus indices
     :param pq: Array of pq indices
     :param iPfsh:
@@ -233,7 +222,8 @@ def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F
     """
     # mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    n = len(pvpq) + len(pq) + len(VfBeqbus) + len(Vtmabus) + len(iPfsh) + len(iQfma) + len(iBeqz) + len(iQtma) + len(iPfdp)
+    n = len(pvpq) + len(pq) + len(VfBeqbus) + len(Vtmabus) + len(iPfsh) + len(iQfma) + len(iBeqz) + len(iQtma) + len(
+        iPfdp)
 
     fx = np.empty(n)
 
@@ -286,9 +276,3 @@ def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F
         k += 1
 
     return fx
-
-
-
-
-
-
