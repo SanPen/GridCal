@@ -954,23 +954,12 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     if time_indices is None:
         time_indices = [None]
-        nc_dict = dict()
     else:
         if len(time_indices) > 0:
-            states_dict = find_different_states(states_array=grid.get_branch_active_time_array()[time_indices])
-            nc_dict: Dict[int, NumericalCircuit] = dict()
-            for key, values in states_dict.items():
-
-                nc = compile_numerical_circuit_at(circuit=grid,
-                                                  t_idx=key,  # yes, this is not a bug
-                                                  bus_dict=bus_dict,
-                                                  areas_dict=areas_dict)
-
-                for v in values:
-                    nc_dict[v] = nc
+            # time indices are ok
+            pass
         else:
             time_indices = [None]
-            nc_dict = dict()
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
@@ -995,15 +984,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
     for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
         # get or compile the circuit at the master time index ------------------------------------------------------
-        nc = nc_dict.get(t, None)
-        if nc is None:
-            nc = compile_numerical_circuit_at(circuit=grid,
-                                              t_idx=t,  # yes, this is not a bug
-                                              bus_dict=bus_dict,
-                                              areas_dict=areas_dict)
-        else:
-            # found nc in the precompiled dictionary
-            pass
+        nc = compile_numerical_circuit_at(circuit=grid,
+                                          t_idx=t,  # yes, this is not a bug
+                                          bus_dict=bus_dict,
+                                          areas_dict=areas_dict)
 
         if add_contingencies:
             ls = LinearAnalysis(numerical_circuit=nc,
