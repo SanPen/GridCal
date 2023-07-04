@@ -139,4 +139,18 @@ As of version 4.0.0 of GridCal we have tested the following procedure to make Mi
 - Test: `python.exe -c "from GridCal.ExecuteGridCal import run; run()"`
 
 
+Configure MIP solvers
+------------------------------
 
+.. code::
+
+    CPLEX_HOME="/opt/ibm/ILOG/CPLEX_Enterprise_Server1210/CPLEX_Studio/cplex"
+    CPO_HOME="/opt/ibm/ILOG/CPLEX_Enterprise_Server1210/CPLEX_Studio/cpoptimizer"
+    PATH="${PATH}:${CPLEX_HOME}/bin/x86-64_linux:${CPO_HOME}/bin/x86-64_linux"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CPLEX_HOME}/bin/x86-64_linux:${CPO_HOME}/bin/x86-64_linux"
+
+.. code::
+
+    GUROBI_HOME="/opt/gurobi1000"
+    PATH="${PATH}:${GUROBI_HOME}/bin"
+    LD_LIBRARY_PATH="${GUROBI_HOME}/lib"

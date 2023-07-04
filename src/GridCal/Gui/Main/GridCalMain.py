@@ -47,9 +47,10 @@ import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.IO.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
 from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
 # GUI imports
@@ -296,7 +297,8 @@ class MainGUI(QMainWindow):
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
         self.mip_solvers_dict[bs.MIPSolvers.GUROBI.value] = bs.MIPSolvers.GUROBI
         self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
-        self.ui.mip_solver_comboBox.setModel(gf.get_list_model(list(self.mip_solvers_dict.keys())))
+        mip_solvers = get_or_tools_available_solvers()
+        self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
         # voltage collapse mode (full, nose)
         self.ui.vc_stop_at_comboBox.setModel(gf.get_list_model([sim.CpfStopAt.Nose.value,
@@ -764,7 +766,7 @@ class MainGUI(QMainWindow):
 
         self.load_gui_config()
 
-    def LOCK(self, val=True):
+    def LOCK(self, val: bool = True) -> None:
         """
         Lock the interface to prevent new simulation launches
         :param val:
@@ -774,14 +776,14 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
         QtGui.QGuiApplication.processEvents()
 
-    def UNLOCK(self):
+    def UNLOCK(self) -> None:
         """
         Unlock the interface
         """
         if not self.any_thread_running():
             self.LOCK(False)
 
-    def modify_ui_options_according_to_the_engine(self):
+    def modify_ui_options_according_to_the_engine(self) -> None:
         """
         Change the UI depending on the engine options
         :return:
@@ -816,6 +818,9 @@ class MainGUI(QMainWindow):
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
+            mip_solvers = get_newton_mip_solvers_list()
+            self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
+
         elif eng == bs.EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
@@ -843,6 +848,10 @@ class MainGUI(QMainWindow):
 
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
+
+            # MIP solvers
+            mip_solvers = get_or_tools_available_solvers()
+            self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
         elif eng == bs.EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)

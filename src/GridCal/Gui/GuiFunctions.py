@@ -1385,7 +1385,7 @@ def fill_model_from_dict(parent: QtGui.QStandardItem,
         parent.appendRow(item)
 
 
-def get_tree_model(d, top='Results', icons: Dict[str, str] = None):
+def get_tree_model(d, top='', icons: Dict[str, str] = None):
     """
 
     :param d:

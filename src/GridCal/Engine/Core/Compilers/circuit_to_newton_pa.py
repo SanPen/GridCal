@@ -64,6 +64,17 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
+def get_newton_mip_solvers_list() ->List[str]:
+    """
+    Get list of available MIP solvers
+    :return:
+    """
+    if NEWTON_PA_AVAILABLE:
+        return npa.getAvailableSolverStrList()
+    else:
+        return list()
+
+
 def add_npa_areas(circuit: MultiCircuit,
                   npa_circuit: "npa.HybridCircuit",
                   n_time: int = 1) -> Dict[dev.Area, "npa.Area"]:

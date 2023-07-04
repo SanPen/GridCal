@@ -19,6 +19,7 @@
 This file includes extensions to the ORTools library
 """
 
+from typing import List
 import numpy as np
 from ortools.linear_solver import pywraplp
 from itertools import product
@@ -381,3 +382,17 @@ def lpGet2D(arr, make_abs=False):
         val = np.abs(val)
 
     return val
+
+
+def get_or_tools_available_solvers() -> List[str]:
+    """
+    Get a list of candidate solvers
+    :return:
+    """
+    candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
+    res = list()
+    for c in candidates:
+        solver = pywraplp.Solver.CreateSolver(c)
+        if solver is not None:
+            res.append(c)
+    return res

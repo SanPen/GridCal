@@ -483,7 +483,8 @@ def get_branch_data(circuit: MultiCircuit,
                     t_idx=-1,
                     time_series=False,
                     opf_results: Union["OptimalPowerFlowResults", None] = None,
-                    use_stored_guess=False):
+                    use_stored_guess=False,
+                    logger: Logger = Logger()):
     """
 
     :param circuit:
@@ -495,6 +496,7 @@ def get_branch_data(circuit: MultiCircuit,
     :param time_series:
     :param opf_results:
     :param use_stored_guess:
+    :param logger:
     :return:
     """
 
@@ -683,81 +685,85 @@ def get_branch_data(circuit: MultiCircuit,
     # windings
     for i, elm in enumerate(circuit.windings):
 
-        # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
+        if elm.bus_from is not None and elm.bus_to is not None:
+            # generic stuff
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
 
-        data.names[ii] = elm.name
+            data.names[ii] = elm.name
 
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.R[ii] = elm.R
-        data.X[ii] = elm.X
-        data.G[ii] = elm.G
-        data.B[ii] = elm.B
-
-        data.R0[ii] = elm.R0
-        data.X0[ii] = elm.X0
-        data.G0[ii] = elm.G0
-        data.B0[ii] = elm.B0
-
-        data.R2[ii] = elm.R2
-        data.X2[ii] = elm.X2
-        data.G2[ii] = elm.G2
-        data.B2[ii] = elm.B2
-
-        data.conn[ii] = elm.conn
-
-        if time_series:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
+            if time_series:
+                data.active[ii] = elm.active_prof[t_idx]
+                data.rates[ii] = elm.rate_prof[t_idx]
+                data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+                data.overload_cost[ii] = elm.Cost_prof[t_idx]
             else:
-                data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                data.tap_angle[ii] = elm.angle_prof[t_idx]
-        else:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[ii]
+                data.active[ii] = elm.active
+                data.rates[ii] = elm.rate
+                data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+                data.overload_cost[ii] = elm.Cost
+
+            data.C_branch_bus_f[ii, f] = 1
+            data.C_branch_bus_t[ii, t] = 1
+            data.F[ii] = f
+            data.T[ii] = t
+
+            data.R[ii] = elm.R
+            data.X[ii] = elm.X
+            data.G[ii] = elm.G
+            data.B[ii] = elm.B
+
+            data.R0[ii] = elm.R0
+            data.X0[ii] = elm.X0
+            data.G0[ii] = elm.G0
+            data.B0[ii] = elm.B0
+
+            data.R2[ii] = elm.R2
+            data.X2[ii] = elm.X2
+            data.G2[ii] = elm.G2
+            data.B2[ii] = elm.B2
+
+            data.conn[ii] = elm.conn
+
+            if time_series:
+                if opf_results is not None:
+                    data.tap_module[ii] = elm.tap_module
+                    data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
+                else:
+                    data.tap_module[ii] = elm.tap_module_prof[t_idx]
+                    data.tap_angle[ii] = elm.angle_prof[t_idx]
             else:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = elm.angle
+                if opf_results is not None:
+                    data.tap_module[ii] = elm.tap_module
+                    data.tap_angle[ii] = opf_results.phase_shift[ii]
+                else:
+                    data.tap_module[ii] = elm.tap_module
+                    data.tap_angle[ii] = elm.angle
 
-        data.tap_module_min[ii] = elm.tap_module_min
-        data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_angle_min[ii] = elm.angle_min
-        data.tap_angle_max[ii] = elm.angle_max
+            data.tap_module_min[ii] = elm.tap_module_min
+            data.tap_module_max[ii] = elm.tap_module_max
+            data.tap_angle_min[ii] = elm.angle_min
+            data.tap_angle_max[ii] = elm.angle_max
 
-        data.Pfset[ii] = elm.Pset
+            data.Pfset[ii] = elm.Pset
 
-        data.control_mode[ii] = elm.control_mode
-        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
+            data.control_mode[ii] = elm.control_mode
+            data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
+            data.contingency_enabled[ii] = int(elm.contingency_enabled)
+            data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        if not use_stored_guess:
-            if elm.control_mode == TransformerControlType.Vt:
-                Vbus[t] = elm.vset
+            if not use_stored_guess:
+                if elm.control_mode == TransformerControlType.Vt:
+                    Vbus[t] = elm.vset
 
-            elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
-                Vbus[t] = elm.vset
+                elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+                    Vbus[t] = elm.vset
 
-        ii += 1
+            ii += 1
+
+        else:
+            logger.add_error("Ill connected winding", device=elm.idtag)
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):

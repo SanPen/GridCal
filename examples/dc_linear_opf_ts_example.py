@@ -10,7 +10,7 @@ main_circuit = FileOpen(fname).open()
 
 # get the power flow options from the GUI
 solver = SolverType.DC_OPF
-mip_solver = MIPSolvers.SCIP
+mip_solver = MIPSolvers.GUROBI
 grouping = TimeGrouping.Daily
 pf_options = PowerFlowOptions()
 
