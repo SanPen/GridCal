@@ -40,7 +40,6 @@ class OptimalPowerFlowOptions:
                  bus_types=None,
                  consider_contingencies=False,
                  skip_generation_limits=False,
-                 tolerance=1.0,
                  LODF=None,
                  lodf_tolerance=0.001,
                  maximize_flows=False,
@@ -89,8 +88,6 @@ class OptimalPowerFlowOptions:
         self.consider_contingencies = consider_contingencies
 
         self.LODF = LODF
-
-        self.tolerance = tolerance
 
         self.lodf_tolerance = lodf_tolerance
 

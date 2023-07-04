@@ -81,7 +81,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             nbat=self.grid.get_batteries_number(),
             nload=self.grid.get_loads_number(),
             nhvdc=self.grid.get_hvdc_number(),
-            time=self.grid.time_profile if self.time_indices is not None else [datetime.datetime.now()],
+            time=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
 
         self.all_solved = True
@@ -165,14 +165,13 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.progress_text.emit('Making groups...')
 
         # get the partition points of the time series
-        groups = get_time_groups(t_array=self.grid.time_profile, grouping=self.options.grouping)
+        groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.grouping)
 
         n = len(groups)
         i = 1
         energy_0: Union[bs.Vec, None] = None  # at the beginning
 
         while i < n and not self.__cancel__:
-
             start_ = groups[i - 1]
             end_ = groups[i]
             time_indices = np.arange(start_, end_)
@@ -181,42 +180,42 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.progress_text.emit('Running OPF for the time group {0} '
                                     'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
-            if start_ >= self.start_ and end_ <= self.end_:
-                # run an opf for the group interval only if the group is within the start:end boundaries
-                # DC optimal power flow
-                opf_vars = run_linear_opf_ts(grid=self.grid,
-                                             time_indices=time_indices,
-                                             solver_type=self.options.mip_solver,
-                                             zonal_grouping=self.options.zonal_grouping,
-                                             skip_generation_limits=self.options.skip_generation_limits,
-                                             consider_contingencies=self.options.consider_contingencies,
-                                             lodf_threshold=self.options.lodf_tolerance,
-                                             maximize_inter_area_flow=self.options.maximize_flows,
-                                             buses_areas_1=self.options.area_from_bus_idx,
-                                             buses_areas_2=self.options.area_to_bus_idx,
-                                             energy_0=energy_0,
-                                             logger=self.logger)
+            # run an opf for the group interval only if the group is within the start:end boundaries
+            # DC optimal power flow
+            opf_vars = run_linear_opf_ts(grid=self.grid,
+                                         time_indices=time_indices,
+                                         solver_type=self.options.mip_solver,
+                                         zonal_grouping=self.options.zonal_grouping,
+                                         skip_generation_limits=self.options.skip_generation_limits,
+                                         consider_contingencies=self.options.consider_contingencies,
+                                         lodf_threshold=self.options.lodf_tolerance,
+                                         maximize_inter_area_flow=self.options.maximize_flows,
+                                         buses_areas_1=self.options.area_from_bus_idx,
+                                         buses_areas_2=self.options.area_to_bus_idx,
+                                         energy_0=energy_0,
+                                         logger=self.logger)
 
-                self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
-                self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
-                self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
-                self.results.battery_power[time_indices, :] = opf_vars.batt_vars.p
-                self.results.battery_energy[time_indices, :] = opf_vars.batt_vars.e
-                self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
-                self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
-                self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
-                self.results.overloads[time_indices, :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
-                self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
-                self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
-                # self.results.Sbus[time_indices, :] = problem.get_power_injections()
-                self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
-                self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
+            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(
+                1j * opf_vars.bus_vars.theta)
+            self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
+            self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
+            self.results.battery_power[time_indices, :] = opf_vars.batt_vars.p
+            self.results.battery_energy[time_indices, :] = opf_vars.batt_vars.e
+            self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
+            self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
+            self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
+            self.results.overloads[time_indices,
+            :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
+            self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
+            # self.results.Sbus[time_indices, :] = problem.get_power_injections()
+            self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
+            self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
             # update progress bar
-            progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
-            self.progress_signal.emit(progress)
+            self.progress_signal.emit((i / len(groups)) * 100)
 
             i += 1
 
@@ -242,8 +241,15 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         elif self.engine == bs.EngineType.NewtonPA:
 
-            ti = self.time_indices if self.time_indices is not None else 0
-            use_time_series = self.time_indices is not None
+            if self.time_indices is None:
+                ti = 0
+                use_time_series = False
+            else:
+                use_time_series = True
+                if self.using_clusters:
+                    ti = np.arange(0, len(self.time_indices))
+                else:
+                    ti = self.time_indices
 
             if self.options.solver == SolverType.DC_OPF:
                 self.progress_text.emit('Running Linear OPF with Newton...')

@@ -119,12 +119,14 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         if clustering_results:
+            self.using_clusters = True
             self.time_indices: IntVec = clustering_results.time_indices
             self.sampled_probabilities: Vec = clustering_results.sampled_probabilities
 
             self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 
         else:
+            self.using_clusters = False
             if time_indices is None:
                 self.time_indices = None
                 self.sampled_probabilities = None

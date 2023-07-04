@@ -4054,7 +4054,6 @@ class MainGUI(QMainWindow):
                 pf_options = self.get_selected_power_flow_options()
                 consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
-                tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                 maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
                 unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
@@ -4096,7 +4095,6 @@ class MainGUI(QMainWindow):
                                                       power_flow_options=pf_options,
                                                       consider_contingencies=consider_contingencies,
                                                       skip_generation_limits=skip_generation_limits,
-                                                      tolerance=tolerance,
                                                       LODF=LODF,
                                                       lodf_tolerance=lodf_tolerance,
                                                       maximize_flows=maximize_flows,
@@ -4179,7 +4177,7 @@ class MainGUI(QMainWindow):
                     pf_options = self.get_selected_power_flow_options()
                     consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
-                    tolerance = 10 ** self.ui.opfTolSpinBox.value()
+
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
                     maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
                     unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
@@ -4221,7 +4219,6 @@ class MainGUI(QMainWindow):
                                                           power_flow_options=pf_options,
                                                           consider_contingencies=consider_contingencies,
                                                           skip_generation_limits=skip_generation_limits,
-                                                          tolerance=tolerance,
                                                           LODF=LODF,
                                                           lodf_tolerance=lodf_tolerance,
                                                           maximize_flows=maximize_flows,
@@ -7332,7 +7329,6 @@ class MainGUI(QMainWindow):
                 "time_grouping": self.ui.opf_time_grouping_comboBox,
                 "zone_grouping": self.ui.opfZonalGroupByComboBox,
                 "mip_solver": self.ui.mip_solver_comboBox,
-                "convergence_tolerance": self.ui.opfTolSpinBox,
                 "contingency_tolerance": self.ui.opfContingencyToleranceSpinBox,
                 "max_module_step": self.ui.maxVoltageModuleStepSpinBox,
                 "max_angle_step": self.ui.maxVoltageAngleStepSpinBox,
