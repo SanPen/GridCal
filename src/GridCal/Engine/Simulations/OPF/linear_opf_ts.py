@@ -32,6 +32,7 @@ from GridCal.Engine.Core.DataStructures.battery_data import BatteryData
 from GridCal.Engine.Core.DataStructures.load_data import LoadData
 from GridCal.Engine.Core.DataStructures.branch_data import BranchData
 from GridCal.Engine.Core.DataStructures.hvdc_data import HvdcData
+from GridCal.Engine.Core.DataStructures.bus_data import BusData
 from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec
 import GridCal.ThirdParty.ortools.ortools_extra as pl
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
@@ -58,6 +59,10 @@ def get_lp_var_value(x: Union[float, ort.Variable]) -> float:
     """
     if isinstance(x, ort.Variable):
         return x.solution_value()
+    elif isinstance(x, ort.SumArray):
+        return x.solution_value()
+    elif isinstance(x, ort.Constraint):
+        return x.dual_value()
     else:
         return x
 
@@ -74,8 +79,8 @@ class BusVars:
         :param n_elm: Number of branches
         """
         self.theta = np.zeros((nt, n_elm), dtype=object)
-        self.Pinj_tau = np.zeros((nt, n_elm), dtype=object)
-
+        self.branch_injections = np.zeros((nt, n_elm), dtype=object)
+        self.kirchoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
 
     def get_values(self, Sbase: float) -> "BusVars":
@@ -91,11 +96,12 @@ class BusVars:
         for t in range(nt):
             for i in range(n_elm):
                 data.theta[t, i] = get_lp_var_value(self.theta[t, i])
-                data.Pinj_tau[t, i] = get_lp_var_value(self.Pinj_tau[t, i])
+                data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i])
+                data.shadow_prices[t, i] = get_lp_var_value(self.kirchoff[t, i])
 
         # format the arrays aproprietly
         data.theta = data.theta.astype(float, copy=False)
-        data.Pinj_tau = data.Pinj_tau.astype(float, copy=False)
+        data.branch_injections = data.branch_injections.astype(float, copy=False)
 
         return data
 
@@ -113,7 +119,7 @@ class LoadVars:
         """
         self.shedding = np.zeros((nt, n_elm), dtype=object)
 
-        self.Pl = np.zeros((nt, n_elm), dtype=float)  # to be filled (no vars)
+        self.p = np.zeros((nt, n_elm), dtype=float)  # to be filled (no vars)
 
     def get_values(self, Sbase: float) -> "LoadVars":
         """
@@ -123,7 +129,7 @@ class LoadVars:
         nt, n_elm = self.shedding.shape
         data = LoadVars(nt=nt, n_elm=n_elm)
 
-        data.Pl = self.Pl * Sbase  # this is data already, so make a refference copy
+        data.p = self.p * Sbase  # this is data already, so make a refference copy
 
         for t in range(nt):
             for i in range(n_elm):
@@ -203,11 +209,11 @@ class BatteryVars(GenerationVars):
         for t in range(nt):
             for i in range(n_elm):
                 data.p[t, i] = get_lp_var_value(self.p[t, i]) * Sbase
+                data.e[t, i] = get_lp_var_value(self.e[t, i]) * Sbase
                 data.shedding[t, i] = get_lp_var_value(self.shedding[t, i]) * Sbase
                 data.producing[t, i] = get_lp_var_value(self.producing[t, i])
                 data.starting_up[t, i] = get_lp_var_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = get_lp_var_value(self.shutting_down[t, i])
-                data.e[t, i] = get_lp_var_value(self.e[t, i]) * Sbase
 
             # format the arrays aproprietly
             data.p = data.p.astype(float, copy=False)
@@ -376,7 +382,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       skip_generation_limits: bool):
     """
     Add MIP generation formulation
-    :param t: time step, if None we assume single time step
+    :param t: time step
     :param Sbase: base power (100 MVA)
     :param time_array: complete time array
     :param gen_data_t: GeneratorData structure
@@ -469,12 +475,16 @@ def add_linear_generation_formulation(t: Union[int, None],
                     prob.Add(gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
                              join("gen==PG-PGslack", [t, k], "_"))
 
+                    f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
+
                 elif p < 0:
-                    # the negative sign is because P is already negative here
+                    # the negative sign is because P is already negative here, to make it positive
                     gen_vars.shedding[t, k] = prob.NumVar(0, -p, join("gen_shedding_", [t, k], "_"))
 
                     prob.Add(gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
                              join("gen==PG+PGslack", [t, k], "_"))
+
+                    f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 else:
                     # the generation value is exactly zero, pass
@@ -521,7 +531,7 @@ def add_linear_battery_formulation(t: Union[int, None],
         if batt_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
-            batt_data_t.p[t, k] = prob.NumVar(0, 1e20, join("batt_p_", [t, k], "_"))
+            batt_vars.p[t, k] = prob.NumVar(0, 1e20, join("batt_p_", [t, k], "_"))
 
             if batt_data_t.dispatchable[k]:
 
@@ -574,7 +584,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                         batt_vars.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment
-                dt = (time_array[t] - time_array[t - 1]) / 3600.0  # time increment in hours
+                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
 
                 if ramp_constraints and t is not None:
                     if t > 0:
@@ -617,12 +627,16 @@ def add_linear_battery_formulation(t: Union[int, None],
                     prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase - batt_vars.shedding[t, k],
                              join("batt==PB-PBslack", [t, k], "_"))
 
+                    f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
+
                 elif p < 0:
                     # the negative sign is because P is already negative here
                     batt_vars.shedding[t, k] = prob.NumVar(0, -p, join("bat_shedding_", [t, k], "_"))
 
                     prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
                              join("batt==PB+PBslack", [t, k], "_"))
+
+                    f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
 
                 else:
                     # the generation value is exactly zero, pass
@@ -659,16 +673,16 @@ def add_linear_load_formulation(t: Union[int, None],
         if load_data_t.active[k]:
 
             # store the load
-            load_vars.Pl[t, k] = load_data_t.S[k].real / Sbase
+            load_vars.p[t, k] = load_data_t.S[k].real / Sbase
 
-            if load_vars.Pl[t, k] > 0.0:
+            if load_vars.p[t, k] > 0.0:
 
                 # assign load shedding variable
-                load_vars.shedding[t, k] = prob.NumVar(lb=0, ub=load_vars.Pl[t, k],
+                load_vars.shedding[t, k] = prob.NumVar(lb=0, ub=load_vars.p[t, k],
                                                        name=join("load_shedding_", [t, k], "_"))
 
                 # minimize the load shedding
-                f_obj += load_vars.shedding[t, k]
+                f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
             else:
                 # the load is negative, won't shed?
                 load_vars.shedding[t, k].SetBounds(0.0, 0.0)
@@ -744,8 +758,8 @@ def add_linear_branches_formulation(t: int,
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
-                vars_bus.Pinj_tau[fr] = -bk * branch_vars.tap_angles[t, m]
-                vars_bus.Pinj_tau[to] = bk * branch_vars.tap_angles[t, m]
+                vars_bus.branch_injections[fr] = -bk * branch_vars.tap_angles[t, m]
+                vars_bus.branch_injections[to] = bk * branch_vars.tap_angles[t, m]
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
@@ -759,18 +773,19 @@ def add_linear_branches_formulation(t: int,
 
                 # add upper rate constraint
                 branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[
-                                                            t, m] <= branch_data_t.rates[m] / Sbase
+                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[
+                                                            m] / Sbase
                 prob.Add(branch_vars.flow_constraints_ub[t, m])
 
                 # add lower rate constraint
                 branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[
-                                                            t, m] >= -branch_data_t.rates[m] / Sbase
+                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[
+                    m] / Sbase
                 prob.Add(branch_vars.flow_constraints_lb[t, m])
 
                 # add to the objective function
-                f_obj += branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m]
+                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
+                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
 
                 if add_contingencies:
 
@@ -820,16 +835,16 @@ def add_linear_hvdc_formulation(t: int,
                          name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
-                vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
-                vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+                vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
+                vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
 
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
 
                     # add the injections matching the flow
-                    vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
 
                 else:
 
@@ -843,8 +858,8 @@ def add_linear_hvdc_formulation(t: int,
                     hvdc_vars.flows[t, m].SetBounds(P0, P0)  # make the flow equal to P0
 
                     # add the injections matching the flow
-                    vars_bus.Pinj_tau[fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.Pinj_tau[to] += hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
             else:
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
@@ -852,6 +867,49 @@ def add_linear_hvdc_formulation(t: int,
             hvdc_vars.flows[t, m].SetBounds(0, 0)
 
     return f_obj
+
+
+def add_linear_node_balance(t_idx: int,
+                            Bbus,
+                            bus_data: BusData,
+                            generator_data: GeneratorData,
+                            battery_data: BatteryData,
+                            load_data: LoadData,
+                            bus_vars: BusVars,
+                            gen_vars: GenerationVars,
+                            batt_vars: BatteryVars,
+                            load_vars: LoadVars,
+                            prob: ort.Solver):
+    """
+    Add the kirchoff nodal equality
+    :param t_idx: time step
+    :param Bbus: susceptance matrix (complete)
+    :param bus_data: BusData
+    :param generator_data: GeneratorData
+    :param battery_data: BatteryData
+    :param load_data: LoadData
+    :param bus_vars: BusVars
+    :param gen_vars: GenerationVars
+    :param batt_vars: BatteryVars
+    :param load_vars: LoadVars
+    :param prob: ort.Solver
+    """
+    B = Bbus.tocsc()
+
+    P_esp = bus_vars.branch_injections[t_idx, :]
+    P_esp += pl.lpDot(generator_data.C_bus_elm.tocsc(),
+                      gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    P_esp += pl.lpDot(battery_data.C_bus_elm.tocsc(),
+                      batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    P_esp += pl.lpDot(load_data.C_bus_elm.tocsc(),
+                      load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+
+    # calculate the linear nodal inyection
+    P_calc = pl.lpDot(B, bus_vars.theta[t_idx, :])
+
+    # add the equality restrictions
+    for k in range(bus_data.nbus):
+        bus_vars.kirchoff[t_idx, k] = prob.Add(P_calc[k] == P_esp[k], name=join("kirchoff_", [t_idx, k], "_"))
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
@@ -868,7 +926,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       buses_areas_1=None,
                       buses_areas_2=None,
                       energy_0: Union[Vec, None] = None,
-                      logger: Logger = Logger()) -> OpfVars:
+                      logger: Logger = Logger(),
+                      progress_text=None,
+                      progress_func=None) -> OpfVars:
     """
 
     :param grid:
@@ -932,6 +992,12 @@ def run_linear_opf_ts(grid: MultiCircuit,
         else:
             LODF = None
 
+        # formulate the bus angles ---------------------------------------------------------------------------------
+        for k in range(nc.bus_data.nbus):
+            mip_vars.bus_vars.theta[t_idx, k] = solver.NumVar(nc.bus_data.angle_min[k],
+                                                              nc.bus_data.angle_max[k],
+                                                              join("th_", [t_idx, k], "_"))
+
         # formulate loads ------------------------------------------------------------------------------------------
         f_obj += add_linear_load_formulation(t=t_idx,
                                              Sbase=nc.Sbase,
@@ -966,18 +1032,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                 skip_generation_limits=skip_generation_limits,
                                                 energy_0=energy_0)
 
-        # formulate branches ---------------------------------------------------------------------------------------
-        f_obj += add_linear_branches_formulation(t=t_idx,
-                                                 Sbase=nc.Sbase,
-                                                 branch_data_t=nc.branch_data,
-                                                 branch_vars=mip_vars.branch_vars,
-                                                 vars_bus=mip_vars.bus_vars,
-                                                 prob=solver,
-                                                 add_contingencies=add_contingencies,
-                                                 LODF=LODF,
-                                                 lodf_threshold=lodf_threshold,
-                                                 inf=1e20)
-
         # formulate hvdc -------------------------------------------------------------------------------------------
         f_obj += add_linear_hvdc_formulation(t=t_idx,
                                              Sbase=nc.Sbase,
@@ -986,14 +1040,54 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                              vars_bus=mip_vars.bus_vars,
                                              prob=solver)
 
+        if zonal_grouping == ZonalGrouping.NoGrouping:
+            # formulate branches -----------------------------------------------------------------------------------
+            f_obj += add_linear_branches_formulation(t=t_idx,
+                                                     Sbase=nc.Sbase,
+                                                     branch_data_t=nc.branch_data,
+                                                     branch_vars=mip_vars.branch_vars,
+                                                     vars_bus=mip_vars.bus_vars,
+                                                     prob=solver,
+                                                     add_contingencies=add_contingencies,
+                                                     LODF=LODF,
+                                                     lodf_threshold=lodf_threshold,
+                                                     inf=1e20)
+
+            # formulate nodes ---------------------------------------------------------------------------------------
+
+            add_linear_node_balance(t_idx=t_idx,
+                                    Bbus=nc.Bbus,
+                                    bus_data=nc.bus_data,
+                                    generator_data=nc.generator_data,
+                                    battery_data=nc.battery_data,
+                                    load_data=nc.load_data,
+                                    bus_vars=mip_vars.bus_vars,
+                                    gen_vars=mip_vars.gen_vars,
+                                    batt_vars=mip_vars.batt_vars,
+                                    load_vars=mip_vars.load_vars,
+                                    prob=solver)
+
+        elif zonal_grouping == ZonalGrouping.All:
+            # this is the copper plate approach
+            pass
+
         # production equals demand ---------------------------------------------------------------------------------
-        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) >= mip_vars.load_vars.Pl[t_idx, :].sum(),
+        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) >= mip_vars.load_vars.p[t_idx, :].sum(),
                    name="satisfy_demand_at_t={0}".format(t_idx))
+
+        if progress_func is not None:
+            progress_func((t_idx + 1) / nt * 100.0)
 
     # set the objective function
     solver.Minimize(f_obj)
 
     # solve
+    if progress_text is not None:
+        progress_text("Solving...")
+
+    if progress_func is not None:
+        progress_func(0)
+
     status = solver.Solve()
 
     # gather the results

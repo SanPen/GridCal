@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import run_linear_opf_ts
+from GridCal.Engine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults

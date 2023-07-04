@@ -25,7 +25,7 @@ from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import run_linear_opf_ts
+from GridCal.Engine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -132,6 +132,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             # self.results.Sbus = problem.get_power_injections()[0, :]
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
+            self.results.converged = opf_vars.acceptable_solution
 
         elif self.options.solver == SolverType.Simple_OPF:
 

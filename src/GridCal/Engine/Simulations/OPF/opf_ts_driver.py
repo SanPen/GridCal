@@ -24,7 +24,7 @@ from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import run_linear_opf_ts
+from GridCal.Engine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -117,7 +117,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          buses_areas_1=self.options.area_from_bus_idx,
                                          buses_areas_2=self.options.area_to_bus_idx,
-                                         logger=self.logger)
+                                         logger=self.logger,
+                                         progress_text=self.progress_text.emit,
+                                         progress_func=self.progress_signal.emit)
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
