@@ -573,10 +573,10 @@ class MIPSolvers(Enum):
     """
     GLOP = "GLOP"
     CBC = 'CBC'
-    HiGS = 'HiGS'
+    HIGHS = 'Highs'
     SCIP = 'SCIP'
     CPLEX = 'CPLEX'
-    GUROBI = 'Gurobi'
+    GUROBI = 'GUROBI'
     XPRESS = 'Xpress'
 
     def __str__(self):

@@ -75,7 +75,6 @@ def get_load_data(circuit: MultiCircuit,
                   t_idx=-1,
                   opf_results: Union["OptimalPowerFlowResults", None] = None,
                   time_series=False,
-                  opf=False,
                   use_stored_guess=False) -> ds.LoadData:
     """
 
@@ -111,9 +110,7 @@ def get_load_data(circuit: MultiCircuit,
             data.Y[ii] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
 
             data.active[ii] = elm.active_prof[t_idx]
-
-            if opf:
-                data.cost[ii] = elm.Cost_prof[t_idx]
+            data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
             if opf_results is not None:
@@ -124,9 +121,7 @@ def get_load_data(circuit: MultiCircuit,
             data.I[ii] = complex(elm.Ir, elm.Ii)
             data.Y[ii] = complex(elm.G, elm.B)
             data.active[ii] = elm.active
-
-            if opf:
-                data.cost[ii] = elm.Cost
+            data.cost[ii] = elm.Cost
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -144,9 +139,7 @@ def get_load_data(circuit: MultiCircuit,
                 data.S[ii] -= elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
 
             data.active[ii] = elm.active_prof[t_idx]
-
-            if opf:
-                data.cost[ii] = elm.Cost_prof[t_idx]
+            data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
             if opf_results is not None:
@@ -155,9 +148,7 @@ def get_load_data(circuit: MultiCircuit,
                 data.S[ii] -= complex(elm.P, elm.Q)
 
             data.active[ii] = elm.active
-
-            if opf:
-                data.cost[ii] = elm.Cost
+            data.cost[ii] = elm.Cost
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -268,7 +259,6 @@ def get_generator_data(circuit: MultiCircuit,
                        opf_results: Union["OptimalPowerFlowResults", None] = None,
                        t_idx=-1,
                        time_series=False,
-                       opf=False,
                        use_stored_guess=False) -> ds.GeneratorData:
     """
 
@@ -306,6 +296,16 @@ def get_generator_data(circuit: MultiCircuit,
         data.x1[k] = elm.X1
         data.x2[k] = elm.X2
 
+        data.availability[k] = 1.0
+        data.ramp_up[k] = elm.RampUp
+        data.ramp_down[k] = elm.RampDown
+        data.min_time_up[k] = elm.MinTimeUp
+        data.min_time_down[k] = elm.MinTimeDown
+
+        data.dispatchable[k] = elm.enabled_dispatch
+        data.pmax[k] = elm.Pmax
+        data.pmin[k] = elm.Pmin
+
         if time_series:
 
             if opf_results is not None:
@@ -316,18 +316,9 @@ def get_generator_data(circuit: MultiCircuit,
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
-            data.availability[k] = 1.0
-            data.ramp_up[k] = elm.RampUp
-            data.ramp_down[k] = elm.RampDown
-            data.min_time_up[k] = elm.MinTimeUp
-            data.min_time_down[k] = elm.MinTimeDown
 
-            if opf:
-                data.dispatchable[k] = elm.enabled_dispatch
-                data.pmax[k] = elm.Pmax
-                data.pmin[k] = elm.Pmin
-                data.cost_0[k] = elm.Cost0_prof[t_idx]
-                data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_0[k] = elm.Cost0_prof[t_idx]
+            data.cost_1[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -350,11 +341,8 @@ def get_generator_data(circuit: MultiCircuit,
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
 
-            if opf:
-                data.dispatchable[k] = elm.enabled_dispatch
-                data.pmax[k] = elm.Pmax
-                data.pmin[k] = elm.Pmin
-                data.cost_1[k] = elm.Cost
+            data.cost_0[k] = elm.Cost0
+            data.cost_1[k] = elm.Cost
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -379,7 +367,6 @@ def get_battery_data(circuit: MultiCircuit,
                      opf_results: Union["OptimalPowerFlowResults", None] = None,
                      t_idx=-1,
                      time_series=False,
-                     opf=False,
                      use_stored_guess=False) -> ds.BatteryData:
     """
 
@@ -418,6 +405,25 @@ def get_battery_data(circuit: MultiCircuit,
         data.x1[k] = elm.X1
         data.x2[k] = elm.X2
 
+        data.dispatchable[k] = elm.enabled_dispatch
+        data.pmax[k] = elm.Pmax
+        data.pmin[k] = elm.Pmin
+        data.enom[k] = elm.Enom
+
+        data.availability[k] = 1.0
+        data.ramp_up[k] = elm.RampUp
+        data.ramp_down[k] = elm.RampDown
+        data.min_time_up[k] = elm.MinTimeUp
+        data.min_time_down[k] = elm.MinTimeDown
+
+        data.min_soc[k] = elm.min_soc
+        data.max_soc[k] = elm.max_soc
+        data.soc_0[k] = elm.soc_0
+        data.e_min[k] = elm.Enom * elm.min_soc
+        data.e_max[k] = elm.Enom * elm.max_soc
+        data.discharge_efficiency[k] = elm.discharge_efficiency
+        data.charge_efficiency[k] = elm.charge_efficiency
+
         if time_series:
             if opf_results is not None:
                 data.p[k] = opf_results.battery_power[t_idx, k]
@@ -428,28 +434,8 @@ def get_battery_data(circuit: MultiCircuit,
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
 
-            if opf:
-                data.dispatchable[k] = elm.enabled_dispatch
-                data.pmax[k] = elm.Pmax
-                data.pmin[k] = elm.Pmin
-
-                data.availability[k] = 1.0
-                data.ramp_up[k] = elm.RampUp
-                data.ramp_down[k] = elm.RampDown
-                data.min_time_up[k] = elm.MinTimeUp
-                data.min_time_down[k] = elm.MinTimeDown
-
-                data.enom[k] = elm.Enom
-                data.e_min[k] = elm.Enom * elm.min_soc
-                data.e_max[k] = elm.Enom * elm.max_soc
-                data.min_soc[k] = elm.min_soc
-                data.max_soc[k] = elm.max_soc
-                data.soc_0[k] = elm.soc_0
-                data.discharge_efficiency[k] = elm.discharge_efficiency
-                data.charge_efficiency[k] = elm.charge_efficiency
-
-                data.cost_0[k] = elm.Cost0_prof[t_idx]
-                data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_0[k] = elm.Cost0_prof[t_idx]
+            data.cost_1[k] = elm.Cost_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -471,17 +457,8 @@ def get_battery_data(circuit: MultiCircuit,
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
 
-            if opf:
-                data.dispatchable[k] = elm.enabled_dispatch
-                data.pmax[k] = elm.Pmax
-                data.pmin[k] = elm.Pmin
-                data.enom[k] = elm.Enom
-                data.min_soc[k] = elm.min_soc
-                data.max_soc[k] = elm.max_soc
-                data.soc_0[k] = elm.soc_0
-                data.discharge_efficiency[k] = elm.discharge_efficiency
-                data.charge_efficiency[k] = elm.charge_efficiency
-                data.cost_1[k] = elm.Cost
+            data.cost_0[k] = elm.Cost0
+            data.cost_1[k] = elm.Cost
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -505,7 +482,6 @@ def get_branch_data(circuit: MultiCircuit,
                     branch_tolerance_mode: BranchImpedanceMode,
                     t_idx=-1,
                     time_series=False,
-                    opf=False,
                     opf_results: Union["OptimalPowerFlowResults", None] = None,
                     use_stored_guess=False):
     """
@@ -517,7 +493,6 @@ def get_branch_data(circuit: MultiCircuit,
     :param branch_tolerance_mode:
     :param t_idx:
     :param time_series:
-    :param opf:
     :param opf_results:
     :param use_stored_guess:
     :return:
@@ -538,16 +513,14 @@ def get_branch_data(circuit: MultiCircuit,
             data.rates[i] = elm.rate_prof[t_idx]
             data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
 
-            if opf:
-                data.overload_cost[i] = elm.Cost_prof[t_idx]
+            data.overload_cost[i] = elm.Cost_prof[t_idx]
 
         else:
             data.active[i] = elm.active
             data.rates[i] = elm.rate
             data.contingency_rates[i] = elm.rate * elm.contingency_factor
 
-            if opf:
-                data.overload_cost[i] = elm.Cost
+            data.overload_cost[i] = elm.Cost
 
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -599,16 +572,12 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost
+            data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
         data.C_branch_bus_t[ii, t] = 1
@@ -645,16 +614,12 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost
+            data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
         data.C_branch_bus_t[ii, t] = 1
@@ -728,16 +693,12 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost
+            data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
         data.C_branch_bus_t[ii, t] = 1
@@ -811,16 +772,12 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost
+            data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
         data.C_branch_bus_t[ii, t] = 1
@@ -913,16 +870,12 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.overload_cost[ii] = elm.Cost
+            data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
         data.C_branch_bus_t[ii, t] = 1
@@ -962,8 +915,8 @@ def get_hvdc_data(circuit: MultiCircuit,
     :param circuit:
     :param bus_dict:
     :param bus_types:
+    :param t_idx:
     :param time_series:
-    :param ntime:
     :param opf_results:
     :return:
     """

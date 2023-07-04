@@ -25,7 +25,7 @@ from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
+from GridCal.Engine.Simulations.OPF.dc_opf_ts import run_linear_opf_ts
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -105,17 +105,33 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         if self.options.solver == SolverType.DC_OPF:
 
             # DC optimal power flow
-            problem = OpfDcTimeSeries(circuit=self.grid,
-                                      time_indices=self.time_indices,
-                                      solver_type=self.options.mip_solver,
-                                      zonal_grouping=self.options.zonal_grouping,
-                                      skip_generation_limits=self.options.skip_generation_limits,
-                                      consider_contingencies=self.options.consider_contingencies,
-                                      LODF=self.options.LODF,
-                                      lodf_tolerance=self.options.lodf_tolerance,
-                                      maximize_inter_area_flow=self.options.maximize_flows,
-                                      buses_areas_1=self.options.area_from_bus_idx,
-                                      buses_areas_2=self.options.area_to_bus_idx)
+            opf_vars = run_linear_opf_ts(grid=self.grid,
+                                         time_indices=None,
+                                         solver_type=self.options.mip_solver,
+                                         zonal_grouping=self.options.zonal_grouping,
+                                         skip_generation_limits=self.options.skip_generation_limits,
+                                         consider_contingencies=self.options.consider_contingencies,
+                                         lodf_threshold=self.options.lodf_tolerance,
+                                         maximize_inter_area_flow=self.options.maximize_flows,
+                                         buses_areas_1=self.options.area_from_bus_idx,
+                                         buses_areas_2=self.options.area_to_bus_idx,
+                                         energy_0=None,
+                                         logger=self.logger)
+
+            self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
+            self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
+            self.results.load_shedding = opf_vars.load_vars.shedding[0, :]
+            self.results.battery_power = opf_vars.batt_vars.p[0, :]
+            # self.results.battery_energy = opf_vars.batt_vars.e[0, :]
+            self.results.generator_power = opf_vars.gen_vars.p[0, :]
+            self.results.Sf = opf_vars.branch_vars.flows[0, :]
+            self.results.St = -opf_vars.branch_vars.flows[0, :]
+            self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[0, :]
+            self.results.loading = opf_vars.branch_vars.loading[0, :]
+            self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
+            # self.results.Sbus = problem.get_power_injections()[0, :]
+            self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
+            self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
         elif self.options.solver == SolverType.Simple_OPF:
 
@@ -134,72 +150,11 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.progress_signal.emit(0.0)
             self.progress_text.emit('Running all in an external solver, this may take a while...')
 
-        # solve the problem
-        problem.formulate(batteries_energy_0=batteries_energy_0)
-        status = problem.solve()
-        print("Status:", status)
-
-        self.results.voltage[self.time_indices, :] = problem.get_voltage()
-        self.results.bus_shadow_prices[self.time_indices, :] = problem.get_shadow_prices()
-        self.results.load_shedding[self.time_indices, :] = problem.get_load_shedding()
-        self.results.battery_power[self.time_indices, :] = problem.get_battery_power()
-        self.results.battery_energy[self.time_indices, :] = problem.get_battery_energy()
-        self.results.generator_power[self.time_indices, :] = problem.get_generator_power()
-        self.results.Sf[self.time_indices, :] = problem.get_branch_power_from()
-        self.results.St[self.time_indices, :] = problem.get_branch_power_to()
-        self.results.overloads[self.time_indices, :] = problem.get_overloads()
-        self.results.loading[self.time_indices, :] = problem.get_loading()
-
-        self.results.Sbus[self.time_indices, :] = problem.get_power_injections()
-        self.results.hvdc_Pf[self.time_indices, :] = problem.get_hvdc_flows()
-        self.results.hvdc_loading[self.time_indices, :] = self.results.hvdc_Pf[self.time_indices,
-                                                          :] / self.numerical_circuit.hvdc_data.rate[:,
-                                                               self.time_indices].transpose()
-        self.results.phase_shift[self.time_indices, :] = problem.get_phase_shifts()
-
-        self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
-        self.results.contingency_indices_list += problem.contingency_indices_list
-        self.results.contingency_flows_slacks_list += problem.get_contingency_flows_slacks_list().tolist()
+        # self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
+        # self.results.contingency_indices_list += problem.contingency_indices_list
+        # self.results.contingency_flows_slacks_list += problem.get_contingency_flows_slacks_list().tolist()
 
         return self.results
-
-    def opf_by_groups(self):
-        """
-        Run the OPF by groups
-        """
-
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Making groups...')
-
-        # get the partition points of the time series
-        groups = get_time_groups(t_array=self.grid.time_profile, grouping=self.options.grouping)
-
-        n = len(groups)
-        i = 1
-        energy_0 = self.numerical_circuit.battery_data.soc_0 * self.numerical_circuit.battery_data.enom
-        while i < n and not self.__cancel__:
-
-            start_ = groups[i - 1]
-            end_ = groups[i]
-
-            # show progress message
-            print(start_, ':', end_, ' [', end_ - start_, ']')
-            self.progress_text.emit('Running OPF for the time group {0} '
-                                    'start {1} - end {2} in external solver...'.format(i, start_, end_))
-
-            if start_ >= self.start_ and end_ <= self.end_:
-                # run an opf for the group interval only if the group is within the start:end boundaries
-                self.opf(start_=start_, end_=end_ + 1,
-                         remote=True,
-                         batteries_energy_0=energy_0)
-
-            energy_0 = self.results.battery_energy[end_ - 1, :]
-
-            # update progress bar
-            progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
-            self.progress_signal.emit(progress)
-
-            i += 1
 
     def run(self):
         """
@@ -210,10 +165,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         start = time.time()
         if self.engine == bs.EngineType.GridCal:
 
-            if self.options.grouping == TimeGrouping.NoGrouping:
-                self.opf()
-            else:
-                self.opf_by_groups()
+            self.opf()
 
         elif self.engine == bs.EngineType.NewtonPA:
 

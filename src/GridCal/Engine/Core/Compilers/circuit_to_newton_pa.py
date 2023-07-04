@@ -1073,7 +1073,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
                       ReactivePowerControlMode.Direct: npa.ReactivePowerControlMode.Direct}
 
     solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HIGHS: npa.LpSolvers.Highs,
                    bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
                    bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
                    bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
@@ -1105,7 +1105,7 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
     """
     from GridCal.Engine.Simulations.OPF.opf_options import ZonalGrouping
     solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.HiGS: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.HIGHS: npa.LpSolvers.Highs,
                    bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
                    bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
                    bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
