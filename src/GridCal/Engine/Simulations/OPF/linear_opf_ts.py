@@ -33,6 +33,7 @@ from GridCal.Engine.Core.DataStructures.load_data import LoadData
 from GridCal.Engine.Core.DataStructures.branch_data import BranchData
 from GridCal.Engine.Core.DataStructures.hvdc_data import HvdcData
 from GridCal.Engine.Core.DataStructures.bus_data import BusData
+from GridCal.Engine.Core.topology import find_different_states
 from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec
 import GridCal.ThirdParty.ortools.ortools_extra as pl
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
@@ -948,10 +949,28 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param logger:
     :return:
     """
+    bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
+    areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
+
     if time_indices is None:
         time_indices = [None]
+        nc_dict = dict()
     else:
-        time_indices = time_indices if len(time_indices) > 0 else [None]
+        if len(time_indices) > 0:
+            states_dict = find_different_states(states_array=grid.get_branch_active_time_array()[time_indices])
+            nc_dict: Dict[int, NumericalCircuit] = dict()
+            for key, values in states_dict.items():
+
+                nc = compile_numerical_circuit_at(circuit=grid,
+                                                  t_idx=key,  # yes, this is not a bug
+                                                  bus_dict=bus_dict,
+                                                  areas_dict=areas_dict)
+
+                for v in values:
+                    nc_dict[v] = nc
+        else:
+            time_indices = [None]
+            nc_dict = dict()
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
@@ -971,17 +990,20 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_error(msg="Solver is not present", value=solver_type.value)
         return mip_vars.get_values(grid.Sbase)
 
-    bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
-    areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
     f_obj = 0
 
     for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
-        # compile the circuit at the master time index -------------------------------------------------------------
-        nc = compile_numerical_circuit_at(circuit=grid,
-                                          t_idx=t,  # yes, this is not a bug
-                                          bus_dict=bus_dict,
-                                          areas_dict=areas_dict)
+        # get or compile the circuit at the master time index ------------------------------------------------------
+        nc = nc_dict.get(t, None)
+        if nc is None:
+            nc = compile_numerical_circuit_at(circuit=grid,
+                                              t_idx=t,  # yes, this is not a bug
+                                              bus_dict=bus_dict,
+                                              areas_dict=areas_dict)
+        else:
+            # found nc in the precompiled dictionary
+            pass
 
         if add_contingencies:
             ls = LinearAnalysis(numerical_circuit=nc,
