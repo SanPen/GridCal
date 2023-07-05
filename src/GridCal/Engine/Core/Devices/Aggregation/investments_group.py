@@ -33,12 +33,14 @@ class InvestmentsGroup(EditableDevice):
 
     """
 
-    def __init__(self, idtag=None,  name="ContingencyGroup", category=''):
+    def __init__(self, idtag: str = None, name: str = "ContingencyGroup", category: str = '',
+                 comment: str = ""):
         """
         Contingency group
         :param idtag: Unique identifier
         :param name: contingency group name
         :param category: tag to category the group
+        :param comment: comment
         """
 
         EditableDevice.__init__(
@@ -52,8 +54,11 @@ class InvestmentsGroup(EditableDevice):
 
         # Contingency type
         self.category = category
+        self.comment = comment
 
         self.register(key='category', units='', tpe=str, definition='Some tag to category the contingency group')
+
+        self.register(key='comment', units='', tpe=str, definition='Some comment')
 
     def get_properties_dict(self):
         """

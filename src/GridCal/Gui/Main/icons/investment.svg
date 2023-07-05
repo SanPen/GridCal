@@ -36,14 +36,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="2491"
+     inkscape:window-width="2495"
      inkscape:window-height="1016"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="33.916667"
-     inkscape:cx="24"
-     inkscape:cy="25.783784"
-     inkscape:window-x="69"
+     inkscape:zoom="11.991353"
+     inkscape:cx="-8.5061294"
+     inkscape:cy="19.889332"
+     inkscape:window-x="65"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="text4524-9"
@@ -52,18 +52,36 @@
      aria-label="λ"
      style="font-style:normal;font-weight:normal;font-size:39.31232071px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#2a7fff;fill-opacity:1;stroke:none;stroke-width:0.98280805"
      id="text4524-9">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:55.6905px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#71c837;fill-opacity:1;stroke:none;stroke-width:1.36833"
-       x="16.495193"
-       y="40.088543"
-       id="text11090"
-       transform="scale(0.96659338,1.0345612)"><tspan
-         sodipodi:role="line"
-         id="tspan11088"
-         x="16.495193"
-         y="40.088543"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';stroke-width:1.36833;fill:#71c837">ι</tspan></text>
+    <g
+       aria-label="+"
+       id="text2511"
+       style="font-size:109.905px;line-height:1.25;letter-spacing:0px;word-spacing:0px;fill:#008066;fill-opacity:1;stroke:#008066;stroke-width:2.74789;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       transform="matrix(0.20780228,0,0,0.20780228,2.8404564,11.090035)">
+      <path
+         d="M 46.624132,71.068442 V 100.9596 h 29.891155 v 9.12297 H 46.624132 v 29.89115 H 37.608488 V 110.08257 H 7.7173335 V 100.9596 H 37.608488 V 71.068442 Z"
+         id="path6487"
+         style="fill:#008066;fill-opacity:1;stroke:#008066;stroke-width:2.74789;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       id="g22691"
+       transform="translate(0.3684601,-2.6004508)"
+       style="fill:#00aa88;stroke:#00aa88">
+      <rect
+         style="font-style:normal;font-weight:normal;font-size:39.3123px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00aa88;fill-opacity:1;stroke:#00aa88;stroke-width:1.78982;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
+         id="rect20972-1"
+         width="3.5221419"
+         height="17.618893"
+         x="24.524189"
+         y="26.842392" />
+      <rect
+         style="font-style:normal;font-weight:normal;font-size:39.3123px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00aa88;fill-opacity:1;stroke:#00aa88;stroke-width:1.12296;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
+         id="rect20972-1-2"
+         width="4.5902376"
+         height="4.9765549"
+         x="23.990141"
+         y="18.80172"
+         ry="1.7069246" />
+    </g>
   </g>
   <text
      xml:space="preserve"

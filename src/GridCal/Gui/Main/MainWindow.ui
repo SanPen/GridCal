@@ -8340,7 +8340,6 @@ QProgressBar::chunk{
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionDrawSchematic"/>
-    <addaction name="actionShow_color_controls"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
@@ -8359,6 +8358,7 @@ QProgressBar::chunk{
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionInputs_analysis"/>
+    <addaction name="actionStorage_location_suggestion"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="separator"/>
@@ -8392,7 +8392,6 @@ QProgressBar::chunk{
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionStorage_location_suggestion"/>
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
@@ -8459,9 +8458,11 @@ QProgressBar::chunk{
    <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
-   <addaction name="actionUse_clustering"/>
    <addaction name="actionClustering"/>
+   <addaction name="actionUse_clustering"/>
    <addaction name="actionPower_flow_Stochastic"/>
+   <addaction name="actionAdd_selected_as_new_investment"/>
+   <addaction name="actionExpansion_planning"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
    <addaction name="actionPTDF_time_series"/>
@@ -8891,18 +8892,6 @@ QProgressBar::chunk{
     <string>PTDF based time series power flow</string>
    </property>
   </action>
-  <action name="actionShow_color_controls">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Show schematic controls</string>
-   </property>
-  </action>
   <action name="actionAdd_circuit">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -9275,10 +9264,13 @@ QProgressBar::chunk{
   <action name="actionAdd_selected_as_new_investment">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/add_investment.svg</normaloff>:/Icons/icons/add_investment.svg</iconset>
+     <normaloff>:/Icons/icons/investment.svg</normaloff>:/Icons/icons/investment.svg</iconset>
    </property>
    <property name="text">
     <string>Add selected as new investment</string>
+   </property>
+   <property name="toolTip">
+    <string>Add schematic selection as new investment</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+I</string>
@@ -9336,6 +9328,21 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Check if you want the available clustering results to be used</string>
+   </property>
+  </action>
+  <action name="actionExpansion_planning">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/expansion_planning.svg</normaloff>:/Icons/icons/expansion_planning.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Expansion planning</string>
+   </property>
+   <property name="toolTip">
+    <string>Run a expansion planning simulation</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E, Ctrl+P</string>
    </property>
   </action>
  </widget>

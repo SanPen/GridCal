@@ -88,7 +88,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         """
         Get time steps list of strings
         """
-        return [l.strftime('%d-%m-%Y %H:%M') for l in pd.to_datetime(self.grid.time_profile)]
+        return []
 
     def opf(self, remote=False, batteries_energy_0=None):
         """

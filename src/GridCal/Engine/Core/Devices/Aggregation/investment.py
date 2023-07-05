@@ -35,7 +35,7 @@ class Investment(EditableDevice):
     """
 
     def __init__(self, idtag=None, device_idtag=None, name="Investment", code='', CAPEX=0.0, OPEX=0.0,
-                 group: InvestmentsGroup = None):
+                 group: InvestmentsGroup = None, comment: str = ""):
         """
         Contingency
         :param idtag: String. Element unique identifier
@@ -44,6 +44,7 @@ class Investment(EditableDevice):
         :param CAPEX: Float. Capital expenditures
         :param OPEX: Float. Operating expenditures
         :param group: ContingencyGroup. Contingency group
+        :param comment: Comment
         """
 
         EditableDevice.__init__(
@@ -60,23 +61,15 @@ class Investment(EditableDevice):
         self.CAPEX = CAPEX
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
+        self.comment = comment
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='M€', tpe=float,
                       definition='Capital expenditures. This is the initial investment.')
         self.register(key='OPEX', units='M€', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
-        self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition = 'Investment group')
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, val: str):
-        self._name = val
-        if self.graphic_obj is not None:
-            self.graphic_obj.set_label(self._name)
+        self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
+        self.register(key='comment', units='', tpe=str, definition='Comments')
 
     @property
     def group(self):
@@ -88,6 +81,10 @@ class Investment(EditableDevice):
 
     @property
     def category(self):
+        """
+        Display the group category
+        :return:
+        """
         return self.group.category
 
     @category.setter

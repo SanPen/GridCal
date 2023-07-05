@@ -297,8 +297,8 @@ class MainGUI(QMainWindow):
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
         self.mip_solvers_dict[bs.MIPSolvers.GUROBI.value] = bs.MIPSolvers.GUROBI
         self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
-        mip_solvers = get_or_tools_available_solvers()
-        self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
+
+        # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
 
         # voltage collapse mode (full, nose)
         self.ui.vc_stop_at_comboBox.setModel(gf.get_list_model([sim.CpfStopAt.Nose.value,
@@ -533,8 +533,6 @@ class MainGUI(QMainWindow):
         self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
 
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
-
-        self.ui.actionShow_color_controls.triggered.connect(self.set_colouring_frame_state)
 
         self.ui.actionClustering.triggered.connect(self.run_clustering)
 
@@ -5082,17 +5080,6 @@ class MainGUI(QMainWindow):
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.available_results_to_color_map_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
-
-        if len(lst) > 1 or max_steps > 0:
-            self.ui.actionShow_color_controls.setChecked(True)
-            self.set_colouring_frame_state()
-
-    def set_colouring_frame_state(self):
-        """
-        Set the colouring frame visibility according to the check button
-        """
-        state = self.ui.actionShow_color_controls.isChecked()
-        self.ui.grid_colouring_frame.setVisible(state)
 
     def clear_results(self):
         """
