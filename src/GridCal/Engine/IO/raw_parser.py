@@ -431,7 +431,7 @@ class PSSeLoad(PSSeObject):
         g = self.YP
         b = self.YQ
         ir = self.IP
-        ii = self.IQ
+        ii = -self.IQ
         p = self.PL
         q = self.QL
 

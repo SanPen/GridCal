@@ -74,8 +74,8 @@ def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
     :param Vm: voltage module
     :return: complex power injection
     """
-    # return S0 + np.conj(Y0 * Vm + I0) * Vm
-    return S0 + (Y0 * Vm + I0) * Vm
+    return S0 + np.conj(Y0 * Vm + I0) * Vm
+    # return S0 + (Y0 * Vm + I0) * Vm
 
 
 def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
