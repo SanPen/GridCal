@@ -55,6 +55,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                                              ResultTypes.BusActivePower,
                                                                              ResultTypes.BusReactivePower],
 
+                                                    ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
+                                                                                   ResultTypes.GeneratorShedding],
+
+                                                    ResultTypes.BatteryResults: [ResultTypes.BatteryPower],
+
+                                                    ResultTypes.LoadResults: [ResultTypes.LoadShedding],
+
                                                     ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
                                                                                 ResultTypes.BranchActivePowerTo,
                                                                                 ResultTypes.BranchLoading,
@@ -64,11 +71,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
-
-                                                    ResultTypes.DispatchResults: [ResultTypes.LoadShedding,
-                                                                                  ResultTypes.GeneratorShedding,
-                                                                                  ResultTypes.GeneratorPower,
-                                                                                  ResultTypes.BatteryPower],
 
                                                     ResultTypes.ReportsResults: [ResultTypes.ContingencyFlowsReport],
 
@@ -322,9 +324,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.LossesPercentPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
+                                                 self.T)
+            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+                                                self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                 self.F, self.T)
             # Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
 
             y = Pl / (Pf + 1e-20) * 100.0
@@ -337,8 +342,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
             gen_bus = self.Sbus.copy().real
             gen_bus[gen_bus < 0] = 0
             Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                 self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+                                                self.hvdc_F, self.hvdc_T)
 
             y = np.zeros(len(self.area_names))
             for i in range(len(self.area_names)):
@@ -350,8 +357,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.LossesPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                self.F, self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+                                               self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -359,8 +368,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
+                                                self.T)
+            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+                                               self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -379,4 +390,3 @@ class OptimalPowerFlowResults(ResultsTemplate):
                            xlabel='',
                            units=y_label)
         return mdl
-

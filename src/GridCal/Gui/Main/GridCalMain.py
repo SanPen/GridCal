@@ -7170,23 +7170,28 @@ class MainGUI(QMainWindow):
             # get the selected buses
             selected = self.get_selected_contingency_devices()
 
-            group = dev.ContingencyGroup(idtag=None,
-                                         name="Contingency " + str(len(self.circuit.contingency_groups)),
-                                         category="single" if len(selected) == 1 else "multiple"
-                                         )
-            self.circuit.add_contingency_group(group)
+            if len(selected) > 0:
+                group = dev.ContingencyGroup(idtag=None,
+                                             name="Contingency " + str(len(self.circuit.contingency_groups)),
+                                             category="single" if len(selected) == 1 else "multiple")
+                self.circuit.add_contingency_group(group)
 
-            for elm in selected:
-                con = dev.Contingency(device_idtag=elm.idtag,
-                                      code=elm.code,
-                                      name=elm.name,
-                                      prop="active",
-                                      value=0,
-                                      group=group)
-                self.circuit.add_contingency(con)
+                for elm in selected:
+                    con = dev.Contingency(device_idtag=elm.idtag,
+                                          code=elm.code,
+                                          name=elm.name,
+                                          prop="active",
+                                          value=0,
+                                          group=group)
+                    self.circuit.add_contingency(con)
+            else:
+                info_msg("Select some elements in the schematic first", "Add selected to contingency")
 
     def export_contingencies(self):
-
+        """
+        Export contingencies
+        :return:
+        """
         if len(self.circuit.contingencies) > 0:
 
             # declare the allowed file types
@@ -7211,19 +7216,22 @@ class MainGUI(QMainWindow):
             # get the selected buses
             selected = self.get_selected_investment_devices()
 
-            group = dev.InvestmentsGroup(idtag=None,
-                                         name="Investment " + str(len(self.circuit.contingency_groups)),
-                                         category="single" if len(selected) == 1 else "multiple")
-            self.circuit.add_investments_group(group)
+            if len(selected) > 0:
+                group = dev.InvestmentsGroup(idtag=None,
+                                             name="Investment " + str(len(self.circuit.contingency_groups)),
+                                             category="single" if len(selected) == 1 else "multiple")
+                self.circuit.add_investments_group(group)
 
-            for elm in selected:
-                con = dev.Investment(device_idtag=elm.idtag,
-                                     code=elm.code,
-                                     name=elm.name,
-                                     CAPEX=0.0,
-                                     OPEX=0.0,
-                                     group=group)
-                self.circuit.add_investment(con)
+                for elm in selected:
+                    con = dev.Investment(device_idtag=elm.idtag,
+                                         code=elm.code,
+                                         name=elm.name,
+                                         CAPEX=0.0,
+                                         OPEX=0.0,
+                                         group=group)
+                    self.circuit.add_investment(con)
+            else:
+                info_msg("Select some elements in the schematic first", "Add selected to investment")
 
     def colour_map(self):
         """
@@ -7254,16 +7262,26 @@ class MainGUI(QMainWindow):
 
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
-    def config_file_path(self):
-        return os.path.join(get_create_gridcal_folder(), 'gui_config.json')
-
-    def config_file_exists(self):
-        return os.path.exists(self.config_file_path())
-
-    def get_config_structure(self):
+    def config_file_path(self) -> str:
         """
 
         :return:
+        """
+        return os.path.join(get_create_gridcal_folder(), 'gui_config.json')
+
+    def config_file_exists(self) -> bool:
+        """
+        Check if the config file exists
+        :return: True / False
+        """
+        return os.path.exists(self.config_file_path())
+
+    def get_config_structure(self) -> Dict[str, Dict[str, any]]:
+        """
+        Get the settings configuration dictionary
+        This serves to collect automatically the settings
+        and apply the incomming setting automatically as well
+        :return: Dict[name, Dict[name, QtWidget]
         """
         return {"graphics": {
             "dark_mode": self.ui.dark_mode_checkBox,
@@ -7275,7 +7293,7 @@ class MainGUI(QMainWindow):
             "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
             "map_tile_provider": self.ui.tile_provider_comboBox,
             "plotting_style": self.ui.plt_style_comboBox
-        },
+            },
             "machine_learning": {
                 "clustering": {
                     "cluster_number": self.ui.cluster_number_spinBox,
@@ -7375,13 +7393,14 @@ class MainGUI(QMainWindow):
             }
         }
 
-    def get_gui_config_data(self):
+    def get_gui_config_data(self) -> Dict[str, Dict[str, Union[float, int, str, bool]]]:
         """
         Get a dictionary with the GUI configuration data
         :return:
         """
 
-        def struct_to_data(data_, struct_):
+        def struct_to_data(data_: Dict[str, Dict[str, Union[float, int, str, bool, Dict]]],
+                           struct_: Dict[str, Dict[str, any]]):
             """
             Recursive function to get the config dictionary from the GUI values
             :param data_: Dictionary to fill

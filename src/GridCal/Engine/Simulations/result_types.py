@@ -233,6 +233,10 @@ class ResultTypes(Enum):
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
     NTCResults = 'NTC', DeviceType.NoDevice
 
+    GeneratorResults = 'Generators', DeviceType.GeneratorDevice
+    LoadResults = 'Loads', DeviceType.LoadDevice
+    BatteryResults = 'Batteries', DeviceType.BatteryDevice
+
     def __str__(self):
         return self.value[0]
 

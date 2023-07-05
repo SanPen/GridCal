@@ -27,6 +27,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
     """
     Optimal power flow time series results
     """
+
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
                  n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=()):
         """
@@ -45,6 +46,14 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                              ResultTypes.BusVoltageAngle,
                                                                              ResultTypes.BusShadowPrices],
 
+                                                    ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
+                                                                                   ResultTypes.GeneratorShedding],
+
+                                                    ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
+                                                                                 ResultTypes.BatteryEnergy],
+
+                                                    ResultTypes.LoadResults: [ResultTypes.LoadShedding],
+
                                                     ResultTypes.BranchResults: [ResultTypes.BranchPower,
                                                                                 ResultTypes.BranchLoading,
                                                                                 ResultTypes.BranchOverloads,
@@ -55,11 +64,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
 
-                                                    ResultTypes.DispatchResults: [ResultTypes.LoadShedding,
-                                                                                  ResultTypes.GeneratorShedding,
-                                                                                  ResultTypes.GeneratorPower,
-                                                                                  ResultTypes.BatteryPower,
-                                                                                  ResultTypes.BatteryEnergy]
                                                     },
                                  data_variables=['bus_names',
                                                  'branch_names',
