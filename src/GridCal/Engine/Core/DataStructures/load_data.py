@@ -46,9 +46,7 @@ class LoadData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self,
-              elm_idx: IntVec,
-              bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
@@ -56,8 +54,7 @@ class LoadData:
         :return: new LoadData instance
         """
 
-        data = LoadData(nelm=len(elm_idx),
-                        nbus=len(bus_idx))
+        data = LoadData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
 
@@ -131,5 +128,5 @@ class LoadData:
         """
         return - self.C_bus_elm * (self.Y * self.active)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.nelm

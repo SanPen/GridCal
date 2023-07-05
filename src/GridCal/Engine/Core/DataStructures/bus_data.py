@@ -15,14 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+from GridCal.Engine.basic_structures import CxVec, Vec, IntVec
 
 
 class BusData:
+    """
+    BusData
+    """
 
-    def __init__(
-            self,
-            nbus:int
-    ):
+    def __init__(self, nbus: int):
         """
         Bus data arrays
         :param nbus: number of buses
@@ -42,10 +43,7 @@ class BusData:
 
         self.original_idx = np.zeros(nbus, dtype=int)
 
-    def slice(
-            self,
-            elm_idx: np.ndarray
-    ):
+    def slice(self, elm_idx: IntVec):
         """
         Slice this data structure
         :param elm_idx: array of bus indices
@@ -73,6 +71,5 @@ class BusData:
 
         return data
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.nbus
-

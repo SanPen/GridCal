@@ -686,11 +686,11 @@ def add_linear_load_formulation(t: Union[int, None],
                 f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
             else:
                 # the load is negative, won't shed?
-                load_vars.shedding[t, k].SetBounds(0.0, 0.0)
+                load_vars.shedding[t, k] = 0.0
 
         else:
             # the load is not available at time step
-            load_vars.shedding[t, k].SetBounds(0.0, 0.0)
+            load_vars.shedding[t, k] = 0.0
 
     return f_obj
 

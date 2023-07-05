@@ -17,9 +17,13 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.basic_structures import CxVec, Vec, IntVec
 
 
 class GeneratorData:
+    """
+    GeneratorData
+    """
 
     def __init__(self, nelm: int, nbus: int):
         """
@@ -66,11 +70,11 @@ class GeneratorData:
         self.min_time_up: np.ndarray = np.zeros(nelm, dtype=float)
         self.min_time_down: np.ndarray = np.zeros(nelm, dtype=float)
 
+        self.is_on: np.ndarray = np.zeros(nelm, dtype=float)
+
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self,
-              elm_idx: np.ndarray,
-              bus_idx: np.ndarray):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
         Slice generator data by given indices
         :param elm_idx: array of element indices
@@ -116,23 +120,24 @@ class GeneratorData:
         data.min_time_up = self.min_time_up[elm_idx]
         data.min_time_down = self.min_time_down[elm_idx]
 
+        data.is_on = self.is_on[elm_idx]
+
         data.original_idx = elm_idx
 
         return data
 
-    def get_island(self, bus_idx: np.ndarray):
+    def get_island(self, bus_idx: IntVec) -> IntVec:
         """
         Get the array of generator indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
-        :return:
+        :return: array of generator indices of the island given by bus_idx
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(
-                self.C_bus_elm.T, bus_idx, active=self.active)
+            return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
         else:
             return np.zeros(0, dtype=int)
 
-    def get_injections(self):
+    def get_injections(self) -> CxVec:
         """
         Compute the active and reactive power of non-controlled generators (assuming all)
         :return:
@@ -142,9 +147,9 @@ class GeneratorData:
         Q = pf_sign * self.p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.p + 1.0j * Q
 
-    def get_Yshunt(self, seq: int = 1):
+    def get_Yshunt(self, seq: int = 1) -> CxVec:
         """
-        Obtain the vector of shunt admittances of a given sequence
+        Obtain the vector of shunt admittances of a given sequence per bus
         :param seq: sequence (0, 1 or 2)
         """
         if seq == 0:
@@ -156,28 +161,28 @@ class GeneratorData:
         else:
             raise Exception('Sequence must be 0, 1, 2')
 
-    def get_effective_generation(self):
+    def get_effective_generation(self) -> Vec:
         """
         Get generator effective power
         :return:
         """
         return self.p * self.active
 
-    def get_injections_per_bus(self):
+    def get_injections_per_bus(self) -> CxVec:
         """
         Get generator Injections per bus
         :return:
         """
         return self.C_bus_elm * (self.get_injections() * self.active)
 
-    def get_bus_indices(self):
+    def get_bus_indices(self) -> IntVec:
         """
         Get generator bus indices
         :return:
         """
         return self.C_bus_elm.tocsc().indices
 
-    def get_voltages_per_bus(self):
+    def get_voltages_per_bus(self) -> CxVec:
         """
         Get generator voltages per bus
         :return:
@@ -189,28 +194,28 @@ class GeneratorData:
         # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
         return np.ndarray((self.C_bus_elm * self.v) / n_per_bus)
 
-    def get_installed_power_per_bus(self):
+    def get_installed_power_per_bus(self) -> Vec:
         """
         Get generator installed power per bus
         :return:
         """
         return self.C_bus_elm * self.installed_p
 
-    def get_qmax_per_bus(self):
+    def get_qmax_per_bus(self) -> Vec:
         """
         Get generator Qmax per bus
         :return:
         """
         return self.C_bus_elm * (self.qmax * self.active)
 
-    def get_qmin_per_bus(self):
+    def get_qmin_per_bus(self) -> Vec:
         """
         Get generator Qmin per bus
         :return:
         """
         return self.C_bus_elm * (self.qmin * self.active)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Get generator count
         :return:

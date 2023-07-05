@@ -17,17 +17,15 @@
 
 import numpy as np
 import pandas as pd
-from typing import Union
+from typing import Union, List, Tuple
 from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import Logger, Vec, IntVec
+from GridCal.Engine.basic_structures import Logger, Vec, IntVec, Mat
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, BuildStatus
 from GridCal.Engine.Core.Devices.Aggregation.technology import Technology
-from GridCal.Engine.Core.Devices.Aggregation.fuel import Fuel
-from GridCal.Engine.Core.Devices.Aggregation.emission_gas import EmissionGas
 
 
-def make_default_q_curve(Snom, Qmin, Qmax, n=3):
+def make_default_q_curve(Snom: float, Qmin: float, Qmax: float, n: int = 3) -> Mat:
     """
     Compute the generator capability curve
     :param Snom: Nominal power
@@ -74,7 +72,7 @@ def make_default_q_curve(Snom, Qmin, Qmax, n=3):
     return pts
 
 
-def get_q_limits(q_points, p):
+def get_q_limits(q_points: Mat, p: Vec) -> Tuple[Vec, Vec]:
     """
     Get the reactive power limits
     :param q_points: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]

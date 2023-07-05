@@ -212,21 +212,21 @@ class BranchData:
         else:
             return np.zeros(0, dtype=int)
 
-    def get_ac_indices(self):
+    def get_ac_indices(self) -> IntVec:
         """
         Get ac branch indices
         :return:
         """
         return np.where(self.dc == 0)[0]
 
-    def get_dc_indices(self):
+    def get_dc_indices(self) -> IntVec:
         """
         Get dc branch indices
         :return:
         """
         return np.where(self.dc != 0)[0]
 
-    def get_linear_series_admittance(self):
+    def get_linear_series_admittance(self) -> Vec:
         """
         Get the linear version of the series admittance for ACDC systems
         :return: Array of the length of the number of Branches with 1/X or 1/R depending whether if it is AC or DC
@@ -246,21 +246,21 @@ class BranchData:
 
         return b
 
-    def get_monitor_enabled_indices(self):
+    def get_monitor_enabled_indices(self) -> IntVec:
         """
         Get monitored branch indices
         :return:
         """
         return np.where(self.monitor_loading == 1)[0]
 
-    def get_contingency_enabled_indices(self):
+    def get_contingency_enabled_indices(self) -> IntVec:
         """
         Get contingency branch indices
         :return:
         """
         return np.where(self.contingency_enabled == 1)[0]
 
-    def to_df(self):
+    def to_df(self) -> pd.DataFrame:
         """
         Create DataFrame with the compiled Branches information
         :return: Pandas DataFrame
@@ -283,5 +283,5 @@ class BranchData:
         }
         return pd.DataFrame(data=data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.nelm

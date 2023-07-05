@@ -820,7 +820,7 @@ class MainGUI(QMainWindow):
             self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
         elif eng == bs.EngineType.GridCal:
-            self.ui.opfUnitCommitmentCheckBox.setVisible(False)
+            self.ui.opfUnitCommitmentCheckBox.setVisible(True)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
             self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
             self.ui.maxVoltageModuleStepLabel.setVisible(False)

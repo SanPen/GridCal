@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
-from typing import Union
+from GridCal.Engine.basic_structures import CxVec, Vec, IntVec
 
 
 class BatteryData(GeneratorData):
@@ -47,9 +47,7 @@ class BatteryData(GeneratorData):
         self.charge_efficiency: np.ndarray = np.ones(nelm)
         self.efficiency: np.ndarray = np.ones(nelm)
 
-    def slice(self,
-              elm_idx: np.ndarray,
-              bus_idx: np.ndarray):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
         Slice battery data by given indices
         :param elm_idx: array of element indices

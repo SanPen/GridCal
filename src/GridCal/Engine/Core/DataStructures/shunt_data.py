@@ -17,41 +17,35 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
+from GridCal.Engine.basic_structures import Vec, CxVec, IntVec, StrVec
 
 
 class ShuntData:
-
-    def __init__(
-            self,
-            nelm: int,
-            nbus: int,
-    ):
+    """
+    ShuntData
+    """
+    def __init__(self, nelm: int, nbus: int):
         """
         Shunt data arrays
         :param nelm: number of shunts
         :param nbus: number of buses
-        :param ntime: time index
         """
         self.nelm: int = nelm
 
-        self.names: np.ndarray = np.empty(nelm, dtype=object)
+        self.names: StrVec = np.empty(nelm, dtype=object)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.admittance: np.ndarray = np.zeros(nelm, dtype=complex)
+        self.active: IntVec = np.zeros(nelm, dtype=bool)
+        self.admittance: CxVec = np.zeros(nelm, dtype=complex)
 
-        self.controlled: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.b_min: np.ndarray = np.zeros(nelm, dtype=float)
-        self.b_max: np.ndarray = np.zeros(nelm, dtype=float)
+        self.controlled: IntVec = np.zeros(nelm, dtype=bool)
+        self.b_min: Vec = np.zeros(nelm, dtype=float)
+        self.b_max: Vec = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
-        self.original_idx = np.zeros(nelm, dtype=int)
+        self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
-    def slice(
-            self,
-            elm_idx: np.ndarray,
-            bus_idx: np.ndarray,
-    ):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
         Slice shunt data by given indices
         :param elm_idx: array of branch indices
@@ -79,10 +73,7 @@ class ShuntData:
 
         return data
 
-    def get_island(
-            self,
-            bus_idx: np.ndarray,
-    ):
+    def get_island(self, bus_idx: IntVec):
         """
         Get the array of shunt indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -97,34 +88,34 @@ class ShuntData:
         else:
             return np.zeros(0, dtype=int)
 
-    def get_controlled_per_bus(self):
+    def get_controlled_per_bus(self) -> IntVec:
         """
         Get controlled per bus
         :return:
         """
         return self.C_bus_elm * (self.controlled * self.active)
 
-    def get_injections_per_bus(self):
+    def get_injections_per_bus(self) -> CxVec:
         """
         Get Injections per bus
         :return:
         """
         return self.C_bus_elm * (self.admittance * self.active)
 
-    def get_b_max_per_bus(self):
+    def get_b_max_per_bus(self) -> Vec:
         """
         Get Bmax per bus
         :return:
         """
         return self.C_bus_elm * (self.b_max * self.active)
 
-    def get_b_min_per_bus(self):
+    def get_b_min_per_bus(self) -> Vec:
         """
         Get Bmin per bus
         :return:
         """
         return self.C_bus_elm * (self.b_min * self.active)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.nelm
 
