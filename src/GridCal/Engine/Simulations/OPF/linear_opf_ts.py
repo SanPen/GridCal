@@ -20,7 +20,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from typing import List, Union, Dict
+from typing import List, Union
 import ortools.linear_solver.pywraplp as ort
 
 from GridCal.Engine.basic_structures import ZonalGrouping
@@ -33,11 +33,9 @@ from GridCal.Engine.Core.DataStructures.load_data import LoadData
 from GridCal.Engine.Core.DataStructures.branch_data import BranchData
 from GridCal.Engine.Core.DataStructures.hvdc_data import HvdcData
 from GridCal.Engine.Core.DataStructures.bus_data import BusData
-from GridCal.Engine.Core.topology import find_different_states
-from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec
+from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
 import GridCal.ThirdParty.ortools.ortools_extra as pl
-from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
-    GenerationNtcFormulation
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 
 
@@ -97,7 +95,7 @@ class BusVars:
         for t in range(nt):
             for i in range(n_elm):
                 data.theta[t, i] = get_lp_var_value(self.theta[t, i])
-                data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i])
+                data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = get_lp_var_value(self.kirchoff[t, i])
 
         # format the arrays aproprietly
@@ -504,7 +502,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
 def add_linear_battery_formulation(t: Union[int, None],
                                    Sbase: float,
-                                   time_array: List[int],
+                                   time_array: DateVec,
                                    batt_data_t: BatteryData,
                                    batt_vars: BatteryVars,
                                    prob: ort.Solver,
@@ -605,6 +603,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                                                 join("batt_e_", [t, k], "_"))
 
                 if t > 0:
+                    # energy decreases / increases with power · dt
                     prob.Add(
                         batt_vars.e[t, k] == batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k])
                 else:
@@ -701,26 +700,26 @@ def add_linear_branches_formulation(t: int,
                                     branch_vars: BranchVars,
                                     vars_bus: BusVars,
                                     prob: ort.Solver,
-                                    add_contingencies: bool,
+                                    consider_contingencies: bool,
                                     LODF: Union[Mat, None],
                                     lodf_threshold: float,
                                     inf=1e20):
     """
-
-    :param t:
-    :param Sbase:
-    :param branch_data_t:
-    :param branch_vars:
-    :param vars_bus:
-    :param prob:
-    :param add_contingencies:
-    :param LODF:
-    :param lodf_threshold:
-    :param inf:
+    Formulate the branches
+    :param t: time index
+    :param Sbase: base power (100 MVA)
+    :param branch_data_t: BranchData
+    :param branch_vars: BranchVars
+    :param vars_bus: BusVars
+    :param prob: OR problem
+    :param consider_contingencies:
+    :param LODF: LODF matrix
+    :param lodf_threshold: LODF threshold to cut-off
+    :param inf: number considered infinte
     :return objective function
     """
     f_obj = 0.0
-    if add_contingencies:
+    if consider_contingencies:
         assert LODF is not None
 
     # for each branch
@@ -751,11 +750,11 @@ def add_linear_branches_formulation(t: int,
                 # add angle
                 branch_vars.tap_angles[t, m] = prob.NumVar(lb=branch_data_t.tap_angle_min[m],
                                                            ub=branch_data_t.tap_angle_max[m],
-                                                           name=join("flow_", [t, m], "_"))
+                                                           name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 flow_ctr = branch_vars.flows[t, m] == bk * (
-                        vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                            vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
@@ -788,7 +787,7 @@ def add_linear_branches_formulation(t: int,
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
 
-                if add_contingencies:
+                if consider_contingencies:
 
                     for c in range(branch_data_t.nelm):
 
@@ -915,15 +914,14 @@ def add_linear_node_balance(t_idx: int,
 
 def run_linear_opf_ts(grid: MultiCircuit,
                       time_indices: IntVec,
-                      solver_type: MIPSolvers = MIPSolvers.HIGHS,
+                      solver_type: MIPSolvers = MIPSolvers.CBC,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
-                      skip_generation_limits=False,
-                      consider_contingencies=False,
-                      unit_Commitment=False,
-                      ramp_constraints=False,
-                      add_contingencies=False,
-                      lodf_threshold=0.001,
-                      maximize_inter_area_flow=False,
+                      skip_generation_limits: bool = False,
+                      consider_contingencies: bool = False,
+                      unit_Commitment: bool = False,
+                      ramp_constraints: bool = False,
+                      lodf_threshold: float = 0.001,
+                      maximize_inter_area_flow: bool = False,
                       buses_areas_1=None,
                       buses_areas_2=None,
                       energy_0: Union[Vec, None] = None,
@@ -932,21 +930,22 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       progress_func=None) -> OpfVars:
     """
 
-    :param grid:
-    :param time_indices:
-    :param solver_type:
-    :param zonal_grouping:
-    :param skip_generation_limits:
-    :param consider_contingencies:
-    :param unit_Commitment:
-    :param ramp_constraints:
-    :param add_contingencies:
+    :param grid: MultiCircuit instance
+    :param time_indices: Time indices (in the general scheme)
+    :param solver_type: MIP solver to use
+    :param zonal_grouping: Zonal grouping?
+    :param skip_generation_limits: Skip the generation limits?
+    :param consider_contingencies: Consider the contingencies?
+    :param unit_Commitment: Formulate unit commitment?
+    :param ramp_constraints: Formulate ramp constraints?
     :param lodf_threshold:
     :param maximize_inter_area_flow:
     :param buses_areas_1:
     :param buses_areas_2:
     :param energy_0:
     :param logger:
+    :param progress_text:
+    :param progress_func:
     :return:
     """
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
@@ -979,17 +978,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_error(msg="Solver is not present", value=solver_type.value)
         return mip_vars.get_values(grid.Sbase)
 
-    f_obj = 0
+    # objective function
+    f_obj = 0.0
 
     for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
-        # get or compile the circuit at the master time index ------------------------------------------------------
-        nc = compile_numerical_circuit_at(circuit=grid,
-                                          t_idx=t,  # yes, this is not a bug
-                                          bus_dict=bus_dict,
-                                          areas_dict=areas_dict)
+        # compile the circuit at the master time index ------------------------------------------------------------
+        # note: There are very little chances of simplifying this step and experience shows it is not
+        #        worth the effort, so compile every time step
+        nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
+                                                            t_idx=t,  # yes, this is not a bug
+                                                            bus_dict=bus_dict,
+                                                            areas_dict=areas_dict)
 
-        if add_contingencies:
+        if consider_contingencies:
+            # if we want to include contingencies, we'll need the LODF at this time step
             ls = LinearAnalysis(numerical_circuit=nc,
                                 distributed_slack=False,
                                 correct_values=True)
@@ -1054,7 +1057,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      branch_vars=mip_vars.branch_vars,
                                                      vars_bus=mip_vars.bus_vars,
                                                      prob=solver,
-                                                     add_contingencies=add_contingencies,
+                                                     consider_contingencies=consider_contingencies,
                                                      LODF=LODF,
                                                      lodf_threshold=lodf_threshold,
                                                      inf=1e20)
@@ -1078,7 +1081,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) >= mip_vars.load_vars.p[t_idx, :].sum(),
+        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) >=
+                   mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
                    name="satisfy_demand_at_t={0}".format(t_idx))
 
         if progress_func is not None:

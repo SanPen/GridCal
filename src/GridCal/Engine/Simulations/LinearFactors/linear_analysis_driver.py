@@ -34,11 +34,12 @@ class LinearAnalysisDriver(DriverTemplate):
     name = 'Linear analysis'
     tpe = SimulationTypes.LinearAnalysis_run
 
-    def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions,
+    def __init__(self, grid: MultiCircuit,
+                 options: LinearAnalysisOptions,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         Linear analysis driver constructor
-        :param numerical_circuit: NumericalCircuit instance
+        :param grid: MultiCircuit instance
         :param options: LinearAnalysisOptions instance
         :param engine: EngineType enum
         """
@@ -105,10 +106,10 @@ class LinearAnalysisDriver(DriverTemplate):
             # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = self.grid.get_hvdc_power(
-                bus_dict,
-                theta=np.zeros(nbus)
-            )
+
+            # TODO: Use the function from HvdcData instead of the one from MultiCircuit
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
+                                                                                                theta=np.zeros(nbus))
             self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real
@@ -143,4 +144,3 @@ class LinearAnalysisDriver(DriverTemplate):
             return [v for v in self.results.bus_names]
         else:
             return list()
-

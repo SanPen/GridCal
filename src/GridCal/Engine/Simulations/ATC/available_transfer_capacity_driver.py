@@ -611,6 +611,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         else:
             # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
+
+            # TODO: Use the function from HvdcData instead of the one from MultiCircuit
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = self.grid.get_hvdc_power(bus_dict,
                                                                                                   theta=np.zeros(nc.nbus))
 

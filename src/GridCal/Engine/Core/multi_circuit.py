@@ -291,14 +291,15 @@ class MultiCircuit:
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
 
-        # for e in self.get_objects_with_profiles_list():
-        #     e.print_register()
-
     def __str__(self):
         return str(self.name)
 
     @property
     def has_time_series(self) -> bool:
+        """
+        Area there time series?
+        :return: True / False
+        """
         return self.time_profile is not None
 
     def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
@@ -323,6 +324,10 @@ class MultiCircuit:
         return d
 
     def get_zones(self):
+        """
+
+        :return: 
+        """
         return self.zones
 
     def get_zone_number(self) -> int:
@@ -353,7 +358,11 @@ class MultiCircuit:
         """
         return len(self.areas)
 
-    def get_substations(self):
+    def get_substations(self) -> List[dev.Substation]:
+        """
+        Get a list of substations
+        :return: List[dev.Substation]
+        """
         return self.substations
 
     def get_substation_number(self) -> int:
@@ -377,10 +386,11 @@ class MultiCircuit:
         """
         return np.ones(len(self.buses), dtype=int)
 
-    def get_branch_lists_wo_hvdc(self):
+    def get_branch_lists_wo_hvdc(self) -> List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]:
         """
-        GEt list of the branch lists
-        :return:
+        Get list of the branch lists
+        :return: List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W],
+                            List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]
         """
         return [
             self.lines,
@@ -402,12 +412,14 @@ class MultiCircuit:
                 names.append(elm.name)
         return names
 
-    def get_branch_lists(self) -> List[Union[List[dev.Branch], List[dev.HvdcLine]]]:
+    def get_branch_lists(self) -> List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC], List[dev.HvdcLine]]]:
         """
         GEt list of the branch lists
         :return:
         """
-        return self.get_branch_lists_wo_hvdc() + [self.hvdc_lines]
+        lst = self.get_branch_lists_wo_hvdc()
+        lst.append(self.hvdc_lines)
+        return lst
 
     def get_branch_number(self) -> int:
         """
@@ -587,60 +599,136 @@ class MultiCircuit:
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
     def get_contingency_devices(self) -> List[dev.EditableDevice]:
+        """
+
+        :return:
+        """
         return self.get_branches() + self.get_generators()
 
     def get_investment_devices(self) -> List[dev.EditableDevice]:
+        """
+
+        :return:
+        """
         return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads()
 
     def get_lines(self) -> List[dev.Line]:
+        """
+
+        :return:
+        """
         return self.lines
 
     def get_transformers2w(self) -> List[dev.Transformer2W]:
+        """
+
+        :return:
+        """
         return self.transformers2w
 
     def get_transformers2w_number(self) -> int:
+        """
+
+        :return:
+        """
         return len(self.transformers2w)
 
     def get_transformers2w_names(self) -> List[str]:
+        """
+
+        :return:
+        """
         return [elm.name for elm in self.transformers2w]
 
     def get_windings(self) -> List[dev.Winding]:
+        """
+
+        :return:
+        """
         return self.windings
 
     def get_windings_number(self) -> int:
+        """
+
+        :return:
+        """
         return len(self.windings)
 
     def get_windings_names(self) -> List[str]:
+        """
+
+        :return:
+        """
         return [elm.name for elm in self.windings]
 
     def get_transformers3w(self) -> List[dev.Transformer3W]:
+        """
+
+        :return:
+        """
         return self.transformers3w
 
     def get_transformers3w_number(self) -> int:
+        """
+
+        :return:
+        """
         return len(self.transformers3w)
 
     def get_transformers3w_names(self) -> List[str]:
+        """
+
+        :return:
+        """
         return [elm.name for elm in self.transformers3w]
 
     def get_vsc(self) -> List[dev.VSC]:
+        """
+
+        :return:
+        """
         return self.vsc_devices
 
     def get_dc_lines(self) -> List[dev.DcLine]:
+        """
+
+        :return:
+        """
         return self.dc_lines
 
     def get_upfc(self) -> List[dev.UPFC]:
+        """
+
+        :return:
+        """
         return self.upfc_devices
 
     def get_switches(self) -> List[dev.Switch]:
+        """
+
+        :return:
+        """
         return self.switch_devices
 
     def get_hvdc(self) -> List[dev.HvdcLine]:
+        """
+
+        :return:
+        """
         return self.hvdc_lines
 
     def get_hvdc_number(self) -> int:
+        """
+
+        :return:
+        """
         return len(self.hvdc_lines)
 
     def get_hvdc_names(self) -> ObjVec:
+        """
+
+        :return:
+        """
         return np.array([elm.name for elm in self.hvdc_lines])
 
     def get_loads(self) -> List[dev.Load]:
@@ -793,13 +881,17 @@ class MultiCircuit:
             lst = lst + bus.generators
         return lst
 
-    def get_generators_number(self):
+    def get_generators_number(self) -> int:
+        """
+        Get the number of generators
+        :return: int
+        """
         val = 0
         for bus in self.buses:
             val = val + len(bus.generators)
         return val
 
-    def get_generator_names(self):
+    def get_generator_names(self) -> StrVec:
         """
         Returns a list of :ref:`Generator<generator>` names.
         """
@@ -829,7 +921,7 @@ class MultiCircuit:
             val = val + len(bus.batteries)
         return val
 
-    def get_battery_names(self):
+    def get_battery_names(self) -> StrVec:
         """
         Returns a list of :ref:`Battery<battery>` names.
         """
@@ -1134,12 +1226,22 @@ class MultiCircuit:
         Apply the LP results as device profiles.
         """
         generators = self.get_generators()
-        for i, gen in enumerate(generators):
-            gen.P_prof = results.generator_power[:, i]
+        for i, elm in enumerate(generators):
+            pr = results.generator_power[:, i]
+            if len(pr) == self.get_time_number():
+                elm.P_prof = pr
+
+        batteries = self.get_batteries()
+        for i, elm in enumerate(batteries):
+            pr = results.battery_power[:, i]
+            if len(pr) == self.get_time_number():
+                elm.P_prof = pr
 
         loads = self.get_loads()
-        for i, gen in enumerate(loads):
-            gen.P_prof -= results.load_shedding[:, i]
+        for i, elm in enumerate(loads):
+            pr = results.load_shedding[:, i]
+            if len(pr) == self.get_time_number():
+                elm.P_prof -= pr
 
         # TODO: implement more devices
 
@@ -1276,11 +1378,15 @@ class MultiCircuit:
 
     def get_units_dict(self):
         """
+        Dictionary of units
+        used in json export v3
         """
         return {'time': 'Milliseconds since 1/1/1970 (Unix time in ms)'}
 
     def get_profiles_dict(self):
         """
+        Get the profiles dictionary
+        mainly used in json export
         """
         if self.time_profile is not None:
             # recommended way to get the unix datetimes
@@ -1402,14 +1508,19 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.create_profiles(index)
 
-    def set_time_profile(self, unix_data):
-
+    def set_time_profile(self, unix_data: IntVec):
+        """
+        Set unix array as time array
+        :param unix_data: array of seconds since 1970
+        """
         # try parse
         try:
             self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
         except Exception as e:
             # it may come in nanoseconds instead of seconds...
             self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
+
+        self.ensure_profiles_exist()
 
         for elm in self.buses:
             elm.create_profiles(self.time_profile)
@@ -1967,7 +2078,7 @@ class MultiCircuit:
         # TODO: Remove dependencies
         self.transformer_types.remove(obj)
 
-    def apply_all_branch_types(self):
+    def apply_all_branch_types(self) -> bs.Logger:
         """
         Apply all the branch types
         """
@@ -2542,7 +2653,6 @@ class MultiCircuit:
     def average_separation(self):
         """
         Average separation of the buses
-        :param Branches: list of Branch elements
         :return: average separation
         """
         separation = 0.0
@@ -2623,7 +2733,8 @@ class MultiCircuit:
 
         return circuit.buses
 
-    def add_devices_list(self, original_list, new_list):
+    @staticmethod
+    def add_devices_list(original_list, new_list):
         """
         Add a list of devices to another keeping coherence
         :param original_list:
@@ -2814,14 +2925,14 @@ class MultiCircuit:
 
         return logger
 
-    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col):
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> bs.Logger:
         """
-
+        Import the buses' latitude and longitude
         :param df: Pandas DataFrame with the information
         :param bus_col: bus column name
         :param lat_col: latitude column name
         :param lon_col: longitude column name
-        :return:
+        :return: Logger
         """
         logger = bs.Logger()
         lats = df[lat_col].values
@@ -3235,9 +3346,17 @@ class MultiCircuit:
         return val
 
     def get_Pbus(self) -> Vec:
+        """
+        Get snapshot active power array per bus
+        :return: Vec
+        """
         return self.get_Sbus().real
 
     def get_Pbus_prof(self) -> Mat:
+        """
+        Get profiles active power per bus
+        :return: Mat
+        """
         return self.get_Sbus_prof().real
 
     def get_branch_rates_prof_wo_hvdc(self) -> Mat:
@@ -3297,6 +3416,9 @@ class MultiCircuit:
         :param t: time index, if None the snapshot is used
         :return: P_hvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
         """
+
+        # TODO: Remove this function because it already exists
+
         P_hvdc = np.zeros(len(self.buses))
         Losses_hvdc = np.zeros(len(self.hvdc_lines))
         Pf_hvdc = np.zeros(len(self.hvdc_lines))
