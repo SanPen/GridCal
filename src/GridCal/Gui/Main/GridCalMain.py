@@ -5119,7 +5119,7 @@ class MainGUI(QMainWindow):
 
         self.ui.units_label.setText("")
 
-    def grid_colour_function(self, plot_function, current_study, current_step):
+    def grid_colour_function(self, plot_function, current_study: str, current_step: int):
 
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -5350,13 +5350,19 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
+        elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
+            pass
+
+        elif current_study == sim.AvailableTransferCapacityDriver.tpe.value:
+            pass
+
         elif current_study == 'Transient stability':
             raise Exception('Not implemented :(')
 
         else:
             print('<' + current_study + '> Not implemented :(')
 
-    def colour_schematic(self):
+    def colour_schematic(self) -> None:
         """
         Color the grid now
         """

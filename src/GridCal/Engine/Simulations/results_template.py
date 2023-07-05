@@ -32,8 +32,7 @@ class ResultsTemplate:
                 Dict[ResultTypes, List[ResultTypes]],
                 List[ResultTypes]
             ] = dict(),
-            data_variables: List[str] = list()
-    ):
+            data_variables: List[str] = list()):
         """
         Results template class
         :param name: Name of the class

@@ -572,8 +572,6 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             numerical_circuit=nc,
             distributed_slack=self.options.distributed_slack,
             correct_values=self.options.correct_values,
-            contingency_group_dict=self.grid.get_contingency_group_dict(),
-            branch_dict=self.grid.get_branches_wo_hvdc_dict(),
         )
 
         linear.run()
@@ -587,8 +585,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             br_names=linear.numerical_circuit.branch_names,
             bus_names=linear.numerical_circuit.bus_names,
             rates=nc.Rates,
-            contingency_rates=nc.Continge
-        # declare the linear analysisncyRates
+            contingency_rates=nc.ContingencyRates
         )
 
         # compute the branch exchange sensitivity (alpha)

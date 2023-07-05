@@ -16,12 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
 import numpy as np
-from typing import Union
+from typing import Union, List
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, \
     compute_atc_list, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -31,21 +32,22 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
+from GridCal.Engine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
     """
-
+    AvailableTransferCapacityTimeSeriesResults
     """
 
-    def __init__(self, br_names, bus_names, rates, contingency_rates, time_array):
+    def __init__(self, br_names: StrVec, bus_names: StrVec, rates: Mat, contingency_rates: Mat, time_array: DateVec):
         """
 
         :param br_names:
         :param bus_names:
         :param rates:
         :param contingency_rates:
-        :param nt:
+        :param time_array:
         """
         ResultsTemplate.__init__(
             self,
@@ -69,11 +71,19 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.base_exchange = 0
         self.raw_report = None
         self.report = None
-        self.report_headers = None
-        self.report_indices = None
+        self.report_headers: StrVec = None
+        self.report_indices: IntVec = None
 
-    def get_steps(self):
-        return
+    def clear(self):
+        """
+        Crear the results
+        :return:
+        """
+        self.base_exchange = 0
+        self.raw_report = None
+        self.report = None
+        self.report_headers: StrVec = None
+        self.report_indices: IntVec = None
 
     def make_report(self, threshold: float = 0.0):
         """
@@ -197,35 +207,6 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         return mdl
 
 
-class AvailableTransferCapacityClusteringResults(AvailableTransferCapacityTimeSeriesResults):
-
-    def __init__(self, br_names, bus_names, rates, contingency_rates, time_array, sampled_time_idx,
-                 sampled_probabilities):
-        """
-
-        :param br_names:
-        :param bus_names:
-        :param rates:
-        :param contingency_rates:
-        :param time_array:
-        :param sampled_time_idx:
-        :param sampled_probabilities:
-        """
-        AvailableTransferCapacityTimeSeriesResults.__init__(
-            self,
-            br_names=br_names,
-            bus_names=bus_names,
-            rates=rates,
-            contingency_rates=contingency_rates,
-            time_array=time_array
-        )
-
-        # self.available_results.append(ResultTypes.P)
-
-        self.sampled_time_idx = sampled_time_idx
-        self.sampled_probabilities = sampled_probabilities
-
-
 class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
@@ -234,8 +215,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self, grid: MultiCircuit,
             options: AvailableTransferCapacityOptions,
             time_indices: np.ndarray,
-            clustering_results: Union[ClusteringResults, None] = None,
-    ):
+            clustering_results: Union[ClusteringResults, None] = None):
 
         """
         Power Transfer Distribution Factors class constructor
@@ -256,14 +236,21 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # OPF results
         self.results = AvailableTransferCapacityTimeSeriesResults(
-            br_names=[],
-            bus_names=[],
-            rates=[],
-            contingency_rates=[],
-            time_array=[]
+            br_names=self.grid.get_branches_wo_hvdc_names(),
+            bus_names=self.grid.get_bus_names(),
+            rates=self.grid.get_branch_rates_prof_wo_hvdc(),
+            contingency_rates=self.grid.get_branch_contingency_rates_prof_wo_hvdc(),
+            time_array=self.grid.time_profile[self.time_indices]
         )
 
-    def run(self):
+    def get_steps(self) -> List[str]:
+        """
+        Get time steps list of strings
+        """
+
+        return []
+
+    def run(self) -> None:
         """
         Run thread
         """
@@ -293,59 +280,39 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         con_br_idx = nc.branch_data.get_contingency_enabled_indices()
 
         # declare the results
-        self.results = AvailableTransferCapacityTimeSeriesResults(
-            br_names=nc.branch_names,
-            bus_names=nc.bus_names,
-            rates=nc.Rates,
-            contingency_rates=nc.ContingencyRates,
-            time_array=self.grid.time_profile[self.time_indices]
-        )
+        self.results.clear()
 
-
-        if self.options.use_clustering:
-            self.progress_text.emit('Clustering...')
-            X = nc.Sbus
-            X = X[:, self.time_indices].real.T
-
-            # cluster and re-assign the time indices
-            time_indices, sampled_probabilities = kmeans_sampling(
-                x_input=X,
-                n_points=self.options.cluster_number
-            )
-
-        # get the power Injections
-        P = self.grid.get_Pbus_prof().T  # these are in p.u.
-
-        # get flow
-        if self.options.use_provided_flows:
-            flows = self.options.Pf
-
-            if self.options.Pf is None:
-                msg = 'The option to use the provided flows is enabled, but no flows are available'
-                self.logger.add_error(msg)
-                raise Exception(msg)
-        else:
-            # compute the base Sf
-            flows = linear_analysis.get_flows(P)  # will be converted to MW internally
-
-        # transform the contingency rates and the normal rates
-        rates = self.grid.get_branch_rates_prof_wo_hvdc()
-        contingency_rates = self.grid.get_branch_contingency_rates_prof_wo_hvdc()
-
-        # these results can be copied directly
-        self.results.base_flow = flows
-        self.results.rates = rates
-        self.results.contingency_rates = contingency_rates
-
-        for it, t in enumerate(time_indices):
+        for it, t in enumerate(self.time_indices):
 
             if self.progress_text is not None:
                 self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
+            nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=t)
+
+            linear_analysis = LinearAnalysis(
+                numerical_circuit=nc,
+                distributed_slack=True,
+                correct_values=False,
+            )
+            linear_analysis.run()
+
+            P: Vec = nc.Sbus.real
+
+            # get flow
+            if self.options.use_provided_flows:
+                flows_t = self.options.Pf[t, :]
+
+                if self.options.Pf is None:
+                    msg = 'The option to use the provided flows is enabled, but no flows are available'
+                    self.logger.add_error(msg)
+                    raise Exception(msg)
+            else:
+                flows_t: Vec = linear_analysis.get_flows(P)
+
             # compute the branch exchange sensitivity (alpha)
             alpha, alpha_n1 = compute_alpha(
                 ptdf=linear_analysis.PTDF,
-                P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
+                P0=P,  # no problem that there are in p.u., are only used for the sensitivity
                 Pinstalled=nc.bus_installed_power,
                 Pgen=nc.generator_data.get_injections_per_bus().real,
                 Pload=nc.load_data.get_injections_per_bus().real,
@@ -356,7 +323,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             )
 
             # base exchange
-            base_exchange = (self.options.inter_area_branch_sense * flows[t, self.options.inter_area_branch_idx]).sum()
+            base_exchange = (self.options.inter_area_branch_sense * flows_t[self.options.inter_area_branch_idx]).sum()
 
             # consider the HVDC transfer
             if self.options.Pf_hvdc is not None:
@@ -369,12 +336,13 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                       contingency_br_idx=con_br_idx,
                                       lodf=linear_analysis.LODF,
                                       alpha=alpha,
-                                      flows=flows[t, :],
-                                      rates=rates[t, :],
-                                      contingency_rates=contingency_rates[t, :],
+                                      flows=flows_t,
+                                      rates=self.results.rates[t, :],
+                                      contingency_rates=self.results.contingency_rates[t, :],
                                       base_exchange=base_exchange,
                                       time_idx=t,
                                       threshold=self.options.threshold)
+
             report = np.array(report, dtype=object)
 
             # sort by NTC
@@ -391,7 +359,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.raw_report = np.r_[self.results.raw_report, report]
 
             if self.progress_signal is not None:
-                self.progress_signal.emit((t + 1) / nt * 100)
+                self.progress_signal.emit((t + 1) / len(self.time_indices) * 100)
 
             if self.__cancel__:
                 break
@@ -401,15 +369,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-
-    def get_steps(self):
-        """
-        Get variations list of strings
-        """
-        if self.results is not None:
-            return [v for v in self.results.branch_names]
-        else:
-            return list()
 
     def cancel(self):
         self.__cancel__ = True

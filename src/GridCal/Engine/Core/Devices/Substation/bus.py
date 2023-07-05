@@ -202,39 +202,33 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
-        self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='', editable=False)
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=True)
+        self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='')
+        self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=False)
         self.register(key='code', units='', tpe=str, definition='Some code to further identify the bus',
-                      profile_name='', editable=False)
+                      profile_name='')
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
-                      profile_name='active_prof', editable=False)
+                      profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
-                      profile_name='', editable=False)
-        self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='',
-                      editable=False)
+                      profile_name='')
+        self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
         self.register(key='is_tr_bus', units='', tpe=bool,
                       definition='Is this bus part of a composite transformer, such as  a 3-winding transformer?.',
-                      profile_name='', editable=False)
-        self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='',
-                      editable=False)
-        self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='',
-                      editable=False)
-        self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='',
-                      editable=False)
+                      profile_name='')
+        self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
+        self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
+        self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
         self.register(key='Vmin', units='p.u.', tpe=float, definition='Lower range of allowed voltage module.',
-                      profile_name='', editable=False)
+                      profile_name='')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
-                      profile_name='', editable=False)
+                      profile_name='')
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
-                      profile_name='', editable=False)
+                      profile_name='')
         self.register(key='angle_max', units='rad.', tpe=float, definition='Higher range of allowed voltage angle.',
-                      profile_name='', editable=False)
+                      profile_name='')
         self.register(key='r_fault', units='p.u.', tpe=float,
-                      definition='Resistance of the fault.This is used for short circuit studies.', profile_name='',
-                      editable=False)
+                      definition='Resistance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x_fault', units='p.u.', tpe=float,
-                      definition='Reactance of the fault.This is used for short circuit studies.', profile_name='',
-                      editable=False)
+                      definition='Reactance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x', units='px', tpe=float, definition='x position in pixels.', profile_name='',
                       editable=False)
         self.register(key='y', units='px', tpe=float, definition='y position in pixels.', profile_name='',
@@ -244,17 +238,13 @@ class Bus(EditableDevice):
         self.register(key='w', units='px', tpe=float, definition='Width of the bus in pixels.', profile_name='',
                       editable=False)
         self.register(key='country', units='', tpe=DeviceType.CountryDevice, definition='Country of the bus',
-                      profile_name='', editable=False)
-        self.register(key='area', units='', tpe=DeviceType.AreaDevice, definition='Area of the bus', profile_name='',
-                      editable=False)
-        self.register(key='zone', units='', tpe=DeviceType.ZoneDevice, definition='Zone of the bus', profile_name='',
-                      editable=False)
+                      profile_name='')
+        self.register(key='area', units='', tpe=DeviceType.AreaDevice, definition='Area of the bus', profile_name='')
+        self.register(key='zone', units='', tpe=DeviceType.ZoneDevice, definition='Zone of the bus', profile_name='')
         self.register(key='substation', units='', tpe=DeviceType.SubstationDevice, definition='Substation of the bus.',
-                      profile_name='', editable=False)
-        self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='',
-                      editable=False)
-        self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='',
-                      editable=False)
+                      profile_name='')
+        self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
+        self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
     @property
     def name(self):
