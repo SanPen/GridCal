@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,10 +27,9 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPower
 from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Core.Devices.enumerations import HvdcControlType
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
-from GridCal.Engine.basic_structures import Vec, CxVec
+from GridCal.Engine.basic_structures import CxVec
 
 
 def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, S0, I0, Y0,

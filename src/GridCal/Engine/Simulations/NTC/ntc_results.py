@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
 
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
-from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType
 
 
 def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,

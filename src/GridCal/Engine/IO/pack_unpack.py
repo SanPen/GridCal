@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -195,7 +195,7 @@ def create_data_frames(circuit: MultiCircuit):
             dta = np.zeros((0, len(headers)))
 
         # declare the DataFrames for the normal data
-        dfs[object_type_name] = pd.DataFrame(data=dta, columns=headers)
+        dfs[object_type_name] = pd.DataFrame(data=dta, columns=list(headers))
 
         # create the profiles' DataFrames
         for prop, data in profiles.items():
@@ -513,8 +513,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                 circuit.upfc_devices = devices
 
             elif template_elm.device_type == DeviceType.VscDevice:
-                for dev in devices:
-                    dev.correct_buses_connection()
+                for elm in devices:
+                    elm.correct_buses_connection()
                 circuit.vsc_devices = devices
 
             elif template_elm.device_type == DeviceType.OverheadLineTypeDevice:
@@ -583,7 +583,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                 phase = df['phase'].values[i]
 
                 w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
-                tower.wires_in_tower.append(w)
+                tower.add_wire(w)
 
     # Other actions ----------------------------------------------------------------------------------------------------
     circuit.logger += circuit.apply_all_branch_types()

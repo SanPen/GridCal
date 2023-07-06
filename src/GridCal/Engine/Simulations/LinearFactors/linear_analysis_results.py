@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,21 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
-import multiprocessing
+
 import numpy as np
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 import GridCal.Engine.basic_structures as bs
 
 
 class LinearAnalysisResults(ResultsTemplate):
+    """
+
+    """
 
     def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
         """
@@ -76,15 +73,6 @@ class LinearAnalysisResults(ResultsTemplate):
         self.voltage = np.ones(self.n_bus, dtype=complex)
 
         self.loading = np.zeros(self.n_br)
-
-    def apply_new_rates(self, nc: "SnapshotData"):
-        """
-
-        :param nc:
-        :return:
-        """
-        rates = nc.Rates
-        self.loading = self.Sf / (rates + 1e-9)
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
@@ -135,4 +123,3 @@ class LinearAnalysisResults(ResultsTemplate):
                            ylabel=y_label,
                            units=y_label)
         return mdl
-

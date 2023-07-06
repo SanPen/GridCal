@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,23 +22,20 @@ from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
 
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCal.Engine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
+from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 
 
-def compute_acptdf(
-        Ybus: np.ndarray,
-        Yf: np.ndarray,
-        F: np.ndarray,
-        T: np.ndarray,
-        V: np.ndarray,
-        pq: np.ndarray,
-        pv: np.ndarray,
-        distribute_slack: bool = False
-):
+def compute_acptdf(Ybus: sp.csc_matrix,
+                   Yf: sp.csc_matrix,
+                   F: IntVec,
+                   T: IntVec,
+                   V: CxVec,
+                   pq: IntVec,
+                   pv: IntVec,
+                   distribute_slack: bool = False) -> Mat:
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
@@ -84,12 +81,10 @@ def compute_acptdf(
     return PTDF
 
 
-def make_ptdf(
-        Bbus: np.ndarray,
-        Bf: np.ndarray,
-        pqpv: np.ndarray,
-        distribute_slack: bool = True
-) -> np.ndarray:
+def make_ptdf(Bbus: sp.csc_matrix,
+              Bf: sp.csc_matrix,
+              pqpv: IntVec,
+              distribute_slack: bool = True) -> Mat:
     """
     Build the PTDF matrix
     :param Bbus: DC-linear susceptance matrix
@@ -129,13 +124,11 @@ def make_ptdf(
     return H
 
 
-def make_lodf(
-        Cf: np.ndarray,
-        Ct: np.ndarray,
-        PTDF: np.ndarray,
-        correct_values: bool = False,
-        numerical_zero: float = 1e-10,
-) -> np.ndarray:
+def make_lodf(Cf: sp.csc_matrix,
+              Ct: sp.csc_matrix,
+              PTDF: Mat,
+              correct_values: bool = False,
+              numerical_zero: float = 1e-10) -> Mat:
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
@@ -175,11 +168,9 @@ def make_lodf(
 
 
 @nb.njit(cache=True)
-def make_otdf(
-        ptdf: np.ndarray,
-        lodf: np.ndarray,
-        j: int
-) -> np.ndarray:
+def make_otdf(ptdf: Mat,
+              lodf: Mat,
+              j: int) -> Mat:
     """
     Outage sensitivity of the Branches when transferring power from the bus j to the slack
         LODF: outage transfer distribution factors
@@ -200,10 +191,8 @@ def make_otdf(
 
 
 @nb.njit(parallel=True)
-def make_otdf_max(
-        ptdf: np.ndarray,
-        lodf: np.ndarray,
-) -> np.ndarray:
+def make_otdf_max(ptdf: Mat,
+                  lodf: Mat) -> Mat:
     """
     Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
         LODF: outage transfer distribution factors
@@ -234,10 +223,8 @@ def make_otdf_max(
 
 
 @nb.njit(cache=True)
-def make_contingency_flows(
-        lodf: np.ndarray,
-        flows: np.ndarray,
-):
+def make_contingency_flows(lodf: Mat,
+                           flows: np.ndarray):
     """
     Make contingency Sf matrix
     :param lodf: line outage distribution factors
@@ -256,11 +243,9 @@ def make_contingency_flows(
 
 
 @nb.njit(cache=True)
-def make_transfer_limits(
-        ptdf: np.ndarray,
-        flows: np.ndarray,
-        rates: np.ndarray,
-) -> np.ndarray:
+def make_transfer_limits(ptdf: Mat,
+                         flows: Vec,
+                         rates: Vec) -> Vec:
     """
     Compute the maximum transfer limits of each branch in normal operation
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
@@ -376,6 +361,7 @@ class LinearAnalysis:
     """
     Linear Analysis
     """
+
     def __init__(self,
                  numerical_circuit: NumericalCircuit,
                  distributed_slack: bool = True,

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -150,11 +150,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.plot_bars_limit = 100
 
     def apply_new_rates(self, nc: "NumericalCircuit"):
+        """
+
+        :param nc:
+        """
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
     def fill_circuit_info(self, grid: "MultiCircuit"):
+        """
 
+        :param grid:
+        """
         area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
         bus_dict = grid.get_bus_index_dict()
 

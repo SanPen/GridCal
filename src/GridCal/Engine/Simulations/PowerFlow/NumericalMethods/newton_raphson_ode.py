@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,6 @@ def F(V, Ybus, S, I, pq, pvpq):
     :param S:
     :param I:
     :param pq:
-    :param pv:
     :param pvpq:
     :return:
     """
@@ -93,7 +92,6 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        robust: Boolean variable for the use of the Iwamoto optimal step factor.
     Returns:
         Voltage solution, converged?, error, calculated power Injections
 

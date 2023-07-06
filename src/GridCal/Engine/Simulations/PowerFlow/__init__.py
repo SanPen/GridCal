@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,5 +19,6 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeries
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_input import PowerFlowTimeSeriesInput
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults

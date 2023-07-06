@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -3804,12 +3804,12 @@ class MainGUI(QMainWindow):
 
                     options = self.get_selected_power_flow_options()
 
-                    drv = sim.PowerFlowTimeSeries(grid=self.circuit,
-                                                  options=options,
-                                                  time_indices=self.get_time_indices(),
-                                                  opf_time_series_results=opf_time_series_results,
-                                                  clustering_results=self.get_clustering_results(),
-                                                  engine=self.get_preferred_engine())
+                    drv = sim.PowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                        options=options,
+                                                        time_indices=self.get_time_indices(),
+                                                        opf_time_series_results=opf_time_series_results,
+                                                        clustering_results=self.get_clustering_results(),
+                                                        engine=self.get_preferred_engine())
 
                     self.session.run(drv,
                                      post_func=self.post_power_flow_time_series,
@@ -5156,7 +5156,7 @@ class MainGUI(QMainWindow):
                                  max_bus_width=max_bus_width,
                                  cmap=cmap)
 
-        elif current_study == sim.PowerFlowTimeSeries.tpe.value:
+        elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
 
             return plot_function(circuit=self.circuit,

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -372,7 +372,7 @@ class OpfVars:
 
 def add_linear_generation_formulation(t: Union[int, None],
                                       Sbase: float,
-                                      time_array: List[int],
+                                      time_array: DateVec,
                                       gen_data_t: GeneratorData,
                                       gen_vars: GenerationVars,
                                       prob: ort.Solver,
@@ -453,7 +453,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     if t > 0:
                         if gen_data_t.ramp_up[k] < gen_data_t.pmax[k] and gen_data_t.ramp_down[k] < gen_data_t.pmax[k]:
                             # if the ramp is actually sufficiently restrictive...
-                            dt = (time_array[t] - time_array[t - 1]) / 3600.0  # time increment in hours
+                            dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
 
                             # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
                             prob.Add(-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k])
@@ -542,33 +542,27 @@ def add_linear_battery_formulation(t: Union[int, None],
                     batt_vars.shutting_down[t, k] = prob.IntVar(0, 1, join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
-                        t, k]
+                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[t, k]
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(batt_vars.p[t, k] >= (
-                                batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k]),
                                  join("batt>=Pmin", [t, k], "_"))
-                        prob.Add(batt_vars.p[t, k] <= (
-                                batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k]),
                                  join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                t, k] - float(batt_data_t.active[k]),
+                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] - float(batt_data_t.active[k]),
                                      join("binary_alg1_", [t, k], "_"))
                             prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg2_", [t, k], "_"))
                         else:
-                            prob.Add(
-                                batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                    t, k] - batt_vars.producing[t - 1, k],
-                                join("binary_alg3_", [t, k], "_"))
+                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
+                                     join("binary_alg3_", [t, k], "_"))
                             prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg4_", [t, k], "_"))
                 else:
@@ -582,8 +576,8 @@ def add_linear_battery_formulation(t: Union[int, None],
                         batt_vars.p[t, k].SetLb(batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase)
                         batt_vars.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
 
-                # compute the time increment
-                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
+                # compute the time increment in hours
+                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
 
                 if ramp_constraints and t is not None:
                     if t > 0:
@@ -772,15 +766,11 @@ def add_linear_branches_formulation(t: int,
                 branch_vars.flow_slacks_neg[t, m] = prob.NumVar(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[
-                                                            m] / Sbase
+                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
                 prob.Add(branch_vars.flow_constraints_ub[t, m])
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[
-                    m] / Sbase
+                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
                 prob.Add(branch_vars.flow_constraints_lb[t, m])
 
                 # add to the objective function

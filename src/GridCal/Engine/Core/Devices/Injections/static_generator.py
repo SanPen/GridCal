@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCal.Engine.Core.Devices.enumerations import BuildStatus
 
 

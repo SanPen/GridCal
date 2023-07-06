@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
 
 from GridCal.Engine.Core.Devices.Branches.templates.transformer_type import TransformerType
 from GridCal.Engine.Core.Devices.Branches.templates.line_template import LineTemplate
-from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
+from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
 from GridCal.Engine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCal.Engine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType
 from GridCal.Engine.Core.Devices.Branches.templates.transformer_type import TransformerType

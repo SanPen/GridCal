@@ -1,4 +1,3 @@
-from numpy import sqrt
 
 __author__ = 'spv86_000'
 # Copyright (c) 1996-2015 PSERC. All rights reserved.

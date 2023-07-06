@@ -2,7 +2,7 @@ __author__ = 'spv86_000'
 # Copyright (c) 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
-from numpy import ones, flatnonzero as find, intc, double, string_, where, delete, zeros, r_, where, delete
+from numpy import flatnonzero as find, intc, double, zeros, r_, where, delete
 from scipy.sparse import csr_matrix as sparse
 
 from .matpower_gen_definitions import GEN_BUS, GEN_STATUS

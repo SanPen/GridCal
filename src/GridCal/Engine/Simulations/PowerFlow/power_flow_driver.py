@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,9 +55,9 @@ class PowerFlowDriver(DriverTemplate):
         self.results = PowerFlowResults(n=0,
                                         m=0,
                                         n_hvdc=0,
-                                        bus_names=[],
-                                        branch_names=[],
-                                        hvdc_names=[],
+                                        bus_names=np.empty(0, dtype=object),
+                                        branch_names=np.empty(0, dtype=object),
+                                        hvdc_names=np.empty(0, dtype=object),
                                         bus_types=np.empty(0))
 
         self.logger = Logger()

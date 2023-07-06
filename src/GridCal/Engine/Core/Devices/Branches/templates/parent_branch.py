@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import numpy as np
 from typing import Tuple
 from matplotlib import pyplot as plt
 
-from GridCal.Engine.basic_structures import Logger, Vec, IntVec, BoolVec
+from GridCal.Engine.basic_structures import Logger, Vec, BoolVec
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType

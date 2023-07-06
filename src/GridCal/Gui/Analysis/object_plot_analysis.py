@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from typing import List
 import math
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtGui
 
 from GridCal.Engine.basic_structures import LogSeverity
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -29,9 +29,15 @@ import GridCal.Engine.basic_structures as bs
 
 
 class GridErrorLog:
+    """
+    Log of grid errors
+    """
 
     def __init__(self, parent=None):
+        """
 
+        :param parent:
+        """
         self.logs = dict()
 
         self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property', 'Lower', 'Value', 'Upper']
@@ -98,7 +104,6 @@ class GridErrorLog:
     def get_df(self):
         """
         Save analysis to excel
-        :param filename:
         :return:
         """
         data = list()
@@ -124,6 +129,9 @@ class GridErrorLog:
 
 
 class FixableErrorOutOfRange:
+    """
+    Error type for when a value is out of range
+    """
 
     def __init__(self, grid_element, property_name, value, lower_limit, upper_limit):
         self.grid_element = grid_element
@@ -158,6 +166,9 @@ class FixableErrorOutOfRange:
 
 
 class FixableErrorRangeFlip:
+    """
+    Error type for when a range is reversed
+    """
 
     def __init__(self, grid_element, property_name_low, property_name_high, value_low, value_high):
         self.grid_element = grid_element
@@ -174,6 +185,9 @@ class FixableErrorRangeFlip:
 
 
 class FixableErrorNegative:
+    """
+    Error type for when a value is negative
+    """
 
     def __init__(self, grid_element, property_name, value):
         self.grid_element = grid_element
@@ -187,6 +201,9 @@ class FixableErrorNegative:
 
 
 class FixableTransformerVtaps:
+    """
+    Error type for when a transformer virtual taps are wrong
+    """
 
     def __init__(self, grid_element, maximum_difference):
         self.grid_element = grid_element

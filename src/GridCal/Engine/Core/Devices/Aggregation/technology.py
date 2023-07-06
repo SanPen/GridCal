@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,12 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class Technology(EditableDevice):
@@ -29,9 +24,8 @@ class Technology(EditableDevice):
         """
 
         :param name:
-        :param idtag:
         :param code:
-        :param id_technology_group:
+        :param idtag:
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -49,7 +43,6 @@ class Technology(EditableDevice):
         self.register(key='name4', units='', tpe=str, definition='Name 4 of the technology')
 
     def get_properties_dict(self):
-
         data = {'id': self.idtag,
                 'name': self.name,
                 'name2': self.name2,

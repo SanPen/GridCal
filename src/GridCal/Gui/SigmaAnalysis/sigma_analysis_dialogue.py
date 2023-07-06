@@ -1,11 +1,6 @@
-import os
-import string
 import sys
-from random import randint
-from enum import Enum
 import numpy as np
-import pandas as pd
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets
 
 from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
 from GridCal.Gui.Session.results_model import ResultsModel

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,10 @@ import os
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
-from typing import List, Dict
+from typing import List
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
-from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 
 
 class GridsModelItem:
@@ -83,6 +81,12 @@ class GridsModel(QtCore.QAbstractTableModel):
         return len(self._headers_)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
@@ -90,6 +94,13 @@ class GridsModel(QtCore.QAbstractTableModel):
         return None
 
     def headerData(self, p_int, orientation, role):
+        """
+
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return self._headers_[p_int]
@@ -98,12 +109,25 @@ class GridsModel(QtCore.QAbstractTableModel):
         return None
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        """
+
+        :param index:
+        :return:
+        """
         return QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
 
     def supportedDropActions(self) -> bool:
+        """
+
+        :return:
+        """
         return QtCore.Qt.MoveAction | QtCore.Qt.CopyAction
 
     def dropEvent(self, event):
+        """
+
+        :param event:
+        """
         if (event.source() is not self or
                 (event.dropAction() != QtCore.Qt.MoveAction and
                  self.dragDropMode() != QtWidgets.QAbstractItemView.InternalMove)):

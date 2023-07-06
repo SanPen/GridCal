@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import numpy as np
 from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
-from GridCal.Engine.Core.Devices import Bus, Generator, Branch, Load, GeneratorTechnologyType, BranchType
+from GridCal.Engine.Core.Devices import Bus, Generator, Branch, Load, BranchType
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 

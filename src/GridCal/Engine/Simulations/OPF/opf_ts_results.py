@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -145,6 +145,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.converged = np.empty(nt, dtype=bool)
 
     def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        """
+
+        :param nc:
+        """
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
 

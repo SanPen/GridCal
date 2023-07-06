@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -59,7 +59,6 @@ class VSC(ParentBranch):
         :param Beq:
         :param Beq_min:
         :param Beq_max:
-        :param Inom:
         :param rate:
         :param kdp:
         :param control_mode:

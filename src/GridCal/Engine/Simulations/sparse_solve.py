@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,9 @@ from scipy.sparse import csr_matrix, csc_matrix
 
 
 class SparseSolver(Enum):
+    """
+    Sparse solvers to use
+    """
     BLAS_LAPACK = 'Blas/Lapack'
     ILU = 'ILU'
     KLU = 'KLU'

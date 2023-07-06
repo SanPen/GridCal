@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,6 @@
 
 import time
 import numpy as np
-import pandas as pd
 from typing import Dict, Union
 
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -120,7 +119,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.loading_threshold_to_report = loading_threshold_to_report
         self.reversed_sort_loading = reversed_sort_loading
 
-        self.results_dict: Dict[int, OptimalNetTransferCapacityResults] = dict()
+        self.results_dict: Dict[int, "OptimalNetTransferCapacityResults"] = dict()
         self.reports: Dict[str, ResultsTable] = dict()
 
     def get_alpha_report(self):

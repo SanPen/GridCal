@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,13 +25,13 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 import GridCal.Engine.Simulations.PowerFlow.power_flow_worker as pf_worker
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
-from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import bentayga_pf
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_pf
+from GridCal.Engine.Core.Compilers.circuit_to_pgm import pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 
-class PowerFlowTimeSeries(TimeSeriesDriverTemplate):
+class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.TimeSeries_run
     name = tpe.value
 

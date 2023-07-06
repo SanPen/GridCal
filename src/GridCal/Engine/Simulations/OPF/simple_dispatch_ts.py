@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from typing import List, Union, Tuple
+from typing import Tuple
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import Vec, IntVec
+from GridCal.Engine.basic_structures import Vec
 
 
 def run_simple_dispatch(grid: MultiCircuit,

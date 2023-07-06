@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,8 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.enumerations import BranchType
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCal.Engine.Core.Devices.Branches.wire import Wire
-
 
 """
 Equations source:
@@ -60,7 +59,7 @@ class WireInTower:
 
 class OverheadLineType(EditableDevice):
 
-    def __init__(self,  name='Tower', tpe=BranchType.Branch, idtag=None):
+    def __init__(self, name='Tower', tpe=BranchType.Branch, idtag=None):
         """
         Overhead line editor
         :param name: name
@@ -132,6 +131,14 @@ class OverheadLineType(EditableDevice):
         self.register(key='Gsh0', units='S/km', tpe=float, definition='Zero sequence shunt conductance')
         self.register(key='Bsh0', units='S/km', tpe=float, definition='Zero sequence shunt susceptance')
         self.register(key='rating', units='kA', tpe=float, definition='Current rating of the tower')
+
+    def add_wire(self, w: Wire):
+        """
+
+        :param w:
+        :return:
+        """
+        self.wires_in_tower.append(w)
 
     def z_series(self):
         """
@@ -224,7 +231,7 @@ class OverheadLineType(EditableDevice):
                 if i != j:
                     if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
                         logger.add('The wires' + wire_i.name + '(' + str(i) + ') and ' +
-                                    wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
+                                   wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
                         return False
                 else:
                     pass
@@ -262,17 +269,17 @@ class OverheadLineType(EditableDevice):
         if all_ok:
             # Impedances
             self.z_abcn, \
-             self.z_phases_abcn, \
-             self.z_abc, \
-             self.z_phases_abc, \
-             self.z_seq = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+                self.z_phases_abcn, \
+                self.z_abc, \
+                self.z_phases_abc, \
+                self.z_seq = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             self.y_abcn, \
-             self.y_phases_abcn, \
-             self.y_abc, \
-             self.y_phases_abc, \
-             self.y_seq = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+                self.y_phases_abcn, \
+                self.y_abc, \
+                self.y_phases_abc, \
+                self.y_seq = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.rating = self.compute_rating()
@@ -296,7 +303,7 @@ class OverheadLineType(EditableDevice):
         :return:
         """
         n = len(self.wires_in_tower)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             if self.wires_in_tower[i].wire.name == wire.name:
                 return True
 
@@ -314,7 +321,7 @@ def get_d_ij(xi, yi, xj, yj):
     :return: distance module
     """
 
-    return sqrt((xi - xj)**2 + (yi - yj)**2)
+    return sqrt((xi - xj) ** 2 + (yi - yj) ** 2)
 
 
 def get_D_ij(xi, yi, xj, yj):

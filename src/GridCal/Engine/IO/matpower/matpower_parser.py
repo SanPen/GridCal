@@ -1,6 +1,6 @@
 """
 GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,6 @@ GridCal
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 import numpy as np
-import pandas as pd
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev

@@ -17,7 +17,7 @@ from GridCal.Engine.Core.Devices import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeries
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 
 
 def main():
@@ -211,10 +211,10 @@ def main():
     # Run a time series power flow simulation
     ####################################################################################################################
 
-    ts = PowerFlowTimeSeries(grid=grid,
-                             options=pf_options,
-                             opf_time_series_results=None,
-                             time_indices=grid.get_all_time_indices())
+    ts = PowerFlowTimeSeriesDriver(grid=grid,
+                                   options=pf_options,
+                                   opf_time_series_results=None,
+                                   time_indices=grid.get_all_time_indices())
 
     ts.run()
 

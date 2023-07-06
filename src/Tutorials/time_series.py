@@ -182,11 +182,11 @@ print('Elapsed time (s):', pf.results.elapsed, '\n')
 # Run a time series power flow simulation
 ####################################################################################################################
 
-ts = PowerFlowTimeSeries(grid=grid,
-                         options=pf_options,
-                         opf_time_series_results=None,
-                         start_=0,
-                         end_=None)
+ts = PowerFlowTimeSeriesDriver(grid=grid,
+                               options=pf_options,
+                               opf_time_series_results=None,
+                               start_=0,
+                               end_=None)
 
 ts.run()
 

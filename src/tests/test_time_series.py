@@ -35,7 +35,7 @@ def test_time_series():
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=True)
 
-    ts = PowerFlowTimeSeries(grid=main_circuit, options=pf_options, time_indices=np.arange(0, 96))
+    ts = PowerFlowTimeSeriesDriver(grid=main_circuit, options=pf_options, time_indices=np.arange(0, 96))
     ts.run()
 
     data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),

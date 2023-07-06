@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
 
 
 from GridCal.Engine.Core.Devices.enumerations import BranchType
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class SequenceLineType(EditableDevice):
