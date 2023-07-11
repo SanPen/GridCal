@@ -79,7 +79,7 @@ class BusVars:
         """
         self.theta = np.zeros((nt, n_elm), dtype=object)
         self.branch_injections = np.zeros((nt, n_elm), dtype=object)
-        self.kirchoff = np.zeros((nt, n_elm), dtype=object)
+        self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
 
     def get_values(self, Sbase: float) -> "BusVars":
@@ -96,7 +96,7 @@ class BusVars:
             for i in range(n_elm):
                 data.theta[t, i] = get_lp_var_value(self.theta[t, i])
                 data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i]) * Sbase
-                data.shadow_prices[t, i] = get_lp_var_value(self.kirchoff[t, i])
+                data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
 
         # format the arrays aproprietly
         data.theta = data.theta.astype(float, copy=False)
@@ -747,8 +747,7 @@ def add_linear_branches_formulation(t: int,
                                                            name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                flow_ctr = branch_vars.flows[t, m] == bk * (
-                            vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
@@ -767,11 +766,11 @@ def add_linear_branches_formulation(t: int,
 
                 # add upper rate constraint
                 branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
-                prob.Add(branch_vars.flow_constraints_ub[t, m])
+                prob.Add(branch_vars.flow_constraints_ub[t, m], name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
                 branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
-                prob.Add(branch_vars.flow_constraints_lb[t, m])
+                prob.Add(branch_vars.flow_constraints_lb[t, m], name=join("br_flow_lower_lim_", [t, m]))
 
                 # add to the objective function
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
@@ -861,6 +860,7 @@ def add_linear_hvdc_formulation(t: int,
 
 def add_linear_node_balance(t_idx: int,
                             Bbus,
+                            vd: IntVec,
                             bus_data: BusData,
                             generator_data: GeneratorData,
                             battery_data: BatteryData,
@@ -899,7 +899,10 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchoff[t_idx, k] = prob.Add(P_calc[k] == P_esp[k], name=join("kirchoff_", [t_idx, k], "_"))
+        bus_vars.kirchhoff[t_idx, k] = prob.Add(P_calc[k] == P_esp[k], name=join("kirchoff_", [t_idx, k], "_"))
+
+    for i in vd:
+        bus_vars.theta[t_idx, i].SetBounds(0, 0)
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
@@ -1056,6 +1059,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
             add_linear_node_balance(t_idx=t_idx,
                                     Bbus=nc.Bbus,
+                                    vd=nc.vd,
                                     bus_data=nc.bus_data,
                                     generator_data=nc.generator_data,
                                     battery_data=nc.battery_data,
@@ -1071,9 +1075,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) >=
+        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) + solver.Sum(mip_vars.batt_vars.p[t_idx, :]) >=
                    mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-                   name="satisfy_demand_at_t={0}".format(t_idx))
+                   name="satisfy_demand_at_={0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)
@@ -1087,6 +1091,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     if progress_func is not None:
         progress_func(0)
+
+    # model_str = solver.ExportModelAsLpFormat(False)
+    # with open("lynn5_busopf.lp", "w") as f:
+    #     f.write(model_str)
 
     status = solver.Solve()
 

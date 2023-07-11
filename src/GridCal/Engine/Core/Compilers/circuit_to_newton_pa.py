@@ -269,8 +269,10 @@ def add_npa_buses(circuit: MultiCircuit,
                                   slack=bus.is_slack,
                                   dc=bus.is_dc,
                                   nominal_voltage=bus.Vnom,
-                                  vmin=bus.Vmin,
-                                  vmax=bus.Vmax,
+                                  vm_min=bus.Vmin,
+                                  vm_max=bus.Vmax,
+                                  va_min=-6.28,
+                                  va_max=6.28,
                                   area=area_dict.get(bus.area, None))
 
         if time_series and n_time > 1:

@@ -912,7 +912,7 @@ class MultiCircuit:
             lst = lst + bus.batteries
         return lst
 
-    def get_batteries_number(self) -> List[dev.Battery]:
+    def get_batteries_number(self) -> int:
         """
         Returns a list of :ref:`Battery<battery>` objects in the grid.
         """
