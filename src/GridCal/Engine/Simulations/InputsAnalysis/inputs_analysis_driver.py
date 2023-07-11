@@ -75,10 +75,10 @@ class InputsAnalysisResults(ResultsTemplate):
                         elm.Pmin, elm.Pmax,
                         elm.Qmin, elm.Qmax,
                         elm.Vset,
-                        elm.bus.zone.name,
-                        elm.bus.area.name,
-                        elm.bus.substation.name,
-                        elm.bus.country.name])
+                        elm.bus.zone.name if elm.bus.zone is not None else "",
+                        elm.bus.area.name if elm.bus.area is not None else "",
+                        elm.bus.substation.name if elm.bus.substation is not None else "",
+                        elm.bus.country.name if elm.bus.country is not None else ""])
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -99,10 +99,10 @@ class InputsAnalysisResults(ResultsTemplate):
                         elm.Pmin, elm.Pmax,
                         elm.Qmin, elm.Qmax,
                         elm.Vset,
-                        elm.bus.zone.name,
-                        elm.bus.area.name,
-                        elm.bus.substation.name,
-                        elm.bus.country.name])
+                        elm.bus.zone.name if elm.bus.zone is not None else "",
+                        elm.bus.area.name if elm.bus.area is not None else "",
+                        elm.bus.substation.name if elm.bus.substation is not None else "",
+                        elm.bus.country.name if elm.bus.country is not None else ""])
         cols = ['Name', 'P', 'Pf',
                 'Snom', 'Pmin', 'Pmax',
                 'Qmin', 'Qmax', 'Vset',
@@ -119,10 +119,10 @@ class InputsAnalysisResults(ResultsTemplate):
             dta.append([elm.name,
                         elm.P * elm.active,
                         elm.Q * elm.active,
-                        elm.bus.zone.name,
-                        elm.bus.area.name,
-                        elm.bus.substation.name,
-                        elm.bus.country.name])
+                        elm.bus.zone.name if elm.bus.zone is not None else "",
+                        elm.bus.area.name if elm.bus.area is not None else "",
+                        elm.bus.substation.name if elm.bus.substation is not None else "",
+                        elm.bus.country.name if elm.bus.country is not None else ""])
         cols = ['Name', 'P', 'Q',
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
@@ -137,10 +137,10 @@ class InputsAnalysisResults(ResultsTemplate):
             dta.append([elm.name,
                         elm.P * elm.active,
                         elm.Q * elm.active,
-                        elm.bus.zone.name,
-                        elm.bus.area.name,
-                        elm.bus.substation.name,
-                        elm.bus.country.name])
+                        elm.bus.zone.name if elm.bus.zone is not None else "",
+                        elm.bus.area.name if elm.bus.area is not None else "",
+                        elm.bus.substation.name if elm.bus.substation is not None else "",
+                        elm.bus.country.name if elm.bus.country is not None else ""])
         cols = ['Name', 'P', 'Q',
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
@@ -191,23 +191,45 @@ class InputsAnalysisResults(ResultsTemplate):
         return df
 
     def get_bus_zone_indices(self):
+        """
+
+        :return:
+        """
         d = {elm: i for i, elm in enumerate(self.grid.zones)}
-        return np.array([d[bus.zone] for bus in self.grid.buses])
+        return np.array([d.get(bus.zone, "") for bus in self.grid.buses])
 
     def get_bus_area_indices(self):
+        """
+
+        :return:
+        """
         d = {elm: i for i, elm in enumerate(self.grid.areas)}
-        return np.array([d[bus.area] for bus in self.grid.buses])
+        return np.array([d.get(bus.area, "") for bus in self.grid.buses])
 
     def get_bus_country_indices(self):
+        """
+
+        :return:
+        """
         d = {elm: i for i, elm in enumerate(self.grid.countries)}
-        return np.array([d[bus.country] for bus in self.grid.buses])
+        return np.array([d.get(bus.country, "") for bus in self.grid.buses])
 
     def get_bus_substation_indices(self):
+        """
+
+        :return:
+        """
         d = {elm: i for i, elm in enumerate(self.grid.substations)}
-        return np.array([d[bus.substation] for bus in self.grid.buses])
+        return np.array([d.get(bus.substation, "") for bus in self.grid.buses])
 
     def get_collection_attr_series(self, elms, attr, aggregation="Area"):
+        """
 
+        :param elms:
+        :param attr:
+        :param aggregation:
+        :return:
+        """
         if aggregation == 'Zone':
             d2 = self.get_bus_zone_indices()
             headers = [e.name for e in self.grid.zones]

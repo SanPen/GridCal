@@ -21,9 +21,13 @@ import numpy as np
 
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCal.Engine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat
 
 
 class ResultsTemplate:
+    """
+    ResultsTemplate
+    """
 
     def __init__(
             self,
@@ -44,15 +48,25 @@ class ResultsTemplate:
         self.data_variables: List[str] = data_variables
 
     def consolidate_after_loading(self):
+        """
+        Consolidate
+        """
         pass
 
     def get_results_dict(self):
+        """
+
+        :return:
+        """
         data = dict()
 
         return data
 
     def get_name_to_results_type_dict(self):
+        """
 
+        :return:
+        """
         d = dict()
         if isinstance(self.available_results, dict):
             for key, values in self.available_results.items():
@@ -66,7 +80,10 @@ class ResultsTemplate:
         return d
 
     def get_name_tree(self):
+        """
 
+        :return:
+        """
         d = dict()
         if isinstance(self.available_results, dict):
             for key, values in self.available_results.items():
@@ -94,14 +111,41 @@ class ResultsTemplate:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def apply_new_rates(self, rates):
+    def apply_new_rates(self, rates: Vec):
+        """
+
+        :param rates:
+        """
         pass
 
-    def apply_new_time_series_rates(self, rates):
+    def apply_new_time_series_rates(self, rates: Vec):
+        """
+
+        :param rates:
+        """
         pass
 
-    def get_inter_area_flows(self, area_names, F, T, Sf, hvdc_F, hvdc_T, hvdc_Pf, bus_area_indices):
+    def get_inter_area_flows(self,
+                             area_names: StrVec,
+                             F: IntVec,
+                             T: IntVec,
+                             Sf: CxVec,
+                             hvdc_F: IntVec,
+                             hvdc_T: IntVec,
+                             hvdc_Pf: Vec,
+                             bus_area_indices: IntVec) -> Mat:
+        """
 
+        :param area_names:
+        :param F:
+        :param T:
+        :param Sf:
+        :param hvdc_F:
+        :param hvdc_T:
+        :param hvdc_Pf:
+        :param bus_area_indices:
+        :return:
+        """
         na = len(area_names)
         x = np.zeros((na, na), dtype=complex)
 
@@ -121,8 +165,14 @@ class ResultsTemplate:
 
         return x
 
-    def get_bus_values_per_area(self, bus_values: np.ndarray, area_names, bus_area_indices):
-
+    def get_bus_values_per_area(self, bus_values: Vec, area_names: StrVec, bus_area_indices: IntVec) -> Vec:
+        """
+        Split array of bus-related values per area
+        :param bus_values:
+        :param area_names:
+        :param bus_area_indices:
+        :return:
+        """
         na = len(area_names)
         x = np.zeros(na, dtype=bus_values.dtype)
 
@@ -131,8 +181,17 @@ class ResultsTemplate:
 
         return x
 
-    def get_branch_values_per_area(self, branch_values: np.ndarray, area_names, bus_area_indices, F, T):
-
+    def get_branch_values_per_area(self, branch_values: Vec, area_names: StrVec, bus_area_indices: IntVec,
+                                   F: IntVec, T: IntVec):
+        """
+        Split array of branch-related values per area
+        :param branch_values:
+        :param area_names:
+        :param bus_area_indices:
+        :param F:
+        :param T:
+        :return:
+        """
         na = len(area_names)
         x = np.zeros((na, na), dtype=branch_values.dtype)
 
@@ -143,8 +202,17 @@ class ResultsTemplate:
 
         return x
 
-    def get_hvdc_values_per_area(self, hvdc_values: np.ndarray, area_names, bus_area_indices, hvdc_F, hvdc_T):
-
+    def get_hvdc_values_per_area(self, hvdc_values: Vec, area_names: StrVec, bus_area_indices: IntVec,
+                                 hvdc_F: IntVec, hvdc_T: IntVec):
+        """
+        Split array of hvdc-related values per area
+        :param hvdc_values:
+        :param area_names:
+        :param bus_area_indices:
+        :param hvdc_F:
+        :param hvdc_T:
+        :return:
+        """
         na = len(area_names)
         x = np.zeros((na, na), dtype=hvdc_values.dtype)
 
@@ -156,4 +224,8 @@ class ResultsTemplate:
         return x
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
+        """
+        Get results model (overloaded in the respective implementations)
+        :param result_type: ResultTypes
+        """
         pass

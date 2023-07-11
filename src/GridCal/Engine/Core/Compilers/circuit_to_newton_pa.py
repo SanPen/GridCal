@@ -64,7 +64,7 @@ except ImportError as e:
 BINT = np.ulonglong
 
 
-def get_newton_mip_solvers_list() ->List[str]:
+def get_newton_mip_solvers_list() -> List[str]:
     """
     Get list of available MIP solvers
     :return:
@@ -1429,31 +1429,35 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
                                       load_names=res.load_names,
                                       generator_names=res.generator_names,
                                       battery_names=res.battery_names,
-                                      Sbus=res.Scalc[0, :],
-                                      voltage=res.voltage[0, :],
-                                      load_shedding=res.load_shedding[0, :],
                                       hvdc_names=res.hvdc_names,
-                                      hvdc_power=res.hvdc_Pf[0, :],
-                                      hvdc_loading=res.hvdc_loading[0, :] * 100.0,
-                                      phase_shift=res.tap_angle[0, :],
-                                      bus_shadow_prices=res.bus_shadow_prices[0, :],
-                                      generator_shedding=res.generator_shedding[0, :],
-                                      battery_power=res.battery_p[0, :],
-                                      controlled_generation_power=res.generator_p[0, :],
-                                      Sf=res.Sf[0, :],
-                                      St=res.St[0, :],
-                                      overloads=res.branch_overload[0, :],
-                                      loading=res.Loading[0, :],
-                                      rates=res.rates[0, :],
-                                      contingency_rates=res.contingency_rates[0, :],
-                                      converged=res.converged[0],
-                                      bus_types=convert_bus_types(res.bus_types[0]))
+                                      bus_types=convert_bus_types(res.bus_types[0]),
+                                      area_names=[a.name for a in grid.areas],
+                                      F=res.F,
+                                      T=res.T,
+                                      F_hvdc=res.hvdc_F,
+                                      T_hvdc=res.hvdc_T)
+
+    results.Sbus = res.Scalc[0, :],
+    results.voltage = res.voltage[0, :],
+    results.load_shedding = res.load_shedding[0, :],
+    results.hvdc_power = res.hvdc_Pf[0, :],
+    results.hvdc_loading = res.hvdc_loading[0, :] * 100.0,
+    results.phase_shift = res.tap_angle[0, :],
+    results.bus_shadow_prices = res.bus_shadow_prices[0, :],
+    results.generator_shedding = res.generator_shedding[0, :],
+    results.battery_power = res.battery_p[0, :],
+    results.controlled_generation_power = res.generator_p[0, :],
+    results.Sf = res.Sf[0, :],
+    results.St = res.St[0, :],
+    results.overloads = res.branch_overload[0, :],
+    results.loading = res.Loading[0, :],
+    results.rates = res.rates[0, :],
+    results.contingency_rates = res.contingency_rates[0, :],
+    results.converged = res.converged[0],
 
     results.contingency_flows_list = list()
     results.losses = res.Losses[0, :]
 
-    results.F = res.F
-    results.T = res.T
     results.hvdc_F = res.hvdc_F
     results.hvdc_T = res.hvdc_T
     results.hvdc_loading = res.hvdc_loading[0, :]

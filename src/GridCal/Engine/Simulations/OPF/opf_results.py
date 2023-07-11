@@ -19,6 +19,7 @@ import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat
 
 
 class OptimalPowerFlowResults(ResultsTemplate):
@@ -44,8 +45,20 @@ class OptimalPowerFlowResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, bus_types=None, area_names=None):
+    def __init__(self,
+                 bus_names: StrVec,
+                 branch_names: StrVec,
+                 load_names: StrVec,
+                 generator_names: StrVec,
+                 battery_names: StrVec,
+                 hvdc_names: StrVec,
+                 bus_types: IntVec,
+                 area_names: StrVec,
+                 F: IntVec,
+                 T: IntVec,
+                 F_hvdc: IntVec,
+                 T_hvdc: IntVec,
+                 bus_area_indices: IntVec):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -101,6 +114,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'generator_power',
                                                  'converged'])
 
+        n = len(bus_names)
+        m = len(branch_names)
+        ngen = len(generator_names)
+        nbat = len(battery_names)
+        nload = len(load_names)
+        nhvdc = len(hvdc_names)
+
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.load_names = load_names
@@ -140,11 +160,11 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.converged = False
 
         # vars for the inter-area computation
-        self.F = None
-        self.T = None
-        self.hvdc_F = None
-        self.hvdc_T = None
-        self.bus_area_indices = None
+        self.F = F
+        self.T = T
+        self.hvdc_F = F_hvdc
+        self.hvdc_T = T_hvdc
+        self.bus_area_indices = bus_area_indices
         self.area_names = area_names
 
         self.plot_bars_limit = 100

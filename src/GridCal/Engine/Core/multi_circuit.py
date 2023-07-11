@@ -386,7 +386,8 @@ class MultiCircuit:
         """
         return np.ones(len(self.buses), dtype=int)
 
-    def get_branch_lists_wo_hvdc(self) -> List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]:
+    def get_branch_lists_wo_hvdc(self) -> List[Union[
+        List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]:
         """
         Get list of the branch lists
         :return: List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W],
@@ -412,7 +413,9 @@ class MultiCircuit:
                 names.append(elm.name)
         return names
 
-    def get_branch_lists(self) -> List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC], List[dev.HvdcLine]]]:
+    def get_branch_lists(self) -> List[Union[
+        List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC],
+        List[dev.HvdcLine]]]:
         """
         GEt list of the branch lists
         :return:
@@ -452,6 +455,43 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists_wo_hvdc():
             count += len(branch_list)
         return count
+
+    def get_branch_number_wo_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
+        """
+        get the from and to arrays of indices
+        :return: IntVec, IntVec
+        """
+        devices = self.get_branches_wo_hvdc()
+        m = len(devices)
+        F = np.zeros(m, dtype=int)
+        T = np.zeros(m, dtype=int)
+        bus_dict = self.get_bus_index_dict()
+        for i, elm in enumerate(devices):
+            F[i] = bus_dict[elm.bus_from]
+            T[i] = bus_dict[elm.bus_to]
+        return F, T
+
+    def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
+        """
+        get the from and to arrays of indices of HVDC lines
+        :return: IntVec, IntVec
+        """
+        m = len(self.hvdc_lines)
+        F = np.zeros(m, dtype=int)
+        T = np.zeros(m, dtype=int)
+        bus_dict = self.get_bus_index_dict()
+        for i, elm in enumerate(self.hvdc_lines):
+            F[i] = bus_dict[elm.bus_from]
+            T[i] = bus_dict[elm.bus_to]
+        return F, T
+
+    def get_bus_area_indices(self) -> IntVec:
+        """
+        Get an array of area indices per bus
+        :return: IntVec
+        """
+        area_dict = {elm: i for i, elm in enumerate(self.get_areas())}
+        return np.array([area_dict[b.area] for b in self.buses])
 
     def get_time_number(self) -> int:
         """

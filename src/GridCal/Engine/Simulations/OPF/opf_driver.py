@@ -57,6 +57,9 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
         nt = len(self.time_indices) if self.time_indices is not None else 1
 
+        F, T = self.grid.get_branch_number_wo_hvdc_FT()
+        F_hvdc, T_hvdc = self.grid.get_hvdc_FT()
+
         # OPF results
         self.results: OptimalPowerFlowResults = OptimalPowerFlowResults(
             bus_names=self.grid.get_bus_names(),
@@ -65,15 +68,10 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
             hvdc_names=self.grid.get_hvdc_names(),
-            n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
-            nt=nt,
-            ngen=self.grid.get_generators_number(),
-            nbat=self.grid.get_batteries_number(),
-            nload=self.grid.get_loads_number(),
-            nhvdc=self.grid.get_hvdc_number(),
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
-            area_names=self.grid.get_area_names())
+            area_names=self.grid.get_area_names(),
+            F=F, T=T, F_hvdc=F_hvdc, T_hvdc=T_hvdc,
+            bus_area_indices=self.grid.get_bus_area_indices())
 
         self.all_solved = True
 
@@ -119,7 +117,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.generator_power = opf_vars.gen_vars.p[0, :]
             self.results.Sf = opf_vars.branch_vars.flows[0, :]
             self.results.St = -opf_vars.branch_vars.flows[0, :]
-            self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[0, :]
+            self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[
+                                                                                  0, :]
             self.results.loading = opf_vars.branch_vars.loading[0, :]
             self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
             # self.results.Sbus = problem.get_power_injections()[0, :]
