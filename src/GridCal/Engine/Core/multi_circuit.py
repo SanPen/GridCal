@@ -629,6 +629,10 @@ class MultiCircuit:
         return self.lines + self.dc_lines + self.transformers2w + self.windings + self.vsc_devices + self.upfc_devices + self.switch_devices
 
     def get_branches_wo_hvdc_names(self) -> List[str]:
+        """
+        Get the non HVDC branches' names
+        :return: list of names
+        """
         return [e.name for e in self.get_branches_wo_hvdc()]
 
     def get_branches(self) -> List[dev.Branch]:
@@ -640,43 +644,43 @@ class MultiCircuit:
 
     def get_contingency_devices(self) -> List[dev.EditableDevice]:
         """
-
-        :return:
+        Get a list of devices susceptible to be included in contingencies
+        :return: list of devices
         """
         return self.get_branches() + self.get_generators()
 
     def get_investment_devices(self) -> List[dev.EditableDevice]:
         """
-
-        :return:
+        Get a list of devices susceptible to be included in investments
+        :return: list of devices
         """
         return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads()
 
     def get_lines(self) -> List[dev.Line]:
         """
-
-        :return:
+        get list of ac lines
+        :return: list of lines
         """
         return self.lines
 
     def get_transformers2w(self) -> List[dev.Transformer2W]:
         """
-
-        :return:
+        get list of 2-winding transformers
+        :return: list of transformers
         """
         return self.transformers2w
 
     def get_transformers2w_number(self) -> int:
         """
-
-        :return:
+        get the number of 2-winding transformers
+        :return: int
         """
         return len(self.transformers2w)
 
     def get_transformers2w_names(self) -> List[str]:
         """
-
-        :return:
+        get a list of names of the 2-winding transformers
+        :return: list of names
         """
         return [elm.name for elm in self.transformers2w]
 
@@ -1260,30 +1264,6 @@ class MultiCircuit:
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
-
-    def apply_lp_profiles(self, results: "OptimalPowerFlowTimeSeriesResults"):
-        """
-        Apply the LP results as device profiles.
-        """
-        generators = self.get_generators()
-        for i, elm in enumerate(generators):
-            pr = results.generator_power[:, i]
-            if len(pr) == self.get_time_number():
-                elm.P_prof = pr
-
-        batteries = self.get_batteries()
-        for i, elm in enumerate(batteries):
-            pr = results.battery_power[:, i]
-            if len(pr) == self.get_time_number():
-                elm.P_prof = pr
-
-        loads = self.get_loads()
-        for i, elm in enumerate(loads):
-            pr = results.load_shedding[:, i]
-            if len(pr) == self.get_time_number():
-                elm.P_prof -= pr
-
-        # TODO: implement more devices
 
     def copy(self):
         """

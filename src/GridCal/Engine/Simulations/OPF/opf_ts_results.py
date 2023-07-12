@@ -21,6 +21,7 @@ from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
@@ -182,6 +183,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.Sbus[t, :] = res.Sbus
 
         self.Sf[t, :] = res.Sf
+
+    def apply_lp_profiles(self, circuit: MultiCircuit):
+        """
+        Apply the LP results as device profiles.
+        """
+        generators = circuit.get_generators()
+        for i, elm in enumerate(generators):
+            pr = self.generator_power[:, i]
+            if len(pr) == circuit.get_time_number():
+                elm.P_prof = pr
+
+        batteries = circuit.get_batteries()
+        for i, elm in enumerate(batteries):
+            pr = self.battery_power[:, i]
+            if len(pr) == circuit.get_time_number():
+                elm.P_prof = pr
+
+        loads = circuit.get_loads()
+        for i, elm in enumerate(loads):
+            pr = self.load_shedding[:, i]
+            if len(pr) == circuit.get_time_number():
+                elm.P_prof -= pr
+
+        # TODO: implement more devices
 
     def mdl(self, result_type) -> "ResultsTable":
         """

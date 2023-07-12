@@ -4302,7 +4302,7 @@ class MainGUI(QMainWindow):
 
                     if reply == QtWidgets.QMessageBox.Yes:
 
-                        self.circuit.apply_lp_profiles(results)
+                        results.apply_lp_profiles(self.circuit)
 
                     else:
                         pass
