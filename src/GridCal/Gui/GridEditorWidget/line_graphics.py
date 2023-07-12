@@ -20,7 +20,8 @@ from typing import Union
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, QDoubleSpinBox, QComboBox
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, \
+    QDoubleSpinBox, QComboBox
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
@@ -32,6 +33,9 @@ from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brut
 
 
 class LineEditor(QDialog):
+    """
+    LineEditor
+    """
 
     def __init__(self, line: Line, Sbase=100, templates=None, current_template=None):
         """
@@ -248,7 +252,6 @@ class LineEditor(QDialog):
         """
 
         if self.templates is not None:
-
             idx = self.catalogue_combo.currentIndex()
             template = self.templates[idx]
 
@@ -256,8 +259,12 @@ class LineEditor(QDialog):
 
 
 class LineGraphicItem(QGraphicsLineItem):
+    """
+    LineGraphicItem
+    """
 
-    def __init__(self, fromPort: TerminalItem, toPort: Union[TerminalItem, None], diagramScene, width=5, branch: Line = None):
+    def __init__(self, fromPort: TerminalItem, toPort: Union[TerminalItem, None], diagramScene, width=5,
+                 branch: Line = None):
         """
 
         :param fromPort:
@@ -313,7 +320,9 @@ class LineGraphicItem(QGraphicsLineItem):
             self.redraw()
 
     def recolour_mode(self):
-
+        """
+        Change the colour according to the system theme
+        """
         if self.api_object is not None:
             if self.api_object.active:
                 self.color = ACTIVE['color']
@@ -430,7 +439,6 @@ class LineGraphicItem(QGraphicsLineItem):
             pe.setCheckable(True)
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
-
 
             ra3 = menu.addAction('Editor')
             edit_icon = QIcon()

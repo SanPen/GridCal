@@ -25,6 +25,9 @@ from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
 
 
 class GeneratorEditor(QDialog):
+    """
+    GeneratorEditor
+    """
 
     def __init__(self, generator: Generator):
         """
@@ -62,6 +65,9 @@ class GeneratorEditor(QDialog):
 
 
 class GeneratorGraphicItem(QGraphicsItemGroup):
+    """
+    GeneratorGraphicItem
+    """
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -116,7 +122,9 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def recolour_mode(self):
-
+        """
+        Change the colour according to the system theme
+        """
         if self.api_object is not None:
             if self.api_object.active:
                 self.color = ACTIVE['color']
@@ -180,7 +188,23 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
+        cb = menu.addAction('Convert to battery')
+        batt_icon = QIcon()
+        batt_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
+        cb.setIcon(batt_icon)
+        cb.triggered.connect(self.to_battery)
+
         menu.exec_(event.screenPos())
+
+    def to_battery(self):
+        """
+        Convert this generator to a battery
+        """
+        ok = yes_no_question('Are you sure that you want to convert this generator into a battery?',
+                             'Convert generator')
+        if ok:
+            editor = self.diagramScene.parent()
+            editor.convert_generator_to_battery(gen=self.api_object)
 
     def remove(self, ask=True):
         """
@@ -195,7 +219,8 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)
-            self.api_object.bus.generators.remove(self.api_object)
+            if self.api_object in self.api_object.bus.generators:
+                self.api_object.bus.generators.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -281,4 +306,3 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
 
     def mouseDoubleClickEvent(self, event):
         self.edit()
-

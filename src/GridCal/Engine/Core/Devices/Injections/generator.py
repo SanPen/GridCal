@@ -190,7 +190,7 @@ class Generator(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.GeneratorDevice)
 
-        self.bus = None
+        self.bus: "Bus" = None
 
         self.active_prof = active_prof
 

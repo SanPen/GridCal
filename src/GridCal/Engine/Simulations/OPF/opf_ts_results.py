@@ -145,7 +145,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.converged = np.empty(nt, dtype=bool)
 
-    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+    def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
         """
 
         :param nc:

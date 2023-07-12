@@ -37,6 +37,7 @@ from GridCal.Engine.Core.Devices.Branches.vsc import VSC
 from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
 from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
@@ -1312,6 +1313,20 @@ class GridEditor(QSplitter):
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
 
+    def convert_generator_to_battery(self, gen: Generator):
+        """
+        Convert a generator to a battery
+        :param gen: Generator instance
+        :return: Nothing
+        """
+        battery = self.circuit.convert_generator_to_battery(gen)
+
+        # add device to the schematic
+        battery.graphic_obj = gen.bus.graphic_obj.add_battery(battery)
+
+        # delete from the schematic
+        gen.graphic_obj.remove(ask=False)
+
     def add_elements_to_schematic(self,
                                   buses: List[Bus],
                                   lines: List[Line],
@@ -1552,12 +1567,20 @@ class GridEditor(QSplitter):
                 elm.graphic_obj.recolour_mode()
 
     def set_dark_mode(self):
+        """
+        Set the dark theme
+        :return:
+        """
         is_dark = True
         ACTIVE['color'] = Qt.white
         ACTIVE['text'] = Qt.white
         self.recolour_mode()
 
     def set_light_mode(self):
+        """
+        Set the light theme
+        :return:
+        """
         is_dark = False
         ACTIVE['color'] = Qt.black
         ACTIVE['text'] = Qt.black

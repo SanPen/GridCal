@@ -2380,6 +2380,44 @@ class MultiCircuit:
 
         return transformer
 
+    def convert_generator_to_battery(self, gen: dev.Generator) -> dev.Battery:
+        """
+        Convert a generator to battery
+        :param gen: Generator instance
+        :return: Transformer2W
+        """
+        batt = dev.Battery(name=gen.name,
+                           idtag=gen.idtag,
+                           active_power=gen.P,
+                           power_factor=gen.Pf,
+                           voltage_module=gen.Vset,
+                           is_controlled=gen.is_controlled,
+                           Qmin=gen.Qmin, Qmax=gen.Qmax, Snom=gen.Snom,
+                           power_prof=gen.P_prof,
+                           power_factor_prof=gen.Pf_prof,
+                           vset_prof=gen.Vset_prof,
+                           active=gen.active,
+                           p_min=gen.Pmin, p_max=gen.Pmax,
+                           Cost=gen.Cost,
+                           Sbase=gen.Sbase,
+                           enabled_dispatch=gen.enabled_dispatch,
+                           mttf=gen.mttf,
+                           mttr=gen.mttr,
+                           r1=gen.R1, x1=gen.X1,
+                           r0=gen.R0, x0=gen.X0,
+                           r2=gen.R2, x2=gen.X2,
+                           capex=gen.capex,
+                           opex=gen.opex,
+                           build_status=gen.build_status)
+
+        # add device to the circuit
+        self.add_battery(gen.bus, batt)
+
+        # delete the line from the circuit
+        gen.bus.generators.remove(gen)
+
+        return batt
+
     def convert_line_to_vsc(self, line: dev.Line) -> dev.VSC:
         """
         Convert a line to voltage source converter

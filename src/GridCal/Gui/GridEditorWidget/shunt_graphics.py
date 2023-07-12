@@ -87,7 +87,9 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         self.update_line(self.pos())
 
     def recolour_mode(self):
-
+        """
+        Change the colour according to the system theme
+        """
         if self.api_object is not None:
             if self.api_object.active:
                 self.color = ACTIVE['color']
