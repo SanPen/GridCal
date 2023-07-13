@@ -130,6 +130,13 @@ def terminate_thread(thread):
 
 
 def traverse_objects(name, obj, lst: list, i=0):
+    """
+
+    :param name:
+    :param obj:
+    :param lst:
+    :param i:
+    """
     lst.append((name, sys.getsizeof(obj)))
     if i < 10:
         if hasattr(obj, '__dict__'):
@@ -158,6 +165,9 @@ def traverse_objects(name, obj, lst: list, i=0):
 ########################################################################################################################
 
 class MainGUI(QMainWindow):
+    """
+    MainGUI
+    """
 
     def __init__(self, parent=None):
         """
@@ -4827,11 +4837,8 @@ class MainGUI(QMainWindow):
 
                 if ts_results is not None:
 
-                    # get the numerical object of the circuit
-                    numeric_circuit = core.compile_numerical_circuit_at(self.circuit, t_idx=None)
-
                     # perform a time series analysis
-                    ts_analysis = grid_analysis.TimeSeriesResultsAnalysis(numeric_circuit, ts_results)
+                    ts_analysis = grid_analysis.TimeSeriesResultsAnalysis(self.circuit, ts_results)
 
                     # get the indices of the buses selected for storage
                     idx = np.where(ts_analysis.buses_selected_for_storage_frequency > 0)[0]
@@ -7292,7 +7299,7 @@ class MainGUI(QMainWindow):
             "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
             "map_tile_provider": self.ui.tile_provider_comboBox,
             "plotting_style": self.ui.plt_style_comboBox
-            },
+        },
             "machine_learning": {
                 "clustering": {
                     "cluster_number": self.ui.cluster_number_spinBox,

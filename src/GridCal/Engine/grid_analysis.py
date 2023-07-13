@@ -17,18 +17,21 @@
 import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
 class TimeSeriesResultsAnalysis:
+    """
+    TimeSeriesResultsAnalysis
+    """
 
-    def __init__(self, numerical_circuit: NumericalCircuit, results: PowerFlowTimeSeriesResults):
+    def __init__(self, grid: MultiCircuit, results: PowerFlowTimeSeriesResults):
         """
         Constructor
-        :param numerical_circuit: TimeCircuit instance
+        :param grid: MultiCircuit instance
         :param results: TimeSeriesResults instance
         """
-        self.numerical_circuit = numerical_circuit
+        self.grid = grid
 
         self.res = results
 
@@ -51,7 +54,6 @@ class TimeSeriesResultsAnalysis:
 
         """
 
-
         '''
         Optimal storage locations are those nodes where there
         are voltage problems and those nodes receiving the flow
@@ -61,19 +63,28 @@ class TimeSeriesResultsAnalysis:
             Returns:
         '''
 
+        n = self.grid.get_bus_number()
+
         self.buses_selected_for_storage_frequency = np.zeros(self.res.n)
 
-        rates = self.numerical_circuit.Rates.T
+        Vmax = np.zeros(n)
+        Vmin = np.zeros(n)
+        for i, bus in enumerate(self.grid.buses):
+            Vmax[i] = bus.Vmax
+            Vmin[i] = bus.Vmin
+
+        F, T = self.grid.get_branch_number_wo_hvdc_FT()
+
+        rates = self.grid.get_branch_rates_prof_wo_hvdc()
 
         for t in range(self.res.nt):
-
             bus_voltage = np.abs(self.res.voltage[t])
 
             branch_loading = np.abs(self.res.loading[t])
 
-            buses_over = np.where(bus_voltage > self.numerical_circuit.bus_data.Vmax)[0]
+            buses_over = np.where(bus_voltage > Vmax)[0]
 
-            buses_under = np.where(bus_voltage < self.numerical_circuit.bus_data.Vmin)[0]
+            buses_under = np.where(bus_voltage < Vmin)[0]
 
             branches_over = np.where(branch_loading > 1.0)[0]
 
@@ -83,8 +94,8 @@ class TimeSeriesResultsAnalysis:
             branches_w_from = np.where(flow_dir > 0)[0]
             branches_w_to = np.where(flow_dir < 0)[0]
 
-            buses_f = self.numerical_circuit.F[branches_w_from]
-            buses_t = self.numerical_circuit.T[branches_w_to]
+            buses_f = F[branches_w_from]
+            buses_t = T[branches_w_to]
 
             # Branches
             self.branch_overload_frequency[branches_over] += 1
@@ -92,8 +103,8 @@ class TimeSeriesResultsAnalysis:
             self.bus_over_voltage_frequency[buses_over] += 1
 
             inc_loading = self.res.Sf[t, branches_over] - rates[t, branches_over]
-            inc_over = bus_voltage[buses_over] - self.numerical_circuit.bus_data.Vmax[buses_over]
-            inc_under = self.numerical_circuit.bus_data.Vmin[buses_under] - bus_voltage[buses_under]
+            inc_over = bus_voltage[buses_over] - Vmax[buses_over]
+            inc_under = Vmin[buses_under] - bus_voltage[buses_under]
 
             self.branch_overload_accumulated[branches_over] += inc_loading
             self.bus_under_voltage_accumulated[buses_under] += inc_under
