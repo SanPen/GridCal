@@ -60,7 +60,7 @@ from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, NewProfilesStructureDialogue, ElementsDialogue, \
-    TimeReIndexDialogue
+    TimeReIndexDialogue, CheckListDialogue
 from GridCal.Gui.GridEditorWidget import GridEditor
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
 
@@ -438,7 +438,8 @@ class MainGUI(QMainWindow):
         self.coordinates_window: Union[CoordinatesInputGUI, None] = None
         self.about_msg_window: Union[AboutDialogueGuiGUI, None] = None
         self.tower_builder_window: Union[TowerBuilderGUI, None] = None
-
+        self.investment_checks_diag: Union[CheckListDialogue, None] = None
+        self.contingency_checks_diag: Union[CheckListDialogue, None] = None
         self.file_name = ''
 
         # current results model ----------------------------------------------------------------------------------------
@@ -7177,19 +7178,27 @@ class MainGUI(QMainWindow):
             selected = self.get_selected_contingency_devices()
 
             if len(selected) > 0:
-                group = dev.ContingencyGroup(idtag=None,
-                                             name="Contingency " + str(len(self.circuit.contingency_groups)),
-                                             category="single" if len(selected) == 1 else "multiple")
-                self.circuit.add_contingency_group(group)
+                names = [elm.type_name + ": " + elm.name for elm in selected]
+                self.contingency_checks_diag = CheckListDialogue(objects_list=names, title="Add contingency")
+                self.contingency_checks_diag.setModal(True)
+                self.contingency_checks_diag.exec_()
 
-                for elm in selected:
-                    con = dev.Contingency(device_idtag=elm.idtag,
-                                          code=elm.code,
-                                          name=elm.name,
-                                          prop="active",
-                                          value=0,
-                                          group=group)
-                    self.circuit.add_contingency(con)
+                if self.contingency_checks_diag.is_accepted:
+
+                    group = dev.ContingencyGroup(idtag=None,
+                                                 name="Contingency " + str(len(self.circuit.contingency_groups)),
+                                                 category="single" if len(selected) == 1 else "multiple")
+                    self.circuit.add_contingency_group(group)
+
+                    for i in self.contingency_checks_diag.selected_indices:
+                        elm = selected[i]
+                        con = dev.Contingency(device_idtag=elm.idtag,
+                                              code=elm.code,
+                                              name=elm.name,
+                                              prop="active",
+                                              value=0,
+                                              group=group)
+                        self.circuit.add_contingency(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to contingency")
 
@@ -7213,7 +7222,7 @@ class MainGUI(QMainWindow):
                 # save file
                 export_contingencies_json_file(circuit=self.circuit, file_path=filename)
 
-    def add_selected_to_investment(self):
+    def add_selected_to_investment(self) -> None:
         """
         Add contingencies from the schematic selection
         """
@@ -7223,19 +7232,27 @@ class MainGUI(QMainWindow):
             selected = self.get_selected_investment_devices()
 
             if len(selected) > 0:
-                group = dev.InvestmentsGroup(idtag=None,
-                                             name="Investment " + str(len(self.circuit.contingency_groups)),
-                                             category="single" if len(selected) == 1 else "multiple")
-                self.circuit.add_investments_group(group)
+                names = [elm.type_name + ": " + elm.name for elm in selected]
+                self.investment_checks_diag = CheckListDialogue(objects_list=names, title="Add investment")
+                self.investment_checks_diag.setModal(True)
+                self.investment_checks_diag.exec_()
 
-                for elm in selected:
-                    con = dev.Investment(device_idtag=elm.idtag,
-                                         code=elm.code,
-                                         name=elm.name,
-                                         CAPEX=0.0,
-                                         OPEX=0.0,
-                                         group=group)
-                    self.circuit.add_investment(con)
+                if self.investment_checks_diag.is_accepted:
+
+                    group = dev.InvestmentsGroup(idtag=None,
+                                                 name="Investment " + str(len(self.circuit.contingency_groups)),
+                                                 category="single" if len(selected) == 1 else "multiple")
+                    self.circuit.add_investments_group(group)
+
+                    for i in self.investment_checks_diag.selected_indices:
+                        elm = selected[i]
+                        con = dev.Investment(device_idtag=elm.idtag,
+                                             code=elm.code,
+                                             name=elm.type_name + ": " + elm.name,
+                                             CAPEX=0.0,
+                                             OPEX=0.0,
+                                             group=group)
+                        self.circuit.add_investment(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
 

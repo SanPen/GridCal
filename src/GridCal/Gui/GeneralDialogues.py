@@ -16,22 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
 from enum import Enum
+from typing import List
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model
-
-
-class ProfileTypes(Enum):
-    Loads = 1,
-    Generators = 2
+from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model, get_checked_indices
 
 
 class NewProfilesStructureDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(NewProfilesStructureDialogue, self).__init__()
         self.setObjectName("self")
@@ -129,7 +126,6 @@ def fill_tree_from_logs(logger: Logger):
             # print('\t', message)
 
             for time, elm, value, expected_value in data_list:
-
                 # print('\t', '\t', time, elm, value, expected_value)
 
                 time_child = QtGui.QStandardItem(time)
@@ -170,10 +166,10 @@ class MTreeExpandHook(QtCore.QObject):
 
     def eventFilter(self, receiver, event):
         if (
-            # NOTE mouse left click
-            event.type() == QtCore.QEvent.Type.MouseButtonPress
-            # NOTE keyboard shift press
-            and event.modifiers() & QtCore.Qt.ShiftModifier
+                # NOTE mouse left click
+                event.type() == QtCore.QEvent.Type.MouseButtonPress
+                # NOTE keyboard shift press
+                and event.modifiers() & QtCore.Qt.ShiftModifier
         ):
             # NOTE get mouse local position
             pos = self.tree.mapFromGlobal(QtGui.QCursor.pos())
@@ -189,6 +185,7 @@ class LogsDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self, name, logger: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
@@ -253,7 +250,7 @@ class LogsDialogue(QtWidgets.QDialog):
         Save the logs to excel or CSV
         """
         file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
-                                                              filter="CSV (*.csv);;Excel files (*.xlsx)",)
+                                                              filter="CSV (*.csv);;Excel files (*.xlsx)", )
 
         if file != '':
             if 'xlsx' in filter_:
@@ -342,6 +339,7 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(TimeReIndexDialogue, self).__init__()
         self.setObjectName("self")
@@ -402,6 +400,7 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(CorrectInconsistenciesDialogue, self).__init__()
         self.setObjectName("self")
@@ -477,9 +476,59 @@ def clear_qt_layout(layout):
         layout.itemAt(i).widget().deleteLater()
 
 
+class CheckListDialogue(QtWidgets.QDialog):
+    """
+    New profile dialogue window
+    """
+
+    def __init__(self, objects_list: List[str], title='Select objects'):
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+        self.selected_indices: List[int] = list()
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("Selected objects")
+
+        # min voltage
+        self.list_view = QtWidgets.QListView()
+        self.mdl = get_list_model(objects_list, checks=True, check_value=True)
+        self.list_view.setModel(self.mdl)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.list_view)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        h = 260
+        self.resize(h, int(0.8 * h))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.selected_indices = get_checked_indices(self.mdl)
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
+
     app = QApplication(sys.argv)
     window = LogsDialogue(name='', logger=Logger())
     window.show()
