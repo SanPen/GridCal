@@ -3718,11 +3718,10 @@ class MainGUI(QMainWindow):
                             pf_drv.run_at(start_idx)
 
                             # get the power Injections array to get the initial and end points
-                            nc = core.compile_time_circuit(circuit=self.circuit)
-                            Sprof = nc.Sbus
-                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
+                            Sprof = self.circuit.get_Sbus_prof()
+                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=Sprof[start_idx, :],
                                                                        Vbase=pf_results.voltage,
-                                                                       Starget=Sprof[:, end_idx])
+                                                                       Starget=Sprof[end_idx, :])
 
                             pf_options = self.get_selected_power_flow_options()
 
@@ -4829,7 +4828,7 @@ class MainGUI(QMainWindow):
                 if ts_results is not None:
 
                     # get the numerical object of the circuit
-                    numeric_circuit = core.compile_time_circuit(self.circuit)
+                    numeric_circuit = core.compile_numerical_circuit_at(self.circuit, t_idx=None)
 
                     # perform a time series analysis
                     ts_analysis = grid_analysis.TimeSeriesResultsAnalysis(numeric_circuit, ts_results)
@@ -6540,7 +6539,7 @@ class MainGUI(QMainWindow):
 
     def get_selected_investment_devices(self) -> List[dev.EditableDevice]:
         """
-        Get the selected buses
+        Get the selected investment devices
         :return:
         """
         lst: List[dev.EditableDevice] = list()
@@ -7213,7 +7212,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            # get the selected buses
+            # get the selected investment devices
             selected = self.get_selected_investment_devices()
 
             if len(selected) > 0:

@@ -654,7 +654,7 @@ class MultiCircuit:
         Get a list of devices susceptible to be included in investments
         :return: list of devices
         """
-        return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads()
+        return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads() + self.buses
 
     def get_lines(self) -> List[dev.Line]:
         """
