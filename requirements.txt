@@ -24,3 +24,5 @@ fastparquet
 darkdetect
 pyqtdarktheme
 nptyping
+windpowerlib
+pvlib

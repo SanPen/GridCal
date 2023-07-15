@@ -20,8 +20,9 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup, QVBo
 from GridCal.Engine.Core.Devices.Injections.generator import Generator, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, info_msg
 from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
+from GridCal.Gui.GridEditorWidget.solar_power_wizzard import SolarPvWizard
 
 
 class GeneratorEditor(QDialog):
@@ -182,6 +183,12 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
 
+        pv = menu.addAction('Solar photovoltaic wizard')
+        pv_icon = QIcon()
+        pv_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pv.setIcon(pv_icon)
+        pv.triggered.connect(self.solar_pv_wizard)
+
         da = menu.addAction('Delete')
         del_icon = QIcon()
         del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
@@ -286,6 +293,33 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         dlg = GeneratorEditor(self.api_object)
         if dlg.exec_():
             pass
+
+    def solar_pv_wizard(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+
+        if self.diagramScene.circuit.has_time_series:
+
+            time_array = self.diagramScene.circuit.time_profile
+
+            dlg = SolarPvWizard(time_array=time_array,
+                                peak_power=self.api_object.Pmax,
+                                latitude=self.api_object.bus.latitude,
+                                longitude=self.api_object.bus.longitude,
+                                gen_name=self.api_object.name,
+                                bus_name=self.api_object.bus.name)
+            if dlg.exec_():
+                if dlg.is_accepted:
+                    if len(dlg.P) == len(self.api_object.P_prof):
+                        self.api_object.P_prof = dlg.P
+
+                        self.plot()
+                    else:
+                        raise Exception("Wrong length from the solar photovoltaic wizard")
+        else:
+            info_msg("You need to have time profiles for this function")
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
