@@ -21,7 +21,6 @@ import sys
 import ctypes
 import threading
 import os.path
-import platform
 import webbrowser
 from collections import OrderedDict
 from typing import List, Tuple, Dict, Union
@@ -692,7 +691,7 @@ class MainGUI(QMainWindow):
 
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
-        self.ui.structure_analysis_pushButton.clicked.connect(self.structure_analysis_plot)
+        self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
 
         self.ui.draw_map_button.clicked.connect(self.colour_map)
 
@@ -917,19 +916,22 @@ class MainGUI(QMainWindow):
             raise Exception('Unsupported engine' + str(eng.value))
 
     @staticmethod
-    def collect_memory():
+    def collect_memory() -> None:
+        """
+        Collect memory
+        """
         for i in (0, 1, 2):
             gc.collect(generation=i)
 
-    def get_preferred_engine(self):
+    def get_preferred_engine(self) -> bs.EngineType:
         """
         Get the currently selected engine
-        :return:
+        :return: EngineType
         """
         val = self.ui.engineComboBox.currentText()
         return self.engine_dict[val]
 
-    def get_simulation_threads(self):
+    def get_simulation_threads(self) -> List[GcThread]:
         """
         Get all threads that has to do with simulation
         :return: list of simulation threads
@@ -952,7 +954,7 @@ class MainGUI(QMainWindow):
 
         return all_threads
 
-    def get_process_threads(self):
+    def get_process_threads(self) -> List[GcThread]:
         """
         Get all threads that has to do with processing
         :return: list of process threads
@@ -1002,7 +1004,7 @@ class MainGUI(QMainWindow):
             else:
                 print(" not killed")
 
-    def any_thread_running(self):
+    def any_thread_running(self) -> bool:
         """
         Checks if any thread is running
         :return: True/False
@@ -1028,7 +1030,7 @@ class MainGUI(QMainWindow):
         else:
             self.grid_editor.setDisabled(True)
 
-    def create_console(self):
+    def create_console(self) -> None:
         """
         Create console
         """
@@ -1074,7 +1076,7 @@ class MainGUI(QMainWindow):
 
         return np.arange(start, end + 1)
 
-    def create_map(self):
+    def create_map(self) -> None:
         """
         Create the map widget
         """
@@ -1106,7 +1108,7 @@ class MainGUI(QMainWindow):
 
         self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
-    def clear_stuff_running(self):
+    def clear_stuff_running(self) -> None:
         """
         This clears the list of stuff running right now
         this list blocks new executions of the same threads.
@@ -1114,7 +1116,7 @@ class MainGUI(QMainWindow):
         """
         self.stuff_running_now.clear()
 
-    def change_theme_mode(self):
+    def change_theme_mode(self) -> None:
         """
         Change the GUI theme
         :return:
@@ -1202,7 +1204,7 @@ class MainGUI(QMainWindow):
         if val in self.stuff_running_now:
             self.stuff_running_now.remove(val)
 
-    def view_cascade_menu(self):
+    def view_cascade_menu(self) -> None:
         """
         show/hide the cascade simulation menu
         """
@@ -1309,7 +1311,10 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def clear_text_output(self):
+    def clear_text_output(self) -> None:
+        """
+        Clear the text output textEdit
+        """
         self.ui.outputTextEdit.setPlainText("")
 
     def console_msg(self, *msg_):
@@ -1513,7 +1518,8 @@ class MainGUI(QMainWindow):
         # options = QtWidgets.QFileDialog.Options()
         # options |= QtWidgets.QFileDialog.DontUseNativeDialog
 
-        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(caption='Open file',
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
+                                                                          caption='Open file',
                                                                           dir=self.project_directory,
                                                                           filter=files_types)
 
@@ -1537,7 +1543,7 @@ class MainGUI(QMainWindow):
         else:
             return None
 
-    def open_file_now(self, filenames, post_function=None):
+    def open_file_now(self, filenames, post_function=None) -> None:
         """
         Open a file without questions
         :param filenames: list of file names (may be more than one because of CIM TP and EQ files)
@@ -1576,7 +1582,7 @@ class MainGUI(QMainWindow):
             # register thread
             self.stuff_running_now.append('file_open')
 
-    def post_open_file(self):
+    def post_open_file(self) -> None:
         """
         Actions to perform after a file has been loaded
         """
@@ -2117,8 +2123,13 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no Branches!')
 
-    def create_objects_model(self, elements, elm_type):
-
+    def create_objects_model(self, elements, elm_type: str) -> QtCore.QAbstractTableModel:
+        """
+        Generate the objects' table model
+        :param elements: list of elements
+        :param elm_type: name of dev.DeviceType.BusDevice
+        :return: QtCore.QAbstractTableModel
+        """
         dictionary_of_lists = dict()
 
         if elm_type == dev.DeviceType.BusDevice.value:
@@ -2134,7 +2145,7 @@ class MainGUI(QMainWindow):
             elm = dev.Branch(None, None)
             elements = list()
 
-            self.view_template_controls(True)
+            # self.view_template_controls(True)
 
         elif elm_type == dev.DeviceType.LoadDevice.value:
             elm = dev.Load()
@@ -2246,7 +2257,6 @@ class MainGUI(QMainWindow):
             elm = dev.GeneratorEmission()
             dictionary_of_lists = {dev.DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    dev.DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
-
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
@@ -5126,8 +5136,13 @@ class MainGUI(QMainWindow):
 
         self.ui.units_label.setText("")
 
-    def grid_colour_function(self, plot_function, current_study: str, current_step: int):
-
+    def grid_colour_function(self, plot_function, current_study: str, current_step: int) -> None:
+        """
+        Colour the schematic or the map
+        :param plot_function: function pointer to the function doing the plotting
+        :param current_study: current_study name
+        :param current_step: current time step
+        """
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
         max_branch_width = self.ui.max_branch_size_spinBox.value()
@@ -5500,7 +5515,10 @@ class MainGUI(QMainWindow):
         if idx > -1:
             self.ui.map_time_label.setText(self.map_list_steps[idx])
 
-    def schematic_time_slider_change(self):
+    def schematic_time_slider_change(self) -> None:
+        """
+        On change of the schematic slider...
+        """
         idx = self.ui.simulation_results_step_slider.value()
 
         if len(self.schematic_list_steps):
@@ -5607,17 +5625,17 @@ class MainGUI(QMainWindow):
         mdl: ResultsModel = self.ui.resultsTableView.model()
 
         if mdl is not None:
-            file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
-                                                                 filter="CSV (*.csv);;Excel files (*.xlsx)")
+            file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                                  filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
-                if 'xlsx' in filter:
+                if 'xlsx' in filter_:
                     f = file
                     if not f.endswith('.xlsx'):
                         f += '.xlsx'
                     mdl.save_to_excel(f)
                     print('Saved!')
-                if 'csv' in filter:
+                if 'csv' in filter_:
                     f = file
                     if not f.endswith('.csv'):
                         f += '.csv'
@@ -6383,7 +6401,8 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 bus.graphic_obj.delete_big_marker()
 
-    def set_big_bus_marker(self, buses, color: QtGui.QColor):
+    @staticmethod
+    def set_big_bus_marker(buses, color: QtGui.QColor):
         """
         Set a big marker at the selected buses
         :param buses: list of Bus objects
@@ -6647,145 +6666,6 @@ class MainGUI(QMainWindow):
         self.ui.actionNew_project.setEnabled(val)
         self.ui.actionOpen_file.setEnabled(val)
 
-    # def file_sync_toggle(self):
-    #     """
-    #     Toggle file sync on/off
-    #     """
-    #     if self.ui.actionSync.isChecked():
-    #
-    #         # attempt to start synchronizing
-    #         if os.path.exists(self.file_name):
-    #             sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
-    #             self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, file_name=self.file_name,
-    #                                                            sleep_time=sleep_time)
-    #
-    #             # upon sync check (call the gui dialogue)
-    #             self.file_sync_thread.sync_event.connect(self.post_file_sync)
-    #
-    #             # upon sync gui check
-    #             self.file_sync_thread.items_processed_event.connect(self.post_file_sync_items_processed)
-    #
-    #             self.file_sync_thread.start()
-    #
-    #             # disable the regular save so that you cannot override the synchronization process
-    #             self.enable_manual_file_operations(False)
-    #
-    #         else:
-    #             warning_msg('Cannot sync because the file does not exist.\nDid you save the model?')
-    #             self.ui.actionSync.setChecked(False)
-    #
-    #             # enable the regular save button
-    #             self.enable_manual_file_operations(True)
-    #     else:
-    #         # attempt to stop the synchronization
-    #         if self.file_sync_thread.isRunning():
-    #             self.file_sync_thread.cancel()
-    #             self.file_sync_thread.quit()
-    #
-    #             # enable the regular save button
-    #             self.enable_manual_file_operations(True)
-    #
-    #         self.UNLOCK()
-
-    # def post_file_sync(self):
-    #     """
-    #     Actions to perform upon synchronization
-    #     """
-    #
-    #     if self.file_sync_thread.version_conflict:
-    #         # version conflict and changes
-    #         if len(self.file_sync_thread.issues) > 0:
-    #
-    #             if self.ui.accept_newer_changes_checkBox.isChecked():
-    #                 if self.file_sync_thread.highest_version > self.circuit.model_version:
-    #                     # there are newer changes and we want to automatically accept them
-    #                     self.post_file_sync_items_processed()
-    #                 else:
-    #                     # there are newer changes but we do not want to automatically accept them
-    #                     self.file_sync_window = SyncDialogueWindow(parent=self,
-    #                                                                file_sync_thread=self.file_sync_thread)  # will pause the thread
-    #                     self.file_sync_window.setModal(True)
-    #                     self.file_sync_window.show()
-    #             else:
-    #                 # we want to check all the conflicts
-    #                 self.file_sync_window = SyncDialogueWindow(parent=self,
-    #                                                            file_sync_thread=self.file_sync_thread)  # will pause the thread
-    #                 self.file_sync_window.setModal(True)
-    #                 self.file_sync_window.show()
-    #         else:
-    #             # just read the file because there were no changes but the version was upgraded
-    #             self.circuit.model_version = self.file_sync_thread.highest_version
-    #             self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
-    #
-    #     else:
-    #         # no version conflict, and there were changes on my side
-    #         if len(self.file_sync_thread.issues) > 0:
-    #             self.save_file()
-
-    # def post_file_sync_items_processed(self):
-    #     """
-    #     Modify, Add or delete objects after the sync acceptation
-    #     This is done here because it concerns the GUI thread
-    #     """
-    #
-    #     # first add any bus that has been created
-    #     for issue in self.file_sync_thread.issues:
-    #         if issue.issue_type == bs.SyncIssueType.Added and issue.device_type == DeviceType.BusDevice:
-    #             # add the bus directly with all the device it may contain
-    #             issue.their_elm.delete_children()
-    #             if issue.their_elm.graphic_obj is not None:
-    #                 issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
-    #             self.circuit.add_bus(issue.their_elm)
-    #
-    #     # create dictionary of buses
-    #     bus_dict = self.circuit.get_bus_dict()
-    #
-    #     # add the rest of the devices
-    #     for issue in self.file_sync_thread.issues:
-    #
-    #         if issue.issue_type == bs.SyncIssueType.Conflict:
-    #             if issue.accepted():
-    #                 issue.accept_change()
-    #
-    #         elif issue.issue_type == bs.SyncIssueType.Added:
-    #
-    #             if issue.device_type == DeviceType.BranchDevice:
-    #                 # re_map the buses
-    #                 name_f = issue.their_elm.bus_from.name
-    #                 issue.their_elm.bus_from = bus_dict[name_f]
-    #                 name_t = issue.their_elm.bus_to.name
-    #                 issue.their_elm.bus_to = bus_dict[name_t]
-    #
-    #                 # add the device
-    #                 if issue.their_elm.graphic_obj is not None:
-    #                     issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
-    #                     issue.their_elm.bus_from.graphic_obj.update()
-    #                     issue.their_elm.bus_to.graphic_obj.update()
-    #                     issue.their_elm.graphic_obj.redraw()
-    #                 self.circuit.add_branch(issue.their_elm)
-    #
-    #             elif issue.device_type == DeviceType.BusDevice:
-    #                 # we already added the buses, but we need to exclude them from the list
-    #                 continue
-    #
-    #             else:
-    #                 # re_map the buses
-    #                 name_f = issue.their_elm.bus.name
-    #                 bus = bus_dict[name_f]
-    #                 issue.their_elm.bus = bus
-    #
-    #                 # add the device
-    #                 bus.add_device(issue.their_elm)
-    #                 if issue.their_elm.graphic_obj is not None:
-    #                     bus.graphic_obj.create_children_icons()
-    #
-    #         elif issue.issue_type == bs.SyncIssueType.Deleted:
-    #             if issue.their_elm.graphic_obj is not None:
-    #                 issue.my_elm.graphic_obj.remove(ask=False)
-    #
-    #     # center nodes
-    #     self.grid_editor.align_schematic()
-
     def snapshot_balance(self):
         """
         Snapshot balance report
@@ -6793,7 +6673,7 @@ class MainGUI(QMainWindow):
         df = self.circuit.snapshot_balance()
         self.console_msg('\n' + str(df))
 
-    def add_default_catalogue(self):
+    def add_default_catalogue(self) -> None:
         """
         Add default catalogue to circuit
         """
@@ -6966,11 +6846,19 @@ class MainGUI(QMainWindow):
         return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
 
     @property
-    def numerical_circuit(self):
+    def numerical_circuit(self) -> core.NumericalCircuit:
+        """
+        get the snapshot NumericalCircuit
+        :return: NumericalCircuit
+        """
         return self.get_snapshot_circuit()
 
     @property
-    def islands(self):
+    def islands(self) -> List[core.NumericalCircuit]:
+        """
+        get the snapshot islands
+        :return: List[NumericalCircuit]
+        """
         numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
@@ -7076,6 +6964,10 @@ class MainGUI(QMainWindow):
             self.circuit.set_loads_active_profile_from_their_active_power()
 
     def get_all_objects_in_memory(self):
+        """
+        Get a list of the objects in memory
+        :return:
+        """
         objects = []
         # for name, obj in globals().items():
         #     objects.append([name, sys.getsizeof(obj)])
@@ -7086,8 +6978,11 @@ class MainGUI(QMainWindow):
         df.sort_values(by='Size (kb)', inplace=True, ascending=False)
         return df
 
-    def structure_analysis_plot(self):
-
+    def objects_histogram_analysis_plot(self):
+        """
+        Histogram analysis
+        :return:
+        """
         if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
@@ -7285,10 +7180,11 @@ class MainGUI(QMainWindow):
 
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
 
-    def config_file_path(self) -> str:
+    @staticmethod
+    def config_file_path() -> str:
         """
-
-        :return:
+        get the config file path
+        :return: config file path
         """
         return os.path.join(get_create_gridcal_folder(), 'gui_config.json')
 
@@ -7508,8 +7404,10 @@ class MainGUI(QMainWindow):
                 self.apply_gui_config(data=data)
                 self.change_theme_mode()
 
-    def expand_object_tree_nodes(self):
-
+    def expand_object_tree_nodes(self) -> None:
+        """
+        Expand objects' tree nodes
+        """
         proxy = self.ui.dataStructuresTreeView.model()
 
         for row in range(proxy.rowCount()):
@@ -7517,7 +7415,7 @@ class MainGUI(QMainWindow):
             self.ui.dataStructuresTreeView.expand(index)
 
 
-def run():
+def runGridCal() -> None:
     """
     Main function to run the GUI
     :return:
@@ -7544,4 +7442,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    runGridCal()

@@ -185,9 +185,17 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
 
         pv = menu.addAction('Solar photovoltaic wizard')
         pv_icon = QIcon()
-        pv_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pv_icon.addPixmap(QPixmap(":/Icons/icons/solar_power.svg"))
         pv.setIcon(pv_icon)
         pv.triggered.connect(self.solar_pv_wizard)
+
+        wp = menu.addAction('Wind farm wizard')
+        wp_icon = QIcon()
+        wp_icon.addPixmap(QPixmap(":/Icons/icons/wind_power.svg"))
+        wp.setIcon(wp_icon)
+        wp.triggered.connect(self.wind_farm_wizard)
+
+        menu.addSeparator()
 
         da = menu.addAction('Delete')
         del_icon = QIcon()
@@ -295,6 +303,33 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
             pass
 
     def solar_pv_wizard(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+
+        if self.diagramScene.circuit.has_time_series:
+
+            time_array = self.diagramScene.circuit.time_profile
+
+            dlg = SolarPvWizard(time_array=time_array,
+                                peak_power=self.api_object.Pmax,
+                                latitude=self.api_object.bus.latitude,
+                                longitude=self.api_object.bus.longitude,
+                                gen_name=self.api_object.name,
+                                bus_name=self.api_object.bus.name)
+            if dlg.exec_():
+                if dlg.is_accepted:
+                    if len(dlg.P) == len(self.api_object.P_prof):
+                        self.api_object.P_prof = dlg.P
+
+                        self.plot()
+                    else:
+                        raise Exception("Wrong length from the solar photovoltaic wizard")
+        else:
+            info_msg("You need to have time profiles for this function")
+
+    def wind_farm_wizard(self):
         """
         Open the appropriate editor dialogue
         :return:

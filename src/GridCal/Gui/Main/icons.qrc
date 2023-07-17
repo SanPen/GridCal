@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/wind_power.svg</file>
+    <file>icons/solar_power.svg</file>
     <file>icons/expansion_planning.svg</file>
     <file>icons/add_external_grid.svg</file>
     <file>icons/clustering_use.svg</file>

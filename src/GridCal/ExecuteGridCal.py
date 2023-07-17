@@ -21,7 +21,7 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
-from GridCal.Gui.Main.GridCalMain import run
+from GridCal.Gui.Main.GridCalMain import runGridCal
 from GridCal.Gui.Main.banner import Ui_splashScreen, QMainWindow, Qt, QApplication
 import platform
 
@@ -60,5 +60,5 @@ if __name__ == "__main__":
     # splash = Splash()
     # splash.show()
 
-    run()
+    runGridCal()
     # sys.exit(app.exec_())
