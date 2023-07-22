@@ -142,7 +142,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
         # build inputs
         monte_carlo_input = StochasticPowerFlowInput(self.grid)
 
-        S_combinations = monte_carlo_input.get(self.max_sampling_points, use_latin_hypercube=use_lhs)
+        # get the power injections in p.u.
+        S_combinations = monte_carlo_input.get(self.max_sampling_points, use_latin_hypercube=use_lhs) / self.grid.Sbase
 
         # run the time series
         for i in range(self.max_sampling_points):
@@ -158,17 +159,6 @@ class StochasticPowerFlowDriver(DriverTemplate):
             mc_results.Sbr_points[i, :] = res.Sf
             mc_results.loading_points[i, :] = res.loading
             mc_results.losses_points[i, :] = res.losses
-
-            # apply the island averaged results
-            # avg_res.Sbus[bus_idx] = Sbus
-            # avg_res.voltage[bus_idx] = lhs_results.voltage[bus_idx]
-            # avg_res.Sf[br_idx] = Sfb
-            # avg_res.St[br_idx] = Stb
-            # avg_res.If[br_idx] = If
-            # avg_res.It[br_idx] = It
-            # avg_res.Vbranch[br_idx] = Vbranch
-            # avg_res.loading[br_idx] = loading
-            # avg_res.losses[br_idx] = losses
 
             # determine when to stop
             if i > 1:

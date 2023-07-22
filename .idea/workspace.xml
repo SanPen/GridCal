@@ -27,70 +27,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added object selection dialogue when adding investments and contingencies">
-      <change afterPath="$PROJECT_DIR$/examples/modelchain_example.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/turbine_cluster_modelchain_example.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/weather_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/icons/automatic_layout.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/icons/color_grid.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/icons/run_cascade_step.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/gui.ui" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/icons.qrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/icons/plot.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/icons/solar_power.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Widgets/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/gui.ui" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/icons.qrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/icons/plot.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/icons/wind_power.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/wind_power_wizzard.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed stochastic power flow">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/2869 Pegase.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/2869 Pegase.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/South Island of New Zealand.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/South Island of New Zealand.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/bus.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_input.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/bus_viewer_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/bus_viewer_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generator_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generator_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/solar_power_wizzard.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/solar_power_wizzard.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/wind_power_wizzard.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/example_pvlib.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/matplotlibwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Widgets/matplotlibwidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profiles_from_data_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profiles_from_data_gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SyncDialogue/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/matplotlibwidget.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/update_gui_common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1266,14 +1209,8 @@
       <workItem from="1689597813602" duration="5460000" />
       <workItem from="1689663103312" duration="7581000" />
       <workItem from="1689684002555" duration="29000" />
-      <workItem from="1690015899078" duration="5153000" />
-    </task>
-    <task id="LOCAL-00399" summary="Fixed plenty of refactoring bugs">
-      <created>1686773930405</created>
-      <option name="number" value="00399" />
-      <option name="presentableId" value="LOCAL-00399" />
-      <option name="project" value="LOCAL" />
-      <updated>1686773930405</updated>
+      <workItem from="1690015899078" duration="5184000" />
+      <workItem from="1690029525199" duration="3576000" />
     </task>
     <task id="LOCAL-00400" summary="refactored contingencies">
       <created>1686862290650</created>
@@ -1611,7 +1548,14 @@
       <option name="project" value="LOCAL" />
       <updated>1689255894352</updated>
     </task>
-    <option name="localTasksCounter" value="448" />
+    <task id="LOCAL-00448" summary="Fixed stochastic power flow">
+      <created>1690021145243</created>
+      <option name="number" value="00448" />
+      <option name="presentableId" value="LOCAL-00448" />
+      <option name="project" value="LOCAL" />
+      <updated>1690021145243</updated>
+    </task>
+    <option name="localTasksCounter" value="449" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1653,7 +1597,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="properly integrated newton pa contingencies" />
     <MESSAGE value="Improvements to the contingency simulation" />
     <MESSAGE value="Implemented mode for contingency analysis in newton" />
     <MESSAGE value="Improved tr3 graphical integration" />
@@ -1678,7 +1621,8 @@
     <MESSAGE value="fixed buses not beign added to investments&#10;Fixed bug in storage selection" />
     <MESSAGE value="Fixed bug in storage selection" />
     <MESSAGE value="Added object selection dialogue when adding investments and contingencies" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added object selection dialogue when adding investments and contingencies" />
+    <MESSAGE value="Fixed stochastic power flow" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed stochastic power flow" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2023,6 +1967,11 @@
           <line>36</line>
           <option name="timeStamp" value="1198" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_input.py</url>
+          <line>87</line>
+          <option name="timeStamp" value="1200" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -2220,7 +2169,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1689623105998" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1690020807986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1690033291647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

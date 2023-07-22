@@ -285,7 +285,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoadingAverage:
             labels = self.branch_names
-            y = self.l_avg_conv[1:-1, :]
+            y = self.l_avg_conv[1:-1, :] * 100.0
             y_label = '(%)'
             x_label = 'Sampling points'
             title = 'Branch loading \naverage convergence'
@@ -313,7 +313,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoadingStd:
             labels = self.branch_names
-            y = self.l_std_conv[1:-1, :]
+            y = self.l_std_conv[1:-1, :] * 100.0
             y_label = '(%)'
             x_label = 'Sampling points'
             title = 'Branch loading standard \ndeviation convergence'
@@ -334,8 +334,8 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoadingCDF:
             labels = self.branch_names
-            cdf = CDF(np.abs(self.loading_points.real))
-            y_label = '(p.u.)'
+            cdf = CDF(np.abs(self.loading_points.real * 100.0))
+            y_label = '(%)'
             x_label = 'Probability $P(X \leq x)$'
             title = result_type.value[0]
 
