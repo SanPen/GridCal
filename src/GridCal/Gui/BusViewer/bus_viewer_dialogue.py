@@ -224,5 +224,5 @@ if __name__ == "__main__":
     window = BusViewerGUI(circuit=circuit_, root_bus=circuit_.buses[0])
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 

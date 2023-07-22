@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QHeaderView,
     QSplitter, QStatusBar, QTableView, QVBoxLayout,
     QWidget)
 
-from .matplotlibwidget import MatplotlibWidget
+from GridCal.Gui.Widgets.matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
 
 class Ui_MainWindow(object):

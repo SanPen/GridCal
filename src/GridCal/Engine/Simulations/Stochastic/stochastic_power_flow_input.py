@@ -17,96 +17,68 @@
 
 import numpy as np
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
-from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_input import PowerFlowTimeSeriesInput
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import CDF, CxVec, CxMat
 
 
 class StochasticPowerFlowInput:
+    """
+    StochasticPowerFlowInput
+    """
 
-    def __init__(self, n, Scdf, Icdf, Ycdf):
+    def __init__(self, grid: MultiCircuit):
         """
         Monte carlo input constructor
-        @param n: number of nodes
-        @param Scdf: Power cumulative density function
-        @param Icdf: Current cumulative density function
-        @param Ycdf: Admittances cumulative density function
+        @param grid: MultiCircuit instance
         """
 
         # number of nodes
-        self.n = n
+        self.n = grid.get_bus_number()
+        Sprof = grid.get_Sbus_prof(non_dispatchable_only=True)
+        self.Scdf = [CDF(Sprof[i, :]) for i in range(self.n)]
 
-        self.Scdf = Scdf
-
-        self.Icdf = Icdf
-
-        self.Ycdf = Ycdf
-
-    def __call__(self, samples=0, use_latin_hypercube=False):
+    def get(self, samples=0, use_latin_hypercube=False) -> CxMat:
         """
         Call this object
         :param samples: number of samples
         :param use_latin_hypercube: use Latin Hypercube to sample
-        :return: Time series object
+        :return: CxMat
         """
+        if samples == 0:
+            raise Exception('Cannot have zero samples :(')
+
         if use_latin_hypercube:
 
             lhs_points = lhs(self.n, samples=samples, criterion='center')
-
-            if samples > 0:
-                S = np.zeros((samples, self.n), dtype=complex)
-                I = np.zeros((samples, self.n), dtype=complex)
-                Y = np.zeros((samples, self.n), dtype=complex)
-
-                for i in range(self.n):
-                    if self.Scdf[i] is not None:
-                        S[:, i] = self.Scdf[i].get_at(lhs_points[:, i])
+            S = np.zeros((samples, self.n), dtype=complex)
+            for i in range(self.n):
+                if self.Scdf[i] is not None:
+                    S[:, i] = self.Scdf[i].get_at(lhs_points[:, i])
 
         else:
-            if samples > 0:
-                S = np.zeros((samples, self.n), dtype=complex)
-                I = np.zeros((samples, self.n), dtype=complex)
-                Y = np.zeros((samples, self.n), dtype=complex)
 
-                for i in range(self.n):
-                    if self.Scdf[i] is not None:
-                        S[:, i] = self.Scdf[i].get_sample(samples)
-            else:
-                S = np.zeros(self.n, dtype=complex)
-                I = np.zeros(self.n, dtype=complex)
-                Y = np.zeros(self.n, dtype=complex)
+            S = np.zeros((samples, self.n), dtype=complex)
 
-                for i in range(self.n):
-                    if self.Scdf[i] is not None:
-                        S[i] = complex(self.Scdf[i].get_sample()[0])
+            for i in range(self.n):
+                if self.Scdf[i] is not None:
+                    S[:, i] = self.Scdf[i].get_sample(samples)
 
-        time_series_input = PowerFlowTimeSeriesInput()
-        time_series_input.S = S
-        time_series_input.I = I
-        time_series_input.Y = Y
-        time_series_input.valid = True
+        return S
 
-        return time_series_input
-
-    def get_at(self, x):
+    def get_at(self, x) -> CxVec:
         """
         Get samples at x
-        Args:
-            x: values in [0, 1] to sample the CDF
-
-        Returns: Time series object
+        :param x: values in [0, 1] to sample the CDF
+        :return: CxVec
         """
-        S = np.zeros((1, self.n), dtype=complex)
-        I = np.zeros((1, self.n), dtype=complex)
-        Y = np.zeros((1, self.n), dtype=complex)
+
+        S = np.zeros(self.n, dtype=complex)
 
         for i in range(self.n):
             if self.Scdf[i] is not None:
-                S[:, i] = self.Scdf[i].get_at(x[i])
+                S[i] = self.Scdf[i].get_at(x[i])
 
-        time_series_input = PowerFlowTimeSeriesInput()
-        time_series_input.S = S
-        time_series_input.I = I
-        time_series_input.Y = Y
-        time_series_input.valid = True
+        return S
 
-        return time_series_input
-
+    def __call__(self, samples=0, use_latin_hypercube=False) -> CxMat:
+        return self.get(samples=samples, use_latin_hypercube=use_latin_hypercube)

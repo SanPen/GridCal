@@ -17,6 +17,7 @@ def correct_file_imports(filename):
 
     # Replace the target string
     file_data = file_data.replace('import icons_rc', 'from .icons_rc import *')
+    file_data = file_data.replace('from .matplotlibwidget import MatplotlibWidget', 'from GridCal.Gui.Widgets.matplotlibwidget import MatplotlibWidget')
     # file_data = file_data.replace('PySide6', 'qtpy')
     # file_data = file_data.replace('PySide6', 'qtpy')
     # file_data = file_data.replace('PyQt5', 'qtpy')

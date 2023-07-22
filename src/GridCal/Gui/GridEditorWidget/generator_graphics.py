@@ -22,7 +22,8 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, O
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, info_msg
 from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
-from GridCal.Gui.GridEditorWidget.solar_power_wizzard import SolarPvWizard
+from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
+from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
 
 
 class GeneratorEditor(QDialog):
@@ -339,12 +340,12 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
 
             time_array = self.diagramScene.circuit.time_profile
 
-            dlg = SolarPvWizard(time_array=time_array,
-                                peak_power=self.api_object.Pmax,
-                                latitude=self.api_object.bus.latitude,
-                                longitude=self.api_object.bus.longitude,
-                                gen_name=self.api_object.name,
-                                bus_name=self.api_object.bus.name)
+            dlg = WindFarmWizard(time_array=time_array,
+                                 peak_power=self.api_object.Pmax,
+                                 latitude=self.api_object.bus.latitude,
+                                 longitude=self.api_object.bus.longitude,
+                                 gen_name=self.api_object.name,
+                                 bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
                     if len(dlg.P) == len(self.api_object.P_prof):

@@ -945,18 +945,28 @@ class Bus(EditableDevice):
         self.shunts = self.get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
         self.external_grids = self.get_fused_device_lst(self.external_grids, [])
 
-    def get_Sbus(self) -> complex:
+    def get_Sbus(self, non_dispatchable_only=False) -> complex:
         """
         Compute the complex power Injections, includes the active effect
+        :param non_dispatchable_only: use only the non dispatchable (AKA fixed) devices.
+        For generators and batteries this meand (not usineg those where enabled_dispatch is False)
         :return: complex bus power injection (snapshot value)
         """
         val = 0.0j
 
         for elm in self.generators:
-            val += elm.P * elm.active
+            if non_dispatchable_only:
+                if not elm.enabled_dispatch:
+                    val += elm.P * elm.active
+            else:
+                val += elm.P * elm.active
 
         for elm in self.batteries:
-            val += elm.P * elm.active
+            if non_dispatchable_only:
+                if not elm.enabled_dispatch:
+                    val += elm.P * elm.active
+            else:
+                val += elm.P * elm.active
 
         for elm in self.static_generators:
             val += (elm.P + 1j * elm.Q) * elm.active
@@ -969,19 +979,29 @@ class Bus(EditableDevice):
 
         return val
 
-    def get_Sbus_prof(self) -> CxVec:
+    def get_Sbus_prof(self, non_dispatchable_only=False) -> CxVec:
         """
         Compute the complex power Injections, includes the active effect
+        :param non_dispatchable_only: use only the non dispatchable (AKA fixed) devices.
+        For generators and batteries this meand (not usineg those where enabled_dispatch is False)
         :return: vector of complex nodal injections
         """
         nt = len(self.active_prof)
         val = np.zeros(nt, dtype=complex)
 
         for elm in self.generators:
-            val += elm.P_prof * elm.active_prof
+            if non_dispatchable_only:
+                if not elm.enabled_dispatch:
+                    val += elm.P_prof * elm.active_prof
+            else:
+                val += elm.P_prof * elm.active_prof
 
         for elm in self.batteries:
-            val += elm.P_prof * elm.active_prof
+            if non_dispatchable_only:
+                if not elm.enabled_dispatch:
+                    val += elm.P_prof * elm.active_prof
+            else:
+                val += elm.P_prof * elm.active_prof
 
         for elm in self.static_generators:
             val += (elm.P_prof + 1j * elm.Q_prof) * elm.active_prof

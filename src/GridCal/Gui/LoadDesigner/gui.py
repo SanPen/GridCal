@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QDoubleSpinBox, QFrame,
     QSizePolicy, QSpacerItem, QSplitter, QTableView,
     QTimeEdit, QToolBox, QVBoxLayout, QWidget)
 
-from .matplotlibwidget import MatplotlibWidget
+from GridCal.Gui.Widgets.matplotlibwidget import MatplotlibWidget
 from .icons_rc import *
 
 class Ui_Dialog(object):
@@ -45,6 +45,7 @@ class Ui_Dialog(object):
         self.toolBox.setObjectName(u"toolBox")
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
+        self.page_3.setGeometry(QRect(0, 0, 848, 352))
         self.verticalLayout_3 = QVBoxLayout(self.page_3)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, -1, 0, -1)
@@ -75,6 +76,8 @@ class Ui_Dialog(object):
 
         self.night_valley_doubleSpinBox = QDoubleSpinBox(self.frame_3)
         self.night_valley_doubleSpinBox.setObjectName(u"night_valley_doubleSpinBox")
+        self.night_valley_doubleSpinBox.setDecimals(4)
+        self.night_valley_doubleSpinBox.setMaximum(9999999.000000000000000)
         self.night_valley_doubleSpinBox.setValue(4.000000000000000)
 
         self.horizontalLayout_3.addWidget(self.night_valley_doubleSpinBox)
@@ -102,6 +105,8 @@ class Ui_Dialog(object):
 
         self.morning_peak_doubleSpinBox = QDoubleSpinBox(self.frame_4)
         self.morning_peak_doubleSpinBox.setObjectName(u"morning_peak_doubleSpinBox")
+        self.morning_peak_doubleSpinBox.setDecimals(4)
+        self.morning_peak_doubleSpinBox.setMaximum(9999999.000000000000000)
         self.morning_peak_doubleSpinBox.setValue(12.000000000000000)
 
         self.horizontalLayout_4.addWidget(self.morning_peak_doubleSpinBox)
@@ -129,6 +134,8 @@ class Ui_Dialog(object):
 
         self.afternoon_valley_doubleSpinBox = QDoubleSpinBox(self.frame_5)
         self.afternoon_valley_doubleSpinBox.setObjectName(u"afternoon_valley_doubleSpinBox")
+        self.afternoon_valley_doubleSpinBox.setDecimals(4)
+        self.afternoon_valley_doubleSpinBox.setMaximum(9999999.000000000000000)
         self.afternoon_valley_doubleSpinBox.setValue(8.000000000000000)
 
         self.horizontalLayout_6.addWidget(self.afternoon_valley_doubleSpinBox)
@@ -156,6 +163,8 @@ class Ui_Dialog(object):
 
         self.evening_peak_doubleSpinBox = QDoubleSpinBox(self.frame_6)
         self.evening_peak_doubleSpinBox.setObjectName(u"evening_peak_doubleSpinBox")
+        self.evening_peak_doubleSpinBox.setDecimals(4)
+        self.evening_peak_doubleSpinBox.setMaximum(9999999.000000000000000)
         self.evening_peak_doubleSpinBox.setValue(16.000000000000000)
 
         self.horizontalLayout_7.addWidget(self.evening_peak_doubleSpinBox)
@@ -194,7 +203,7 @@ class Ui_Dialog(object):
         self.toolBox.addItem(self.page_3, u"Definition by peak points")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 830, 352))
+        self.page.setGeometry(QRect(0, 0, 848, 352))
         self.verticalLayout_2 = QVBoxLayout(self.page)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tableView = QTableView(self.page)
@@ -264,10 +273,14 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
-        self.label.setText(QCoreApplication.translate("Dialog", u"Night valley (MW)", None))
-        self.label_2.setText(QCoreApplication.translate("Dialog", u"Morning Peak (MW)", None))
-        self.label_4.setText(QCoreApplication.translate("Dialog", u"Afternoon valley (MW)", None))
-        self.label_5.setText(QCoreApplication.translate("Dialog", u"Evening Peak (MW)", None))
+        self.label.setText(QCoreApplication.translate("Dialog", u"Night valley", None))
+        self.night_valley_doubleSpinBox.setSuffix(QCoreApplication.translate("Dialog", u" MW", None))
+        self.label_2.setText(QCoreApplication.translate("Dialog", u"Morning Peak", None))
+        self.morning_peak_doubleSpinBox.setSuffix(QCoreApplication.translate("Dialog", u" MW", None))
+        self.label_4.setText(QCoreApplication.translate("Dialog", u"Afternoon valley", None))
+        self.afternoon_valley_doubleSpinBox.setSuffix(QCoreApplication.translate("Dialog", u" MW", None))
+        self.label_5.setText(QCoreApplication.translate("Dialog", u"Evening Peak", None))
+        self.evening_peak_doubleSpinBox.setSuffix(QCoreApplication.translate("Dialog", u" MW", None))
         self.draw_by_peak_pushButton.setText("")
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QCoreApplication.translate("Dialog", u"Definition by peak points", None))
         self.draw_by_points_pushButton.setText("")

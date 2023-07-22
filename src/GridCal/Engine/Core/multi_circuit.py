@@ -249,16 +249,16 @@ class MultiCircuit:
                 dev.VSC(None, None),
                 dev.UPFC(None, None),
             ],
-            "Tags": [
-                dev.Technology(),
-                dev.Fuel(),
-                dev.EmissionGas(),
+            "Groups": [
                 dev.ContingencyGroup(),
                 dev.Contingency(),
                 dev.InvestmentsGroup(),
                 dev.Investment(),
             ],
-            "Associations": [
+            "Tags & Associations": [
+                dev.Technology(),
+                dev.Fuel(),
+                dev.EmissionGas(),
                 dev.GeneratorTechnology(),
                 dev.GeneratorFuel(),
                 dev.GeneratorEmission(),
@@ -3379,7 +3379,7 @@ class MultiCircuit:
 
         return v
 
-    def get_Sbus(self) -> CxVec:
+    def get_Sbus(self, non_dispatchable_only=False) -> CxVec:
         """
         Get the complex bus power Injections
         :return: (nbus) [MW + j MVAr]
@@ -3387,11 +3387,11 @@ class MultiCircuit:
         val = np.zeros(self.get_bus_number(), dtype=complex)
 
         for i, bus in enumerate(self.buses):
-            val[i] = bus.get_Sbus()
+            val[i] = bus.get_Sbus(non_dispatchable_only=non_dispatchable_only)
 
         return val
 
-    def get_Sbus_prof(self) -> CxMat:
+    def get_Sbus_prof(self, non_dispatchable_only=False) -> CxMat:
         """
         Get the complex bus power Injections
         :return: (ntime, nbus) [MW + j MVAr]
@@ -3399,23 +3399,23 @@ class MultiCircuit:
         val = np.zeros((self.get_time_number(), self.get_bus_number()), dtype=complex)
 
         for i, bus in enumerate(self.buses):
-            val[:, i] = bus.get_Sbus_prof()
+            val[:, i] = bus.get_Sbus_prof(non_dispatchable_only=non_dispatchable_only)
 
         return val
 
-    def get_Pbus(self) -> Vec:
+    def get_Pbus(self, non_dispatchable_only=False) -> Vec:
         """
         Get snapshot active power array per bus
         :return: Vec
         """
-        return self.get_Sbus().real
+        return self.get_Sbus(non_dispatchable_only=non_dispatchable_only).real
 
-    def get_Pbus_prof(self) -> Mat:
+    def get_Pbus_prof(self, non_dispatchable_only=False) -> Mat:
         """
         Get profiles active power per bus
         :return: Mat
         """
-        return self.get_Sbus_prof().real
+        return self.get_Sbus_prof(non_dispatchable_only=non_dispatchable_only).real
 
     def get_branch_rates_prof_wo_hvdc(self) -> Mat:
         """

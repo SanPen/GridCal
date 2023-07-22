@@ -547,13 +547,15 @@ def single_island_pf(circuit: NumericalCircuit, Vbus, Sbus, Ibus, Yloadbus, ma, 
 def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
                        logger=bs.Logger(),
-                       V_guess: Union[CxVec, None] = None) -> "PowerFlowResults":
+                       V_guess: Union[CxVec, None] = None,
+                       Sbus_input: Union[CxVec, None] = None) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
     :param options: PowerFlowOptions instance
     :param logger: logger
     :param V_guess: voltage guess
+    :param Sbus_input: Use this power injections if provided
     :return: PowerFlowResults instance
     """
 
@@ -600,11 +602,16 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
             if len(island.vd) > 0:
 
+                if Sbus_input is None:
+                    Sbus = island.Sbus + Shvdc[island.original_bus_idx]
+                else:
+                    Sbus = Sbus_input
+
                 # run circuit power flow
                 res = single_island_pf(
                     circuit=island,
                     Vbus=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
-                    Sbus=island.Sbus + Shvdc[island.original_bus_idx],
+                    Sbus=Sbus,
                     Ibus=island.Ibus,
                     Yloadbus=island.YLoadBus,
                     ma=island.branch_data.tap_module,
