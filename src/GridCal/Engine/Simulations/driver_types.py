@@ -49,6 +49,7 @@ class SimulationTypes(Enum):
     NodeGrouping_run = "Node groups"
     InputsAnalysis_run = 'Inputs Analysis'
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
+    InvestmestsEvaluation_run = 'Investments evaluation'
 
     def __str__(self):
         return self.value

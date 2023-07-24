@@ -34,8 +34,11 @@ from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, Con
 import GridCal.Engine.Core.DataStructures as ds
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
+from GridCal.Engine.Core.Devices.Aggregation.investment import Investment
 
 sparse_type = get_sparse_type()
+
+ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData]
 
 
 @nb.njit(cache=True)
@@ -311,19 +314,19 @@ class NumericalCircuit:
         self.Admittances = None
 
         # Admittance for HELM / AC linear
-        self.Yseries_: sp.csc_matrix = None
-        self.Yshunt_: sp.csc_matrix = None
+        self.Yseries_: Union[sp.csc_matrix, None] = None
+        self.Yshunt_: Union[sp.csc_matrix, None] = None
 
         # Admittances for Fast-Decoupled
-        self.B1_: sp.csc_matrix = None
-        self.B2_: sp.csc_matrix = None
+        self.B1_: Union[sp.csc_matrix, None] = None
+        self.B2_: Union[sp.csc_matrix, None] = None
 
         # Admittances for Linear
-        self.Bbus_: sp.csc_matrix = None
-        self.Bf_: sp.csc_matrix = None
-        self.Btheta_: sp.csc_matrix = None
-        self.Bpqpv_: sp.csc_matrix = None
-        self.Bref_: sp.csc_matrix = None
+        self.Bbus_: Union[sp.csc_matrix, None] = None
+        self.Bf_: Union[sp.csc_matrix, None] = None
+        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Bpqpv_: Union[sp.csc_matrix, None] = None
+        self.Bref_: Union[sp.csc_matrix, None] = None
 
         self.pq_: IntVec = None
         self.pv_: IntVec = None
@@ -331,6 +334,10 @@ class NumericalCircuit:
         self.pqpv_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
+
+        # dictionary relating idtags to structures and indices
+        # Dict[idtag] -> (structure, index)
+        self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
 
     def get_injections(self, normalize=True):
         """
@@ -635,12 +642,44 @@ class NumericalCircuit:
         nc.battery_data = self.battery_data.copy()
         nc.consolidate_information()
 
-    def get_branch_df(self):
+        return nc
+
+    def get_structs_idtag_dict(self) -> Dict[str, Tuple[ALL_STRUCTS, int]]:
+        """
+        Get a dictionary to map idtags to the structure they belong and the index
+        :return: Dictionary relating an idtag to the structure and the index in it (Dict[idtag] -> (structure, index))
+        """
+        structs_dict = dict()
+
+        for struct_elm in [self.bus_data,
+                           self.generator_data,
+                           self.battery_data,
+                           self.load_data,
+                           self.shunt_data,
+                           self.branch_data,
+                           self.hvdc_data]:
+
+            for i, idtag in enumerate(struct_elm.idtag):
+                structs_dict[idtag] = (struct_elm, i)
+
+        return structs_dict
+
+    def set_investments_status(self, investments_list: List[Investment], status: int) -> None:
+        """
+        Set the status of a list of investmensts
+        :param investments_list: list of investments
+        :param status: status to set in the internal strctures
         """
 
-        :return:
-        """
-        return self.branch_data.to_df()
+        for inv in investments_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(inv.device_idtag, (None, 0))
+
+            if structure is not None:
+                structure.active[idx] = status
+            else:
+                raise Exception('Could not find the idtag, is this a programming bug?')
 
     @property
     def original_bus_idx(self):
@@ -1224,6 +1263,17 @@ class NumericalCircuit:
 
         return self.pqpv_
 
+    @property
+    def structs_dict(self):
+        """
+
+        :return:
+        """
+        if self.structs_dict_ is None:
+            self.structs_dict_ = self.get_structs_idtag_dict()
+
+        return self.structs_dict_
+
     def compute_reactive_power_limits(self):
         """
         compute the reactive power limits in place
@@ -1473,7 +1523,7 @@ class NumericalCircuit:
             Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(
                 Cf=self.Cf,
                 Ct=self.Ct,
-                C_bus_shunt=self.shunt_data.C_bus_elm,
+                C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
                 shunt_admittance=self.shunt_data.admittance,
                 shunt_active=self.shunt_data.active,
                 ys=Ys,

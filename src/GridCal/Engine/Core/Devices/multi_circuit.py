@@ -656,6 +656,39 @@ class MultiCircuit:
         """
         return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads() + self.buses
 
+    def get_investmenst_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
+        """
+        Get a dictionary of investments goups and their
+        :return: list of investment groups and their list of associated investments
+        """
+        d = {e: list() for e in self.investments_groups}
+
+        for inv in self.investments:
+            inv_list = d.get(inv.group, None)
+
+            if inv_list is not None:
+                inv_list.append(inv)
+
+        # second pass, sort it
+        res = list()
+        for inv_group in self.investments_groups:
+
+            inv_list = d.get(inv_group, None)
+
+            if inv_list is not None:
+                res.append((inv_group, inv_list))
+            else:
+                res.append((inv_group, list()))
+
+        return res
+
+    def get_investment_groups_names(self) -> List[str]:
+        """
+
+        :return:
+        """
+        return [e.name for e in self.investments_groups]
+
     def get_lines(self) -> List[dev.Line]:
         """
         get list of ac lines

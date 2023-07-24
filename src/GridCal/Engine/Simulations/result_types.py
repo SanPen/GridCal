@@ -237,6 +237,9 @@ class ResultTypes(Enum):
     LoadResults = 'Loads', DeviceType.LoadDevice
     BatteryResults = 'Batteries', DeviceType.BatteryDevice
 
+    # investments evaluation
+    InvestmentsReportResults = 'Investments evaluation report', DeviceType.NoDevice
+
     def __str__(self):
         return self.value[0]
 

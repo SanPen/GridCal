@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import time
 import numpy as np
 from typing import List, Dict, Union
 from GridCal.Engine.basic_structures import IntVec, Vec
@@ -74,6 +74,15 @@ class DriverTemplate:
         self.logger = Logger()
 
         self.__cancel__ = False
+
+        self.__start = time.time()
+
+    def tic(self):
+
+        self.__start = time.time()
+
+    def toc(self):
+        self.elapsed = time.time() - self.__start
 
     def get_steps(self):
         """

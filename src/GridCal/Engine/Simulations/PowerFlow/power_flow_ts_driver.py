@@ -199,7 +199,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         @return:
         """
 
-        a = time.time()
+        self.tic()
 
         if self.engine == bs.EngineType.GridCal:
             self.results = self.run_single_thread(time_indices=self.time_indices)
@@ -223,4 +223,4 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         # fill F, T, Areas, etc...
         self.results.fill_circuit_info(self.grid)
 
-        self.elapsed = time.time() - a
+        self.toc()

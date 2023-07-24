@@ -591,6 +591,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
 
+        self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -4921,6 +4923,55 @@ class MainGUI(QMainWindow):
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
 
+    def run_investments_evaluation(self):
+        """
+        Run investments evaluation
+        """
+        if len(self.circuit.buses) > 0:
+
+            if len(self.circuit.investments_groups) > 0:
+
+                if not self.session.is_this_running(sim.SimulationTypes.InvestmestsEvaluation_run):
+
+                    drv = sim.InvestmentsEvaluationDriver(grid=self.circuit)
+
+                    self.session.run(drv,
+                                     post_func=self.post_run_investments_evaluation,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+                    self.add_simulation(sim.SimulationTypes.InvestmestsEvaluation_run)
+                    self.LOCK()
+
+                else:
+                    warning_msg('Another contingency analysis is being executed now...')
+            else:
+                warning_msg("There are no investment groups, "
+                            "you need to create some so that GridCal can evaluate them ;)")
+
+        else:
+            pass
+
+    def post_run_investments_evaluation(self):
+        """
+        Post investments evaluation
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.InvestmestsEvaluation_run)
+        self.remove_simulation(sim.SimulationTypes.InvestmestsEvaluation_run)
+
+        # update the results in the circuit structures
+        if results is not None:
+
+            self.ui.progress_label.setText('Colouring investments evaluation results in the grid...')
+            QtGui.QGuiApplication.processEvents()
+
+            self.update_available_results()
+            self.colour_schematic()
+        else:
+            error_msg('Something went wrong, There are no investments evaluation results.')
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
     def grid_generator(self):
         """
         Open the grid generator window
@@ -5071,25 +5122,28 @@ class MainGUI(QMainWindow):
             if len(steps) > max_steps:
                 max_steps = len(steps)
 
-        icons = {SimulationTypes.PowerFlow_run.value: ':/Icons/icons/pf',
-                 SimulationTypes.TimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
-                 SimulationTypes.ClusteringTimeSeries_run.value: ':/Icons/icons/pf_ts_cluster.svg',
-                 SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
-                 SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
-                 SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
-                 SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
-                 SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
-                 SimulationTypes.SigmaAnalysis_run.value: ':/Icons/icons/sigma.svg',
-                 SimulationTypes.StochasticPowerFlow.value: ':/Icons/icons/stochastic_power_flow.svg',
-                 SimulationTypes.ContingencyAnalysis_run.value: ':/Icons/icons/otdf.svg',
-                 SimulationTypes.ContingencyAnalysisTS_run.value: ':/Icons/icons/otdf_ts.svg',
-                 SimulationTypes.NetTransferCapacity_run.value: ':/Icons/icons/atc.svg',
-                 SimulationTypes.NetTransferCapacityTS_run.value: ':/Icons/icons/atc_ts.svg',
-                 SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
-                 SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
-                 SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
-                 SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
-                 SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg', }
+        icons = {
+                SimulationTypes.PowerFlow_run.value: ':/Icons/icons/pf',
+                SimulationTypes.TimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
+                SimulationTypes.ClusteringTimeSeries_run.value: ':/Icons/icons/pf_ts_cluster.svg',
+                SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
+                SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
+                SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
+                SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
+                SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
+                SimulationTypes.SigmaAnalysis_run.value: ':/Icons/icons/sigma.svg',
+                SimulationTypes.StochasticPowerFlow.value: ':/Icons/icons/stochastic_power_flow.svg',
+                SimulationTypes.ContingencyAnalysis_run.value: ':/Icons/icons/otdf.svg',
+                SimulationTypes.ContingencyAnalysisTS_run.value: ':/Icons/icons/otdf_ts.svg',
+                SimulationTypes.NetTransferCapacity_run.value: ':/Icons/icons/atc.svg',
+                SimulationTypes.NetTransferCapacityTS_run.value: ':/Icons/icons/atc_ts.svg',
+                SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
+                SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
+                SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
+                SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
+                SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
+                SimulationTypes.InvestmestsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
+                }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
         lst.reverse()  # this is to show the latest simulation first

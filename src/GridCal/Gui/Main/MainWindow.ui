@@ -8462,7 +8462,7 @@ QProgressBar::chunk{
    <addaction name="actionUse_clustering"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionAdd_selected_as_new_investment"/>
-   <addaction name="actionExpansion_planning"/>
+   <addaction name="actionInvestments_evaluation"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
    <addaction name="actionPTDF_time_series"/>
@@ -9330,19 +9330,19 @@ QProgressBar::chunk{
     <string>Check if you want the available clustering results to be used</string>
    </property>
   </action>
-  <action name="actionExpansion_planning">
+  <action name="actionInvestments_evaluation">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/expansion_planning.svg</normaloff>:/Icons/icons/expansion_planning.svg</iconset>
    </property>
    <property name="text">
-    <string>Expansion planning</string>
+    <string>Investments evaluation</string>
    </property>
    <property name="toolTip">
-    <string>Run a expansion planning simulation</string>
+    <string>Run the investments evaluation</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+E, Ctrl+P</string>
+    <string>Ctrl+I, Ctrl+E</string>
    </property>
   </action>
  </widget>
