@@ -230,7 +230,7 @@ class MainGUI(QMainWindow):
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
         self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Hyperopt.value] = bs.InvestmentEvaluationMethod.Hyperopt
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 

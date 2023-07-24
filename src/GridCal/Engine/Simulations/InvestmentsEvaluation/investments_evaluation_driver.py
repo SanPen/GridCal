@@ -15,7 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import List
+import hyperopt
+import functools
+from typing import List, Dict
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
@@ -51,6 +53,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.__eval_index = 0
 
+        self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
+
+        self.dim = len(self.grid.investments_groups)
+
+        self.nc: NumericalCircuit = None
+
     def get_steps(self):
         """
 
@@ -58,22 +66,25 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         return self.results.get_index()
 
-    def objective_function(self,
-                           combination: IntVec,
-                           inv_list: List[Investment],
-                           nc: NumericalCircuit):
+    def objective_function(self, combination: IntVec):
         """
         Function to evaluate a combination of investments
         :param combination:
-        :param inv_list: list of investment objects
         :param nc: NumericalCircuit
         :return: objective function value
         """
+
+        # add all the investments of the investment groups reflected in the combination
+        inv_list = list()
+        for i in combination:
+            if i == 1:
+                inv_list += self.investments_by_group[i]
+
         # enable the investment
-        nc.set_investments_status(investments_list=inv_list, status=1)
+        self.nc.set_investments_status(investments_list=inv_list, status=1)
 
         # do something
-        res = multi_island_pf_nc(nc=nc, options=self.pf_options)
+        res = multi_island_pf_nc(nc=self.nc, options=self.pf_options)
         total_losses = np.sum(res.losses.real)
         f = total_losses
 
@@ -87,7 +98,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             index_name="Evaluation {}".format(self.__eval_index))
 
         # revert to disabled
-        nc.set_investments_status(investments_list=inv_list, status=0)
+        self.nc.set_investments_status(investments_list=inv_list, status=0)
+
+        # increase evaluations
+        self.__eval_index += 1
+
+        self.progress_signal.emit(self.__eval_index / self.max_eval * 100.0)
 
         return f
 
@@ -96,76 +112,65 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
         # compile the snapshot
-        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(grid=self.grid,
                                                     max_eval=len(self.grid.investments_groups) + 1)
         # disable all status
-        nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # get investments by investment group
-        inv_by_groups_list = self.grid.get_investmenst_by_groups()
+        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
         # evaluate the investments
         self.__eval_index = 0
 
-        combination = np.zeros(self.results.n_groups, dtype=int)
-
         # add baseline
-        self.objective_function(combination=combination, inv_list=[], nc=nc)
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
-        self.__eval_index += 1
+        dim = len(self.grid.investments_groups)
 
-        for k, (inv_group, inv_list) in enumerate(inv_by_groups_list):
-            self.progress_text.emit("Evaluating " + inv_group.name + '...')
+        for k in range(dim):
 
-            combination = np.zeros(self.results.n_groups, dtype=int)
+            self.progress_text.emit("Evaluating investment group {}...".format(k))
+
+            combination = np.zeros(dim, dtype=int)
             combination[k] = 1
 
-            self.objective_function(combination=combination, inv_list=inv_list, nc=nc)
+            self.objective_function(combination=combination)
 
-            # increase evaluations
-            self.__eval_index += 1
-
-            self.progress_signal.emit((k + 1) / len(inv_by_groups_list) * 100.0)
         self.progress_text.emit("Done!")
         self.progress_signal.emit(0.0)
 
-    def optimized_evaluation(self) -> None:
+    def optimized_evaluation_hyperopt(self) -> None:
         """
         Run an optimized investment evaluation without considering multiple evaluation groups at a time
         """
+
+        # configure hyperopt:
+
+        # number of random evaluations at the beginning
+        rand_evals = round(self.dim * 1.5)
+
+        # binary search space
+        space = [hyperopt.hp.randint(f'x_{i}', 2) for i in range(self.dim)]
+
+        if self.max_eval == rand_evals:
+            algo = hyperopt.rand.suggest
+        else:
+            algo = functools.partial(hyperopt.tpe.suggest, n_startup_jobs=rand_evals)
+
         # compile the snapshot
-        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(grid=self.grid,
                                                     max_eval=self.max_eval + 1)
         # disable all status
-        nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # get investments by investment group
-        inv_by_groups_list = self.grid.get_investmenst_by_groups()
+        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
         # evaluate the investments
         self.__eval_index = 0
 
-        combination = np.zeros(self.results.n_groups, dtype=int)
-
         # add baseline
-        self.objective_function(combination=combination, inv_list=[], nc=nc)
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
-        self.__eval_index += 1
+        hyperopt.fmin(self.objective_function, space, algo, self.max_eval)
 
-        for k, (inv_group, inv_list) in enumerate(inv_by_groups_list):
-            self.progress_text.emit("Evaluating " + inv_group.name + '...')
-
-            combination = np.zeros(self.results.n_groups, dtype=int)
-            combination[k] = 1
-
-            self.objective_function(combination=combination, inv_list=inv_list, nc=nc)
-
-            # increase evaluations
-            self.__eval_index += 1
-
-            self.progress_signal.emit((k + 1) / len(inv_by_groups_list) * 100.0)
         self.progress_text.emit("Done!")
         self.progress_signal.emit(0.0)
 
@@ -180,8 +185,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         if self.method == InvestmentEvaluationMethod.Independent:
             self.independent_evaluation()
 
-        elif self.method == InvestmentEvaluationMethod.MVRSM:
-            self.optimized_evaluation()
+        elif self.method == InvestmentEvaluationMethod.Hyperopt:
+            self.optimized_evaluation_hyperopt()
 
         else:
             raise Exception('Unsupported method')

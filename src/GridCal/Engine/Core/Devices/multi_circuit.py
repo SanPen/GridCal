@@ -682,6 +682,24 @@ class MultiCircuit:
 
         return res
 
+    def get_investmenst_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
+        """
+        Get a dictionary of investments goups and their
+        :return: Dict[investment group index] = list of investments
+        """
+        d = {e: idx for idx, e in enumerate(self.investments_groups)}
+
+        res = dict()
+        for inv in self.investments:
+            inv_group_idx = d.get(inv.group, None)
+            inv_list = res.get(inv_group_idx, None)
+            if inv_list is None:
+                res[inv_group_idx] = [inv]
+            else:
+                inv_list.append(inv)
+
+        return res
+
     def get_investment_groups_names(self) -> List[str]:
         """
 

@@ -90,7 +90,7 @@ class InvestmentEvaluationMethod(Enum):
     Investment evaluation methods
     """
     Independent = "Independent"
-    MVRSM = "MVRSM"
+    Hyperopt = "Hyperopt"
 
     def __str__(self):
         return self.value
