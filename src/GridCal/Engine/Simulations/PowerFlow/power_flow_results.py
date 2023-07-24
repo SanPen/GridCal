@@ -17,6 +17,8 @@
 
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
+import matplotlib.colors as plt_colors
 from typing import Union
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -142,6 +144,9 @@ class PowerFlowResults(ResultsTemplate):
                     ResultTypes.LossesPerArea,
                     ResultTypes.LossesPercentPerArea,
                     ResultTypes.LossesPerGenPerArea
+                ],
+                ResultTypes.SpecialPlots: [
+                    ResultTypes.BusVoltagePolarPlot
                 ]
             },
             data_variables=[
@@ -379,176 +384,196 @@ class PowerFlowResults(ResultsTemplate):
 
         if result_type == ResultTypes.BusVoltageModule:
             labels = self.bus_names
-            y = np.abs(self.voltage)
+            data = np.abs(self.voltage)
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BusVoltageAngle:
             labels = self.bus_names
-            y = np.angle(self.voltage, deg=True)
+            data = np.angle(self.voltage, deg=True)
             y_label = '(deg)'
             title = result_type.value[0]
 
+        elif result_type == ResultTypes.BusVoltagePolarPlot:
+            labels = self.bus_names
+            columns = ['Voltage module', 'Voltage angle (deg)']
+            vm = np.abs(self.voltage)
+            va = np.angle(self.voltage, deg=True)
+            va_rad = np.angle(self.voltage, deg=False)
+            data = np.c_[vm, va]
+            y_label = ''
+            title = result_type.value[0]
+
+            plt.ion()
+            color_norm = plt_colors.LogNorm()
+            fig = plt.figure(figsize=(8, 6))
+            ax3 = plt.subplot(1, 1, 1, projection='polar')
+            sc3 = ax3.scatter(va_rad, vm, c=vm, norm=color_norm)
+            # plt.colorbar(sc3, fraction=0.05, label='Objective function')
+            fig.suptitle(result_type.value[0])
+            plt.tight_layout()
+            plt.show()
+
         elif result_type == ResultTypes.BusActivePower:
             labels = self.bus_names
-            y = self.Sbus.real
+            data = self.Sbus.real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BusReactivePower:
             labels = self.bus_names
-            y = self.Sbus.imag
+            data = self.Sbus.imag
             y_label = '(MVAr)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BusVoltagePolar:
             labels = self.bus_names
-            y = self.voltage
+            data = self.voltage
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
-            y = self.Sf
+            data = self.Sf
             y_label = '(MVA)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
-            y = self.Sf.real
+            data = self.Sf.real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
-            y = self.Sf.imag
+            data = self.Sf.imag
             y_label = '(MVAr)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActivePowerTo:
             labels = self.branch_names
-            y = self.St.real
+            data = self.St.real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactivePowerTo:
             labels = self.branch_names
-            y = self.St.imag
+            data = self.St.imag
             y_label = '(MVAr)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchCurrent:
             labels = self.branch_names
-            y = self.If
+            data = self.If
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveCurrentFrom:
             labels = self.branch_names
-            y = self.If.real
+            data = self.If.real
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveCurrentFrom:
             labels = self.branch_names
-            y = self.If.imag
+            data = self.If.imag
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveCurrentTo:
             labels = self.branch_names
-            y = self.It.real
+            data = self.It.real
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveCurrentTo:
             labels = self.branch_names
-            y = self.It.imag
+            data = self.It.imag
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
-            y = np.abs(self.loading) * 100
+            data = np.abs(self.loading) * 100
             y_label = '(%)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLosses:
             labels = self.branch_names
-            y = self.losses
+            data = self.losses
             y_label = '(MVA)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveLosses:
             labels = self.branch_names
-            y = self.losses.real
+            data = self.losses.real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveLosses:
             labels = self.branch_names
-            y = self.losses.imag
+            data = self.losses.imag
             y_label = '(MVAr)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveLossesPercentage:
             labels = self.branch_names
-            y = np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0
+            data = np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0
             y_label = '(%)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchVoltage:
             labels = self.branch_names
-            y = np.abs(self.Vbranch)
+            data = np.abs(self.Vbranch)
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchAngles:
             labels = self.branch_names
-            y = np.angle(self.Vbranch, deg=True)
+            data = np.angle(self.Vbranch, deg=True)
             y_label = '(deg)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchTapModule:
             labels = self.branch_names
-            y = self.tap_module
+            data = self.tap_module
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchTapAngle:
             labels = self.branch_names
-            y = self.tap_angle
+            data = self.tap_angle
             y_label = '(rad)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchBeq:
             labels = self.branch_names
-            y = self.Beq
+            data = self.Beq
             y_label = '(p.u.)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcLosses:
             labels = self.hvdc_names
-            y = self.hvdc_losses
+            data = self.hvdc_losses
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerFrom:
             labels = self.hvdc_names
-            y = self.hvdc_Pf
+            data = self.hvdc_Pf
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerTo:
             labels = self.hvdc_names
-            y = self.hvdc_Pt
+            data = self.hvdc_Pt
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.InterAreaExchange:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_inter_area_flows(area_names=self.area_names,
+            data = self.get_inter_area_flows(area_names=self.area_names,
                                           F=self.F,
                                           T=self.T,
                                           Sf=self.Sf,
@@ -567,7 +592,7 @@ class PowerFlowResults(ResultsTemplate):
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
             Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
-            y = Pl / (Pf + 1e-20) * 100.0
+            data = Pl / (Pf + 1e-20) * 100.0
             y_label = '(%)'
             title = result_type.value[0]
 
@@ -580,9 +605,9 @@ class PowerFlowResults(ResultsTemplate):
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
             Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
-            y = np.zeros(len(self.area_names))
+            data = np.zeros(len(self.area_names))
             for i in range(len(self.area_names)):
-                y[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
+                data[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
 
             y_label = '(%)'
             title = result_type.value[0]
@@ -590,8 +615,8 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.LossesPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            data = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -599,8 +624,8 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            data = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
+            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -609,7 +634,7 @@ class PowerFlowResults(ResultsTemplate):
             raise Exception('Unsupported result type: ' + str(result_type))
 
         # assemble model
-        mdl = ResultsTable(data=y, index=labels, columns=columns,
+        mdl = ResultsTable(data=data, index=labels, columns=columns,
                            title=title, ylabel=y_label, units=y_label)
         return mdl
 

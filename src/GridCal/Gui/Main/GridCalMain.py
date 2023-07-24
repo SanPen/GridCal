@@ -227,6 +227,13 @@ class MainGUI(QMainWindow):
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
+        # investment evaluation methods
+        self.investment_evaluation_method_dict = OrderedDict()
+        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
+        lst = list(self.investment_evaluation_method_dict.keys())
+        self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
+
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
 
@@ -4933,7 +4940,16 @@ class MainGUI(QMainWindow):
 
                 if not self.session.is_this_running(sim.SimulationTypes.InvestmestsEvaluation_run):
 
-                    drv = sim.InvestmentsEvaluationDriver(grid=self.circuit)
+                    # evaluation method
+                    method = self.investment_evaluation_method_dict[self.ui.investment_evaluation_method_ComboBox.currentText()]
+
+                    # maximum number of function evalñuations as a factor of the number of investments
+                    max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(self.circuit.investments_groups)
+
+                    drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
+                                                          method=method,
+                                                          max_eval=max_eval,
+                                                          pf_options=self.get_selected_power_flow_options())
 
                     self.session.run(drv,
                                      post_func=self.post_run_investments_evaluation,
@@ -7274,6 +7290,10 @@ class MainGUI(QMainWindow):
                 "node_grouping": {
                     "sigma": self.ui.node_distances_sigma_doubleSpinBox,
                     "n_elements": self.ui.node_distances_elements_spinBox,
+                },
+                "investments_evaluation": {
+                    "investment_evaluation_method": self.ui.investment_evaluation_method_ComboBox,
+                    "max_investments_evluation_number": self.ui.max_investments_evluation_number_spinBox,
                 }
             },
             "linear": {
@@ -7448,7 +7468,7 @@ class MainGUI(QMainWindow):
         struct = self.get_config_structure()
         data_to_struct(data_=data, struct_=struct)
 
-    def load_gui_config(self):
+    def load_gui_config(self) -> None:
         """
         Load GUI configuration from the local user folder
         """

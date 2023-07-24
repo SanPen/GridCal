@@ -85,6 +85,27 @@ class ExternalGridMode(Enum):
             return s
 
 
+class InvestmentEvaluationMethod(Enum):
+    """
+    Investment evaluation methods
+    """
+    Independent = "Independent"
+    MVRSM = "MVRSM"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return InvestmentEvaluationMethod[s]
+        except KeyError:
+            return s
+
+
 class BranchImpedanceMode(Enum):
     """
     Enumeration of branch impedance modes

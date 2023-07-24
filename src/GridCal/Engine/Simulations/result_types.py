@@ -72,7 +72,7 @@ class ResultTypes(Enum):
     BranchLossesStd = 'Losses std', DeviceType.BranchDevice
     BranchLossesCDF = 'Losses CDF', DeviceType.BranchDevice
 
-    # OPF
+    # PF
     BusVoltageModule = 'V: Voltage module', DeviceType.BusDevice
     BusVoltageAngle = 'θ: Voltage angle', DeviceType.BusDevice
     BusPower = 'Bus power', DeviceType.BusDevice
@@ -81,6 +81,7 @@ class ResultTypes(Enum):
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
     GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
     GeneratorPower = 'Generator power', DeviceType.GeneratorDevice
+    BusVoltagePolarPlot = 'Voltage plot', DeviceType.BusDevice
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice
@@ -232,6 +233,7 @@ class ResultTypes(Enum):
     SeriesResults = 'Series', DeviceType.NoDevice
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
     NTCResults = 'NTC', DeviceType.NoDevice
+    SpecialPlots = 'Special plots', DeviceType.NoDevice
 
     GeneratorResults = 'Generators', DeviceType.GeneratorDevice
     LoadResults = 'Loads', DeviceType.LoadDevice
@@ -239,6 +241,8 @@ class ResultTypes(Enum):
 
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report', DeviceType.NoDevice
+    InvestmentsParetoPlot = 'Pareto plot', DeviceType.NoDevice
+    InvestmentsIterationsPlot = 'Itertions plot', DeviceType.NoDevice
 
     def __str__(self):
         return self.value[0]

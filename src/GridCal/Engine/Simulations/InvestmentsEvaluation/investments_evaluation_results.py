@@ -16,26 +16,29 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
-from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from matplotlib import pyplot as plt
+import matplotlib.colors as plt_colors
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import Vec
+from GridCal.Engine.basic_structures import Vec, IntVec, StrVec
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
     tpe = 'Investments Evaluation Results'
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit, max_eval: int):
         """
         Construct the analysis
         :param grid: MultiCircuit
+        :param max_eval: maximum number of evaluations
         """
         available_results = {
-                             ResultTypes.ReportsResults: [ResultTypes.InvestmentsReportResults, ]
-                            }
+            ResultTypes.ReportsResults: [ResultTypes.InvestmentsReportResults, ],
+            ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
+                                       ResultTypes.InvestmentsIterationsPlot]
+        }
 
         ResultsTemplate.__init__(self,
                                  name='Investments Evaluation',
@@ -44,26 +47,38 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         self.grid = grid
         self.n_groups = len(grid.investments_groups)
+        self.max_eval = max_eval
 
-        self._capex: Vec = np.zeros(self.n_groups, dtype=float)
-        self._opex: Vec = np.zeros(self.n_groups, dtype=float)
-        self._losses: Vec = np.zeros(self.n_groups, dtype=float)
-        self._f_obj: Vec = np.zeros(self.n_groups, dtype=float)
+        self._combinations: IntVec = np.zeros((max_eval, self.n_groups), dtype=int)
+        self._capex: Vec = np.zeros(max_eval, dtype=float)
+        self._opex: Vec = np.zeros(max_eval, dtype=float)
+        self._losses: Vec = np.zeros(max_eval, dtype=float)
+        self._f_obj: Vec = np.zeros(max_eval, dtype=float)
+        self._index_names: Vec = np.zeros(max_eval, dtype=object)
 
-    def set_at(self, i, capex, opex, losses, objective_function):
+    def get_index(self) -> StrVec:
+        """
+        Return index names
+        """
+        return self._index_names
+
+    def set_at(self, eval_idx, capex, opex, losses, objective_function, combination: IntVec, index_name: str) -> None:
         """
         Set the results at an investment group
-        :param i: investment group index
+        :param eval_idx: evaluation index
         :param capex:
         :param opex:
         :param losses:
         :param objective_function:
-        :return:
+        :param combination: vector of size (n_investment_groups) with ones in those investments used
+        :param index_name: Name of the evaluation
         """
-        self._capex[i] = capex
-        self._opex[i] = opex
-        self._losses[i] = losses
-        self._f_obj[i] = objective_function
+        self._capex[eval_idx] = capex
+        self._opex[eval_idx] = opex
+        self._losses[eval_idx] = losses
+        self._f_obj[eval_idx] = objective_function
+        self._combinations[eval_idx, :] = combination
+        self._index_names[eval_idx] = index_name
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -74,23 +89,66 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.InvestmentsReportResults:
-            labels = self.grid.get_investment_groups_names()
-            columns = ["CAPEX (M€)", "OPEX (M€/yr)", "Losses (MW)", "Objective function"]
-            y = np.c_[self._capex,
-                      self._opex,
-                      self._losses,
-                      self._f_obj]
+            labels = self._index_names
+            columns = ["CAPEX (M€)", "OPEX (M€/yr)", "Losses (MW)",
+                       "Objective function"] + self.grid.get_investment_groups_names()
+            data = np.c_[self._capex,
+                         self._opex,
+                         self._losses,
+                         self._f_obj,
+                         self._combinations]
             y_label = ''
             title = ''
+
+        elif result_type == ResultTypes.InvestmentsParetoPlot:
+            labels = self._index_names
+            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
+            x = self._capex + self._opex
+            y = self._f_obj
+            data = np.c_[x, y]
+            y_label = ''
+            title = ''
+
+            plt.ion()
+            color_norm = plt_colors.LogNorm()
+            fig = plt.figure(figsize=(8, 6))
+            ax3 = plt.subplot(1, 1, 1)
+            sc3 = ax3.scatter(x, y, c=y, norm=color_norm)
+            ax3.set_xlabel('Investment cost (M€)')
+            ax3.set_ylabel('Total cost of losses (M€)')
+            plt.colorbar(sc3, fraction=0.05, label='Objective function')
+            fig.suptitle(result_type.value[0])
+            plt.tight_layout()
+            plt.show()
+
+        elif result_type == ResultTypes.InvestmentsIterationsPlot:
+            labels = self._index_names
+            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
+            x = np.arange(self.max_eval)
+            y = self._f_obj
+            data = np.c_[x, y]
+            y_label = ''
+            title = ''
+
+            plt.ion()
+            fig = plt.figure(figsize=(8, 6))
+            ax3 = plt.subplot(1, 1, 1)
+            ax3.plot(x, y, '.')
+            # plt.plot(iters, self.best_y[0:self.iter], 'r')
+            ax3.set_xlabel('Iteration')
+            ax3.set_ylabel('Objective')
+            fig.suptitle(result_type.value[0])
+            plt.grid()
+            plt.show()
 
         else:
             columns = []
             labels = []
-            y = np.zeros(0)
+            data = np.zeros(0)
             y_label = '(MW)'
             title = ''
 
-        mdl = ResultsTable(data=y,
+        mdl = ResultsTable(data=data,
                            index=np.array(labels),
                            columns=np.array(columns),
                            title=title,
@@ -98,4 +156,3 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                            xlabel='',
                            units=y_label)
         return mdl
-
