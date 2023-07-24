@@ -18,10 +18,9 @@
 import time
 import numpy as np
 from typing import Union
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.basic_structures import Vec
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.helm_contingencies import HelmVariations
 from GridCal.Engine.Simulations.driver_types import SimulationTypes

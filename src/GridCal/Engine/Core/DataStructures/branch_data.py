@@ -51,8 +51,10 @@ class BranchData:
         :param nbus: number of buses
         """
         self.nelm: int = nelm
+        self.nbus: int = nbus
 
         self.names: StrVec = np.empty(self.nelm, dtype=object)
+        self.idtag: StrVec = np.empty(self.nelm, dtype=object)
 
         self.dc: IntVec = np.zeros(self.nelm, dtype=int)
 
@@ -124,9 +126,7 @@ class BranchData:
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
-    def slice(self,
-              elm_idx: IntVec,
-              bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BranchData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -137,6 +137,7 @@ class BranchData:
         data = BranchData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
 
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
@@ -196,6 +197,78 @@ class BranchData:
         data.overload_cost = self.overload_cost[elm_idx]
 
         data.original_idx = elm_idx
+
+        return data
+
+    def copy(self) -> "BranchData":
+        """
+        Get a deep copy of this object
+        :return: new BranchData instance
+        """
+
+        data = BranchData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+
+        data.R = self.R.copy()
+        data.X = self.X.copy()
+        data.G = self.G.copy()
+        data.B = self.B.copy()
+
+        data.R0 = self.R.copy()
+        data.X0 = self.X.copy()
+        data.G0 = self.G.copy()
+        data.B0 = self.B.copy()
+
+        data.R2 = self.R.copy()
+        data.X2 = self.X.copy()
+        data.G2 = self.G.copy()
+        data.B2 = self.B.copy()
+
+        data.k = self.k.copy()
+        data.virtual_tap_f = self.virtual_tap_f.copy()
+        data.virtual_tap_t = self.virtual_tap_t.copy()
+        data.Kdp = self.Kdp.copy()
+        data.Kdp_va = self.Kdp_va.copy()
+        data.dc = self.dc.copy()
+        data.alpha1 = self.alpha1.copy()
+        data.alpha2 = self.alpha2.copy()
+        data.alpha3 = self.alpha3.copy()
+
+        data.conn = self.conn.copy()  # winding connection
+
+        data.control_mode = self.control_mode.copy()
+        data.contingency_enabled = self.contingency_enabled.copy()
+        data.monitor_loading = self.monitor_loading.copy()
+
+        data.active = self.active.copy()
+        data.rates = self.rates.copy()
+        data.contingency_rates = self.contingency_rates.copy()
+        data.tap_module = self.tap_module.copy()
+
+        data.tap_module_min = self.tap_module_min.copy()
+        data.tap_module_max = self.tap_module_max.copy()
+        data.tap_angle = self.tap_angle.copy()
+        data.tap_angle_min = self.tap_angle_min.copy()
+        data.tap_angle_max = self.tap_angle_max.copy()
+        data.Beq = self.Beq.copy()
+        data.G0sw = self.G0sw.copy()
+        data.Pfset = self.Pfset.copy()
+        data.Qfset = self.Qfset.copy()
+        data.Qtset = self.Qtset.copy()
+        data.vf_set = self.vf_set.copy()
+        data.vt_set = self.vt_set.copy()
+
+        data.C_branch_bus_f = self.C_branch_bus_f.copy()
+        data.C_branch_bus_t = self.C_branch_bus_t.copy()
+
+        data.F = get_bus_indices(data.C_branch_bus_f.tocsc())
+        data.T = get_bus_indices(data.C_branch_bus_t.tocsc())
+
+        data.overload_cost = self.overload_cost.copy()
+
+        data.original_idx = self.original_idx.copy()
 
         return data
 

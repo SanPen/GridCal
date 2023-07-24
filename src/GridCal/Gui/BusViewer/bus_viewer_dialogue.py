@@ -1,17 +1,10 @@
-import os
-import string
 import sys
-from random import randint
-from enum import Enum
-import numpy as np
-from numpy.random import default_rng
-import networkx as nx
 from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.GridEditorWidget import GridEditor
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class BusViewerGUI(QMainWindow):

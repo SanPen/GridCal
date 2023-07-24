@@ -15,23 +15,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os.path
-
 from warnings import warn
 import numpy as np
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 import json
-from pathlib import Path
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
-from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import Logger, SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 try:
     import power_grid_model as pgm

@@ -29,6 +29,7 @@ class BusData:
         :param nbus: number of buses
         """
         self.nbus: int = nbus
+        self.idtag: np.ndarray = np.empty(nbus, dtype=object)
         self.names: np.ndarray = np.empty(nbus, dtype=object)
         self.active: np.ndarray = np.ones(nbus, dtype=int)
         self.Vbus: np.ndarray = np.ones(nbus, dtype=complex)
@@ -43,7 +44,7 @@ class BusData:
 
         self.original_idx = np.zeros(nbus, dtype=int)
 
-    def slice(self, elm_idx: IntVec):
+    def slice(self, elm_idx: IntVec) -> "BusData":
         """
         Slice this data structure
         :param elm_idx: array of bus indices
@@ -53,7 +54,7 @@ class BusData:
         data = BusData(nbus=len(elm_idx))
 
         data.names = self.names[elm_idx]
-
+        data.idtag = self.idtag[elm_idx]
         data.active = self.active[elm_idx]
 
         data.Vbus = self.Vbus[elm_idx]
@@ -68,6 +69,33 @@ class BusData:
         data.areas = self.areas[elm_idx]
 
         data.original_idx = elm_idx
+
+        return data
+
+    def copy(self) -> "BusData":
+        """
+        Deep copy of this structure
+        :return: instance of BusData
+        """
+
+        data = BusData(nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+        data.active = self.active.copy()
+
+        data.Vbus = self.Vbus.copy()
+        data.Vmin = self.Vmin.copy()
+        data.Vmax = self.Vmax.copy()
+        data.angle_min = self.angle_min.copy()
+        data.angle_max = self.angle_max.copy()
+
+        data.bus_types = self.bus_types.copy()
+        data.installed_power = self.installed_power.copy()
+        data.is_dc = self.is_dc.copy()
+        data.areas = self.areas.copy()
+
+        data.original_idx = self.original_idx.copy()
 
         return data
 

@@ -19,7 +19,7 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.Core.Devices import DeviceType
 

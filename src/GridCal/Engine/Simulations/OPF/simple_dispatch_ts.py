@@ -21,7 +21,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import Tuple
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import Vec
 
 

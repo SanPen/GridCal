@@ -18,8 +18,8 @@ from typing import Dict, Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode, Vec, CxVec, ExternalGridMode
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import BusMode, BranchImpedanceMode, CxVec, ExternalGridMode
 from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
 import GridCal.Engine.Core.DataStructures as ds
 
@@ -44,6 +44,7 @@ def get_bus_data(circuit: MultiCircuit,
 
         # bus parameters
         bus_data.names[i] = bus.name
+        bus_data.idtag[i] = bus.idtag
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
@@ -99,6 +100,7 @@ def get_load_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         if time_series:
             if opf_results is not None:
@@ -131,6 +133,7 @@ def get_load_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         if time_series:
             if opf_results is not None:
@@ -158,6 +161,7 @@ def get_load_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
@@ -229,6 +233,8 @@ def get_shunt_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
         data.controlled[k] = elm.is_controlled
         data.b_min[k] = elm.Bmin
         data.b_max[k] = elm.Bmax
@@ -283,6 +289,8 @@ def get_generator_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
         data.qmin[k] = elm.Qmin
         data.qmax[k] = elm.Qmax
         data.controllable[k] = elm.is_controlled
@@ -391,6 +399,8 @@ def get_battery_data(circuit: MultiCircuit,
         i = bus_dict[elm.bus]
 
         data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
         data.qmin[k] = elm.Qmin
         data.qmax[k] = elm.Qmax
 
@@ -509,6 +519,7 @@ def get_branch_data(circuit: MultiCircuit,
     for i, elm in enumerate(circuit.lines):
         # generic stuff
         data.names[i] = elm.name
+        data.idtag[i] = elm.idtag
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -568,6 +579,7 @@ def get_branch_data(circuit: MultiCircuit,
         t = bus_dict[elm.bus_to]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
         data.dc[ii] = 1
 
         if time_series:
@@ -611,6 +623,7 @@ def get_branch_data(circuit: MultiCircuit,
         t = bus_dict[elm.bus_to]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -691,6 +704,7 @@ def get_branch_data(circuit: MultiCircuit,
             t = bus_dict[elm.bus_to]
 
             data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
 
             if time_series:
                 data.active[ii] = elm.active_prof[t_idx]
@@ -773,6 +787,7 @@ def get_branch_data(circuit: MultiCircuit,
         t = bus_dict[elm.bus_to]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -871,6 +886,7 @@ def get_branch_data(circuit: MultiCircuit,
         t = bus_dict[elm.bus_to]
 
         data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -937,6 +953,8 @@ def get_hvdc_data(circuit: MultiCircuit,
 
         # hvdc values
         data.names[i] = elm.name
+        data.idtag[i] = elm.idtag
+
         data.dispatchable[i] = int(elm.dispatchable)
         data.F[i] = f
         data.T[i] = t

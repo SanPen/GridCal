@@ -24,6 +24,7 @@ class ShuntData:
     """
     ShuntData
     """
+
     def __init__(self, nelm: int, nbus: int):
         """
         Shunt data arrays
@@ -31,8 +32,10 @@ class ShuntData:
         :param nbus: number of buses
         """
         self.nelm: int = nelm
+        self.nbus: int = nbus
 
         self.names: StrVec = np.empty(nelm, dtype=object)
+        self.idtag: StrVec = np.empty(nelm, dtype=object)
 
         self.active: IntVec = np.zeros(nelm, dtype=bool)
         self.admittance: CxVec = np.zeros(nelm, dtype=complex)
@@ -45,7 +48,7 @@ class ShuntData:
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "ShuntData":
         """
         Slice shunt data by given indices
         :param elm_idx: array of branch indices
@@ -53,12 +56,10 @@ class ShuntData:
         :return: new ShuntData instance
         """
 
-        data = ShuntData(
-            nelm=len(elm_idx),
-            nbus=len(bus_idx),
-        )
+        data = ShuntData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
 
         data.controlled = self.controlled[elm_idx]
         data.b_min = self.b_min[elm_idx]
@@ -70,6 +71,30 @@ class ShuntData:
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
 
         data.original_idx = elm_idx
+
+        return data
+
+    def copy(self) -> "ShuntData":
+        """
+        Get deep copy of this structure
+        :return: new ShuntData instance
+        """
+
+        data = ShuntData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+
+        data.controlled = self.controlled.copy()
+        data.b_min = self.b_min.copy()
+        data.b_max = self.b_max.copy()
+
+        data.active = self.active.copy()
+        data.admittance = self.admittance.copy()
+
+        data.C_bus_elm = self.C_bus_elm.copy()
+
+        data.original_idx = self.original_idx.copy()
 
         return data
 
@@ -118,4 +143,3 @@ class ShuntData:
 
     def __len__(self) -> int:
         return self.nelm
-

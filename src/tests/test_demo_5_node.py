@@ -18,8 +18,7 @@
 import numpy as np
 
 from GridCal.Engine.IO.file_handler import FileSave
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.Devices import Branch
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices import Bus
 from GridCal.Engine.Core.Devices import Generator
 from GridCal.Engine.Core.Devices import Load

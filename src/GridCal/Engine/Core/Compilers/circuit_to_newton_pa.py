@@ -17,17 +17,14 @@
 import os.path
 import numpy as np
 from typing import List, Dict, Union
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
+from GridCal.Engine.basic_structures import IntVec
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.enumerations import TransformerControlType
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
+from GridCal.Engine.basic_structures import SolverType, ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 # from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 # from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
 # from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions

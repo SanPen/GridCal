@@ -19,8 +19,8 @@ import numpy as np
 import numba as nb
 from enum import Enum
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes

@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict, Union, Tuple, Any
-from GridCal.Engine.basic_structures import IntVec, StrMat, StrVec, Vec, CxVec
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from typing import List, Union, Any
+from GridCal.Engine.basic_structures import IntVec, StrMat, StrVec, Vec
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.Devices import ContingencyGroup
 
 import numpy as np

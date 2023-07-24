@@ -21,7 +21,7 @@ from typing import List, AnyStr, Dict
 
 import numpy as np
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.Devices as dev
 

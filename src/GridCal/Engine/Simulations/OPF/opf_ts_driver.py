@@ -21,7 +21,7 @@ import pandas as pd
 import time
 from typing import Union
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts

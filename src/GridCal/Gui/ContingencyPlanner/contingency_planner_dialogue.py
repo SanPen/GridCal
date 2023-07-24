@@ -20,7 +20,7 @@ from typing import List
 
 from GridCal.Gui.ContingencyPlanner.gui import Ui_MainWindow
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_plan import generate_automatic_contingency_plan
 

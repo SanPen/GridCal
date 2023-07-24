@@ -31,11 +31,7 @@ class BatteryData(GeneratorData):
         :param nbus: number of buses
         """
 
-        GeneratorData.__init__(
-            self,
-            nelm=nelm,
-            nbus=nbus,
-        )
+        GeneratorData.__init__(self, nelm=nelm, nbus=nbus)
 
         self.enom: np.ndarray = np.zeros(nelm)
         self.e_min: np.ndarray = np.zeros(nelm)
@@ -47,7 +43,7 @@ class BatteryData(GeneratorData):
         self.charge_efficiency: np.ndarray = np.ones(nelm)
         self.efficiency: np.ndarray = np.ones(nelm)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BatteryData":
         """
         Slice battery data by given indices
         :param elm_idx: array of element indices
@@ -66,5 +62,25 @@ class BatteryData(GeneratorData):
         data.discharge_efficiency = self.discharge_efficiency[elm_idx]
         data.charge_efficiency = self.charge_efficiency[elm_idx]
         data.efficiency = self.efficiency[elm_idx]
+
+        return data
+
+    def copy(self) -> "BatteryData":
+        """
+        Get a deep copy of this object
+        :return: new BatteryData instance
+        """
+
+        data = super().copy()
+
+        data.enom = self.enom.copy()
+        data.e_min = self.e_min.copy()
+        data.e_max = self.e_max.copy()
+        data.min_soc = self.min_soc.copy()
+        data.max_soc = self.max_soc.copy()
+        data.soc_0 = self.soc_0.copy()
+        data.discharge_efficiency = self.discharge_efficiency.copy()
+        data.charge_efficiency = self.charge_efficiency.copy()
+        data.efficiency = self.efficiency.copy()
 
         return data

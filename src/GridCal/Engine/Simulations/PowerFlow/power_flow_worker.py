@@ -24,9 +24,9 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 # from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.area import Area
 from GridCal.Engine.basic_structures import CxVec
@@ -605,7 +605,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 if Sbus_input is None:
                     Sbus = island.Sbus + Shvdc[island.original_bus_idx]
                 else:
-                    Sbus = Sbus_input
+                    Sbus = Sbus_input + Shvdc[island.original_bus_idx]
 
                 # run circuit power flow
                 res = single_island_pf(

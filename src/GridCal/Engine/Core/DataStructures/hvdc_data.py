@@ -37,17 +37,13 @@ class HvdcData:
         self.nelm: int = nelm
 
         self.names: np.ndarray = np.zeros(nelm, dtype=object)
+        self.idtag: np.ndarray = np.zeros(nelm, dtype=object)
 
-        self.angle_droop: np.ndarray = np.zeros(nelm, dtype=float)
-
-        self.control_mode: np.ndarray = np.zeros(nelm, dtype=object)
-
+        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
         self.dispatchable: np.ndarray = np.zeros(nelm, dtype=int)
-
         self.F: np.ndarray = np.zeros(nelm, dtype=int)
         self.T: np.ndarray = np.zeros(nelm, dtype=int)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
         self.rate: np.ndarray = np.zeros(nelm, dtype=float)
         self.contingency_rate: np.ndarray = np.zeros(nelm, dtype=float)
 
@@ -64,6 +60,9 @@ class HvdcData:
         self.Vnf: np.ndarray = np.zeros(nelm, dtype=float)
         self.Vnt: np.ndarray = np.zeros(nelm, dtype=float)
 
+        self.angle_droop: np.ndarray = np.zeros(nelm, dtype=float)
+        self.control_mode: np.ndarray = np.zeros(nelm, dtype=object)
+
         self.Qmin_f: np.ndarray = np.zeros(nelm, dtype=float)
         self.Qmax_f: np.ndarray = np.zeros(nelm, dtype=float)
         self.Qmin_t: np.ndarray = np.zeros(nelm, dtype=float)
@@ -73,6 +72,49 @@ class HvdcData:
                                                          dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
                                                          dtype=int)  # this ons is just for splitting islands
+
+    def copy(self) -> "HvdcData":
+        """
+        Make a deep copy of this structure
+        :return: new HvdcData instance
+        """
+
+        data = HvdcData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+
+        data.active = self.active.copy()
+        data.dispatchable = self.dispatchable.copy()
+        data.F = self.F.copy()
+        data.T = self.T.copy()
+
+        data.rate = self.rate.copy()
+        data.contingency_rate = self.contingency_rate.copy()
+
+        data.r = self.r.copy()
+
+        data.Pset = self.Pset.copy()
+        data.Pt = self.Pt.copy()
+
+        data.Vset_f = self.Vset_f.copy()
+        data.Vset_t = self.Vset_t.copy()
+
+        data.Vnf = self.Vnf.copy()
+        data.Vnt = self.Vnt.copy()
+
+        data.angle_droop = self.angle_droop.copy()
+        data.control_mode = self.control_mode.copy()
+
+        data.Qmin_f = self.Qmin_f.copy()
+        data.Qmax_f = self.Qmax_f.copy()
+        data.Qmin_t = self.Qmin_t.copy()
+        data.Qmax_t = self.Qmax_t.copy()
+
+        data.C_hvdc_bus_f = self.C_hvdc_bus_f.copy()
+        data.C_hvdc_bus_t = self.C_hvdc_bus_t.copy()
+
+        return data
 
     def get_bus_indices_f(self) -> IntVec:
         """

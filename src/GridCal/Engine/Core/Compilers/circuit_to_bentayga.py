@@ -16,16 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
 import numpy as np
-from GridCal.Engine.basic_structures import Logger
 
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
+from GridCal.Engine.basic_structures import SolverType, ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 import GridCal.Engine.basic_structures as bs
 
@@ -561,7 +557,7 @@ class FakeAdmittances:
 
 def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
-    from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+    from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 
     btgCircuit = to_bentayga(circuit, time_series=False)
 

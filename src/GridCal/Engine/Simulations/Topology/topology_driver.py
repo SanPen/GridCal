@@ -24,7 +24,7 @@ from typing import List
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import Normalizer
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults

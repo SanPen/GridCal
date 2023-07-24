@@ -20,7 +20,7 @@ from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, C
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):

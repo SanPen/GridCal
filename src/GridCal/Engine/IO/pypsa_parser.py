@@ -20,7 +20,7 @@ from GridCal.Engine.Core.Devices.Injections.load import Load
 from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Aggregation.country import Country
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 BUS_X_SCALE_FACTOR = 720
 BUS_Y_SCALE_FACTOR = -900

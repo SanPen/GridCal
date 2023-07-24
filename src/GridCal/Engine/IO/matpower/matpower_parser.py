@@ -18,7 +18,7 @@ GridCal
 """
 import numpy as np
 import GridCal.Engine.basic_structures as bs
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.IO.matpower.matpower_branch_definitions as matpower_branches
 import GridCal.Engine.IO.matpower.matpower_bus_definitions as matpower_buses

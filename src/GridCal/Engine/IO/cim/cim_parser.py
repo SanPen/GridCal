@@ -15,13 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-import chardet
-import pandas as pd
 from math import sqrt
-from typing import Set, Dict, List, Tuple
+from typing import Dict
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
 import GridCal.Engine.IO.cim.cim_devices as cimdev
 from GridCal.Engine.IO.cim.cim_circuit import CIMCircuit

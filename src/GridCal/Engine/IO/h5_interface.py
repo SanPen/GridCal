@@ -14,13 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
-import collections
-import h5py
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None, prog_func=None):

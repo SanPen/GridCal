@@ -20,7 +20,7 @@ import chardet
 import re
 from typing import List, AnyStr, Dict, Union
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 

@@ -15,14 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-import numba as nb
 import scipy as sp
 
-from typing import Union, List
-from GridCal.Engine.basic_structures import Logger, Vec, IntVec, CxVec
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.DataStructures.branch_data import BranchData
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from typing import List
+from GridCal.Engine.basic_structures import IntVec, CxVec
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.admittance_matrices import compute_admittances
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
     helm_preparation_dY, HelmPreparation

@@ -18,8 +18,8 @@ import time
 import numpy as np
 from typing import Union, List
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
@@ -30,7 +30,6 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCal.Engine.Simulations.Clustering.clustering import kmeans_sampling
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCal.Engine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
 

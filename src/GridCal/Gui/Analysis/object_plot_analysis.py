@@ -23,7 +23,7 @@ import math
 from PySide6 import QtGui
 
 from GridCal.Engine.basic_structures import LogSeverity
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 

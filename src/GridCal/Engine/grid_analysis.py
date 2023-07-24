@@ -17,7 +17,7 @@
 import numpy as np
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class TimeSeriesResultsAnalysis:

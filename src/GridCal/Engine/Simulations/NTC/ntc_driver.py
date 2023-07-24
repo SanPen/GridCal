@@ -19,9 +19,9 @@
 import numpy as np
 import time
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.NTC.ntc_opf import OpfNTC, get_inter_areas_branches
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha

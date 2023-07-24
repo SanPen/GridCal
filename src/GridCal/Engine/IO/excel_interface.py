@@ -18,10 +18,9 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.IO.pack_unpack import create_data_frames, get_objects_dictionary
-from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
 def check_names(names):

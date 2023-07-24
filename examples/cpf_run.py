@@ -1,7 +1,7 @@
 import os
 from matplotlib import pyplot as plt
 import GridCal.Engine as gce
-from GridCal.Engine.Core.numerical_circuit import compile_numerical_circuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit
 
 fname = os.path.join('/Grids_and_profiles/grids', 'IEEE 14.xlsx')
 # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')

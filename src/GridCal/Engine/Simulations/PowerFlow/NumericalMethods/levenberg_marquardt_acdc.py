@@ -25,8 +25,8 @@ from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
-from GridCal.Engine.basic_structures import Vec, CxVec
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCal.Engine.basic_structures import CxVec
 
 
 def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,

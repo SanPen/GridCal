@@ -32,13 +32,12 @@ from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_
 from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.power_world_parser import PowerWorldParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree, \
-    load_session_driver_objects
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.IO.rawx_parser import rawx_parse, rawx_writer
 from GridCal.Engine.IO.pypsa_parser import parse_netcdf, parse_hdf5
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class FileOpen:

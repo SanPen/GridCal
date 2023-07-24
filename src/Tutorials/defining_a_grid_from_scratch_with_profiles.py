@@ -6,17 +6,13 @@ The added profile is just to demonstrate how to create load profiles properly
 
 Author: Santiago Peñate Vera (September 2018)
 """
-import numpy as np
-import pandas as pd
 from GridCal.Engine import *
-from GridCal.Engine.Core.Devices import Branch, BranchTemplate
 from GridCal.Engine.Core.Devices import Bus
 from GridCal.Engine.Core.Devices import Generator
 from GridCal.Engine.Core.Devices import Load
-from GridCal.Engine.Core.Devices import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 
 

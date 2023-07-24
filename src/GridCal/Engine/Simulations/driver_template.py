@@ -17,10 +17,10 @@
 
 import numpy as np
 from typing import List, Dict, Union
-from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCal.Engine.basic_structures import IntVec, Vec
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
 

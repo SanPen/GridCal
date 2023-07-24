@@ -18,7 +18,7 @@ from itertools import combinations
 import numpy as np
 from typing import List, Tuple
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
 from GridCal.Engine.Core.Devices.editable_device import DeviceType
 

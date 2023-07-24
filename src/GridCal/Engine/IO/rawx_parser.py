@@ -20,7 +20,7 @@ import json
 import numpy as np
 from GridCal.Engine.basic_structures import Logger, CompressedJsonStruct
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.raw_parser import get_psse_transformer_impedances
 
 

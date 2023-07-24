@@ -32,8 +32,10 @@ class LoadData:
         :param nbus: number of buses
         """
         self.nelm: int = nelm
+        self.nbus: int = nbus
 
         self.names: StrVec = np.empty(nelm, dtype=object)
+        self.idtag: StrVec = np.empty(nelm, dtype=object)
 
         self.active: IntVec = np.zeros(nelm, dtype=bool)
         self.S: Vec = np.zeros(nelm, dtype=complex)
@@ -46,7 +48,7 @@ class LoadData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "LoadData":
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
@@ -57,6 +59,7 @@ class LoadData:
         data = LoadData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
 
         data.active = self.active[elm_idx]
         data.S = self.S[elm_idx]
@@ -68,6 +71,30 @@ class LoadData:
         data.cost = self.cost[elm_idx]
 
         data.original_idx = elm_idx
+
+        return data
+
+    def copy(self) -> "LoadData":
+        """
+        Get a deep copy of this structure
+        :return: new LoadData instance
+        """
+
+        data = LoadData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+
+        data.active = self.active.copy()
+        data.S = self.S.copy()
+        data.I = self.I.copy()
+        data.Y = self.Y.copy()
+
+        data.C_bus_elm = self.C_bus_elm.copy()
+
+        data.cost = self.cost.copy()
+
+        data.original_idx = self.original_idx.copy()
 
         return data
 

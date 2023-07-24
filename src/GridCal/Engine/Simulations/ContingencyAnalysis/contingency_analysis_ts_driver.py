@@ -23,7 +23,7 @@ from typing import Union
 
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.basic_structures import IntVec, StrVec
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, \
@@ -33,7 +33,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_resu
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCal.Engine.Simulations.Clustering.clustering_results import ClusteringResults
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_contingencies
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import newton_pa_contingencies
 
 
 @jit(nopython=True, parallel=False, cache=True)

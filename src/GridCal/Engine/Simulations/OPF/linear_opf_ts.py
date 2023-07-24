@@ -25,8 +25,8 @@ import ortools.linear_solver.pywraplp as ort
 
 from GridCal.Engine.basic_structures import ZonalGrouping
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCal.Engine.Core.DataStructures.generator_data import GeneratorData
 from GridCal.Engine.Core.DataStructures.battery_data import BatteryData
 from GridCal.Engine.Core.DataStructures.load_data import LoadData

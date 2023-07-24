@@ -22,7 +22,7 @@ from typing import Union
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 
 
 class PowerFlowTimeSeriesResults(PowerFlowResults):

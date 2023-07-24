@@ -22,7 +22,7 @@ from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
 from GridCal.Engine.Core.Devices import Bus, Generator, Branch, Load, BranchType
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class XmlDictConfig(dict):

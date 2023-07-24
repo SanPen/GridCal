@@ -22,13 +22,13 @@ import scipy.sparse as sp
 from typing import List, Tuple, Dict, Union
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode, Vec, IntVec, CxVec
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 from GridCal.Engine.Core.topology import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
-import GridCal.Engine.Core.Compilers.circuit_to_data2 as gc_compiler2
+import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, ConverterControlType
 import GridCal.Engine.Core.DataStructures as ds
@@ -311,26 +311,26 @@ class NumericalCircuit:
         self.Admittances = None
 
         # Admittance for HELM / AC linear
-        self.Yseries_ = None
-        self.Yshunt_ = None
+        self.Yseries_: sp.csc_matrix = None
+        self.Yshunt_: sp.csc_matrix = None
 
         # Admittances for Fast-Decoupled
-        self.B1_ = None
-        self.B2_ = None
+        self.B1_: sp.csc_matrix = None
+        self.B2_: sp.csc_matrix = None
 
         # Admittances for Linear
-        self.Bbus_ = None
-        self.Bf_ = None
-        self.Btheta_ = None
-        self.Bpqpv_ = None
-        self.Bref_ = None
+        self.Bbus_: sp.csc_matrix = None
+        self.Bf_: sp.csc_matrix = None
+        self.Btheta_: sp.csc_matrix = None
+        self.Bpqpv_: sp.csc_matrix = None
+        self.Bref_: sp.csc_matrix = None
 
-        self.pq_ = None
-        self.pv_ = None
-        self.vd_ = None
-        self.pqpv_ = None
-        self.ac_ = None
-        self.dc_ = None
+        self.pq_: IntVec = None
+        self.pv_: IntVec = None
+        self.vd_: IntVec = None
+        self.pqpv_: IntVec = None
+        self.ac_: IntVec = None
+        self.dc_: IntVec = None
 
     def get_injections(self, normalize=True):
         """
@@ -611,36 +611,91 @@ class NumericalCircuit:
         self.iPfdp_va = np.array(iPfdp_va, dtype=int)
         self.iVscL = np.array(iVscL, dtype=int)
 
+    def copy(self) -> "NumericalCircuit":
+        """
+        Deep copy of ths object
+        :return: NumericalCircuit instance
+        """
+        nc = NumericalCircuit(nbus=self.nbus,
+                              nbr=self.nbr,
+                              nhvdc=self.nhvdc,
+                              nload=self.nload,
+                              ngen=self.ngen,
+                              nbatt=self.nbatt,
+                              nshunt=self.nshunt,
+                              sbase=self.Sbase,
+                              t_idx=self.t_idx)
+
+        nc.bus_data = self.bus_data.copy()
+        nc.branch_data = self.branch_data.copy()
+        nc.hvdc_data = self.hvdc_data.copy()
+        nc.load_data = self.load_data.copy()
+        nc.shunt_data = self.shunt_data.copy()
+        nc.generator_data = self.generator_data.copy()
+        nc.battery_data = self.battery_data.copy()
+        nc.consolidate_information()
+
     def get_branch_df(self):
+        """
+
+        :return:
+        """
         return self.branch_data.to_df()
 
     @property
     def original_bus_idx(self):
+        """
+
+        :return:
+        """
         return self.bus_data.original_idx
 
     @property
     def original_branch_idx(self):
+        """
+
+        :return:
+        """
         return self.branch_data.original_idx
 
     @property
     def original_load_idx(self):
+        """
+
+        :return:
+        """
         return self.load_data.original_idx
 
     @property
     def original_generator_idx(self):
+        """
+
+        :return:
+        """
         return self.generator_data.original_idx
 
     @property
     def original_battery_idx(self):
+        """
+
+        :return:
+        """
         return self.battery_data.original_idx
 
     @property
     def original_shunt_idx(self):
+        """
+
+        :return:
+        """
         return self.shunt_data.original_idx
 
     @property
     def Vbus(self):
+        """
 
+        :return:
+        """
         if self.Vbus_ is None:
             self.Vbus_ = self.bus_data.Vbus
 
@@ -660,7 +715,10 @@ class NumericalCircuit:
 
     @property
     def Ibus(self):
+        """
 
+        :return:
+        """
         if self.Ibus_ is None:
             self.Ibus_ = self.load_data.get_current_injections_per_bus() / self.Sbase
 
@@ -668,7 +726,10 @@ class NumericalCircuit:
 
     @property
     def YLoadBus(self):
+        """
 
+        :return:
+        """
         if self.YloadBus_ is None:
             self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
@@ -676,15 +737,26 @@ class NumericalCircuit:
 
     @property
     def Rates(self):
+        """
+
+        :return:
+        """
         return self.branch_data.rates
 
     @property
     def ContingencyRates(self):
+        """
+
+        :return:
+        """
         return self.branch_data.contingency_rates
 
     @property
     def Qmax_bus(self):
+        """
 
+        :return:
+        """
         if self.Qmax_bus_ is None:
             self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
 
@@ -692,7 +764,10 @@ class NumericalCircuit:
 
     @property
     def Qmin_bus(self):
+        """
 
+        :return:
+        """
         if self.Qmin_bus_ is None:
             self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
 
@@ -700,7 +775,10 @@ class NumericalCircuit:
 
     @property
     def Bmax_bus(self):
+        """
 
+        :return:
+        """
         if self.Bmax_bus_ is None:
             self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
 
@@ -708,7 +786,10 @@ class NumericalCircuit:
 
     @property
     def Bmin_bus(self):
+        """
 
+        :return:
+        """
         if self.Bmin_bus_ is None:
             self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
 
@@ -716,7 +797,10 @@ class NumericalCircuit:
 
     @property
     def Yshunt_from_devices(self):
+        """
 
+        :return:
+        """
         # compute on demand and store
         if self.Yshunt_from_devices_ is None:
             self.Yshunt_from_devices_ = self.shunt_data.get_injections_per_bus() / self.Sbase
@@ -725,54 +809,106 @@ class NumericalCircuit:
 
     @property
     def bus_types(self):
+        """
+
+        :return:
+        """
         return self.bus_data.bus_types
 
     @property
     def bus_installed_power(self):
+        """
+
+        :return:
+        """
         return self.bus_data.installed_power
 
     @property
     def bus_names(self):
+        """
+
+        :return:
+        """
         return self.bus_data.names
 
     @property
     def branch_names(self):
+        """
+
+        :return:
+        """
         return self.branch_data.names
 
     @property
     def rates(self):
+        """
+
+        :return:
+        """
         return self.branch_data.rates
 
     @property
     def contingency_rates(self):
+        """
+
+        :return:
+        """
         return self.branch_data.contingency_rates
 
     @property
     def load_names(self):
+        """
+
+        :return:
+        """
         return self.load_data.names
 
     @property
     def generator_names(self):
+        """
+
+        :return:
+        """
         return self.generator_data.names
 
     @property
     def battery_names(self):
+        """
+
+        :return:
+        """
         return self.battery_data.names
 
     @property
     def hvdc_names(self):
+        """
+
+        :return:
+        """
         return self.hvdc_data.names
 
     @property
     def F(self):
+        """
+
+        :return:
+        """
         return self.branch_data.F
 
     @property
     def T(self):
+        """
+
+        :return:
+        """
         return self.branch_data.T
 
     @property
     def branch_rates(self):
+        """
+
+        :return:
+        """
         return self.branch_data.rates
 
     @property

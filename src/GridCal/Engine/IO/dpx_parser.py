@@ -21,7 +21,7 @@ import chardet
 import numpy as np
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 
 pd.set_option('display.max_rows', 500)

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import GridCal.Engine.Core.Compilers.circuit_to_data2
+import GridCal.Engine.Core.Compilers.circuit_to_data
 # import GridCal.Engine.Core.Compilers.circuit_to_bentayga
 # import GridCal.Engine.Core.Compilers.circuit_to_newton_pa
 # import GridCal.Engine.Core.Compilers.circuit_to_pgm

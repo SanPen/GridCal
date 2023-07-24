@@ -32,8 +32,10 @@ class GeneratorData:
         :param nbus: number of buses
         """
         self.nelm: int = nelm
+        self.nbus: int = nbus
 
         self.names: np.ndarray = np.empty(nelm, dtype=object)
+        self.idtag: np.ndarray = np.empty(nelm, dtype=object)
 
         self.controllable: np.ndarray = np.zeros(nelm, dtype=bool)
         self.installed_p: np.ndarray = np.zeros(nelm, dtype=float)
@@ -85,6 +87,7 @@ class GeneratorData:
         data = GeneratorData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
 
         data.controllable = self.controllable[elm_idx]
         data.installed_p = self.installed_p[elm_idx]
@@ -123,6 +126,57 @@ class GeneratorData:
         data.is_on = self.is_on[elm_idx]
 
         data.original_idx = elm_idx
+
+        return data
+
+    def copy(self):
+        """
+        Get a deep copy of this object
+        :return: new GeneratorData instance
+        """
+
+        data = GeneratorData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+
+        data.controllable = self.controllable.copy()
+        data.installed_p = self.installed_p.copy()
+
+        data.active = self.active.copy()
+        data.p = self.p.copy()
+        data.pf = self.pf.copy()
+        data.v = self.v.copy()
+
+        data.qmin = self.qmin.copy()
+        data.qmax = self.qmax.copy()
+
+        data.C_bus_elm = self.C_bus_elm.copy()
+
+        data.r0 = self.r0.copy()
+        data.r1 = self.r1.copy()
+        data.r2 = self.r2.copy()
+
+        data.x0 = self.x0.copy()
+        data.x1 = self.x1.copy()
+        data.x2 = self.x2.copy()
+
+        data.dispatchable = self.dispatchable.copy()
+        data.pmax = self.pmax.copy()
+        data.pmin = self.pmin.copy()
+
+        data.cost_0 = self.cost_0.copy()
+        data.cost_1 = self.cost_1.copy()
+        data.startup_cost = self.startup_cost.copy()
+        data.availability = self.availability.copy()
+        data.ramp_up = self.ramp_up.copy()
+        data.ramp_down = self.ramp_down.copy()
+        data.min_time_up = self.min_time_up.copy()
+        data.min_time_down = self.min_time_down.copy()
+
+        data.is_on = self.is_on.copy()
+
+        data.original_idx = self.original_idx
 
         return data
 

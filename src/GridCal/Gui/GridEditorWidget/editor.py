@@ -28,7 +28,7 @@ from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView
     QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.Branches.line import Line
 from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine

@@ -23,7 +23,7 @@ from scipy.sparse.linalg import spsolve
 
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 

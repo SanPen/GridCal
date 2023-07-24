@@ -19,10 +19,9 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from enum import Enum
 from typing import List, Tuple
 import numpy as np
-from GridCal.Engine.Core.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCal.Engine.basic_structures import Logger
@@ -32,7 +31,6 @@ try:
 except ModuleNotFoundError:
     print('ORTOOLS not found :(')
 
-import pandas as pd
 from scipy.sparse import csc_matrix
 
 

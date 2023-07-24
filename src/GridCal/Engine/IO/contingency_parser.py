@@ -3,7 +3,7 @@ import json
 from typing import List
 from GridCal.Engine.Core.Devices.Aggregation.contingency import Contingency
 from GridCal.Engine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 def parse_contingencies(data):
