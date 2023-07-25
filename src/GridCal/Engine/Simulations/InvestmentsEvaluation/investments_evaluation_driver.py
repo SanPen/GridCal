@@ -26,6 +26,8 @@ from GridCal.Engine.Core.Devices.Aggregation.investment import Investment
 from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from GridCal.Engine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize
+from GridCal.Engine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
 from GridCal.Engine.basic_structures import IntVec, InvestmentEvaluationMethod
 
 
@@ -86,13 +88,17 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # do something
         res = multi_island_pf_nc(nc=self.nc, options=self.pf_options)
         total_losses = np.sum(res.losses.real)
-        f = total_losses
+        overload_score = res.get_oveload_score(branch_prices=self.nc.branch_data.overload_cost)
+        voltage_score = 0.0
+        f = total_losses + overload_score + voltage_score
 
         # store the results
         self.results.set_at(eval_idx=self.__eval_index,
                             capex=sum([inv.CAPEX for inv in inv_list]),
                             opex=sum([inv.OPEX for inv in inv_list]),
                             losses=total_losses,
+                            overload_score=overload_score,
+                            voltage_score=voltage_score,
                             objective_function=f,
                             combination=combination,
                             index_name="Evaluation {}".format(self.__eval_index))
@@ -127,7 +133,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         dim = len(self.grid.investments_groups)
 
         for k in range(dim):
-
             self.progress_text.emit("Evaluating investment group {}...".format(k))
 
             combination = np.zeros(dim, dtype=int)
@@ -174,6 +179,52 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.progress_text.emit("Done!")
         self.progress_signal.emit(0.0)
 
+    def optimized_evaluation_mvrsm(self) -> None:
+        """
+        Run an optimized investment evaluation without considering multiple evaluation groups at a time
+        """
+
+        # configure MVRSM:
+
+        # number of random evaluations at the beginning
+        rand_evals = round(self.dim * 1.5)
+        lb = np.zeros(self.dim)
+        ub = np.ones(self.dim)
+        rand_search_active_prob = 0.5
+        threshold = 0.001
+        conf_dist = 0.0
+        conf_level = 0.95
+        stop_crit = StochStopCriterion(conf_dist, conf_level)
+        x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
+
+        # compile the snapshot
+        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        self.results = InvestmentsEvaluationResults(grid=self.grid,
+                                                    max_eval=self.max_eval + 1)
+        # disable all status
+        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+
+        # evaluate the investments
+        self.__eval_index = 0
+
+        # add baseline
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        # optimize
+        best_x, inv_scale, model = MVRSM_minimize(obj=self.objective_function,
+                                                  x0=x0,
+                                                  lb=lb,
+                                                  ub=ub,
+                                                  num_int=self.dim,
+                                                  max_evals=self.max_eval,
+                                                  rand_evals=rand_evals,
+                                                  obj_threshold=threshold,
+                                                  stop_crit=stop_crit,
+                                                  rand_search_bias=rand_search_active_prob)
+
+        self.progress_text.emit("Done!")
+        self.progress_signal.emit(0.0)
+
     def run(self):
         """
         run the QThread
@@ -188,6 +239,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         elif self.method == InvestmentEvaluationMethod.Hyperopt:
             self.optimized_evaluation_hyperopt()
 
+        elif self.method == InvestmentEvaluationMethod.MVRSM:
+            self.optimized_evaluation_mvrsm()
+
         else:
             raise Exception('Unsupported method')
 
@@ -195,5 +249,3 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
-
-

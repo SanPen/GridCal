@@ -53,6 +53,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._capex: Vec = np.zeros(max_eval, dtype=float)
         self._opex: Vec = np.zeros(max_eval, dtype=float)
         self._losses: Vec = np.zeros(max_eval, dtype=float)
+        self._overload_score: Vec = np.zeros(max_eval, dtype=float)
+        self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
+        self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
 
@@ -62,13 +65,16 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
         return self._index_names
 
-    def set_at(self, eval_idx, capex, opex, losses, objective_function, combination: IntVec, index_name: str) -> None:
+    def set_at(self, eval_idx, capex, opex, losses, overload_score, voltage_score, objective_function,
+               combination: IntVec, index_name: str) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
         :param capex:
         :param opex:
         :param losses:
+        :param overload_score:
+        :param voltage_score:
         :param objective_function:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
         :param index_name: Name of the evaluation
@@ -76,6 +82,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._capex[eval_idx] = capex
         self._opex[eval_idx] = opex
         self._losses[eval_idx] = losses
+        self._overload_score[eval_idx] = overload_score
+        self._voltage_score[eval_idx] = voltage_score
         self._f_obj[eval_idx] = objective_function
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
@@ -90,11 +98,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         if result_type == ResultTypes.InvestmentsReportResults:
             labels = self._index_names
-            columns = ["CAPEX (M€)", "OPEX (M€/yr)", "Losses (MW)",
+            columns = ["CAPEX (M€)",
+                       "OPEX (M€/yr)",
+                       "Losses (MW)",
+                       "Overload cost (€)",
+                       "Voltage deviations cost (€)",
                        "Objective function"] + self.grid.get_investment_groups_names()
             data = np.c_[self._capex,
                          self._opex,
                          self._losses,
+                         self._overload_score,
+                         self._voltage_score,
                          self._f_obj,
                          self._combinations]
             y_label = ''

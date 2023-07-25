@@ -231,6 +231,7 @@ class MainGUI(QMainWindow):
         self.investment_evaluation_method_dict = OrderedDict()
         self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
         self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Hyperopt.value] = bs.InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -4930,7 +4931,7 @@ class MainGUI(QMainWindow):
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
 
-    def run_investments_evaluation(self):
+    def run_investments_evaluation(self) -> None:
         """
         Run investments evaluation
         """
@@ -4967,7 +4968,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_run_investments_evaluation(self):
+    def post_run_investments_evaluation(self) -> None:
         """
         Post investments evaluation
         """

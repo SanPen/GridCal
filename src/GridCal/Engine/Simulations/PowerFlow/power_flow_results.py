@@ -25,26 +25,24 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.basic_structures import Vec, CxVec, IntVec, StrVec
 
 
 class NumericPowerFlowResults:
 
-    def __init__(
-            self,
-            V,
-            converged,
-            norm_f,
-            Scalc,
-            ma=None,
-            theta=None,
-            Beq=None,
-            Ybus=None,
-            Yf=None,
-            Yt=None,
-            iterations=0,
-            elapsed=0.0,
-            method=None
-    ):
+    def __init__(self,
+                 V: CxVec,
+                 converged: bool,
+                 norm_f: float,
+                 Scalc: CxVec,
+                 ma: Vec = None,
+                 theta: Vec = None,
+                 Beq: Vec = None,
+                 Ybus=None,
+                 Yf=None,
+                 Yt=None,
+                 iterations=0,
+                 elapsed=0.0):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -86,8 +84,7 @@ class PowerFlowResults(ResultsTemplate):
             branch_names: np.ndarray,
             hvdc_names: np.ndarray,
             bus_types: np.ndarray,
-            area_names: Union[np.ndarray, None] = None
-    ):
+            area_names: Union[np.ndarray, None] = None):
         """
         A **PowerFlowResults** object is create as an attribute of the
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
@@ -178,49 +175,49 @@ class PowerFlowResults(ResultsTemplate):
         self.m = m
         self.n_hvdc = n_hvdc
 
-        self.bus_types = bus_types
+        self.bus_types: IntVec = bus_types
 
-        self.bus_names = bus_names
-        self.branch_names = branch_names
-        self.hvdc_names = hvdc_names
+        self.bus_names: StrVec = bus_names
+        self.branch_names: StrVec = branch_names
+        self.hvdc_names: StrVec = hvdc_names
 
         # vars for the inter-area computation
-        self.F = None
-        self.T = None
-        self.hvdc_F = None
-        self.hvdc_T = None
-        self.bus_area_indices = None
-        self.area_names = area_names
+        self.F: IntVec = None
+        self.T: IntVec = None
+        self.hvdc_F: IntVec = None
+        self.hvdc_T: IntVec = None
+        self.bus_area_indices: IntVec = None
+        self.area_names: StrVec = area_names
 
-        self.Sbus = np.zeros(n, dtype=complex)
+        self.Sbus: CxVec = np.zeros(n, dtype=complex)
 
-        self.voltage = np.zeros(n, dtype=complex)
+        self.voltage: CxVec = np.zeros(n, dtype=complex)
 
-        self.Sf = np.zeros(m, dtype=complex)
-        self.St = np.zeros(m, dtype=complex)
+        self.Sf: CxVec = np.zeros(m, dtype=complex)
+        self.St: CxVec = np.zeros(m, dtype=complex)
 
-        self.If = np.zeros(m, dtype=complex)
-        self.It = np.zeros(m, dtype=complex)
+        self.If: CxVec = np.zeros(m, dtype=complex)
+        self.It: CxVec = np.zeros(m, dtype=complex)
 
-        self.tap_module = np.zeros(m, dtype=float)
-        self.tap_angle = np.zeros(m, dtype=float)
-        self.Beq = np.zeros(m, dtype=float)
+        self.tap_module: Vec = np.zeros(m, dtype=float)
+        self.tap_angle: Vec = np.zeros(m, dtype=float)
+        self.Beq: Vec = np.zeros(m, dtype=float)
 
-        self.Vbranch = np.zeros(m, dtype=complex)
+        self.Vbranch: CxVec = np.zeros(m, dtype=complex)
 
-        self.loading = np.zeros(m, dtype=complex)
+        self.loading: CxVec = np.zeros(m, dtype=complex)
 
-        self.losses = np.zeros(m, dtype=complex)
+        self.losses: CxVec = np.zeros(m, dtype=complex)
 
-        self.hvdc_losses = np.zeros(self.n_hvdc)
+        self.hvdc_losses: Vec = np.zeros(self.n_hvdc)
 
-        self.hvdc_Pf = np.zeros(self.n_hvdc)
+        self.hvdc_Pf: Vec = np.zeros(self.n_hvdc)
 
-        self.hvdc_Pt = np.zeros(self.n_hvdc)
+        self.hvdc_Pt: Vec = np.zeros(self.n_hvdc)
 
-        self.hvdc_loading = np.zeros(self.n_hvdc)
+        self.hvdc_loading: Vec = np.zeros(self.n_hvdc)
 
-        self.plot_bars_limit = 100
+        self.plot_bars_limit: int = 100
 
         self.convergence_reports = list()
 
@@ -314,12 +311,10 @@ class PowerFlowResults(ResultsTemplate):
 
         return val
 
-    def apply_from_island(
-            self,
-            results: "PowerFlowResults",
-            b_idx: np.ndarray,
-            br_idx: np.ndarray,
-    ):
+    def apply_from_island(self,
+                          results: "PowerFlowResults",
+                          b_idx: np.ndarray,
+                          br_idx: np.ndarray):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -372,6 +367,17 @@ class PowerFlowResults(ResultsTemplate):
         df = pd.DataFrame(data)
 
         return df
+
+    def get_oveload_score(self, branch_prices: Vec):
+        """
+        Compute the cost of overload
+        :param branch_prices: array of branch prices
+        :return:
+        """
+        ld = np.abs(self.loading)
+        idx = np.where(ld > 1)[0]
+        cost = np.sum(ld[idx] * branch_prices[idx])
+        return cost
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
@@ -574,23 +580,27 @@ class PowerFlowResults(ResultsTemplate):
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
             data = self.get_inter_area_flows(area_names=self.area_names,
-                                          F=self.F,
-                                          T=self.T,
-                                          Sf=self.Sf,
-                                          hvdc_F=self.hvdc_F,
-                                          hvdc_T=self.hvdc_T,
-                                          hvdc_Pf=self.hvdc_Pf,
-                                          bus_area_indices=self.bus_area_indices).real
+                                             F=self.F,
+                                             T=self.T,
+                                             Sf=self.Sf,
+                                             hvdc_F=self.hvdc_F,
+                                             hvdc_T=self.hvdc_T,
+                                             hvdc_Pf=self.hvdc_Pf,
+                                             bus_area_indices=self.bus_area_indices).real
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.LossesPercentPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
+                                                 self.T)
+            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+                                                self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                 self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+                                                self.hvdc_F, self.hvdc_T)
 
             data = Pl / (Pf + 1e-20) * 100.0
             y_label = '(%)'
@@ -602,8 +612,10 @@ class PowerFlowResults(ResultsTemplate):
             gen_bus = self.Sbus.copy().real
             gen_bus[gen_bus < 0] = 0
             Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                 self.F, self.T)
+            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+                                                self.hvdc_F, self.hvdc_T)
 
             data = np.zeros(len(self.area_names))
             for i in range(len(self.area_names)):
@@ -615,8 +627,10 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.LossesPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            data = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            data = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
+                                                   self.F, self.T)
+            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+                                                  self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -624,8 +638,10 @@ class PowerFlowResults(ResultsTemplate):
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            data = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F, self.T)
-            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices, self.hvdc_F, self.hvdc_T)
+            data = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
+                                                   self.T)
+            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+                                                  self.hvdc_F, self.hvdc_T)
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -681,4 +697,3 @@ class PowerFlowResults(ResultsTemplate):
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
         return df_bus, df_branch
-

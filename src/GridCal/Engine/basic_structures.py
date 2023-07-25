@@ -91,6 +91,7 @@ class InvestmentEvaluationMethod(Enum):
     """
     Independent = "Independent"
     Hyperopt = "Hyperopt"
+    MVRSM = "MVRSM"
 
     def __str__(self):
         return self.value
