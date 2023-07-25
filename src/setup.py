@@ -93,7 +93,8 @@ dependencies = ['setuptools>=41.0.1',
                 "pyqtdarktheme",
                 "nptyping",
                 "windpowerlib",
-                "pvlib"
+                "pvlib",
+                "hyperopt"
                 ]
 
 extras_require = {

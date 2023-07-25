@@ -26,3 +26,4 @@ pyqtdarktheme
 nptyping
 windpowerlib
 pvlib
+hyperopt
