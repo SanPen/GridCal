@@ -253,13 +253,14 @@ class ContingencyResultsReport:
         for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
+            b_flow = abs(flows[m])
 
             if c_flow > numerical_circuit.contingency_rates[m]:  # if the contingency flow is greater than the rate ...
 
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],
                          base_uuid=calc_branches[m].idtag,
-                         base_flow=abs(flows[m]),
+                         base_flow=b_flow,
                          base_rating=numerical_circuit.branch_data.rates[m],
                          base_loading=abs(loading[m] * 100.0),
                          contingency_idx=contingency_idx,

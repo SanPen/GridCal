@@ -296,7 +296,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         # get the contingency branch indices
         mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
-        Pbus = numerical_circuit.get_injections(False).real
+        Pbus = numerical_circuit.get_injections(normalize=False).real
 
         # compute the branch Sf in "n"
         if self.options.use_provided_flows:
@@ -339,8 +339,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                         br_idx = branches_dict[cnt.device_idtag]
 
                         if cnt.prop == 'active':
-                            c_flow = flows_n[mon_idx] + linear_analysis.LODF[mon_idx, br_idx] * flows_n[br_idx]
-                            c_loading = c_flow / (numerical_circuit.ContingencyRates[mon_idx] + 1e-9)
+                            c_flow = flows_n + linear_analysis.LODF[:, br_idx] * flows_n[br_idx]
+                            c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
 
                             results.Sf[ic, :] = c_flow  # already in MW
                             results.S[ic, :] = Pbus
