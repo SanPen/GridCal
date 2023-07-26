@@ -20,7 +20,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from typing import List, Union
+from typing import List, Union, Tuple
 import ortools.linear_solver.pywraplp as ort
 
 from GridCal.Engine.basic_structures import ZonalGrouping
@@ -36,7 +36,7 @@ from GridCal.Engine.Core.DataStructures.bus_data import BusData
 from GridCal.Engine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
 import GridCal.ThirdParty.ortools.ortools_extra as pl
 from GridCal.Engine.Core.Devices.enumerations import TransformerControlType, HvdcControlType
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
 
 
 def join(init: str, vals: List[int], sep="_"):
@@ -65,6 +65,37 @@ def get_lp_var_value(x: Union[float, ort.Variable]) -> float:
     else:
         return x
 
+
+def get_contingency_flow_with_filter(
+        multi_contingency: LinearMultiContingency,
+        base_flow: Vec,
+        injections: Union[None, Vec],
+        threshold: float,
+        m: int) -> ort.LinearExpr:
+
+    """
+    Get contingency flow
+    :param multi_contingency: MultiContingency object
+    :param base_flow: Base branch flows (nbranch)
+    :param injections: Bus injections increments (nbus)
+    :param threshold: threshold to filter contingency elements
+    :param m: branch monitor index (int)
+    :return: New flows (nbranch)
+    """
+
+    res = base_flow[m] + 0
+
+    if len(multi_contingency.branch_indices):
+        for i, c in enumerate(multi_contingency.branch_indices):
+            if abs(multi_contingency.lodf_factors[m, i]) >= threshold:
+                res += multi_contingency.lodf_factors[m, i] * base_flow[c]
+
+    if len(multi_contingency.bus_indices):
+        for i, c in enumerate(multi_contingency.bus_indices):
+            if abs(multi_contingency.ptdf_factors[m, i]) >= threshold:
+                res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+
+    return res
 
 class BusVars:
     """
@@ -246,6 +277,8 @@ class BranchVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
+        self.contingency_flow_data: List[Tuple[int, int, ort.Variable]] = list()
+
     def get_values(self, Sbase: float) -> "BranchVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
@@ -265,6 +298,11 @@ class BranchVars:
                 data.flow_constraints_ub[t, i] = get_lp_var_value(self.flow_constraints_ub[t, i])
                 data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
 
+        for i in range(len(self.contingency_flow_data)):
+            m, c, var = self.contingency_flow_data[i]
+            val = get_lp_var_value(var)
+            self.contingency_flow_data[i] = (m, c, val)
+
         # format the arrays aproprietly
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
@@ -276,6 +314,15 @@ class BranchVars:
 
         return data
 
+    def add_contingency_flow(self, m: int, c: int, flow_var: ort.Variable):
+        """
+
+        :param m:
+        :param c:
+        :param flow_var:
+        :return:
+        """
+        self.contingency_flow_data.append((m, c, flow_var))
 
 class HvdcVars:
     """
@@ -906,7 +953,7 @@ def add_linear_node_balance(t_idx: int,
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
-                      time_indices: IntVec,
+                      time_indices: Union[IntVec, None],
                       solver_type: MIPSolvers = MIPSolvers.CBC,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                       skip_generation_limits: bool = False,
@@ -936,7 +983,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param buses_areas_1:
     :param buses_areas_2:
     :param energy_0:
-    :param logger:
+    :param logger: logger instance
     :param progress_text:
     :param progress_func:
     :return:

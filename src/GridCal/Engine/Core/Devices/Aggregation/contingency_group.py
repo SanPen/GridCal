@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
@@ -33,7 +33,7 @@ class ContingencyGroup(EditableDevice):
 
     """
 
-    def __init__(self, idtag=None,  name="ContingencyGroup", category=''):
+    def __init__(self, idtag: Union[str, None] = None,  name="ContingencyGroup", category=''):
         """
         Contingency group
         :param idtag: Unique identifier

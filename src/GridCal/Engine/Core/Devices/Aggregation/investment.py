@@ -92,7 +92,7 @@ class Investment(EditableDevice):
         # self.group.category = val
         pass
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
@@ -102,6 +102,9 @@ class Investment(EditableDevice):
             'id': self.idtag,
             'name': self.name,
             'name_code': self.code,
+            'group': self._group,
+            'device_idtag': self.device_idtag,
             'CAPEX': self.CAPEX,
-            'OPEX': self.OPEX
+            'OPEX': self.OPEX,
+            'comment': self.comment
         }

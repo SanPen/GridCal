@@ -27,6 +27,12 @@ import GridCal.Engine.Core.Devices as dev
 
 @nb.njit()
 def compress_array_numba(value, base):
+    """
+
+    :param value:
+    :param base:
+    :return:
+    """
     data = list()
     indptr = list()
     for i, x in enumerate(value):
@@ -37,6 +43,11 @@ def compress_array_numba(value, base):
 
 
 def get_most_frequent(arr):
+    """
+
+    :param arr:
+    :return:
+    """
     values, counts = np.unique(arr, return_counts=True)
     ind = np.argmax(counts)
     return values[ind]
@@ -1179,12 +1190,24 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
     logger = Logger()
 
     def add_to_dict(d, d2, key):
+        """
+
+        :param d:
+        :param d2:
+        :param key:
+        """
         if key in d.keys():
             d[key].append(d2)
         else:
             d[key] = [d2]
 
     def add_to_dict2(d, d2, key):
+        """
+
+        :param d:
+        :param d2:
+        :param key:
+        """
         if key not in d.keys():
             d[key] = d2
 
@@ -1199,8 +1222,8 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
                 circuit.areas,
                 circuit.countries,
                 circuit.technologies,
-                # circuit.contingency_groups,
-                # circuit.contingencies,
+                circuit.contingency_groups,
+                circuit.contingencies,
                 circuit.investments_groups,
                 circuit.investments]:
 
@@ -1282,7 +1305,7 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
                                           'branch': branch_data}
 
     data = {'version': '3',
-            'review': '1',
+            'review': '2',
             'software': 'GridCal',
             'units': units_dict,
             'devices': elements,

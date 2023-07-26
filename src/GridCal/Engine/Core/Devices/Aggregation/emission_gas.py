@@ -25,7 +25,7 @@ class EmissionGas(EditableDevice):
 
     def __init__(self, name='',
                  code='',
-                 idtag=None,
+                 idtag: Union[str, None] = None,
                  device_type=DeviceType.EmissionGasDevice,
                  cost: float = 0.0,
                  cost_prof: Union[Vec, None] = None):

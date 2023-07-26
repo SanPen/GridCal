@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import numpy as np
-import pandas as pd
+from typing import Union
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -25,7 +24,7 @@ from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceTy
 
 class GenericAreaGroup(EditableDevice):
 
-    def __init__(self, name='', code='', idtag=None, device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
+    def __init__(self, name='', code='', idtag: Union[str, None] = None, device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
         """
 
         :param name:

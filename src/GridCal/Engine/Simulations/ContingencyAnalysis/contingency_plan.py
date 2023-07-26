@@ -21,7 +21,7 @@ from typing import List, Tuple
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
 from GridCal.Engine.Core.Devices.editable_device import DeviceType
-
+import GridCal.Engine.Core.Devices as dev
 
 def enumerate_states_n_k(m: int, k: int = 1):
     """
@@ -151,11 +151,57 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
     return contingencies, groups
 
 
-def generate_automatic_contingency_plan(grid: MultiCircuit, k: int,
-                                        filter_branches_by_voltage: bool = False, vmin=0, vmax=1000,
-                                        branch_types: List[DeviceType] = list(),
-                                        filter_injections_by_power: bool = False, contingency_perc=100.0, pmin=0, pmax=10000,
-                                        injection_types: List[DeviceType] = list()) -> Tuple[List[Contingency], List[ContingencyGroup]]:
+def add_generator_contingencies(
+        generators: List[dev.Generator],
+        pmin: float,
+        pmax: float,
+        contingency_perc: float,
+        filter_injections_by_power: bool):
+    """
+    Create generator contingencies
+    :param generators: Generator list
+    :param pmin: Min power to filter
+    :param pmax: Max power to filter
+    :param contingency_perc: Percentage of power to trigger
+    :param filter_injections_by_power: boolean
+    :return:
+    """
+    contingencies = list()
+    groups = list()
+
+    for i, gen in enumerate(generators):
+
+        if (pmin <= gen.Snom <= pmax) or not filter_injections_by_power:
+
+            group = ContingencyGroup(
+                name=gen.name,
+                category='generator',
+            )
+            contingency = Contingency(
+                device_idtag=gen.idtag,
+                name=gen.name,
+                code=gen.code,
+                prop='%',
+                value=contingency_perc,
+                group=group
+            )
+
+            contingencies.append(contingency)
+            groups.append(group)
+
+    return contingencies, groups
+
+def generate_automatic_contingency_plan(
+        grid: MultiCircuit, k: int,
+        filter_branches_by_voltage: bool = False,
+        vmin: float = 0,
+        vmax: float = 1000,
+        branch_types: List[DeviceType] = list(),
+        filter_injections_by_power: bool = False,
+        contingency_perc=100.0,
+        pmin=0,
+        pmax=10000,
+        injection_types: List[DeviceType] = list()) -> Tuple[List[Contingency], List[ContingencyGroup]]:
     """
 
     :param grid: MultiCircuit instance
@@ -190,5 +236,16 @@ def generate_automatic_contingency_plan(grid: MultiCircuit, k: int,
     else:
         contingencies = list()
         groups = list()
+
+    contingencies_gen, groups_gen = add_generator_contingencies(
+        generators=grid.get_generators(),
+        pmin=pmin,
+        pmax=pmax,
+        contingency_perc=contingency_perc,
+        filter_injections_by_power=filter_injections_by_power,
+    )
+
+    contingencies += contingencies_gen
+    groups += groups_gen
 
     return contingencies, groups

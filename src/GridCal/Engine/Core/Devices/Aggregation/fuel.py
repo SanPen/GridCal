@@ -65,7 +65,8 @@ class Fuel(EditableDevice):
         return data
 
     def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag}
+        data = {'id': self.idtag,
+                'cost': self.cost_prof}
         return data
 
     def get_units_dict(self, version=3):

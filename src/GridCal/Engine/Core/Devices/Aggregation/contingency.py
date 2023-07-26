@@ -68,7 +68,7 @@ class Contingency(EditableDevice):
         self.register(key='group', units='', tpe=DeviceType.ContingencyGroupDevice, definition='Contingency group')
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
@@ -78,7 +78,11 @@ class Contingency(EditableDevice):
             self.graphic_obj.set_label(self._name)
 
     @property
-    def prop(self):
+    def prop(self) -> str:
+        """
+        Property to modify when contingency is triggered out
+        :return:
+        """
         return self._prop
 
     @prop.setter
@@ -87,15 +91,23 @@ class Contingency(EditableDevice):
             self._prop = val
 
     @property
-    def value(self):
+    def value(self) -> float:
+        """
+        Property value to apply when contingency happens
+        :return:
+        """
         return self._value
 
     @value.setter
-    def value(self, val):
+    def value(self, val: float):
         self._value = val
 
     @property
-    def group(self):
+    def group(self) -> ContingencyGroup:
+        """
+        Contingency group
+        :return:
+        """
         return self._group
 
     @group.setter
@@ -104,6 +116,10 @@ class Contingency(EditableDevice):
 
     @property
     def category(self):
+        """
+
+        :return:
+        """
         return self.group.category
 
     @category.setter
@@ -111,7 +127,7 @@ class Contingency(EditableDevice):
         # self.group.category = val
         pass
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
@@ -121,6 +137,7 @@ class Contingency(EditableDevice):
             'id': self.idtag,
             'name': self.name,
             'name_code': self.code,
+            'group': self._group.idtag,
             'prop': self.prop,
             'value': self.value
         }

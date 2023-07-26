@@ -402,7 +402,7 @@ class MultiCircuit:
             self.upfc_devices
         ]
 
-    def get_branch_names_wo_hvdc(self) -> List[str]:
+    def get_branch_names_wo_hvdc(self) -> StrVec:
         """
         Get all branch names without HVDC devices
         :return: list of names
@@ -411,7 +411,7 @@ class MultiCircuit:
         for lst in self.get_branch_lists_wo_hvdc():
             for elm in lst:
                 names.append(elm.name)
-        return names
+        return np.array(names)
 
     def get_branch_lists(self) -> List[Union[
         List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC],
@@ -614,12 +614,12 @@ class MultiCircuit:
         """
         return self.buses
 
-    def get_bus_names(self) -> List[str]:
+    def get_bus_names(self) -> StrVec:
         """
         List of bus names
         :return:
         """
-        return [e.name for e in self.buses]
+        return np.array([e.name for e in self.buses])
 
     def get_branches_wo_hvdc(self) -> List[dev.Branch]:
         """
@@ -819,7 +819,7 @@ class MultiCircuit:
         """
         return len(self.hvdc_lines)
 
-    def get_hvdc_names(self) -> ObjVec:
+    def get_hvdc_names(self) -> StrVec:
         """
 
         :return:
@@ -1614,14 +1614,14 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.ensure_profiles_exist(self.time_profile)
 
-    def get_bus_dict(self):
+    def get_bus_dict(self) -> Dict[str, dev.Bus]:
         """
         Return dictionary of buses
         :return: dictionary of buses {name:object}
         """
         return {b.name: b for b in self.buses}
 
-    def get_bus_index_dict(self):
+    def get_bus_index_dict(self) -> Dict[dev.Bus, int]:
         """
         Return dictionary of buses
         :return: dictionary of buses {name:object}

@@ -15,14 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCal.Engine.Core.Devices.editable_device import DeviceType, GCProp
 from GridCal.Engine.Core.Devices.Aggregation.area import GenericAreaGroup
 
 
 class Country(GenericAreaGroup):
 
-    def __init__(self, name='Country', idtag=None, code='', latitude=0.0, longitude=0.0):
+    def __init__(self, name='Country', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0):
         """
 
         :param name:

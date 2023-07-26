@@ -24,8 +24,52 @@ from scipy.sparse.linalg import spsolve
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
 from GridCal.Engine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
+
+
+class LinearMultiContingency:
+    def __init__(
+            self,
+            branch_indices: IntVec,
+            bus_indices: IntVec,
+            lodf_factors: Mat,
+            ptdf_factors: Mat,
+            injections_factor: Vec):
+        """
+        Linear multi contingency object
+        :param branch_indices: contingency branch indices.
+        :param bus_indices: contingency bus indices.
+        :param lodf_factors: LODF factors applicable (all_branches, contingency branches).
+        :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
+        :param injections_factor: Injection contingency factors (len(bus indices))
+        """
+
+        assert len(bus_indices) == len(injections_factor)
+
+        self.branch_indices: IntVec = branch_indices
+        self.bus_indices: IntVec = bus_indices
+        self.lodf_factors: Mat = lodf_factors
+        self.ptdf_factors: Mat = ptdf_factors
+        self.injections_factor: Vec = injections_factor
+
+    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec]):
+        """
+        Get contingency flows
+        :param base_flow: Base branch flows (nbranch)
+        :param injections: Bus injections increments (nbus)
+        :return: New flows (nbranch)
+        """
+        res = base_flow.copy()
+
+        if len(self.branch_indices):
+            res += self.lodf_factors @ base_flow[self.branch_indices]
+
+        if len(self.bus_indices):
+            res += self.ptdf_factors @ (self.injections_factor * injections[self.bus_indices])
+
+        return res
 
 
 def compute_acptdf(Ybus: sp.csc_matrix,
@@ -275,8 +319,7 @@ def make_contingency_transfer_limits(
         otdf_max: np.ndarray,
         lodf: np.ndarray,
         flows: np.ndarray,
-        rates: np.ndarray,
-) -> np.ndarray:
+        rates: np.ndarray,) -> np.ndarray:
     """
     Compute the maximum transfer limits after contingency of each branch
     :param otdf_max: Maximum Outage sensitivity of the Branches when transferring power
@@ -306,7 +349,6 @@ def make_contingency_transfer_limits(
 
     return tmc
 
-
 def make_worst_contingency_transfer_limits(tmc):
     nbr = tmc.shape[0]
     wtmc = np.zeros((nbr, 2))
@@ -316,45 +358,90 @@ def make_worst_contingency_transfer_limits(tmc):
 
     return wtmc
 
+class LinearMultiContingencies:
+    def __init__(self, grid: MultiCircuit):
 
-# @nb.njit(cache=True)
-def make_lodfnx(
-        lodf: np.ndarray,
-        contingencies_dict: Dict[str, List[dev.Contingency]],
-        branches_dict: Dict[str, dev.Branch]
-) -> Dict[str, np.ndarray]:
-    """
-    Make the LODF with any contingency combination using the declared contingency objects
-    :param lodf: original LODF matrix (nbr, nbus)
-    :param contingencies_dict: Dictionary of contingency group_objects Dict['key', object]
-    :param branches_dict: Dictionary of branch devices. Dict['key', obj]
-    :return: Dict[str, lodf_nx]
-    """
+        self.grid: MultiCircuit = grid
+        self.contingency_group_dict = grid.get_contingency_group_dict()
+        self.bus_index_dict = grid.get_bus_index_dict()
+        self.branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
+        self.generator_dict = {g.idtag: g for g in grid.get_contingency_devices()}
 
-    lodf_nx = dict()
+        self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    for key, cg in contingencies_dict.items():
+    def update(self, lodf: Mat, ptdf: Mat):
+        """
+        Make the LODF with any contingency combination using the declared contingency objects
+        :param lodf: original LODF matrix (nbr, nbr)
+        :param ptdf: original PTDF matrix (nbr, nbus)
+        :param grid: multicircuit
+        :return: Dict[str, lodf_nx]
+        """
 
-        # Get unique contingency device indices list
-        c_idx = list(sorted(set([branches_dict[c.device_idtag] for c in cg]), reverse=False))
+        self.multi_contingencies = list()
 
-        # Compute LODF vector
-        L = lodf[:, c_idx]  # Take the columns of the LODF associated with the contingencies
+        # for each contingency group
+        for ic, contingency_group in enumerate(self.grid.contingency_groups):
 
-        # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-        M = np.ones((len(c_idx), len(c_idx)))
-        for i in range(len(c_idx)):
-            for j in range(len(c_idx)):
-                if not (i == j):
-                    M[i, j] = -lodf[c_idx[i], c_idx[j]]
+            # get the group's contingencies
+            contingencies = self.contingency_group_dict[contingency_group.idtag]
 
-        # Compute LODF_NX
-        lodf_ = np.matmul(L, np.linalg.inv(M))
+            branch_contingency_indices = list()
+            bus_contingency_indices = list()
+            injections_factors = list()
 
-        # store value
-        lodf_nx[key] = lodf_
+            # apply the contingencies
+            for cnt in contingencies:
 
-    return lodf_nx
+                # search for the contingency in the Branches
+                if cnt.device_idtag in self.branches_dict:
+                    br_idx = self.branches_dict.get(cnt.device_idtag, None)
+
+                    if br_idx is not None:
+                        if cnt.prop == 'active':
+                            branch_contingency_indices.append(br_idx)
+                        else:
+                            print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                    else:
+                        gen = self.generator_dict.get(cnt.device_idtag, None)
+
+                        if gen is not None:
+                            if cnt.prop == '%':
+                                bus_contingency_indices.append(self.bus_index_dict[gen.bus])
+                                injections_factors.append(cnt.value / 100.0)
+                else:
+                    pass
+
+            branch_contingency_indices = np.array(branch_contingency_indices)
+            bus_contingency_indices = np.array(bus_contingency_indices)
+            injections_factors = np.array(injections_factors)
+
+            if len(branch_contingency_indices) > 1:
+                # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
+                M = np.ones((len(branch_contingency_indices), len(branch_contingency_indices)))
+                for i in range(len(branch_contingency_indices)):
+                    for j in range(len(branch_contingency_indices)):
+                        if not (i == j):
+                            M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
+
+                # Compute LODF_NX
+                lodf_ = np.matmul(lodf[:, branch_contingency_indices], np.linalg.inv(M))
+
+            elif len(branch_contingency_indices) == 1:
+                # append values
+                lodf_ = lodf[:, branch_contingency_indices]
+
+            else:
+                lodf_ = np.zeros((lodf.shape[0], 0))
+
+            # append values
+            self.multi_contingencies.append(
+                LinearMultiContingency(
+                    branch_indices=branch_contingency_indices,
+                    bus_indices=bus_contingency_indices,
+                    lodf_factors=lodf_,
+                    ptdf_factors=ptdf[:, bus_contingency_indices],
+                    injections_factor=injections_factors))
 
 
 class LinearAnalysis:
@@ -379,15 +466,12 @@ class LinearAnalysis:
 
         self.PTDF: Union[np.ndarray, None] = None
         self.LODF: Union[np.ndarray, None] = None
-        self.lodf_nx: Union[Dict[str, np.ndarray], None] = None
-        self.__OTDF: Union[np.ndarray, None] = None
 
         self.logger: Logger = Logger()
 
-    def run(self, with_nx=True):
+    def run(self):
         """
         Run the PTDF and LODF
-        :param with_nx: Boolean to compute lodf n-x sensibilities
         """
 
         # self.numerical_circuit = compile_snapshot_circuit(self.grid)
@@ -397,7 +481,6 @@ class LinearAnalysis:
 
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
-        self.lodf_nx: Union[Dict[str, np.ndarray], None] = None
 
         # compute the PTDF per islands
         if len(islands) > 0:
@@ -446,18 +529,6 @@ class LinearAnalysis:
                                   PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 
-    @property
-    def OTDF(self):
-        """
-        Maximum Outage sensitivity of the Branches when transferring power from any bus to the slack
-        LODF: outage transfer distribution factors
-        :return: Maximum LODF matrix (n-branch, n-branch)
-        """
-        if self.__OTDF is None:  # lazy-evaluation
-            self.__OTDF = make_otdf_max(self.PTDF, self.LODF)
-
-        return self.__OTDF
-
     def get_transfer_limits(self, flows: np.ndarray):
         """
         compute the normal transfer limits
@@ -470,20 +541,7 @@ class LinearAnalysis:
             rates=self.numerical_circuit.Rates
         )
 
-    def get_contingency_transfer_limits(self, flows: np.ndarray):
-        """
-        Compute the contingency transfer limits
-        :param flows: base Sf in MW
-        :return: Max transfer limits matrix (n-branch, n-branch)
-        """
-        return make_contingency_transfer_limits(
-            otdf=self.OTDF,
-            ldof=self.LODF,
-            flows=flows,
-            rates=self.numerical_circuit.Rates
-        )
-
-    def get_flows(self, Sbus: np.array):
+    def get_flows(self, Sbus: CxVec) -> Vec:
         """
         Compute the time series branch Sf using the PTDF
         :param Sbus: Power Injections time series array
@@ -495,52 +553,3 @@ class LinearAnalysis:
             return np.dot(self.PTDF, Sbus.real.T).T
         else:
             raise Exception(f'Sbus has wrong dimensions: {Sbus.shape}')
-
-    def make_lodfnx(
-            self,
-            lodf: np.ndarray,
-            contingencies_dict: Dict[str, List[dev.Contingency]],
-            branches_dict: Dict[str, dev.Branch]
-    ) -> Dict[str, np.ndarray]:
-        """
-        Make the LODF with any contingency combination using the declared contingency objects
-        :param lodf: original LODF matrix (nbr, nbus)
-        :param contingencies_dict: Dictionary of contingency group_objects Dict['key', object]
-        :param branches_dict: Dictionary of branch devices. Dict['key', obj]
-        :return: Dict[str, lodf_nx]
-        """
-        return make_lodfnx(
-            lodf=lodf,
-            contingencies_dict=contingencies_dict,
-            branches_dict=branches_dict,
-        )
-
-# Todo: delete this
-# class LinearAnalysisMultiCircuit(LinearAnalysis):
-#
-#     def __init__(
-#             self,
-#             grid: MultiCircuit,
-#             distributed_slack: bool = True,
-#             correct_values: bool = True,
-#     ):
-#         """
-#         Linear Analysis constructor
-#         :param grid: Multicircuit instance
-#         :param distributed_slack: boolean to distribute slack
-#         :param correct_values: boolean to fix out layer values
-#         """
-#
-#         self.grid = grid
-#
-#         self.nc = compile_numerical_circuit_at(
-#             circuit=grid,
-#             t_idx=None
-#         )
-#
-#         LinearAnalysis.__init__(
-#             self,
-#             numerical_circuit=self.nc,
-#             distributed_slack=distributed_slack,
-#             correct_values=correct_values,
-#         )

@@ -60,7 +60,7 @@ class InvestmentsGroup(EditableDevice):
 
         self.register(key='comment', units='', tpe=str, definition='Some comment')
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
