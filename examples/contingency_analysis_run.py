@@ -25,9 +25,13 @@ options_ = ContingencyAnalysisOptions(
     engine=bs.ContingencyEngine.PTDF,
     pf_options=None,
 )
+
+linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
+
 simulation = ContingencyAnalysisDriver(
     grid=main_circuit,
-    options=options_
+    options=options_,
+    linear_multiple_contingencies=linear_multiple_contingencies
 )
 
 simulation.run()

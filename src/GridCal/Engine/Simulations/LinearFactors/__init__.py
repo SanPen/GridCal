@@ -16,5 +16,5 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver, LinearAnalysisTimeSeriesResults
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency, LinearMultiContingencies
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions, LinearAnalysisDriver, LinearAnalysisResults

@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacit
 from GridCal.Engine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, \
     ContingencyAnalysisOptions
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.basic_structures import Logger
 
@@ -156,7 +156,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                     distributed_slack=False,
                     use_provided_flows=True,
                     Pf=pf_drv.results.Sf.real)
-                cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
+                linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
+                cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options,
+                                                    linear_multiple_contingencies=linear_multiple_contingencies)
                 cnt_drv.run()
                 indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
 

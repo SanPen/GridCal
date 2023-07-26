@@ -17,9 +17,7 @@
 
 
 from typing import Union
-from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class GenericAreaGroup(EditableDevice):

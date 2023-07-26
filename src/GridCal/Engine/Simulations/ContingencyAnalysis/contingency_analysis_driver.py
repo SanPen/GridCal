@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
 
 
@@ -40,17 +40,21 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit,
                  options: ContingencyAnalysisOptions,
+                 linear_multiple_contingencies: LinearMultiContingencies,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         ContingencyAnalysisDriver constructor
         :param grid: MultiCircuit Object
         :param options: N-k options
+        :param linear_multiple_contingencies: LinearMultiContingencies instance
         :param engine Calculation engine to use
         """
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         # Options to use
         self.options = options
+
+        self.linear_multiple_contingencies = linear_multiple_contingencies
 
         # N-K results
         self.results = ContingencyAnalysisResults(
@@ -294,6 +298,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                          correct_values=True)
         linear_analysis.run()
 
+        self.linear_multiple_contingencies.update(lodf=linear_analysis.LODF,
+                                                  ptdf=linear_analysis.PTDF)
+
         # get the contingency branch indices
         mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
         Pbus = numerical_circuit.get_injections(normalize=False).real
@@ -313,55 +320,35 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         self.progress_text.emit('Computing loading...')
 
-        # get contingency groups dictionary
-        cg_dict = self.grid.get_contingency_group_dict()
-        branches_dict = self.grid.get_branches_wo_hvdc_dict()
-
         # for each contingency group
-        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+        for ic, multi_contingency in enumerate(self.linear_multiple_contingencies.multi_contingencies):
 
-            # get the group's contingencies
-            contingencies = cg_dict[contingency_group.idtag]
+            if multi_contingency.has_injection_contingencies():
+                injections = numerical_circuit.generator_data.get_injections().real
+            else:
+                injections = None
+
+            c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
+            c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
+
+            results.Sf[ic, :] = c_flow  # already in MW
+            results.S[ic, :] = Pbus
+            results.loading[ic, :] = c_loading
+            results.report.analyze(t=t,
+                                   mon_idx=mon_idx,
+                                   calc_branches=calc_branches,
+                                   numerical_circuit=numerical_circuit,
+                                   flows=flows_n,
+                                   loading=loadings_n,
+                                   contingency_flows=c_flow,
+                                   contingency_loadings=c_loading,
+                                   contingency_idx=ic,
+                                   contingency_group=self.grid.contingency_groups[ic])
 
             # report progress
             if t is None:
-                self.progress_text.emit(f'Contingency group: {contingency_group.name}')
-                self.progress_signal.emit((ic + 1) / len(self.grid.contingency_groups) * 100)
-
-            # apply the contingencies
-            if len(contingencies) == 1:  # can only handle single contingencies ...
-
-                # apply the contingencies
-                for cnt in contingencies:
-
-                    # search for the contingency in the Branches
-                    if cnt.device_idtag in branches_dict:
-                        br_idx = branches_dict[cnt.device_idtag]
-
-                        if cnt.prop == 'active':
-                            c_flow = flows_n + linear_analysis.LODF[:, br_idx] * flows_n[br_idx]
-                            c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
-
-                            results.Sf[ic, :] = c_flow  # already in MW
-                            results.S[ic, :] = Pbus
-                            results.loading[ic, :] = c_loading
-                            results.report.analyze(t=t,
-                                                   mon_idx=mon_idx,
-                                                   calc_branches=calc_branches,
-                                                   numerical_circuit=numerical_circuit,
-                                                   flows=flows_n,
-                                                   loading=loadings_n,
-                                                   contingency_flows=c_flow,
-                                                   contingency_loadings=c_loading,
-                                                   contingency_idx=ic,
-                                                   contingency_group=contingency_group)
-
-                        else:
-                            print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-                    else:
-                        pass
-            else:
-                print("Cannot handle multiple contingencies with the PTDF method")
+                self.progress_text.emit(f'Contingency group: {self.grid.contingency_groups[ic].name}')
+                self.progress_signal.emit((ic + 1) / len(self.linear_multiple_contingencies.multi_contingencies) * 100)
 
         results.lodf = linear_analysis.LODF
 

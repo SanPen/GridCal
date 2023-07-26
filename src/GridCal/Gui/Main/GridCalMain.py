@@ -3267,7 +3267,11 @@ class MainGUI(QMainWindow):
                         engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
                     )
 
-                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
+                    linear_multiple_contingencies = sim.LinearMultiContingencies(grid=self.circuit)
+
+                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
+                                                        options=options,
+                                                        linear_multiple_contingencies=linear_multiple_contingencies)
 
                     self.session.run(drv,
                                      post_func=self.post_contingency_analysis,
