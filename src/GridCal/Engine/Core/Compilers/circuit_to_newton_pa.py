@@ -223,7 +223,9 @@ def add_npa_investments(circuit: MultiCircuit,
                              name=elm.name,
                              time_steps=n_time,
                              device_uuid=elm.device_idtag,
-                             group=groups_dict[elm.group])
+                             group=groups_dict[elm.group],
+                             capex=elm.CAPEX,
+                             opex=elm.OPEX)
 
         npa_circuit.addInvestment(dev)
 
@@ -1119,7 +1121,7 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
                    bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
                    bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
                    bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   bs.MIPSolvers.SCIP: npa.LpSolvers.Scip,
                    bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 
     grouping_dict = {bs.TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
