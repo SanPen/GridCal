@@ -252,37 +252,53 @@ class SurrogateModel:
         return res.x
 
 
-SCALE_THRESHOLD = 1e-8
-
-
-def scale(y, y0):
+def scale(y, y0, scale_threshold=1e-8):
     """
     Scale the objective with respect to the initial objective value,
     causing the optimum to lie below zero. This helps exploration and
     prevents the algorithm from getting stuck at the boundary.
     :param y: the objective function value.
     :param y0: the initial objective function value, `y(x0)`.
+    :param scale_threshold: value under which no scaling is done
     """
     y -= y0
-    if abs(y0) > SCALE_THRESHOLD:
+    if abs(y0) > scale_threshold:
         y /= abs(y0)
     return y
 
 
-def inv_scale(y_scaled, y0):
+def inv_scale(y_scaled, y0, scale_threshold=1e-8):
     """
     Computes the inverse function of `scale(y, y0)`.
     :param y_scaled: the scaled objective function value.
     :param y0: the initial objective function value, `y(x0)`.
+    :param scale_threshold: value under which no scaling is done
     :return: the value `y` such that `scale(y, y0) = y_scaled`.
     """
-    if abs(y0) > SCALE_THRESHOLD:
+    if abs(y0) > scale_threshold:
         y_scaled *= abs(y0)
     return y_scaled + y0
 
 
-def MVRSM_minimize(obj, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_threshold=0.0, args=(),
-                   stop_crit=None, rand_search_bias=0.5, log_times=False):
+def MVRSM_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_threshold=0.0, args=(),
+                   stop_crit=None, rand_search_bias=0.5, log_times=False, scale_threshold=1e-8):
+    """
+
+    :param obj_func: objective function
+    :param x0: Initial solution
+    :param lb: lower bound
+    :param ub: Upper bound
+    :param num_int: number of integer variables
+    :param max_evals: maximum number of evaluations
+    :param rand_evals: number of random initial evaluations
+    :param obj_threshold:
+    :param args: extra arguments to be passed to obj_func appart from x
+    :param stop_crit:
+    :param rand_search_bias:
+    :param log_times:
+    :param scale_threshold: value under which no scaling is done
+    :return: best x, best y, SurrogateModel
+    """
     d = len(x0)  # number of decision variables
     assert num_int == d  # [GTEP] This is a modified version that only supports discrete variables.
 
@@ -301,11 +317,11 @@ def MVRSM_minimize(obj, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_thresh
 
         # Evaluate the objective and scale it.
         x = next_x.astype(float, copy=False)
-        y_unscaled = obj(x.astype(int), *args)  # [GTEP]: added astype(int)
+        y_unscaled = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
         if i == 0:
             y0 = y_unscaled
         # noinspection PyUnboundLocalVariable
-        y = scale(y_unscaled, y0)
+        y = scale(y_unscaled, y0, scale_threshold= 1e-8)
 
         # Keep track of the best found objective value and candidate solution so far.
         if y < best_y:
@@ -389,4 +405,4 @@ def MVRSM_minimize(obj, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_thresh
             # noinspection PyUnboundLocalVariable
             print(f'Iteration time: {time.time() - iter_start}')
 
-    return best_x, inv_scale(best_y, y0), model
+    return best_x, inv_scale(best_y, y0, scale_threshold), model

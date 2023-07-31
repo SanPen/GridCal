@@ -211,7 +211,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
-        best_x, inv_scale, model = MVRSM_minimize(obj=self.objective_function,
+        best_x, inv_scale, model = MVRSM_minimize(obj_func=self.objective_function,
                                                   x0=x0,
                                                   lb=lb,
                                                   ub=ub,
