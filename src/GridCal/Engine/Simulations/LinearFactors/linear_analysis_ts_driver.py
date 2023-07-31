@@ -38,8 +38,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             grid: MultiCircuit,
             options: LinearAnalysisOptions,
             time_indices: IntVec,
-            clustering_results: Union[ClusteringResults, None] = None,
-    ):
+            clustering_results: Union[ClusteringResults, None] = None):
         """
         TimeSeries Analysis constructor
         :param grid: MultiCircuit instance
@@ -58,7 +57,16 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options: "LinearAnalysisOptions" = options
 
         self.drivers: Dict[int, LinearAnalysis] = dict()
-        self.results: Dict[int, LinearAnalysisTimeSeriesResults] = dict()
+
+        self.results = LinearAnalysisTimeSeriesResults(
+            n=self.grid.get_bus_number(),
+            m=self.grid.get_branch_number_wo_hvdc(),
+            time_array=self.grid.time_profile[self.time_indices],
+            bus_names=self.grid.get_bus_names(),
+            bus_types=self.grid.get_bus_default_types(),
+            branch_names=self.grid.get_branches_wo_hvdc_names(),
+            clustering_results=self.clustering_results,
+        )
 
     def run(self):
         """
@@ -71,15 +79,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.progress_text.emit('Computing TS linear analysis...')
 
         self.__cancel__ = False
-
-        self.results = LinearAnalysisTimeSeriesResults(
-            n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
-            time_array=self.grid.time_profile[self.time_indices],
-            bus_names=self.grid.get_bus_names(),
-            bus_types=self.grid.get_bus_default_types(),
-            branch_names=self.grid.get_branches_wo_hvdc_names(),
-        )
 
         # Compute bus Injections
         Pbus = self.grid.get_Pbus_prof()

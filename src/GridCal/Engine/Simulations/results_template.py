@@ -21,7 +21,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
-from GridCal.Engine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat
+from GridCal.Engine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec
 
 
 class ResultsTemplate:
@@ -31,21 +31,35 @@ class ResultsTemplate:
 
     def __init__(
             self,
-            name: str = '',
-            available_results: Union[
-                Dict[ResultTypes, List[ResultTypes]],
-                List[ResultTypes]
-            ] = dict(),
-            data_variables: List[str] = list()):
+            name: str,
+            available_results: Union[Dict[ResultTypes, List[ResultTypes]], List[ResultTypes]],
+            data_variables: List[str],
+            time_aray: Union[DateVec, None],
+            clustering_results: Union["ClusteringResults", None]):
         """
         Results template class
         :param name: Name of the class
         :param available_results: list of stuff to represent the results
         :param data_variables: list of class variables to persist to disk
+        :param clustering_results: ClusteringResults object (optional)
         """
         self.name: str = name
         self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
         self.data_variables: List[str] = data_variables
+        self.time_aray = time_aray
+
+        if clustering_results:
+            self.clustering_results = clustering_results
+            self.using_clusters = True
+            self.time_indices: IntVec = clustering_results.time_indices
+            self.sampled_probabilities: Vec = clustering_results.sampled_probabilities
+            self.original_sample_idx: IntVec = clustering_results.original_sample_idx
+        else:
+            self.clustering_results = None
+            self.using_clusters = False
+            self.time_indices = None
+            self.sampled_probabilities = None
+            self.original_sample_idx = None
 
     def consolidate_after_loading(self):
         """
@@ -229,3 +243,23 @@ class ResultsTemplate:
         :param result_type: ResultTypes
         """
         pass
+
+    def expand_clustered_results(self):
+        """
+        Expand all arrays to their
+        """
+        if self.using_clusters:
+
+            self.time_aray = self.clustering_results.time_array
+
+            for prop, value in self.__dict__.items():
+
+                if isinstance(value, np.ndarray):
+                    if value.ndim == 2:
+
+                        nt = len(self.original_sample_idx)
+                        ncol = value.shape[1]
+                        # arr = np.zeros((nt, ncol), dtype=value.dtype)  # declare an array of matching size
+                        # arr[self.time_indices, :] = value  # copy the values where they match
+                        arr = value[self.original_sample_idx, :]  # expand
+                        setattr(self, prop, arr)  # ovewrite the array

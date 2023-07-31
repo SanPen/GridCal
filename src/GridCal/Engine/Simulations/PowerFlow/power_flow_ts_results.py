@@ -37,8 +37,8 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
             hvdc_names: np.ndarray,
             time_array: np.ndarray,
             bus_types: np.ndarray,
-            area_names: Union[np.ndarray, None] = None
-    ):
+            area_names: Union[np.ndarray, None] = None,
+            clustering_results=None):
         """
         TimeSeriesResults constructor
         :param n: number of buses
@@ -59,7 +59,8 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
             branch_names=branch_names,
             hvdc_names=hvdc_names,
             bus_types=bus_types,
-            area_names=area_names
+            area_names=area_names,
+            clustering_results=clustering_results
         )
 
         self.data_variables.append('time')  # this is missing from the base class
@@ -103,7 +104,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         self.m = m
         self.n = n
 
-        self.time = time_array
+        self.time_array = time_array
 
         self.bus_types = np.zeros(n, dtype=int)
 
@@ -292,7 +293,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
     def get_inter_area_flows(self):
 
         na = len(self.area_names)
-        nt = len(self.time)
+        nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=complex)
 
         for f, t, flow in zip(self.F, self.T, self.Sf.T):
@@ -314,7 +315,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
     def get_branch_values_per_area(self, branch_values: np.ndarray):
 
         na = len(self.area_names)
-        nt = len(self.time)
+        nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=branch_values.dtype)
 
         for f, t, val in zip(self.F, self.T, branch_values.T):
@@ -327,7 +328,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
     def get_hvdc_values_per_area(self, hvdc_values: np.ndarray):
 
         na = len(self.area_names)
-        nt = len(self.time)
+        nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=hvdc_values.dtype)
 
         for f, t, val in zip(self.hvdc_F, self.hvdc_T, hvdc_values.T):
@@ -490,8 +491,8 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
-        if self.time is not None:
-            index = pd.to_datetime(self.time)
+        if self.time_array is not None:
+            index = pd.to_datetime(self.time_array)
         else:
             index = list(range(data.shape[0]))
 

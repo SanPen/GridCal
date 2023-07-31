@@ -82,7 +82,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             nload=self.grid.get_loads_number(),
             nhvdc=self.grid.get_hvdc_number(),
             time=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
-            bus_types=np.ones(self.grid.get_bus_number(), dtype=int))
+            bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
+            clustering_results=clustering_results)
 
         self.all_solved = True
 

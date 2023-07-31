@@ -3225,6 +3225,9 @@ class MainGUI(QMainWindow):
         # if not drv.__cancel__:
         if results is not None:
 
+            # expand the clusters
+            results.expand_clustered_results()
+
             self.ui.progress_label.setText('Colouring PTDF results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
@@ -3370,6 +3373,9 @@ class MainGUI(QMainWindow):
         # update the results in the circuit structures
         # if not drv.__cancel__:
         if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
 
             self.ui.progress_label.setText('Colouring results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -3611,6 +3617,9 @@ class MainGUI(QMainWindow):
         # update the results in the circuit structures
         # if not drv.__cancel__:
         if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
 
             self.ui.progress_label.setText('Colouring ATC time series results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -3866,6 +3875,9 @@ class MainGUI(QMainWindow):
         drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
 
         if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
 
             self.remove_simulation(sim.SimulationTypes.TimeSeries_run)
 
@@ -4293,6 +4305,9 @@ class MainGUI(QMainWindow):
 
         if results is not None:
 
+            # expand the clusters
+            results.expand_clustered_results()
+
             if len(drv.logger) > 0:
                 dlg = LogsDialogue('logger', drv.logger)
                 dlg.exec_()
@@ -4640,6 +4655,9 @@ class MainGUI(QMainWindow):
         drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_TS_run)
 
         if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
 
             if len(drv.logger) > 0:
                 dlg = LogsDialogue('logger', drv.logger)

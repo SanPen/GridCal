@@ -81,7 +81,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                          branch_names=self.grid.get_branch_names_wo_hvdc(),
                                                          hvdc_names=self.grid.get_hvdc_names(),
                                                          bus_types=np.zeros(m),
-                                                         time_array=self.grid.time_profile[time_indices])
+                                                         time_array=self.grid.time_profile[time_indices],
+                                                         clustering_results=self.clustering_results)
 
         # compile dictionaries once for speed
         bus_dict = {bus: i for i, bus in enumerate(self.grid.buses)}
@@ -132,7 +133,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                              branch_names=res.names,
                                              hvdc_names=res.hvdc_names,
                                              bus_types=res.bus_types,
-                                             time_array=self.grid.time_profile)
+                                             time_array=self.grid.time_profile,
+                                             clustering_results=self.clustering_results)
 
         results.voltage = res.V
         results.S = res.S
@@ -167,7 +169,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                              branch_names=res.branch_names,
                                              hvdc_names=res.hvdc_names,
                                              bus_types=res.bus_types,
-                                             time_array=self.grid.time_profile[time_indices])
+                                             time_array=self.grid.time_profile[time_indices],
+                                             clustering_results=self.clustering_results)
 
         results.voltage = res.voltage
         results.S = res.Scalc

@@ -124,7 +124,8 @@ class ShortCircuitResults(ResultsTemplate):
                                                  'hvdc_Pf',
                                                  'hvdc_Pt',
                                                  'hvdc_loading',
-                                                 ]
+                                                 ],
+                                 clustering_results=None
                                  )
 
         self.n = n

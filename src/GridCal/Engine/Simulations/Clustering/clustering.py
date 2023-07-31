@@ -23,12 +23,14 @@ from sklearn.cluster import SpectralClustering
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 
 
-def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:
+def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, IntVec]:
     """
     K-Means clustering, fit to the closest points
     :param x_input: matrix to evaluate (time, params)
     :param n_points: number of clusters
-    :return: indices of the closest to the cluster centers, deviation of the closest representatives
+    :return: indices of the closest to the cluster centers,
+             deviation of the closest representatives,
+             array signifying to which cluster does each simulation belong
     """
     os.environ['OPENBLAS_NUM_THREADS'] = '12'
 
@@ -56,7 +58,7 @@ def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:
     samples = sample_idx[centroid_idx]
     probabilities = [prob_dict[i] for i in samples]
 
-    return centroid_idx, probabilities
+    return centroid_idx, probabilities, sample_idx
 
 
 def kmeans_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec]:

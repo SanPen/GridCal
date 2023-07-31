@@ -47,18 +47,18 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(AvailableTransferCapacityResults([], [], [], []), SimulationTypes.NetTransferCapacity_run),
-           (AvailableTransferCapacityTimeSeriesResults([], [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
+    lst = [(AvailableTransferCapacityResults([], [], [], [], clustering_results=None), SimulationTypes.NetTransferCapacity_run),
+           (AvailableTransferCapacityTimeSeriesResults([], [], [], [], [], clustering_results=None), SimulationTypes.NetTransferCapacityTS_run),
            (ContingencyAnalysisResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysis_run),
-           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], []),
+           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], [], clustering_results=None),
             SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
            (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
-           (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), ()), SimulationTypes.LinearAnalysis_TS_run),
+           (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), (), clustering_results=None), SimulationTypes.LinearAnalysis_TS_run),
            (OptimalPowerFlowResults(bus_names=(), branch_names=(), load_names=(), generator_names=(), battery_names=(),
                                     hvdc_names=(), bus_types=(), area_names=(), F=(), T=(), F_hvdc=(), T_hvdc=(), bus_area_indices=()),
                                     SimulationTypes.OPF_run),
-           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
+           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0, clustering_results=None), SimulationTypes.OPFTimeSeries_run),
            (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
            (PowerFlowTimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
            (ShortCircuitResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.ShortCircuit_run),

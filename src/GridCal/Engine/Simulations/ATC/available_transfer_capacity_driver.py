@@ -329,7 +329,7 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
 
 class AvailableTransferCapacityResults(ResultsTemplate):
 
-    def __init__(self, br_names, bus_names, rates, contingency_rates):
+    def __init__(self, br_names, bus_names, rates, contingency_rates, clustering_results):
         """
 
         :param br_names:
@@ -342,7 +342,9 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                                     ],
                                  data_variables=['report',
                                                  'branch_names',
-                                                 'bus_names'])
+                                                 'bus_names'],
+                                 time_aray=None,
+                                 clustering_results=clustering_results)
 
         self.branch_names = np.array(br_names, dtype=object)
         self.bus_names = bus_names
@@ -544,7 +546,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.results = AvailableTransferCapacityResults(br_names=[],
                                                         bus_names=[],
                                                         rates=[],
-                                                        contingency_rates=[])
+                                                        contingency_rates=[],
+                                                        clustering_results=None)
 
     def run(self):
         """
@@ -585,7 +588,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             br_names=linear.numerical_circuit.branch_names,
             bus_names=linear.numerical_circuit.bus_names,
             rates=nc.Rates,
-            contingency_rates=nc.ContingencyRates
+            contingency_rates=nc.ContingencyRates,
+            clustering_results=None
         )
 
         # compute the branch exchange sensitivity (alpha)

@@ -30,7 +30,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=()):
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=(), clustering_results=None):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -87,7 +87,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'generator_shedding',
                                                  'generator_power',
                                                  'shadow_prices',
-                                                 'converged'])
+                                                 'converged'],
+                                 clustering_results=clustering_results)
 
         self.bus_names = bus_names
         self.branch_names = branch_names

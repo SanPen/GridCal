@@ -39,7 +39,8 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
     AvailableTransferCapacityTimeSeriesResults
     """
 
-    def __init__(self, br_names: StrVec, bus_names: StrVec, rates: Mat, contingency_rates: Mat, time_array: DateVec):
+    def __init__(self, br_names: StrVec, bus_names: StrVec, rates: Mat, contingency_rates: Mat, time_array: DateVec,
+                 clustering_results):
         """
 
         :param br_names:
@@ -59,10 +60,12 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                 'branch_names',
                 'bus_names',
                 'time_array'
-            ]
+            ],
+            time_aray=time_array,
+            clustering_results=clustering_results
         )
 
-        self.time_array = time_array
+        # self.time_array = time_array
         self.branch_names = np.array(br_names, dtype=object)
         self.bus_names = bus_names
         self.rates = rates
@@ -239,7 +242,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             bus_names=self.grid.get_bus_names(),
             rates=self.grid.get_branch_rates_prof_wo_hvdc(),
             contingency_rates=self.grid.get_branch_contingency_rates_prof_wo_hvdc(),
-            time_array=self.grid.time_profile[self.time_indices]
+            time_array=self.grid.time_profile[self.time_indices],
+            clustering_results=clustering_results
         )
 
     def get_steps(self) -> List[str]:

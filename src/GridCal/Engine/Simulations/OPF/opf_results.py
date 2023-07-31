@@ -112,7 +112,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'phase_shift',
                                                  'battery_power',
                                                  'generator_power',
-                                                 'converged'])
+                                                 'converged'],
+                                 clustering_results=None)
 
         n = len(bus_names)
         m = len(branch_names)

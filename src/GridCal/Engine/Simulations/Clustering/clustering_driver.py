@@ -49,14 +49,13 @@ class ClusteringDriver(DriverTemplate):
         self.progress_text.emit('Clustering')
         self.progress_signal.emit(0)
 
-        time_indices, sampled_probabilities = kmeans_sampling(
-            x_input=self.grid.get_Pbus_prof(),
-            n_points=self.options.n_points,
-        )
+        time_indices, sampled_probabilities, sample_idx = kmeans_sampling(x_input=self.grid.get_Pbus_prof(),
+                                                                          n_points=self.options.n_points)
         self.results = ClusteringResults(
             time_indices=time_indices,
             sampled_probabilities=sampled_probabilities,
             time_array=self.grid.time_profile,
+            original_sample_idx=sample_idx
         )
 
         end = time.time()
@@ -70,4 +69,3 @@ class ClusteringDriver(DriverTemplate):
             return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.results.time_indices]
         else:
             return list()
-

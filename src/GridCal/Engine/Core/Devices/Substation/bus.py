@@ -489,7 +489,7 @@ class Bus(EditableDevice):
         if time_series_driver is not None:
             v = np.abs(time_series_driver.results.voltage[:, my_index])
             p = np.abs(time_series_driver.results.S[:, my_index])
-            t = time_series_driver.results.time
+            t = time_series_driver.results.time_array
             pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
             pd.DataFrame(data=p, index=t, columns=['Computed power (p.u.)']).plot(ax=ax_load)
 

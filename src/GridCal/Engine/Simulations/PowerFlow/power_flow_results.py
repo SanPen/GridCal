@@ -84,7 +84,8 @@ class PowerFlowResults(ResultsTemplate):
             branch_names: np.ndarray,
             hvdc_names: np.ndarray,
             bus_types: np.ndarray,
-            area_names: Union[np.ndarray, None] = None):
+            area_names: Union[np.ndarray, None] = None,
+            clustering_results=None):
         """
         A **PowerFlowResults** object is create as an attribute of the
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
@@ -168,7 +169,8 @@ class PowerFlowResults(ResultsTemplate):
                 'hvdc_Pf',
                 'hvdc_Pt',
                 'hvdc_loading'
-            ]
+            ],
+            clustering_results=clustering_results
         )
 
         self.n = n

@@ -127,7 +127,8 @@ class ContinuationPowerFlowResults(ResultsTemplate):
                                                  'loading',
                                                  'losses',
                                                  'Sbus',
-                                                 'bus_types']
+                                                 'bus_types'],
+                                 clustering_results=None
                                  )
 
         self.bus_names = bus_names

@@ -82,7 +82,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ],
             },
 
-            data_variables=[])
+            data_variables=[],
+            clustering_results=None)
 
         self.time_array = time_array
         self.time_indices = time_indices

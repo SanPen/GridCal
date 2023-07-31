@@ -33,7 +33,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             bus_names: StrVec,
             bus_types: IntVec,
             branch_names: StrVec,
-    ):
+            clustering_results):
         """
         Constructor
         :param n: number of buses
@@ -61,7 +61,8 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
                 'Sf',
                 'loading',
                 'losses'
-            ]
+            ],
+            clustering_results=clustering_results
         )
 
         self.nt: int = len(time_array)

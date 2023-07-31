@@ -25,12 +25,13 @@ from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, C
 
 class ClusteringResults(ResultsTemplate):
 
-    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec):
+    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec, original_sample_idx: IntVec):
         """
         Clustering Results constructor
         :param time_indices: number of Branches
         :param sampled_probabilities: number of buses
         :param time_array: Array of time values (all of them, because this array is sliced with time_indices)
+        :param original_sample_idx: Array signifying to which cluster does each original value belong (same size as time_array)
         """
         ResultsTemplate.__init__(
             self,
@@ -41,12 +42,18 @@ class ClusteringResults(ResultsTemplate):
             data_variables=[
                 'time_indices',
                 'sampled_probabilities',
-            ]
+                'time_array',
+                'original_sample_idx'
+            ],
+            clustering_results=None
         )
 
         self.time_indices = time_indices
+
         self.sampled_probabilities = sampled_probabilities
+
         self.time_array = time_array
+        self.original_sample_idx = original_sample_idx
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
@@ -63,8 +70,8 @@ class ClusteringResults(ResultsTemplate):
             title = 'Clustering report'
 
         else:
-            index = []
-            labels = []
+            index = np.array([])
+            labels = np.array([])
             y = np.zeros(0)
             y_label = ''
             title = ''

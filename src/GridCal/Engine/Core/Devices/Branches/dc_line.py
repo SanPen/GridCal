@@ -394,7 +394,7 @@ class DcLine(ParentBranch):
             ax_1 = fig.add_subplot(211)
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
-            x = time_series.results.time
+            x = time_series.results.time_array
 
             # loading
             y = time_series.results.loading * 100.0

@@ -29,7 +29,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
     Contingency analysis time series results
     """
 
-    def __init__(self, n, nbr, nc, time_array, bus_names, branch_names, bus_types, con_names):
+    def __init__(self, n, nbr, nc, time_array, bus_names, branch_names, bus_types, con_names, clustering_results):
         """
         ContingencyAnalysisTimeSeriesResults
         :param n: 
@@ -39,7 +39,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :param bus_names: 
         :param branch_names: 
         :param bus_types: 
-        :param con_names: 
+        :param con_names:
+        :param clustering_results:
         """
 
         ResultsTemplate.__init__(
@@ -63,7 +64,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 'overload_count',
                 'relative_frequency',
                 'max_overload'
-            ]
+            ],
+            clustering_results=clustering_results
         )
 
         nt = len(time_array)

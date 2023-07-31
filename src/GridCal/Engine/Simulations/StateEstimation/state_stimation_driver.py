@@ -110,7 +110,7 @@ class StateEstimationInput:
 
 class StateEstimationResults(PowerFlowResults):
 
-    def __init__(self, n, m, bus_names, branch_names, bus_types):
+    def __init__(self, n, m, bus_names, branch_names, hvdc_names, bus_types):
         """
 
         :param n:
@@ -126,7 +126,7 @@ class StateEstimationResults(PowerFlowResults):
                                   n_hvdc=0,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
-                                  hvdc_names=(),
+                                  hvdc_names=hvdc_names,
                                   bus_types=bus_types)
 
 
@@ -210,6 +210,7 @@ class StateEstimation(DriverTemplate):
                                               m=m,
                                               bus_names=numerical_circuit.bus_names,
                                               branch_names=numerical_circuit.branch_names,
+                                              hvdc_names=numerical_circuit.hvdc_names,
                                               bus_types=numerical_circuit.bus_types)
         # self.se_results.initialize(n, m)
 
