@@ -170,6 +170,7 @@ class PowerFlowResults(ResultsTemplate):
                 'hvdc_Pt',
                 'hvdc_loading'
             ],
+            time_array=None,
             clustering_results=clustering_results
         )
 

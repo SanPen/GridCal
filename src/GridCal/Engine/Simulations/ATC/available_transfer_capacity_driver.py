@@ -343,7 +343,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                  data_variables=['report',
                                                  'branch_names',
                                                  'bus_names'],
-                                 time_aray=None,
+                                 time_array=None,
                                  clustering_results=clustering_results)
 
         self.branch_names = np.array(br_names, dtype=object)

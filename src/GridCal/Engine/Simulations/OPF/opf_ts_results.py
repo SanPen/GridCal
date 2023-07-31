@@ -30,7 +30,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=(), clustering_results=None):
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time_array=None, bus_types=(), clustering_results=None):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -39,7 +39,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param ngen:
         :param nbat:
         :param nload:
-        :param time: Time array (optional)
+        :param time_array: Time array (optional)
         """
         ResultsTemplate.__init__(self,
                                  name='OPF time series',
@@ -88,6 +88,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'generator_power',
                                                  'shadow_prices',
                                                  'converged'],
+                                 time_array=time_array,
                                  clustering_results=clustering_results)
 
         self.bus_names = bus_names
@@ -105,7 +106,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.nt = nt
 
-        self.time = time
+        # self.time_array = time_array
 
         self.voltage = np.zeros((nt, n), dtype=complex)
 
@@ -321,7 +322,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                 if self.contingency_flows_list[i] != 0.0:
                     t, m, c = self.contingency_indices_list[i]
                     y.append((t, m, c,
-                              str(self.time[t]), self.branch_names[m], self.branch_names[c],
+                              str(self.time_array[t]), self.branch_names[m], self.branch_names[c],
                               self.contingency_flows_list[i], self.Sf[t, m].real,
                               self.contingency_flows_list[i] / self.contingency_rates[c, t] * 100,
                               self.Sf[t, m].real / self.rates[m, t] * 100))
@@ -344,8 +345,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             title = ''
             y = np.zeros(0)
 
-        if self.time is not None:
-            index = pd.to_datetime(self.time)
+        if self.time_array is not None:
+            index = pd.to_datetime(self.time_array)
         else:
             index = np.arange(0, y.shape[0], 1)
 

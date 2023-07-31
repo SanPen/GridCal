@@ -44,6 +44,7 @@ class InputsAnalysisResults(ResultsTemplate):
                                  name='Inputs analysis',
                                  available_results=available_results,
                                  data_variables=[],
+                                 time_array=None,
                                  clustering_results=None)
 
         self.grid = grid

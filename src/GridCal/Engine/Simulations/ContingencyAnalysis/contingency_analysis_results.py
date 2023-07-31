@@ -57,6 +57,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 'Sf',
                 'loading'
             ],
+            time_array=None,
             clustering_results=None
         )
 

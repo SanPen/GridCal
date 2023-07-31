@@ -34,7 +34,7 @@ class ResultsTemplate:
             name: str,
             available_results: Union[Dict[ResultTypes, List[ResultTypes]], List[ResultTypes]],
             data_variables: List[str],
-            time_aray: Union[DateVec, None],
+            time_array: Union[DateVec, None],
             clustering_results: Union["ClusteringResults", None]):
         """
         Results template class
@@ -46,7 +46,7 @@ class ResultsTemplate:
         self.name: str = name
         self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
         self.data_variables: List[str] = data_variables
-        self.time_aray = time_aray
+        self.time_array: Union[DateVec, None] = time_array
 
         if clustering_results:
             self.clustering_results = clustering_results
@@ -250,7 +250,7 @@ class ResultsTemplate:
         """
         if self.using_clusters:
 
-            self.time_aray = self.clustering_results.time_array
+            self.time_array = self.clustering_results.time_array
 
             for prop, value in self.__dict__.items():
 

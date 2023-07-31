@@ -61,7 +61,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                 'bus_names',
                 'time_array'
             ],
-            time_aray=time_array,
+            time_array=time_array,
             clustering_results=clustering_results
         )
 

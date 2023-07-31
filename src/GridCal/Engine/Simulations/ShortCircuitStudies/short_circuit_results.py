@@ -125,6 +125,7 @@ class ShortCircuitResults(ResultsTemplate):
                                                  'hvdc_Pt',
                                                  'hvdc_loading',
                                                  ],
+                                 time_array=None,
                                  clustering_results=None
                                  )
 

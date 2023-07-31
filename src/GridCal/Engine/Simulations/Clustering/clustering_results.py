@@ -45,14 +45,15 @@ class ClusteringResults(ResultsTemplate):
                 'time_array',
                 'original_sample_idx'
             ],
-            clustering_results=None
+            clustering_results=None,
+            time_array=time_array
         )
 
         self.time_indices = time_indices
 
         self.sampled_probabilities = sampled_probabilities
 
-        self.time_array = time_array
+        # self.time_array = time_array
         self.original_sample_idx = original_sample_idx
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:

@@ -104,6 +104,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         self.m = m
         self.n = n
 
+        # this is from the template
         self.time_array = time_array
 
         self.bus_types = np.zeros(n, dtype=int)

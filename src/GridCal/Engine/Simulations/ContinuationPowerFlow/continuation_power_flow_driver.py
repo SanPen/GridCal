@@ -128,6 +128,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
                                                  'losses',
                                                  'Sbus',
                                                  'bus_types'],
+                                 time_array=None,
                                  clustering_results=None
                                  )
 

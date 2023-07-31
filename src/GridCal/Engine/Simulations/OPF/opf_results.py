@@ -113,6 +113,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'battery_power',
                                                  'generator_power',
                                                  'converged'],
+                                 time_array=None,
                                  clustering_results=None)
 
         n = len(bus_names)

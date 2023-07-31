@@ -49,6 +49,7 @@ class LinearAnalysisResults(ResultsTemplate):
                                                  'LODF',
                                                  'Sf',
                                                  'loading'],
+                                 time_array=None,
                                  clustering_results=None)
         # number of Branches
         self.n_br = n_br

@@ -40,8 +40,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             loading_threshold_to_report: float = 0.98,
             reversed_sort_loading: bool = True,
             trm: float = 0,
-            ntc_load_rule: float = 100,
-    ):
+            ntc_load_rule: float = 100):
 
         """
 
@@ -81,11 +80,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     ResultTypes.TsContingencyBranches,
                 ],
             },
-
             data_variables=[],
+            time_array=time_array,
             clustering_results=None)
 
-        self.time_array = time_array
+        # self.time_array = time_array
         self.time_indices = time_indices
         self.branch_names = np.array(branch_names, dtype=object)
         self.bus_names = bus_names

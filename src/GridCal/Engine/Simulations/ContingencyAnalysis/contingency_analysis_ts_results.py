@@ -65,6 +65,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 'relative_frequency',
                 'max_overload'
             ],
+            time_array=time_array,
             clustering_results=clustering_results
         )
 
@@ -79,7 +80,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.con_names = con_names
         self.bus_types = bus_types
 
-        self.time_array = time_array
+        # self.time_array = time_array
 
         self.S = np.zeros((nt, n))
 
