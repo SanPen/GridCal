@@ -55,6 +55,8 @@ class CascadingReportElement:
 
 class CascadingResults:
 
+    # TODO: refactor this class
+
     def __init__(self, cascade_type: CascadeType):
         """
         Cascading results constructor
@@ -98,6 +100,8 @@ class CascadingResults:
 
 class Cascading(DriverTemplate):
     tpe = SimulationTypes.Cascade_run
+
+    # TODO: re-make this simulation class
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1,
                  cascade_type_: CascadeType = CascadeType.LatinHypercube, n_lhs_samples_=1000):

@@ -17,7 +17,7 @@
 
 
 import numpy as np
-
+from typing import Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
@@ -256,66 +256,31 @@ class Line(ParentBranch):
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
     def change_base(self, Sbase_old, Sbase_new):
-
+        """
+        Change the inpedance base
+        :param Sbase_old: old base (MVA)
+        :param Sbase_new: new base (MVA)
+        """
         b = Sbase_new / Sbase_old
 
         self.R *= b
         self.X *= b
         self.B *= b
 
-    def get_weight(self):
+    def get_weight(self) -> float:
+        """
+        Get a weight of this line for graph porpuses
+        the weight is the impedance moudule (sqrt(r^2 + x^2))
+        :return: weight value
+        """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def copy(self, bus_dict=None):
-        """
-        Returns a copy of the line
-        @return: A new  with the same content as this
-        """
-
-        if bus_dict is None:
-            f = self.bus_from
-            t = self.bus_to
-        else:
-            f = bus_dict[self.bus_from]
-            t = bus_dict[self.bus_to]
-
-        b = Line(bus_from=f,
-                 bus_to=t,
-                 name=self.name,
-                 r=self.R,
-                 x=self.X,
-                 b=self.B,
-                 rate=self.rate,
-                 active=self.active,
-                 mttf=self.mttf,
-                 mttr=self.mttr,
-                 temp_base=self.temp_base,
-                 temp_oper=self.temp_oper,
-                 alpha=self.alpha,
-                 template=self.template,
-                 opex=self.opex,
-                 capex=self.capex)
-
-        b.measurements = self.measurements
-
-        b.active_prof = self.active_prof
-        b.rate_prof = self.rate_prof
-        b.Cost_prof = self.Cost_prof
-
-        return b
-
-    def apply_template(self, obj, Sbase, logger=Logger()):
+    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float, logger=Logger()):
         """
         Apply a line template to this object
-
-        Arguments:
-
-            **obj**: TransformerType or Tower object
-
-            **Sbase** (float): Nominal power in MVA
-
-            **logger** (list, []): Log list
-
+        :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
+        :param Sbase: Nominal power in MVA
+        :param logger: Logger
         """
 
         if type(obj) is OverheadLineType:
@@ -545,11 +510,19 @@ class Line(ParentBranch):
         return errors
 
     @property
-    def Vf(self):
+    def Vf(self) -> float:
+        """
+        Get the voltage "from" (kV)
+        :return: get the nominal voltage from
+        """
         return self.bus_from.Vnom
 
     @property
-    def Vt(self):
+    def Vt(self) -> float:
+        """
+        Get the voltage "to" (kV)
+        :return: get the nominal voltage to
+        """
         return self.bus_to.Vnom
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:

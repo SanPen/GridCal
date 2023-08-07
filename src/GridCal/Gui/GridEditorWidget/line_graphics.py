@@ -25,237 +25,12 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.line_editor import LineEditor
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
-
-
-class LineEditor(QDialog):
-    """
-    LineEditor
-    """
-
-    def __init__(self, line: Line, Sbase=100, templates=None, current_template=None):
-        """
-        Line Editor constructor
-        :param line: Branch object to update
-        :param Sbase: Base power in MVA
-        """
-        super(LineEditor, self).__init__()
-
-        # keep pointer to the line object
-        self.line = line
-
-        self.Sbase = Sbase
-
-        self.templates = templates
-
-        self.current_template = current_template
-
-        self.selected_template = None
-
-        self.setObjectName("self")
-
-        self.setContextMenuPolicy(Qt.NoContextMenu)
-
-        self.layout = QVBoxLayout(self)
-
-        # ------------------------------------------------------------------------------------------
-        # Set the object values
-        # ------------------------------------------------------------------------------------------
-
-        Vf = self.line.bus_from.Vnom
-        Vt = self.line.bus_to.Vnom
-
-        Zbase = (Vf * Vf) / self.Sbase
-        Ybase = 1 / Zbase
-        length = self.line.length
-
-        if length == 0:
-            length = 1.0
-
-        R = self.line.R * Zbase / length
-        X = self.line.X * Zbase / length
-        B = self.line.B * Ybase / length
-        I = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in kA
-
-        # ------------------------------------------------------------------------------------------
-
-        # catalogue
-        self.catalogue_combo = QComboBox()
-        if self.templates is not None:
-            if len(self.templates) > 0:
-                self.catalogue_combo.setModel(get_list_model(self.templates))
-
-                if self.current_template is not None:
-                    try:
-                        idx = self.templates.index(self.current_template)
-                        self.catalogue_combo.setCurrentIndex(idx)
-
-                        if isinstance(self.current_template, SequenceLineType):
-                            I = self.current_template.rating
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
-
-                        if isinstance(self.current_template, UndergroundLineType):
-                            I = self.current_template.rating
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
-
-                        elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.rating
-                            R = self.current_template.R1
-                            X = self.current_template.X1
-                            B = self.current_template.Bsh1
-
-                    except:
-                        pass
-
-        # load template
-        self.load_template_btn = QPushButton()
-        self.load_template_btn.setText('Load template values')
-        self.load_template_btn.clicked.connect(self.load_template_btn_click)
-
-        # line length
-        self.l_spinner = QDoubleSpinBox()
-        self.l_spinner.setMinimum(0)
-        self.l_spinner.setMaximum(9999999)
-        self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(length)
-
-        # Max current
-        self.i_spinner = QDoubleSpinBox()
-        self.i_spinner.setMinimum(0)
-        self.i_spinner.setMaximum(9999999)
-        self.i_spinner.setDecimals(2)
-        self.i_spinner.setValue(I)
-
-        # R
-        self.r_spinner = QDoubleSpinBox()
-        self.r_spinner.setMinimum(0)
-        self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setDecimals(6)
-        self.r_spinner.setValue(R)
-
-        # X
-        self.x_spinner = QDoubleSpinBox()
-        self.x_spinner.setMinimum(0)
-        self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setDecimals(6)
-        self.x_spinner.setValue(X)
-
-        # B
-        self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # add all to the GUI
-        if templates is not None:
-            self.layout.addWidget(QLabel("Available templates"))
-            self.layout.addWidget(self.catalogue_combo)
-            self.layout.addWidget(self.load_template_btn)
-            self.layout.addWidget(QLabel(""))
-
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
-        self.layout.addWidget(self.l_spinner)
-
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
-        self.layout.addWidget(self.i_spinner)
-
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
-        self.layout.addWidget(self.r_spinner)
-
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
-
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle('Line editor')
-
-    def accept_click(self):
-        """
-        Set the values
-        :return:
-        """
-        length = self.l_spinner.value()
-        I = self.i_spinner.value()
-        R = self.r_spinner.value() * length
-        X = self.x_spinner.value() * length
-        B = self.b_spinner.value() * length
-
-        Vf = self.line.bus_from.Vnom
-        Vt = self.line.bus_to.Vnom
-
-        Zbase = (Vf * Vf) / self.Sbase
-        Ybase = 1.0 / Zbase
-
-        self.line.R = np.round(R / Zbase, 6)
-        self.line.X = np.round(X / Zbase, 6)
-        self.line.B = np.round(B / Ybase, 6)
-        self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV
-        self.line.length = length
-
-        if self.selected_template is not None:
-            self.line.template = self.selected_template
-
-        self.accept()
-
-    def load_template(self, template):
-        """
-
-        :param template:
-        :return:
-        """
-        if isinstance(template, SequenceLineType):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R)
-            self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
-
-            self.selected_template = template
-
-        elif isinstance(template, UndergroundLineType):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R)
-            self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
-
-            self.selected_template = template
-
-        elif isinstance(template, OverheadLineType):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R1)
-            self.x_spinner.setValue(template.X1)
-            self.b_spinner.setValue(template.Bsh1)
-
-            self.selected_template = template
-
-    def load_template_btn_click(self):
-        """
-        Accept template values
-        """
-
-        if self.templates is not None:
-            idx = self.catalogue_combo.currentIndex()
-            template = self.templates[idx]
-
-            self.load_template(template)
 
 
 class LineGraphicItem(QGraphicsLineItem):
@@ -465,6 +240,12 @@ class LineGraphicItem(QGraphicsLineItem):
             ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
+
+            ra3 = menu.addAction('Add to catalogue')
+            ra3_icon = QIcon()
+            ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
+            ra3.setIcon(ra3_icon)
+            ra3.triggered.connect(self.add_to_catalogue)
 
             # menu.addSeparator()
 
@@ -789,7 +570,7 @@ class LineGraphicItem(QGraphicsLineItem):
         if dlg.exec_():
             pass
 
-    def add_to_templates(self):
+    def show_line_editor(self):
         """
         Open the appropriate editor dialogue
         :return:
@@ -799,6 +580,32 @@ class LineGraphicItem(QGraphicsLineItem):
         dlg = LineEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
+
+    def add_to_catalogue(self):
+        """
+        Add this to the catalogue
+        """
+        ok = yes_no_question(text="A template will be generated using this line values per unit of length",
+                             title="Add sequence line type")
+
+        if ok:
+
+            # rate = I
+            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = kA * kV * sqrt(3)
+
+            tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
+                                   idtag=None,
+                                   rating=rated_current,
+                                   R=self.api_object.R / self.api_object.length,
+                                   X=self.api_object.X / self.api_object.length,
+                                   G=0.0,
+                                   B=self.api_object.B / self.api_object.length,
+                                   R0=self.api_object.R0 / self.api_object.length,
+                                   X0=self.api_object.X0 / self.api_object.length,
+                                   G0=0,
+                                   B0=self.api_object.B0 / self.api_object.length)
+
+            self.diagramScene.circuit.add_sequence_line(tpe)
 
     def assign_rate_to_profile(self):
         """

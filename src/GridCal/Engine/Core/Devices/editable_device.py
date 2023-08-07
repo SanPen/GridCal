@@ -338,3 +338,17 @@ class EditableDevice:
         :return:
         """
         return dict()
+
+    def copy(self):
+        """
+        Create a deep copy of this object
+        """
+        tpe = type(self)
+
+        new_obj = tpe()
+
+        for prop_name, value in self.__dict__.items():
+            setattr(new_obj, prop_name, value)
+
+        return new_obj
+

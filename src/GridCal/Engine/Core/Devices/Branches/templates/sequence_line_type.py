@@ -27,7 +27,7 @@ class SequenceLineType(EditableDevice):
         """
         Constructor
         :param name: name of the model
-        :param rating: Line rating in kA
+        :param rating: Line rating current in kA
         :param R: Resistance of positive sequence in Ohm/km
         :param X: Reactance of positive sequence in Ohm/km
         :param G: Conductance of positive sequence in Ohm/km
