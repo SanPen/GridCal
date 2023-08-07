@@ -188,6 +188,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.diagramScene.removeItem(self.big_marker)
             self.big_marker = None
 
+    def redraw(self):
+
+        self.set_position(x=self.api_object.x, y=self.api_object.y)
+
     def set_position(self, x, y):
         """
         Set the bus x, y position

@@ -262,13 +262,14 @@ class LibraryModel(QStandardItemModel):
 
 class DiagramScene(QGraphicsScene):
     """
-
+    DiagramScene
     """
 
     def __init__(self, parent=None, circuit: MultiCircuit = None):
         """
 
-        @param parent:
+        :param parent:
+        :param circuit:
         """
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
@@ -1116,7 +1117,10 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = LineGraphicItem(fromPort=terminal_from,
+                                      toPort=terminal_to,
+                                      diagramScene=self.diagramScene,
+                                      branch=branch)
 
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -1133,7 +1137,10 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = DcLineGraphicItem(fromPort=terminal_from,
+                                        toPort=terminal_to,
+                                        diagramScene=self.diagramScene,
+                                        branch=branch)
 
         graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)

@@ -407,7 +407,7 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.accepted = False
+        self.is_accepted = False
 
         self.label1 = QtWidgets.QLabel()
         self.label1.setText("Minimum generator set point")
@@ -463,7 +463,7 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
         """
         Accept and close
         """
-        self.accepted = True
+        self.is_accepted = True
         self.accept()
 
 
@@ -525,11 +525,82 @@ class CheckListDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class InputNumberDialogue(QtWidgets.QDialog):
+    """
+    New InputNumberDialogue window
+    """
+
+    def __init__(self, min_value: float, max_value: float, default_value: float, is_int: bool = False,
+                 title='Select objects', text='', decimals=2, suffix='', h=80, w=240):
+        """
+
+        :param min_value:
+        :param max_value:
+        :param is_int:
+        :param title:
+        :param text:
+        :param decimals:
+        :param suffix:
+        :param h:
+        :param w:
+        """
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+        self.value = 0 if is_int else 0.0
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText(text)
+
+        # min voltage
+        self.input_box = QtWidgets.QSpinBox() if is_int else QtWidgets.QDoubleSpinBox()
+        self.input_box.setMinimum(min_value)
+        self.input_box.setMaximum(max_value)
+        self.input_box.setSuffix(suffix)
+        self.input_box.setValue(default_value)
+
+        if not is_int:
+            self.input_box.setDecimals(decimals)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.input_box)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        self.resize(w, h)
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.value = self.input_box.value()
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
-    window = LogsDialogue(name='', logger=Logger())
+    window = InputNumberDialogue(min_value=3,
+                                 max_value=10,
+                                 is_int=True,
+                                 title="stuff",
+                                 text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
+                                 suffix=' cosas')
     window.show()
     sys.exit(app.exec_())

@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+import copy
 import numpy as np
-from typing import Union
+from typing import Union, Tuple
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
 from GridCal.Engine.Core.Devices.enumerations import BranchType, BuildStatus
@@ -275,7 +275,8 @@ class Line(ParentBranch):
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float, logger=Logger()):
+    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float,
+                       logger=Logger()):
         """
         Apply a line template to this object
         :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
@@ -557,3 +558,39 @@ class Line(ParentBranch):
                              b=self.B,
                              active_prof=self.active_prof,
                              rate_prof=self.rate_prof)
+
+    def split_line(self, position: float) -> Tuple["Line", "Line", Bus]:
+        """
+        Split a branch by a given distance
+        :param position: per unit distance measured from the "from" bus (0 ~ 1)
+        :return: the two new Branches and the mid short circuited bus
+        """
+
+        assert (0.0 < position < 1.0)
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        middle_bus = self.bus_from.copy()
+        middle_bus.name += ' split'
+        middle_bus.x = self.bus_from.x + (self.bus_from.x - self.bus_to.x) * position
+        middle_bus.y = self.bus_from.y + (self.bus_from.y - self.bus_to.y) * position
+
+        props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
+
+        br1 = self.copy()
+        br1.bus_from = self.bus_from
+        br1.bus_to = middle_bus
+        for p in props_to_scale:
+            setattr(br1, p, getattr(self, p) * position)
+
+        br2 = self.copy()
+        br2.bus_from = middle_bus
+        br2.bus_to = self.bus_to
+        for p in props_to_scale:
+            setattr(br2, p, getattr(self, p) * (1.0 - position))
+
+        return br1, br2, middle_bus

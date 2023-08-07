@@ -20,15 +20,14 @@ from typing import Union
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, \
-    QDoubleSpinBox, QComboBox
-from GridCal.Gui.GuiFunctions import get_list_model
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem
+from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.line_editor import LineEditor
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
+from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
@@ -246,6 +245,12 @@ class LineGraphicItem(QGraphicsLineItem):
             ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
             ra3.setIcon(ra3_icon)
             ra3.triggered.connect(self.add_to_catalogue)
+
+            spl = menu.addAction('Split line')
+            spl_icon = QIcon()
+            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            spl.setIcon(spl_icon)
+            spl.triggered.connect(self.split_line)
 
             # menu.addSeparator()
 
@@ -606,6 +611,40 @@ class LineGraphicItem(QGraphicsLineItem):
                                    B0=self.api_object.B0 / self.api_object.length)
 
             self.diagramScene.circuit.add_sequence_line(tpe)
+
+    def split_line(self):
+        """
+        Split line
+        :return:
+        """
+        dlg = InputNumberDialogue(min_value=1.0,
+                                  max_value=99.0,
+                                  is_int=False,
+                                  title="Split line",
+                                  text="Enter the distance from the beginning of the \n"
+                                       "line as a percentage of the total length",
+                                  suffix=' %',
+                                  decimals=2,
+                                  default_value=50.0)
+        if dlg.exec_():
+
+            if dlg.is_accepted:
+
+                br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
+
+                # add the graphical objects
+                middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
+                br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
+                br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
+                middle_bus.graphic_obj.redraw()
+
+                # add to gridcal
+                self.diagramScene.circuit.add_bus(middle_bus)
+                self.diagramScene.circuit.add_line(br1)
+                self.diagramScene.circuit.add_line(br2)
+
+                # remove this line
+                self.remove(ask=False)
 
     def assign_rate_to_profile(self):
         """
