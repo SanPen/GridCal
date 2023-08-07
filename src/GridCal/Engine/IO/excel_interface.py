@@ -695,6 +695,13 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
     # common function
     def set_object_attributes(obj_, attr_list, values):
+        """
+
+        :param obj_:
+        :param attr_list:
+        :param values:
+        :return:
+        """
         for a, attr in enumerate(attr_list):
 
             # Hack to change the enabled by active...
@@ -708,19 +715,24 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 attr = 'name'
 
             if hasattr(obj_, attr):
-                conv = obj_.editable_headers[attr].tpe  # get the type converter
-                if conv is None:
-                    setattr(obj_, attr, values[a])
-                elif conv is dev.BranchType:
-                    # cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, dev.BranchType(values[a]))
-                elif conv in [dev.DeviceType.AreaDevice,
-                              dev.DeviceType.SubstationDevice,
-                              dev.DeviceType.ZoneDevice,
-                              dev.DeviceType.CountryDevice]:
-                    pass
+                prop = obj_.editable_headers.get(attr, None)
+
+                if prop is not None:
+                    conv = prop.tpe  # get the type converter
+                    if conv is None:
+                        setattr(obj_, attr, values[a])
+                    elif conv is dev.BranchType:
+                        # cbr = BranchTypeConverter(None)
+                        setattr(obj_, attr, dev.BranchType(values[a]))
+                    elif conv in [dev.DeviceType.AreaDevice,
+                                  dev.DeviceType.SubstationDevice,
+                                  dev.DeviceType.ZoneDevice,
+                                  dev.DeviceType.CountryDevice]:
+                        pass
+                    else:
+                        setattr(obj_, attr, conv(values[a]))
                 else:
-                    setattr(obj_, attr, conv(values[a]))
+                    warn(str(obj_) + ' has no ' + attr + ' registered property.')
             else:
                 warn(str(obj_) + ' has no ' + attr + ' property.')
 

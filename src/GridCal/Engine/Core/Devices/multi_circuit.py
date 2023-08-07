@@ -1777,7 +1777,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.switch_devices.append(obj)
 
-    def add_branch(self, obj):
+    def add_branch(self, obj: dev.ParentBranch):
         """
         Add a :ref:`Branch<branch>` object to the grid.
 
@@ -1811,12 +1811,11 @@ class MultiCircuit:
             self.add_switch(obj)
 
         elif obj.device_type == dev.DeviceType.BranchDevice:
-            # we need to convert it :D
-            if obj.branch_type == dev.BranchType.Line or obj.branch_type == dev.BranchType.Transformer:
-                obj2 = dev.convert_branch(obj)
-                self.add_branch(obj2)  # call this again, but this time it is not a Branch object
+
+            if obj.should_this_be_a_transformer():
+                self.add_transformer2w(obj.get_equivalent_transformer())
             else:
-                print('Omitting branch ' + obj.name)
+                self.add_line(obj.get_equivalent_line())
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
@@ -3164,12 +3163,12 @@ class MultiCircuit:
         Get array of area indices for each bus
         :return:
         """
-        d = {elm: k for k, elm in enumerate(self.areas)}
+        areas_dict = {elm: k for k, elm in enumerate(self.areas)}
 
         lst = np.zeros(len(self.buses), dtype=int)
         for k, bus in enumerate(self.buses):
             if bus.area is not None:
-                lst[k] = d[bus.area]
+                lst[k] = areas_dict.get(bus.area, 0)
             else:
                 lst[k] = 0
         return lst

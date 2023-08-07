@@ -17,12 +17,14 @@
 import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type
-from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType
+from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType, BranchType
 from GridCal.Engine.basic_structures import ExternalGridMode
 
 
 class GCProp:
-
+    """
+    GridCal property
+    """
     def __init__(self,
                  units: str,
                  tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
@@ -100,12 +102,13 @@ class EditableDevice:
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
-        self.register(key='active', units='', tpe=bool, definition='Is active?') # this one is overriden if active_prof is present
+        self.register(key='active', units='', tpe=bool, definition='Is active?')  # this one is overriden if active_prof is present
 
     def register(self,
                  key: str,
                  units: str,
-                 tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
+                 tpe: Union[Type[int], Type[bool], Type[float], Type[str],
+                            DeviceType, Type[BuildStatus], WindingsConnection, TransformerControlType, BranchType],
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,

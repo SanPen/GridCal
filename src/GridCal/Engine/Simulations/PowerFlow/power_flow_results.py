@@ -243,7 +243,7 @@ class PowerFlowResults(ResultsTemplate):
         bus_dict = grid.get_bus_index_dict()
 
         self.area_names = [a.name for a in grid.get_areas()]
-        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.buses])
+        self.bus_area_indices = np.array([area_dict.get(b.area, 0) for b in grid.buses])
 
         branches = grid.get_branches_wo_hvdc()
         self.F = np.zeros(len(branches), dtype=int)

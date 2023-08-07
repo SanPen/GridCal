@@ -223,7 +223,7 @@ class Line(ParentBranch):
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
         self.register(key='tolerance', units='%', tpe=float,
-                      definition='Tolerance expected for the impedance values7% is expected for transformers0% for lines.')
+                      definition='Tolerance expected for the impedance values % is expected for transformers0% for lines.')
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',

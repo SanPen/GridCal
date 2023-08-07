@@ -28,6 +28,7 @@ class BranchType(Enum):
     Reactance = 'reactance'
     Switch = 'switch'
     Winding = 'Winding'
+    BranchTemplate = 'BranchTemplate'
 
     def __str__(self):
         return self.value

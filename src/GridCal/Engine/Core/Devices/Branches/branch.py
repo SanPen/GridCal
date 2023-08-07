@@ -39,8 +39,7 @@ class BranchTemplate:
     This class only exists for legacy reasons
     """
 
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
-
+    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch) -> None:
         self.idtag = uuid.uuid4().hex
 
         self.name = name
@@ -58,7 +57,10 @@ class BranchTemplate:
         return self.name
 
     def get_save_data(self):
+        """
 
+        :return:
+        """
         dta = list()
         for p in self.edit_headers:
             dta.append(getattr(self, p))
@@ -174,7 +176,8 @@ class Branch(ParentBranch):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20, b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20,
+                 b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
@@ -201,7 +204,7 @@ class Branch(ParentBranch):
                               opex=0.0,
                               Cost=cost,
                               Cost_prof=None,
-                              device_type=DeviceType.LineDevice,
+                              device_type=DeviceType.BranchDevice,
                               branch_type=BranchType.Branch)
 
         # List of measurements
@@ -267,6 +270,34 @@ class Branch(ParentBranch):
                      'reactance': BranchType.Reactance}
 
         self.inv_conv = {val: key for key, val in self.conv.items()}
+
+        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
+        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
+        self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
+        self.register(key='G', units='p.u.', tpe=float, definition='Total positive sequence shunt conductance.')
+        self.register(key='tolerance', units='%', tpe=float,
+                      definition='Tolerance expected for the impedance values % is expected for '
+                                 'transformers0% for lines.')
+        self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
+        self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
+        self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
+                      profile_name='temp_oper_prof')
+        self.register(key='alpha', units='1/ºC', tpe=float,
+                      definition='Thermal coefficient to modify R,around a reference temperatureusing a linear '
+                                 'approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed '
+                                 'copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
+        self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0')
+        self.register(key='angle', units='rad', tpe=float, definition='Angle shift of the tap changer.')
+        self.register(key='template', units='', tpe=BranchType, definition='', editable=False)
+
+        self.register(key='bus_to_regulated', units='', tpe=bool, definition='Is the regulation at the bus to?')
+        self.register(key='vset', units='p.u.', tpe=float, definition='set control voltage.')
+
+        self.register(key='r_fault', units='p.u.', tpe=float, definition='Fault resistance.')
+        self.register(key='x_fault', units='p.u.', tpe=float, definition='Fault reactance.')
+        self.register(key='fault_pos', units='p.u.', tpe=float,
+                      definition='proportion of the fault location measured from the "from" bus.')
+        self.register(key='branch_type', units='p.u.', tpe=BranchType, definition='Fault resistance.')
 
     @property
     def R_corrected(self):
@@ -462,6 +493,68 @@ class Branch(ParentBranch):
         Get the branch defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+    def get_equivalent_transformer(self) -> Transformer2W:
+        """
+        Convert this line into a transformer
+        This is necessary if the buses' voltage differ too much
+        :return: Transformer2W
+        """
+        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+        return Transformer2W(bus_from=self.bus_from,
+                             bus_to=self.bus_to,
+                             name=self.name,
+                             r=self.R,
+                             x=self.X,
+                             b=self.B,
+                             rate=self.rate,
+                             active=self.active,
+                             tolerance=self.tolerance,
+                             cost=self.Cost,
+                             mttf=self.mttf,
+                             mttr=self.mttr,
+                             tap=self.tap_module,
+                             shift_angle=self.angle,
+                             vset=self.vset,
+                             bus_to_regulated=self.bus_to_regulated,
+                             temp_base=self.temp_base,
+                             temp_oper=self.temp_oper,
+                             alpha=self.alpha,
+                             template=self.template,
+                             rate_prof=self.rate_prof,
+                             Cost_prof=self.Cost_prof,
+                             active_prof=self.active_prof,
+                             temp_oper_prof=self.temp_oper_prof)
+
+    def get_equivalent_line(self) -> Line:
+        """
+        Get the equivalent line object
+        :return:
+        """
+        return Line(bus_from=self.bus_from,
+                    bus_to=self.bus_to,
+                    name=self.name,
+                    r=self.R,
+                    x=self.X,
+                    b=self.B,
+                    rate=self.rate,
+                    active=self.active,
+                    tolerance=self.tolerance,
+                    cost=self.Cost,
+                    mttf=self.mttf,
+                    mttr=self.mttr,
+                    r_fault=self.r_fault,
+                    x_fault=self.x_fault,
+                    fault_pos=self.fault_pos,
+                    length=self.length,
+                    temp_base=self.temp_base,
+                    temp_oper=self.temp_oper,
+                    alpha=self.alpha,
+                    rate_prof=self.rate_prof,
+                    Cost_prof=self.Cost_prof,
+                    active_prof=self.active_prof,
+                    temp_oper_prof=self.temp_oper_prof)
 
 
 def convert_branch(branch: Branch):
