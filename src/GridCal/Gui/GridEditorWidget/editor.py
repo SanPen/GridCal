@@ -786,7 +786,7 @@ class GridEditor(QSplitter):
                                     obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
                                                                              toPort=self.started_branch.toPort,
                                                                              diagramScene=self.diagramScene,
-                                                                             branch=obj)
+                                                                             api_object=obj)
 
                                 else:
                                     name = 'Line ' + str(len(self.circuit.lines) + 1)
@@ -797,7 +797,7 @@ class GridEditor(QSplitter):
                                     obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
                                                                       toPort=self.started_branch.toPort,
                                                                       diagramScene=self.diagramScene,
-                                                                      branch=obj)
+                                                                      api_object=obj)
 
                             # add the new object to the circuit
                             self.circuit.add_branch(obj)
@@ -1054,7 +1054,7 @@ class GridEditor(QSplitter):
         """
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
@@ -1082,7 +1082,7 @@ class GridEditor(QSplitter):
         """
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
@@ -1120,7 +1120,7 @@ class GridEditor(QSplitter):
         graphic_obj = LineGraphicItem(fromPort=terminal_from,
                                       toPort=terminal_to,
                                       diagramScene=self.diagramScene,
-                                      branch=branch)
+                                      api_object=branch)
 
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -1208,7 +1208,7 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
 
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)

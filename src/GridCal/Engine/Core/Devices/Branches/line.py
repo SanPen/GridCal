@@ -576,8 +576,11 @@ class Line(ParentBranch):
 
         middle_bus = self.bus_from.copy()
         middle_bus.name += ' split'
-        middle_bus.x = self.bus_from.x + (self.bus_from.x - self.bus_to.x) * position
-        middle_bus.y = self.bus_from.y + (self.bus_from.y - self.bus_to.y) * position
+        middle_bus.delete_children()
+
+        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+        middle_bus.x = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position
+        middle_bus.y = self.bus_from.y + (self.bus_to.y - self.bus_from.y) * position
 
         props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
 

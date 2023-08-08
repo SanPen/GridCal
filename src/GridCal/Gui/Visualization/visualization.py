@@ -265,6 +265,10 @@ def colour_sub_schematic(Sbase,
                     branch.graphic_obj.setToolTipText(tooltip)
                     branch.graphic_obj.set_colour(color, w, style)
 
+                    if hasattr(branch.graphic_obj, 'set_arrows_with_power'):
+                        branch.graphic_obj.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
+                                                                 St=St[i] if St is not None else None)
+
     if failed_br_idx is not None:
         for i in failed_br_idx:
             if branches[i].graphic_obj is not None:

@@ -267,11 +267,10 @@ class Bus(EditableDevice):
         self.loads.clear()
         self.generators.clear()
 
-    def add_device(self, device):
+    def add_device(self, device) -> None:
         """
         Add device to the bus in the corresponding list
         :param device:
-        :return:
         """
         if device.device_type == DeviceType.BatteryDevice:
             self.batteries.append(device)

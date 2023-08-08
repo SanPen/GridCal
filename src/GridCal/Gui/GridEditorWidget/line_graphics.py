@@ -14,113 +14,48 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
 
 from typing import Union
-from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.line_editor import LineEditor
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
-from GridCal.Gui.GuiFunctions import BranchObjectModel
+from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
-class LineGraphicItem(QGraphicsLineItem):
+class LineGraphicItem(LineGraphicTemplateItem):
     """
     LineGraphicItem
     """
 
-    def __init__(self, fromPort: TerminalItem, toPort: Union[TerminalItem, None], diagramScene, width=5,
-                 branch: Line = None):
+    def __init__(self,
+                 fromPort: TerminalItem,
+                 toPort: Union[TerminalItem, None],
+                 diagramScene,
+                 width=5,
+                 api_object: Line = None):
         """
 
         :param fromPort:
         :param toPort:
         :param diagramScene:
         :param width:
-        :param branch:
+        :param api_object:
         """
-        QGraphicsLineItem.__init__(self, None)
+        LineGraphicTemplateItem.__init__(self,
+                                         fromPort=fromPort,
+                                         toPort=toPort,
+                                         diagramScene=diagramScene,
+                                         width=width,
+                                         api_object=api_object)
 
-        self.api_object = branch
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-        self.width = width
-        self.pen_width = width
-        self.setPen(QPen(self.color, self.width, self.style))
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.pos1 = None
-        self.pos2 = None
-        self.fromPort: Union[TerminalItem, None] = None
-        self.toPort: Union[TerminalItem, None] = None
-        self.diagramScene = diagramScene
-
-        if fromPort:
-            self.setFromPort(fromPort)
-
-        if toPort:
-            self.setToPort(toPort)
-
-        # add transformer circles
-        self.symbol_type = BranchType.Line
-        self.symbol = None
-        self.c0 = None
-        self.c1 = None
-        self.c2 = None
-        if self.api_object is not None:
-            self.update_symbol()
-
-        # add the line and it possible children to the scene
-        self.diagramScene.addItem(self)
-
-        if fromPort and toPort:
-            self.redraw()
-
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
-        self.set_colour(self.color, self.width, self.style)
-
-    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
-        """
-        Set color and style
-        :param color: QColor instance
-        :param w: width
-        :param style: PenStyle instance
-        :return:
-        """
-        self.setPen(QPen(color, w, style))
-
-    def remove_symbol(self):
+    def remove_symbol(self) -> None:
         """
         Remove all symbols
         """
@@ -132,31 +67,6 @@ class LineGraphicItem(QGraphicsLineItem):
                     elm = None
                 except:
                     pass
-
-    def update_symbol(self):
-        """
-        Make the branch symbol
-        :return:
-        """
-
-        # remove the symbol of the branch
-        self.remove_symbol()
-
-        if self.api_object.branch_type == BranchType.Switch:
-            self.make_switch_symbol()
-            self.symbol_type = BranchType.Switch
-
-        elif self.api_object.branch_type == BranchType.Reactance:
-            self.make_reactance_symbol()
-            self.symbol_type = BranchType.Switch
-
-        else:
-            # this is a line
-            self.symbol = None
-            self.c0 = None
-            self.c1 = None
-            self.c2 = None
-            self.symbol_type = BranchType.Line
 
     def make_switch_symbol(self):
         """
@@ -183,21 +93,19 @@ class LineGraphicItem(QGraphicsLineItem):
         self.symbol.setPen(QPen(self.color, self.width, self.style))
         self.symbol.setBrush(self.color)
 
-    def setToolTipText(self, toolTip: str):
+    def mouseDoubleClickEvent(self, event):
         """
-        Set branch tool tip text
-        Args:
-            toolTip: text
+        On double click, edit
+        :param event:
+        :return:
         """
-        self.setToolTip(toolTip)
-
-        if self.symbol is not None:
-            self.symbol.setToolTip(toolTip)
-
-        if self.c0 is not None:
-            self.c0.setToolTip(toolTip)
-            self.c1.setToolTip(toolTip)
-            self.c2.setToolTip(toolTip)
+        if self.api_object is not None:
+            if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
+                # trigger the editor
+                self.edit()
+            elif self.api_object.branch_type is BranchType.Switch:
+                # change state
+                self.enable_disable_toggle()
 
     def contextMenuEvent(self, event):
         """
@@ -295,34 +203,6 @@ class LineGraphicItem(QGraphicsLineItem):
         else:
             pass
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        if self.api_object is not None:
-            mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
-                                    parent=self.diagramScene.parent().object_editor_table,
-                                    editable=True, transposed=True,
-                                    non_editable_attributes=self.api_object.non_editable_attributes)
-
-            self.diagramScene.parent().object_editor_table.setModel(mdl)
-
-    def mouseDoubleClickEvent(self, event):
-        """
-        On double click, edit
-        :param event:
-        :return:
-        """
-        if self.api_object is not None:
-            if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-                # trigger the editor
-                self.edit()
-            elif self.api_object.branch_type is BranchType.Switch:
-                # change state
-                self.enable_disable_toggle()
-
     def remove(self, ask=True):
         """
         Remove this object in the diagram and the API
@@ -385,13 +265,6 @@ class LineGraphicItem(QGraphicsLineItem):
                 br.bus_from.graphic_obj.update()
                 br.bus_to.graphic_obj.update()
 
-    def remove_widget(self):
-        """
-        Remove this object in the diagram
-        @return:
-        """
-        self.diagramScene.removeItem(self)
-
     def enable_disable_toggle(self):
         """
 
@@ -411,41 +284,6 @@ class LineGraphicItem(QGraphicsLineItem):
                     # change the bus state (time series)
                     self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
 
-    def set_enable(self, val=True):
-        """
-        Set the enable value, graphically and in the API
-        @param val:
-        @return:
-        """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-
-        # Switch coloring
-        if self.symbol_type == BranchType.Switch:
-            if self.api_object.active:
-                self.symbol.setBrush(self.color)
-            else:
-                self.symbol.setBrush(Qt.white)
-
-        if self.symbol_type == BranchType.DCLine:
-            self.symbol.setBrush(self.color)
-            if self.api_object.active:
-                self.symbol.setPen(QPen(ACTIVE['color']))
-            else:
-                self.symbol.setPen(QPen(DEACTIVATED['color']))
-
-        # Set pen for everyone
-        self.set_pen(QPen(self.color, self.width, self.style))
-
     def plot_profiles(self):
         """
         Plot the time series profiles
@@ -455,121 +293,13 @@ class LineGraphicItem(QGraphicsLineItem):
         i = self.diagramScene.circuit.get_branches().index(self.api_object)
         self.diagramScene.plot_branch(i, self.api_object)
 
-    def setFromPort(self, fromPort):
-        """
-        Set the From terminal in a connection
-        @param fromPort:
-        @return:
-        """
-        self.fromPort = fromPort
-        if self.fromPort:
-            self.pos1 = fromPort.scenePos()
-            self.fromPort.posCallbacks.append(self.setBeginPos)
-            self.fromPort.parent.setZValue(0)
-
-    def setToPort(self, toPort):
-        """
-        Set the To terminal in a connection
-        @param toPort:
-        @return:
-        """
-        self.toPort = toPort
-        if self.toPort:
-            self.pos2 = toPort.scenePos()
-            self.toPort.posCallbacks.append(self.setEndPos)
-            self.toPort.parent.setZValue(0)
-
-    def setEndPos(self, endpos):
-        """
-        Set the starting position
-        @param endpos:
-        @return:
-        """
-        self.pos2 = endpos
-        self.redraw()
-
-    def setBeginPos(self, pos1):
-        """
-        Set the starting position
-        @param pos1:
-        @return:
-        """
-        self.pos1 = pos1
-        self.redraw()
-
-    def redraw(self):
-        """
-        Redraw the line with the given positions
-        @return:
-        """
-        if self.pos1 is not None and self.pos2 is not None:
-
-            # Set position
-            self.setLine(QLineF(self.pos1, self.pos2))
-
-            # set Z-Order (to the back)
-            self.setZValue(-1)
-
-            if self.api_object is not None:
-
-                # if the object branch type is different from the current displayed type, change it
-                if self.symbol_type != self.api_object.branch_type:
-                    self.update_symbol()
-
-                if self.api_object.branch_type == BranchType.Line:
-                    pass
-
-                elif self.api_object.branch_type == BranchType.Branch:
-                    pass
-
-                else:
-
-                    # if the branch has a moveable symbol, move it
-                    try:
-                        if self.symbol is not None:
-                            h = self.pos2.y() - self.pos1.y()
-                            b = self.pos2.x() - self.pos1.x()
-                            ang = np.arctan2(h, b)
-                            h2 = self.symbol.rect().height() / 2.0
-                            w2 = self.symbol.rect().width() / 2.0
-                            a = h2 * np.cos(ang) - w2 * np.sin(ang)
-                            b = w2 * np.sin(ang) + h2 * np.cos(ang)
-
-                            center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
-
-                            transform = QTransform()
-                            transform.translate(center.x(), center.y())
-                            transform.rotate(np.rad2deg(ang))
-                            self.symbol.setTransform(transform)
-
-                    except Exception as ex:
-                        print(ex)
-
-    def set_pen(self, pen):
-        """
-        Set pen to all objects
-        Args:
-            pen:
-        """
-        self.setPen(pen)
-
-        # Color the symbol only for switches
-        if self.api_object.branch_type == BranchType.Switch:
-            if self.symbol is not None:
-                self.symbol.setPen(pen)
-
-        elif self.api_object.branch_type == BranchType.Transformer:
-            if self.c1 is not None:
-                self.c1.setPen(pen)
-                self.c2.setPen(pen)
-
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types
+        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types + self.diagramScene.circuit.sequence_line_types
         current_template = self.api_object.template
         dlg = LineEditor(self.api_object, Sbase, templates, current_template)
         if dlg.exec_():
@@ -594,7 +324,6 @@ class LineGraphicItem(QGraphicsLineItem):
                              title="Add sequence line type")
 
         if ok:
-
             # rate = I
             rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = kA * kV * sqrt(3)
 
@@ -629,7 +358,6 @@ class LineGraphicItem(QGraphicsLineItem):
         if dlg.exec_():
 
             if dlg.is_accepted:
-
                 br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
 
                 # add the graphical objects
@@ -637,6 +365,8 @@ class LineGraphicItem(QGraphicsLineItem):
                 br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
                 br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
                 middle_bus.graphic_obj.redraw()
+                br1.bus_from.graphic_obj.arrange_children()
+                br2.bus_to.graphic_obj.arrange_children()
 
                 # add to gridcal
                 self.diagramScene.circuit.add_bus(middle_bus)
@@ -645,18 +375,6 @@ class LineGraphicItem(QGraphicsLineItem):
 
                 # remove this line
                 self.remove(ask=False)
-
-    def assign_rate_to_profile(self):
-        """
-        Assign the snapshot rate to the profile
-        """
-        self.diagramScene.set_rate_to_profile(self.api_object)
-
-    def assign_status_to_profile(self):
-        """
-        Assign the snapshot rate to the profile
-        """
-        self.diagramScene.set_active_status_to_profile(self.api_object)
 
     def to_transformer(self):
         """

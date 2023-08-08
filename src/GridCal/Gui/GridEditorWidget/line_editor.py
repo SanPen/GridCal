@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
-from typing import Union
+from typing import Union, List
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
@@ -37,10 +37,14 @@ class LineEditor(QDialog):
     LineEditor
     """
 
-    def __init__(self, line: Line, Sbase=100, templates=None, current_template=None):
+    def __init__(self, line: Line,
+                 Sbase=100,
+                 templates: Union[List[Union[SequenceLineType, OverheadLineType, UndergroundLineType]], None] = None,
+                 current_template=None):
         """
         Line Editor constructor
         :param line: Branch object to update
+        :param templates: List of templates
         :param Sbase: Base power in MVA
         """
         super(LineEditor, self).__init__()
