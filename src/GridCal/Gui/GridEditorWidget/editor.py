@@ -44,6 +44,7 @@ from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
+from GridCal.Gui.GridEditorWidget.switch_graphics import SwitchGraphicItem
 from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
@@ -757,7 +758,7 @@ class GridEditor(QSplitter):
                                 obj.graphic_obj = VscGraphicItem(from_port=self.started_branch.fromPort,
                                                                  to_port=self.started_branch.toPort,
                                                                  diagram_scene=self.diagramScene,
-                                                                 branch=obj)
+                                                                 api_object=obj)
 
                             elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
                                 # both buses are DC
@@ -770,7 +771,7 @@ class GridEditor(QSplitter):
                                 obj.graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
                                                                     toPort=self.started_branch.toPort,
                                                                     diagramScene=self.diagramScene,
-                                                                    branch=obj)
+                                                                    api_object=obj)
 
                             else:
                                 # Same DC status -> line / trafo
@@ -1068,7 +1069,7 @@ class GridEditor(QSplitter):
         """
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
         graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
@@ -1140,7 +1141,7 @@ class GridEditor(QSplitter):
         graphic_obj = DcLineGraphicItem(fromPort=terminal_from,
                                         toPort=terminal_to,
                                         diagramScene=self.diagramScene,
-                                        branch=branch)
+                                        api_object=branch)
 
         graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -1157,7 +1158,7 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = HvdcGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = HvdcGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
 
         graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -1174,7 +1175,7 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = VscGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = VscGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
 
         graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -1459,10 +1460,10 @@ class GridEditor(QSplitter):
 
             branch.graphic_obj = self.add_api_upfc(branch)
 
-    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
+    def add_circuit_to_schematic(self, grid: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a complete circuit to the schematic scene
-        :param circuit: MultiCircuit instance
+        :param grid: MultiCircuit instance
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -1471,14 +1472,14 @@ class GridEditor(QSplitter):
         # reset zoom level, otherwise the newly loaded grids appear with a much wider spacing
         self.diagramView.resetTransform()
 
-        self.add_elements_to_schematic(buses=circuit.buses,
-                                       lines=circuit.lines,
-                                       dc_lines=circuit.dc_lines,
-                                       transformers2w=circuit.transformers2w,
-                                       transformers3w=circuit.transformers3w,
-                                       hvdc_lines=circuit.hvdc_lines,
-                                       vsc_devices=circuit.vsc_devices,
-                                       upfc_devices=circuit.upfc_devices,
+        self.add_elements_to_schematic(buses=grid.buses,
+                                       lines=grid.lines,
+                                       dc_lines=grid.dc_lines,
+                                       transformers2w=grid.transformers2w,
+                                       transformers3w=grid.transformers3w,
+                                       hvdc_lines=grid.hvdc_lines,
+                                       vsc_devices=grid.vsc_devices,
+                                       upfc_devices=grid.upfc_devices,
                                        explode_factor=explode_factor,
                                        prog_func=prog_func,
                                        text_func=text_func)
@@ -1556,7 +1557,7 @@ class GridEditor(QSplitter):
 
         self.align_schematic()
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         :return:
@@ -1573,22 +1574,20 @@ class GridEditor(QSplitter):
             if elm.graphic_obj is not None:
                 elm.graphic_obj.recolour_mode()
 
-    def set_dark_mode(self):
+    def set_dark_mode(self) -> None:
         """
         Set the dark theme
         :return:
         """
-        is_dark = True
         ACTIVE['color'] = Qt.white
         ACTIVE['text'] = Qt.white
         self.recolour_mode()
 
-    def set_light_mode(self):
+    def set_light_mode(self) -> None:
         """
         Set the light theme
         :return:
         """
-        is_dark = False
         ACTIVE['color'] = Qt.black
         ACTIVE['text'] = Qt.black
         self.recolour_mode()

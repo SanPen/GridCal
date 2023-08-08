@@ -1,38 +1,35 @@
 # GridCal
 # Copyright (C) 2015 - 2023 Santiago Peñate Vera
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 3 of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
-
-from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+from typing import Union
+from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Engine.Core.Devices.Branches.branch import BranchType
-from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Engine.Core.Devices.Branches.switch import Switch
+from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
 
 
-class UpfcGraphicItem(LineGraphicTemplateItem):
+class SwitchGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
-                 api_object: UPFC = None):
+    def __init__(self, fromPort: TerminalItem,
+                 toPort: Union[TerminalItem, None],
+                 diagramScene,
+                 width=5,
+                 api_object: Switch = None):
         """
 
         :param fromPort:
@@ -56,25 +53,14 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("Line")
 
-            pe = menu.addAction('Enable/Disable')
-            pe_icon = QIcon()
-            if self.api_object.active:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-            else:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-            pe.setIcon(pe_icon)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
-            menu.addSeparator()
-
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
-
-            menu.addSeparator()
+            # menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
@@ -94,13 +80,19 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
-            menu.addSeparator()
+            # menu.addSeparator()
 
             re = menu.addAction('Reduce')
             re_icon = QIcon()
             re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
             re.setIcon(re_icon)
             re.triggered.connect(self.reduce)
+
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
 
             menu.exec_(event.screenPos())
         else:
@@ -112,10 +104,11 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Do you want to remove this UPFC?', 'Remove UPFC')
+            ok = yes_no_question('Do you want to remove this winding?', 'Remove winding')
         else:
             ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.circuit.delete_winding(self.api_object)
             self.diagramScene.removeItem(self)
+

@@ -17,18 +17,19 @@
 import numpy as np
 
 from typing import Union
-from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.line_editor import LineEditor
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
+from GridCal.Engine.Core.Devices.Branches.line import Line
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
+from GridCal.Engine.Core.Devices.Branches.vsc import VSC
+from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
+from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
+from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
@@ -182,6 +183,159 @@ class TransformerSymbol(QGraphicsRectItem):
         self.setTransform(transform)
 
 
+class VscSymbol(QGraphicsRectItem):
+    """
+    TransformerSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=48, w=48, icon_route=":/Icons/icons/vsc.svg"):
+        QGraphicsRectItem.__init__(self, parent=parent)
+
+        self.parent = parent
+
+        self.width = pen_width
+        self.pen_width = pen_width
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+
+        self.setPen(QPen(Qt.transparent))
+        self.setRect(QRectF(0, 0, w, h))
+
+        graphic = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        graphic.setBrush(QBrush(QPixmap(icon_route)))
+        graphic.setPen(QPen(Qt.transparent, self.width, self.style))
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setBrush(color)
+        self.setPen(QPen(color, w, style))
+
+    def set_pen(self, pen: QPen):
+        """
+
+        :param pen:
+        :return:
+        """
+        self.setPen(pen)
+
+    def setToolTipText(self, toolTip: str):
+        """
+        Set branch tool tip text
+        Args:
+            toolTip: text
+        """
+        self.setToolTip(toolTip)
+
+    def redraw(self):
+        h = self.parent.pos2.y() - self.parent.pos1.y()
+        b = self.parent.pos2.x() - self.parent.pos1.x()
+        ang = np.arctan2(h, b)
+        h2 = self.rect().height() / 2.0
+        w2 = self.rect().width() / 2.0
+        a = h2 * np.cos(ang) - w2 * np.sin(ang)
+        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+
+        center = (self.parent.pos1 + self.parent.pos2) * 0.5 - QPointF(a, b)
+
+        transform = QTransform()
+        transform.translate(center.x(), center.y())
+        transform.rotate(np.rad2deg(ang))
+        self.setTransform(transform)
+
+
+class UpfcSymbol(VscSymbol):
+    """
+    UpfcSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=48, w=48):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w, icon_route=":/Icons/icons/upfc.svg")
+
+
+class HvdcSymbol(QGraphicsRectItem):
+    """
+    TransformerSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=30, w=30):
+        QGraphicsRectItem.__init__(self, parent=parent)
+
+        w2 = int(w / 2)
+        self.parent = parent
+
+        self.width = pen_width
+        self.pen_width = pen_width
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+
+        self.setPen(QPen(Qt.transparent))
+        self.setRect(QRectF(0, 0, w, h))
+
+        offset = 3
+        t_points = QPolygonF()
+        t_points.append(QPointF(0, offset))
+        t_points.append(QPointF(w - offset, w2))
+        t_points.append(QPointF(0, w - offset))
+
+        triangle = QGraphicsPolygonItem(self)
+        triangle.setPolygon(t_points)
+        triangle.setPen(QPen(Qt.white))
+        triangle.setBrush(QBrush(Qt.white))
+
+        line = QGraphicsRectItem(QRectF(h - offset, offset, offset, w - 2 * offset), parent=self)
+        line.setPen(QPen(Qt.white))
+        line.setBrush(QBrush(Qt.white))
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setBrush(color)
+        self.setPen(QPen(color, w, style))
+
+    def set_pen(self, pen: QPen):
+        """
+
+        :param pen:
+        :return:
+        """
+        self.setPen(pen)
+
+    def setToolTipText(self, toolTip: str):
+        """
+        Set branch tool tip text
+        Args:
+            toolTip: text
+        """
+        self.setToolTip(toolTip)
+
+    def redraw(self):
+        h = self.parent.pos2.y() - self.parent.pos1.y()
+        b = self.parent.pos2.x() - self.parent.pos1.x()
+        ang = np.arctan2(h, b)
+        h2 = self.rect().height() / 2.0
+        w2 = self.rect().width() / 2.0
+        a = h2 * np.cos(ang) - w2 * np.sin(ang)
+        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+
+        center = (self.parent.pos1 + self.parent.pos2) * 0.5 - QPointF(a, b)
+
+        transform = QTransform()
+        transform.translate(center.x(), center.y())
+        transform.rotate(np.rad2deg(ang))
+        self.setTransform(transform)
+
+
 class LineGraphicTemplateItem(QGraphicsLineItem):
     """
     LineGraphicItem
@@ -192,7 +346,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                  toPort: Union[TerminalItem, None],
                  diagramScene,
                  width=5,
-                 api_object: Union[Line, Transformer2W, None] = None):
+                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, None] = None):
         """
 
         :param fromPort:
@@ -207,6 +361,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if isinstance(api_object, Transformer2W):
             self.symbol = TransformerSymbol(parent=self, pen_width=width, h=80, w=80)
+        elif isinstance(api_object, VSC):
+            self.symbol = VscSymbol(parent=self, pen_width=width, h=48, w=48)
+        elif isinstance(api_object, UPFC):
+            self.symbol = UpfcSymbol(parent=self, pen_width=width, h=48, w=48)
+        elif isinstance(api_object, HvdcSymbol):
+            self.symbol = HvdcSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 
@@ -465,11 +625,61 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param St: Complex power to
         """
 
+        # TODO: Review the signs and conditions
+
         if Sf is not None:
             if St is None:
                 St = -Sf
 
-            self.arrow_from_1.set_value(Sf.real, True)
-            self.arrow_from_2.set_value(Sf.imag, True)
-            self.arrow_to_1.set_value(-St.real, True)
-            self.arrow_to_2.set_value(-St.imag, True)
+            Pf = Sf.real
+            Qf = Sf.imag
+            Pt = St.real
+            Qt = St.imag
+            self.arrow_from_1.set_value(Pf, True)
+            self.arrow_from_2.set_value(Qf if Qf != 0.0 else Pf, True)
+            self.arrow_to_1.set_value(-Pt, True)
+            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else Pt, True)
+
+    def reduce(self):
+        """
+        Reduce this branch
+        """
+        ok = yes_no_question('Do you want to reduce this VSC?', 'Remove VSC')
+
+        if ok:
+            # get the index of the branch
+            br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+
+            # call the reduction routine
+            removed_branch, removed_bus, \
+                updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
+
+            # remove the reduced branch
+            removed_branch.graphic_obj.remove_symbol()
+            self.diagramScene.removeItem(removed_branch.graphic_obj)
+
+            # update the buses (the deleted one and the updated one)
+            if removed_bus is not None:
+                # merge the removed bus with the remaining one
+                updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+
+                # remove the updated bus children
+                for g in updated_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)
+                    self.diagramScene.removeItem(g)
+                # re-draw the children
+                updated_bus.graphic_obj.create_children_icons()
+
+                # remove bus
+                for g in removed_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
+                self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
+
+            for br in updated_branches:
+                # remove the branch from the schematic
+                self.diagramScene.removeItem(br.graphic_obj)
+                # add the branch to the schematic with the rerouting and all
+                self.diagramScene.parent_.add_line(br)
+                # update both buses
+                br.bus_from.graphic_obj.update()
+                br.bus_to.graphic_obj.update()
