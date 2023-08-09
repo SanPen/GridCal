@@ -42,16 +42,23 @@ class ArrowHead(QGraphicsPolygonItem):
                  parent: QGraphicsLineItem,
                  arrow_size: int,
                  position: float = 0.9,
-                 draw_below: bool = False,
-                 sign: float = 1):
+                 under: bool = False,
+                 backwards: bool = False,
+                 separation: int = 5):
 
         QGraphicsPolygonItem.__init__(self, parent=parent)
 
         self.parent: QGraphicsLineItem = parent
         self.arrow_size: int = arrow_size
         self.position: float = position
-        self.draw_below: bool = draw_below
-        self.sign: float = sign
+        self.under: bool = under
+        self.backwards: float = backwards
+        self.sep = separation
+
+        self.w = arrow_size
+        self.h = arrow_size
+
+        self.setPen(Qt.NoPen)
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
@@ -62,7 +69,7 @@ class ArrowHead(QGraphicsPolygonItem):
         :return:
         """
         # self.setPen(QPen(color, w, style))
-        self.setPen(Qt.NoPen)
+        # self.setPen(Qt.NoPen)
         self.setBrush(color)
 
     def set_value(self, value: float, redraw=True):
@@ -71,7 +78,7 @@ class ArrowHead(QGraphicsPolygonItem):
         :param value: any real value
         :param redraw: redraw after the sign update
         """
-        self.sign = 1.0 if value >= 0 else -1.0
+        self.backwards = value < 0
 
         if redraw:
             self.redraw()
@@ -83,14 +90,59 @@ class ArrowHead(QGraphicsPolygonItem):
         line = self.parent.line()
 
         # the angle is added 180º if the sign is negative
-        angle = line.angle() if self.sign >= 0 else line.angle() + 180.0
+        angle = line.angle()
+        base_pt = line.p1() + (line.p2() - line.p1()) * self.position
 
-        p2 = -self.arrow_size if self.draw_below else self.arrow_size
+        p1 = -self.arrow_size if self.backwards else self.arrow_size
+        p2 = -self.arrow_size if self.under else self.arrow_size
+        arrow_p1 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, 0))
+        arrow_p2 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, p2))
+        arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
 
-        arrow_position = line.p1() + (line.p2() - line.p1()) * self.position
-        arrow_p1 = arrow_position - QTransform().rotate(-angle).map(QPointF(self.arrow_size, 0))
-        arrow_p2 = arrow_position - QTransform().rotate(-angle).map(QPointF(self.arrow_size, p2))
-        arrow_polygon = QPolygonF([arrow_position, arrow_p1, arrow_p2])
+        # if line.p1().x() < line.p2().x():
+        #     if self.backwards:
+        #         if self.under:
+        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
+        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
+        #         else:
+        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
+        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(
+        #                 QPointF(self.w, -self.h))
+        #     else:
+        #         if self.under:
+        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
+        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(
+        #                 QPointF(self.w, -self.h))
+        #         else:
+        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
+        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
+        # else:
+        #     if self.backwards:
+        #         if self.under:
+        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
+        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(
+        #                 QPointF(self.w, -self.h))
+        #         else:
+        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
+        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
+        #     else:
+        #         if self.under:
+        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
+        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
+        #         else:
+        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
+        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
+        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(
+        #                 QPointF(self.w, -self.h))
+        #
+        # arrow_polygon = QPolygonF([arrow_p0, arrow_p1, arrow_p2])
 
         self.setPolygon(arrow_polygon)
 
@@ -392,10 +444,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=10, position=0.15, draw_below=False)
-        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=10, position=0.15, draw_below=True)
-        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=10, position=0.85, draw_below=False)
-        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=10, position=0.85, draw_below=True)
+        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=False)
+        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=True)
+        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=False)
+        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=True)
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
@@ -638,7 +690,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             self.arrow_from_1.set_value(Pf, True)
             self.arrow_from_2.set_value(Qf if Qf != 0.0 else Pf, True)
             self.arrow_to_1.set_value(-Pt, True)
-            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else Pt, True)
+            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else -Pt, True)
+
+            self.arrow_from_1.setToolTip("Pf: {} MW".format(Pf))
+            self.arrow_from_2.setToolTip("Qf: {} MW".format(Qf))
+            self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
+            self.arrow_to_2.setToolTip("Qt: {} MW".format(Qt))
 
     def reduce(self):
         """

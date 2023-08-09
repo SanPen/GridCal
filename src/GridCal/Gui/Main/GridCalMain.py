@@ -5350,6 +5350,7 @@ class MainGUI(QMainWindow):
                                  loadings=results.loading,
                                  types=results.bus_types,
                                  Sf=results.Sf,
+                                 St=results.St,
                                  Sbus=results.Sbus,
                                  hvdc_Pf=results.hvdc_Pf,
                                  hvdc_Pt=-results.hvdc_Pf,
