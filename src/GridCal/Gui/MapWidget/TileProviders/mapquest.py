@@ -1,12 +1,9 @@
 """
-A tile source that serves Stamen Toner tiles from the internet.
-
-Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.
+A tile source that serves MapQuest tiles from the internet.
 """
 
 import math
-import GridCal.Gui.pySlipQt.tiles_net as tiles_net
-
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 ###############################################################################
 # Change values below here to configure an internet tile source.
@@ -14,17 +11,20 @@ import GridCal.Gui.pySlipQt.tiles_net as tiles_net
 
 # attributes used for tileset introspection
 # names must be unique amongst tile modules
-TilesetName = 'Stamen Toner Tiles'
-TilesetShortName = 'STMT Tiles'
+TilesetName = 'MapQuest Tiles'
+TilesetShortName = 'MQ Tiles'
 TilesetVersion = '1.0'
 
 # the pool of tile servers used
-TileServers = ['http://tile.stamen.com',
-              ]
+TileServers = ['http://otile1.mqcdn.com',
+               'http://otile2.mqcdn.com',
+               'http://otile3.mqcdn.com',
+               'http://otile4.mqcdn.com',
+               ]
 
 # the path on the server to a tile
 # {} params are Z=level, X=column, Y=row, origin at map top-left
-TileURLPath = '/toner/{Z}/{X}/{Y}.png'
+TileURLPath = '/tiles/1.0.0/map/{Z}/{X}/{Y}.jpg'
 
 # tile levels to be used
 TileLevels = range(17)
@@ -41,13 +41,14 @@ TileHeight = 256
 
 # where earlier-cached tiles will be
 # this can be overridden in the __init__ method
-TilesDir = 'stamen_toner_tiles'
+TilesDir = 'mapquest_tiles'
+
 
 ################################################################################
 # Class for these tiles.   Builds on tiles_net.Tiles.
 ################################################################################
 
-class Tiles(tiles_net.Tiles):
+class MapquestTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
     def __init__(self, tiles_dir=TilesDir, http_proxy=None):
@@ -64,7 +65,8 @@ class Tiles(tiles_net.Tiles):
                          http_proxy=http_proxy)
 
     def Geo2Tile(self, xgeo, ygeo):
-        """Convert geo to tile fractional coordinates for level in use.
+        """
+        Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
 
@@ -76,9 +78,9 @@ class Tiles(tiles_net.Tiles):
         lat_rad = math.radians(ygeo)
         n = 2.0 ** self.level
         xtile = (xgeo + 180.0) / 360.0 * n
-        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
+        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
-        return (xtile, ytile)
+        return xtile, ytile
 
     def Tile2Geo(self, xtile, ytile):
         """Convert tile fractional coordinates to geo for level in use.
@@ -96,4 +98,3 @@ class Tiles(tiles_net.Tiles):
         ygeo = math.degrees(yrad)
 
         return (xgeo, ygeo)
-

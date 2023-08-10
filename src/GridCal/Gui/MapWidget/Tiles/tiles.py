@@ -13,103 +13,23 @@ import urllib
 from urllib import request
 import queue
 from PySide6.QtGui import QPixmap
-from PySide6.QtCore import QThread
-import GridCal.Gui.pySlipQt.tiles as tiles
-import GridCal.Gui.pySlipQt.sys_tile_data as std
-import GridCal.Gui.pySlipQt.log as log
+from GridCal.Gui.MapWidget.Tiles.base_tiles import BaseTiles
+import GridCal.Gui.MapWidget.Tiles.default_tile_data as std
+from GridCal.Gui.MapWidget.Tiles.tile_worker import TileWorker
+from GridCal.Gui.MapWidget.logger import log
 
-try:
-    log = log.Log('pyslipqt.log')
-except AttributeError:
-    # means log already set up
-    pass
-
-# set how old disk-cache tiles can be before we re-request them from the
-# server.  this is the number of days old a tile is before we re-request.
-# if 'None', never re-request tiles after first satisfied request.
-RefreshTilesAfterDays = 60
+# # set how old disk-cache tiles can be before we re-request them from the
+# # server.  this is the number of days old a tile is before we re-request.
+# # if 'None', never re-request tiles after first satisfied request.
+# RefreshTilesAfterDays = 60
 
 # define the error messages for various failures
 StatusError = {401: 'Looks like you need to be authorised for this server.',
                404: 'You might need to check the tile addressing for this server.',
-               429: 'You are asking for too many tiles.',
-              }
-
-################################################################################
-# Worker class for server tile retrieval
-################################################################################
-
-class TileWorker(QThread):
-    """Thread class that gets request from queue, loads tile, calls callback."""
-
-    def __init__(self, id_num, server, tilepath, requests, callback,
-                 error_tile, content_type, rerequest_age, error_image):
-        """Prepare the tile worker.
-
-        id_num         a unique numer identifying the worker instance
-        server         server URL
-        tilepath       path to tile on server
-        requests       the request queue
-        callback       function to call after tile available
-        error_tile     image of error tile
-        content_type   expected Content-Type string
-        rerequest_age  number of days in tile age before re-requesting
-                       (0 means don't update tiles)
-        error_image    the image to return on some error
-
-        Results are returned in the callback() params.
-        """
-
-        QThread.__init__(self)
-
-        self.id_num = id_num
-        self.server = server
-        self.tilepath = tilepath
-        self.requests = requests
-        self.callback = callback
-        self.error_tile_image = error_tile
-        self.content_type = content_type
-        self.rerequest_age = rerequest_age
-        self.error_image = error_image
-        self.daemon = True
-
-    def run(self):
-        while True:
-            # get zoom level and tile coordinates to retrieve
-            (level, x, y) = self.requests.get()
-
-            # try to retrieve the image
-            error = False
-            pixmap = self.error_image
-            try:
-                tile_url = self.server + self.tilepath.format(Z=level, X=x, Y=y)
-                response = request.urlopen(tile_url)
-                content_type = response.info().get_content_type()
-                if content_type == self.content_type:
-                    data = response.read()
-                    pixmap = QPixmap()
-                    pixmap.loadFromData(data)
-                else:
-                    # show error, don't cache returned error tile
-                    error = True
-            except Exception as e:
-                error = True
-                log('%s exception getting tile (%d,%d,%d)'
-                        % (type(e).__name__, level, x, y))
-
-            # call the callback function passing level, x, y and pixmap data
-            # error is False if we want to cache this tile on-disk
-            self.callback(level, x, y, pixmap, error)
-
-            # finally, removes request from queue
-            self.requests.task_done()
-
-###############################################################################
-# Class for a server tile source.  Extend the BaseTiles class.
-###############################################################################
+               429: 'You are asking for too many tiles.', }
 
 
-class Tiles(tiles.BaseTiles):
+class Tiles(BaseTiles):
     """
     A tile object to source server tiles for the widget.
     """
@@ -126,9 +46,17 @@ class Tiles(tiles.BaseTiles):
     # the number of seconds in a day
     SecondsInADay = 60 * 60 * 24
 
-    def __init__(self, levels, tile_width, tile_height, tiles_dir, max_lru,
-                 servers, url_path, max_server_requests, http_proxy,
-                 refetch_days=RefreshTilesAfterDays):
+    def __init__(self,
+                 levels,
+                 tile_width,
+                 tile_height,
+                 tiles_dir,
+                 max_lru,
+                 servers,
+                 url_path,
+                 max_server_requests,
+                 http_proxy,
+                 refetch_days=60):
         """
         Initialise a Tiles instance.
         :param levels: a list of level numbers that are to be served
@@ -158,14 +86,13 @@ class Tiles(tiles.BaseTiles):
         self.url_path = url_path
         self.max_requests = max_server_requests
         self.http_proxy = http_proxy
+        self.refresh_tiles_after_days = refetch_days
 
         # callback must be set by higher-level copde
         self.callback = None
 
         # calculate a re-request age, if specified
-        self.rerequest_age = None
-        if refetch_days:
-            self.rerequest_age = (time.time() - refetch_days*self.SecondsInADay)
+        self.rerequest_age = (time.time() - self.refresh_tiles_after_days * self.SecondsInADay)
 
         # tiles extent for tile data (left, right, top, bottom)
         self.extent = (-180.0, 180.0, -85.0511, 85.0511)
@@ -178,7 +105,7 @@ class Tiles(tiles.BaseTiles):
 
         # figure out tile filename extension from 'url_path'
         tile_extension = os.path.splitext(url_path)[1][1:]
-        tile_extension_lower = tile_extension.lower()      # ensure lower case
+        tile_extension_lower = tile_extension.lower()  # ensure lower case
 
         # determine the file bitmap type
         try:
@@ -283,7 +210,7 @@ class Tiles(tiles.BaseTiles):
 
         return True
 
-    def GetTile(self, x, y):
+    def GetTile(self, x, y) -> QPixmap:
         """
         Get bitmap for tile at tile coords (x, y) and current level.
 
@@ -422,8 +349,8 @@ class Tiles(tiles.BaseTiles):
         """
 
         # update the global in case we instantiate again
-        global RefreshTilesAfterDays
-        RefreshTilesAfterDays = num_days
+
+        self.refresh_tiles_after_days = num_days
 
         # recalculate this instance's age threshold in UNIX time
-        self.rerequest_age = time.time() - RefreshTilesAfterDays * self.SecondsInADay
+        self.rerequest_age = time.time() - self.refresh_tiles_after_days * self.SecondsInADay

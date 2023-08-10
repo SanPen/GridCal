@@ -3,8 +3,8 @@ A tile source that serves BlueMarble tiles from the internet.
 """
 
 import math
-import GridCal.Gui.pySlipQt.tiles_net as tiles_net
-
+from typing import Tuple
+import GridCal.Gui.MapWidget.Tiles.tiles as tiles_net
 
 ###############################################################################
 # Change values below here to configure an internet tile source.
@@ -18,7 +18,7 @@ TilesetVersion = '1.0'
 
 # the pool of tile servers used
 TileServers = ['http://s3.amazonaws.com',
-              ]
+               ]
 
 # the path on the server to a tile
 # {} params are Z=level, X=column, Y=row, origin at map top-left
@@ -40,6 +40,7 @@ TileHeight = 256
 # where earlier-cached tiles will be
 # this can be overridden in the __init__ method
 TilesDir = 'blue_marble_tiles'
+
 
 ################################################################################
 # Class for these tiles.   Builds on net_tiles.Tiles.
@@ -65,7 +66,7 @@ class BlueMarbleTiles(tiles_net.Tiles):
                          max_server_requests=MaxServerRequests,
                          http_proxy=http_proxy)
 
-    def Geo2Tile(self, xgeo, ygeo):
+    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
@@ -78,11 +79,11 @@ class BlueMarbleTiles(tiles_net.Tiles):
         lat_rad = math.radians(ygeo)
         n = 2.0 ** self.level
         xtile = (xgeo + 180.0) / 360.0 * n
-        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
+        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
-        return (xtile, ytile)
+        return xtile, ytile
 
-    def Tile2Geo(self, xtile, ytile):
+    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
         """Convert tile fractional coordinates to geo for level in use.
 
         tile  a tupl;e (xtile,ytile) of tile fractional coordinates
@@ -96,4 +97,4 @@ class BlueMarbleTiles(tiles_net.Tiles):
         yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
         ygeo = math.degrees(yrad)
 
-        return (xgeo, ygeo)
+        return xgeo, ygeo

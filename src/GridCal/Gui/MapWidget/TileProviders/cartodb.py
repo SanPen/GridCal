@@ -3,7 +3,8 @@ A tile source that serves OpenStreetMap tiles from server(s).
 """
 
 import math
-import GridCal.Gui.pySlipQt.tiles_net as tiles_net
+from typing import Tuple
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
 ###############################################################################
@@ -12,17 +13,13 @@ import GridCal.Gui.pySlipQt.tiles_net as tiles_net
 
 # attributes used for tileset introspection
 # names must be unique amongst tile modules
-TilesetName = 'OpenStreetMap Tiles'
-TilesetShortName = 'OSM Tiles'
+TilesetName = 'CartoDb Dark Matter'
+TilesetShortName = 'CartoDb Dark Matter'
 TilesetVersion = '1.0'
 
 # the pool of tile servers used
 TileServers = [
-               # 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all',
-               'https://tile.openstreetmap.org',
-               # 'https://a.tile.openstreetmap.org',
-               # 'https://b.tile.openstreetmap.org',
-               # 'https://c.tile.openstreetmap.org',
+               "http://basemaps.cartocdn.com/dark_all/"  # http://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png
               ]
 
 # the path on the server to a tile
@@ -47,14 +44,14 @@ TilesDir = 'open_street_map_tiles'
 # Class for these tiles.   Builds on tiles_net.Tiles.
 ################################################################################
 
-class Tiles(tiles_net.Tiles):
+class CartoDbTiles(Tiles):
     """An object to source server tiles for pySlipQt."""
 
     # size of tiles
     TileWidth = 256
     TileHeight = 256
 
-    def __init__(self, tiles_dir=TilesDir, http_proxy=None):
+    def __init__(self, tiles_dir=TilesDir, http_proxy=None, tile_servers=None):
         """Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
@@ -62,9 +59,10 @@ class Tiles(tiles_net.Tiles):
         """
 
         super().__init__(TileLevels,
-                         Tiles.TileWidth, Tiles.TileHeight,
+                         CartoDbTiles.TileWidth, CartoDbTiles.TileHeight,
                          tiles_dir=tiles_dir,
-                         servers=TileServers, url_path=TileURLPath,
+                         servers=TileServers if tile_servers is None else tile_servers,
+                         url_path=TileURLPath,
                          max_server_requests=MaxServerRequests,
                          max_lru=MaxLRU, http_proxy=http_proxy)
 # TODO: implement map wrap-around
@@ -75,7 +73,7 @@ class Tiles(tiles_net.Tiles):
         self.level = min(TileLevels)
         self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
 
-    def Geo2Tile(self, xgeo, ygeo):
+    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
         """
         Convert geo to tile fractional coordinates for level in use.
         geo  tuple of geo coordinates (xgeo, ygeo)
@@ -89,7 +87,7 @@ class Tiles(tiles_net.Tiles):
 
         return xtile, ytile
 
-    def Tile2Geo(self, xtile, ytile):
+    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
         """
         Convert tile fractional coordinates to geo for level in use.
         tile  a tuple (xtile,ytile) of tile fractional coordinates

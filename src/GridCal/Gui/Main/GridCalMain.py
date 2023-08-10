@@ -75,9 +75,9 @@ from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThrea
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
-from GridCal.Gui.pySlipQt.pySlipQt import PySlipQt
-from GridCal.Gui.pySlipQt.blue_marble import BlueMarbleTiles
-from GridCal.Gui.pySlipQt.cartodb import CartoDbTiles
+from GridCal.Gui.MapWidget.map_widget import MapWidget
+from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
+from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 import GridCal.Gui.Visualization.palettes as palettes
 
 from GridCal.__version__ import __GridCal_VERSION__
@@ -402,7 +402,7 @@ class MainGUI(QMainWindow):
 
         # These get initialized by create_map()
         self.tile_source = None
-        self.map_widget: Union[PySlipQt, None] = None
+        self.map_widget: Union[MapWidget, None] = None
         self.polyline_layer_id: Union[int, None] = None
 
         self.create_map()
@@ -1103,7 +1103,7 @@ class MainGUI(QMainWindow):
         self.tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
 
         # create the map widget
-        self.map_widget = PySlipQt(self, tile_src=self.tile_source, start_level=5)
+        self.map_widget = MapWidget(self, tile_src=self.tile_source, start_level=5)
 
         # add lines layer
         self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=[],
@@ -5368,6 +5368,7 @@ class MainGUI(QMainWindow):
             return plot_function(circuit=self.circuit,
                                  Sbus=results.Sbus[current_step, :],
                                  Sf=results.Sf[current_step, :],
+                                 St=results.St[current_step, :],
                                  voltages=results.voltage[current_step, :],
                                  loadings=np.abs(results.loading[current_step, :]),
                                  types=results.bus_types,
@@ -5422,6 +5423,7 @@ class MainGUI(QMainWindow):
             return plot_function(circuit=self.circuit,
                                  Sbus=results.S[current_step, :],
                                  Sf=results.Sf[current_step, :],
+                                 # St=results.St[current_step, :],
                                  voltages=results.voltage[current_step, :],
                                  loadings=np.abs(results.loading[current_step, :]),
                                  types=results.bus_types,

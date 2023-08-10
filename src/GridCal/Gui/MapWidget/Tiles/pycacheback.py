@@ -6,7 +6,7 @@ https://github.com/rzzzwilson/pyCacheBack
 """
 
 
-class pyCacheBack(dict):
+class PyCacheBack(dict):
     """An LRU limited in-memory store fronting an unlimited on-disk store."""
 
     # default maximum number of key/value pairs for pyCacheBack
@@ -40,10 +40,18 @@ class pyCacheBack(dict):
         self._reorder_lru(key, remove=True)
 
     def clear(self):
+        """
+
+        """
         super().clear()
         self._lru_list = []
 
     def pop(self, *args):
+        """
+
+        :param args:
+        :return:
+        """
         k = args[0]
         try:
             self._lru_list.remove(k)
@@ -52,6 +60,10 @@ class pyCacheBack(dict):
         return super().pop(*args)
 
     def popitem(self):
+        """
+
+        :return:
+        """
         kv_return = super().popitem()
         try:
             self._lru_list.remove(kv_return[0])

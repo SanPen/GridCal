@@ -5,8 +5,7 @@ Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.
 """
 
 import math
-import GridCal.Gui.pySlipQt.tiles_net as tiles_net
-
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 ###############################################################################
 # Change values below here to configure an internet tile source.
@@ -20,7 +19,7 @@ TilesetVersion = '1.0'
 
 # the pool of tile servers used
 TileServers = ['http://c.tile.stamen.com',
-              ]
+               ]
 
 # the path on the server to a tile
 # {} params are Z=level, X=column, Y=row, origin at map top-left
@@ -43,11 +42,12 @@ TileHeight = 256
 # this can be overridden in the __init__ method
 TilesDir = 'stamen_watercolor_tiles'
 
+
 ################################################################################
 # Class for these tiles.   Builds on tiles_net.Tiles.
 ################################################################################
 
-class Tiles(tiles_net.Tiles):
+class StamenWatercolorTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
     def __init__(self, tiles_dir=TilesDir, http_proxy=None):
@@ -77,7 +77,7 @@ class Tiles(tiles_net.Tiles):
         lat_rad = math.radians(ygeo)
         n = 2.0 ** self.level
         xtile = (xgeo + 180.0) / 360.0 * n
-        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
+        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
         return xtile, ytile
 
@@ -98,4 +98,3 @@ class Tiles(tiles_net.Tiles):
         ygeo = math.degrees(yrad)
 
         return xgeo, ygeo
-

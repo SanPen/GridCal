@@ -370,6 +370,7 @@ def getPendingImage():
         "BAACAAEgABAACAAEAAIAAYAAQAAgABAACAAEAN/b0mZho3Q2iFYAAAAASUVO"
         "RK5CYII=")
 
+
 def getErrorImage():
     """Generate 'pending' image from embedded data."""
 

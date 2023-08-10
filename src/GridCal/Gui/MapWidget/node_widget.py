@@ -23,7 +23,7 @@ import math
 
 class DeviceMarker(QGraphicsRectItem):
     """
-
+    DeviceMarker
     """
 
     def __init__(self, x, y, size, scale, parent):
@@ -61,14 +61,14 @@ class DeviceMarker(QGraphicsRectItem):
 
     def add_cluster_marker(self):
         """
-
+        Add cluster marker
         """
         pass
 
 
 class VoltageLevelCircle(QGraphicsEllipseItem):
     """
-
+    VoltageLevelCircle
     """
 
     def __init__(self, xc, yc, d, parent):

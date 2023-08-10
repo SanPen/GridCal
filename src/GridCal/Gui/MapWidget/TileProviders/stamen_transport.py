@@ -6,7 +6,7 @@ Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY 
 """
 
 import math
-import GridCal.Gui.pySlipQt.tiles_net as tiles_net
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
 ###############################################################################
@@ -50,7 +50,7 @@ TilesDir = 'stamen_transport_tiles'
 # Class for these tiles.   Builds on tiles_net.Tiles.
 ################################################################################
 
-class Tiles(tiles_net.Tiles):
+class StamenTransportTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
     def __init__(self, tiles_dir=TilesDir ,http_proxy=None):

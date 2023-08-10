@@ -8,97 +8,10 @@ For example, see gmt_local.py (local tiles) and osm_tiles.py
 
 import os
 import math
+from typing import Tuple, Union
 from PySide6.QtGui import QPixmap
-import GridCal.Gui.pySlipQt.pycacheback as pycacheback
-import GridCal.Gui.pySlipQt.log as log
+from GridCal.Gui.MapWidget.Tiles.tiles_cache import TilesCache
 
-try:
-    log = log.Log('pyslipqt.log')
-except AttributeError:
-    # already have a log file, ignore
-    pass
-
-
-# set how old disk-cache tiles can be before we re-request them from the internet
-# this is the number of days old a tile is before we re-request
-# if 'None', never re-request tiles after first satisfied request
-RefreshTilesAfterDays = 60
-
-
-################################################################################
-# Define a cache for tiles.  This is an in-memory cache backed to disk.
-################################################################################
-
-class Cache(pycacheback.pyCacheBack):
-    """Cache for local or internet tiles.
-
-    Instance variables we use from pyCacheBack:
-        self._tiles_dir  path to the on-disk cache directory
-    """
-
-    PicExtension = 'png'
-    TilePath = '{Z}/{X}/{Y}.%s' % PicExtension
-
-
-    def tile_date(self, key):
-        """Return the creation date of a tile given its key."""
-
-        tile_path = self.tile_path(key)
-        return os.path.getctime(tile_path)
-
-    def tile_path(self, key):
-        """Return path to a tile file given its key."""
-
-        (level, x, y) = key
-        file_path = os.path.join(self._tiles_dir,
-                                 self.TilePath.format(Z=level, X=x, Y=y))
-        return file_path
-
-    def _get_from_back(self, key):
-        """Retrieve value for 'key' from backing storage.
-
-        key  tuple (level, x, y)
-             where level is the level of the tile
-                   x, y  is the tile coordinates (integer)
-
-        Raises KeyError if tile not found.
-        """
-
-        # look for item in disk cache
-        file_path = self.tile_path(key)
-        if not os.path.exists(file_path):
-            # tile not there, raise KeyError
-            raise KeyError("Item with key '%s' not found in on-disk cache"
-                           % str(key)) from None
-
-        # we have the tile file - read into memory & return
-        return QPixmap(file_path)
-
-    def _put_to_back(self, key, image):
-        """Put a image into on-disk cache.
-
-        key     a tuple: (level, x, y)
-                where level  level for image
-                      x      integer tile coordinate
-                      y      integer tile coordinate
-        image   the wx.Image to save
-        """
-
-        (level, x, y) = key
-        tile_path = os.path.join(self._tiles_dir,
-                                 self.TilePath.format(Z=level, X=x, Y=y))
-        dir_path = os.path.dirname(tile_path)
-        try:
-            os.makedirs(dir_path)
-        except OSError:
-            # we assume it's a "directory exists' error, which we ignore
-            pass
-
-        image.save(tile_path, Cache.PicExtension)
-
-###############################################################################
-# Base class for a tile source - handles access to a source of tiles.
-###############################################################################
 
 class BaseTiles(object):
     """A base tile object to source local tiles for pySlip."""
@@ -107,7 +20,7 @@ class BaseTiles(object):
     MaxLRU = 1000
 
     def __init__(self, levels, tile_width, tile_height,
-                       tiles_dir, max_lru=MaxLRU):
+                 tiles_dir, max_lru=MaxLRU):
         """Initialise a Tiles instance.
 
         levels       a list of level numbers that are to be served
@@ -129,12 +42,17 @@ class BaseTiles(object):
         self.max_level = max(self.levels)
         self.level = self.min_level
 
-# TODO: implement map wrap-around
-#        self.wrap_x = False
-#        self.wrap_y = False
+        self.num_tiles_x = 0
+        self.num_tiles_y = 0
+        self.ppd_x = 0
+        self.ppd_y = 0
+
+        # TODO: implement map wrap-around
+        #        self.wrap_x = False
+        #        self.wrap_y = False
 
         # setup the tile cache
-        self.cache = Cache(tiles_dir=tiles_dir, max_lru=max_lru)
+        self.cache = TilesCache(tiles_dir=tiles_dir, max_lru=max_lru)
 
         #####
         # Now finish setting up
@@ -146,17 +64,14 @@ class BaseTiles(object):
         # check tile cache - we expect there to already be a directory
         if not os.path.isdir(tiles_dir):
             if os.path.isfile(tiles_dir):
-                msg = ("%s doesn't appear to be a tile cache directory"
-                       % tiles_dir)
-                log.critical(msg)
+                msg = ("%s doesn't appear to be a tile cache directory" % tiles_dir)
                 raise Exception(msg) from None
 
             msg = "The tiles directory %s doesn't exist." % tiles_dir
-            log.critical(msg)
             raise Exception(msg) from None
 
-# possible recursion here?
-#        self.UseLevel(min(self.levels))
+    # possible recursion here?
+    #        self.UseLevel(min(self.levels))
 
     def UseLevel(self, level):
         """Prepare to serve tiles from the required level.
@@ -177,11 +92,11 @@ class BaseTiles(object):
 
         # OK, save new level
         self.level = level
-        (self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y) = info
+        self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = info
 
         return True
 
-    def GetTile(self, x, y):
+    def GetTile(self, x, y) -> QPixmap:
         """Get bitmap for tile at tile coords (x, y) and current level.
 
         x  X coord of tile required (tile coordinates)
@@ -191,21 +106,20 @@ class BaseTiles(object):
         Tile coordinates are measured from map top-left.
         """
 
-#        # if we are wrapping X or Y, get wrapped tile coords
-#        if self.wrap_x:
-#            x = (x + self.num_tiles_x*self.tile_size_x) % self.num_tiles_x
-#        if self.wrap_y:
-#            y = (y + self.num_tiles_y*self.tile_size_y) % self.num_tiles_y
+        #        # if we are wrapping X or Y, get wrapped tile coords
+        #        if self.wrap_x:
+        #            x = (x + self.num_tiles_x*self.tile_size_x) % self.num_tiles_x
+        #        if self.wrap_y:
+        #            y = (y + self.num_tiles_y*self.tile_size_y) % self.num_tiles_y
 
         # retrieve the tile
         try:
             # get tile from cache
             return self.cache[(self.level, x, y)]
         except KeyError as e:
-            raise KeyError("Can't find tile for key '%s'"
-                           % str((self.level, x, y))) from None
+            raise KeyError("Can't find tile for key '%s'" % str((self.level, x, y))) from None
 
-    def GetInfo(self, level):
+    def GetInfo(self, level) -> Union[Tuple[float, float, None, None], None]:
         """Get tile info for a particular level.
 
         level  the level to get tile info for
@@ -225,7 +139,7 @@ class BaseTiles(object):
         self.num_tiles_x = int(math.pow(2, level))
         self.num_tiles_y = int(math.pow(2, level))
 
-        return (self.num_tiles_x, self.num_tiles_y, None, None)
+        return self.num_tiles_x, self.num_tiles_y, None, None
 
     def GetExtent(self):
         """Get geo limits of the map tiles.
@@ -235,7 +149,7 @@ class BaseTiles(object):
 
         return self.extent
 
-    def tile_on_disk(self, level, x, y):
+    def tile_on_disk(self, level: int, x: float, y: float):
         """Return True if tile at (level, x, y) is on-disk."""
 
         raise Exception('You must override BaseTiles.tile_on_disk(level, x, y))')
@@ -247,9 +161,9 @@ class BaseTiles(object):
         """
 
         pass
-        #raise Exception('You must override BaseTiles.setCallback(callback))')
+        # raise Exception('You must override BaseTiles.setCallback(callback))')
 
-    def Geo2Tile(self, xgeo, ygeo):
+    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.
 
         xgeo   geo longitude in degrees
@@ -260,7 +174,7 @@ class BaseTiles(object):
 
         raise Exception('You must override BaseTiles.Geo2Tile(xgeo, ygeo)')
 
-    def Tile2Geo(self, xtile, ytile):
+    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
         """Convert tile fractional coordinates to geo for level in use.
 
         xtile  tile fractional X coordinate

@@ -534,8 +534,11 @@ class Line(ParentBranch):
         """
         V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
         V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        per = V1 / V2
-        return per < (1.0 - branch_connection_voltage_tolerance)
+        if V2 > 0:
+            per = V1 / V2
+            return per < (1.0 - branch_connection_voltage_tolerance)
+        else:
+            return V1 != V2
 
     def get_equivalent_transformer(self) -> Transformer2W:
         """

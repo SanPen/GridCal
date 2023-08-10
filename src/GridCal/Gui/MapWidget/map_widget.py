@@ -31,24 +31,8 @@ from typing import List, Dict
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QObject, Signal
 from PySide6.QtWidgets import QLabel, QSizePolicy, QWidget, QMessageBox
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor
-
-try:
-    import GridCal.Gui.pySlipQt.log as log
-    log = log.Log('pyslipqt.log')
-except AttributeError:
-    # means log already set up
-    pass
-except ImportError as e:
-    # if we don't have log.py, don't crash
-    # fake all log(), log.debug(), ... calls
-    def logit(*args, **kwargs):
-        pass
-    log = logit
-    log.debug = logit
-    log.info = logit
-    log.warn = logit
-    log.error = logit
-    log.critical = logit
+from GridCal.Gui.MapWidget.map_layer import MapLayer
+from GridCal.Gui.MapWidget.logger import log
 
 import platform
 if platform.python_version_tuple()[0] != '3':
@@ -61,184 +45,10 @@ if platform.python_version_tuple()[0] != '3':
 __version__ = '0.5'
 
 
-######
-# A layer class - encapsulates all layer data.
-######
-
-class MapLayer:
+class MapWidget(QWidget):
     """
-    A Layer object.
+    Map widget
     """
-
-    DefaultDelta = 50      # default selection delta
-
-    def __init__(self, layer_id=0, painter=None, data=None, map_rel=True,
-                 visible=False, show_levels=None, selectable=False,
-                 name="<no name given>", ltype=None):
-        """
-        Initialise the Layer object.
-
-        id           unique layer ID
-        painter      render function
-        data         the layer data
-        map_rel      True if layer is map-relative, else layer-relative
-        visible      layer visibility
-        show_levels  list of levels at which to auto-show the level
-        selectable   True if select operates on this layer, else False
-        name         the name of the layer (for debug)
-        ltype        a layer 'type' flag
-        """
-
-        self.painter = painter          # routine to draw layer
-        self.data = data                # data that defines the layer
-        self.map_rel = map_rel          # True if layer is map relative
-        self.visible = visible          # True if layer visible
-        self.show_levels = show_levels  # None or list of levels to auto-show
-        self.selectable = selectable    # True if we can select on this layer
-        self.delta = self.DefaultDelta  # minimum distance for selection
-        self.name = name                # name of this layer
-        self.type = ltype               # type of layer
-        self.layer_id = layer_id        # ID of this layer
-
-        self.valid_placements = ['cc', 'nw', 'cn', 'ne', 'ce', 'se', 'cs', 'sw', 'cw']
-
-    @staticmethod
-    def colour_to_internal(colour):
-        """Convert a colour in one of various forms to an internal format.
-
-        colour  either a HEX string ('#RRGGBBAA')
-                or a tuple (r, g, b, a)
-                or a colour name ('red')
-
-        Returns internal form:  (r, g, b, a)
-        """
-
-        if isinstance(colour, str):
-            # expect '#RRGGBBAA' form
-            if len(colour) != 9 or colour[0] != '#':
-                # assume it's a colour *name*
-                # we should do more checking of the name here, though it looks
-                # like PySide6 defaults to a colour if the name isn't recognized
-                c = QColor(colour)
-                result = (c.red(), c.blue(), c.green(), c.alpha())
-            else:
-                # we try for a colour like '#RRGGBBAA'
-                r = int(colour[1:3], 16)
-                g = int(colour[3:5], 16)
-                b = int(colour[5:7], 16)
-                a = int(colour[7:9], 16)
-                result = (r, g, b, a)
-        elif isinstance(colour, QColor):
-            # if it's a QColor, get float RGBA values, convert to ints
-            result = [int(v*255) for v in colour.getRgbF()]
-        else:
-
-            # we assume a list or tuple
-            try:
-                len_colour = len(colour)
-            except TypeError:
-                msg = ("Colour value '%s' is not in the form '(r, g, b, a)'" % str(colour))
-                raise Exception(msg)
-
-            if len_colour != 4:
-                msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                        % str(colour))
-                raise Exception(msg)
-            result = []
-            for v in colour:
-                try:
-                    v = int(v)
-                except ValueError:
-                    msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                            % str(colour))
-                    raise Exception(msg)
-                if v < 0 or v > 255:
-                    msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                            % str(colour))
-                    raise Exception(msg)
-                result.append(v)
-            result = tuple(result)
-
-        return result
-
-    @staticmethod
-    def get_i18n_kw(kwargs, kws, default):
-        """Get alternate international keyword value.
-
-        kwargs   dictionary to look for keyword value
-        kws      iterable of keyword spelling strings
-        default  default value if no keyword found
-
-        Returns the keyword value.
-        """
-
-        result = None
-        for kw_str in kws[:-1]:
-            result = kwargs.get(kw_str, None)
-            if result:
-                break
-        else:
-            result = kwargs.get(kws[-1], default)
-
-        return result
-
-    def setData(self, data,
-                default_placement='cc',
-                default_width=1,
-                default_colour='red',
-                default_offset_x=0,
-                default_offset_y=0,
-                default_data=None):
-
-        # create draw_data iterable
-        self.data = []
-        for data_entry in data:
-
-            if len(data_entry) == 2:
-                polyline_points, attributes = data_entry
-
-            elif len(data_entry) == 1:
-                polyline_points = data_entry
-                attributes = {}
-
-            else:
-                msg = ('Polyline data must be iterable of tuples: (polyline, [attributes])\n'
-                       'Got: %s' % str(data_entry))
-                raise Exception(msg)
-
-            # get polygon attributes
-            placement = attributes.get('placement', default_placement)
-            width = attributes.get('width', default_width)
-            colour = self.get_i18n_kw(attributes, ('colour', 'color'), default_colour)
-            offset_x = attributes.get('offset_x', default_offset_x)
-            offset_y = attributes.get('offset_y', default_offset_y)
-            udata = attributes.get('data', default_data)
-
-            # check values that can be wrong
-            if not placement:
-                placement = default_placement
-            placement = placement.lower()
-
-            if placement not in self.valid_placements:
-                msg = ("Polyline placement value is invalid, got '%s'" % str(placement))
-                raise Exception(msg)
-
-            # convert various colour formats to internal (r, g, b, a)
-            rgba = self.colour_to_internal(colour)
-
-            self.data.append((polyline_points, placement, width, rgba, offset_x, offset_y, udata))
-
-    def __str__(self):
-        return ('<pySlipQt Layer: id=%d, name=%s, map_rel=%s, visible=%s>'
-                % (self.layer_id, self.name, str(self.map_rel), str(self.visible)))
-
-
-######
-# The pySlipQt widget.
-######
-
-
-class PySlipQt(QWidget):
 
     # events the widget will emit
     class Events(QObject):
@@ -473,16 +283,16 @@ class PySlipQt(QWidget):
                                  self.TypePolyline: self.sel_box_polylines_in_layer}
 
         # create the events raised by PySlipQt
-        self.events = PySlipQt.Events()
+        self.events = MapWidget.Events()
 
         # a dictionary to map event number to raising function
         self.pyslipqt_event_dict = {
-           PySlipQt.EVT_PYSLIPQT_LEVEL:         self.events.EVT_PYSLIPQT_LEVEL.emit,
-           PySlipQt.EVT_PYSLIPQT_POSITION:      self.events.EVT_PYSLIPQT_POSITION.emit,
-           PySlipQt.EVT_PYSLIPQT_SELECT:        self.events.EVT_PYSLIPQT_SELECT.emit,
-           PySlipQt.EVT_PYSLIPQT_BOXSELECT:     self.events.EVT_PYSLIPQT_BOXSELECT.emit,
-           PySlipQt.EVT_PYSLIPQT_POLYSELECT:    self.events.EVT_PYSLIPQT_POLYSELECT.emit,
-           PySlipQt.EVT_PYSLIPQT_POLYBOXSELECT: self.events.EVT_PYSLIPQT_POLYBOXSELECT.emit,
+           MapWidget.EVT_PYSLIPQT_LEVEL:         self.events.EVT_PYSLIPQT_LEVEL.emit,
+           MapWidget.EVT_PYSLIPQT_POSITION:      self.events.EVT_PYSLIPQT_POSITION.emit,
+           MapWidget.EVT_PYSLIPQT_SELECT:        self.events.EVT_PYSLIPQT_SELECT.emit,
+           MapWidget.EVT_PYSLIPQT_BOXSELECT:     self.events.EVT_PYSLIPQT_BOXSELECT.emit,
+           MapWidget.EVT_PYSLIPQT_POLYSELECT:    self.events.EVT_PYSLIPQT_POLYSELECT.emit,
+           MapWidget.EVT_PYSLIPQT_POLYBOXSELECT: self.events.EVT_PYSLIPQT_POLYBOXSELECT.emit,
           }
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -543,7 +353,7 @@ class PySlipQt(QWidget):
         kwargs  a dictionary of attributes to attach to event
         """
 
-        event = PySlipQt.PySlipQtEvent(etype, **kwargs)
+        event = MapWidget.PySlipQtEvent(etype, **kwargs)
         self.pyslipqt_event_dict[etype](event)
 
     ######
@@ -633,12 +443,12 @@ class PySlipQt(QWidget):
                             result = self.layerBSelHandler[l.type](l, ll_v, tr_v)
                         if result:
                             (sel, data, relsel) = result
-                            self.raise_event(PySlipQt.EVT_PYSLIPQT_BOXSELECT,
+                            self.raise_event(MapWidget.EVT_PYSLIPQT_BOXSELECT,
                                              mposn=None, vposn=None, layer_id=lid,
                                              selection=sel, relsel=relsel)
                         else:
                             # raise an empty EVT_PYSLIPQT_BOXSELECT event
-                            self.raise_event(PySlipQt.EVT_PYSLIPQT_BOXSELECT,
+                            self.raise_event(MapWidget.EVT_PYSLIPQT_BOXSELECT,
                                              mposn=None, vposn=None,
                                              layer_id=lid, selection=None, relsel=None)
 
@@ -664,14 +474,14 @@ class PySlipQt(QWidget):
                                 (sel, relsel) = result
     
                                 # raise the EVT_PYSLIPQT_SELECT event
-                                self.raise_event(PySlipQt.EVT_PYSLIPQT_SELECT,
+                                self.raise_event(MapWidget.EVT_PYSLIPQT_SELECT,
                                                  mposn=clickpt_g,
                                                  vposn=clickpt_v,
                                                  layer_id=lid,
                                                  selection=sel, relsel=relsel)
                             else:
                                 # raise an empty EVT_PYSLIPQT_SELECT event
-                                self.raise_event(PySlipQt.EVT_PYSLIPQT_SELECT,
+                                self.raise_event(MapWidget.EVT_PYSLIPQT_SELECT,
                                                  mposn=clickpt_g,
                                                  vposn=clickpt_v,
                                                  layer_id=lid,
@@ -771,7 +581,7 @@ class PySlipQt(QWidget):
             self.update()                                   # force a repaint
 
         # emit the event for mouse position
-        self.raise_event(PySlipQt.EVT_PYSLIPQT_POSITION, mposn=mouse_geo, vposn=(x, y))
+        self.raise_event(MapWidget.EVT_PYSLIPQT_POSITION, mposn=mouse_geo, vposn=(x, y))
 
     def keyPressEvent(self, event):
         """Capture a key press."""
@@ -833,7 +643,7 @@ class PySlipQt(QWidget):
         self.mouse_x = None
         self.mouse_y = None
 
-        self.raise_event(PySlipQt.EVT_PYSLIPQT_POSITION, mposn=None, vposn=None)
+        self.raise_event(MapWidget.EVT_PYSLIPQT_POSITION, mposn=None, vposn=None)
 
     def paintEvent(self, event):
         """
@@ -888,8 +698,8 @@ class PySlipQt(QWidget):
         if self.sbox_1_x:
             # draw the select box, transparent fill
             painter.setBrush(QBrush(QColor(0, 0, 0, 0)))
-            pen = QPen(PySlipQt.BoxSelectPenColor, PySlipQt.BoxSelectPenWidth,
-                       PySlipQt.BoxSelectPenStyle)
+            pen = QPen(MapWidget.BoxSelectPenColor, MapWidget.BoxSelectPenWidth,
+                       MapWidget.BoxSelectPenStyle)
             painter.setPen(pen)
             painter.drawRect(self.sbox_1_x, self.sbox_1_y, self.sbox_w, self.sbox_h)
 
@@ -1907,7 +1717,7 @@ class PySlipQt(QWidget):
             self.resizeEvent()
 
             # raise the EVT_PYSLIPQT_LEVEL event
-            self.raise_event(PySlipQt.EVT_PYSLIPQT_LEVEL, level=level)
+            self.raise_event(MapWidget.EVT_PYSLIPQT_LEVEL, level=level)
 
         return result
 
@@ -3514,7 +3324,7 @@ class PySlipQt(QWidget):
         self.resizeEvent()
 
         # raise level change event
-        self.raise_event(PySlipQt.EVT_PYSLIPQT_LEVEL, level=level)
+        self.raise_event(MapWidget.EVT_PYSLIPQT_LEVEL, level=level)
 
         return True
 
