@@ -25,7 +25,6 @@ Some semantics:
           (view may be smaller than map, or larger)
 """
 
-
 import sys
 from typing import List, Dict
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QObject, Signal
@@ -35,6 +34,7 @@ from GridCal.Gui.MapWidget.map_layer import MapLayer
 from GridCal.Gui.MapWidget.logger import log
 
 import platform
+
 if platform.python_version_tuple()[0] != '3':
     msg = ('You must run pySlipQt with python 3.x, you are running version %s.x.' % platform.python_version_tuple()[0])
     # log(msg)
@@ -45,19 +45,37 @@ if platform.python_version_tuple()[0] != '3':
 __version__ = '0.5'
 
 
+class MapEvents(QObject):
+    """
+    Map events
+    """
+    EVT_PYSLIPQT_LEVEL = Signal(object)
+    EVT_PYSLIPQT_POSITION = Signal(object)
+    EVT_PYSLIPQT_SELECT = Signal(object)
+    EVT_PYSLIPQT_BOXSELECT = Signal(object)
+    EVT_PYSLIPQT_POLYSELECT = Signal(object)
+    EVT_PYSLIPQT_POLYBOXSELECT = Signal(object)
+
+
+class PySlipQtEvent:
+    """
+    PySlipQtEvent
+    """
+
+    def __init__(self, etype, **kwargs):
+        """Create a PySlipQtEvent with attributes in 'kwargs'."""
+
+        self.type = etype
+        for (attr, value) in kwargs.items():
+            setattr(self, attr, value)
+
+
 class MapWidget(QWidget):
     """
     Map widget
     """
 
     # events the widget will emit
-    class Events(QObject):
-        EVT_PYSLIPQT_LEVEL = Signal(object)
-        EVT_PYSLIPQT_POSITION = Signal(object)
-        EVT_PYSLIPQT_SELECT = Signal(object)
-        EVT_PYSLIPQT_BOXSELECT = Signal(object)
-        EVT_PYSLIPQT_POLYSELECT = Signal(object)
-        EVT_PYSLIPQT_POLYBOXSELECT = Signal(object)
 
     # event numbers
     (EVT_PYSLIPQT_LEVEL, EVT_PYSLIPQT_POSITION,
@@ -70,11 +88,10 @@ class MapWidget(QWidget):
                   EVT_PYSLIPQT_BOXSELECT: 'EVT_PYSLIPQT_BOXSELECT',
                   EVT_PYSLIPQT_POLYSELECT: 'EVT_PYSLIPQT_POLYSELECT',
                   EVT_PYSLIPQT_POLYBOXSELECT: 'EVT_PYSLIPQT_POLYBOXSELECT',
-                 }
+                  }
 
     # list of valid placement values
-    valid_placements = ['cc', 'nw', 'cn', 'ne', 'ce',
-                        'se', 'cs', 'sw', 'cw']
+    valid_placements = ['cc', 'nw', 'cn', 'ne', 'ce', 'se', 'cs', 'sw', 'cw']
 
     # default point attributes - map relative
     DefaultPointPlacement = 'cc'
@@ -191,7 +208,7 @@ class MapWidget(QWidget):
         kwargs       keyword args passed through to the underlying QLabel
         """
 
-        super().__init__(parent, **kwargs)    # inherit all parent object setup
+        super().__init__(parent, **kwargs)  # inherit all parent object setup
 
         # remember the tile source object
         self.tile_src = tile_src
@@ -200,40 +217,40 @@ class MapWidget(QWidget):
         self.level = start_level
 
         # view and map limits
-        self.view_width = 0     # width/height of the view
-        self.view_height = 0    # changes when the widget changes size
+        self.view_width = 0  # width/height of the view
+        self.view_height = 0  # changes when the widget changes size
 
         # set tile and levels stuff
-        self.max_level = max(tile_src.levels)   # max level displayed
-        self.min_level = min(tile_src.levels)   # min level displayed
+        self.max_level = max(tile_src.levels)  # max level displayed
+        self.min_level = min(tile_src.levels)  # min level displayed
         self.tile_width = tile_src.tile_size_x  # width of tile in pixels
-        self.tile_height = tile_src.tile_size_y # height of tile in pixels
-        self.num_tiles_x = tile_src.num_tiles_x # number of map tiles in X direction
-        self.num_tiles_y = tile_src.num_tiles_y # number of map tiles in Y direction
-# TODO: implement map wrap-around
-#        self.wrap_x = tile_src.wrap_x           # True if tiles wrap in X direction
-#        self.wrap_y = tile_src.wrap_y           # True if tiles wrap in Y direction
-        self.wrap_x = False                     # True if tiles wrap in X direction
-        self.wrap_y = False                     # True if tiles wrap in Y direction
+        self.tile_height = tile_src.tile_size_y  # height of tile in pixels
+        self.num_tiles_x = tile_src.num_tiles_x  # number of map tiles in X direction
+        self.num_tiles_y = tile_src.num_tiles_y  # number of map tiles in Y direction
+        # TODO: implement map wrap-around
+        #        self.wrap_x = tile_src.wrap_x           # True if tiles wrap in X direction
+        #        self.wrap_y = tile_src.wrap_y           # True if tiles wrap in Y direction
+        self.wrap_x = False  # True if tiles wrap in X direction
+        self.wrap_y = False  # True if tiles wrap in Y direction
 
-        self.map_width = self.num_tiles_x * self.tile_width     # virtual map width
-        self.map_height = self.num_tiles_y * self.tile_height   # virtual map height
+        self.map_width = self.num_tiles_x * self.tile_width  # virtual map width
+        self.map_height = self.num_tiles_y * self.tile_height  # virtual map height
 
-        self.next_layer_id = 1                  # source of unique layer IDs
+        self.next_layer_id = 1  # source of unique layer IDs
 
-        self.tiles_max_level = max(tile_src.levels) # maximum level in tile source
-        self.tiles_min_level = min(tile_src.levels) # minimum level in tile source
+        self.tiles_max_level = max(tile_src.levels)  # maximum level in tile source
+        self.tiles_min_level = min(tile_src.levels)  # minimum level in tile source
 
         # box select state
-        self.sbox_w = None          # width/height of box select rectangle
+        self.sbox_w = None  # width/height of box select rectangle
         self.sbox_h = None
-        self.sbox_1_x = None        # view coords of start corner of select box
-        self.sbox_1_y = None        # if selecting, self.sbox_1_x != NOne
+        self.sbox_1_x = None  # view coords of start corner of select box
+        self.sbox_1_y = None  # if selecting, self.sbox_1_x != NOne
 
         # define position and tile coords of the "key" tile
-        self.key_tile_left = 0      # tile coordinates of key tile
+        self.key_tile_left = 0  # tile coordinates of key tile
         self.key_tile_top = 0
-        self.key_tile_xoffset = 0   # view coordinates of key tile wrt view
+        self.key_tile_xoffset = 0  # view coordinates of key tile wrt view
         self.key_tile_yoffset = 0
 
         # we keep track of the cursor coordinates if cursor on map
@@ -253,8 +270,8 @@ class MapWidget(QWidget):
         self.start_drag_y = None
 
         # layer state variables
-        self.layer_mapping: Dict[int, MapLayer] = dict()         # maps layer ID to layer data
-        self.layer_z_order = list()         # layer Z order, contains layer IDs
+        self.layer_mapping: Dict[int, MapLayer] = dict()  # maps layer ID to layer data
+        self.layer_z_order = list()  # layer Z order, contains layer IDs
 
         self.map_llon = 0.0
         self.map_rlon = 0.0
@@ -283,17 +300,17 @@ class MapWidget(QWidget):
                                  self.TypePolyline: self.sel_box_polylines_in_layer}
 
         # create the events raised by PySlipQt
-        self.events = MapWidget.Events()
+        self.events = MapEvents()
 
         # a dictionary to map event number to raising function
         self.pyslipqt_event_dict = {
-           MapWidget.EVT_PYSLIPQT_LEVEL:         self.events.EVT_PYSLIPQT_LEVEL.emit,
-           MapWidget.EVT_PYSLIPQT_POSITION:      self.events.EVT_PYSLIPQT_POSITION.emit,
-           MapWidget.EVT_PYSLIPQT_SELECT:        self.events.EVT_PYSLIPQT_SELECT.emit,
-           MapWidget.EVT_PYSLIPQT_BOXSELECT:     self.events.EVT_PYSLIPQT_BOXSELECT.emit,
-           MapWidget.EVT_PYSLIPQT_POLYSELECT:    self.events.EVT_PYSLIPQT_POLYSELECT.emit,
-           MapWidget.EVT_PYSLIPQT_POLYBOXSELECT: self.events.EVT_PYSLIPQT_POLYBOXSELECT.emit,
-          }
+            MapWidget.EVT_PYSLIPQT_LEVEL: self.events.EVT_PYSLIPQT_LEVEL.emit,
+            MapWidget.EVT_PYSLIPQT_POSITION: self.events.EVT_PYSLIPQT_POSITION.emit,
+            MapWidget.EVT_PYSLIPQT_SELECT: self.events.EVT_PYSLIPQT_SELECT.emit,
+            MapWidget.EVT_PYSLIPQT_BOXSELECT: self.events.EVT_PYSLIPQT_BOXSELECT.emit,
+            MapWidget.EVT_PYSLIPQT_POLYSELECT: self.events.EVT_PYSLIPQT_POLYSELECT.emit,
+            MapWidget.EVT_PYSLIPQT_POLYBOXSELECT: self.events.EVT_PYSLIPQT_POLYBOXSELECT.emit,
+        }
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumSize(self.tile_width, self.tile_height)
@@ -301,7 +318,7 @@ class MapWidget(QWidget):
         tile_src.setCallback(self.on_tile_available)
 
         self.setMouseTracking(True)
-        self.setEnabled(True)       # to receive key events?
+        self.setEnabled(True)  # to receive key events?
 
         self.default_cursor = self.standard_cursor
         self.setCursor(self.standard_cursor)
@@ -309,7 +326,7 @@ class MapWidget(QWidget):
         # do a "resize" after this function
         QTimer.singleShot(10, self.resizeEvent)
 
-    def on_tile_available(self, level, x, y, image, error):
+    def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
 
         level  the level the tile is for
@@ -322,18 +339,6 @@ class MapWidget(QWidget):
         """
 
         self.update()
-
-    ######
-    # Code for events raised by this widget
-    ######
-
-    class PySlipQtEvent:
-        def __init__(self, etype, **kwargs):
-            """Create a PySlipQtEvent with attributes in 'kwargs'."""
-
-            self.type = etype
-            for (attr, value) in kwargs.items():
-                setattr(self, attr, value)
 
     def dump_event(self, msg, event):
         """Dump an event to the log.
@@ -353,12 +358,8 @@ class MapWidget(QWidget):
         kwargs  a dictionary of attributes to attach to event
         """
 
-        event = MapWidget.PySlipQtEvent(etype, **kwargs)
+        event = PySlipQtEvent(etype, **kwargs)
         self.pyslipqt_event_dict[etype](event)
-
-    ######
-    # Overide the PySide6 mouse/keyboard/etc events
-    ######
 
     def mousePressEvent(self, event):
         """Mouse button pressed."""
@@ -401,20 +402,20 @@ class MapWidget(QWidget):
         self.setCursor(self.default_cursor)
 
         # we need a repaint to remove any selection box, but NOT YET!
-        delayed_paint = self.sbox_1_x       # True if box select active
+        delayed_paint = self.sbox_1_x  # True if box select active
 
         b = event.button()
         if b == Qt.NoButton:
             pass
         elif b == Qt.LeftButton:
             self.left_mbutton_down = False
-# legacy code from pySlip, leave just in case we need it
-#            # if required, ignore this event
-#            if self.ignore_next_up:
-#                self.ignore_next_up = False
-#                return
-#            # we need a repaint to remove any selection box, but NOT YET!
-#            delayed_paint = self.sbox_1_x       # True if box select active
+            # legacy code from pySlip, leave just in case we need it
+            #            # if required, ignore this event
+            #            if self.ignore_next_up:
+            #                self.ignore_next_up = False
+            #                return
+            #            # we need a repaint to remove any selection box, but NOT YET!
+            #            delayed_paint = self.sbox_1_x       # True if box select active
 
             if self.sbox_1_x:
                 # we are doing a box select,
@@ -460,9 +461,9 @@ class MapWidget(QWidget):
                     # not dragging, possible point selection
                     # get click point in view & global coords
                     clickpt_g = self.view_to_geo(x, y)
-#                    if clickpt_g is None:
-#                        return          # we clicked off the map
-    
+                    #                    if clickpt_g is None:
+                    #                        return          # we clicked off the map
+
                     # check each layer for a point select handler, we work on a
                     # copy as user click-handler code could change order
                     for lid in self.layer_z_order[:]:
@@ -472,7 +473,7 @@ class MapWidget(QWidget):
                             result = self.layerPSelHandler[l.type](l, clickpt_v, clickpt_g)
                             if result:
                                 (sel, relsel) = result
-    
+
                                 # raise the EVT_PYSLIPQT_SELECT event
                                 self.raise_event(MapWidget.EVT_PYSLIPQT_SELECT,
                                                  mposn=clickpt_g,
@@ -555,20 +556,20 @@ class MapWidget(QWidget):
                 # drag the key tile in the X direction
                 delta_x = self.start_drag_x - x
                 self.key_tile_xoffset -= delta_x
-                if self.key_tile_xoffset < -self.tile_width:    # too far left
+                if self.key_tile_xoffset < -self.tile_width:  # too far left
                     self.key_tile_xoffset += self.tile_width
                     self.key_tile_left += 1
-                if self.key_tile_xoffset > 0:                   # too far right
+                if self.key_tile_xoffset > 0:  # too far right
                     self.key_tile_xoffset -= self.tile_width
                     self.key_tile_left -= 1
 
                 # drag the key tile in the Y direction
                 delta_y = self.start_drag_y - y
                 self.key_tile_yoffset -= delta_y
-                if self.key_tile_yoffset < -self.tile_height:   # too far up
+                if self.key_tile_yoffset < -self.tile_height:  # too far up
                     self.key_tile_yoffset += self.tile_height
                     self.key_tile_top += 1
-                if self.key_tile_yoffset > 0:                   # too far down
+                if self.key_tile_yoffset > 0:  # too far down
                     self.key_tile_yoffset -= self.tile_height
                     self.key_tile_top -= 1
 
@@ -578,7 +579,7 @@ class MapWidget(QWidget):
                 # get ready for more drag
                 self.start_drag_x, self.start_drag_y = x, y
 
-            self.update()                                   # force a repaint
+            self.update()  # force a repaint
 
         # emit the event for mouse position
         self.raise_event(MapWidget.EVT_PYSLIPQT_POSITION, mposn=mouse_geo, vposn=(x, y))
@@ -592,7 +593,7 @@ class MapWidget(QWidget):
             self.setCursor(self.default_cursor)
             if self.left_mbutton_down:
                 # start of a box select
-                self.sbox_1_x = -1      # special value, means fill X,Y on mouse down
+                self.sbox_1_x = -1  # special value, means fill X,Y on mouse down
         event.accept()
 
     def keyReleaseEvent(self, event):
@@ -659,7 +660,7 @@ class MapWidget(QWidget):
         x_pix_start = self.key_tile_xoffset
         while x_pix_start < self.view_width:
             col_list.append(x_coord)
-            if not self.wrap_x and x_coord >= self.num_tiles_x-1:
+            if not self.wrap_x and x_coord >= self.num_tiles_x - 1:
                 break
             x_coord = (x_coord + 1) % self.num_tiles_x
             x_pix_start += self.tile_height
@@ -669,7 +670,7 @@ class MapWidget(QWidget):
         y_pix_start = self.key_tile_yoffset
         while y_pix_start < self.view_height:
             row_list.append(y_coord)
-            if not self.wrap_y and y_coord >= self.num_tiles_y-1:
+            if not self.wrap_y and y_coord >= self.num_tiles_y - 1:
                 break
             y_coord = (y_coord + 1) % self.num_tiles_y
             y_pix_start += self.tile_height
@@ -829,7 +830,7 @@ class MapWidget(QWidget):
     #
     ######
 
-# UNUSED
+    # UNUSED
     def tile_frac_to_parts(self, t_frac, length):
         """Split a tile coordinate into integer and fractional parts.
 
@@ -844,7 +845,7 @@ class MapWidget(QWidget):
 
         return (int_part, frac_part)
 
-# UNUSED
+    # UNUSED
     def tile_parts_to_frac(self, t_coord, t_offset, length):
         """Convert a tile coord plus offset to a fractional tile value.
 
@@ -855,9 +856,9 @@ class MapWidget(QWidget):
         Returns a fractional tile coordinate.
         """
 
-        return t_coord + t_offset/length
+        return t_coord + t_offset / length
 
-# UNUSED
+    # UNUSED
     def zoom_tile(self, c_tile, scale):
         """Zoom into centre tile at given scale.
 
@@ -882,15 +883,15 @@ class MapWidget(QWidget):
                 tile_left = tile_left * 2
                 tile_xoff = tile_xoff * 2
             else:
-                tile_left = tile_left*2 + 1
-                tile_xoff = tile_xoff*2 - self.tile_width
+                tile_left = tile_left * 2 + 1
+                tile_xoff = tile_xoff * 2 - self.tile_width
 
             if tile_yoff < self.tile_height // 2:
                 tile_top = tile_top * 2
                 tile_yoff = tile_yoff * 2
             else:
-                tile_top = tile_top*2 + 1
-                tile_yoff = tile_yoff*2 % self.tile_height
+                tile_top = tile_top * 2 + 1
+                tile_yoff = tile_yoff * 2 % self.tile_height
         else:
             # assume scale is 0.5
             # a simple halving of fractional coordinates
@@ -941,7 +942,7 @@ class MapWidget(QWidget):
 
         # prepare the show_level value
         if show_levels is None:
-            show_levels = range(self.tiles_min_level, self.tiles_max_level+1)[:]
+            show_levels = range(self.tiles_min_level, self.tiles_max_level + 1)[:]
 
         # create layer, add unique ID to Z order list
         l = MapLayer(layer_id=id, painter=painter, data=data, map_rel=map_rel,
@@ -1077,7 +1078,7 @@ class MapWidget(QWidget):
 
         # draw text on map/view
         for (lon, lat, tdata, place, radius, colour,
-                textcolour, fontname, fontsize, x_off, y_off, data) in text:
+             textcolour, fontname, fontsize, x_off, y_off, data) in text:
             # set font characteristics so we can calculate text width/height
             if cache_font != (fontname, fontsize):
                 font = QFont(fontname, fontsize)
@@ -1086,12 +1087,12 @@ class MapWidget(QWidget):
                 font_metrics = QFontMetrics(font)
 
             qrect = font_metrics.boundingRect(tdata)
-            w = qrect.width()       # text string width and height
+            w = qrect.width()  # text string width and height
             h = qrect.height()
 
             # get point + extent information (each can be None if off-view)
             (pt, ex) = pex(place, lon, lat, x_off, y_off, w, h)
-            if pt and radius:   # don't draw point if off screen or zero radius
+            if pt and radius:  # don't draw point if off screen or zero radius
                 (pt_x, pt_y) = pt
                 if cache_colour != colour:
                     qcolour = QColor(*colour)
@@ -1101,7 +1102,7 @@ class MapWidget(QWidget):
                     cache_colour = colour
                 dc.drawEllipse(QPoint(pt_x, pt_y), radius, radius)
 
-            if ex:              # don't draw text if off screen
+            if ex:  # don't draw text if off screen
                 (lx, _, _, by) = ex
                 if cache_textcolour != textcolour:
                     qcolour = QColor(*textcolour)
@@ -1127,13 +1128,13 @@ class MapWidget(QWidget):
             pex = self.pex_polygon
 
         # draw polygons
-        cache_colour_width = None         # speed up mostly unchanging data
+        cache_colour_width = None  # speed up mostly unchanging data
         cache_fillcolour = (0, 0, 0, 0)
 
-        dc.setBrush(QBrush(QColor(*cache_fillcolour))) # initial brush is transparent
+        dc.setBrush(QBrush(QColor(*cache_fillcolour)))  # initial brush is transparent
 
         for (p, place, width, colour, closed,
-                 filled, fillcolour, x_off, y_off, udata) in data:
+             filled, fillcolour, x_off, y_off, udata) in data:
             (poly, extent) = pex(place, p, x_off, y_off)
             if poly:
                 if (colour, width) != cache_colour_width:
@@ -1166,7 +1167,7 @@ class MapWidget(QWidget):
         dc.setBrush(QBrush(QColor(0, 0, 0, 0)))
 
         # draw polyline(s)
-        cache_colour_width = None       # speed up mostly unchanging data
+        cache_colour_width = None  # speed up mostly unchanging data
 
         for points, place, width, colour, x_off, y_off, udata in data:
             poly, extent = pex(place, points, x_off, y_off)
@@ -1177,9 +1178,9 @@ class MapWidget(QWidget):
                 obj = QPolygon([QPoint(x, y) for x, y in poly])
                 dc.drawPolyline(obj)
 
-######
-# Convert between geo and view coordinates
-######
+    ######
+    # Convert between geo and view coordinates
+    ######
 
     def geo_to_view(self, xgeo, ygeo):
         """Convert a geo coord to view.
@@ -1202,7 +1203,7 @@ class MapWidget(QWidget):
         else:
             return None
 
-# UNUSED
+    # UNUSED
     def geo_to_view_masked(self, xgeo, ygeo):
         """Convert a geo (lon+lat) position to view pixel coords.
 
@@ -1235,8 +1236,8 @@ class MapWidget(QWidget):
         y_from_key = yview - self.key_tile_yoffset
 
         # get view point as tile coordinates
-        xtile = self.key_tile_left + x_from_key/self.tile_width
-        ytile = self.key_tile_top + y_from_key/self.tile_height
+        xtile = self.key_tile_left + x_from_key / self.tile_width
+        ytile = self.key_tile_top + y_from_key / self.tile_height
 
         xgeo, ygeo = self.tile_src.Tile2Geo(xtile, ytile)
 
@@ -1253,14 +1254,14 @@ class MapWidget(QWidget):
 
         return xgeo, ygeo
 
-######
-# PEX - Point & EXtension.
-#
-# These functions encapsulate the code that finds the extent of an object.
-# They all return a tuple (point, extent) where 'point' is the placement
-# point of an object (or list of points for a polygon) and an 'extent'
-# tuple (lx, rx, ty, by) [left, right, top, bottom].
-######
+    ######
+    # PEX - Point & EXtension.
+    #
+    # These functions encapsulate the code that finds the extent of an object.
+    # They all return a tuple (point, extent) where 'point' is the placement
+    # point of an object (or list of points for a polygon) and an 'extent'
+    # tuple (lx, rx, ty, by) [left, right, top, bottom].
+    ######
 
     def pex_point(self, place, xgeo, ygeo, x_off, y_off, radius):
         """Convert point object geo position to point & extent in view coords.
@@ -1408,15 +1409,33 @@ class MapWidget(QWidget):
         # this is different for images
         if image:
             # perturb extent coords to edges of image
-            if   place == 'cc': elx = px - w/2;        ety = py - h/2
-            elif place == 'cn': elx = px - w/2;        ety = py + y_off
-            elif place == 'ne': elx = px - w - x_off;  ety = py + y_off
-            elif place == 'ce': elx = px - w - x_off;  ety = py - h/2
-            elif place == 'se': elx = px - w - x_off;  ety = py - h - y_off
-            elif place == 'cs': elx = px - w/2;        ety = py - h - y_off
-            elif place == 'sw': elx = px + x_off;      ety = py - h - y_off
-            elif place == 'cw': elx = px + x_off;      ety = py - h/2
-            elif place == 'nw': elx = px + x_off;      ety = py + y_off
+            if place == 'cc':
+                elx = px - w / 2;
+                ety = py - h / 2
+            elif place == 'cn':
+                elx = px - w / 2;
+                ety = py + y_off
+            elif place == 'ne':
+                elx = px - w - x_off;
+                ety = py + y_off
+            elif place == 'ce':
+                elx = px - w - x_off;
+                ety = py - h / 2
+            elif place == 'se':
+                elx = px - w - x_off;
+                ety = py - h - y_off
+            elif place == 'cs':
+                elx = px - w / 2;
+                ety = py - h - y_off
+            elif place == 'sw':
+                elx = px + x_off;
+                ety = py - h - y_off
+            elif place == 'cw':
+                elx = px + x_off;
+                ety = py - h / 2
+            elif place == 'nw':
+                elx = px + x_off;
+                ety = py + y_off
             erx = elx + w
             eby = ety + h
         else:
@@ -1464,7 +1483,7 @@ class MapWidget(QWidget):
         extent = (elx, erx, ety, eby)
 
         # decide if extent is off-view
-        res_ex = None       # assume extent is off-view
+        res_ex = None  # assume extent is off-view
         for px, py in view_points:
             if (0 <= px < self.view_width) and (0 <= py < self.view_height):
                 res_ex = extent  # at least some of extent is on-view
@@ -1507,10 +1526,10 @@ class MapWidget(QWidget):
 
         return view, res_ex
 
-######
-# Placement routines instead of original 'exec' code.
-# Code in test_assumptions.py shows this is faster.
-######
+    ######
+    # Placement routines instead of original 'exec' code.
+    # Code in test_assumptions.py shows this is faster.
+    ######
 
     @staticmethod
     def point_placement(place, x, y, x_off, y_off):
@@ -1794,7 +1813,7 @@ class MapWidget(QWidget):
                 self.key_tile_xoffset = 0
             else:
                 # if map left/right edges showing, cover them
-                show_len = (self.num_tiles_x - self.key_tile_left)*self.tile_width + self.key_tile_xoffset
+                show_len = (self.num_tiles_x - self.key_tile_left) * self.tile_width + self.key_tile_xoffset
                 if show_len < self.view_width:
                     # figure out key tile X to have right edge of map and view equal
                     tiles_showing = self.view_width / self.tile_width
@@ -1814,7 +1833,7 @@ class MapWidget(QWidget):
                 self.key_tile_yoffset = 0
             else:
                 # if map bottom edge showing, cover
-                show_len = (self.num_tiles_y - self.key_tile_top)*self.tile_height + self.key_tile_yoffset
+                show_len = (self.num_tiles_y - self.key_tile_top) * self.tile_height + self.key_tile_yoffset
                 if show_len < self.view_height:
                     # figure out key tile Y to have bottom edge of map and view equal
                     tiles_showing = self.view_height / self.tile_height
@@ -1861,7 +1880,7 @@ class MapWidget(QWidget):
         Returns a tuple (level, geo) where 'geo' is (geo_x, geo_y).
         """
 
-        view_x, view_y = self.point_placement_view(place, 0, 0, 0, 0,)
+        view_x, view_y = self.point_placement_view(place, 0, 0, 0, 0, )
         xgeo, ygeo = self.view_to_geo(view_x, view_y)
 
         return self.level, xgeo, ygeo
@@ -1893,8 +1912,8 @@ class MapWidget(QWidget):
         num_whole_x = ctile_xoff // self.tile_width
         num_whole_y = ctile_yoff // self.tile_height
 
-        xmargin = ctile_xoff - num_whole_x*self.tile_width
-        ymargin = ctile_yoff - num_whole_y*self.tile_height
+        xmargin = ctile_xoff - num_whole_x * self.tile_width
+        ymargin = ctile_yoff - num_whole_y * self.tile_height
 
         # update the 'key' tile state variables
         self.key_tile_left = int_ctile_tx - num_whole_x - 1
@@ -1911,9 +1930,9 @@ class MapWidget(QWidget):
             self.key_tile_top = 0
             self.key_tile_yoffset = (self.view_height - self.map_height) // 2
 
-######
-#
-######
+    ######
+    #
+    ######
 
     def colour_to_internal(self, colour):
         """Convert a colour in one of various forms to an internal format.
@@ -1931,7 +1950,7 @@ class MapWidget(QWidget):
                 # assume it's a colour *name*
                 # we should do more checking of the name here, though it looks
                 # like PySide6 defaults to a colour if the name isn't recognized
-                c = QColor(colour) 
+                c = QColor(colour)
                 result = (c.red(), c.blue(), c.green(), c.alpha())
             else:
                 # we try for a colour like '#RRGGBBAA'
@@ -1942,7 +1961,7 @@ class MapWidget(QWidget):
                 result = (r, g, b, a)
         elif isinstance(colour, QColor):
             # if it's a QColor, get float RGBA values, convert to ints
-            result = [int(v*255) for v in colour.getRgbF()]
+            result = [int(v * 255) for v in colour.getRgbF()]
         else:
 
             # we assume a list or tuple
@@ -1950,12 +1969,12 @@ class MapWidget(QWidget):
                 len_colour = len(colour)
             except TypeError:
                 msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                        % str(colour))
+                       % str(colour))
                 raise Exception(msg)
 
             if len_colour != 4:
                 msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                        % str(colour))
+                       % str(colour))
                 raise Exception(msg)
             result = []
             for v in colour:
@@ -1963,11 +1982,11 @@ class MapWidget(QWidget):
                     v = int(v)
                 except ValueError:
                     msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                            % str(colour))
+                           % str(colour))
                     raise Exception(msg)
                 if v < 0 or v > 255:
                     msg = ("Colour value '%s' is not in the form '(r, g, b, a)'"
-                            % str(colour))
+                           % str(colour))
                     raise Exception(msg)
                 result.append(v)
             result = tuple(result)
@@ -2024,9 +2043,9 @@ class MapWidget(QWidget):
 
         return (ll_corner_vx, ll_corner_vy, tr_corner_vx, tr_corner_vy)
 
-######
-# Select helpers - get objects that were selected
-######
+    ######
+    # Select helpers - get objects that were selected
+    ######
 
     def sel_point_in_layer(self, layer, view_pt, map_pt):
         """Determine if clicked location selects a point in layer data.
@@ -2050,7 +2069,7 @@ class MapWidget(QWidget):
 
         result = None
         delta = layer.delta
-        dist = 9999999.0        # more than possible
+        dist = 9999999.0  # more than possible
 
         # get correct pex function (map-rel or view-rel)
         pex = self.pex_point_view
@@ -2063,7 +2082,7 @@ class MapWidget(QWidget):
             (vp, _) = pex(place, x, y, x_off, y_off, radius)
             if vp:
                 (vx, vy) = vp
-                d = (vx - view_x)*(vx - view_x) + (vy - view_y)*(vy - view_y)
+                d = (vx - view_x) * (vx - view_x) + (vy - view_y) * (vy - view_y)
                 if d < dist:
                     rpt = (x, y, {'placement': place,
                                   'radius': radius,
@@ -2202,7 +2221,7 @@ class MapWidget(QWidget):
         for (x, y, bmp, w, h, place, x_off, y_off, radius, colour, udata) in layer.data:
             (_, e) = pex(place, x, y, x_off, y_off, w, h)
             if e:
-                (li, ri, ti, bi) = e    # image extents (view coords)
+                (li, ri, ti, bi) = e  # image extents (view coords)
                 if (vboxlx <= li and ri <= vboxrx and vboxty <= ti and bi <= vboxby):
                     selection.append((x, y, {'placement': place,
                                              'radius': radius,
@@ -2247,7 +2266,7 @@ class MapWidget(QWidget):
             (vp, ex) = pex(place, x, y, 0, 0, radius)
             if vp:
                 (px, py) = vp
-                d = (px - view_x)**2 + (py - view_y)**2
+                d = (px - view_x) ** 2 + (py - view_y) ** 2
                 if d < dist:
                     selection = (x, y, {'placement': place,
                                         'radius': radius,
@@ -2300,7 +2319,7 @@ class MapWidget(QWidget):
 
         # get texts inside box
         for (x, y, text, place, radius, colour,
-                tcolour, fname, fsize, x_off, y_off, udata) in layer.data:
+             tcolour, fname, fsize, x_off, y_off, udata) in layer.data:
             (vp, ex) = pex(place, x, y, x_off, y_off, radius)
             if vp:
                 (px, py) = vp
@@ -2342,7 +2361,7 @@ class MapWidget(QWidget):
 
         # check polyons in layer, choose first view_pt is inside
         for (poly, place, width, colour, close,
-                 filled, fcolour, x_off, y_off, udata) in layer.data:
+             filled, fcolour, x_off, y_off, udata) in layer.data:
             if pip(poly, sel_pt, place, x_off, y_off):
                 sel = (poly, {'placement': place,
                               'offset_x': x_off,
@@ -2379,7 +2398,7 @@ class MapWidget(QWidget):
 
         # check polygons in layer
         for (poly, place, width, colour, close,
-                filled, fcolour, x_off, y_off, udata) in layer.data:
+             filled, fcolour, x_off, y_off, udata) in layer.data:
             (pt, ex) = pex(place, poly, x_off, y_off)
             if ex:
                 (plx, prx, pty, pby) = ex
@@ -2470,9 +2489,9 @@ class MapWidget(QWidget):
 
         return selection, None, None
 
-######
-# Polygon/polyline utility routines
-######
+    ######
+    # Polygon/polyline utility routines
+    ######
 
     @staticmethod
     def point_inside_polygon(point, poly):
@@ -2504,7 +2523,7 @@ class MapWidget(QWidget):
                 if y <= max(p1y, p2y):
                     if x <= max(p1x, p2x):
                         if p1y != p2y:
-                            xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x
+                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
                         if p1x == p2x or x <= xinters:
                             inside = not inside
             (p1x, p1y) = (p2x, p2y)
@@ -2646,7 +2665,7 @@ class MapWidget(QWidget):
 
         px = s2x - s1x
         py = s2y - s1y
-        div = float(px**2 + py**2)
+        div = float(px ** 2 + py ** 2)
         if div != 0:
             u = ((ptx - s1x) * px + (pty - s1y) * py) / div
         else:
@@ -2657,10 +2676,10 @@ class MapWidget(QWidget):
         elif u < 0:
             u = 0
 
-        dx = s1x + u*px - ptx
-        dy = s1y + u*py - pty
+        dx = s1x + u * px - ptx
+        dy = s1y + u * py - pty
 
-        return dx**2 + dy**2
+        return dx ** 2 + dy ** 2
 
     def info(self, msg):
         """Display an information message, log and graphically."""
@@ -2668,7 +2687,7 @@ class MapWidget(QWidget):
         log_msg = '# ' + msg
         length = len(log_msg)
         prefix = '#### Information '
-        banner = prefix + '#'*(80 - len(log_msg) - len(prefix))
+        banner = prefix + '#' * (80 - len(log_msg) - len(prefix))
         log(banner)
         log(log_msg)
         log(banner)
@@ -2681,16 +2700,16 @@ class MapWidget(QWidget):
         log_msg = '# ' + msg
         length = len(log_msg)
         prefix = '#### Warning '
-        banner = prefix + '#'*(80 - len(log_msg) - len(prefix))
+        banner = prefix + '#' * (80 - len(log_msg) - len(prefix))
         log(banner)
         log(log_msg)
         log(banner)
 
         QMessageBox.warning(self, 'Information', msg)
 
-################################################################################
-# Below are the "external" API methods.
-################################################################################
+    ################################################################################
+    # Below are the "external" API methods.
+    ################################################################################
 
     ######
     # "add a layer" routines
@@ -2744,7 +2763,7 @@ class MapWidget(QWidget):
             default_data = kwargs.get('data', self.DefaultPointData)
 
         # create draw data iterable for draw method
-        draw_data = []              # list to hold draw data
+        draw_data = []  # list to hold draw data
 
         for pt in points:
             if len(pt) == 3:
@@ -2889,9 +2908,9 @@ class MapWidget(QWidget):
                               offset_x, offset_y, radius, colour, udata))
 
         return self.add_layer(self.draw_image_layer, draw_data, map_rel,
-                             visible=visible, show_levels=show_levels,
-                             selectable=selectable, name=name,
-                             ltype=self.TypeImage)
+                              visible=visible, show_levels=show_levels,
+                              selectable=selectable, name=name,
+                              ltype=self.TypeImage)
 
     def AddTextLayer(self, text, map_rel=True, visible=True, show_levels=None,
                      selectable=False, name='<text_layer>', **kwargs):
@@ -2983,9 +3002,9 @@ class MapWidget(QWidget):
                               offset_x, offset_y, udata))
 
         return self.add_layer(self.draw_text_layer, draw_data, map_rel,
-                             visible=visible, show_levels=show_levels,
-                             selectable=selectable, name=name,
-                             ltype=self.TypeText)
+                              visible=visible, show_levels=show_levels,
+                              selectable=selectable, name=name,
+                              ltype=self.TypeText)
 
     def AddPolygonLayer(self, data, map_rel=True, visible=True,
                         show_levels=None, selectable=False,
@@ -3084,7 +3103,7 @@ class MapWidget(QWidget):
 
             # if polygon is to be filled, ensure closed
             if close:
-                p = list(p)     # must get a *copy*
+                p = list(p)  # must get a *copy*
                 p.append(p[0])
 
             # check values that can be wrong
@@ -3290,7 +3309,7 @@ class MapWidget(QWidget):
             # if not given a 'show_levels' show all levels available
             if not show_levels:
                 show_levels = range(self.tiles_min_level,
-                                    self.tiles_max_level+1)[:]
+                                    self.tiles_max_level + 1)[:]
 
             layer.show_levels = show_levels
 
@@ -3311,14 +3330,14 @@ class MapWidget(QWidget):
         """
 
         if not self.tile_src.UseLevel(level):
-            return False        # couldn't change level
+            return False  # couldn't change level
 
         self.level = level
         (self.num_tiles_x, self.num_tiles_y, _, _) = self.tile_src.GetInfo(level)
         self.map_width = self.num_tiles_x * self.tile_width
         self.map_height = self.num_tiles_y * self.tile_height
         (self.map_llon, self.map_rlon,
-             self.map_blat, self.map_tlat) = self.tile_src.extent
+         self.map_blat, self.map_tlat) = self.tile_src.extent
 
         # to set some state variables
         self.resizeEvent()
@@ -3483,12 +3502,11 @@ class MapWidget(QWidget):
                                 % (str(self.level),
                                    str(tile_src), str(tile_src.levels)))
 
-# TODO: MUST SET KEY TILE STUFF HERE
+        # TODO: MUST SET KEY TILE STUFF HERE
         self.set_key_from_centre(xgeo, ygeo)
 
         # back to old level+centre, and refresh the display
-#        self.GotoLevelAndPosition(level, geo)
+        #        self.GotoLevelAndPosition(level, geo)
         self.zoom_level_position(level, xgeo, ygeo)
 
         return old_tileset
-

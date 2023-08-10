@@ -4,7 +4,7 @@ A server Tiles object for pySlipQt tiles.
 All server tile sources should inherit from this class.
 For example, see osm_tiles.py.
 """
-
+import queue
 from urllib import request
 from typing import Callable
 from PySide6.QtGui import QPixmap
@@ -19,11 +19,11 @@ class TileWorker(QThread):
                  id_num: int,
                  server: str,
                  tilepath: str,
-                 requests,
+                 requests: queue.Queue,
                  callback: Callable[[int, float, float, QPixmap, bool], None],  # level, x, y, pixmap, error
                  error_tile: QPixmap,
                  content_type: str,
-                 rerequest_age: int,
+                 rerequest_age: float,
                  error_image: QPixmap,
                  refresh_tiles_after_days=60):
         """

@@ -1,5 +1,5 @@
 """
-A tile source that serves OpenStreetMap tiles from server(s).
+A tile source that serves OpenStreetMap tiles from the internet.
 """
 
 import math
@@ -7,50 +7,40 @@ from typing import Tuple
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
-class OsmTiles(Tiles):
-    """An object to source server tiles for pySlipQt."""
-
-    TilesetName = 'OpenStreetMap Tiles'
-    TilesetShortName = 'OSM Tiles'
+class MapboxTiles(Tiles):
+    """An object to source internet tiles for pySlip."""
+    TilesetName = 'ModestMaps Tiles'
+    TilesetShortName = 'MM Tiles'
     TilesetVersion = '1.0'
 
-    def __init__(self, tiles_dir='open_street_map_tiles', http_proxy=None):
+    def __init__(self, tiles_dir='modest_maps_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(list(range(17)),
+        super().__init__(levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,
-                         servers=[
-                             # 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all',
-                             'https://tile.openstreetmap.org',
-                             # 'https://a.tile.openstreetmap.org',
-                             # 'https://b.tile.openstreetmap.org',
-                             # 'https://c.tile.openstreetmap.org',
-                         ],
-                         url_path='/{Z}/{X}/{Y}.png',
-                         max_server_requests=2,
                          max_lru=10000,
+                         servers=['http://c.tiles.mapbox.com',
+                                  ],
+                         url_path='/v3/examples.map-szwdot65/{Z}/{X}/{Y}.png',
+                         max_server_requests=2,
                          http_proxy=http_proxy)
-        # TODO: implement map wrap-around
-        #        self.wrap_x = True
-        #        self.wrap_y = False
-
-        # get tile information into instance
-        self.level = min(self.levels)
-        self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
 
     def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
-        """
-        Convert geo to tile fractional coordinates for level in use.
+        """Convert geo to tile fractional coordinates for level in use.
+
         geo  tuple of geo coordinates (xgeo, ygeo)
+
         Note that we assume the point *is* on the map!
+
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
+
         lat_rad = math.radians(ygeo)
         n = 2.0 ** self.level
         xtile = (xgeo + 180.0) / 360.0 * n
@@ -61,8 +51,11 @@ class OsmTiles(Tiles):
     def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
         """
         Convert tile fractional coordinates to geo for level in use.
-        tile  a tuple (xtile,ytile) of tile fractional coordinates
+
+        tile  a tupl;e (xtile,ytile) of tile fractional coordinates
+
         Note that we assume the point *is* on the map!
+
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
 

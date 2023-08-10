@@ -8,7 +8,7 @@ For example, see gmt_local.py (local tiles) and osm_tiles.py
 
 import os
 import math
-from typing import Tuple, Union
+from typing import Tuple, Union, List, Callable
 from PySide6.QtGui import QPixmap
 from GridCal.Gui.MapWidget.Tiles.tiles_cache import TilesCache
 
@@ -16,18 +16,19 @@ from GridCal.Gui.MapWidget.Tiles.tiles_cache import TilesCache
 class BaseTiles(object):
     """A base tile object to source local tiles for pySlip."""
 
-    # maximum number of in-memory cached tiles
-    MaxLRU = 1000
-
-    def __init__(self, levels, tile_width, tile_height,
-                 tiles_dir, max_lru=MaxLRU):
-        """Initialise a Tiles instance.
-
-        levels       a list of level numbers that are to be served
-        tile_width   width of each tile in pixels
-        tile_height  height of each tile in pixels
-        tiles_dir    path to on-disk tile cache directory
-        max_lru      maximum number of cached in-memory tiles
+    def __init__(self,
+                 levels: List[int],
+                 tile_width: int,
+                 tile_height: int,
+                 tiles_dir: str,
+                 max_lru: int):
+        """
+        Initialise a Tiles instance.
+        :param levels: a list of level numbers that are to be served
+        :param tile_width: width of each tile in pixels
+        :param tile_height: height of each tile in pixels
+        :param tiles_dir: path to on-disk tile cache directory
+        :param max_lru: maximum number of tiles cached in-memory
         """
 
         # save params
@@ -96,7 +97,7 @@ class BaseTiles(object):
 
         return True
 
-    def GetTile(self, x, y) -> QPixmap:
+    def GetTile(self, x: float, y: float) -> QPixmap:
         """Get bitmap for tile at tile coords (x, y) and current level.
 
         x  X coord of tile required (tile coordinates)
@@ -119,7 +120,7 @@ class BaseTiles(object):
         except KeyError as e:
             raise KeyError("Can't find tile for key '%s'" % str((self.level, x, y))) from None
 
-    def GetInfo(self, level) -> Union[Tuple[float, float, None, None], None]:
+    def GetInfo(self, level: int) -> Union[Tuple[float, float, None, None], None]:
         """Get tile info for a particular level.
 
         level  the level to get tile info for
@@ -150,13 +151,15 @@ class BaseTiles(object):
         return self.extent
 
     def tile_on_disk(self, level: int, x: float, y: float):
-        """Return True if tile at (level, x, y) is on-disk."""
+        """
+        Return True if tile at (level, x, y) is on-disk.
+        """
 
         raise Exception('You must override BaseTiles.tile_on_disk(level, x, y))')
 
-    def setCallback(self, callback):
-        """Set the "tile available" callback function.
-
+    def setCallback(self, callback: Callable[[int, float, float, QPixmap, bool], None]):
+        """
+        Set the "tile available" callback function.
         Only used with internet tiles.  See "tiles_net.py".
         """
 
@@ -164,8 +167,8 @@ class BaseTiles(object):
         # raise Exception('You must override BaseTiles.setCallback(callback))')
 
     def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
-        """Convert geo to tile fractional coordinates for level in use.
-
+        """
+        Convert geo to tile fractional coordinates for level in use.
         xgeo   geo longitude in degrees
         ygeo   geo latitude in degrees
 
@@ -175,7 +178,8 @@ class BaseTiles(object):
         raise Exception('You must override BaseTiles.Geo2Tile(xgeo, ygeo)')
 
     def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
-        """Convert tile fractional coordinates to geo for level in use.
+        """
+        Convert tile fractional coordinates to geo for level in use.
 
         xtile  tile fractional X coordinate
         ytile  tile fractional Y coordinate

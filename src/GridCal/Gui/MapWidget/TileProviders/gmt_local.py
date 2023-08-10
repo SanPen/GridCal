@@ -7,37 +7,13 @@ import pickle
 from typing import Tuple
 from GridCal.Gui.MapWidget.Tiles.base_tiles import BaseTiles
 
-###############################################################################
-# Change values below here to configure the GMT local tile source.
-###############################################################################
-
-# attributes used for tileset introspection
-# names must be unique amongst tile modules
-# TilesetName = 'GMT local tiles'
-# TilesetShortName = 'GMT tiles'
-# TilesetVersion = '1.0'
-#
-# # the pool of tile servers used
-# TileServers = None
-#
-# # the path on the server to a tile
-# # {} params are Z=level, X=column, Y=row, origin at map top-left
-# TileURLPath = None
-#
-# # maximum pending requests for each tile server
-# # unused with local tiles
-# MaxServerRequests = None
-#
-# # path to the INFO file for GMT tiles
-# TileInfoFilename = "tile.info"
-
-
-################################################################################
-# Class for GMT local tiles.   Builds on tiles.BaseTiles.
-################################################################################
 
 class GmtLocalTiles(BaseTiles):
     """An object to source GMT tiles for the widget."""
+
+    TilesetName = 'GMT local tiles'
+    TilesetShortName = 'GMT tiles'
+    TilesetVersion = '1.0'
 
     def __init__(self, tiles_dir=os.path.abspath(os.path.expanduser('~/gmt_local_tiles'))):
         """Override the base class for GMT tiles.

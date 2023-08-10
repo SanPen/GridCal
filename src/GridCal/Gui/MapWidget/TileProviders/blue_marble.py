@@ -6,64 +6,34 @@ import math
 from typing import Tuple
 import GridCal.Gui.MapWidget.Tiles.tiles as tiles_net
 
-###############################################################################
-# Change values below here to configure an internet tile source.
-###############################################################################
-
-# attributes used for tileset introspection
-# names must be unique amongst tile modules
-TilesetName = 'BlueMarble Tiles'
-TilesetShortName = 'BM Tiles'
-TilesetVersion = '1.0'
-
-# the pool of tile servers used
-TileServers = ['http://s3.amazonaws.com',
-               ]
-
-# the path on the server to a tile
-# {} params are Z=level, X=column, Y=row, origin at map top-left
-TileURLPath = '/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg'
-
-# tile levels to be used
-TileLevels = range(10)
-
-# maximum pending requests for each tile server
-MaxServerRequests = 2
-
-# set maximum number of in-memory tiles for each level
-MaxLRU = 10000
-
-# size of tiles
-TileWidth = 256
-TileHeight = 256
-
-# where earlier-cached tiles will be
-# this can be overridden in the __init__ method
-TilesDir = 'blue_marble_tiles'
-
-
-################################################################################
-# Class for these tiles.   Builds on net_tiles.Tiles.
-################################################################################
-
 
 class BlueMarbleTiles(tiles_net.Tiles):
     """
     An object to source internet tiles for pySlip.
     """
 
-    def __init__(self, tiles_dir=TilesDir, http_proxy=None):
-        """Override the base class for these tiles.
+    TilesetName = 'BlueMarble Tiles'
+    TilesetShortName = 'BM Tiles'
+    TilesetVersion = '1.0'
+
+    def __init__(self, tiles_dir='blue_marble_tiles', http_proxy=None):
+        """
+        Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
+        :param tiles_dir:
+        :param http_proxy:
         """
 
-        super().__init__(levels=TileLevels,
-                         tile_width=TileWidth, tile_height=TileHeight,
-                         tiles_dir=tiles_dir, max_lru=MaxLRU,
-                         servers=TileServers, url_path=TileURLPath,
-                         max_server_requests=MaxServerRequests,
+        super().__init__(levels=list(range(10)),
+                         tile_width=256,
+                         tile_height=256,
+                         tiles_dir=tiles_dir,
+                         max_lru=10000,
+                         servers=['http://s3.amazonaws.com', ],
+                         url_path='/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg',
+                         max_server_requests=2,
                          http_proxy=http_proxy)
 
     def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:

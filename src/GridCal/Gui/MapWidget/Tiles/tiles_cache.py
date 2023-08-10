@@ -22,7 +22,7 @@ class TilesCache(pycacheback.PyCacheBack):
     PicExtension = 'png'
     TilePath = '{Z}/{X}/{Y}.%s' % PicExtension
 
-    def tile_date(self, key):
+    def tile_date(self, key: Tuple[int, float, float]):
         """Return the creation date of a tile given its key."""
 
         tile_path = self.tile_path(key)

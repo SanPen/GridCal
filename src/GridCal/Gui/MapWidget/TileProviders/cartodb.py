@@ -7,70 +7,42 @@ from typing import Tuple
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
-###############################################################################
-# Change values below here to configure this tile source.
-###############################################################################
-
-# attributes used for tileset introspection
-# names must be unique amongst tile modules
-TilesetName = 'CartoDb Dark Matter'
-TilesetShortName = 'CartoDb Dark Matter'
-TilesetVersion = '1.0'
-
-# the pool of tile servers used
-TileServers = [
-               "http://basemaps.cartocdn.com/dark_all/"  # http://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png
-              ]
-
-# the path on the server to a tile
-# {} params are Z=level, X=column, Y=row, origin at map top-left
-TileURLPath = '/{Z}/{X}/{Y}.png'
-
-# tile levels to be used
-TileLevels = range(17)
-
-# maximum pending requests for each tile server
-MaxServerRequests = 2
-
-# set maximum number of in-memory tiles for each level
-MaxLRU = 10000
-
-# where earlier-cached tiles will be
-# this can be overridden in the __init__ method
-TilesDir = 'open_street_map_tiles'
-
-
-################################################################################
-# Class for these tiles.   Builds on tiles_net.Tiles.
-################################################################################
-
 class CartoDbTiles(Tiles):
     """An object to source server tiles for pySlipQt."""
 
-    # size of tiles
-    TileWidth = 256
-    TileHeight = 256
+    TilesetName = 'CartoDb Dark Matter'
+    TilesetShortName = 'CartoDb Dark Matter'
+    TilesetVersion = '1.0'
 
-    def __init__(self, tiles_dir=TilesDir, http_proxy=None, tile_servers=None):
-        """Override the base class for these tiles.
+    def __init__(self, tiles_dir='open_street_map_tiles', http_proxy=None, tile_servers=None):
+        """
+        Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
+        :param tiles_dir:
+        :param http_proxy:
+        :param tile_servers:
         """
 
-        super().__init__(TileLevels,
-                         CartoDbTiles.TileWidth, CartoDbTiles.TileHeight,
+        super().__init__(levels=list(range(17)),
+                         tile_width=256,
+                         tile_height=256,
                          tiles_dir=tiles_dir,
-                         servers=TileServers if tile_servers is None else tile_servers,
-                         url_path=TileURLPath,
-                         max_server_requests=MaxServerRequests,
-                         max_lru=MaxLRU, http_proxy=http_proxy)
-# TODO: implement map wrap-around
-#        self.wrap_x = True
-#        self.wrap_y = False
+                         servers=[
+                             "http://basemaps.cartocdn.com/dark_all/"
+                             # http://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png
+                         ] if tile_servers is None else tile_servers,
+                         url_path='/{Z}/{X}/{Y}.png',
+                         max_server_requests=2,
+                         max_lru=10000,
+                         http_proxy=http_proxy)
+        # TODO: implement map wrap-around
+        #        self.wrap_x = True
+        #        self.wrap_y = False
 
         # get tile information into instance
-        self.level = min(TileLevels)
+        self.level = min(self.levels)
         self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
 
     def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
@@ -83,7 +55,7 @@ class CartoDbTiles(Tiles):
         lat_rad = math.radians(ygeo)
         n = 2.0 ** self.level
         xtile = (xgeo + 180.0) / 360.0 * n
-        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0/math.cos(lat_rad))) / math.pi) / 2.0) * n
+        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
         return xtile, ytile
 

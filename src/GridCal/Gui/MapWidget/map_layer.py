@@ -25,6 +25,7 @@ Some semantics:
           (view may be smaller than map, or larger)
 """
 
+from typing import Callable, List, Union, Tuple
 from PySide6.QtGui import QColor
 
 
@@ -35,9 +36,16 @@ class MapLayer:
 
     DefaultDelta = 50  # default selection delta
 
-    def __init__(self, layer_id=0, painter=None, data=None, map_rel=True,
-                 visible=False, show_levels=None, selectable=False,
-                 name="<no name given>", ltype=None):
+    def __init__(self,
+                 layer_id: int = 0,
+                 painter: Callable = None,
+                 data: List = None,
+                 map_rel: bool = True,
+                 visible: bool = False,
+                 show_levels: List[int] = None,
+                 selectable: bool = False,
+                 name: str = "<no name given>",
+                 ltype: int = None) -> None:
         """
         Initialise the Layer object.
 
@@ -66,7 +74,7 @@ class MapLayer:
         self.valid_placements = ['cc', 'nw', 'cn', 'ne', 'ce', 'se', 'cs', 'sw', 'cw']
 
     @staticmethod
-    def colour_to_internal(colour):
+    def colour_to_internal(colour: Union[str, QColor, List[int]]) -> Tuple[int]:
         """Convert a colour in one of various forms to an internal format.
 
         colour  either a HEX string ('#RRGGBBAA')
@@ -145,13 +153,25 @@ class MapLayer:
 
         return result
 
-    def setData(self, data,
+    def setData(self,
+                data,
                 default_placement='cc',
                 default_width=1,
                 default_colour='red',
                 default_offset_x=0,
                 default_offset_y=0,
                 default_data=None):
+        """
+
+        :param data:
+        :param default_placement:
+        :param default_width:
+        :param default_colour:
+        :param default_offset_x:
+        :param default_offset_y:
+        :param default_data:
+        :return:
+        """
 
         # create draw_data iterable
         self.data = []

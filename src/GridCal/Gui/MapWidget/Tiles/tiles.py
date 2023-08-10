@@ -13,6 +13,7 @@ import urllib
 from urllib import request
 import queue
 from PySide6.QtGui import QPixmap
+from typing import List, Tuple, Callable
 from GridCal.Gui.MapWidget.Tiles.base_tiles import BaseTiles
 import GridCal.Gui.MapWidget.Tiles.default_tile_data as std
 from GridCal.Gui.MapWidget.Tiles.tile_worker import TileWorker
@@ -34,12 +35,6 @@ class Tiles(BaseTiles):
     A tile object to source server tiles for the widget.
     """
 
-    # maximum number of outstanding requests per server
-    MaxServerRequests = 2
-
-    # maximum number of in-memory cached tiles
-    MaxLRU = 1000
-
     # allowed file types and associated values
     AllowedFileTypes = {'png': 'PNG', 'jpg': 'JPG'}
 
@@ -47,23 +42,23 @@ class Tiles(BaseTiles):
     SecondsInADay = 60 * 60 * 24
 
     def __init__(self,
-                 levels,
-                 tile_width,
-                 tile_height,
-                 tiles_dir,
-                 max_lru,
-                 servers,
-                 url_path,
-                 max_server_requests,
+                 levels: List[int],
+                 tile_width: int,
+                 tile_height: int,
+                 tiles_dir: str,
+                 max_lru: int,
+                 servers: List[str],
+                 url_path: str,
+                 max_server_requests: int,
                  http_proxy,
-                 refetch_days=60):
+                 refetch_days: int = 60):
         """
         Initialise a Tiles instance.
         :param levels: a list of level numbers that are to be served
         :param tile_width: width of each tile in pixels
         :param tile_height: height of each tile in pixels
         :param tiles_dir: path to on-disk tile cache directory
-        :param max_lru: maximum number of cached in-memory tiles
+        :param max_lru: maximum number of tiles cached in-memory
         :param servers: list of tile servers
         :param url_path: path on server to each tile
         :param max_server_requests: maximum number of requests per server
@@ -89,7 +84,7 @@ class Tiles(BaseTiles):
         self.refresh_tiles_after_days = refetch_days
 
         # callback must be set by higher-level copde
-        self.callback = None
+        self.callback: Callable[[int, float, float, QPixmap, bool], None] = None
 
         # calculate a re-request age, if specified
         self.rerequest_age = (time.time() - self.refresh_tiles_after_days * self.SecondsInADay)
@@ -174,10 +169,16 @@ class Tiles(BaseTiles):
         self.workers = []
         for server in self.servers:
             for num_thread in range(self.max_requests):
-                worker = TileWorker(num_thread, server, self.url_path,
-                                    self.request_queue, self.tile_is_available,
-                                    self.error_tile, self.content_type,
-                                    self.rerequest_age, self.error_tile)
+                worker = TileWorker(id_num=num_thread,
+                                    server=server,
+                                    tilepath=self.url_path,
+                                    requests=self.request_queue,
+                                    callback=self.tile_is_available,
+                                    error_tile=self.error_tile,
+                                    content_type=self.content_type,
+                                    rerequest_age=self.rerequest_age,
+                                    error_image=self.error_tile,
+                                    refresh_tiles_after_days=60)
                 self.workers.append(worker)
                 worker.start()
 
@@ -277,7 +278,7 @@ class Tiles(BaseTiles):
                 self.request_queue.queue.clear()
             self.queued_requests.clear()
 
-    def get_server_tile(self, level, x, y):
+    def get_server_tile(self, level: int, x: float, y: float) -> None:
         """
         Start the process to get a server tile.
 
@@ -294,13 +295,13 @@ class Tiles(BaseTiles):
             self.request_queue.put(tile_key)
             self.queued_requests[tile_key] = True
 
-    def tile_on_disk(self, level, x, y):
+    def tile_on_disk(self, level: int, x: float, y: float):
         """Return True if tile at (level, x, y) is on-disk."""
 
         tile_path = self.cache.tile_path((level, x, y))
         return os.path.exists(tile_path)
 
-    def setCallback(self, callback):
+    def setCallback(self, callback: Callable[[int, float, float, QPixmap, bool], None]):
         """Set the "tile available" callback.
 
         callback  reference to object to call when tile is found.
@@ -308,7 +309,7 @@ class Tiles(BaseTiles):
 
         self.callback = callback
 
-    def tile_is_available(self, level, x, y, image, error):
+    def tile_is_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """
         Callback routine - a 'net tile is available.
 
@@ -336,7 +337,6 @@ class Tiles(BaseTiles):
             self.callback(level, x, y, image, True)
         else:
             msg = f'tile_is_available: self.callback is NOT SET!'
-            log.error(msg)
             raise RuntimeError(msg) from None
 
     def SetAgeThresholdDays(self, num_days):
