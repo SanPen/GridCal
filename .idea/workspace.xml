@@ -27,10 +27,21 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Refactoring the map widget (2)">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_events.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="More map refactoring">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/draw_data_point.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/image_layer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/layer_types.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/place.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/point_layer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/polygon_layer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/polyline_layer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/text_layer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/map_layer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +171,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/GridEditorWidget&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/MapWidget/Layers&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -178,18 +189,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/InvestmentsEvaluation" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard/icons" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard/icons" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/TileProviders" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/tiles" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/pySlipQt/TileProviders" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -1225,6 +1236,8 @@
       <workItem from="1691571786443" duration="1490000" />
       <workItem from="1691583695694" duration="537000" />
       <workItem from="1691664195563" duration="12714000" />
+      <workItem from="1691756719846" duration="5416000" />
+      <workItem from="1691763964200" duration="10358000" />
     </task>
     <task id="LOCAL-00420" summary="Improved thread synchronization on cancel&#10;Improved Contingency analysis TS integration">
       <created>1687938132794</created>
@@ -2003,7 +2016,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>3879</line>
+          <line>3883</line>
           <option name="timeStamp" value="1211" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2027,11 +2040,6 @@
           <option name="timeStamp" value="1217" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics_template.py</url>
-          <line>683</line>
-          <option name="timeStamp" value="1235" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
           <line>132</line>
           <option name="timeStamp" value="1237" />
@@ -2042,38 +2050,33 @@
           <option name="timeStamp" value="1238" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics_template.py</url>
-          <line>689</line>
-          <option name="timeStamp" value="1239" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/TileProviders/blue_marble.py</url>
           <line>69</line>
           <option name="timeStamp" value="1240" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_layer.py</url>
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/map_layer.py</url>
           <line>86</line>
           <option name="timeStamp" value="1242" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>542</line>
+          <line>549</line>
           <option name="timeStamp" value="1248" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>800</line>
+          <line>807</line>
           <option name="timeStamp" value="1252" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>683</line>
+          <line>690</line>
           <option name="timeStamp" value="1257" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>813</line>
+          <line>820</line>
           <option name="timeStamp" value="1258" />
         </line-breakpoint>
       </breakpoints>
@@ -2274,7 +2277,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1689623105998" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1691678636245" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1691774449890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

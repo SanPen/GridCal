@@ -1093,9 +1093,13 @@ class MainGUI(QMainWindow):
 
         # remove all widgets from the layout
         for i in reversed(range(self.ui.map_layout.count())):
+
+            # get the widget
             widget_to_remove = self.ui.map_layout.itemAt(i).widget()
+
             # remove it from the layout list
             self.ui.map_layout.removeWidget(widget_to_remove)
+
             # remove it from the gui
             widget_to_remove.setParent(None)
 
@@ -1105,12 +1109,12 @@ class MainGUI(QMainWindow):
         # create the map widget
         self.map_widget = MapWidget(self, tile_src=self.tile_source, start_level=5)
 
-        # add lines layer
+        # add empty polylines layer
         self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=[],
                                                                   map_rel=True,
                                                                   visible=True,
-                                                                  delta=40,
                                                                   show_levels=list(range(20)),
+                                                                  selectable=True,
                                                                   # levels at which to show the polylines
                                                                   name='<polyline_layer>')
         # add to the layout
@@ -7271,7 +7275,7 @@ class MainGUI(QMainWindow):
             #                                                           # levels at which to show the polylines
             #                                                           name='<polyline_layer>')
 
-            self.map_widget.getLayer(self.polyline_layer_id).data = poly
+            self.map_widget.setLayerData(self.polyline_layer_id, poly)
             self.map_widget.update()
 
             # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)

@@ -16,9 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+from typing import List, Tuple
 from PySide6 import QtCore, QtGui
 from matplotlib.colors import LinearSegmentedColormap
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as mplcm
 import matplotlib.colors as colors
@@ -26,9 +28,10 @@ import matplotlib.colors as colors
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.Devices.editable_device import DeviceType
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.MapWidget.map_widget import PolylineData, Place
 
 
-def get_voltage_color_map():
+def get_voltage_color_map() -> matplotlib.colors.LinearSegmentedColormap:
     """
     Voltage Color map
     :return: colormap
@@ -44,7 +47,7 @@ def get_voltage_color_map():
     return voltage_cmap
 
 
-def get_loading_color_map():
+def get_loading_color_map() -> matplotlib.colors.LinearSegmentedColormap:
     """
     Loading Color map
     :return: colormap
@@ -398,7 +401,7 @@ def colour_the_schematic(circuit: MultiCircuit,
                          )
 
 
-def has_null_coordinates(coord):
+def has_null_coordinates(coord: List[Tuple[float, float]]) -> bool:
     """
 
     """
@@ -467,10 +470,10 @@ def get_map_polylines(circuit: MultiCircuit,
                       max_branch_width=1,
                       min_bus_width=20,
                       max_bus_width=20,
-                      cmap: palettes.Colormaps = None):
+                      cmap: palettes.Colormaps = None) -> List[PolylineData]:
 
     # (polyline_points, placement, width, rgba, offset_x, offset_y, udata)
-    data = list()
+    data: List[PolylineData] = list()
 
     voltage_cmap = get_voltage_color_map()
     loading_cmap = get_loading_color_map()
@@ -560,15 +563,13 @@ def get_map_polylines(circuit: MultiCircuit,
                 b *= 255
                 a *= 255
 
-
             if use_flow_based_width:
                 weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
             else:
                 weight = 3
 
             # draw the line
-            # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
-            data.append((points, "cc", weight, (r, g, b, a), 0, 0, {}))
+            data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
 
     if len(circuit.get_hvdc()) > 0:
         lnorm = np.abs(hvdc_loading)
@@ -613,6 +614,6 @@ def get_map_polylines(circuit: MultiCircuit,
 
                 # draw the line
                 # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
-                data.append((points, "cc", weight, (r, g, b, a), 0, 0, {}))
+                data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
 
     return data
