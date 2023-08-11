@@ -12,7 +12,8 @@ import traceback
 import urllib
 from urllib import request
 import queue
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QColor
+# from PySide6 import QtG
 from typing import List, Tuple, Callable
 from GridCal.Gui.MapWidget.Tiles.base_tiles import BaseTiles
 import GridCal.Gui.MapWidget.Tiles.default_tile_data as std
@@ -122,11 +123,13 @@ class Tiles(BaseTiles):
         self.queued_requests = {}
 
         # prepare the "pending" and "error" images
-        self.pending_tile = QPixmap()
-        self.pending_tile.loadFromData(std.getPendingImage())
+        self.pending_tile = QPixmap(256, 256)
+        self.pending_tile.fill(QColor.fromRgb(50, 50, 50, 255))
+        # self.pending_tile.loadFromData(std.getPendingImage())
 
-        self.error_tile = QPixmap()
-        self.error_tile.loadFromData(std.getErrorImage())
+        self.error_tile = QPixmap(256, 256)
+        self.error_tile.fill(QColor.fromRgb(255, 0, 0, 255))
+        # self.error_tile.loadFromData(std.getErrorImage())
 
         # test for firewall - use proxy (if supplied)
         test_url = self.servers[0] + self.url_path.format(Z=0, X=0, Y=0)

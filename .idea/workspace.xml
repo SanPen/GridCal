@@ -28,20 +28,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="More map refactoring">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/draw_data_point.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/image_layer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/layer_types.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/place.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/point_layer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/polygon_layer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/polyline_layer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/text_layer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers/map_layer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +57,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel" />
+        <entry key="$PROJECT_DIR$" value="devel_map_refactor" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -1624,7 +1612,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added generator to battery conversion" />
     <MESSAGE value="fixed buses not beign added to investments&#10;Fixed bug in storage selection" />
     <MESSAGE value="Fixed bug in storage selection" />
     <MESSAGE value="Added object selection dialogue when adding investments and contingencies" />
@@ -1649,7 +1636,8 @@
     <MESSAGE value="Improved arrows and fixed some signs bug in the OPF visualization" />
     <MESSAGE value="Refactoring the map widget" />
     <MESSAGE value="Refactoring the map widget (2)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactoring the map widget (2)" />
+    <MESSAGE value="restructured the layers and its functions properly" />
+    <option name="LAST_COMMIT_MESSAGE" value="restructured the layers and its functions properly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2277,7 +2265,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1689623105998" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1691774449890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1691775069099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
