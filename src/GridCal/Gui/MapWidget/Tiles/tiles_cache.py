@@ -76,3 +76,11 @@ class TilesCache(pycacheback.PyCacheBack):
             pass
 
         image.save(tile_path, TilesCache.PicExtension)
+
+    def add(self, key: Tuple[int, float, float], image: QPixmap):
+        """
+        Add entry
+        :param key: key
+        :param image: value
+        """
+        self._put_to_back(key, image)

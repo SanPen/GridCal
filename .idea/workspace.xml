@@ -27,9 +27,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="More map refactoring">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed the default tiles to be gray and red when errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles_cache.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Tiles/tiles_cache.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1227,13 +1228,6 @@
       <workItem from="1691756719846" duration="5416000" />
       <workItem from="1691763964200" duration="10358000" />
     </task>
-    <task id="LOCAL-00420" summary="Improved thread synchronization on cancel&#10;Improved Contingency analysis TS integration">
-      <created>1687938132794</created>
-      <option name="number" value="00420" />
-      <option name="presentableId" value="LOCAL-00420" />
-      <option name="project" value="LOCAL" />
-      <updated>1687938132794</updated>
-    </task>
     <task id="LOCAL-00421" summary="Changes to integrate Newton for contingencies (WIP)">
       <created>1687940216400</created>
       <option name="number" value="00421" />
@@ -1570,7 +1564,14 @@
       <option name="project" value="LOCAL" />
       <updated>1691673020698</updated>
     </task>
-    <option name="localTasksCounter" value="469" />
+    <task id="LOCAL-00469" summary="Fixed the default tiles to be gray and red when errors">
+      <created>1691775113176</created>
+      <option name="number" value="00469" />
+      <option name="presentableId" value="LOCAL-00469" />
+      <option name="project" value="LOCAL" />
+      <updated>1691775113176</updated>
+    </task>
+    <option name="localTasksCounter" value="470" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1612,7 +1613,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed buses not beign added to investments&#10;Fixed bug in storage selection" />
     <MESSAGE value="Fixed bug in storage selection" />
     <MESSAGE value="Added object selection dialogue when adding investments and contingencies" />
     <MESSAGE value="Fixed stochastic power flow" />
@@ -1637,7 +1637,8 @@
     <MESSAGE value="Refactoring the map widget" />
     <MESSAGE value="Refactoring the map widget (2)" />
     <MESSAGE value="restructured the layers and its functions properly" />
-    <option name="LAST_COMMIT_MESSAGE" value="restructured the layers and its functions properly" />
+    <MESSAGE value="Fixed the default tiles to be gray and red when errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed the default tiles to be gray and red when errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

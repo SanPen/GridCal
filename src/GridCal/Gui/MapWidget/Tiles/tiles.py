@@ -11,6 +11,7 @@ import math
 import traceback
 import urllib
 from urllib import request
+from urllib.error import HTTPError
 import queue
 from PySide6.QtGui import QPixmap, QColor
 # from PySide6 import QtG
@@ -137,7 +138,7 @@ class Tiles(BaseTiles):
             # r = request.Request(test_url, headers={'User-Agent': 'Nokia (PyQt) Graphics Dojo 1.0'})
             # response = request.urlopen(r).read()
             request.urlopen(test_url)
-        except urllib.error.HTTPError as e:
+        except HTTPError as e:
             # if it's fatal, log it and die, otherwise try a proxy
             status_code = e.code
             log('Error: test_url=%s, status_code=%s' % (test_url, str(status_code)))
@@ -326,7 +327,7 @@ class Tiles(BaseTiles):
         # put image into in-memory cache, but error images don't go to disk
         self.cache[(level, x, y)] = image
         if not error:
-            self.cache._put_to_back((level, x, y), image)
+            self.cache.add(key=(level, x, y), image=image)
 
         # remove the request from the queued requests
         # note that it may not be there - a level change can flush the dict
