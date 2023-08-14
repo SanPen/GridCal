@@ -40,8 +40,6 @@ from GridCal.Gui.MapWidget.Layers.polyline_layer import PolylineLayer, PolylineD
 from GridCal.Gui.MapWidget.Layers.text_layer import TextLayer, TextData
 from GridCal.Gui.MapWidget.Layers.image_layer import ImageLayer, ImageData
 from GridCal.Gui.MapWidget.Layers.layer_types import LayerType
-
-from GridCal.Gui.MapWidget.Layers.draw_data_point import DrawDataPoint
 from GridCal.Gui.MapWidget.Layers.place import Place
 
 # version number of the widget
@@ -666,8 +664,7 @@ class MapWidget(QWidget):
         if self.sbox_1_x:
             # draw the select box, transparent fill
             painter.setBrush(QBrush(QColor(0, 0, 0, 0)))
-            pen = QPen(MapWidget.BoxSelectPenColor, MapWidget.BoxSelectPenWidth,
-                       MapWidget.BoxSelectPenStyle)
+            pen = QPen(MapWidget.BoxSelectPenColor, MapWidget.BoxSelectPenWidth, MapWidget.BoxSelectPenStyle)
             painter.setPen(pen)
             painter.drawRect(self.sbox_1_x, self.sbox_1_y, self.sbox_w, self.sbox_h)
 
@@ -937,7 +934,7 @@ class MapWidget(QWidget):
         """
         return self.layer_mapping[lid]
 
-    def setLayerData(self, lid, data: List[DrawDataPoint]) -> None:
+    def setLayerData(self, lid: int, data: List) -> None:
         """
 
         :param lid:
@@ -946,7 +943,7 @@ class MapWidget(QWidget):
         """
         self.layer_mapping[lid].data = data
 
-    def setLayerSelectable(self, lid, selectable=False):
+    def setLayerSelectable(self, lid: int, selectable: bool = False) -> None:
         """Update the .selectable attribute for a layer.
 
         lid         ID of the layer we are going to update
@@ -958,13 +955,13 @@ class MapWidget(QWidget):
             layer = self.layer_mapping[lid]
             layer.selectable = selectable
 
-    def draw_point_layer(self, dc, data: List[PointData], map_rel: bool):
+    def draw_point_layer(self, painter: QPainter, data: List[PointData], map_rel: bool):
         """Draw a points layer.
 
-        dc       the active device context to draw on
-        data     an iterable of point tuples:
-                     (x, y, place, radius, colour, x_off, y_off, udata)
-        map_rel  points relative to map if True, else relative to view
+        draw_context    the active device context to draw on
+        data            an iterable of point tuples:
+                        (x, y, place, radius, colour, x_off, y_off, udata)
+        map_rel         points relative to map if True, else relative to view
         """
 
         # speed up drawing by caching the current pen colour
@@ -992,19 +989,19 @@ class MapWidget(QWidget):
                 if cache_pcolour != entry.colour:
                     qcolour = QColor(*entry.colour)
                     pen = QPen(qcolour, entry.radius, Qt.SolidLine)
-                    dc.setPen(pen)
-                    dc.setBrush(qcolour)
+                    painter.setPen(pen)
+                    painter.setBrush(qcolour)
                     cache_pcolour = entry.colour
                 pt_x, pt_y = pt
-                dc.drawEllipse(QPoint(pt_x, pt_y), entry.radius, entry.radius)
+                painter.drawEllipse(QPoint(pt_x, pt_y), entry.radius, entry.radius)
 
-    def draw_image_layer(self, dc, images: List[ImageData], map_rel):
+    def draw_image_layer(self, painter: QPainter, images: List[ImageData], map_rel):
         """Draw an image Layer on the view.
 
-        dc       the active device context to draw on
-        images   a sequence of image tuple sequences
-                   (x,y,pmap,w,h,placement,offset_x,offset_y,idata)
-        map_rel  points relative to map if True, else relative to view
+        draw_context       the active device context to draw on
+        images             a sequence of image tuple sequences
+                           (x,y,pmap,w,h,placement,offset_x,offset_y,idata)
+        map_rel            points relative to map if True, else relative to view
         """
 
         # get correct pex function
@@ -1045,27 +1042,25 @@ class MapWidget(QWidget):
                 if cache_pcolour != entry.colour:
                     qcolour = QColor(*entry.colour)
                     pen = QPen(qcolour, entry.radius, Qt.SolidLine)
-                    dc.setPen(pen)
-                    dc.setBrush(qcolour)
+                    painter.setPen(pen)
+                    painter.setBrush(qcolour)
                     cache_pcolour = entry.colour
 
                 # draw the image 'point'
                 (px, py) = pt
-                dc.drawEllipse(QPoint(px, py), entry.radius, entry.radius)
+                painter.drawEllipse(QPoint(px, py), entry.radius, entry.radius)
 
             if ex:
                 # draw the image itself
                 (ix, _, iy, _) = ex
-                dc.drawPixmap(QPoint(ix, iy), entry.pmap)
+                painter.drawPixmap(QPoint(ix, iy), entry.pmap)
 
-    def draw_text_layer(self, dc, text: List[TextData], map_rel: bool):
+    def draw_text_layer(self, painter: QPainter, data: List[TextData], map_rel: bool):
         """Draw a text Layer on the view.
 
-        dc       the active device context to draw on
-        text     a sequence of tuples:
-                     (lon, lat, tdata, placement, radius, colour, fontname,
-                      fontsize, offset_x, offset_y, tdata)
-        map_rel  points relative to map if True, else relative to view
+        draw_context       the active device context to draw on
+        text               a list of TextData
+        map_rel            points relative to map if True, else relative to view
         """
 
         # get correct pex function for mode (map/view)
@@ -1080,11 +1075,11 @@ class MapWidget(QWidget):
 
         # draw text on map/view
         # (lon, lat, tdata, place, radius, colour, textcolour, fontname, fontsize, x_off, y_off, data)
-        for entry in text:
+        for entry in data:
             # set font characteristics so we can calculate text width/height
             if cache_font != (entry.fontname, entry.fontsize):
                 font = QFont(entry.fontname, entry.fontsize)
-                dc.setFont(font)
+                painter.setFont(font)
                 cache_font = (entry.fontname, entry.fontsize)
                 font_metrics = QFontMetrics(font)
             else:
@@ -1117,36 +1112,36 @@ class MapWidget(QWidget):
                 if cache_colour != entry.colour:
                     qcolour = QColor(*entry.colour)
                     pen = QPen(qcolour, entry.radius, Qt.SolidLine)
-                    dc.setPen(pen)
-                    dc.setBrush(qcolour)
+                    painter.setPen(pen)
+                    painter.setBrush(qcolour)
                     cache_colour = entry.colour
-                dc.drawEllipse(QPoint(pt_x, pt_y), entry.radius, entry.radius)
+                painter.drawEllipse(QPoint(pt_x, pt_y), entry.radius, entry.radius)
 
             if ex:  # don't draw text if off screen
                 (lx, _, _, by) = ex
                 if cache_textcolour != entry.textcolour:
                     qcolour = QColor(*entry.textcolour)
                     pen = QPen(qcolour, entry.radius, Qt.SolidLine)
-                    dc.setPen(pen)
+                    painter.setPen(pen)
                     cache_textcolour = entry.textcolour
-                dc.drawText(QPointF(lx, by), entry.tdata)
+                painter.drawText(QPointF(lx, by), entry.tdata)
 
-    def draw_polygon_layer(self, dc, data: List[PolygonData], map_rel: bool):
+    def draw_polygon_layer(self, painter: QPainter, data: List[PolygonData], map_rel: bool):
         """Draw a polygon layer.
 
-        dc       the active device context to draw on
-        data     an iterable of polygon tuples:
-                     (p, placement, width, colour, closed,
-                      filled, fillcolour, offset_x, offset_y, udata)
-                 where p is an iterable of points: (x, y)
-        map_rel  points relative to map if True, else relative to view
+        draw_context       the active device context to draw on
+        data               an iterable of polygon tuples:
+                           (p, placement, width, colour, closed,
+                           filled, fillcolour, offset_x, offset_y, udata)
+                           where p is an iterable of points: (x, y)
+        map_rel            points relative to map if True, else relative to view
         """
 
         # draw polygons
         cache_colour_width = None  # speed up mostly unchanging data
         cache_fillcolour = (0, 0, 0, 0)
 
-        dc.setBrush(QBrush(QColor(*cache_fillcolour)))  # initial brush is transparent
+        painter.setBrush(QBrush(QColor(*cache_fillcolour)))  # initial brush is transparent
 
         # (p, place, width, colour, closed, filled, fillcolour, x_off, y_off, udata)
         for entry in data:
@@ -1164,28 +1159,28 @@ class MapWidget(QWidget):
 
             if poly:
                 if (entry.colour, entry.width) != cache_colour_width:
-                    dc.setPen(QPen(QColor(*entry.colour), entry.width, Qt.SolidLine))
+                    painter.setPen(QPen(QColor(*entry.colour), entry.width, Qt.SolidLine))
                     cache_colour = (entry.colour, entry.width)
 
                 if entry.filled and (entry.fillcolour != cache_fillcolour):
-                    dc.setBrush(QBrush(QColor(*entry.fillcolour), Qt.SolidPattern))
+                    painter.setBrush(QBrush(QColor(*entry.fillcolour), Qt.SolidPattern))
                     cache_fillcolour = entry.fillcolour
 
                 qpoly = [QPoint(*p) for p in poly]
-                dc.drawPolygon(QPolygon(qpoly))
+                painter.drawPolygon(QPolygon(qpoly))
 
-    def draw_polyline_layer(self, device_context, data: List[PolylineData], map_rel: bool):
+    def draw_polyline_layer(self, painter: QPainter, data: List[PolylineData], map_rel: bool):
         """Draw a polyline layer.
 
-        dc       the active device context to draw on
-        data     an iterable of polyline tuples:
-                     (p, placement, width, colour, offset_x, offset_y, udata)
-                 where p is an iterable of points: (x, y)
-        map_rel  points relative to map if True, else relative to view
+        draw_context      the active device context to draw on
+        data              an iterable of polyline tuples:
+                          (p, placement, width, colour, offset_x, offset_y, udata)
+                          where p is an iterable of points: (x, y)
+        map_rel           points relative to map if True, else relative to view
         """
 
         # brush is always transparent
-        device_context.setBrush(QBrush(QColor(0, 0, 0, 0)))
+        painter.setBrush(QBrush(QColor(0, 0, 0, 0)))
 
         # draw polyline(s)
         cache_colour_width = None  # speed up mostly unchanging data
@@ -1205,11 +1200,11 @@ class MapWidget(QWidget):
 
             if poly:
                 if cache_colour_width != (entry.colour, entry.width):
-                    device_context.setPen(QPen(QColor(*entry.colour), entry.width, Qt.SolidLine))
+                    painter.setPen(QPen(QColor(*entry.colour), entry.width, Qt.SolidLine))
                     cache_colour_width = (entry.colour, entry.width)
 
-                obj = QPolygon([QPoint(x, y) for x, y in poly])
-                device_context.drawPolyline(obj)
+                polygon = QPolygon([QPoint(x, y) for x, y in poly])
+                painter.drawPolyline(polygon)
 
     def geo_to_view(self, xgeo: float, ygeo: float) -> Union[None, Tuple[float, float]]:
         """Convert a geo coord to view.
@@ -1491,7 +1486,7 @@ class MapWidget(QWidget):
     def pex_polygon(self, place: Place, poly: List[Tuple[float, float]], x_off: float, y_off: float):
         """Convert polygon/line obj geo position to points & extent in view coords.
 
-        place         placement string
+        place         placement
         poly          list of point position tuples (xgeo, ygeo)
         x_off, y_off  X and Y offsets
 

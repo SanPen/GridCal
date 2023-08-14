@@ -19,13 +19,9 @@ import numpy as np
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Engine.Core.Devices.Branches.branch import BranchType
 from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 

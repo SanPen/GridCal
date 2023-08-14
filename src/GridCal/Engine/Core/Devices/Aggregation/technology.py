@@ -21,7 +21,8 @@ from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceTy
 
 class Technology(EditableDevice):
 
-    def __init__(self, name: str = '', code: str = '', idtag: Union[str, None] = None):
+    def __init__(self, name: str = '', code: str = '', idtag: Union[str, None] = None,
+                 color: Union[str, None] = None):
         """
 
         :param name:
@@ -39,9 +40,12 @@ class Technology(EditableDevice):
         self.name3 = ""
         self.name4 = ""
 
+        self.color = color if color is not None else self.rnd_color()
+
         self.register(key='name2', units='', tpe=str, definition='Name 2 of the technology')
         self.register(key='name3', units='', tpe=str, definition='Name 3 of the technology')
         self.register(key='name4', units='', tpe=str, definition='Name 4 of the technology')
+        self.register(key='color', units='', tpe=str, definition='Color to paint')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

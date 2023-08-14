@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem, QGrap
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import BranchObjectModel
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Engine.Core.Devices.Branches.line import Line
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
 from GridCal.Engine.Core.Devices.Branches.vsc import VSC
@@ -510,7 +510,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self.api_object is not None:
-            mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
+            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                                     parent=self.diagramScene.parent().object_editor_table,
                                     editable=True, transposed=True,
                                     non_editable_attributes=self.api_object.non_editable_attributes)

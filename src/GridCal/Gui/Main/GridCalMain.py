@@ -2275,14 +2275,7 @@ class MainGUI(QMainWindow):
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
-        if elm_type == 'Branches':
-            mdl = gf.BranchObjectModel(elements, elm.editable_headers,
-                                       parent=self.ui.dataStructureTableView,
-                                       editable=True,
-                                       non_editable_attributes=elm.non_editable_attributes)
-        else:
-
-            mdl = gf.ObjectsModel(elements, elm.editable_headers,
+        mdl = gf.ObjectsModel(elements, elm.editable_headers,
                                   parent=self.ui.dataStructureTableView,
                                   editable=True,
                                   non_editable_attributes=elm.non_editable_attributes,

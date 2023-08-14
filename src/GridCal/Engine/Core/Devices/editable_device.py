@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import random
 import uuid
 import numpy as np
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type
+from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType, BranchType
 from GridCal.Engine.basic_structures import ExternalGridMode
 
@@ -351,4 +352,18 @@ class EditableDevice:
             setattr(new_obj, prop_name, value)
 
         return new_obj
+
+    @staticmethod
+    def rgb2hex(r: int, g: int, b: int) -> str:
+        return "#{:02x}{:02x}{:02x}".format(r, g, b)
+
+    @staticmethod
+    def hex2rgb(hexcode: int) -> Tuple[int, ...]:
+        return tuple(map(ord, hexcode[1:].decode('hex')))
+
+    def rnd_color(self) -> str:
+        r = random.randint(0, 128)
+        g = random.randint(0, 128)
+        b = random.randint(0, 128)
+        return self.rgb2hex(r, g, b)
 

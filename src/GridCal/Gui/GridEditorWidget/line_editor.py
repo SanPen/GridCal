@@ -17,19 +17,11 @@
 import numpy as np
 
 from typing import Union, List
-from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, \
     QDoubleSpinBox, QComboBox
 from GridCal.Gui.GuiFunctions import get_list_model
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
-from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg
-from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
-from GridCal.Engine.Core.Devices.Branches.branch import BranchType
-from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
 class LineEditor(QDialog):

@@ -20,7 +20,7 @@ import numba as nb
 import pandas as pd
 from typing import Dict, List, Union, Any
 from PySide6 import QtWidgets
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtWidgets, QtGui, Qt
 from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
@@ -277,6 +277,47 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
         """
         val = complex(editor.children()[1].value(), editor.children()[2].value())
         model.setData(index, val)
+
+
+class ColorPickerDelegate(QtWidgets.QItemDelegate):
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent):
+        """
+
+        :param parent:
+        """
+        super(ColorPickerDelegate, self).__init__(parent)
+
+    @QtCore.Slot()
+    def returnPressed(self):
+        """
+
+        :return:
+        """
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        colorDialog = QtWidgets.QColorDialog(parent)
+        return colorDialog
+
+    def setEditorData(self, editor: QtWidgets.QColorDialog, index):
+        editor.blockSignals(True)
+        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
+        color = QtGui.QColor.fromString(val)
+        editor.setCurrentColor(color)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor: QtWidgets.QColorDialog, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        :return:
+        """
+        model.setData(index, editor.currentColor().name())
+
 
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -576,7 +617,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, delegate)
 
             elif tpe is BranchTemplate or tpe is str:
-                delegate = TextDelegate(self.parent)
+
+                if 'color' in self.attributes[i]:
+                    delegate = ColorPickerDelegate(self.parent)
+                else:
+                    delegate = TextDelegate(self.parent)
+
                 F(i, delegate)
 
             elif tpe is BranchTemplate:
@@ -616,7 +662,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
-
             else:
                 F(i, None)
 
@@ -888,17 +933,17 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             cb.setText(txt)
 
 
-class BranchObjectModel(ObjectsModel):
-
-    def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=defaultdict()):
-
-        # type templates catalogue
-        self.catalogue_dict = catalogue_dict
-
-        super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
-                                                editable=editable, non_editable_attributes=non_editable_attributes,
-                                                transposed=transposed, check_unique=check_unique)
+# class BranchObjectModel(ObjectsModel):
+#
+#     def __init__(self, objects, editable_headers, parent=None, editable=False,
+#                  non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=defaultdict()):
+#
+#         # type templates catalogue
+#         self.catalogue_dict = catalogue_dict
+#
+#         super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
+#                                                 editable=editable, non_editable_attributes=non_editable_attributes,
+#                                                 transposed=transposed, check_unique=check_unique)
 
 
 class ObjectHistory:
