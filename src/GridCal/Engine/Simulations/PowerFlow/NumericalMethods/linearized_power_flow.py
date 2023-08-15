@@ -23,12 +23,13 @@ import numpy as np
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-
+from GridCal.Engine.basic_structures import CxVec, Vec, IntVec
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
+def dcpf(Ybus, Bpqpv, Bref, Btheta, S0: CxVec, I0: CxVec, V0: CxVec, theta: Vec,
+         ref: IntVec, pvpq: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
     :param Ybus: Normal circuit admittance matrix
@@ -89,7 +90,7 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> Num
     return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
 
 
-def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
+def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Linearized AC Load Flow
 
@@ -101,7 +102,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
         Ybus: Admittance matrix
         Ys: Admittance matrix of the series elements
         S0: Power Injections vector of all the nodes
-        Vset: Set voltages of all the nodes (used for the slack and PV nodes)
+        V0: Set voltages of all the nodes (used for the slack and PV nodes)
         pq: list of indices of the pq nodes
         pv: list of indices of the pv nodes
 
@@ -136,7 +137,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
         try:
             x = linear_solver(Asys, rhs)
         except Exception as e:
-            V = Vset
+            V = V0
             # Calculate the error and check the convergence
             Scalc = cf.compute_power(Ybus, V)
             mismatch = cf.compute_fx(Scalc=Scalc, Sbus=S0, pvpq=pvpq, pq=pq)
@@ -149,11 +150,11 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
                                            None, None, None, None, None, None, 1, elapsed)
 
         # compose the results vector
-        V = Vset.copy()
+        V = V0.copy()
 
         #  set the pv voltages
         va_pv = x[0:npv]
-        vm_pv = np.abs(Vset[pv])
+        vm_pv = np.abs(V0[pv])
         V[pv] = cf.polar_to_rect(vm_pv, va_pv)
 
         # set the PQ voltages
@@ -167,7 +168,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
         norm_f = cf.compute_fx_error(mismatch)
     else:
         norm_f = 0.0
-        V = Vset
+        V = V0
         Scalc = cf.compute_power(Ybus, V)
 
     end = time.time()

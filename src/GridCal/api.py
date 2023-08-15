@@ -14,9 +14,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
 from typing import Union
 import GridCal.Engine as gce
+from GridCal.Gui.Main.GridCalMain import runGridCal
+
+
+def open_file(filename: str) -> gce.MultiCircuit:
+    """
+    Open file
+    :param filename: name of the file (.gridcal, .ejson, .m, etc.)
+    :return: MultiCircuit instance
+    """
+    return gce.FileOpen(file_name=filename).open()
+
+
+def save_file(grid: gce.MultiCircuit, filename: str):
+    """
+    Save file
+    :param grid: MultiCircuit instance
+    :param filename: name of the file (.gridcal, .ejson)
+    """
+    gce.FileSave(circuit=grid, file_name=filename).save()
+
+
+def open_gui():
+    """
+    Open GridCal Gui
+    """
+    runGridCal()
 
 
 def power_flow(grid: gce.MultiCircuit,
@@ -41,11 +66,11 @@ def power_flow_ts(grid: gce.MultiCircuit,
                   time_indices: Union[gce.IntVec, None] = None,
                   engine=gce.EngineType.GridCal) -> gce.PowerFlowResults:
     """
-    Run power flow on the snapshot
+    Run power flow on the time series
     :param grid: MultiCircuit instance
-    :param options: PowerFlowOptions instance
-    :param time_indices: Array of time indices to simulate, if None all are used
-    :param engine: Engine to run with
+    :param options: PowerFlowOptions instance (optional)
+    :param time_indices: Array of time indices to simulate, if None all are used (optional)
+    :param engine: Engine to run with (optional, default GridCal)
     :return: PowerFlowResults instance
     """
 

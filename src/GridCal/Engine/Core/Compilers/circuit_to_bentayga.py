@@ -38,22 +38,22 @@ try:
                 if btg.is_license_activated():
                     BENTAYGA_AVAILABLE = True
                 else:
-                    print('Bentayga v' + btg.get_version(),
-                          "installed, tried to activate with {} but the license did not work :/".format(btg_license))
+                    # print('Bentayga v' + btg.get_version(),
+                    #       "installed, tried to activate with {} but the license did not work :/".format(btg_license))
                     BENTAYGA_AVAILABLE = False
             except RuntimeError:
-                print("Bentayga: Error reading the license file :(")
+                # print("Bentayga: Error reading the license file :(")
                 BENTAYGA_AVAILABLE = False
         else:
-            print('Bentayga v' + btg.get_version(), "installed but not licensed")
+            # print('Bentayga v' + btg.get_version(), "installed but not licensed")
             BENTAYGA_AVAILABLE = False
     else:
-        print('Bentayga v' + btg.get_version())
+        # print('Bentayga v' + btg.get_version())
         BENTAYGA_AVAILABLE = True
 
 except ImportError:
     BENTAYGA_AVAILABLE = False
-    print('Bentayga is not available')
+    # print('Bentayga is not available')
 
 # numpy integer type for bentayga's uword
 BINT = np.ulonglong

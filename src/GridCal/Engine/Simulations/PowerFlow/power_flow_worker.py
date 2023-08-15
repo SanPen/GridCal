@@ -132,7 +132,7 @@ def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.Conve
                                   Ys=circuit.Yseries,
                                   S0=S0,
                                   I0=I0,
-                                  Vset=V0,
+                                  V0=V0,
                                   pq=pq,
                                   pv=pv)
 

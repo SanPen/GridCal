@@ -102,7 +102,7 @@ class LoadData:
         """
         Get the array of load indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
-        :return: array of island branch indices
+        :return: array of island load indices
         """
         if self.nelm:
             return tp.get_elements_of_the_island(

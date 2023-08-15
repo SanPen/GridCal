@@ -1474,22 +1474,24 @@ class NumericalCircuit:
             )
 
         elif structure_type == "B'":
+            names = self.bus_names[self.pqpv]
             df = pd.DataFrame(
                 data=self.B1.toarray(),
-                columns=self.bus_data.names,
-                index=self.bus_data.names,
+                columns=names,
+                index=names,
             )
 
         elif structure_type == "B''":
+            names = self.bus_names[self.pq]
             df = pd.DataFrame(
                 data=self.B2.toarray(),
-                columns=self.bus_data.names,
-                index=self.bus_data.names,
+                columns=names,
+                index=names,
             )
 
         elif structure_type == 'Types':
             df = pd.DataFrame(
-                data=self.bus_types,
+                data=[d.value for d in self.bus_types],
                 columns=['Bus types'],
                 index=self.bus_data.names,
             )

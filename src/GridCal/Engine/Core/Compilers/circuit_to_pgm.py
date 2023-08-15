@@ -34,11 +34,11 @@ try:
     from power_grid_model.utils import export_json_data
     from power_grid_model.errors import PowerGridError
     PGM_AVAILABLE = True
-    print("Power Grid Model available")
+    # print("Power Grid Model available")
 
 except ImportError:
     PGM_AVAILABLE = False
-    print("power grid model is not available, try pip install power-grid-model")
+    # print("power grid model is not available, try pip install power-grid-model")
 
 
 '''

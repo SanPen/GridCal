@@ -16,6 +16,7 @@ GridCal
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
+from typing import Dict, Tuple, List, Union
 import numpy as np
 import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
@@ -251,9 +252,9 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logge
         gen.bus = circuit.buses[bus_idx]
         circuit.buses[bus_idx].generators.append(gen)
 
-    if 'gen_cost' in data:
+    if 'gencost' in data:
         # parse the OPF data
-        opf_table = data['gen_cost']
+        opf_table = data['gencost']
 
         for i in range(opf_table.shape[0]):
             curve_model = opf_table[i, 0]
@@ -263,7 +264,9 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logge
             points = opf_table[i, 4:]
             if curve_model == 2:
                 if len(points) > 1:
+                    gen_dict[i].Cost0 = points[0]
                     gen_dict[i].Cost = points[1]
+                    gen_dict[i].Cost2 = points[2]
             elif curve_model == 1:
                 # fit a quadratic curve
                 x = points[0::1]
@@ -425,7 +428,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
 
             if f.Vnom != t.Vnom or \
                     (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or \
-                     table[i, matpower_branches.SHIFT] != 0.0:
+                    table[i, matpower_branches.SHIFT] != 0.0:
 
                 branch = dev.Transformer2W(bus_from=f,
                                            bus_to=t,
@@ -510,18 +513,12 @@ def interpret_data_v1(circuit: MultiCircuit, data, logger: bs.Logger) -> MultiCi
     return circuit
 
 
-def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
+def read_matpower_file(filename: str) -> [MultiCircuit, bs.Logger]:
     """
 
-    Args:
-        filename:
-        export:
-
-    Returns:
-
+    :param filename:
+    :return:
     """
-
-    logger = bs.Logger()
 
     # open the file as text
     with open(filename, 'r') as myfile:
@@ -557,7 +554,7 @@ def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
             data['areas'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
         elif key == "gencost":
-            data['gen_cost'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+            data['gencost'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
         elif key == "gen":
             data['gen'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
@@ -565,9 +562,250 @@ def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
         elif key == "branch":
             data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
+    return data
+
+
+def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
+    """
+
+    Args:
+        filename:
+        export:
+
+    Returns:
+
+    """
+
+    # declare circuit
+    circuit = MultiCircuit()
+
+    logger = bs.Logger()
+
+    data = read_matpower_file(filename)
+
     if 'bus' in data.keys():
         circuit = interpret_data_v1(circuit, data, logger)
     else:
         logger.add_error('No bus data')
 
     return circuit, logger
+
+
+def arr_to_dict(hdr, arr):
+    """
+    Match header-data pair into a dictionary
+    :param hdr: array of header data
+    :param arr: array of values
+    :return:
+    """
+    assert len(hdr) == len(arr)
+    return {h: a for h, a in zip(hdr, arr)}
+
+
+def get_matpower_case_data(filename, force_linear_cost=False) -> Dict:
+    """
+    PArse matpower .m file and get the case data structure
+    :param filename: Name of the file
+    :param force_linear_cost: Force linear cost when costs are found?
+    :return: Matpower case data dictionary
+    """
+    logger = bs.Logger()
+
+    data = read_matpower_file(filename)
+
+    bus_data = list()
+    bus_arr = data['bus']
+    headers = matpower_buses.bus_headers[:bus_arr.shape[1]]
+    for i in range(bus_arr.shape[0]):
+        bus_data.append(arr_to_dict(hdr=headers, arr=bus_arr[i, :]))
+
+    gen_data = list()
+    gen_arr = data['gen']
+    headers = matpower_gen.gen_headers[: gen_arr.shape[1]]
+    for i in range(gen_arr.shape[0]):
+        gen_data.append(arr_to_dict(hdr=headers, arr=gen_arr[i, :]))
+
+    gen_cost_data = list()
+    gen_cost_arr = data['gencost']
+    for i in range(gen_cost_arr.shape[0]):
+        costtype = gen_cost_arr[i, 0]
+        startup = gen_cost_arr[i, 1]
+        shutdown = gen_cost_arr[i, 2]
+        n = int(gen_cost_arr[i, 3])
+        costvector = gen_cost_arr[i, 3:3 + n]
+
+        if force_linear_cost:
+            if len(costvector) == 3:
+                costvector[2] = 0.0
+
+        gen_cost_data.append({'costtype': costtype,
+                              'startup': startup,
+                              'shutdown': shutdown,
+                              'n': n,
+                              'costvector': costvector})
+
+    branch_data = list()
+    bus_arr = data['branch']
+    headers = matpower_branches.branch_headers[: bus_arr.shape[1]]
+    for i in range(bus_arr.shape[0]):
+        branch_data.append(arr_to_dict(hdr=headers, arr=bus_arr[i, :]))
+
+    return {'baseMVA': 100.0,
+            'bus': bus_data,
+            'branch': branch_data,
+            'gen': gen_data,
+            'gencost': gen_cost_data}
+
+
+def get_buses(circuit: MultiCircuit) -> Tuple[List[Dict[str, float]], Dict[dev.Bus, int]]:
+    """
+    Get matpower buses structure
+    :param circuit: MultiCircuit
+    :return: list of buses structure, buses dictionary {Bus: bus int}
+    """
+    data = list()
+
+    bus_dict = dict()
+
+    for i, elm in enumerate(circuit.buses):
+
+        Pd = 0.0
+        Qd = 0.0
+        Gs = 0.0
+        Bs = 0.0
+
+        for child in (elm.loads + elm.static_generators + elm.external_grids):
+            Pd += child.P
+            Qd += child.Q
+
+        for child in elm.shunts:
+            Gs += child.G
+            Bs += child.B
+
+        data.append({
+            'bus_i': i + 1,  # matlab starts at 1
+            'type': elm.determine_bus_type().value,
+            'Pd': Pd,
+            'Qd': Qd,
+            'Gs': Gs,
+            'Bs': Bs,
+            'area': 0,
+            'Vm': elm.Vm0,
+            'Va': elm.Va0,
+            'baseKV': elm.Vnom,
+            'zone': 0,
+            'Vmax': elm.Vmax,
+            'Vmin': elm.Vmin
+        })
+
+        bus_dict[circuit.buses[i]] = i + 1
+
+    return data, bus_dict
+
+
+def get_generation(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> Tuple[List[Dict[str, float]],
+                                                                                 List[Dict[str, float]]]:
+    """
+    Get generation and generation cost data
+    :param circuit:
+    :param bus_dict:
+    :return:
+    """
+    data = list()
+    cost_data = list()
+    elm_list = circuit.get_generators() + circuit.get_batteries()
+
+    for k, elm in enumerate(elm_list):
+        i = bus_dict[elm.bus]  # already accounts for the +1 of Matlab
+
+        data.append({'bus': i,
+                     'Pg': elm.P,
+                     'Qg': 0,
+                     'Qmax': elm.Qmax,
+                     'Qmin': elm.Qmin,
+                     'Vg': elm.Vset,
+                     'mBase': elm.Snom,
+                     'status': int(elm.active),
+                     'Pmax': elm.Pmax,
+                     'Pmin': elm.Pmin,
+                     'Pc1': 0,
+                     'Pc2': 0,
+                     'Qc1min': 0,
+                     'Qc1max': 0,
+                     'Qc2min': 0,
+                     'Qc2max': 0,
+                     'ramp_agc': 0,
+                     'ramp_10': 0,
+                     'ramp_30': 0,
+                     'ramp_q': 0,
+                     'apf': 0,
+                     })
+
+        cost_data.append({
+            'costtype': 2,
+            'startup': elm.StartupCost,
+            'shutdown': elm.ShutdownCost,
+            'n': 3,
+            'costvector': [elm.Cost2, elm.Cost, elm.Cost0]
+        })
+
+    return data, cost_data
+
+
+def get_branches(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> List[Dict[str, float]]:
+    """
+
+    :param circuit:
+    :param bus_dict:
+    :return:
+    """
+    data = list()
+
+    elm_list = circuit.get_branches_wo_hvdc()
+
+    for k, elm in enumerate(elm_list):
+        f = bus_dict[elm.bus_from]  # already accounts for the +1 of Matlab
+        t = bus_dict[elm.bus_to]  # already accounts for the +1 of Matlab
+
+        angle = 0.0
+        ratio = 1.0
+        angmin = -360.0  # deg
+        angmax = 360.0  # deg
+        if isinstance(elm, dev.Transformer2W):
+            angle = elm.angle * 57.2958  # deg
+            ratio = elm.tap_module
+            angmin = elm.angle_min * 57.2958  # deg
+            angmax = elm.angle_max * 57.2958  # deg
+
+        data.append({'fbus': f,
+                     'tbus': t,
+                     'r': elm.R,
+                     'x': elm.X,
+                     'b': elm.B,
+                     'rateA': elm.rate,
+                     'rateB': elm.rate * elm.contingency_factor,
+                     'rateC': 0,
+                     'ratio': ratio,
+                     'angle': angle,
+                     'status': int(elm.active),
+                     'angmin': angmin,
+                     'angmax': angmax,
+                     })
+
+    return data
+
+
+def to_matpower(circuit: MultiCircuit, logger: bs.Logger = bs.Logger()) -> Dict[str, Union[float, List[Dict[str, float]]]]:
+    """
+
+    :param circuit:
+    :param logger:
+    :return:
+    """
+    case = dict()
+    case['baseMVA'] = circuit.Sbase
+    case['bus'], bus_dict = get_buses(circuit=circuit)
+    case['gen'], case['gencost'] = get_generation(circuit=circuit, bus_dict=bus_dict)
+    case['branch'] = get_branches(circuit=circuit, bus_dict=bus_dict)
+
+    return case

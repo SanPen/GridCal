@@ -254,7 +254,7 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
 
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QtWidgets.QFrame, index):
         """
 
         :param editor:
@@ -267,7 +267,7 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
         editor.children()[2].setValue(val.imag)
         editor.blockSignals(False)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QtWidgets.QFrame, model, index):
         """
 
         :param editor:

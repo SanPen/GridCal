@@ -5,10 +5,9 @@ from collections.abc import Mapping
 
 try:
     import pypsa
-
     PYPSA_AVAILABLE = True
 except ImportError:
-    print('Could not find PyPSA library; some grid file formats may not be supported')
+    # print('Could not find PyPSA library; some grid file formats may not be supported')
     PYPSA_AVAILABLE = False
 
 from GridCal.Engine.basic_structures import Logger
