@@ -29,18 +29,22 @@ from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.raw_parser import PSSeParser
+from GridCal.Engine.IO.psse.raw_parser import read_raw, write_raw
+from GridCal.Engine.IO.psse.psse_to_gridcal import psse_to_gridcal
 from GridCal.Engine.IO.power_world_parser import PowerWorldParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
-from GridCal.Engine.IO.rawx_parser import rawx_parse, rawx_writer
+from GridCal.Engine.IO.psse.rawx_parser import rawx_parse, rawx_writer
 from GridCal.Engine.IO.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class FileOpen:
+    """
+    File open interface
+    """
 
     def __init__(self, file_name):
         """
@@ -182,16 +186,15 @@ class FileOpen:
                         self.circuit = parse_json_data_v3(data, self.logger)
 
                 elif file_extension.lower() == '.raw':
-                    parser = PSSeParser(self.file_name,
+                    pss_grid = read_raw(self.file_name,
                                         text_func=text_func,
-                                        progress_func=progress_func)
-                    self.circuit = parser.circuit
-                    self.logger += parser.logger
+                                        progress_func=progress_func,
+                                        logger=self.logger)
+                    self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
 
                 elif file_extension.lower() == '.rawx':
-                    circuit, logger = rawx_parse(self.file_name)
-                    self.circuit = circuit
-                    self.logger += logger
+                    pss_grid = rawx_parse(self.file_name, logger=self.logger)
+                    self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
 
                 elif file_extension.lower() == '.epc':
                     parser = PowerWorldParser(self.file_name)

@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Tuple
 from enum import Enum
 import pandas as pd
 import numpy as np
 import datetime
 import nptyping as npt
-
+from scipy.sparse import csc_matrix, csr_matrix
 from GridCal.Gui.plot_config import LINEWIDTH, plt
 
 IntList = List[int]
@@ -36,6 +36,8 @@ Mat = npt.NDArray[npt.Shape['*, *'], npt.Double]
 CxMat = npt.NDArray[npt.Shape['*, *'], npt.Complex]
 IntMat = npt.NDArray[npt.Shape['*, *'], npt.Int]
 StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
+CscMat = csc_matrix
+CsrMat = csr_matrix
 
 
 class BusMode(Enum):
@@ -57,6 +59,11 @@ class BusMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return BusMode[s]
         except KeyError:
@@ -79,6 +86,11 @@ class ExternalGridMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ExternalGridMode[s]
         except KeyError:
@@ -101,6 +113,11 @@ class InvestmentEvaluationMethod(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return InvestmentEvaluationMethod[s]
         except KeyError:
@@ -123,6 +140,11 @@ class BranchImpedanceMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return BranchImpedanceMode[s]
         except KeyError:
@@ -170,6 +192,11 @@ class SolverType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return SolverType[s]
         except KeyError:
@@ -318,6 +345,11 @@ class TapsControlMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return TapsControlMode[s]
         except KeyError:
@@ -340,6 +372,11 @@ class SyncIssueType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return SyncIssueType[s]
         except KeyError:
@@ -363,6 +400,11 @@ class EngineType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return EngineType[s]
         except KeyError:
@@ -526,15 +568,15 @@ class StatisticalCharacterization:
             cdf = CDF(load_Q[:, i])
             self.load_Q_laws.append(cdf)
 
-    def get_sample(self, load_enabled_idx, gen_enabled_idx, npoints=1):
+    def get_sample(self, load_enabled_idx, gen_enabled_idx, npoints=1) -> Tuple[Vec, CxVec]:
         """
         Returns a 2D array containing for load and generation profiles, shape (time, load)
         The profile is sampled from the original data CDF functions
-
-        @param npoints: number of sampling points
-        @return:
-        PG: generators profile
-        S: loads profile
+        :param load_enabled_idx:
+        :param gen_enabled_idx:
+        :param npoints:
+        :return: PG: generators profile
+                 S: loads profile
         """
         # nlp = len(self.load_P_laws)
         # nlq = len(self.load_Q_laws)
@@ -609,6 +651,11 @@ class MIPSolvers(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return MIPSolvers[s]
         except KeyError:
@@ -633,6 +680,11 @@ class TimeGrouping(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return TimeGrouping[s]
         except KeyError:
@@ -655,6 +707,11 @@ class ZonalGrouping(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ZonalGrouping[s]
         except KeyError:
@@ -677,13 +734,18 @@ class ContingencyEngine(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ZonalGrouping[s]
         except KeyError:
             return s
 
 
-def classify_by_hour(t: pd.DatetimeIndex) -> List[int]:
+def classify_by_hour(t: pd.DatetimeIndex) -> List[List[int]]:
     """
     Passes an array of TimeStamps to an array of arrays of indices
     classified by hour of the year
@@ -790,6 +852,11 @@ class LogSeverity(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return LogSeverity[s]
         except KeyError:
@@ -858,35 +925,41 @@ class Logger:
         """
         return len(self.entries) > 0
 
-    def add_info(self, msg: str, device="", value="", expected_value=""):
+    def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment=''):
         """
         Add info entry
         :param msg:
         :param device:
         :param value:
-        :param expected_value
+        :param expected_value:
+        :param device_class:
+        :param comment:
         :return:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Information, device, str(value), str(expected_value)))
 
-    def add_warning(self, msg, device="", value="", expected_value=""):
+    def add_warning(self, msg, device="", value="", expected_value="", device_class='', comment=''):
         """
         Add warning entry
         :param msg:
         :param device:
         :param value:
-        :param expected_value
+        :param expected_value:
+        :param device_class:
+        :param comment:
         :return:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Warning, device, str(value), str(expected_value)))
 
-    def add_error(self, msg, device="", value="", expected_value=""):
+    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment=''):
         """
         Add error entry
         :param msg:
         :param device:
         :param value:
-        :param expected_value
+        :param expected_value:
+        :param device_class:
+        :param comment:
         :return:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
@@ -897,7 +970,8 @@ class Logger:
         :param msg:
         :param device:
         :param value:
-        :param expected_value
+        :param expected_value:
+        :param tol:
         :return:
         """
 
@@ -1022,6 +1096,15 @@ class ConvergenceReport:
         self.iterations_ = list()
 
     def add(self, method, converged, error, elapsed, iterations):
+        """
+
+        :param method:
+        :param converged:
+        :param error:
+        :param elapsed:
+        :param iterations:
+        :return:
+        """
         self.methods_.append(method)
         self.converged_.append(converged)
         self.error_.append(error)
@@ -1029,24 +1112,40 @@ class ConvergenceReport:
         self.iterations_.append(iterations)
 
     def converged(self):
+        """
+
+        :return:
+        """
         if len(self.converged_) > 0:
             return self.converged_[-1]
         else:
             return False
 
     def error(self):
+        """
+
+        :return:
+        """
         if len(self.error_) > 0:
             return self.error_[-1]
         else:
             return 0
 
     def elapsed(self):
+        """
+
+        :return:
+        """
         if len(self.elapsed_) > 0:
             return self.elapsed_[-1]
         else:
             return 0
 
     def to_dataframe(self):
+        """
+
+        :return:
+        """
         data = {'Method': self.methods_,
                 'Converged?': self.converged_,
                 'Error': self.error_,
@@ -1094,6 +1193,10 @@ class CompressedJsonStruct:
         self.__fields_pos_dict: Dict[str, int] = self.get_position_dict()
 
     def get_position_dict(self):
+        """
+
+        :return:
+        """
         return {val: i for i, val in enumerate(self.__fields)}
 
     def set_fields(self, fields: List[str]):
@@ -1127,19 +1230,41 @@ class CompressedJsonStruct:
                     raise Exception("Data length does not match the fields length")
 
     def get_data(self):
+        """
+
+        :return:
+        """
         return self.__data
 
     def get_row_number(self):
+        """
+
+        :return:
+        """
         return len(self.__data)
 
     def get_col_index(self, prop):
+        """
+
+        :param prop:
+        :return:
+        """
         return self.__fields_pos_dict[prop]
 
     def get_final_dict(self):
+        """
+
+        :return:
+        """
         return {'fields': self.__fields,
                 'data': self.__data[0] if len(self.__data) == 1 else self.__data}
 
     def get_dict_at(self, i):
+        """
+
+        :param i:
+        :return:
+        """
         return {f: val for f, val in zip(self.__fields, self.__data[i])}
 
     def declare_n_entries(self, n):

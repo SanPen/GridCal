@@ -21,7 +21,8 @@ import numpy as np
 import pandas as pd
 from math import sqrt
 from typing import Set, Dict, List, Tuple
-from GridCal.Engine.IO.cim.cim_enums import UnitSymbol, UnitMultiplier, cgmesProfile
+from GridCal.Engine.IO.cim.cim_enums import cgmesProfile
+from GridCal.Engine.IO.base.units import UnitSymbol, UnitMultiplier
 import GridCal.Engine.IO.cim.cim_enums as cim_enums
 from GridCal.Engine.basic_structures import Logger
 

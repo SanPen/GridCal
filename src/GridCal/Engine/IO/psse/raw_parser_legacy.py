@@ -748,7 +748,7 @@ class PSSeInductionMachine(PSSeObject):
                             active_power=self.PSET,
                             voltage_module=self.RATEKV,
                             Snom=self.MBASE,
-                            active=bool(self.STAT))
+                            active=bool(self.STATUS))
 
         return elm
 

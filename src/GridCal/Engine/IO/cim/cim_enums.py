@@ -171,7 +171,6 @@ class SynchronousMachineKind(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-
 class SynchronousMachineOperatingMode(Enum):
     generator = 'generator'
     condenser = 'condenser'
@@ -304,7 +303,6 @@ class OperationalLimitDirectionKind(Enum):
 
 
 class LimitTypeKind(Enum):
-
     '''
     The Permanent Admissible Transmission Loading (PATL) is the
     loading in Amps, MVA or MW that can be accepted by a network
@@ -313,7 +311,6 @@ class LimitTypeKind(Enum):
     limit type. Hence, only one limit value exists for the PATL type.
     '''
     patl = 'patl'
-
 
     '''
     Permanent Admissible Transmission Loading Threshold (PATLT) is a
@@ -537,119 +534,6 @@ class FuelType(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-
-
-class UnitSymbol(Enum):
-    VA = 'VA'
-    W = 'W'
-    VAr = 'VAr'
-    VAh = 'VAh'
-    Wh = 'WH'
-    VArh = 'VArh'
-    V = 'V'
-    ohm = 'ohm'
-    A = 'A'
-    F = 'F'
-    H = 'H'
-    degC = 'degC'
-    s = 's'
-    minutes = 'min'
-    h = 'h'
-    deg = 'deg'
-    rad = 'rad'
-    J = 'J'
-    N = 'N'
-    S = 'S'
-    none = 'none'
-    Hz = 'Hz'
-    g = 'g'
-    Pa = 'Pa'
-    m = 'm'
-    m2 = 'm2'
-    m3 = 'm3'
-    pu = 'p.u.'  # Not in the CIM standard, but makes sense to exist here
-    PerCent = "%"
-    Money = "€"
-    kVperMVAr = "kV/MVAr"
-    t = "t"  # ton
-    kg = 'kg'
-
-    def __str__(self):
-        return 'UnitSymbol.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return UnitSymbol[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-
-
-class UnitMultiplier(Enum):
-    p = 'p'
-    n = 'n'
-    micro = 'micro'
-    m = 'm'
-    c = 'c'
-    d = 'd'
-    k = 'k'
-    M = 'M'
-    G = 'G'
-    T = 'T'
-    none = 'none'
-
-    def __str__(self):
-        return 'UnitMultiplier.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return UnitMultiplier[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-
-    def toNum(self):
-        return UnitMultiplier2num(self)
-
-
-def UnitMultiplier2num(val: UnitMultiplier):
-
-    if val == UnitMultiplier.p:
-        return 1e-12
-    elif val == UnitMultiplier.n:
-        return 1e-9
-    elif val == UnitMultiplier.micro:
-        return 1e-6
-    elif val == UnitMultiplier.m:
-        return 1e-3
-    elif val == UnitMultiplier.c:
-        return 1e-2
-    elif val == UnitMultiplier.d:
-        return 1e-1
-    elif val == UnitMultiplier.k:
-        return 1e3
-    elif val == UnitMultiplier.M:
-        return 1e6
-    elif val == UnitMultiplier.G:
-        return 1e9
-    elif val == UnitMultiplier.T:
-        return 1e12
-    elif val == UnitMultiplier.none:
-        return 1.0
 
 
 class PhaseCode(Enum):
