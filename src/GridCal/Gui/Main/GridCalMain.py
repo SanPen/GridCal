@@ -52,7 +52,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 
-# GUI imports
+# GUI importswa
 from PySide6 import QtGui, QtWidgets, QtCore
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -375,6 +375,9 @@ class MainGUI(QMainWindow):
         self.ui.results_splitter.setStretchFactor(0, 2)
         self.ui.results_splitter.setStretchFactor(1, 4)
 
+        self.ui.diagram_selection_splitter.setStretchFactor(0, 10)
+        self.ui.diagram_selection_splitter.setStretchFactor(1, 2)
+
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
@@ -496,7 +499,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
-        self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
+        # self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
@@ -601,6 +604,13 @@ class MainGUI(QMainWindow):
 
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
 
+        self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_bar_diagram)
+        self.ui.actionAdd_area_bus_branch_diagram.triggered.connect(self.add_area_bus_bar_diagram)
+        self.ui.actionAdd_zone_bus_branch_diagram.triggered.connect(self.add_zone_bus_bar_diagram)
+        self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram)
+        self.ui.actionAdd_map.triggered.connect(self.add_map)
+        self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -620,12 +630,6 @@ class MainGUI(QMainWindow):
         self.ui.set_profile_state_button.clicked.connect(self.set_state)
 
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
-
-        self.ui.run_cascade_pushButton.clicked.connect(self.run_cascade)
-
-        self.ui.clear_cascade_pushButton.clicked.connect(self.clear_cascade)
-
-        self.ui.run_cascade_step_pushButton.clicked.connect(self.run_cascade_step)
 
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
 
@@ -705,6 +709,8 @@ class MainGUI(QMainWindow):
 
         self.ui.draw_map_button.clicked.connect(self.colour_map)
 
+        self.ui.remove_diagram_button.clicked.connect(self.remove_diagram)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -722,9 +728,6 @@ class MainGUI(QMainWindow):
 
         # tree-view clicks
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
-
-        # Table clicks
-        self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
 
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
@@ -778,7 +781,7 @@ class MainGUI(QMainWindow):
         # this is the contingency planner tab, invisible until done
         self.ui.tabWidget_3.setTabVisible(4, True)
 
-        self.view_cascade_menu()
+        # self.view_cascade_menu()
 
         self.clear_results()
 
@@ -1217,13 +1220,6 @@ class MainGUI(QMainWindow):
         """
         if val in self.stuff_running_now:
             self.stuff_running_now.remove(val)
-
-    def view_cascade_menu(self) -> None:
-        """
-        show/hide the cascade simulation menu
-        """
-        self.ui.cascade_menu.setVisible(self.ui.actionBlackout_cascade.isChecked())
-        self.ui.cascade_grid_splitter.setStretchFactor(1, 4)
 
     def about_box(self):
         """
@@ -3958,75 +3954,6 @@ class MainGUI(QMainWindow):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def clear_cascade(self):
-        """
-        Clear cascade simulation
-        """
-        # self.cascade = None
-        self.ui.cascade_tableView.setModel(None)
-
-    def run_cascade_step(self):
-        """
-        Run cascade step
-        """
-        if len(self.circuit.buses) > 0:
-
-            self.LOCK()
-            if self.session.exists(sim.SimulationTypes.Cascade_run):
-                options = self.get_selected_power_flow_options()
-                options.solver_type = bs.SolverType.LM
-                max_isl = self.ui.cascading_islands_spinBox.value()
-                drv = sim.Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
-
-                self.session.run(drv,
-                                 post_func=self.post_cascade,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
-
-            self.cascade.perform_step_run()
-
-            self.post_cascade()
-
-            self.UNLOCK()
-
-    def run_cascade(self):
-        """
-        Run a cascading to blackout simulation
-        """
-        if len(self.circuit.buses) > 0:
-
-            if not self.session.is_this_running(sim.SimulationTypes.Cascade_run):
-
-                self.add_simulation(sim.SimulationTypes.Cascade_run)
-
-                self.LOCK()
-
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
-
-                options = self.get_selected_power_flow_options()
-                options.solver_type = bs.SolverType.LM
-
-                max_isl = self.ui.cascading_islands_spinBox.value()
-                n_lsh_samples = self.ui.max_iterations_stochastic_spinBox.value()
-
-                drv = sim.Cascading(self.circuit.copy(), options,
-                                    max_additional_islands=max_isl,
-                                    n_lhs_samples_=n_lsh_samples)
-
-                self.session.run(drv,
-                                 post_func=self.post_cascade,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
-
-                # run
-                drv.start()
-
-            else:
-                warning_msg('Another cascade is running...')
-        else:
-            pass
-
     def post_cascade(self, idx=None):
         """
         Actions to perform after the cascade simulation is finished
@@ -4065,17 +3992,6 @@ class MainGUI(QMainWindow):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
-
-    def cascade_table_click(self):
-        """
-        Display cascade upon cascade scenario click
-        Returns:
-
-        """
-
-        idx = self.ui.cascade_tableView.currentIndex()
-        if idx.row() > -1:
-            self.post_cascade(idx=idx.row())
 
     def run_opf(self):
         """
@@ -7510,6 +7426,27 @@ class MainGUI(QMainWindow):
         for row in range(proxy.rowCount()):
             index = proxy.index(row, 0)
             self.ui.dataStructuresTreeView.expand(index)
+
+    def add_bus_bar_diagram(self):
+        pass
+
+    def add_area_bus_bar_diagram(self):
+        pass
+
+    def add_zone_bus_bar_diagram(self):
+        pass
+
+    def add_bus_vecinity_diagram(self):
+        pass
+
+    def add_map(self):
+        pass
+
+    def add_substation_diagram(self):
+        pass
+
+    def remove_diagram(self):
+        pass
 
 
 def runGridCal() -> None:

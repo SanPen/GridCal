@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/add_substation.svg</file>
+    <file>icons/map (add).svg</file>
     <file>icons/wind_power.svg</file>
     <file>icons/solar_power.svg</file>
     <file>icons/expansion_planning.svg</file>
