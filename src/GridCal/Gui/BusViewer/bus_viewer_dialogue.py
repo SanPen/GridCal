@@ -2,7 +2,7 @@ import sys
 from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
-from GridCal.Gui.GridEditorWidget import GridEditor
+from GridCal.Gui.GridEditorWidget import GridEditorWidget
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
@@ -87,7 +87,7 @@ class BusViewerGUI(QMainWindow):
         """
         Create new editor
         """
-        self.grid_editor = GridEditor(self.circuit)
+        self.grid_editor = GridEditorWidget(self.circuit, '')
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):

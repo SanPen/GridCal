@@ -29,7 +29,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
 
     """
-    def __init__(self, parent=None, object_types=None, circuit: MultiCircuit = None):
+    def __init__(self, parent=None, circuit: MultiCircuit = None):
         """
         Constructor
         Args:
@@ -45,12 +45,12 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # set the circuit
         self.circuit = circuit
 
+        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
+
         # declare logs
         self.log = GridErrorLog()
 
         self.fixable_errors: List[FixableErrorOutOfRange] = []
-
-        self.object_types = object_types if object_types is not None else []
 
         self.ui.actionSave_diagnostic.triggered.connect(self.save_diagnostic)
         self.ui.actionAnalyze.triggered.connect(self.analyze_all)

@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import pandas as pd
-from typing import Dict, List, Union, Any
+from typing import Dict, List, Union, Any, Tuple
 from PySide6 import QtWidgets
 from PySide6 import QtCore, QtWidgets, QtGui, Qt
 from warnings import warn
@@ -1347,7 +1347,7 @@ class MeasurementsModel(QtCore.QAbstractListModel):
         return None
 
 
-def get_list_model(lst, checks=False, check_value=False):
+def get_list_model(lst: List[str], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """
@@ -1363,6 +1363,37 @@ def get_list_model(lst, checks=False, check_value=False):
             for val in lst:
                 # for the list model
                 item = QtGui.QStandardItem(str(val))
+                item.setEditable(False)
+                item.setCheckable(True)
+                if check_value:
+                    item.setCheckState(QtCore.Qt.Checked)
+                list_model.appendRow(item)
+
+    return list_model
+
+
+def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+    """
+
+    :param lst:
+    :param checks:
+    :param check_value:
+    :return:
+    """
+    list_model = QtGui.QStandardItemModel()
+    if lst is not None:
+        if not checks:
+            for val, icon in lst:
+                # for the list model
+                item = QtGui.QStandardItem(str(val))
+                item.setEditable(False)
+                item.setIcon(icon)
+                list_model.appendRow(item)
+        else:
+            for val, icon in lst:
+                # for the list model
+                item = QtGui.QStandardItem(str(val))
+                item.setIcon(icon)
                 item.setEditable(False)
                 item.setCheckable(True)
                 if check_value:

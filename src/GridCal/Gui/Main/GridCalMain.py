@@ -60,7 +60,7 @@ from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, NewProfilesStructureDialogue, ElementsDialogue, \
     TimeReIndexDialogue, CheckListDialogue
-from GridCal.Gui.GridEditorWidget import GridEditor
+from GridCal.Gui.GridEditorWidget import GridEditorWidget
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
 
 from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
@@ -75,7 +75,7 @@ from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThrea
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
-from GridCal.Gui.MapWidget.map_widget import MapWidget
+from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 import GridCal.Gui.Visualization.palettes as palettes
@@ -229,9 +229,12 @@ class MainGUI(QMainWindow):
 
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.Hyperopt.value] = bs.InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[
+            bs.InvestmentEvaluationMethod.Hyperopt.value] = bs.InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[
+            bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -350,8 +353,7 @@ class MainGUI(QMainWindow):
         # Declare the schematic editor
         ################################################################################################################
 
-        # create diagram editor object
-        self.grid_editor = GridEditor(self.circuit)
+        self.diagrams_list: List[Union[GridEditorWidget]] = list()
 
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
         self.expand_object_tree_nodes()
@@ -361,10 +363,6 @@ class MainGUI(QMainWindow):
         self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(core.NumericalCircuit.available_structures))
 
         self.schematic_list_steps = list()
-
-        # add the widgets
-        self.ui.schematic_layout.addWidget(self.grid_editor)
-        # self.grid_editor.setStretchFactor(1, 10)
 
         # 1:4
         self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
@@ -402,22 +400,6 @@ class MainGUI(QMainWindow):
 
         self.ui.tile_provider_comboBox.setModel(gf.get_list_model(list(self.tile_sources.keys())))
         self.ui.tile_provider_comboBox.setCurrentIndex(0)
-
-        # These get initialized by create_map()
-        self.tile_source = None
-        self.map_widget: Union[MapWidget, None] = None
-        self.polyline_layer_id: Union[int, None] = None
-
-        self.create_map()
-
-        self.ui.map_time_horizontalSlider.setMinimum(0)
-        self.ui.map_time_horizontalSlider.setMaximum(0)
-        self.ui.map_time_horizontalSlider.setSliderPosition(0)
-        ################################################################################################################
-
-        # set initial view position
-        self.map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
-        self.map_list_steps = list()
 
         ################################################################################################################
         # simulations session ------------------------------------------------------------------------------------------
@@ -557,7 +539,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionClustering.triggered.connect(self.run_clustering)
 
-        self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
+        # self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
 
@@ -604,11 +586,11 @@ class MainGUI(QMainWindow):
 
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
 
-        self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_bar_diagram)
-        self.ui.actionAdd_area_bus_branch_diagram.triggered.connect(self.add_area_bus_bar_diagram)
-        self.ui.actionAdd_zone_bus_branch_diagram.triggered.connect(self.add_zone_bus_bar_diagram)
+        self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_branch_diagram)
+        self.ui.actionAdd_area_bus_branch_diagram.triggered.connect(self.add_area_bus_branch_diagram)
+        self.ui.actionAdd_zone_bus_branch_diagram.triggered.connect(self.add_zone_bus_branch_diagram)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram)
-        self.ui.actionAdd_map.triggered.connect(self.add_map)
+        self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
 
         # Buttons
@@ -657,15 +639,11 @@ class MainGUI(QMainWindow):
 
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
-        self.ui.colour_results_pushButton.clicked.connect(self.colour_schematic)
+        self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
 
         self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
 
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
-
-        self.ui.view_previous_simulation_step_map_pushButton.clicked.connect(self.colour_previous_simulation_step_map)
-
-        self.ui.view_next_simulation_step_map_pushButton.clicked.connect(self.colour_next_simulation_step_map)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
@@ -707,8 +685,6 @@ class MainGUI(QMainWindow):
 
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
 
-        self.ui.draw_map_button.clicked.connect(self.colour_map)
-
         self.ui.remove_diagram_button.clicked.connect(self.remove_diagram)
 
         # node size
@@ -726,6 +702,8 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
+        self.ui.diagramsListView.clicked.connect(self.set_selected_diagram)
+
         # tree-view clicks
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
@@ -737,18 +715,13 @@ class MainGUI(QMainWindow):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
-        self.ui.available_results_to_color_map_comboBox.currentTextChanged.connect(
-            self.update_available_steps_to_color_map)
 
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
-
-        self.ui.tile_provider_comboBox.currentTextChanged.connect(self.create_map)
 
         # sliders
         self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
-        self.ui.simulation_results_step_slider.valueChanged.connect(self.schematic_time_slider_change)
-        self.ui.map_time_horizontalSlider.valueChanged.connect(self.map_time_slider_change)
+        self.ui.simulation_results_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
 
         # doubleSpinBox
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
@@ -761,7 +734,6 @@ class MainGUI(QMainWindow):
         self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
 
         # check boxes
-        self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
 
         # Radio Button
@@ -786,6 +758,10 @@ class MainGUI(QMainWindow):
         self.clear_results()
 
         self.load_gui_config()
+
+        self.add_bus_branch_diagram()
+        self.add_map_diagram()
+        self.set_diagram_widget(self.diagrams_list[0])
 
     def LOCK(self, val: bool = True) -> None:
         """
@@ -963,7 +939,9 @@ class MainGUI(QMainWindow):
         all_threads = list(self.session.drivers.values())
 
         # set the threads so that the diagram scene objects can plot them
-        self.grid_editor.diagramScene.set_results_to_plot(all_threads)
+        for diagram in self.diagrams_list:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.diagramScene.set_results_to_plot(all_threads)
 
         return all_threads
 
@@ -1034,15 +1012,6 @@ class MainGUI(QMainWindow):
                     return True
         return val
 
-    def set_grid_editor_state(self):
-        """
-        Enable/disable the grid editor
-        """
-        if self.ui.draw_schematic_checkBox.isChecked():
-            self.grid_editor.setEnabled(True)
-        else:
-            self.grid_editor.setDisabled(True)
-
     def create_console(self) -> None:
         """
         Create console
@@ -1089,42 +1058,6 @@ class MainGUI(QMainWindow):
 
         return np.arange(start, end + 1)
 
-    def create_map(self) -> None:
-        """
-        Create the map widget
-        """
-
-        # remove all widgets from the layout
-        for i in reversed(range(self.ui.map_layout.count())):
-
-            # get the widget
-            widget_to_remove = self.ui.map_layout.itemAt(i).widget()
-
-            # remove it from the layout list
-            self.ui.map_layout.removeWidget(widget_to_remove)
-
-            # remove it from the gui
-            widget_to_remove.setParent(None)
-
-        # select the tile source
-        self.tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
-
-        # create the map widget
-        self.map_widget = MapWidget(self, tile_src=self.tile_source, start_level=5)
-
-        # add empty polylines layer
-        self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=[],
-                                                                  map_rel=True,
-                                                                  visible=True,
-                                                                  show_levels=list(range(20)),
-                                                                  selectable=True,
-                                                                  # levels at which to show the polylines
-                                                                  name='<polyline_layer>')
-        # add to the layout
-        self.ui.map_layout.addWidget(self.map_widget)
-
-        self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
-
     def clear_stuff_running(self) -> None:
         """
         This clears the list of stuff running right now
@@ -1142,15 +1075,23 @@ class MainGUI(QMainWindow):
                          "primary>list.selectionBackground": "#00aa88be"}
 
         if self.ui.dark_mode_checkBox.isChecked():
-            qdarktheme.setup_theme(theme='dark',
-                                   custom_colors=custom_colors)
-            self.grid_editor.set_dark_mode()
-            self.colour_schematic()
+            qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
+
+            diagram = self.get_selected_diagram()
+            if diagram is not None:
+                if isinstance(diagram, GridEditorWidget):
+                    diagram.set_dark_mode()
+
+            self.colour_diagrams()
         else:
-            qdarktheme.setup_theme(theme='light',
-                                   custom_colors=custom_colors)
-            self.grid_editor.set_light_mode()
-            self.colour_schematic()
+            qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
+
+            diagram = self.get_selected_diagram()
+            if diagram is not None:
+                if isinstance(diagram, GridEditorWidget):
+                    diagram.set_light_mode()
+
+            self.colour_diagrams()
 
     def dragEnterEvent(self, event):
         """
@@ -1409,32 +1350,38 @@ class MainGUI(QMainWindow):
         """
         Move the nodes more separated
         """
-        if self.grid_editor is not None:
-            self.grid_editor.expand_node_distances()
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.expand_node_distances()
 
     def smaller_nodes(self):
         """
         Move the nodes closer
         """
-        if self.grid_editor is not None:
-            self.grid_editor.shrink_node_distances()
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.shrink_node_distances()
 
     def center_nodes(self):
         """
         Center the nodes in the screen
         """
-        if self.grid_editor is not None:
 
-            selected = self.get_selected_buses()
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
+                selected = self.get_selected_buses()
 
-            if len(selected) == 0:
-                buses = self.circuit.buses
-            else:
-                buses = [b for i, b in selected]
+                if len(selected) == 0:
+                    buses = self.circuit.buses
+                else:
+                    buses = [b for i, b in selected]
 
-            self.grid_editor.align_schematic(buses=buses)
+                diagram.align_schematic(buses=buses)
 
-    def new_project_now(self):
+    def new_project_now(self, create_default_diagrams=True):
         """
         New project right now without asking questions
         """
@@ -1444,7 +1391,7 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        self.grid_editor.clear()
+        self.remove_all_diagrams()
 
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict(),
                                                                   top='Objects'))
@@ -1455,6 +1402,8 @@ class MainGUI(QMainWindow):
 
         # clear the comments
         self.ui.comments_textEdit.setText("")
+
+        self.ui.grid_name_line_edit.setText("")
 
         # clear the simulation objects
         for thread in self.get_all_threads():
@@ -1471,9 +1420,13 @@ class MainGUI(QMainWindow):
 
         self.clear_stuff_running()
         self.clear_results()
-        self.add_default_catalogue()
         self.create_console()
-        self.create_map()
+
+        if create_default_diagrams:
+            self.add_bus_branch_diagram()
+            self.add_map_diagram()
+            self.set_diagram_widget(self.diagrams_list[0])
+
         self.collect_memory()
 
     def new_project(self):
@@ -1488,7 +1441,7 @@ class MainGUI(QMainWindow):
                                                    QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.Yes:
-                self.new_project_now()
+                self.new_project_now(create_default_diagrams=True)
 
     def open_file(self):
         """
@@ -1504,7 +1457,6 @@ class MainGUI(QMainWindow):
                                                        QtWidgets.QMessageBox.No)
 
                 if reply == QtWidgets.QMessageBox.Yes:
-                    self.new_project_now()
                     self.open_file_threaded()
                 else:
                     pass
@@ -1608,7 +1560,7 @@ class MainGUI(QMainWindow):
             if self.open_file_thread_object.valid:
 
                 # assign the loaded circuit
-                self.new_project_now()
+                self.new_project_now(create_default_diagrams=False)
                 self.circuit = self.open_file_thread_object.circuit
                 self.file_name = self.open_file_thread_object.file_name
 
@@ -1619,20 +1571,13 @@ class MainGUI(QMainWindow):
                     reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
                                                            QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
-                    if reply == QtWidgets.QMessageBox.No:
-                        self.ui.draw_schematic_checkBox.setChecked(False)
-                        self.set_grid_editor_state()
+                    if reply == QtWidgets.QMessageBox.Yes:
+                        # create schematic
+                        self.add_bus_branch_diagram()
+
                 else:
-                    if not self.ui.draw_schematic_checkBox.isChecked():
-                        # the schematic is disabled but the grid size is ok
-                        self.ui.draw_schematic_checkBox.setChecked(True)
-                        self.set_grid_editor_state()
-
-                # create schematic
-                self.create_schematic_from_api(explode_factor=1, show_msg=False)
-
-                # set circuit name
-                self.grid_editor.name_label.setText(str(self.circuit.name))
+                    # create schematic
+                    self.add_bus_branch_diagram()
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
@@ -1660,11 +1605,16 @@ class MainGUI(QMainWindow):
                 # clear the results
                 self.clear_results()
 
+                self.ui.grid_name_line_edit.setText(self.circuit.name)
+
             else:
                 warn('The file was not valid')
         else:
             # center nodes
-            self.grid_editor.align_schematic()
+            diagram = self.get_selected_diagram()
+            if diagram is not None:
+                if isinstance(diagram, GridEditorWidget):
+                    diagram.diagramView.align_schematic()
 
         self.collect_memory()
 
@@ -1698,8 +1648,11 @@ class MainGUI(QMainWindow):
                     buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
 
                     # add to schematic
-                    self.grid_editor.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
-                    self.grid_editor.align_schematic()
+                    diagram = self.get_selected_diagram()
+                    if diagram is not None:
+                        if isinstance(diagram, GridEditorWidget):
+                            diagram.diagramView.align_schematic()
+                            diagram.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
 
                     for bus in buses:
                         if bus.graphic_obj is not None:
@@ -1765,15 +1718,12 @@ class MainGUI(QMainWindow):
         if self.project_directory is None:
             self.project_directory = ''
 
-        # set grid name
-        self.circuit.name = self.grid_editor.name_label.text()
-
         # gather comments
         self.circuit.comments = self.ui.comments_textEdit.toPlainText()
 
         if self.file_name == '':
             # if the global file_name is empty, ask where to save
-            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+            fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
 
             filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
@@ -1916,10 +1866,7 @@ class MainGUI(QMainWindow):
             if self.project_directory is None:
                 self.project_directory = ''
 
-            # set grid name
-            self.circuit.name = self.grid_editor.name_label.text()
-
-            fname = os.path.join(self.project_directory, 'profiles of ' + self.grid_editor.name_label.text())
+            fname = os.path.join(self.project_directory, 'profiles of ' + self.ui.grid_name_line_edit.text())
 
             filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
@@ -1937,15 +1884,12 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        # set grid name
-        self.circuit.name = self.grid_editor.name_label.text()
-
         available_results = self.get_available_results()
 
         if len(available_results) > 0:
 
             files_types = "Zip file (*.zip)"
-            fname = os.path.join(self.project_directory, 'Results of ' + self.grid_editor.name_label.text())
+            fname = os.path.join(self.project_directory, 'Results of ' + self.ui.grid_name_line_edit.text())
 
             filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
@@ -1989,10 +1933,7 @@ class MainGUI(QMainWindow):
         if self.project_directory is None:
             self.project_directory = ''
 
-        # set grid name
-        self.circuit.name = self.grid_editor.name_label.text()
-
-        fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+        fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
 
         filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
@@ -2017,33 +1958,27 @@ class MainGUI(QMainWindow):
         Save the schematic
         :return:
         """
-        if self.grid_editor is not None:
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
 
-            # declare the allowed file types
-            files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
+                # declare the allowed file types
+                files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
 
-            fname = os.path.join(self.project_directory, self.grid_editor.name_label.text())
+                fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
 
-            # call dialog to select the file
-            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+                # call dialog to select the file
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
-            if not (filename.endswith('.svg') or filename.endswith('.png')):
-                filename += ".svg"
+                if not (filename.endswith('.svg') or filename.endswith('.png')):
+                    filename += ".svg"
 
-            if filename != "":
-                # save in factor * K
-                factor = self.ui.resolution_factor_spinBox.value()
-                w = 1920 * factor
-                h = 1080 * factor
-                self.grid_editor.export(filename, w, h)
-
-    def draw_schematic(self):
-        """
-        Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
-        """
-        self.ui.draw_schematic_checkBox.setChecked(True)
-        self.set_grid_editor_state()
-        self.create_schematic_from_api()
+                if filename != "":
+                    # save in factor * K
+                    factor = self.ui.resolution_factor_spinBox.value()
+                    w = 1920 * factor
+                    h = 1080 * factor
+                    diagram.export(filename, w, h)
 
     def set_xy_from_lat_lon(self):
         """
@@ -2058,31 +1993,7 @@ class MainGUI(QMainWindow):
                     dlg = LogsDialogue('Set xy from lat lon', logger)
                     dlg.exec_()
 
-                self.create_schematic_from_api()
-
-    def create_schematic_from_api(self, explode_factor=1.0, show_msg=True):
-        """
-        This function explores the API values and draws a schematic layout
-        @return:
-        """
-        if self.ui.draw_schematic_checkBox.isChecked():
-            # set pointer to the circuit
-            self.grid_editor.circuit = self.circuit
-
-            self.grid_editor.schematic_from_api(explode_factor=explode_factor)
-
-            # center nodes
-            self.grid_editor.align_schematic()
-        else:
-            if show_msg:
-                info_msg('The schematic drawing is disabled')
-
-    def post_create_schematic(self):
-        """
-
-        :return:
-        """
-        self.UNLOCK()
+                self.refresh_current_diagram()
 
     def auto_rate_branches(self):
         """
@@ -2272,10 +2183,10 @@ class MainGUI(QMainWindow):
             raise Exception('elm_type not understood: ' + elm_type)
 
         mdl = gf.ObjectsModel(elements, elm.editable_headers,
-                                  parent=self.ui.dataStructureTableView,
-                                  editable=True,
-                                  non_editable_attributes=elm.non_editable_attributes,
-                                  dictionary_of_lists=dictionary_of_lists)
+                              parent=self.ui.dataStructureTableView,
+                              editable=True,
+                              non_editable_attributes=elm.non_editable_attributes,
+                              dictionary_of_lists=dictionary_of_lists)
 
         return mdl
 
@@ -3007,8 +2918,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
-                self.colour_schematic()
+            self.colour_diagrams()
 
             # print convergence reports on the console
             for report in drv.convergence_reports:
@@ -3112,8 +3022,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+            self.colour_diagrams()
 
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
@@ -3167,7 +3076,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             self.update_available_results()
-            self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no PTDF results.')
 
@@ -3226,11 +3135,10 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                if results.S.shape[0] > 0:
-                    self.colour_schematic()
-                else:
-                    info_msg('Cannot colour because the PTDF results have zero time steps :/')
+            if results.S.shape[0] > 0:
+                self.colour_diagrams()
+            else:
+                info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
         else:
             error_msg('Something went wrong, There are no PTDF Time series results.')
@@ -3299,8 +3207,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no contingency analysis results.')
 
@@ -3375,8 +3282,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no contingency time series results.')
 
@@ -3488,7 +3394,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             self.update_available_results()
-            self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no ATC results.')
 
@@ -3618,7 +3524,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             self.update_available_results()
-            self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no ATC time series results.')
 
@@ -3797,8 +3703,7 @@ class MainGUI(QMainWindow):
 
                     self.update_available_results()
 
-                    if self.ui.draw_schematic_checkBox.isChecked():
-                        self.colour_schematic()
+                    self.colour_diagrams()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
@@ -3876,8 +3781,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+            self.colour_diagrams()
 
         else:
             warning_msg('No results for the time series simulation.')
@@ -3944,9 +3848,7 @@ class MainGUI(QMainWindow):
 
             self.update_available_results()
 
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
-
+            self.colour_diagrams()
 
         else:
             pass
@@ -3978,17 +3880,13 @@ class MainGUI(QMainWindow):
                 br_idx = np.r_[br_idx, results.events[i].removed_idx]
 
             # pick the results at the designated cascade step
-            results = results.events[idx].pf_results  # StochasticPowerFlowResults object
+            # results = results.events[idx].pf_results  # StochasticPowerFlowResults object
 
             # Update results
             self.update_available_results()
 
             # print grid
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
-
-            # Set cascade table
-            self.ui.cascade_tableView.setModel(gf.PandasModel(drv.get_table()))
+            self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4102,8 +4000,8 @@ class MainGUI(QMainWindow):
                             'You may also use the diagnostic tool (F8)', 'OPF')
 
             self.update_available_results()
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+
+            self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4232,8 +4130,7 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
 
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    self.colour_schematic()
+                self.colour_diagrams()
 
                 msg = 'OPF time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -4433,9 +4330,7 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
             self.update_available_results()
-
-            if self.ui.draw_schematic_checkBox.isChecked():
-                self.colour_schematic()
+            self.colour_diagrams()
 
         if drv.logger is not None:
             if len(drv.logger) > 0:
@@ -4582,7 +4477,7 @@ class MainGUI(QMainWindow):
             if results is not None:
                 self.update_available_results()
 
-                self.colour_schematic()
+                self.colour_diagrams()
 
                 msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
@@ -4671,7 +4566,7 @@ class MainGUI(QMainWindow):
 
         self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
 
-        self.create_schematic_from_api(explode_factor=1)
+        self.refresh_current_diagram()
 
         self.clear_results()
 
@@ -4771,7 +4666,7 @@ class MainGUI(QMainWindow):
         if results is not None:
             self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
             self.update_available_results()
-            self.colour_schematic()
+            self.colour_diagrams()
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue(drv.name, drv.logger)
@@ -4877,10 +4772,12 @@ class MainGUI(QMainWindow):
                 if not self.session.is_this_running(sim.SimulationTypes.InvestmestsEvaluation_run):
 
                     # evaluation method
-                    method = self.investment_evaluation_method_dict[self.ui.investment_evaluation_method_ComboBox.currentText()]
+                    method = self.investment_evaluation_method_dict[
+                        self.ui.investment_evaluation_method_ComboBox.currentText()]
 
                     # maximum number of function evalñuations as a factor of the number of investments
-                    max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(self.circuit.investments_groups)
+                    max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
+                        self.circuit.investments_groups)
 
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
                                                           method=method,
@@ -4917,7 +4814,7 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
 
             self.update_available_results()
-            self.colour_schematic()
+            self.colour_diagrams()
         else:
             error_msg('Something went wrong, There are no investments evaluation results.')
 
@@ -4945,10 +4842,13 @@ class MainGUI(QMainWindow):
             self.circuit = self.grid_generator_dialogue.circuit
 
             # create schematic
-            self.create_schematic_from_api(explode_factor=1)
+            self.refresh_current_diagram()
 
             # set circuit name
-            self.grid_editor.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
+            diagram = self.get_selected_diagram()
+            if diagram is not None:
+                if isinstance(diagram, GridEditorWidget):
+                    diagram.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
 
             # set base magnitudes
             self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
@@ -4973,7 +4873,7 @@ class MainGUI(QMainWindow):
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
         self.coordinates_window.exec_()
 
-        self.create_schematic_from_api()
+        self.refresh_current_diagram()
 
     def set_selected_bus_property(self, prop):
         """
@@ -5075,33 +4975,32 @@ class MainGUI(QMainWindow):
                 max_steps = len(steps)
 
         icons = {
-                SimulationTypes.PowerFlow_run.value: ':/Icons/icons/pf',
-                SimulationTypes.TimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
-                SimulationTypes.ClusteringTimeSeries_run.value: ':/Icons/icons/pf_ts_cluster.svg',
-                SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
-                SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
-                SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
-                SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
-                SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
-                SimulationTypes.SigmaAnalysis_run.value: ':/Icons/icons/sigma.svg',
-                SimulationTypes.StochasticPowerFlow.value: ':/Icons/icons/stochastic_power_flow.svg',
-                SimulationTypes.ContingencyAnalysis_run.value: ':/Icons/icons/otdf.svg',
-                SimulationTypes.ContingencyAnalysisTS_run.value: ':/Icons/icons/otdf_ts.svg',
-                SimulationTypes.NetTransferCapacity_run.value: ':/Icons/icons/atc.svg',
-                SimulationTypes.NetTransferCapacityTS_run.value: ':/Icons/icons/atc_ts.svg',
-                SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
-                SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
-                SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
-                SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
-                SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
-                SimulationTypes.InvestmestsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
-                }
+            SimulationTypes.PowerFlow_run.value: ':/Icons/icons/pf',
+            SimulationTypes.TimeSeries_run.value: ':/Icons/icons/pf_ts.svg',
+            SimulationTypes.ClusteringTimeSeries_run.value: ':/Icons/icons/pf_ts_cluster.svg',
+            SimulationTypes.OPF_run.value: ':/Icons/icons/dcopf.svg',
+            SimulationTypes.OPFTimeSeries_run.value: ':/Icons/icons/dcopf_ts.svg',
+            SimulationTypes.ShortCircuit_run.value: ':/Icons/icons/short_circuit.svg',
+            SimulationTypes.LinearAnalysis_run.value: ':/Icons/icons/ptdf.svg',
+            SimulationTypes.LinearAnalysis_TS_run.value: ':/Icons/icons/ptdf_ts.svg',
+            SimulationTypes.SigmaAnalysis_run.value: ':/Icons/icons/sigma.svg',
+            SimulationTypes.StochasticPowerFlow.value: ':/Icons/icons/stochastic_power_flow.svg',
+            SimulationTypes.ContingencyAnalysis_run.value: ':/Icons/icons/otdf.svg',
+            SimulationTypes.ContingencyAnalysisTS_run.value: ':/Icons/icons/otdf_ts.svg',
+            SimulationTypes.NetTransferCapacity_run.value: ':/Icons/icons/atc.svg',
+            SimulationTypes.NetTransferCapacityTS_run.value: ':/Icons/icons/atc_ts.svg',
+            SimulationTypes.OptimalNetTransferCapacityTimeSeries_run.value: ':/Icons/icons/ntc_opf_ts.svg',
+            SimulationTypes.InputsAnalysis_run.value: ':/Icons/icons/stats.svg',
+            SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
+            SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
+            SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
+            SimulationTypes.InvestmestsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
+        }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
         lst.reverse()  # this is to show the latest simulation first
         mdl = gf.get_list_model(lst)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
-        self.ui.available_results_to_color_map_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
 
     def clear_results(self):
@@ -5123,10 +5022,6 @@ class MainGUI(QMainWindow):
         self.ui.schematic_step_label.setText("")
         self.ui.simulation_results_step_slider.setMinimum(0)
         self.ui.simulation_results_step_slider.setMaximum(0)
-
-        self.ui.map_time_label.setText("")
-        self.ui.map_time_horizontalSlider.setMinimum(0)
-        self.ui.map_time_horizontalSlider.setMaximum(0)
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
@@ -5393,19 +5288,28 @@ class MainGUI(QMainWindow):
         else:
             print('<' + current_study + '> Not implemented :(')
 
-    def colour_schematic(self) -> None:
+    def colour_diagrams(self) -> None:
         """
         Color the grid now
         """
 
-        if not self.ui.draw_schematic_checkBox.isChecked():
-            # The schematic drawing is disabled
-            return None
-
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
-            self.grid_colour_function(plot_function=viz.colour_the_schematic,
-                                      current_study=self.ui.available_results_to_color_comboBox.currentText(),
-                                      current_step=self.ui.simulation_results_step_slider.value())
+            current_study = self.ui.available_results_to_color_comboBox.currentText()
+            current_step = self.ui.simulation_results_step_slider.value()
+
+            for diagram in self.diagrams_list:
+
+                if isinstance(diagram, GridEditorWidget):
+                    self.grid_colour_function(plot_function=viz.colour_the_schematic,
+                                              current_study=current_study,
+                                              current_step=current_step)
+
+                elif isinstance(diagram, GridMapWidget):
+                    poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
+                                                     current_study=current_study,
+                                                     current_step=current_step)
+
+                    diagram.setBranchData(poly)
 
     def colour_next_simulation_step(self):
         """
@@ -5422,7 +5326,7 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_slider.setValue(nxt)
 
-            self.colour_schematic()
+            self.colour_diagrams()
 
     def colour_previous_simulation_step(self):
         """
@@ -5439,41 +5343,7 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_slider.setValue(prv)
 
-            self.colour_schematic()
-
-    def colour_next_simulation_step_map(self):
-        """
-        Next colour step
-        """
-        current_step = self.ui.map_time_horizontalSlider.value()
-        count = self.ui.map_time_horizontalSlider.maximum() + 1
-
-        if count > 0:
-            nxt = current_step + 1
-
-            if nxt >= count:
-                nxt = count - 1
-
-            self.ui.map_time_horizontalSlider.setValue(nxt)
-
-            self.colour_map()
-
-    def colour_previous_simulation_step_map(self):
-        """
-        Prev colour step
-        """
-        current_step = self.ui.map_time_horizontalSlider.value()
-        count = self.ui.map_time_horizontalSlider.maximum() + 1
-
-        if count > 0:
-            prv = current_step - 1
-
-            if prv < 0:
-                prv = 0
-
-            self.ui.map_time_horizontalSlider.setValue(prv)
-
-            self.colour_map()
+            self.colour_diagrams()
 
     def update_available_steps_to_color(self):
         """
@@ -5524,7 +5394,7 @@ class MainGUI(QMainWindow):
         if idx > -1:
             self.ui.map_time_label.setText(self.map_list_steps[idx])
 
-    def schematic_time_slider_change(self) -> None:
+    def diagrams_time_slider_change(self) -> None:
         """
         On change of the schematic slider...
         """
@@ -5722,9 +5592,7 @@ class MainGUI(QMainWindow):
         Display the grid analysis GUI
         """
 
-        self.analysis_dialogue = GridAnalysisGUI(parent=self,
-                                                 object_types=self.grid_editor.object_types,
-                                                 circuit=self.circuit)
+        self.analysis_dialogue = GridAnalysisGUI(parent=self, circuit=self.circuit)
 
         self.analysis_dialogue.resize(int(1.61 * 600.0), 600)
         self.analysis_dialogue.show()
@@ -5768,22 +5636,27 @@ class MainGUI(QMainWindow):
         """
         Change the node explosion factor
         """
-        if self.grid_editor is not None:
-            self.grid_editor.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
+        for diagram in self.diagrams_list:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
     def zoom_in(self):
         """
         Zoom the diagram in
         """
-        if self.grid_editor is not None:
-            self.grid_editor.diagramView.zoom_in()
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.diagramView.zoom_in()
 
     def zoom_out(self):
         """
         Zoom the diagram out
         """
-        if self.grid_editor is not None:
-            self.grid_editor.diagramView.zoom_out()
+        diagram = self.get_selected_diagram()
+        if diagram is not None:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.diagramView.zoom_out()
 
     def profile_sliders_changed(self):
         """
@@ -6170,7 +6043,7 @@ class MainGUI(QMainWindow):
                     bus.graphic_obj.create_children_icons()
                     bus.graphic_obj.arrange_children()
 
-            self.create_schematic_from_api(explode_factor=1)
+            self.refresh_current_diagram()
 
             self.clear_results()
 
@@ -6881,7 +6754,7 @@ class MainGUI(QMainWindow):
 
         if ok:
             self.circuit.fuse_devices()
-            self.create_schematic_from_api()
+            self.refresh_current_diagram()
 
     # def correct_inconsistencies(self):
     #     """
@@ -7160,35 +7033,6 @@ class MainGUI(QMainWindow):
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
 
-    def colour_map(self):
-        """
-        Draw lines
-        :return:
-        """
-        current_study = self.ui.available_results_to_color_map_comboBox.currentText()
-
-        if current_study != '':
-            poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
-                                             current_study=current_study,
-                                             current_step=self.ui.map_time_horizontalSlider.value())
-
-            # # delete the previous layer
-            # self.map_widget.DeleteLayer(self.polyline_layer_id)
-            #
-            # # draw again
-            # self.polyline_layer_id = self.map_widget.AddPolylineLayer(data=poly,
-            #                                                           map_rel=True,
-            #                                                           visible=True,
-            #                                                           delta=40,
-            #                                                           show_levels=list(range(15)),
-            #                                                           # levels at which to show the polylines
-            #                                                           name='<polyline_layer>')
-
-            self.map_widget.setLayerData(self.polyline_layer_id, poly)
-            self.map_widget.update()
-
-            # self.map_widget.setLayerSelectable(self.polyline_layer_id, True)
-
     @staticmethod
     def config_file_path() -> str:
         """
@@ -7427,26 +7271,141 @@ class MainGUI(QMainWindow):
             index = proxy.index(row, 0)
             self.ui.dataStructuresTreeView.expand(index)
 
-    def add_bus_bar_diagram(self):
-        pass
+    def set_diagrams_list_view(self):
 
-    def add_area_bus_bar_diagram(self):
-        pass
+        bus_branch_editor_icon = QtGui.QIcon()
+        bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
 
-    def add_zone_bus_bar_diagram(self):
-        pass
+        map_editor_icon = QtGui.QIcon()
+        map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
+
+        lst = list()
+        for diagram in self.diagrams_list:
+            if isinstance(diagram, GridEditorWidget):
+                icon = bus_branch_editor_icon
+            if isinstance(diagram, GridMapWidget):
+                icon = map_editor_icon
+            else:
+                icon = bus_branch_editor_icon
+
+            lst.append((diagram.name, icon))
+
+        mdl = gf.get_icon_list_model(lst)
+        self.ui.diagramsListView.setModel(mdl)
+
+    def get_selected_diagram(self) -> Union[None, GridEditorWidget, GridMapWidget]:
+        """
+
+        :return:
+        """
+        indices = self.ui.diagramsListView.selectedIndexes()
+
+        if len(indices):
+            idx = indices[0].row()
+            return self.diagrams_list[idx]
+        else:
+            return None
+
+    def refresh_current_diagram(self):
+
+        diagram = self.get_selected_diagram()
+
+        if diagram:
+
+            if isinstance(diagram, GridEditorWidget):
+                # set pointer to the circuit
+                diagram.circuit = self.circuit
+                diagram.schematic_from_api(explode_factor=1.0)
+
+    def set_selected_diagram(self):
+
+        diagram = self.get_selected_diagram()
+
+        if diagram:
+            self.set_diagram_widget(diagram)
+
+    def add_bus_branch_diagram(self):
+
+        diagram = GridEditorWidget(self.circuit, 'Bus-branch diagram')
+        diagram.setStretchFactor(1, 10)
+        diagram.schematic_from_api(explode_factor=1.0)
+        diagram.align_schematic()
+        diagram.center_nodes()
+        self.diagrams_list.append(diagram)
+        self.set_diagrams_list_view()
+        self.set_diagram_widget(diagram)
+
+    def add_area_bus_branch_diagram(self):
+        self.diagrams_list.append(GridEditorWidget(self.circuit, 'area diagram'))
+        self.set_diagrams_list_view()
+
+    def add_zone_bus_branch_diagram(self):
+        self.diagrams_list.append(GridEditorWidget(self.circuit, 'zone diagram'))
+        self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram(self):
-        pass
+        self.diagrams_list.append(GridEditorWidget(self.circuit, 'vecinity diagram'))
+        self.set_diagrams_list_view()
 
-    def add_map(self):
-        pass
+    def add_map_diagram(self):
+        # select the tile source
+        tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+
+        # create the map widget
+        map_widget = GridMapWidget(parent=self, tile_src=tile_source, start_level=5, name='Map diagram')
+        map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+
+        self.diagrams_list.append(map_widget)
+        self.set_diagrams_list_view()
+        self.set_diagram_widget(diagram=map_widget)
 
     def add_substation_diagram(self):
-        pass
+        self.set_diagrams_list_view()
 
     def remove_diagram(self):
-        pass
+
+        diagram = self.get_selected_diagram()
+
+        if diagram is not None:
+            self.diagrams_list.remove(diagram)
+            self.set_diagrams_list_view()
+
+    def remove_all_diagrams(self):
+        self.diagrams_list.clear()
+        self.remove_all_diagram_widgets()
+
+    def remove_all_diagram_widgets(self):
+
+        # remove all widgets from the layout
+        for i in reversed(range(self.ui.schematic_layout.count())):
+            # get the widget
+            widget_to_remove = self.ui.schematic_layout.itemAt(i).widget()
+
+            # remove it from the layout list
+            self.ui.schematic_layout.removeWidget(widget_to_remove)
+
+            # remove it from the gui
+            widget_to_remove.setParent(None)
+
+    def set_diagram_widget(self, diagram: Union[GridEditorWidget, GridMapWidget]):
+        """
+
+        :param diagram:
+        :return:
+        """
+        self.remove_all_diagram_widgets()
+
+        # add the new diagram
+        self.ui.schematic_layout.addWidget(diagram)
+
+        # set the alignment
+        self.ui.diagram_selection_splitter.setStretchFactor(0, 10)
+        self.ui.diagram_selection_splitter.setStretchFactor(1, 2)
+
+        # set the selected index
+        row = self.diagrams_list.index(diagram)
+        index = self.ui.diagramsListView.model().index(row, 0)
+        self.ui.diagramsListView.setCurrentIndex(index)
 
 
 def runGridCal() -> None:

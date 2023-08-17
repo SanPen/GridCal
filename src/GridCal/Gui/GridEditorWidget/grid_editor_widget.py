@@ -608,18 +608,20 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).mouseReleaseEvent(event)
 
 
-class GridEditor(QSplitter):
+class GridEditorWidget(QSplitter):
+    """
+    GridEditorWidget
     """
 
-    """
-
-    def __init__(self, circuit: MultiCircuit):
+    def __init__(self, circuit: MultiCircuit, name: str):
         """
         Creates the Diagram Editor
         Args:
             circuit: Circuit that is handling
         """
         QSplitter.__init__(self)
+
+        self.name = name
 
         # store a reference to the multi circuit instance
         self.circuit = circuit
@@ -677,10 +679,6 @@ class GridEditor(QSplitter):
         self.name_layout = QHBoxLayout()
         self.name_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.name_label = QLineEdit()
-        self.name_label.setText(str(self.circuit.name))
-        self.name_label.setToolTip('Name of the model')
-        self.name_layout.addWidget(self.name_label)
         self.name_editor_frame.setLayout(self.name_layout)
 
         self.frame1_layout.addWidget(self.name_editor_frame)
@@ -1500,41 +1498,41 @@ class GridEditor(QSplitter):
         else:
             lst = self.circuit.buses
 
-        # Align lines
-        for bus in lst:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.arrange_children()
-                # get the item position
-                x = bus.graphic_obj.pos().x()
-                y = bus.graphic_obj.pos().y()
+        if len(lst):
+            # Align lines
+            for bus in lst:
+                if bus.graphic_obj is not None:
+                    bus.graphic_obj.arrange_children()
+                    # get the item position
+                    x = bus.graphic_obj.pos().x()
+                    y = bus.graphic_obj.pos().y()
 
-                # compute the boundaries of the grid
-                max_x = max(max_x, x)
-                min_x = min(min_x, x)
-                max_y = max(max_y, y)
-                min_y = min(min_y, y)
+                    # compute the boundaries of the grid
+                    max_x = max(max_x, x)
+                    min_x = min(min_x, x)
+                    max_y = max(max_y, y)
+                    min_y = min(min_y, y)
 
-        # Fix boundaries
-        for bus in lst:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.arrange_children()
-                # get the item position
-                x = bus.graphic_obj.pos().x()
-                y = bus.graphic_obj.pos().y()
-                bus.graphic_obj.set_position(x - min_x, y - max_y)
+            # Fix boundaries
+            for bus in lst:
+                if bus.graphic_obj is not None:
+                    bus.graphic_obj.arrange_children()
+                    # get the item position
+                    x = bus.graphic_obj.pos().x()
+                    y = bus.graphic_obj.pos().y()
+                    bus.graphic_obj.set_position(x - min_x, y - max_y)
 
-        # set the figure limits
-        self.set_limits(0, max_x - min_x, min_y - max_y, 0)
+            # set the figure limits
+            self.set_limits(0, max_x - min_x, min_y - max_y, 0)
 
-        #  center the view
-        self.center_nodes()
+            #  center the view
+            self.center_nodes()
 
     def clear(self):
         """
         Clear the schematic
         """
         self.diagramView.scene_.clear()
-        self.name_label.setText("")
 
     def schematic_from_api(self, explode_factor=1.0, prog_func=None, text_func=None):
         """
@@ -1596,8 +1594,8 @@ class GridEditor(QSplitter):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
-    circuit = MultiCircuit()
-    window = GridEditor(circuit)
+    circuit_ = MultiCircuit()
+    window = GridEditorWidget(circuit_, 'test')
     h = 600
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
