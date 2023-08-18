@@ -925,7 +925,7 @@ class Logger:
         """
         return len(self.entries) > 0
 
-    def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment=''):
+    def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment='', device_property=''):
         """
         Add info entry
         :param msg:
@@ -938,7 +938,7 @@ class Logger:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Information, device, str(value), str(expected_value)))
 
-    def add_warning(self, msg, device="", value="", expected_value="", device_class='', comment=''):
+    def add_warning(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property=''):
         """
         Add warning entry
         :param msg:
@@ -951,7 +951,7 @@ class Logger:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Warning, device, str(value), str(expected_value)))
 
-    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment=''):
+    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property=''):
         """
         Add error entry
         :param msg:

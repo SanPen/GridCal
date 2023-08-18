@@ -16,4 +16,5 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCal.Engine.Core.Devices.Substation.substation import Substation
+from GridCal.Engine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCal.Engine.Core.Devices.Substation.bus import Bus, BusMode

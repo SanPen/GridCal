@@ -15,15 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime
-import os
-import chardet
 import numpy as np
-import pandas as pd
-from math import sqrt
-from typing import Set, Dict, List, Tuple
-from GridCal.Engine.IO.cim.cim_enums import cgmesProfile
+from typing import Dict, List, Tuple
+from GridCal.Engine.IO.cim.cim16.cim_enums import cgmesProfile
 from GridCal.Engine.IO.base.units import UnitSymbol, UnitMultiplier
-import GridCal.Engine.IO.cim.cim_enums as cim_enums
+import GridCal.Engine.IO.cim.cim16.cim_enums as cim_enums
 from GridCal.Engine.basic_structures import Logger
 
 

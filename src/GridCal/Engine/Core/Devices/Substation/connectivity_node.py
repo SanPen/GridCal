@@ -21,7 +21,7 @@ from GridCal.Engine.Core.Devices.editable_device import EditableDevice, DeviceTy
 
 class ConnectivityNode(EditableDevice):
 
-    def __init__(self, name='Substation', idtag=None, code='', x=0.0, y=0.0):
+    def __init__(self, name='Substation', idtag=None, code='', x=0.0, y=0.0, dc=False, bus_bar = None):
         """
 
         :param name:
@@ -36,4 +36,7 @@ class ConnectivityNode(EditableDevice):
                                 active=True,
                                 device_type=DeviceType.ConnectivityNodeDevice)
 
+        self.dc = dc
+
+        self.bus_bar = bus_bar
 

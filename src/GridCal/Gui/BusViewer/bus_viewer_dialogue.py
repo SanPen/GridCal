@@ -9,7 +9,7 @@ from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 class BusViewerGUI(QMainWindow):
 
-    def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, parent=None, ):
+    def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, name='', parent=None, view_toolbar=True):
         """
 
         :param circuit:
@@ -19,6 +19,8 @@ class BusViewerGUI(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.ui = Ui_BusViewerWindow()
         self.ui.setupUi(self)
+
+        self.name = name
 
         self.root_bus = root_bus
         self.bus_id = self.root_bus.name + ' ' + self.root_bus.code
@@ -42,9 +44,11 @@ class BusViewerGUI(QMainWindow):
 
         # toolbar clicks
         self.ui.actiondraw.triggered.connect(self.draw)
-        self.ui.actionExpand_nodes.triggered.connect(self.bigger_nodes)
-        self.ui.actionScrink_nodes.triggered.connect(self.smaller_nodes)
+        self.ui.actionExpand_nodes.triggered.connect(self.expand_node_distances)
+        self.ui.actionScrink_nodes.triggered.connect(self.shrink_node_distances)
         self.ui.actionAdjust_to_window_size.triggered.connect(self.center_nodes)
+
+        self.ui.toolBar.setVisible(view_toolbar)
 
     def msg(self, text, title="Warning"):
         """
@@ -61,14 +65,14 @@ class BusViewerGUI(QMainWindow):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
 
-    def bigger_nodes(self):
+    def expand_node_distances(self):
         """
         Move the nodes more separated
         """
         if self.grid_editor is not None:
             self.grid_editor.expand_node_distances()
 
-    def smaller_nodes(self):
+    def shrink_node_distances(self):
         """
         Move the nodes closer
         """

@@ -15,9 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import List
 from GridCal.Engine.Core.Devices.editable_device import DeviceType
 from GridCal.Engine.Core.Devices.Aggregation.area import GenericAreaGroup
+from GridCal.Engine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class Substation(GenericAreaGroup):
@@ -38,4 +39,5 @@ class Substation(GenericAreaGroup):
                                   latitude=latitude,
                                   longitude=longitude)
 
-
+        # array of connectivity nodes
+        self.connectivity_nodes: List[ConnectivityNode] = list()

@@ -27,18 +27,139 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Separated the cascading GUI">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/grid_map_widget.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented the base decoupling of diagrams">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cgmes_circuit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cgmes_poperty.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cgmes_to_gridcal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cgmes_writer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cim_enums.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cim_parser.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/cgm_region.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/control_area.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/energy_area.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/geographical_region.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/load_area.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/merging_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/modelling_authority.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/operational_limit_set.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/operational_limit_type.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/sub_geographical_region.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/aggregation/sub_load_area.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/current_limit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/dipole.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/equivalent_branch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/line/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/line/ac_line_segment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/line/line.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/tie_flow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer_non_linear.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer_symmetrical.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer_table_point.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/phase_tap_changer_tabular.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/power_transformer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/power_transformer_end.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/ratio_tap_changer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/ratio_tap_changer_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/ratio_tap_changer_table_point.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/tap_changer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/branches/transformer/tap_changer_control.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/conducting_equipment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/equipment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/equipment_container.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/equivalent_equipment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/full_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/identified_object.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/energy_scheduling_type.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/energy_source.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/control_area_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/fossil_fuel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/fuel_type.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/hydro_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/hydro_power_plant.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/hydro_pump.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/nuclear_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/reactive_capability_curve.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/rotating_machine.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/solar_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/synchronous_machine.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/thermal_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/generation/wind_generating_unit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/conform_load.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/conform_load_group.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/energy_consumer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/equivalent_injection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/equivalent_network.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/load_group.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/load_response_characteristic.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/non_conform_load.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/load/non_conform_load_group.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/monopole.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/power_systems_resource.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/regulating_cond_eq.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/regulating_control.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/shunt/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/shunt/linear_shunt_compensator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/shunt/shunt_compensator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/injections/shunt/static_var_compensator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/inputs/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/inputs/curve.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/inputs/curve_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/sv_power_flow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/sv_shunt_compensator_sections.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/sv_tap_step.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/sv_voltage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/results/topological_island.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/acdc_terminal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/base_voltage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/breaker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/bus_bar_section.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/bus_name_marker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/connectivity_node.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/connectivity_node_container.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/connector.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/junction.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/load_breaker_switch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/substation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/switch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/voltage_level.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/substation/voltage_limit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/terminal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/devices/topological_node.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_data_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/GB reduced network.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/GB reduced network.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/connectivity_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/connectivity_node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/substation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/Substation/substation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/cim_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_devices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/cim_devices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/cim_enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/cim_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/bus_viewer_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/bus_viewer_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/gui.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/grid_map_widget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,7 +289,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/CascadingSteps",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Engine/IO/cim/cgmes_2_4_15",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -186,18 +307,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15" />
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/cgmes" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/psse" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16" />
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/cim" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/psse" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/Layers" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/TileProviders" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -256,28 +377,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="GeneralDialogues" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/GeneralDialogues.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -300,7 +399,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="circuit_to_optimods" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="grid_editor_widget" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -308,12 +407,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_optimods.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -336,6 +435,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/CascadingSteps/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="update_gui_file (2)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/BusViewer/update_gui_file.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -478,19 +599,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.grid_editor_widget" />
+      <item itemvalue="Python.update_gui_file (2)" />
       <item itemvalue="Python.update_gui_file (1)" />
-      <item itemvalue="Python.circuit_to_optimods" />
-      <item itemvalue="Python.GeneralDialogues" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.update_gui_file (2)" />
+        <item itemvalue="Python.grid_editor_widget" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update_gui_file (1)" />
-        <item itemvalue="Python.circuit_to_optimods" />
-        <item itemvalue="Python.GeneralDialogues" />
       </list>
     </recent_temporary>
   </component>
@@ -1242,14 +1363,8 @@
       <workItem from="1692126647786" duration="2088000" />
       <workItem from="1692172577773" duration="10273000" />
       <workItem from="1692188443493" duration="7680000" />
-      <workItem from="1692253701148" duration="20733000" />
-    </task>
-    <task id="LOCAL-00424" summary="Implemented mode for contingency analysis in newton">
-      <created>1688129827051</created>
-      <option name="number" value="00424" />
-      <option name="presentableId" value="LOCAL-00424" />
-      <option name="project" value="LOCAL" />
-      <updated>1688129827051</updated>
+      <workItem from="1692253701148" duration="20793000" />
+      <workItem from="1692345824712" duration="17762000" />
     </task>
     <task id="LOCAL-00425" summary="Improved tr3 graphical integration">
       <created>1688330842845</created>
@@ -1587,7 +1702,14 @@
       <option name="project" value="LOCAL" />
       <updated>1692266726638</updated>
     </task>
-    <option name="localTasksCounter" value="473" />
+    <task id="LOCAL-00473" summary="Implemented the base decoupling of diagrams">
+      <created>1692289033527</created>
+      <option name="number" value="00473" />
+      <option name="presentableId" value="LOCAL-00473" />
+      <option name="project" value="LOCAL" />
+      <updated>1692289033527</updated>
+    </task>
+    <option name="localTasksCounter" value="474" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1629,7 +1751,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored MultiCircuit into devices and numericalcircuit into data structures&#10;also, added deep copy to the data structures" />
     <MESSAGE value="Dummy investments evaluation classes" />
     <MESSAGE value="Added special plots" />
     <MESSAGE value="Added hyperopt evaluation" />
@@ -1654,7 +1775,8 @@
     <MESSAGE value="Added color to some object tags&#10;Added color as an item delegate" />
     <MESSAGE value="added matpower to dictionary structure" />
     <MESSAGE value="Separated the cascading GUI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Separated the cascading GUI" />
+    <MESSAGE value="Implemented the base decoupling of diagrams" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented the base decoupling of diagrams" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1915,7 +2037,7 @@
           <option name="timeStamp" value="1115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim_parser.py</url>
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cim16/cim_parser.py</url>
           <line>853</line>
           <option name="timeStamp" value="1116" />
         </line-breakpoint>
@@ -2120,19 +2242,19 @@
           <option name="timeStamp" value="1276" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>7293</line>
-          <option name="timeStamp" value="1277" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py</url>
+          <line>1686</line>
+          <option name="timeStamp" value="1281" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py</url>
-          <line>1498</line>
-          <option name="timeStamp" value="1279" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py</url>
+          <line>84</line>
+          <option name="timeStamp" value="1283" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/grid_editor_widget.py</url>
-          <line>1525</line>
-          <option name="timeStamp" value="1280" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim/cgmes_2_4_15/cgmes_to_gridcal.py</url>
+          <line>356</line>
+          <option name="timeStamp" value="1285" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2236,6 +2358,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_dcopf_py.coverage" NAME="Nosetests in test_api_dcopf.py Coverage Results" MODIFIED="1609500321255" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$transformer_example.coverage" NAME="transformer_example Coverage Results" MODIFIED="1619382581078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
     <SUITE FILE_PATH="coverage/GridCal$circuit_to_optimods.coverage" NAME="circuit_to_optimods Coverage Results" MODIFIED="1692126689711" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
+    <SUITE FILE_PATH="coverage/GridCal$grid_editor_widget.coverage" NAME="grid_editor_widget Coverage Results" MODIFIED="1692351877900" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
     <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1663317493075" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$loss_factors_research2.coverage" NAME="loss_factors_research2 Coverage Results" MODIFIED="1649693493327" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power_5_sparse_.coverage" NAME="branch_power_5(sparse) Coverage Results" MODIFIED="1662061799081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
@@ -2337,8 +2460,8 @@
     <SUITE FILE_PATH="coverage/GridCal$line_arrow.coverage" NAME="line_arrow Coverage Results" MODIFIED="1640989833222" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1689623105998" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/WindPowerWizard" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1692287685005" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1692362060427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1692372128668" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

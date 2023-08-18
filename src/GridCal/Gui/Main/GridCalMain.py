@@ -353,7 +353,7 @@ class MainGUI(QMainWindow):
         # Declare the schematic editor
         ################################################################################################################
 
-        self.diagrams_list: List[Union[GridEditorWidget]] = list()
+        self.diagrams_list: List[Union[GridEditorWidget, BusViewerGUI, GridMapWidget]] = list()
 
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
         self.expand_object_tree_nodes()
@@ -1339,7 +1339,8 @@ class MainGUI(QMainWindow):
                     y = pos[i][1] * 500
                     bus.graphic_obj.setPos(QtCore.QPoint(x, y))
                 except KeyError as ex:
-                    warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+                    # warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
+                    pass
             # adjust the view
             self.center_nodes()
 
@@ -3700,7 +3701,6 @@ class MainGUI(QMainWindow):
 
             if results.voltages is not None:
                 if results.voltages.shape[0] > 0:
-
                     self.update_available_results()
 
                     self.colour_diagrams()
@@ -4127,7 +4127,6 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPFTimeSeries_run)
 
             if results is not None:
-
                 self.update_available_results()
 
                 self.colour_diagrams()
@@ -4327,7 +4326,6 @@ class MainGUI(QMainWindow):
         drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
 
         if results is not None:
-
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
             self.update_available_results()
             self.colour_diagrams()
@@ -5033,7 +5031,8 @@ class MainGUI(QMainWindow):
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
         self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
         if self.open_file_thread_object is not None:
-            self.ui.file_information_label.setText(self.open_file_thread_object.file_name)
+            if isinstance(self.open_file_thread_object.file_name, str):
+                self.ui.file_information_label.setText(self.open_file_thread_object.file_name)
 
         self.ui.units_label.setText("")
 
@@ -5053,10 +5052,16 @@ class MainGUI(QMainWindow):
 
         cmap = self.cmap_dict[cmap_text]
 
+        buses = self.circuit.buses
+        branches = self.circuit.get_branches_wo_hvdc()
+        hvdc_lines = self.circuit.hvdc_lines
+
         if current_study == sim.PowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.Sbus,
                                  Sf=results.Sf,
                                  St=results.St,
@@ -5082,7 +5087,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.S[current_step, :],
                                  Sf=results.Sf[current_step, :],
                                  St=results.St[current_step, :],
@@ -5105,7 +5112,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.Sbus[current_step, :],
                                  Sf=results.Sf[current_step, :],
                                  voltages=results.voltages[current_step, :],
@@ -5121,7 +5130,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.StochasticPowerFlow)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  voltages=results.V_points[current_step, :],
                                  loadings=np.abs(results.loading_points[current_step, :]),
                                  Sf=results.Sbr_points[current_step, :],
@@ -5137,7 +5148,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.Sbus1,
                                  Sf=results.Sf1,
                                  voltages=results.voltage1,
@@ -5153,7 +5166,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  voltages=results.voltage,
                                  loadings=results.loading,
                                  types=results.bus_types,
@@ -5173,7 +5188,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.Sbus[current_step, :],
                                  Sf=results.Sf[current_step, :],
                                  St=results.St[current_step, :],
@@ -5194,7 +5211,9 @@ class MainGUI(QMainWindow):
             drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
             voltage = np.ones(self.circuit.get_bus_number())
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.Sbus,
                                  Sf=results.Sf,
                                  St=-results.Sf,
@@ -5212,7 +5231,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.S[current_step],
                                  Sf=results.Sf[current_step],
                                  voltages=results.voltage[current_step],
@@ -5228,7 +5249,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.S[current_step, :],
                                  Sf=results.Sf[current_step, :],
                                  # St=results.St[current_step, :],
@@ -5245,7 +5268,9 @@ class MainGUI(QMainWindow):
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
             drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=results.S[current_step, :],
                                  Sf=results.worst_flows[current_step, :],
                                  voltages=np.ones(results.nbus, dtype=complex),
@@ -5264,7 +5289,9 @@ class MainGUI(QMainWindow):
             nbus = self.circuit.get_bus_number()
             nbr = self.circuit.get_branch_number()
             # empty
-            return plot_function(circuit=self.circuit,
+            return plot_function(buses=buses,
+                                 branches=branches,
+                                 hvdc_lines=hvdc_lines,
                                  Sbus=np.zeros(nbus, dtype=complex),
                                  Sf=np.zeros(nbr, dtype=complex),
                                  loadings=np.zeros(nbr, dtype=complex),
@@ -5300,16 +5327,14 @@ class MainGUI(QMainWindow):
             for diagram in self.diagrams_list:
 
                 if isinstance(diagram, GridEditorWidget):
-                    self.grid_colour_function(plot_function=viz.colour_the_schematic,
+                    self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
                                               current_step=current_step)
 
                 elif isinstance(diagram, GridMapWidget):
-                    poly = self.grid_colour_function(plot_function=viz.get_map_polylines,
-                                                     current_study=current_study,
-                                                     current_step=current_step)
-
-                    diagram.setBranchData(poly)
+                    self.grid_colour_function(plot_function=diagram.colour_results,
+                                              current_study=current_study,
+                                              current_step=current_step)
 
     def colour_next_simulation_step(self):
         """
@@ -7344,15 +7369,71 @@ class MainGUI(QMainWindow):
         self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram(self):
-        self.diagrams_list.append(GridEditorWidget(self.circuit, 'vecinity diagram'))
-        self.set_diagrams_list_view()
+
+        model = self.ui.dataStructureTableView.model()
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = {idx.row() for idx in sel_idx}
+                    sel_obj = [objects[idx] for idx in unique][0]
+                    root_bus = None
+                    if isinstance(sel_obj, dev.Bus):
+                        root_bus = sel_obj
+
+                    elif isinstance(sel_obj, dev.Generator):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, dev.Battery):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, dev.Load):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, dev.Shunt):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, dev.Line):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, dev.Transformer2W):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, dev.DcLine):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, dev.HvdcLine):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, dev.VSC):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, dev.UPFC):
+                        root_bus = sel_obj.bus_from
+
+                    if root_bus is not None:
+                        diagram = BusViewerGUI(circuit=self.circuit,
+                                               root_bus=root_bus,
+                                               name=root_bus.name + ' vecinity',
+                                               view_toolbar=False)
+                        self.diagrams_list.append(diagram)
+                        self.set_diagrams_list_view()
 
     def add_map_diagram(self):
         # select the tile source
         tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
 
         # create the map widget
-        map_widget = GridMapWidget(parent=self, tile_src=tile_source, start_level=5, name='Map diagram')
+        map_widget = GridMapWidget(parent=None,
+                                   tile_src=tile_source,
+                                   start_level=5,
+                                   name='Map diagram')
         map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
 
         self.diagrams_list.append(map_widget)
@@ -7387,7 +7468,7 @@ class MainGUI(QMainWindow):
             # remove it from the gui
             widget_to_remove.setParent(None)
 
-    def set_diagram_widget(self, diagram: Union[GridEditorWidget, GridMapWidget]):
+    def set_diagram_widget(self, diagram: Union[GridEditorWidget, GridMapWidget, BusViewerGUI]):
         """
 
         :param diagram:

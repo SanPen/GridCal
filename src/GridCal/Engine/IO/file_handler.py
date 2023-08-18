@@ -17,10 +17,11 @@
 import os
 import json
 
+from typing import Callable, Union
 from GridCal.Engine.basic_structures import Logger
 
 from GridCal.Engine.IO.json_parser import save_json_file_v3
-from GridCal.Engine.IO.cim.cim_parser import CIMExport
+from GridCal.Engine.IO.cim.cim16.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
 from GridCal.Engine.IO.matpower.matpower_parser import interpret_data_v1
@@ -29,10 +30,12 @@ from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.psse.raw_parser import read_raw, write_raw
+from GridCal.Engine.IO.psse.raw_parser import read_raw
 from GridCal.Engine.IO.psse.psse_to_gridcal import psse_to_gridcal
 from GridCal.Engine.IO.power_world_parser import PowerWorldParser
-from GridCal.Engine.IO.cim.cim_parser import CIMImport
+from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
@@ -59,7 +62,7 @@ class FileOpen:
 
         self.logger = Logger()
 
-    def open(self, text_func=None, progress_func=None):
+    def open(self, text_func: Union[None, Callable] = None, progress_func: Union[None, Callable] = None):
         """
         Load GridCal compatible file
         :param text_func: pointer to function that prints the names
@@ -73,11 +76,13 @@ class FileOpen:
             for f in self.file_name:
                 _, file_extension = os.path.splitext(f)
                 if file_extension.lower() not in ['.xml', '.zip']:
-                    raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM)')
+                    raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
-            parser = CIMImport(text_func=text_func, progress_func=progress_func)
-            self.circuit = parser.load_cim_file(self.file_name)
-            self.logger += parser.logger
+            # parser = CIMImport(text_func=text_func, progress_func=progress_func)
+            # self.circuit = parser.load_cim_file(self.file_name)
+            cgmes = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.logger)
+            cgmes.parse_files(cim_files=self.file_name)
+            self.circuit = cgmes_to_gridcal(cgmes_model=cgmes, logger=self.logger)
 
         else:
 

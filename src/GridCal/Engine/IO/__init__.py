@@ -1,5 +1,5 @@
 
-from GridCal.Engine.IO.cim.cim_parser import CIMImport, CIMExport
+from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport, CIMExport
 from GridCal.Engine.IO.dgs_parser import dgs_to_circuit
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA

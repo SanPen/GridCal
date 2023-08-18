@@ -17,9 +17,8 @@
 from enum import Enum, EnumMeta
 import chardet
 import pandas as pd
-from typing import Set, Dict, List, Tuple
 from GridCal.Engine.basic_structures import Logger
-import GridCal.Engine.IO.cim.cim_devices as cimdev
+import GridCal.Engine.IO.cim.cim16.cim_devices as cimdev
 
 
 class CIMCircuit:

@@ -2998,18 +2998,17 @@ class MultiCircuit:
         Get the precision that simulates correctly the power flow
         :return: tolerance parameter for the power flow options, exponent
         """
-        injections = list()
-        devices = self.get_loads() + self.get_static_generators() + self.get_generators() + self.get_batteries()
-        for elm in devices:
-            if elm.P != 0.0:
-                injections.append(elm.P)
-
+        injections = self.get_Pbus()
         P = np.abs(injections) / self.Sbase
         P = P[P > 0]
-        lg = np.log10(P)
-        lg[lg == -np.inf] = 1e20
-        exponent = int(np.min(np.abs(lg))) * 3
-        tolerance = 1.0 / (10.0 ** exponent)
+        if np.sum(P) > 0:
+            lg = np.log10(P)
+            lg[lg == -np.inf] = 1e20
+            exponent = int(np.min(np.abs(lg))) * 3
+            tolerance = 1.0 / (10.0 ** exponent)
+        else:
+            exponent = 3
+            tolerance = 1e-3
 
         return tolerance, exponent
 

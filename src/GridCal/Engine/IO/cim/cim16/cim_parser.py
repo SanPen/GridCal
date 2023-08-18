@@ -21,8 +21,8 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
-import GridCal.Engine.IO.cim.cim_devices as cimdev
-from GridCal.Engine.IO.cim.cim_circuit import CIMCircuit
+import GridCal.Engine.IO.cim.cim16.cim_devices as cimdev
+from GridCal.Engine.IO.cim.cim16.cim_circuit import CIMCircuit
 
 
 def read_cim_files(cim_files):
