@@ -151,7 +151,17 @@ of the GNU Lesser General Public License shall apply, that proxy's public statem
 acceptance of any version is permanent authorization for you to choose that version for
 the Library.
 
+-----------------------------------------------------------------------------
+Trademarks
+-----------------------------------------------------------------------------
 
+All trademarks mentioned in the source code or the interface belong to their
+respective owners.
+
+PSSe is a trademark of Siements PTI
+PowerFactory is a trademark of DiGSilent
+PowerWorld is a trademark of Power World Corporation
+Plexos is a Trademark of Energy Exemplar
 
 -----------------------------------------------------------------------------
 Linking exceptions

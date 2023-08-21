@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+from typing import Union
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
@@ -165,7 +166,12 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.api_object.retrieve_graphic_position()
+        self.diagramScene.parent_.set_position(idtag=self.api_object.idtag,
+                                               x=self.pos().x(),
+                                               y=self.pos().x(),
+                                               w=self.w,
+                                               h=self.h,
+                                               r=self.rotation())
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """
@@ -188,9 +194,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.diagramScene.removeItem(self.big_marker)
             self.big_marker = None
 
-    def redraw(self):
-
-        self.set_position(x=self.api_object.x, y=self.api_object.y)
+    # def redraw(self):
+    #
+    #     self.set_position(x=self.api_object.x, y=self.api_object.y)
 
     def set_position(self, x, y):
         """
@@ -229,7 +235,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w, h=None):
+    def change_size(self, w: int, h: Union[None, int] = None):
         """
         Resize block function
         @param w:
@@ -266,6 +272,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # rearrange children
         self.arrange_children()
+
+        self.diagramScene.parent_.set_position(device=self.api_object,
+                                               x=self.pos().x(),
+                                               y=self.pos().x(),
+                                               w=w,
+                                               h=h,
+                                               r=self.rotation())
 
         return w, h
 

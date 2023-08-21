@@ -2434,7 +2434,7 @@ class PowerTransformer(DiPole, ConductingEquipment):
         except KeyError:
             return list()
 
-    def get_pu_values(self):
+    def get_pu_values(self, System_Sbase):
         """
         Get the transformer p.u. values
         :return:
@@ -2442,21 +2442,25 @@ class PowerTransformer(DiPole, ConductingEquipment):
         try:
             windings = self.get_windings()
 
+            R, X, G, B = 0, 0, 0, 0
+            R0, X0, G0, B0 = 0, 0, 0, 0
             if len(windings) == 2:
-                R, X, G, B = 0, 0, 0, 0
                 for winding in windings:
-                    r, x, g, b = winding.get_pu_values()
+                    r, x, g, b = winding.get_pu_values(System_Sbase)
                     R += r
                     X += x
                     G += g
                     B += b
-            else:
-                R, X, G, B = 0, 0, 0, 0
+                    R += r
+                    X += x
+                    G += g
+                    B += b
 
         except KeyError:
             R, X, G, B = 0, 0, 0, 0
+            R0, X0, G0, B0 = 0, 0, 0, 0
 
-        return R, X, G, B
+        return R, X, G, B, R0, X0, G0, B0
 
     def get_voltages(self):
         """

@@ -15,14 +15,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice
-from GridCal.Engine.Core.Devices.measurement import Measurement, MeasurementType
-from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, HvdcControlType, BranchType, WindingsConnection, GeneratorTechnologyType, TransformerControlType, DeviceType
-from GridCal.Engine.Core.Devices.templates import get_transformer_catalogue, get_wires_catalogue, get_cables_catalogue
+import uuid
+from typing import Dict, Union
+from GridCal.Engine.Core.Devices.Diagrams.base_diagram import BaseDiagram
+from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 
-from GridCal.Engine.Core.Devices.Aggregation import *
-from GridCal.Engine.Core.Devices.Branches import *
-from GridCal.Engine.Core.Devices.Injections import *
-from GridCal.Engine.Core.Devices.Substation import *
-from GridCal.Engine.Core.Devices.Associations import *
-from GridCal.Engine.Core.Devices.Diagrams import *
+
+class BusBranchDiagram(BaseDiagram):
+    """
+    Diagram
+    """
+
+    def __init__(self, idtag=None, name=''):
+        """
+
+        :param name: Diagram name
+        """
+        BaseDiagram.__init__(self, idtag=idtag, name=name)

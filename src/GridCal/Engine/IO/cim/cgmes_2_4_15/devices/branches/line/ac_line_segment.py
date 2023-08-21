@@ -178,18 +178,30 @@ class ACLineSegment(DiPole):
                 X = self.x / Zbase
                 G = self.gch / Ybase
                 B = self.bch / Ybase
+                R0 = self.r0 / Zbase
+                X0 = self.x0 / Zbase
+                G0 = self.gch0 / Ybase
+                B0 = self.bch0 / Ybase
             else:
                 R = 0
                 X = 0
                 G = 0
                 B = 0
+                R0 = 0
+                X0 = 0
+                G0 = 0
+                B0 = 0
         else:
             R = 0
             X = 0
             G = 0
             B = 0
+            R0 = 0
+            X0 = 0
+            G0 = 0
+            B0 = 0
 
-        return R, X, G, B
+        return R, X, G, B, R0, X0, G0, B0
 
     def get_rate(self):
         return 1e-20

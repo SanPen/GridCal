@@ -585,6 +585,28 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                 w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
                 tower.add_wire(w)
 
+    # create diagrams --------------------------------------------------------------------------------------------------
+    if 'diagrams' in data.keys():
+
+        for diagram_dict in data['diagrams']:
+
+            if diagram_dict['type'] == 'BusBranchDiagram':
+                diagram = dev.BusBranchDiagram()
+                diagram.parse_data(diagram_dict)
+                circuit.add_diagram(diagram)
+
+            if diagram_dict['type'] == 'NodeBreakerDiagram':
+                diagram = dev.NodeBreakerDiagram()
+                diagram.parse_data(diagram_dict)
+                circuit.add_diagram(diagram)
+
+            if diagram_dict['type'] == 'MapDiagram':
+                diagram = dev.MapDiagram()
+                diagram.parse_data(diagram_dict)
+                circuit.add_diagram(diagram)
+            else:
+                pass
+
     # Other actions ----------------------------------------------------------------------------------------------------
     circuit.logger += circuit.apply_all_branch_types()
 

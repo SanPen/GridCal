@@ -21,7 +21,7 @@ import numpy as np
 import numba as nb
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.contingency_parser import get_contingencies_dict, parse_contingencies
+from GridCal.Engine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 import GridCal.Engine.Core.Devices as dev
 
 

@@ -316,7 +316,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
                 middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
                 br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
                 br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
-                middle_bus.graphic_obj.redraw()
+                # middle_bus.graphic_obj.redraw()
                 br1.bus_from.graphic_obj.arrange_children()
                 br2.bus_to.graphic_obj.arrange_children()
 

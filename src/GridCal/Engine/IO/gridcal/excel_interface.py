@@ -20,7 +20,7 @@ import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.IO.pack_unpack import create_data_frames, get_objects_dictionary
+from GridCal.Engine.IO.gridcal.pack_unpack import create_data_frames, get_objects_dictionary
 
 
 def check_names(names):

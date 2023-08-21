@@ -14,15 +14,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Dict
 
-from GridCal.Engine.Core.Devices.editable_device import EditableDevice
-from GridCal.Engine.Core.Devices.measurement import Measurement, MeasurementType
-from GridCal.Engine.Core.Devices.enumerations import ConverterControlType, HvdcControlType, BranchType, WindingsConnection, GeneratorTechnologyType, TransformerControlType, DeviceType
-from GridCal.Engine.Core.Devices.templates import get_transformer_catalogue, get_wires_catalogue, get_cables_catalogue
 
-from GridCal.Engine.Core.Devices.Aggregation import *
-from GridCal.Engine.Core.Devices.Branches import *
-from GridCal.Engine.Core.Devices.Injections import *
-from GridCal.Engine.Core.Devices.Substation import *
-from GridCal.Engine.Core.Devices.Associations import *
-from GridCal.Engine.Core.Devices.Diagrams import *
+class GraphicLocation:
+    """
+    GraphicLocation
+    """
+
+    def __init__(self, x: int = 0, y: int = 0, h: int = 80, w: int = 80, r: float = 0):
+        """
+
+        :param x: x position (px)
+        :param y: y position (px)
+        :param h: height (px)
+        :param w: width (px)
+        :param r: rotation (deg)
+        """
+
+        self.x = x
+        self.y = y
+        self.h = h
+        self.w = w
+        self.r = r
+
+    def get_properties_dict(self) -> Dict[str, int]:
+        """
+        get as a dictionary point
+        :return:
+        """
+        return {'x': self.x, 'y': self.y, 'h': self.h, 'w': self.w, 'r': self.r}

@@ -259,6 +259,8 @@ class DeviceType(Enum):
     GeneratorFuelAssociation = 'Generator Fuel'
     GeneratorTechnologyAssociation = 'Generator Technology'
 
+    DiagramDevice = 'Diagram'
+
     def __str__(self):
         return self.value
 

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
+from GridCal.Engine.IO.gridcal.pack_unpack import create_data_frames, data_frames_to_circuit
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 

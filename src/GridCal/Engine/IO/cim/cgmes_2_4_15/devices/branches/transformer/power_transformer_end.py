@@ -251,10 +251,18 @@ class PowerTransformerEnd(IdentifiedObject):
             X = self.x / Zbase * machine_to_sys
             G = self.g / Ybase * machine_to_sys
             B = self.b / Ybase * machine_to_sys
+            R0 = self.r0 / Zbase * machine_to_sys
+            X0 = self.x0 / Zbase * machine_to_sys
+            G0 = self.g0 / Ybase * machine_to_sys
+            B0 = self.b0 / Ybase * machine_to_sys
         else:
             R = 0
             X = 0
             G = 0
             B = 0
+            R0 = 0
+            X0 = 0
+            G0 = 0
+            B0 = 0
 
-        return R, X, G, B
+        return R, X, G, B, R0, X0, G0, B0

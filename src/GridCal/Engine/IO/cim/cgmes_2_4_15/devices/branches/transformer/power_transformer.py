@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import List
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.conducting_equipment import ConductingEquipment
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.dipole import DiPole
@@ -121,7 +122,7 @@ class PowerTransformer(DiPole, ConductingEquipment):
         except KeyError:
             return 0
 
-    def get_windings(self):
+    def get_windings(self) -> List["PowerTransformerEnd"]:
         """
         Get list of windings
         :return: list of winding objects
@@ -131,7 +132,7 @@ class PowerTransformer(DiPole, ConductingEquipment):
         except KeyError:
             return list()
 
-    def get_pu_values(self):
+    def get_pu_values(self, System_Sbase):
         """
         Get the transformer p.u. values
         :return:
@@ -139,21 +140,25 @@ class PowerTransformer(DiPole, ConductingEquipment):
         try:
             windings = self.get_windings()
 
+            R, X, G, B = 0, 0, 0, 0
+            R0, X0, G0, B0 = 0, 0, 0, 0
             if len(windings) == 2:
-                R, X, G, B = 0, 0, 0, 0
                 for winding in windings:
-                    r, x, g, b = winding.get_pu_values()
+                    r, x, g, b, r0, x0, g0, b0 = winding.get_pu_values(System_Sbase)
                     R += r
                     X += x
                     G += g
                     B += b
-            else:
-                R, X, G, B = 0, 0, 0, 0
+                    R0 += r0
+                    X0 += x0
+                    G0 += g0
+                    B0 += b0
 
         except KeyError:
             R, X, G, B = 0, 0, 0, 0
+            R0, X0, G0, B0 = 0, 0, 0, 0
 
-        return R, X, G, B
+        return R, X, G, B, R0, X0, G0, B0
 
     def get_voltages(self):
         """

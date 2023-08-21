@@ -19,7 +19,7 @@ import os
 from typing import Dict, List, Union
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.base.base_circuit import BaseCircuit
-from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
+from GridCal.Engine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_content
 
 
 def read_cim_files(cim_files: Union[List[str], str]):

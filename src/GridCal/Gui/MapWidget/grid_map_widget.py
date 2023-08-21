@@ -30,6 +30,7 @@ from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
+from GridCal.Engine.Core.Devices.Diagrams.map_diagram import MapDiagram, MapLocation
 from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
 
@@ -38,7 +39,8 @@ class GridMapWidget(MapWidget):
     def __init__(self, parent: Union[QWidget, None], tile_src, start_level: int, name: str):
         MapWidget.__init__(self, parent=parent, tile_src=tile_src, start_level=start_level)
 
-        self.name = name
+        # diagram to store the objects locations
+        self.diagram: MapDiagram = MapDiagram(name=name)
 
         # add empty polylines layer
         self.polyline_layer_id = self.AddPolylineLayer(data=[],
@@ -48,6 +50,23 @@ class GridMapWidget(MapWidget):
                                                        selectable=True,
                                                        # levels at which to show the polylines
                                                        name='<polyline_layer>')
+
+    @property
+    def name(self):
+        """
+        Get the diagram name
+        :return:
+        """
+        return self.diagram.name
+
+    @name.setter
+    def name_setter(self, val: str):
+        """
+        Name setter
+        :param val:
+        :return:
+        """
+        self.diagram.name = val
 
     def setBranchData(self, data):
         self.setLayerData(self.polyline_layer_id, data)

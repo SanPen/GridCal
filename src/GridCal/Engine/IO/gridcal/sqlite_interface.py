@@ -18,8 +18,8 @@ import pandas as pd
 import sqlite3
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.IO.excel_interface import check_names
-from GridCal.Engine.IO.generic_io_functions import parse_config_df
+from GridCal.Engine.IO.gridcal.excel_interface import check_names
+from GridCal.Engine.IO.gridcal.generic_io_functions import parse_config_df
 
 
 def save_data_frames_to_sqlite(dfs, file_path, text_func=None, progress_func=None):

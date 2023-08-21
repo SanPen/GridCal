@@ -18,7 +18,7 @@ import os
 from math import sqrt
 from typing import Dict
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
+from GridCal.Engine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
 import GridCal.Engine.IO.cim.cim16.cim_devices as cimdev

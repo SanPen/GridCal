@@ -44,7 +44,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Engine.IO.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCal.Engine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
 from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
@@ -352,7 +352,7 @@ class MainGUI(QMainWindow):
         # Declare the schematic editor
         ################################################################################################################
 
-        self.diagrams_list: List[Union[GridEditorWidget, BusViewerGUI, GridMapWidget]] = list()
+        self.diagram_widgets_list: List[Union[GridEditorWidget, BusViewerGUI, GridMapWidget]] = list()
 
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
         self.expand_object_tree_nodes()
@@ -760,7 +760,7 @@ class MainGUI(QMainWindow):
 
         self.add_bus_branch_diagram()
         self.add_map_diagram()
-        self.set_diagram_widget(self.diagrams_list[0])
+        self.set_diagram_widget(self.diagram_widgets_list[0])
 
     def LOCK(self, val: bool = True) -> None:
         """
@@ -938,7 +938,7 @@ class MainGUI(QMainWindow):
         all_threads = list(self.session.drivers.values())
 
         # set the threads so that the diagram scene objects can plot them
-        for diagram in self.diagrams_list:
+        for diagram in self.diagram_widgets_list:
             if isinstance(diagram, GridEditorWidget):
                 diagram.diagramScene.set_results_to_plot(all_threads)
 
@@ -1076,7 +1076,7 @@ class MainGUI(QMainWindow):
         if self.ui.dark_mode_checkBox.isChecked():
             qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
 
-            diagram = self.get_selected_diagram()
+            diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, GridEditorWidget):
                     diagram.set_dark_mode()
@@ -1085,7 +1085,7 @@ class MainGUI(QMainWindow):
         else:
             qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
 
-            diagram = self.get_selected_diagram()
+            diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, GridEditorWidget):
                     diagram.set_light_mode()
@@ -1350,7 +1350,7 @@ class MainGUI(QMainWindow):
         """
         Move the nodes more separated
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
                 diagram.expand_node_distances()
@@ -1359,7 +1359,7 @@ class MainGUI(QMainWindow):
         """
         Move the nodes closer
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
                 diagram.shrink_node_distances()
@@ -1369,7 +1369,7 @@ class MainGUI(QMainWindow):
         Center the nodes in the screen
         """
 
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
                 selected = self.get_selected_buses()
@@ -1419,7 +1419,7 @@ class MainGUI(QMainWindow):
         if create_default_diagrams:
             self.add_bus_branch_diagram()
             self.add_map_diagram()
-            self.set_diagram_widget(self.diagrams_list[0])
+            self.set_diagram_widget(self.diagram_widgets_list[0])
 
         self.collect_memory()
 
@@ -1558,20 +1558,24 @@ class MainGUI(QMainWindow):
                 self.circuit = self.open_file_thread_object.circuit
                 self.file_name = self.open_file_thread_object.file_name
 
-                if len(self.circuit.buses) > 1500:
-                    quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
-                               "Do you want to enable the schematic?\n" \
-                               "(you can always enable the drawing later)"
-                    reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
-                                                           QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-
-                    if reply == QtWidgets.QMessageBox.Yes:
-                        # create schematic
-                        self.add_bus_branch_diagram()
+                if self.circuit.has_diagrams():
+                    self.create_circuit_stored_diagrams()
 
                 else:
-                    # create schematic
-                    self.add_bus_branch_diagram()
+                    if len(self.circuit.buses) > 1500:
+                        quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
+                                   "Do you want to enable the schematic?\n" \
+                                   "(you can always enable the drawing later)"
+                        reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
+                                                               QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+
+                        if reply == QtWidgets.QMessageBox.Yes:
+                            # create schematic
+                            self.add_bus_branch_diagram()
+
+                    else:
+                        # create schematic
+                        self.add_bus_branch_diagram()
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
@@ -1605,7 +1609,7 @@ class MainGUI(QMainWindow):
                 warn('The file was not valid')
         else:
             # center nodes
-            diagram = self.get_selected_diagram()
+            diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, GridEditorWidget):
                     diagram.diagramView.align_schematic()
@@ -1642,7 +1646,7 @@ class MainGUI(QMainWindow):
                     buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
 
                     # add to schematic
-                    diagram = self.get_selected_diagram()
+                    diagram = self.get_selected_diagram_widget()
                     if diagram is not None:
                         if isinstance(diagram, GridEditorWidget):
                             diagram.diagramView.align_schematic()
@@ -1952,7 +1956,7 @@ class MainGUI(QMainWindow):
         Save the schematic
         :return:
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
 
@@ -4836,7 +4840,7 @@ class MainGUI(QMainWindow):
             self.redraw_current_diagram()
 
             # set circuit name
-            diagram = self.get_selected_diagram()
+            diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, GridEditorWidget):
                     diagram.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
@@ -5317,7 +5321,7 @@ class MainGUI(QMainWindow):
             current_study = self.ui.available_results_to_color_comboBox.currentText()
             current_step = self.ui.simulation_results_step_slider.value()
 
-            for diagram in self.diagrams_list:
+            for diagram in self.diagram_widgets_list:
 
                 if isinstance(diagram, GridEditorWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
@@ -5654,7 +5658,7 @@ class MainGUI(QMainWindow):
         """
         Change the node explosion factor
         """
-        for diagram in self.diagrams_list:
+        for diagram in self.diagram_widgets_list:
             if isinstance(diagram, GridEditorWidget):
                 diagram.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
@@ -5662,7 +5666,7 @@ class MainGUI(QMainWindow):
         """
         Zoom the diagram in
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
                 diagram.diagramView.zoom_in()
@@ -5671,7 +5675,7 @@ class MainGUI(QMainWindow):
         """
         Zoom the diagram out
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
                 diagram.diagramView.zoom_out()
@@ -7244,7 +7248,7 @@ class MainGUI(QMainWindow):
         map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
 
         lst = list()
-        for diagram in self.diagrams_list:
+        for diagram in self.diagram_widgets_list:
             if isinstance(diagram, GridEditorWidget):
                 icon = bus_branch_editor_icon
             if isinstance(diagram, GridMapWidget):
@@ -7257,7 +7261,7 @@ class MainGUI(QMainWindow):
         mdl = gf.get_icon_list_model(lst)
         self.ui.diagramsListView.setModel(mdl)
 
-    def get_selected_diagram(self) -> Union[None, GridEditorWidget, GridMapWidget, BusViewerGUI]:
+    def get_selected_diagram_widget(self) -> Union[None, GridEditorWidget, GridMapWidget, BusViewerGUI]:
         """
         Get the currently selected diagram
         :return: None, GridEditorWidget, GridMapWidget, BusViewerGUI
@@ -7266,7 +7270,7 @@ class MainGUI(QMainWindow):
 
         if len(indices):
             idx = indices[0].row()
-            return self.diagrams_list[idx]
+            return self.diagram_widgets_list[idx]
         else:
             return None
 
@@ -7274,7 +7278,7 @@ class MainGUI(QMainWindow):
         """
         Redraw the currently selected diagram
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
 
         if diagram:
 
@@ -7287,7 +7291,7 @@ class MainGUI(QMainWindow):
         """
         on list-view click, set the currentlt selected diagram widget
         """
-        diagram = self.get_selected_diagram()
+        diagram = self.get_selected_diagram_widget()
 
         if diagram:
             self.set_diagram_widget(diagram)
@@ -7298,10 +7302,11 @@ class MainGUI(QMainWindow):
         """
         diagram = GridEditorWidget(self.circuit, 'Bus-branch diagram')
         diagram.setStretchFactor(1, 10)
-        diagram.schematic_from_api(explode_factor=1.0)
+        if len(self.circuit.buses) + len(self.circuit.transformers3w):
+            diagram.schematic_from_api(explode_factor=1.0)
         diagram.align_schematic()
         diagram.center_nodes()
-        self.diagrams_list.append(diagram)
+        self.add_diagram(diagram)
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram)
 
@@ -7309,16 +7314,16 @@ class MainGUI(QMainWindow):
         """
         Add a bus-branch diagram of a particular area
         """
-        self.diagrams_list.append(GridEditorWidget(self.circuit, 'area diagram'))
+        self.add_diagram(GridEditorWidget(self.circuit, 'area diagram'))
         self.set_diagrams_list_view()
 
     def add_zone_bus_branch_diagram(self):
         """
         Add a bus-branch diagram of a particular zone
         """
-        self.diagrams_list.append(GridEditorWidget(self.circuit, 'zone diagram'))
+        self.add_diagram(GridEditorWidget(self.circuit, 'zone diagram'))
         self.set_diagrams_list_view()
-    
+
     def add_bus_vecinity_diagram_from_model(self):
         """
         Add a bus vecinity diagram
@@ -7376,24 +7381,61 @@ class MainGUI(QMainWindow):
                                                root_bus=root_bus,
                                                name=root_bus.name + ' vecinity',
                                                view_toolbar=False)
-                        self.diagrams_list.append(diagram)
+                        self.add_diagram(diagram)
                         self.set_diagrams_list_view()
-    
+
+    def create_circuit_stored_diagrams(self):
+        """
+
+        :return:
+        """
+        self.diagram_widgets_list.clear()
+        self.remove_all_diagram_widgets()
+
+        for diagram in self.circuit.diagrams:
+
+            if isinstance(diagram, dev.BusBranchDiagram):
+                diagram_widget = GridEditorWidget(self.circuit,
+                                                  name='Bus-branch diagram',
+                                                  diagram=diagram)
+                diagram_widget.setStretchFactor(1, 10)
+                self.diagram_widgets_list.append(diagram_widget)
+
+            elif isinstance(diagram, dev.MapDiagram):
+                # select the tile source
+                tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+
+                # create the map widget
+                map_widget = GridMapWidget(parent=None,
+                                           tile_src=tile_source,
+                                           start_level=5,
+                                           name='Map diagram')
+                map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+                self.diagram_widgets_list.append(map_widget)
+
+            elif isinstance(diagram, dev.NodeBreakerDiagram):
+                print("NodeBreakerDiagram not implemented yet :/")
+
+            else:
+                raise Exception("Unknown diagram type")
+
+        self.set_diagrams_list_view()
+
     def add_bus_vecinity_diagram_from_diagram_selection(self):
         """
         Add a bus vecinity diagram
         :return: 
         """
-        
+
         sel_buses = self.get_selected_buses()
-        
+
         if len(sel_buses):
             bus_idx, root_bus = sel_buses[0]
             diagram = BusViewerGUI(circuit=self.circuit,
                                    root_bus=root_bus,
                                    name=root_bus.name + ' vecinity',
                                    view_toolbar=False)
-            self.diagrams_list.append(diagram)
+            self.add_diagram(diagram)
             self.set_diagrams_list_view()
 
     def add_map_diagram(self) -> None:
@@ -7410,7 +7452,7 @@ class MainGUI(QMainWindow):
                                    name='Map diagram')
         map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
 
-        self.diagrams_list.append(map_widget)
+        self.add_diagram(map_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram=map_widget)
 
@@ -7420,23 +7462,42 @@ class MainGUI(QMainWindow):
         """
         self.set_diagrams_list_view()
 
+    def add_diagram(self, diagram_widget: Union[GridEditorWidget, GridMapWidget, BusViewerGUI]):
+        """
+        Add diagram
+        :param diagram_widget:
+        :return:
+        """
+
+        # add the widget pointer
+        self.diagram_widgets_list.append(diagram_widget)
+
+        # add the diagram to the circuit
+        self.circuit.diagrams.append(diagram_widget.diagram)
+
     def remove_diagram(self):
         """
         Remove diagram
         """
-        diagram = self.get_selected_diagram()
-        if diagram is not None:
-            ok = yes_no_question("Remove diagram", "Are you sure that you want to remove " + diagram.name + "?")
-            
+        diagram_widget = self.get_selected_diagram_widget()
+        if diagram_widget is not None:
+            ok = yes_no_question("Remove diagram", "Are you sure that you want to remove " + diagram_widget.name + "?")
+
             if ok:
-                self.diagrams_list.remove(diagram)
+                # remove the widget
+                self.diagram_widgets_list.remove(diagram_widget)
+
+                # remove the diagram
+                self.circuit.remove_diagram(diagram_widget.diagram)
+
+                # update view
                 self.set_diagrams_list_view()
 
     def remove_all_diagrams(self) -> None:
         """
         Remove all diagrams and their widgets
         """
-        self.diagrams_list.clear()
+        self.diagram_widgets_list.clear()
         self.remove_all_diagram_widgets()
 
     def remove_all_diagram_widgets(self) -> None:
@@ -7469,7 +7530,7 @@ class MainGUI(QMainWindow):
         self.ui.diagram_selection_splitter.setStretchFactor(1, 2)
 
         # set the selected index
-        row = self.diagrams_list.index(diagram)
+        row = self.diagram_widgets_list.index(diagram)
         index = self.ui.diagramsListView.model().index(row, 0)
         self.ui.diagramsListView.setCurrentIndex(index)
 

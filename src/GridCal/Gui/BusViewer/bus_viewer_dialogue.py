@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 from PySide6 import QtWidgets
 
@@ -34,7 +50,14 @@ class BusViewerGUI(QMainWindow):
         self.bus_idx = list()
 
         # create grid editor o
-        self.grid_editor = None
+        self.grid_editor = GridEditorWidget(self.circuit, name)
+
+        # delete all widgets
+        for i in reversed(range(self.ui.editorLayout.count())):
+            self.ui.editorLayout.itemAt(i).widget().deleteLater()
+
+        # add the widgets
+        self.ui.editorLayout.addWidget(self.grid_editor)
 
         # create editor and show the root bus
         self.draw()
@@ -49,6 +72,22 @@ class BusViewerGUI(QMainWindow):
         self.ui.actionAdjust_to_window_size.triggered.connect(self.center_nodes)
 
         self.ui.toolBar.setVisible(view_toolbar)
+
+    @property
+    def diagram(self) -> dev.BusBranchDiagram:
+        """
+        Get the diagram object
+        :return: BusBranchDiagram
+        """
+        return self.grid_editor.diagram
+
+    @diagram.setter
+    def diagram_setter(self, val: dev.BusBranchDiagram):
+        """
+        Set the diagram object
+        :param val: BusBranchDiagram
+        """
+        self.grid_editor.diagram = val
 
     def msg(self, text, title="Warning"):
         """

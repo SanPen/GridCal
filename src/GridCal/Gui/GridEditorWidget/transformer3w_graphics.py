@@ -188,7 +188,12 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.api_object.retrieve_graphic_position()
+        self.diagramScene.parent_.set_position(device=self.api_object,
+                                               x=self.pos().x(),
+                                               y=self.pos().x(),
+                                               w=self.w,
+                                               h=self.h,
+                                               r=self.rotation())
 
         self.update_conn()
 
@@ -234,7 +239,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param h:
         """
         # Keep for compatibility
-        pass
+
+        self.diagramScene.parent_.set_position(idtag=self.api_object.idtag,
+                                               x=self.pos().x(),
+                                               y=self.pos().x(),
+                                               w=w,
+                                               h=h,
+                                               r=self.rotation())
 
     def set_position(self, x: float, y: float) -> None:
         """
