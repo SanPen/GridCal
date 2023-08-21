@@ -30,7 +30,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1460, 805)
+        mainWindow.resize(1379, 785)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -415,6 +415,11 @@ class Ui_mainWindow(object):
         icon63 = QIcon()
         icon63.addFile(u":/Icons/icons/add_substation.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionAdd_substation_diagram.setIcon(icon63)
+        self.actionRemove_selected_diagram = QAction(mainWindow)
+        self.actionRemove_selected_diagram.setObjectName(u"actionRemove_selected_diagram")
+        icon64 = QIcon()
+        icon64.addFile(u":/Icons/icons/minus.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionRemove_selected_diagram.setIcon(icon64)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -490,35 +495,65 @@ class Ui_mainWindow(object):
         self.gridLayout_20 = QGridLayout(self.grid_colouring_frame)
         self.gridLayout_20.setObjectName(u"gridLayout_20")
         self.gridLayout_20.setContentsMargins(1, 1, 1, 1)
-        self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
-        self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
-        icon64 = QIcon()
-        icon64.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_next_simulation_step_pushButton.setIcon(icon64)
+        self.profile_end_slider = QSlider(self.grid_colouring_frame)
+        self.profile_end_slider.setObjectName(u"profile_end_slider")
+        self.profile_end_slider.setOrientation(Qt.Horizontal)
 
-        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 9, 1, 1)
+        self.gridLayout_20.addWidget(self.profile_end_slider, 1, 10, 1, 1)
+
+        self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
+        self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
+        icon65 = QIcon()
+        icon65.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_previous_simulation_step_pushButton.setIcon(icon65)
+
+        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 7, 1, 1)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_20.addItem(self.horizontalSpacer_2, 1, 14, 1, 1)
+
+        self.profile_start_slider = QSlider(self.grid_colouring_frame)
+        self.profile_start_slider.setObjectName(u"profile_start_slider")
+        self.profile_start_slider.setOrientation(Qt.Horizontal)
+
+        self.gridLayout_20.addWidget(self.profile_start_slider, 1, 8, 1, 1)
+
+        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 1, 1, 1)
 
         self.simulation_results_step_slider = QSlider(self.grid_colouring_frame)
         self.simulation_results_step_slider.setObjectName(u"simulation_results_step_slider")
         self.simulation_results_step_slider.setOrientation(Qt.Horizontal)
 
-        self.gridLayout_20.addWidget(self.simulation_results_step_slider, 1, 8, 1, 1)
+        self.gridLayout_20.addWidget(self.simulation_results_step_slider, 1, 9, 1, 1)
 
-        self.remove_diagram_button = QPushButton(self.grid_colouring_frame)
-        self.remove_diagram_button.setObjectName(u"remove_diagram_button")
-        icon65 = QIcon()
-        icon65.addFile(u":/Icons/icons/minus.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.remove_diagram_button.setIcon(icon65)
+        self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
+        self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
+        icon66 = QIcon()
+        icon66.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_next_simulation_step_pushButton.setIcon(icon66)
 
-        self.gridLayout_20.addWidget(self.remove_diagram_button, 1, 12, 1, 1)
+        self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 11, 1, 1)
+
+        self.grid_name_line_edit = QLineEdit(self.grid_colouring_frame)
+        self.grid_name_line_edit.setObjectName(u"grid_name_line_edit")
+
+        self.gridLayout_20.addWidget(self.grid_name_line_edit, 1, 0, 1, 1)
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
-        icon66 = QIcon()
-        icon66.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.colour_results_pushButton.setIcon(icon66)
+        icon67 = QIcon()
+        icon67.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.colour_results_pushButton.setIcon(icon67)
 
         self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 4, 1, 1)
+
+        self.schematic_step_label = QLabel(self.grid_colouring_frame)
+        self.schematic_step_label.setObjectName(u"schematic_step_label")
+
+        self.gridLayout_20.addWidget(self.schematic_step_label, 1, 12, 1, 1)
 
         self.available_results_to_color_comboBox = QComboBox(self.grid_colouring_frame)
         self.available_results_to_color_comboBox.setObjectName(u"available_results_to_color_comboBox")
@@ -526,31 +561,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_20.addWidget(self.available_results_to_color_comboBox, 1, 2, 1, 1)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.profile_label = QLabel(self.grid_colouring_frame)
+        self.profile_label.setObjectName(u"profile_label")
 
-        self.gridLayout_20.addItem(self.horizontalSpacer_2, 1, 11, 1, 1)
-
-        self.schematic_step_label = QLabel(self.grid_colouring_frame)
-        self.schematic_step_label.setObjectName(u"schematic_step_label")
-
-        self.gridLayout_20.addWidget(self.schematic_step_label, 1, 10, 1, 1)
-
-        self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
-        self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
-        icon67 = QIcon()
-        icon67.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_previous_simulation_step_pushButton.setIcon(icon67)
-
-        self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 7, 1, 1)
-
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_20.addItem(self.horizontalSpacer_19, 1, 1, 1, 1)
-
-        self.grid_name_line_edit = QLineEdit(self.grid_colouring_frame)
-        self.grid_name_line_edit.setObjectName(u"grid_name_line_edit")
-
-        self.gridLayout_20.addWidget(self.grid_name_line_edit, 1, 0, 1, 1)
+        self.gridLayout_20.addWidget(self.profile_label, 1, 13, 1, 1)
 
 
         self.verticalLayout_5.addWidget(self.grid_colouring_frame)
@@ -714,7 +728,7 @@ class Ui_mainWindow(object):
 
         self.delete_selected_objects_pushButton = QPushButton(self.frame_9)
         self.delete_selected_objects_pushButton.setObjectName(u"delete_selected_objects_pushButton")
-        self.delete_selected_objects_pushButton.setIcon(icon65)
+        self.delete_selected_objects_pushButton.setIcon(icon64)
 
         self.horizontalLayout_25.addWidget(self.delete_selected_objects_pushButton)
 
@@ -887,7 +901,7 @@ class Ui_mainWindow(object):
 
         self.profile_subtract_pushButton = QPushButton(self.frame_12)
         self.profile_subtract_pushButton.setObjectName(u"profile_subtract_pushButton")
-        self.profile_subtract_pushButton.setIcon(icon65)
+        self.profile_subtract_pushButton.setIcon(icon64)
 
         self.horizontalLayout_4.addWidget(self.profile_subtract_pushButton)
 
@@ -926,33 +940,6 @@ class Ui_mainWindow(object):
         self.horizontalSpacer_13 = QSpacerItem(267, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_13)
-
-        self.profile_label = QLabel(self.frame_12)
-        self.profile_label.setObjectName(u"profile_label")
-
-        self.horizontalLayout_4.addWidget(self.profile_label)
-
-        self.label_36 = QLabel(self.frame_12)
-        self.label_36.setObjectName(u"label_36")
-
-        self.horizontalLayout_4.addWidget(self.label_36)
-
-        self.profile_start_slider = QSlider(self.frame_12)
-        self.profile_start_slider.setObjectName(u"profile_start_slider")
-        self.profile_start_slider.setOrientation(Qt.Horizontal)
-
-        self.horizontalLayout_4.addWidget(self.profile_start_slider)
-
-        self.label_35 = QLabel(self.frame_12)
-        self.label_35.setObjectName(u"label_35")
-
-        self.horizontalLayout_4.addWidget(self.label_35)
-
-        self.profile_end_slider = QSlider(self.frame_12)
-        self.profile_end_slider.setObjectName(u"profile_end_slider")
-        self.profile_end_slider.setOrientation(Qt.Horizontal)
-
-        self.horizontalLayout_4.addWidget(self.profile_end_slider)
 
 
         self.verticalLayout_14.addWidget(self.frame_12)
@@ -1119,7 +1106,7 @@ class Ui_mainWindow(object):
 
         self.deleteDriverButton = QPushButton(self.frame_62)
         self.deleteDriverButton.setObjectName(u"deleteDriverButton")
-        self.deleteDriverButton.setIcon(icon65)
+        self.deleteDriverButton.setIcon(icon64)
 
         self.horizontalLayout_34.addWidget(self.deleteDriverButton)
 
@@ -3620,7 +3607,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_18.addWidget(self.frame_3)
 
-        self.settings_tabWidget.addTab(self.tab_10, icon66, "")
+        self.settings_tabWidget.addTab(self.tab_10, icon67, "")
         self.tab_8 = QWidget()
         self.tab_8.setObjectName(u"tab_8")
         self.horizontalLayout_40 = QHBoxLayout(self.tab_8)
@@ -3853,7 +3840,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1460, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1379, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuExport = QMenu(self.menuProject)
@@ -3910,14 +3897,6 @@ class Ui_mainWindow(object):
         self.menuImport.addAction(self.actionImport_contingencies)
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionAbout)
-        self.menuActions.addAction(self.actionZoom_in)
-        self.menuActions.addAction(self.actionZoom_out)
-        self.menuActions.addAction(self.actionCenter_view)
-        self.menuActions.addAction(self.actionBigger_nodes)
-        self.menuActions.addAction(self.actionSmaller_nodes)
-        self.menuActions.addAction(self.actionAutoatic_layout)
-        self.menuActions.addAction(self.actionDrawSchematic)
-        self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionAdd_default_catalogue)
         self.menuActions.addAction(self.actionClear_stuff_running_right_now)
         self.menuActions.addAction(self.actionReset_console)
@@ -3925,11 +3904,8 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionPower_Flow_Time_series)
         self.menuSimulations.addAction(self.actionInputs_analysis)
         self.menuSimulations.addAction(self.actionStorage_location_suggestion)
-        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionShort_Circuit)
-        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionVoltage_stability)
-        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionSigma_analysis)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionOPF)
@@ -3942,40 +3918,48 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionClustering)
         self.menuSimulations.addAction(self.actionUse_clustering)
         self.menuSimulations.addAction(self.actionPower_flow_Stochastic)
+        self.menuSimulations.addAction(self.actionInvestments_evaluation)
+        self.menuSimulations.addAction(self.actionAdd_selected_as_new_investment)
         self.menuSimulations.addAction(self.actionBlackout_cascade)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionLinearAnalysis)
         self.menuSimulations.addAction(self.actionPTDF_time_series)
         self.menuSimulations.addAction(self.actionContingency_analysis)
         self.menuSimulations.addAction(self.actionOTDF_time_series)
+        self.menuSimulations.addAction(self.actionInitialize_contingencies)
+        self.menuSimulations.addAction(self.actionAdd_selected_to_contingency)
         self.menuSimulations.addAction(self.actionATC)
         self.menuSimulations.addAction(self.actionATC_Time_Series)
         self.menuModel.addAction(self.actionAuto_rate_branches)
         self.menuModel.addAction(self.actionDetect_transformers)
-        self.menuModel.addAction(self.actionTry_to_fix_buses_location)
         self.menuModel.addAction(self.actionFind_node_groups)
         self.menuModel.addAction(self.actionGrid_Reduction)
-        self.menuModel.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
         self.menuModel.addAction(self.actionFuse_devices)
         self.menuModel.addAction(self.actionre_index_time)
+        self.menuModel.addAction(self.actionDelete_selected)
+        self.menuModel.addSeparator()
+        self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
         self.menuModel.addAction(self.actionFix_generators_active_based_on_the_power)
         self.menuModel.addAction(self.actionFix_loads_active_based_on_the_power)
         self.menuModel.addAction(self.actionDelete_inconsistencies)
-        self.menuModel.addSeparator()
-        self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
-        self.menuModel.addSeparator()
-        self.menuModel.addAction(self.actionInitialize_contingencies)
-        self.menuModel.addAction(self.actionAdd_selected_to_contingency)
-        self.menuModel.addAction(self.actionAdd_selected_as_new_investment)
         self.menuDiagrams.addAction(self.actionAdd_general_bus_branch_diagram)
         self.menuDiagrams.addAction(self.actionAdd_area_bus_branch_diagram)
         self.menuDiagrams.addAction(self.actionAdd_zone_bus_branch_diagram)
         self.menuDiagrams.addAction(self.actionAdd_bus_vecinity_diagram)
+        self.menuDiagrams.addAction(self.actionAdd_map)
+        self.menuDiagrams.addAction(self.actionAdd_substation_diagram)
         self.menuDiagrams.addAction(self.menuSelect_buses_by.menuAction())
         self.menuDiagrams.addSeparator()
-        self.menuDiagrams.addAction(self.actionAdd_map)
+        self.menuDiagrams.addAction(self.actionRemove_selected_diagram)
         self.menuDiagrams.addSeparator()
-        self.menuDiagrams.addAction(self.actionAdd_substation_diagram)
+        self.menuDiagrams.addAction(self.actionZoom_in)
+        self.menuDiagrams.addAction(self.actionZoom_out)
+        self.menuDiagrams.addAction(self.actionCenter_view)
+        self.menuDiagrams.addAction(self.actionBigger_nodes)
+        self.menuDiagrams.addAction(self.actionSmaller_nodes)
+        self.menuDiagrams.addAction(self.actionAutoatic_layout)
+        self.menuDiagrams.addAction(self.actionTry_to_fix_buses_location)
+        self.menuDiagrams.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusCountry)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusArea)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusZone)
@@ -4302,32 +4286,39 @@ class Ui_mainWindow(object):
         self.actionAdd_general_bus_branch_diagram.setText(QCoreApplication.translate("mainWindow", u"Add general bus-branch diagram", None))
         self.actionAdd_map.setText(QCoreApplication.translate("mainWindow", u"Add map view", None))
         self.actionAdd_substation_diagram.setText(QCoreApplication.translate("mainWindow", u"Add substation diagram", None))
+        self.actionRemove_selected_diagram.setText(QCoreApplication.translate("mainWindow", u"Remove selected diagram", None))
 #if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.profile_end_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Simulation end", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.view_previous_simulation_step_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Previous", None))
+#endif // QT_CONFIG(tooltip)
+        self.view_previous_simulation_step_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.profile_start_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Simulation start", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.simulation_results_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Simulation step", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.view_next_simulation_step_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Next", None))
 #endif // QT_CONFIG(tooltip)
         self.view_next_simulation_step_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.remove_diagram_button.setToolTip(QCoreApplication.translate("mainWindow", u"Remove diagram", None))
+        self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
 #endif // QT_CONFIG(tooltip)
-        self.remove_diagram_button.setText("")
 #if QT_CONFIG(tooltip)
         self.colour_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Color the grid with the selected study", None))
 #endif // QT_CONFIG(tooltip)
         self.colour_results_pushButton.setText("")
+        self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
 #if QT_CONFIG(tooltip)
         self.available_results_to_color_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
 #endif // QT_CONFIG(tooltip)
-        self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-#if QT_CONFIG(tooltip)
-        self.view_previous_simulation_step_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Previous", None))
-#endif // QT_CONFIG(tooltip)
-        self.view_previous_simulation_step_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
-#endif // QT_CONFIG(tooltip)
+        self.profile_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Designer", None))
 #if QT_CONFIG(tooltip)
         self.smart_search_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
@@ -4351,7 +4342,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.highlight_selection_buses_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.busViewerButton.setToolTip(QCoreApplication.translate("mainWindow", u"open bus viewer", None))
+        self.busViewerButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add bus vecinity viewer of the selected items", None))
 #endif // QT_CONFIG(tooltip)
         self.busViewerButton.setText("")
 #if QT_CONFIG(tooltip)
@@ -4470,9 +4461,6 @@ class Ui_mainWindow(object):
         self.set_profile_value_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Set the value to all or to the selection", None))
 #endif // QT_CONFIG(tooltip)
         self.set_profile_value_pushButton.setText("")
-        self.profile_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-        self.label_36.setText(QCoreApplication.translate("mainWindow", u"Start", None))
-        self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))

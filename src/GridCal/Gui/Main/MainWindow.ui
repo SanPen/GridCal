@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1460</width>
-    <height>805</height>
+    <width>1379</width>
+    <height>785</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -231,85 +231,13 @@
                   <property name="bottomMargin">
                    <number>1</number>
                   </property>
-                  <item row="1" column="9">
-                   <widget class="QPushButton" name="view_next_simulation_step_pushButton">
-                    <property name="toolTip">
-                     <string>Next</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="8">
-                   <widget class="QSlider" name="simulation_results_step_slider">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="12">
-                   <widget class="QPushButton" name="remove_diagram_button">
-                    <property name="toolTip">
-                     <string>Remove diagram</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="4">
-                   <widget class="QPushButton" name="colour_results_pushButton">
-                    <property name="toolTip">
-                     <string>Color the grid with the selected study</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="QComboBox" name="available_results_to_color_comboBox">
-                    <property name="minimumSize">
-                     <size>
-                      <width>164</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="toolTip">
-                     <string>Available results</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="11">
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
                   <item row="1" column="10">
-                   <widget class="QLabel" name="schematic_step_label">
-                    <property name="text">
-                     <string>...</string>
+                   <widget class="QSlider" name="profile_end_slider">
+                    <property name="toolTip">
+                     <string>Simulation end</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
                     </property>
                    </widget>
                   </item>
@@ -327,6 +255,29 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="1" column="14">
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="8">
+                   <widget class="QSlider" name="profile_start_slider">
+                    <property name="toolTip">
+                     <string>Simulation start</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="1">
                    <spacer name="horizontalSpacer_19">
                     <property name="orientation">
@@ -340,10 +291,75 @@
                     </property>
                    </spacer>
                   </item>
+                  <item row="1" column="9">
+                   <widget class="QSlider" name="simulation_results_step_slider">
+                    <property name="toolTip">
+                     <string>Simulation step</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="11">
+                   <widget class="QPushButton" name="view_next_simulation_step_pushButton">
+                    <property name="toolTip">
+                     <string>Next</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="0">
                    <widget class="QLineEdit" name="grid_name_line_edit">
                     <property name="toolTip">
                      <string>Name of the grid model</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="4">
+                   <widget class="QPushButton" name="colour_results_pushButton">
+                    <property name="toolTip">
+                     <string>Color the grid with the selected study</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="12">
+                   <widget class="QLabel" name="schematic_step_label">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QComboBox" name="available_results_to_color_comboBox">
+                    <property name="minimumSize">
+                     <size>
+                      <width>164</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Available results</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="13">
+                   <widget class="QLabel" name="profile_label">
+                    <property name="text">
+                     <string>...</string>
                     </property>
                    </widget>
                   </item>
@@ -531,7 +547,7 @@ p, li { white-space: pre-wrap; }
                    <item>
                     <widget class="QPushButton" name="busViewerButton">
                      <property name="toolTip">
-                      <string>open bus viewer</string>
+                      <string>Add bus vecinity viewer of the selected items</string>
                      </property>
                      <property name="text">
                       <string/>
@@ -1127,41 +1143,6 @@ p, li { white-space: pre-wrap; }
                   </size>
                  </property>
                 </spacer>
-               </item>
-               <item>
-                <widget class="QLabel" name="profile_label">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_36">
-                 <property name="text">
-                  <string>Start</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSlider" name="profile_start_slider">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_35">
-                 <property name="text">
-                  <string>End</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSlider" name="profile_end_slider">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
                </item>
               </layout>
              </widget>
@@ -8190,7 +8171,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1460</width>
+     <width>1379</width>
      <height>22</height>
     </rect>
    </property>
@@ -8243,14 +8224,6 @@ QProgressBar::chunk{
     <property name="title">
      <string>Actions</string>
     </property>
-    <addaction name="actionZoom_in"/>
-    <addaction name="actionZoom_out"/>
-    <addaction name="actionCenter_view"/>
-    <addaction name="actionBigger_nodes"/>
-    <addaction name="actionSmaller_nodes"/>
-    <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionDrawSchematic"/>
-    <addaction name="separator"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
@@ -8263,11 +8236,8 @@ QProgressBar::chunk{
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
-    <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
-    <addaction name="separator"/>
     <addaction name="actionVoltage_stability"/>
-    <addaction name="separator"/>
     <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
@@ -8280,12 +8250,16 @@ QProgressBar::chunk{
     <addaction name="actionClustering"/>
     <addaction name="actionUse_clustering"/>
     <addaction name="actionPower_flow_Stochastic"/>
+    <addaction name="actionInvestments_evaluation"/>
+    <addaction name="actionAdd_selected_as_new_investment"/>
     <addaction name="actionBlackout_cascade"/>
     <addaction name="separator"/>
     <addaction name="actionLinearAnalysis"/>
     <addaction name="actionPTDF_time_series"/>
     <addaction name="actionContingency_analysis"/>
     <addaction name="actionOTDF_time_series"/>
+    <addaction name="actionInitialize_contingencies"/>
+    <addaction name="actionAdd_selected_to_contingency"/>
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
    </widget>
@@ -8295,21 +8269,16 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionGrid_Reduction"/>
-    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
+    <addaction name="actionDelete_selected"/>
+    <addaction name="separator"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
-    <addaction name="separator"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
-    <addaction name="separator"/>
-    <addaction name="actionInitialize_contingencies"/>
-    <addaction name="actionAdd_selected_to_contingency"/>
-    <addaction name="actionAdd_selected_as_new_investment"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -8331,11 +8300,20 @@ QProgressBar::chunk{
     <addaction name="actionAdd_area_bus_branch_diagram"/>
     <addaction name="actionAdd_zone_bus_branch_diagram"/>
     <addaction name="actionAdd_bus_vecinity_diagram"/>
+    <addaction name="actionAdd_map"/>
+    <addaction name="actionAdd_substation_diagram"/>
     <addaction name="menuSelect_buses_by"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_map"/>
+    <addaction name="actionRemove_selected_diagram"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_substation_diagram"/>
+    <addaction name="actionZoom_in"/>
+    <addaction name="actionZoom_out"/>
+    <addaction name="actionCenter_view"/>
+    <addaction name="actionBigger_nodes"/>
+    <addaction name="actionSmaller_nodes"/>
+    <addaction name="actionAutoatic_layout"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -9343,6 +9321,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Add substation diagram</string>
+   </property>
+  </action>
+  <action name="actionRemove_selected_diagram">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove selected diagram</string>
    </property>
   </action>
  </widget>

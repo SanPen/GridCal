@@ -347,7 +347,6 @@ class MainGUI(QMainWindow):
         # list of pointers to the GIS windows
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
-        self.bus_viewer_windows = list()
 
         ################################################################################################################
         # Declare the schematic editor
@@ -589,9 +588,11 @@ class MainGUI(QMainWindow):
         self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_branch_diagram)
         self.ui.actionAdd_area_bus_branch_diagram.triggered.connect(self.add_area_bus_branch_diagram)
         self.ui.actionAdd_zone_bus_branch_diagram.triggered.connect(self.add_zone_bus_branch_diagram)
-        self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram)
+        self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
+
+        self.ui.actionRemove_selected_diagram.triggered.connect(self.remove_diagram)
 
         # Buttons
 
@@ -669,7 +670,7 @@ class MainGUI(QMainWindow):
 
         self.ui.plot_data_pushButton.clicked.connect(self.plot_results)
 
-        self.ui.busViewerButton.clicked.connect(self.bus_viewer)
+        self.ui.busViewerButton.clicked.connect(self.add_bus_vecinity_diagram_from_model)
 
         self.ui.search_results_Button.clicked.connect(self.search_in_results)
 
@@ -684,8 +685,6 @@ class MainGUI(QMainWindow):
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
-
-        self.ui.remove_diagram_button.clicked.connect(self.remove_diagram)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -702,7 +701,7 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-        self.ui.diagramsListView.clicked.connect(self.set_selected_diagram)
+        self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
 
         # tree-view clicks
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
@@ -1410,12 +1409,6 @@ class MainGUI(QMainWindow):
         for thread in self.get_all_threads():
             thread = None
 
-        # close all the bus view windows
-        for hndl in self.bus_viewer_windows:
-            if hndl is not None:
-                hndl.close()
-        self.bus_viewer_windows.clear()
-
         if self.analysis_dialogue is not None:
             self.analysis_dialogue.close()
 
@@ -1994,7 +1987,7 @@ class MainGUI(QMainWindow):
                     dlg = LogsDialogue('Set xy from lat lon', logger)
                     dlg.exec_()
 
-                self.refresh_current_diagram()
+                self.redraw_current_diagram()
 
     def auto_rate_branches(self):
         """
@@ -4564,7 +4557,7 @@ class MainGUI(QMainWindow):
 
         self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
 
-        self.refresh_current_diagram()
+        self.redraw_current_diagram()
 
         self.clear_results()
 
@@ -4840,7 +4833,7 @@ class MainGUI(QMainWindow):
             self.circuit = self.grid_generator_dialogue.circuit
 
             # create schematic
-            self.refresh_current_diagram()
+            self.redraw_current_diagram()
 
             # set circuit name
             diagram = self.get_selected_diagram()
@@ -4871,7 +4864,7 @@ class MainGUI(QMainWindow):
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
         self.coordinates_window.exec_()
 
-        self.refresh_current_diagram()
+        self.redraw_current_diagram()
 
     def set_selected_bus_property(self, prop):
         """
@@ -6068,7 +6061,7 @@ class MainGUI(QMainWindow):
                     bus.graphic_obj.create_children_icons()
                     bus.graphic_obj.arrange_children()
 
-            self.refresh_current_diagram()
+            self.redraw_current_diagram()
 
             self.clear_results()
 
@@ -6588,62 +6581,6 @@ class MainGUI(QMainWindow):
         self.circuit.underground_cable_types += dev.get_cables_catalogue()
         self.circuit.wire_types += dev.get_wires_catalogue()
 
-    def bus_viewer(self):
-        """
-        Launch bus viewer
-        """
-        model = self.ui.dataStructureTableView.model()
-
-        if model is not None:
-
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
-
-            if len(objects) > 0:
-
-                if len(sel_idx) > 0:
-
-                    unique = {idx.row() for idx in sel_idx}
-                    sel_obj = [objects[idx] for idx in unique][0]
-                    root_bus = None
-                    if isinstance(sel_obj, dev.Bus):
-                        root_bus = sel_obj
-
-                    elif isinstance(sel_obj, dev.Generator):
-                        root_bus = sel_obj.bus
-
-                    elif isinstance(sel_obj, dev.Battery):
-                        root_bus = sel_obj.bus
-
-                    elif isinstance(sel_obj, dev.Load):
-                        root_bus = sel_obj.bus
-
-                    elif isinstance(sel_obj, dev.Shunt):
-                        root_bus = sel_obj.bus
-
-                    elif isinstance(sel_obj, dev.Line):
-                        root_bus = sel_obj.bus_from
-
-                    elif isinstance(sel_obj, dev.Transformer2W):
-                        root_bus = sel_obj.bus_from
-
-                    elif isinstance(sel_obj, dev.DcLine):
-                        root_bus = sel_obj.bus_from
-
-                    elif isinstance(sel_obj, dev.HvdcLine):
-                        root_bus = sel_obj.bus_from
-
-                    elif isinstance(sel_obj, dev.VSC):
-                        root_bus = sel_obj.bus_from
-
-                    elif isinstance(sel_obj, dev.UPFC):
-                        root_bus = sel_obj.bus_from
-
-                    if root_bus is not None:
-                        window = BusViewerGUI(self.circuit, root_bus)
-                        self.bus_viewer_windows.append(window)
-                        window.show()
-
     def import_plexos_node_load(self):
         """
         Open and parse Plexos load file
@@ -6779,7 +6716,7 @@ class MainGUI(QMainWindow):
 
         if ok:
             self.circuit.fuse_devices()
-            self.refresh_current_diagram()
+            self.redraw_current_diagram()
 
     # def correct_inconsistencies(self):
     #     """
@@ -7296,8 +7233,10 @@ class MainGUI(QMainWindow):
             index = proxy.index(row, 0)
             self.ui.dataStructuresTreeView.expand(index)
 
-    def set_diagrams_list_view(self):
-
+    def set_diagrams_list_view(self) -> None:
+        """
+        Create the diagrams list view
+        """
         bus_branch_editor_icon = QtGui.QIcon()
         bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
 
@@ -7318,10 +7257,10 @@ class MainGUI(QMainWindow):
         mdl = gf.get_icon_list_model(lst)
         self.ui.diagramsListView.setModel(mdl)
 
-    def get_selected_diagram(self) -> Union[None, GridEditorWidget, GridMapWidget]:
+    def get_selected_diagram(self) -> Union[None, GridEditorWidget, GridMapWidget, BusViewerGUI]:
         """
-
-        :return:
+        Get the currently selected diagram
+        :return: None, GridEditorWidget, GridMapWidget, BusViewerGUI
         """
         indices = self.ui.diagramsListView.selectedIndexes()
 
@@ -7331,8 +7270,10 @@ class MainGUI(QMainWindow):
         else:
             return None
 
-    def refresh_current_diagram(self):
-
+    def redraw_current_diagram(self):
+        """
+        Redraw the currently selected diagram
+        """
         diagram = self.get_selected_diagram()
 
         if diagram:
@@ -7342,15 +7283,19 @@ class MainGUI(QMainWindow):
                 diagram.circuit = self.circuit
                 diagram.schematic_from_api(explode_factor=1.0)
 
-    def set_selected_diagram(self):
-
+    def set_selected_diagram_on_click(self):
+        """
+        on list-view click, set the currentlt selected diagram widget
+        """
         diagram = self.get_selected_diagram()
 
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_bus_branch_diagram(self):
-
+    def add_bus_branch_diagram(self) -> None:
+        """
+        Add ageneral bus-branch diagram
+        """
         diagram = GridEditorWidget(self.circuit, 'Bus-branch diagram')
         diagram.setStretchFactor(1, 10)
         diagram.schematic_from_api(explode_factor=1.0)
@@ -7361,15 +7306,24 @@ class MainGUI(QMainWindow):
         self.set_diagram_widget(diagram)
 
     def add_area_bus_branch_diagram(self):
+        """
+        Add a bus-branch diagram of a particular area
+        """
         self.diagrams_list.append(GridEditorWidget(self.circuit, 'area diagram'))
         self.set_diagrams_list_view()
 
     def add_zone_bus_branch_diagram(self):
+        """
+        Add a bus-branch diagram of a particular zone
+        """
         self.diagrams_list.append(GridEditorWidget(self.circuit, 'zone diagram'))
         self.set_diagrams_list_view()
-
-    def add_bus_vecinity_diagram(self):
-
+    
+    def add_bus_vecinity_diagram_from_model(self):
+        """
+        Add a bus vecinity diagram
+        :return: 
+        """
         model = self.ui.dataStructureTableView.model()
 
         if model is not None:
@@ -7424,8 +7378,28 @@ class MainGUI(QMainWindow):
                                                view_toolbar=False)
                         self.diagrams_list.append(diagram)
                         self.set_diagrams_list_view()
+    
+    def add_bus_vecinity_diagram_from_diagram_selection(self):
+        """
+        Add a bus vecinity diagram
+        :return: 
+        """
+        
+        sel_buses = self.get_selected_buses()
+        
+        if len(sel_buses):
+            bus_idx, root_bus = sel_buses[0]
+            diagram = BusViewerGUI(circuit=self.circuit,
+                                   root_bus=root_bus,
+                                   name=root_bus.name + ' vecinity',
+                                   view_toolbar=False)
+            self.diagrams_list.append(diagram)
+            self.set_diagrams_list_view()
 
-    def add_map_diagram(self):
+    def add_map_diagram(self) -> None:
+        """
+        Adds a Map diagram
+        """
         # select the tile source
         tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
 
@@ -7441,22 +7415,34 @@ class MainGUI(QMainWindow):
         self.set_diagram_widget(diagram=map_widget)
 
     def add_substation_diagram(self):
+        """
+        Add substation diagram
+        """
         self.set_diagrams_list_view()
 
     def remove_diagram(self):
-
+        """
+        Remove diagram
+        """
         diagram = self.get_selected_diagram()
-
         if diagram is not None:
-            self.diagrams_list.remove(diagram)
-            self.set_diagrams_list_view()
+            ok = yes_no_question("Remove diagram", "Are you sure that you want to remove " + diagram.name + "?")
+            
+            if ok:
+                self.diagrams_list.remove(diagram)
+                self.set_diagrams_list_view()
 
-    def remove_all_diagrams(self):
+    def remove_all_diagrams(self) -> None:
+        """
+        Remove all diagrams and their widgets
+        """
         self.diagrams_list.clear()
         self.remove_all_diagram_widgets()
 
-    def remove_all_diagram_widgets(self):
-
+    def remove_all_diagram_widgets(self) -> None:
+        """
+        Remove all diagram widgets from the container
+        """
         # remove all widgets from the layout
         for i in reversed(range(self.ui.schematic_layout.count())):
             # get the widget
@@ -7470,9 +7456,8 @@ class MainGUI(QMainWindow):
 
     def set_diagram_widget(self, diagram: Union[GridEditorWidget, GridMapWidget, BusViewerGUI]):
         """
-
-        :param diagram:
-        :return:
+        Set the current diagram in the container
+        :param diagram: GridEditorWidget, GridMapWidget, BusViewerGUI
         """
         self.remove_all_diagram_widgets()
 
