@@ -170,9 +170,10 @@ class DiagramsMain(BaseMainGui):
         if self.ui.ask_before_appliying_layout_checkBox.isChecked():
             reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                    'Are you sure that you want to try an automatic layout?',
-                                                   QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 do_it = True
                 # build the graph always in this step
                 self.circuit.build_graph()
@@ -876,6 +877,7 @@ class DiagramsMain(BaseMainGui):
         """
         self.diagram_widgets_list.clear()
         self.remove_all_diagram_widgets()
+        self.ui.diagramsListView.setModel(None)
 
     def remove_all_diagram_widgets(self) -> None:
         """
@@ -1023,9 +1025,10 @@ class DiagramsMain(BaseMainGui):
             if len(selected) > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Delete',
                                                        'Are you sure that you want to delete the selected elements?',
-                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes,
+                                                       QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
 
                     # remove the buses (from the schematic and the circuit)
                     for k, bus in selected:

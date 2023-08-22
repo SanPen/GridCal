@@ -72,12 +72,12 @@ class AboutDialogueGuiGUI(QtWidgets.QDialog):
         :param title: Name of the window
         """
         msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def update(self):

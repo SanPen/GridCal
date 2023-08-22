@@ -121,7 +121,7 @@ class IoMain(SimulationsMain, ConfigurationMain):
                                                            QtWidgets.QMessageBox.StandardButton.Yes,
                                                            QtWidgets.QMessageBox.StandardButton.No)
 
-                    if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                    if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                         self.open_file_now(filenames=file_names)
                 else:
                     # Just open the file
@@ -180,7 +180,7 @@ class IoMain(SimulationsMain, ConfigurationMain):
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
                                                    QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 self.new_project_now(create_default_diagrams=True)
 
     def open_file(self):
@@ -196,7 +196,7 @@ class IoMain(SimulationsMain, ConfigurationMain):
                                                        QtWidgets.QMessageBox.StandardButton.Yes,
                                                        QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                     self.open_file_threaded()
                 else:
                     pass
@@ -313,9 +313,10 @@ class IoMain(SimulationsMain, ConfigurationMain):
                                    "Do you want to enable the schematic?\n" \
                                    "(you can always enable the drawing later)"
                         reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
-                                                               QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                                               QtWidgets.QMessageBox.StandardButton.Yes,
+                                                               QtWidgets.QMessageBox.StandardButton.No)
 
-                        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                        if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                             # create schematic
                             self.add_bus_branch_diagram()
 

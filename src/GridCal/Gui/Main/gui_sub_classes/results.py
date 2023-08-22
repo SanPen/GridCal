@@ -232,10 +232,12 @@ class ResultsMain(SimulationsMain):
                 study_type = self.available_results_dict[study_name]
 
                 quit_msg = "Do you want to delete the results driver " + study_name + "?"
-                reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                       quit_msg,
+                                                       QtWidgets.QMessageBox.StandardButton.Yes,
+                                                       QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                     self.session.delete_driver_by_name(study_name)
                     self.update_available_results()
 
@@ -250,9 +252,10 @@ class ResultsMain(SimulationsMain):
             reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                    'Are you sure that you want to overwrite '
                                                    'the generation profiles with the OPF results?',
-                                                   QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 for i, gen in enumerate(self.circuit.get_generators()):
                     gen.P_prof = results.generator_power[:, i]
 

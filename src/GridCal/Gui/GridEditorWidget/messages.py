@@ -25,10 +25,10 @@ def info_msg(text, title="Information"):
     :param title: Name of the window
     """
     msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Information)
+    msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
     msg.setText(text)
     msg.setWindowTitle(title)
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
     return msg.exec_()
 
 
@@ -39,10 +39,10 @@ def warning_msg(text, title="Warning"):
     :param title: Name of the window
     """
     msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Warning)
+    msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
     msg.setText(text)
     msg.setWindowTitle(title)
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
     return msg.exec_()
 
 
@@ -53,10 +53,10 @@ def error_msg(text, title="Error"):
     :param title: Name of the window
     """
     msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Critical)
+    msg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
     msg.setText(text)
     msg.setWindowTitle(title)
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
     return msg.exec_()
 
 
@@ -72,4 +72,4 @@ def yes_no_question(text, title='Question'):
                                                  text,
                                                  QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
                                                  QtWidgets.QMessageBox.StandardButton.No)
-    return buttonReply == QtWidgets.QMessageBox.StandardButton.Yes
+    return buttonReply == QtWidgets.QMessageBox.StandardButton.Yes.value

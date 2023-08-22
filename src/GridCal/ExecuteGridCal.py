@@ -22,7 +22,6 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
 from GridCal.Gui.Main.GridCalMain import runGridCal
-from GridCal.Gui.Main.banner import Ui_splashScreen, QMainWindow, Qt, QApplication
 import platform
 
 if platform.system() == 'Windows':
@@ -30,21 +29,6 @@ if platform.system() == 'Windows':
     import ctypes
     myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
-class Splash(QMainWindow):
-
-    def __init__(self, parent=None):
-        """
-
-        @param parent:
-        """
-
-        # create main window
-        QMainWindow.__init__(self, parent)
-        self.ui = Ui_splashScreen()
-        self.ui.setupUi(self)
-        self.setWindowFlags(Qt.SplashScreen | Qt.FramelessWindowHint)
 
 
 if __name__ == "__main__":

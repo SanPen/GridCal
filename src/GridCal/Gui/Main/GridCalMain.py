@@ -18,7 +18,7 @@
 import sys
 
 import qdarktheme
-
+from PySide6 import QtGui, QtWidgets, QtCore
 from GridCal.Gui.Main.MainWindow import QApplication
 from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.gui_sub_classes.io import IoMain
@@ -94,6 +94,34 @@ class MainGUI(IoMain, ObjectsTableMain, ResultsMain, TimeEventsMain, CompiledArr
         self.add_bus_branch_diagram()
         self.add_map_diagram()
         self.set_diagram_widget(self.diagram_widgets_list[0])
+
+    def closeEvent(self, event):
+        """
+        Close event
+        :param event:
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            quit_msg = "Are you sure that you want to exit GridCal?"
+            reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
+
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                # save config regardless
+                self.save_gui_config()
+                self.stop_all_threads()
+                event.accept()
+            else:
+                # save config regardless
+                self.save_gui_config()
+                event.ignore()
+        else:
+            # no buses so exit
+            # save config regardless
+            self.save_gui_config()
+            self.stop_all_threads()
+            event.accept()
 
 
 def runGridCal() -> None:

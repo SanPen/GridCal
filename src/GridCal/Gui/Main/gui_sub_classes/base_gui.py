@@ -643,41 +643,11 @@ class BaseMainGui(QMainWindow):
         """
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
 
-
-
     def clear_text_output(self) -> None:
         """
         Clear the text output textEdit
         """
         self.ui.outputTextEdit.setPlainText("")
-
-    def closeEvent(self, event):
-        """
-        Close event
-        :param event:
-        :return:
-        """
-        if len(self.circuit.buses) > 0:
-            quit_msg = "Are you sure that you want to exit GridCal?"
-            reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
-                                                   QtWidgets.QMessageBox.StandardButton.Yes,
-                                                   QtWidgets.QMessageBox.StandardButton.No)
-
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-                # save config regardless
-                self.save_gui_config()
-                self.stop_all_threads()
-                event.accept()
-            else:
-                # save config regardless
-                self.save_gui_config()
-                event.ignore()
-        else:
-            # no buses so exit
-            # save config regardless
-            self.save_gui_config()
-            self.stop_all_threads()
-            event.accept()
 
     def auto_rate_branches(self):
         """
@@ -736,9 +706,10 @@ class BaseMainGui(QMainWindow):
 
         reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                'Are you sure that you want to cancel the simulation?',
-                                               QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                               QtWidgets.QMessageBox.StandardButton.Yes,
+                                               QtWidgets.QMessageBox.StandardButton.No)
 
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+        if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
             # send the cancel state to whatever it is being executed
 
             for drv in self.get_all_threads():

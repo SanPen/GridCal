@@ -303,7 +303,7 @@ def get_gridcal_transformer(psse_elm: PSSeTransformer,
         else:
             V2 = psse_elm.NOMV2
 
-        contingency_factor = psse_elm.RATE1_1 / psse_elm.RATE1_2 if psse_elm.RATE1_1 > 0.0 else 1.0
+        contingency_factor = psse_elm.RATE1_1 / psse_elm.RATE1_2 if psse_elm.RATE1_2 > 0.0 else 1.0
 
         # r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(psse_elm.CW, psse_elm.CZ, psse_elm.CM,
         #                                                                  V1, V2,

@@ -559,9 +559,9 @@ class DiagramScene(QGraphicsScene):
                 quit_msg = str(api_object.name) + \
                            "\nAre you sure that you want to overwrite the rates profile with the snapshot value?"
                 reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg,
-                                             QMessageBox.Yes, QMessageBox.No)
+                                             QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
 
-                if reply == QMessageBox.Yes:
+                if reply == QMessageBox.StandardButton.Yes.value:
                     api_object.rate_prof *= 0
                     api_object.rate_prof += api_object.rate
 

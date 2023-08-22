@@ -110,7 +110,7 @@ class TimeEventsMain(DiagramsMain):
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
                                                    QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 for bus in self.circuit.buses:
                     bus.delete_profiles()
                 self.circuit.time_profile = None
@@ -320,7 +320,7 @@ class TimeEventsMain(DiagramsMain):
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
                                                    QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
 
                 dev_type = self.circuit.device_type_name_dict[dev_type_text]
                 objects = self.circuit.get_elements_by_type(dev_type)
