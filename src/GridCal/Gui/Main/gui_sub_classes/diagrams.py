@@ -15,36 +15,30 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
+from typing import List, Tuple, Union
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-from matplotlib import pyplot as plt
 import qdarktheme
-import darkdetect
-
+from PySide6 import QtGui, QtWidgets, QtCore
+from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-from typing import List, Tuple, Dict, Union
-from PySide6 import QtGui, QtWidgets, QtCore
-from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
-
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.Simulations as sim
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
+from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
+from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
-from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-
-
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 
 
 class DiagramsMain(BaseMainGui):
@@ -176,9 +170,9 @@ class DiagramsMain(BaseMainGui):
         if self.ui.ask_before_appliying_layout_checkBox.isChecked():
             reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                    'Are you sure that you want to try an automatic layout?',
-                                                   QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 do_it = True
                 # build the graph always in this step
                 self.circuit.build_graph()
@@ -1029,9 +1023,9 @@ class DiagramsMain(BaseMainGui):
             if len(selected) > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Delete',
                                                        'Are you sure that you want to delete the selected elements?',
-                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
 
                     # remove the buses (from the schematic and the circuit)
                     for k, bus in selected:

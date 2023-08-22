@@ -27,19 +27,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/base_gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/compiled_arrays.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/configuration.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/diagrams.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/io.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/objects.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/simulations.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/time_events.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="split the Main gui into several subclasses">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/messages.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/messages.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/base_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/base_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/compiled_arrays.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/compiled_arrays.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/configuration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/io.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/io.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/objects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/simulations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/time_events.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/time_events.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1246,14 +1247,7 @@
       <workItem from="1692345824712" duration="17762000" />
       <workItem from="1692599861467" duration="27257000" />
       <workItem from="1692645266350" duration="3238000" />
-      <workItem from="1692685824724" duration="13980000" />
-    </task>
-    <task id="LOCAL-00428" summary="Fixed bug with compute_zip_power having to conjugate I0">
-      <created>1688374655510</created>
-      <option name="number" value="00428" />
-      <option name="presentableId" value="LOCAL-00428" />
-      <option name="project" value="LOCAL" />
-      <updated>1688374655510</updated>
+      <workItem from="1692685824724" duration="15804000" />
     </task>
     <task id="LOCAL-00429" summary="Some more work towards the OPF">
       <created>1688400201512</created>
@@ -1591,7 +1585,14 @@
       <option name="project" value="LOCAL" />
       <updated>1692649138429</updated>
     </task>
-    <option name="localTasksCounter" value="477" />
+    <task id="LOCAL-00477" summary="split the Main gui into several subclasses">
+      <created>1692704503136</created>
+      <option name="number" value="00477" />
+      <option name="presentableId" value="LOCAL-00477" />
+      <option name="project" value="LOCAL" />
+      <updated>1692704503136</updated>
+    </task>
+    <option name="localTasksCounter" value="478" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1633,7 +1634,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added mvrsm and overload criteria" />
     <MESSAGE value="added hyperopt as requirement" />
     <MESSAGE value="Fixed bug with LODF based contingencies" />
     <MESSAGE value="Included improvements in linear contingency creation" />
@@ -1658,7 +1658,8 @@
     <MESSAGE value="Moved sliders to the designer tab" />
     <MESSAGE value="added CGMES trasnsformer and line conversions" />
     <MESSAGE value="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)" />
+    <MESSAGE value="split the Main gui into several subclasses" />
+    <option name="LAST_COMMIT_MESSAGE" value="split the Main gui into several subclasses" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2339,7 +2340,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1692362060427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1692704415141" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1692708533782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

@@ -14,37 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
 import numpy as np
 import pandas as pd
-import networkx as nx
+from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
-import qdarktheme
-import darkdetect
 
-from pandas.plotting import register_matplotlib_converters
-
-from typing import List, Tuple, Dict, Union
-from PySide6 import QtGui, QtWidgets, QtCore
-from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
-
+import GridCal.Engine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
-import GridCal.Engine.Simulations as sim
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.diagrams import DiagramsMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
-from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
-from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
-from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue, CheckListDialogue
-
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-import GridCal.Gui.Visualization.palettes as palettes
 
 
 class TimeEventsMain(DiagramsMain):
@@ -126,10 +107,10 @@ class TimeEventsMain(DiagramsMain):
         if self.circuit.time_profile is not None:
             quit_msg = "Are you sure that you want to remove the profiles?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                   QtWidgets.QMessageBox.Yes,
-                                                   QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 for bus in self.circuit.buses:
                     bus.delete_profiles()
                 self.circuit.time_profile = None
@@ -336,10 +317,10 @@ class TimeEventsMain(DiagramsMain):
                   " with the values of " + magnitude_from + "?"
 
             reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                                                   QtWidgets.QMessageBox.Yes,
-                                                   QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
 
                 dev_type = self.circuit.device_type_name_dict[dev_type_text]
                 objects = self.circuit.get_elements_by_type(dev_type)

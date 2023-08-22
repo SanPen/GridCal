@@ -166,7 +166,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.diagramScene.parent_.set_position(idtag=self.api_object.idtag,
+        self.diagramScene.parent_.set_position(device=self.api_object,
                                                x=self.pos().x(),
                                                y=self.pos().x(),
                                                w=self.w,

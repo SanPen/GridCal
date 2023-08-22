@@ -15,81 +15,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import gc
-import json
 import sys
-import ctypes
-import threading
-import os.path
-import webbrowser
-from collections import OrderedDict
-from typing import List, Tuple, Dict, Union
-import numpy as np
 
-import pandas as pd
-from matplotlib.colors import LinearSegmentedColormap
-from pandas.plotting import register_matplotlib_converters
-
-import darkdetect
 import qdarktheme
 
-# Engine imports
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Gui.Session.export_results_driver as exprtdrv
-import GridCal.Gui.Session.file_handler as filedrv
-import GridCal.Gui.Session.synchronization_driver as syncdrv
-import GridCal.Engine.Simulations as sim
-import GridCal.Gui.Visualization.visualization as viz
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.grid_analysis as grid_analysis
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Engine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
-from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
-from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
-
-# GUI importswa
-from PySide6 import QtGui, QtWidgets, QtCore
-import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, NewProfilesStructureDialogue, ElementsDialogue, \
-    TimeReIndexDialogue, CheckListDialogue
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-
-from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
-from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-
-from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
-from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
-from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
-from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
-from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
-from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
-from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
-from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-
-
-from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
+from GridCal.Gui.Main.MainWindow import QApplication
+from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.gui_sub_classes.io import IoMain
 from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
 from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
-from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
-
 from GridCal.__version__ import __GridCal_VERSION__
 
-
-
-from matplotlib import pyplot as plt
 
 __author__ = 'Santiago Peñate Vera'
 

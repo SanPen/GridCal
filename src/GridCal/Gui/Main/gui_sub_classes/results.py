@@ -14,33 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
 import numpy as np
-import pandas as pd
-import networkx as nx
+from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
-import qdarktheme
-from typing import List, Tuple, Dict, Union
-from PySide6 import QtGui, QtWidgets, QtCore
-from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
-from matplotlib.colors import LinearSegmentedColormap
 
-import GridCal.Gui.GuiFunctions as gf
 import GridCal.Engine.Simulations as sim
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.GridEditorWidget.messages import error_msg, warning_msg
 from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
-from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
-from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.Session.session import SimulationSession, ResultsModel, GcThread
-
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.Session.session import ResultsModel
 
 
 class ResultsMain(SimulationsMain):
@@ -251,9 +233,9 @@ class ResultsMain(SimulationsMain):
 
                 quit_msg = "Do you want to delete the results driver " + study_name + "?"
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                     self.session.delete_driver_by_name(study_name)
                     self.update_available_results()
 
@@ -268,9 +250,9 @@ class ResultsMain(SimulationsMain):
             reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                    'Are you sure that you want to overwrite '
                                                    'the generation profiles with the OPF results?',
-                                                   QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 for i, gen in enumerate(self.circuit.get_generators()):
                     gen.P_prof = results.generator_power[:, i]
 

@@ -70,6 +70,6 @@ def yes_no_question(text, title='Question'):
     buttonReply = QtWidgets.QMessageBox.question(None,
                                                  title,
                                                  text,
-                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                                 QtWidgets.QMessageBox.No)
-    return buttonReply == QtWidgets.QMessageBox.Yes
+                                                 QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+                                                 QtWidgets.QMessageBox.StandardButton.No)
+    return buttonReply == QtWidgets.QMessageBox.StandardButton.Yes

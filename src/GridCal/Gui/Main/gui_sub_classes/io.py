@@ -16,37 +16,25 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-import json
-import pandas as pd
 from warnings import warn
-from typing import List, Tuple, Dict, Union
-from PySide6 import QtGui, QtWidgets, QtCore
-from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow, QApplication
 
-import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
-from GridCal.Gui.Main.gui_sub_classes.configuration import ConfigurationMain
-from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
-from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, NewProfilesStructureDialogue, ElementsDialogue, \
-    TimeReIndexDialogue, CheckListDialogue
-from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
-from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
+import pandas as pd
+from PySide6 import QtWidgets
 
 import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Gui.Session.file_handler as filedrv
+import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.export_results_driver as exprtdrv
-import GridCal.Gui.Session.synchronization_driver as syncdrv
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
+import GridCal.Gui.Session.file_handler as filedrv
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCal.Engine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
+from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.Main.gui_sub_classes.configuration import ConfigurationMain
+from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
 
 
 class IoMain(SimulationsMain, ConfigurationMain):
@@ -130,10 +118,10 @@ class IoMain(SimulationsMain, ConfigurationMain):
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                           QtWidgets.QMessageBox.Yes,
-                                                           QtWidgets.QMessageBox.No)
+                                                           QtWidgets.QMessageBox.StandardButton.Yes,
+                                                           QtWidgets.QMessageBox.StandardButton.No)
 
-                    if reply == QtWidgets.QMessageBox.Yes:
+                    if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                         self.open_file_now(filenames=file_names)
                 else:
                     # Just open the file
@@ -189,10 +177,10 @@ class IoMain(SimulationsMain, ConfigurationMain):
         if len(self.circuit.buses) > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                   QtWidgets.QMessageBox.Yes,
-                                                   QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.StandardButton.Yes,
+                                                   QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 self.new_project_now(create_default_diagrams=True)
 
     def open_file(self):
@@ -205,10 +193,10 @@ class IoMain(SimulationsMain, ConfigurationMain):
                 quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                            "\n If the process is cancelled the grid will remain."
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                       QtWidgets.QMessageBox.Yes,
-                                                       QtWidgets.QMessageBox.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes,
+                                                       QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                     self.open_file_threaded()
                 else:
                     pass
@@ -325,9 +313,9 @@ class IoMain(SimulationsMain, ConfigurationMain):
                                    "Do you want to enable the schematic?\n" \
                                    "(you can always enable the drawing later)"
                         reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
-                                                               QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                               QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-                        if reply == QtWidgets.QMessageBox.Yes:
+                        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                             # create schematic
                             self.add_bus_branch_diagram()
 
@@ -614,9 +602,9 @@ class IoMain(SimulationsMain, ConfigurationMain):
             if len(self.circuit.buses) > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete the current grid and replace it?',
-                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
 
-                if reply == QtWidgets.QMessageBox.No:
+                if reply == QtWidgets.QMessageBox.StandardButton.No:
                     return
 
             self.circuit = self.grid_generator_dialogue.circuit
