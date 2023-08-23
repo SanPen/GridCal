@@ -39,7 +39,7 @@ This class is the handler of the main gui of GridCal.
 # Main Window
 ########################################################################################################################
 
-class MainGUI(IoMain, ObjectsTableMain, ResultsMain, TimeEventsMain, CompiledArraysMain):
+class MainGUI(IoMain):
     """
     MainGUI
     """
@@ -52,10 +52,6 @@ class MainGUI(IoMain, ObjectsTableMain, ResultsMain, TimeEventsMain, CompiledArr
 
         # create main window
         IoMain.__init__(self, parent)
-        ObjectsTableMain.__init__(self, parent)
-        ResultsMain.__init__(self, parent)
-        TimeEventsMain.__init__(self, parent)
-        CompiledArraysMain.__init__(self, parent)
 
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)

@@ -34,12 +34,12 @@ from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILAB
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.diagrams import DiagramsMain
+from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
 
 
-class SimulationsMain(DiagramsMain):
+class SimulationsMain(TimeEventsMain):
     """
     SimulationsMain
     """
@@ -51,7 +51,7 @@ class SimulationsMain(DiagramsMain):
         """
 
         # create main window
-        DiagramsMain.__init__(self, parent)
+        TimeEventsMain.__init__(self, parent)
 
         # Power Flow Methods
         self.solvers_dict = OrderedDict()

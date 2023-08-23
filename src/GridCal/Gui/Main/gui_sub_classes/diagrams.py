@@ -34,14 +34,14 @@ from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
 from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
+from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 
 
-class DiagramsMain(BaseMainGui):
+class DiagramsMain(CompiledArraysMain):
     """
     Diagrams Main
     """
@@ -53,7 +53,7 @@ class DiagramsMain(BaseMainGui):
         """
 
         # create main window
-        BaseMainGui.__init__(self, parent)
+        CompiledArraysMain.__init__(self, parent)
 
         # list of diagrams
         self.diagram_widgets_list: List[Union[GridEditorWidget, BusViewerGUI, GridMapWidget]] = list()

@@ -34,10 +34,9 @@ from GridCal.Gui.GridEditorWidget import GridEditorWidget
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.Main.gui_sub_classes.configuration import ConfigurationMain
-from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
 
 
-class IoMain(SimulationsMain, ConfigurationMain):
+class IoMain(ConfigurationMain):
     """
     Inputs-Outputs Main
     """
@@ -49,7 +48,6 @@ class IoMain(SimulationsMain, ConfigurationMain):
         """
 
         # create main window
-        SimulationsMain.__init__(self, parent)
         ConfigurationMain.__init__(self, parent)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',

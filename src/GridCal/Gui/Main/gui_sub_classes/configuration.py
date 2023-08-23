@@ -21,10 +21,10 @@ from typing import Dict, Union
 from PySide6 import QtWidgets
 
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.Main.gui_sub_classes.diagrams import DiagramsMain
+from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
 
 
-class ConfigurationMain(DiagramsMain):
+class ConfigurationMain(ResultsMain):
     """
     Diagrams Main
     """
@@ -36,8 +36,7 @@ class ConfigurationMain(DiagramsMain):
         """
 
         # create main window
-        DiagramsMain.__init__(self, parent)
-
+        ResultsMain.__init__(self, parent)
 
     @staticmethod
     def config_file_path() -> str:

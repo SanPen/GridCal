@@ -23,12 +23,12 @@ import GridCal.Engine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.diagrams import DiagramsMain
+from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 
 
-class TimeEventsMain(DiagramsMain):
+class TimeEventsMain(ObjectsTableMain):
     """
     Diagrams Main
     """
@@ -40,7 +40,7 @@ class TimeEventsMain(DiagramsMain):
         """
 
         # create main window
-        DiagramsMain.__init__(self, parent)
+        ObjectsTableMain.__init__(self, parent)
 
         mdl = gf.get_list_model(self.circuit.profile_magnitudes.keys())
         self.ui.profile_device_type_comboBox.setModel(mdl)

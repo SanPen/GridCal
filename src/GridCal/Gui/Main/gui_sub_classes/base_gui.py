@@ -125,111 +125,103 @@ class BaseMainGui(QMainWindow):
     DiagramFunctionsMain
     """
 
-    ALREADY_INITIALIZED = False
-
     def __init__(self, parent=None):
         """
 
         @param parent:
         """
-        if not self.ALREADY_INITIALIZED:
-            # create main window
-            QMainWindow.__init__(self, parent)
-            self.ui = Ui_mainWindow()
-            self.ui.setupUi(self)
+        # create main window
+        QMainWindow.__init__(self, parent)
+        self.ui = Ui_mainWindow()
+        self.ui.setupUi(self)
 
-            # Declare circuit
-            self.circuit: core.MultiCircuit = core.MultiCircuit()
+        # Declare circuit
+        self.circuit: core.MultiCircuit = core.MultiCircuit()
 
-            self.lock_ui = False
-            self.ui.progress_frame.setVisible(self.lock_ui)
+        self.lock_ui = False
+        self.ui.progress_frame.setVisible(self.lock_ui)
 
-            self.stuff_running_now = list()
+        self.stuff_running_now = list()
 
-            self.session: SimulationSession = SimulationSession(name='GUI session')
+        self.session: SimulationSession = SimulationSession(name='GUI session')
 
-            self.file_name = ''
+        self.file_name = ''
 
-            self.project_directory = os.path.expanduser("~")
+        self.project_directory = os.path.expanduser("~")
 
-            # threads ------------------------------------------------------------------------------------------------------
-            self.painter = None
-            self.open_file_thread_object = None
-            self.save_file_thread_object = None
-            self.last_file_driver = None
-            self.delete_and_reduce_driver = None
-            self.export_all_thread_object = None
-            self.topology_reduction = None
-            self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
-            self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
+        # threads --------------------------------------------------------------------------------------------------
+        self.painter = None
+        self.open_file_thread_object = None
+        self.save_file_thread_object = None
+        self.last_file_driver = None
+        self.delete_and_reduce_driver = None
+        self.export_all_thread_object = None
+        self.topology_reduction = None
+        self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
+        self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
 
-            # window pointers ----------------------------------------------------------------------------------------------
-            self.file_sync_window: Union[SyncDialogueWindow, None] = None
-            self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
-            self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
-            self.contingency_planner_dialogue: Union[ContingencyPlannerGUI, None] = None
-            self.analysis_dialogue: Union[GridAnalysisGUI, None] = None
-            self.profile_input_dialogue: Union[ProfileInputGUI, None] = None
-            self.models_input_dialogue: Union[ModelsInputGUI, None] = None
-            self.object_select_window: Union[ObjectSelectWindow, None] = None
-            self.coordinates_window: Union[CoordinatesInputGUI, None] = None
-            self.about_msg_window: Union[AboutDialogueGuiGUI, None] = None
-            self.tower_builder_window: Union[TowerBuilderGUI, None] = None
-            self.investment_checks_diag: Union[CheckListDialogue, None] = None
-            self.contingency_checks_diag: Union[CheckListDialogue, None] = None
+        # window pointers ------------------------------------------------------------------------------------------
+        self.file_sync_window: Union[SyncDialogueWindow, None] = None
+        self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
+        self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
+        self.contingency_planner_dialogue: Union[ContingencyPlannerGUI, None] = None
+        self.analysis_dialogue: Union[GridAnalysisGUI, None] = None
+        self.profile_input_dialogue: Union[ProfileInputGUI, None] = None
+        self.models_input_dialogue: Union[ModelsInputGUI, None] = None
+        self.object_select_window: Union[ObjectSelectWindow, None] = None
+        self.coordinates_window: Union[CoordinatesInputGUI, None] = None
+        self.about_msg_window: Union[AboutDialogueGuiGUI, None] = None
+        self.tower_builder_window: Union[TowerBuilderGUI, None] = None
+        self.investment_checks_diag: Union[CheckListDialogue, None] = None
+        self.contingency_checks_diag: Union[CheckListDialogue, None] = None
 
-            # available engines
-            engine_lst = [bs.EngineType.GridCal]
-            if NEWTON_PA_AVAILABLE:
-                engine_lst.append(bs.EngineType.NewtonPA)
-            if BENTAYGA_AVAILABLE:
-                engine_lst.append(bs.EngineType.Bentayga)
-            if PGM_AVAILABLE:
-                engine_lst.append(bs.EngineType.PGM)
+        # available engines
+        engine_lst = [bs.EngineType.GridCal]
+        if NEWTON_PA_AVAILABLE:
+            engine_lst.append(bs.EngineType.NewtonPA)
+        if BENTAYGA_AVAILABLE:
+            engine_lst.append(bs.EngineType.Bentayga)
+        if PGM_AVAILABLE:
+            engine_lst.append(bs.EngineType.PGM)
 
-            self.ui.engineComboBox.setModel(gf.get_list_model([x.value for x in engine_lst]))
-            self.ui.engineComboBox.setCurrentIndex(0)
-            self.engine_dict = {x.value: x for x in engine_lst}
+        self.ui.engineComboBox.setModel(gf.get_list_model([x.value for x in engine_lst]))
+        self.ui.engineComboBox.setCurrentIndex(0)
+        self.engine_dict = {x.value: x for x in engine_lst}
 
-            # Console
-            self.console: Union[ConsoleWidget, None] = None
-            try:
-                self.create_console()
-            except TypeError:
-                error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
+        # Console
+        self.console: Union[ConsoleWidget, None] = None
+        try:
+            self.create_console()
+        except TypeError:
+            error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
 
-            # dark mode detection
-            is_dark = darkdetect.theme() == "Dark"
-            self.ui.dark_mode_checkBox.setChecked(is_dark)
+        # dark mode detection
+        is_dark = darkdetect.theme() == "Dark"
+        self.ui.dark_mode_checkBox.setChecked(is_dark)
 
-            self.calculation_inputs_to_display = None
+        self.calculation_inputs_to_display = None
 
-            # ----------------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------------------------------
 
-            self.ui.actionReset_console.triggered.connect(self.create_console)
-            self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
-            self.ui.actionAbout.triggered.connect(self.about_box)
-            self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
-            self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
-            self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
-            self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
-            self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
-            self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
-            self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
-            self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
-            self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
+        self.ui.actionReset_console.triggered.connect(self.create_console)
+        self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
+        self.ui.actionAbout.triggered.connect(self.about_box)
+        self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
+        self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
+        self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
+        self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
+        self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+        self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
+        self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
 
-            # Buttons
-            self.ui.cancelButton.clicked.connect(self.set_cancel_state)
+        # Buttons
+        self.ui.cancelButton.clicked.connect(self.set_cancel_state)
 
-            # doubleSpinBox
-            self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
-            self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
-
-            self.ALREADY_INITIALIZED = True
-
-        else:
-            print('Already intialized, called from', parent)
+        # doubleSpinBox
+        self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
+        self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
     def LOCK(self, val: bool = True) -> None:
         """
