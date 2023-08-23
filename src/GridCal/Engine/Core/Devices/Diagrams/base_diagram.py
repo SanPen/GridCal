@@ -22,6 +22,68 @@ from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice
 
 
+class PointsGroup:
+    """
+    Diagram
+    """
+
+    def __init__(self, name=''):
+        """
+
+        :param name: Diagram name
+        """
+        self.name = name
+
+        # device_type: {device uuid: {x, y, h, w, r}}
+        self.locations: Dict[str, Union[GraphicLocation, MapLocation]] = dict()
+
+    def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
+        """
+
+        :param device:
+        :param location:
+        :return:
+        """
+        self.locations[device.idtag] = location
+
+    def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
+        """
+
+        :param device:
+        :return:
+        """
+        return self.locations.get(device.idtag, None)
+
+    def get_dict(self) -> Dict[str, Union[GraphicLocation, MapLocation]]:
+        """
+
+        :return:
+        """
+        points = {idtag: location.get_properties_dict() for idtag, location in self.locations.items()}
+
+        return points
+
+    def parse_data(self, data: Dict[str, Dict[str, Union[int, float]]]):
+        """
+        Parse file data ito this class
+        :param data: json dictionary
+        """
+        self.locations = dict()
+
+        for idtag, location in data.items():
+
+            if 'x' in location:
+                self.locations[idtag] = GraphicLocation(x=location['x'],
+                                                        y=location['y'],
+                                                        w=location['w'],
+                                                        h=location['h'],
+                                                        r=location['r'])
+            if 'latitude' in location:
+                self.locations[idtag] = MapLocation(latitude=location['latitude'],
+                                                    longitude=location['longitude'],
+                                                    altitude=location['altitude'])
+
+
 class BaseDiagram:
     """
     Diagram
@@ -40,7 +102,7 @@ class BaseDiagram:
         self.name = name
 
         # device_type: {device uuid: {x, y, h, w, r}}
-        self.points: Dict[str, Dict[str, Union[GraphicLocation, MapLocation]]] = dict()
+        self.data: Dict[str, PointsGroup] = dict()
 
     def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
         """
@@ -50,12 +112,19 @@ class BaseDiagram:
         :return:
         """
         # check if the category exists ...
-        d = self.points.get(device.device_type.value, None)
+        d = self.data.get(device.device_type.value, None)
+
+        if location.api_object is None:
+            location.api_object = device
 
         if d is None:
-            self.points[device.device_type.value] = {device.idtag: location}  # create dictionary
+            # the category does not exist, create it
+            group = PointsGroup(name=device.device_type.value)
+            group.set_point(device, location)
+            self.data[device.device_type.value] = group
         else:
-            d[device.idtag] = location  # the category, exists, just add
+            # the category does exists, add point
+            d.set_point(device, location)  # the category, exists, just add
 
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
         """
@@ -64,51 +133,37 @@ class BaseDiagram:
         :return:
         """
         # check if the category exists ...
-        d = self.points.get(device.device_type.value, None)
+        group = self.data.get(device.device_type.value, None)
 
-        if d is None:
+        if group is None:
             return None  # the category did not exist
         else:
             # search for the device idtag and return the location, if not found return None
-            return d.get(device.idtag, None)
+            return group.query_point(device)
 
     def get_properties_dict(self) -> Dict[str, Dict[str, Union[GraphicLocation, MapLocation]]]:
         """
 
         :return:
         """
-        points = {category: {idtag: location.get_properties_dict() for idtag, location in loc_dict.items()}
-                  for category, loc_dict in self.points.items()}
+        data = {category: group.get_dict() for category, group in self.data.items()}
 
         return {'type': 'BusBranchDiagram',
                 'idtag': self.idtag,
                 'name': self.name,
-                'points': points}
+                'data': data}
 
     def parse_data(self, data: Dict[str, Dict[str, Dict[str, Union[int, float]]]]):
         """
         Parse file data ito this class
         :param data: json dictionary
         """
-        self.points = dict()
+        self.data = dict()
 
         self.name = data['name']
 
-        for category, loc_dict in data['points'].items():
+        for category, loc_dict in data['data'].items():
 
-            points = dict()
-
-            for idtag, location in loc_dict.items():
-
-                if 'x' in location:
-                    points[idtag] = GraphicLocation(x=location['x'],
-                                                    y=location['y'],
-                                                    w=location['w'],
-                                                    h=location['h'],
-                                                    r=location['r'])
-                if 'latitude' in location:
-                    points[idtag] = MapLocation(latitude=location['latitude'],
-                                                longitude=location['longitude'],
-                                                altitude=location['altitude'])
-
-            self.points[category] = points
+            category = PointsGroup(name=category)
+            category.parse_data(loc_dict)
+            self.data[category] = category

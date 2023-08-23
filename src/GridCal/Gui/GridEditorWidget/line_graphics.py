@@ -313,12 +313,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
                 br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
 
                 # add the graphical objects
-                middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
-                br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
-                br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
-                # middle_bus.graphic_obj.redraw()
-                br1.bus_from.graphic_obj.arrange_children()
-                br2.bus_to.graphic_obj.arrange_children()
+                # TODO: Figure this out
+                # middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
+                # br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
+                # br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
+                # # middle_bus.graphic_obj.redraw()
+                # br1.bus_from.graphic_obj.arrange_children()
+                # br2.bus_to.graphic_obj.arrange_children()
 
                 # add to gridcal
                 self.diagramScene.circuit.add_bus(middle_bus)

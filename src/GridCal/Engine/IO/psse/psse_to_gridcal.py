@@ -305,14 +305,6 @@ def get_gridcal_transformer(psse_elm: PSSeTransformer,
 
         contingency_factor = psse_elm.RATE1_1 / psse_elm.RATE1_2 if psse_elm.RATE1_2 > 0.0 else 1.0
 
-        # r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(psse_elm.CW, psse_elm.CZ, psse_elm.CM,
-        #                                                                  V1, V2,
-        #                                                                  Sbase, logger, code,
-        #                                                                  psse_elm.MAG1, psse_elm.MAG2, psse_elm.WINDV1,
-        #                                                                  psse_elm.WINDV2,
-        #                                                                  psse_elm.ANG1, psse_elm.NOMV1, psse_elm.NOMV2,
-        #                                                                  psse_elm.R1_2, psse_elm.X1_2, psse_elm.SBASE1_2)
-
         r, x, g, b, tap_module, tap_angle = psse_elm.get_2w_pu_impedances(Sbase=Sbase,
                                                                           v_bus_i=bus_from.Vnom,
                                                                           v_bus_j=bus_to.Vnom)

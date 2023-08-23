@@ -61,7 +61,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        parent.scene().addItem(self.nexus)
+        self.diagramScene.addItem(self.nexus)
 
         pen = QPen(self.color, self.width, self.style)
 

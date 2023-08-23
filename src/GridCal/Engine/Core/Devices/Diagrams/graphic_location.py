@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict
+from typing import Dict, List, Tuple
+from GridCal.Engine.Core.Devices.editable_device import EditableDevice
 
 
 class GraphicLocation:
@@ -22,7 +23,8 @@ class GraphicLocation:
     GraphicLocation
     """
 
-    def __init__(self, x: int = 0, y: int = 0, h: int = 80, w: int = 80, r: float = 0):
+    def __init__(self, x: int = 0, y: int = 0, h: int = 80, w: int = 80, r: float = 0,
+                 poly_line: List[Tuple[int, int]] = list(), api_object: EditableDevice = None):
         """
 
         :param x: x position (px)
@@ -30,6 +32,8 @@ class GraphicLocation:
         :param h: height (px)
         :param w: width (px)
         :param r: rotation (deg)
+        :param poly_line: List of poits to represent a polyline, if this object is to use one
+        :param api_object: object to be linked to this representation
         """
 
         self.x = x
@@ -37,10 +41,19 @@ class GraphicLocation:
         self.h = h
         self.w = w
         self.r = r
+        self.poly_line = poly_line
+        self.api_object = api_object
+        self.graphic_object = None  # filled by the widget if needed
 
     def get_properties_dict(self) -> Dict[str, int]:
         """
         get as a dictionary point
         :return:
         """
-        return {'x': self.x, 'y': self.y, 'h': self.h, 'w': self.w, 'r': self.r}
+        return {'x': self.x,
+                'y': self.y,
+                'h': self.h,
+                'w': self.w,
+                'r': self.r,
+                'poly_line': self.poly_line,
+                'api_object': self.api_object.idtag}

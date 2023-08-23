@@ -359,7 +359,7 @@ class IoMain(SimulationsMain, ConfigurationMain):
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, GridEditorWidget):
-                    diagram.diagramView.align_schematic()
+                    diagram.center_nodes()
 
         self.collect_memory()
 
@@ -393,12 +393,24 @@ class IoMain(SimulationsMain, ConfigurationMain):
                     buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
 
                     # add to schematic
-                    diagram = self.get_selected_diagram_widget()
-                    if diagram is not None:
-                        if isinstance(diagram, GridEditorWidget):
-                            diagram.diagramView.align_schematic()
-                            diagram.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
-
+                    # TODO: think about how to add the new schematic
+                    # diagram_widget = self.get_selected_diagram_widget()
+                    # if diagram_widget is not None:
+                    #     if isinstance(diagram_widget, GridEditorWidget):
+                    #         diagram_widget.diagramView.align_schematic()
+                    #         # diagram.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
+                    #         grid = self.open_file_thread_object.circuit
+                    #         diagram_widget.add_elements_to_schematic(buses=grid.buses,
+                    #                                           lines=grid.lines,
+                    #                                           dc_lines=grid.dc_lines,
+                    #                                           transformers2w=grid.transformers2w,
+                    #                                           transformers3w=grid.transformers3w,
+                    #                                           hvdc_lines=grid.hvdc_lines,
+                    #                                           vsc_devices=grid.vsc_devices,
+                    #                                           upfc_devices=grid.upfc_devices,
+                    #                                           explode_factor=1.0,
+                    #                                           prog_func=None,
+                    #                                           text_func=None)
                     for bus in buses:
                         if bus.graphic_obj is not None:
                             bus.graphic_obj.setSelected(True)
@@ -540,7 +552,6 @@ class IoMain(SimulationsMain, ConfigurationMain):
         # call the garbage collector to free memory
         self.collect_memory()
 
-
     def import_plexos_node_load(self):
         """
         Open and parse Plexos load file
@@ -590,6 +601,7 @@ class IoMain(SimulationsMain, ConfigurationMain):
                 if len(logger) > 0:
                     dlg = LogsDialogue('Plexos branch rates import', logger)
                     dlg.exec_()
+
     def grid_generator(self):
         """
         Open the grid generator window
@@ -603,7 +615,8 @@ class IoMain(SimulationsMain, ConfigurationMain):
             if len(self.circuit.buses) > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete the current grid and replace it?',
-                                                       QtWidgets.QMessageBox.StandardButton.Yes, QtWidgets.QMessageBox.StandardButton.No)
+                                                       QtWidgets.QMessageBox.StandardButton.Yes,
+                                                       QtWidgets.QMessageBox.StandardButton.No)
 
                 if reply == QtWidgets.QMessageBox.StandardButton.No:
                     return

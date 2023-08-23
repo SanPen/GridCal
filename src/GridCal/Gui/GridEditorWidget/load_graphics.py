@@ -25,7 +25,7 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import Polygon
 
 class LoadGraphicItem(QGraphicsItemGroup):
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj, scene):
         """
 
         :param parent:
@@ -40,7 +40,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
 
         self.api_object = api_obj
 
-        self.diagramScene = diagramScene
+        self.scene = scene
 
         # Properties of the container:
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
@@ -62,7 +62,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        parent.scene().addItem(self.nexus)
+        self.scene.addItem(self.nexus)
 
         # triangle
         self.glyph = Polygon(self)
@@ -147,8 +147,8 @@ class LoadGraphicItem(QGraphicsItemGroup):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.scene.removeItem(self.nexus)
+            self.scene.removeItem(self)
             self.api_object.bus.loads.remove(self.api_object)
 
     def enable_disable_toggle(self):
@@ -162,13 +162,13 @@ class LoadGraphicItem(QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.scene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -191,7 +191,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
 
     def plot(self):
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.scene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -203,6 +203,6 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+                           parent=self.scene.parent().object_editor_table, editable=True, transposed=True)
+        self.scene.parent().object_editor_table.setModel(mdl)
 

@@ -18,7 +18,7 @@ import sys
 from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
@@ -234,26 +234,25 @@ class BusViewerGUI(QMainWindow):
                 raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
         # Draw schematic subset
-        self.grid_editor.add_elements_to_schematic(buses=list(buses),
-                                                   lines=lines,
-                                                   dc_lines=dc_lines,
-                                                   transformers2w=transformers2w,
-                                                   transformers3w=transformers3w,
-                                                   hvdc_lines=hvdc_lines,
-                                                   vsc_devices=vsc_converters,
-                                                   upfc_devices=upfc_devices,
-                                                   explode_factor=1.0,
-                                                   prog_func=None,
-                                                   text_func=print)
+        diagram = generate_bus_branch_diagram(buses=list(buses),
+                                              lines=lines,
+                                              dc_lines=dc_lines,
+                                              transformers2w=transformers2w,
+                                              transformers3w=transformers3w,
+                                              hvdc_lines=hvdc_lines,
+                                              vsc_devices=vsc_converters,
+                                              upfc_devices=upfc_devices,
+                                              explode_factor=1.0,
+                                              prog_func=None,
+                                              text_func=print,
+                                              name=self.root_bus.name + 'vecinity')
 
-        for bus in buses:
-            bus.graphic_obj.arrange_children()
+        self.grid_editor.set_data(self.circuit, diagram=diagram)
 
         self.center_nodes()
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     circuit_ = MultiCircuit()
     circuit_.add_bus(dev.Bus('bus1'))
@@ -261,4 +260,3 @@ if __name__ == "__main__":
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec())
-

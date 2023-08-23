@@ -18,7 +18,8 @@
 import sys
 
 import qdarktheme
-from PySide6 import QtGui, QtWidgets, QtCore
+from PySide6 import QtWidgets
+
 from GridCal.Gui.Main.MainWindow import QApplication
 from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.gui_sub_classes.io import IoMain
@@ -26,7 +27,6 @@ from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
 from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.__version__ import __GridCal_VERSION__
-
 
 __author__ = 'Santiago Peñate Vera'
 

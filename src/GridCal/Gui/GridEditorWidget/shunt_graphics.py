@@ -25,7 +25,7 @@ from GridCal.Gui.GridEditorWidget.messages import yes_no_question
 
 class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj, scene):
         """
 
         :param parent:
@@ -40,7 +40,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
         self.api_object = api_obj
 
-        self.diagramScene = diagramScene
+        self.scene = scene
 
         self.width = 4
 
@@ -64,7 +64,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QtWidgets.QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        parent.scene().addItem(self.nexus)
+        self.scene.addItem(self.nexus)
 
         lines_data = list()
         lines_data.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
@@ -166,8 +166,8 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.scene.removeItem(self.nexus)
+            self.scene.removeItem(self)
             self.api_object.bus.shunts.remove(self.api_object)
 
     def enable_disable_toggle(self):
@@ -180,13 +180,13 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.scene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
@@ -223,7 +223,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         Plot API objects profiles
         """
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.scene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -235,6 +235,6 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+                           parent=self.scene.parent().object_editor_table, editable=True, transposed=True)
+        self.scene.parent().object_editor_table.setModel(mdl)
 

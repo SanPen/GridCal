@@ -32,7 +32,7 @@ import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
@@ -199,17 +199,23 @@ class DiagramsMain(BaseMainGui):
             else:
                 pos = pos_alg(self.circuit.graph, scale=10)
 
-            # assign the positions to the graphical objects of the nodes
-            for i, bus in enumerate(self.circuit.buses):
-                try:
-                    x = pos[i][0] * 500
-                    y = pos[i][1] * 500
-                    bus.graphic_obj.setPos(QtCore.QPoint(x, y))
-                except KeyError as ex:
-                    # warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
-                    pass
-            # adjust the view
-            self.center_nodes()
+            diagram_widget = self.get_selected_diagram_widget()
+
+            if diagram_widget:
+                if isinstance(diagram_widget, GridEditorWidget):
+
+                    # assign the positions to the graphical objects of the nodes
+                    for i, bus in enumerate(self.circuit.buses):
+                        x = pos[i][0] * 500
+                        y = pos[i][1] * 500
+                        position = diagram_widget.diagram.query_point(bus)
+
+                        if position:
+                            if position.graphic_object:
+                                position.graphic_object.setPos(QtCore.QPoint(x, y))
+
+                    # adjust the view
+                    diagram_widget.center_nodes()
 
         else:
             pass  # asked and decided ot to change the layout
@@ -247,7 +253,7 @@ class DiagramsMain(BaseMainGui):
                 else:
                     buses = [b for i, b in selected]
 
-                diagram.align_schematic(buses=buses)
+                diagram.center_nodes(buses=buses)
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus]]:
         """
@@ -285,7 +291,7 @@ class DiagramsMain(BaseMainGui):
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
-                diagram.diagramView.zoom_in()
+                diagram.editor_graphics_view.zoom_in()
 
     def zoom_out(self):
         """
@@ -294,7 +300,7 @@ class DiagramsMain(BaseMainGui):
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, GridEditorWidget):
-                diagram.diagramView.zoom_out()
+                diagram.editor_graphics_view.zoom_out()
 
     def profile_sliders_changed(self):
         """
@@ -656,14 +662,26 @@ class DiagramsMain(BaseMainGui):
         """
         Redraw the currently selected diagram
         """
-        diagram = self.get_selected_diagram_widget()
+        diagram_widget = self.get_selected_diagram_widget()
 
-        if diagram:
+        if diagram_widget:
 
-            if isinstance(diagram, GridEditorWidget):
+            if isinstance(diagram_widget, GridEditorWidget):
                 # set pointer to the circuit
-                diagram.circuit = self.circuit
-                diagram.schematic_from_api(explode_factor=1.0)
+                diagram = generate_bus_branch_diagram(buses=self.circuit.buses,
+                                                      lines=self.circuit.lines,
+                                                      dc_lines=self.circuit.dc_lines,
+                                                      transformers2w=self.circuit.transformers2w,
+                                                      transformers3w=self.circuit.transformers3w,
+                                                      hvdc_lines=self.circuit.hvdc_lines,
+                                                      vsc_devices=self.circuit.vsc_devices,
+                                                      upfc_devices=self.circuit.upfc_devices,
+                                                      explode_factor=1.0,
+                                                      prog_func=None,
+                                                      text_func=None)
+
+                diagram_widget.set_data(circuit=self.circuit,
+                                        diagram=diagram)
 
     def set_selected_diagram_on_click(self):
         """
@@ -678,15 +696,24 @@ class DiagramsMain(BaseMainGui):
         """
         Add ageneral bus-branch diagram
         """
-        diagram = GridEditorWidget(self.circuit, 'Bus-branch diagram')
-        diagram.setStretchFactor(1, 10)
-        if len(self.circuit.buses) + len(self.circuit.transformers3w):
-            diagram.schematic_from_api(explode_factor=1.0)
-        diagram.align_schematic()
-        diagram.center_nodes()
-        self.add_diagram(diagram)
+        diagram = generate_bus_branch_diagram(buses=self.circuit.buses,
+                                              lines=self.circuit.lines,
+                                              dc_lines=self.circuit.dc_lines,
+                                              transformers2w=self.circuit.transformers2w,
+                                              transformers3w=self.circuit.transformers3w,
+                                              hvdc_lines=self.circuit.hvdc_lines,
+                                              vsc_devices=self.circuit.vsc_devices,
+                                              upfc_devices=self.circuit.upfc_devices,
+                                              explode_factor=1.0,
+                                              prog_func=None,
+                                              text_func=None,
+                                              name='All bus branches')
+        diagram_widget = GridEditorWidget(circuit=self.circuit, name='Bus-branch diagram', diagram=diagram)
+        diagram_widget.setStretchFactor(1, 10)
+        diagram_widget.center_nodes()
+        self.add_diagram(diagram_widget)
         self.set_diagrams_list_view()
-        self.set_diagram_widget(diagram)
+        self.set_diagram_widget(diagram_widget)
 
     def add_area_bus_branch_diagram(self):
         """
@@ -859,7 +886,8 @@ class DiagramsMain(BaseMainGui):
         """
         diagram_widget = self.get_selected_diagram_widget()
         if diagram_widget is not None:
-            ok = yes_no_question("Remove diagram", "Are you sure that you want to remove " + diagram_widget.name + "?")
+            ok = yes_no_question("Are you sure that you want to remove " + diagram_widget.name + "?",
+                                 "Remove diagram")
 
             if ok:
                 # remove the widget
@@ -867,6 +895,9 @@ class DiagramsMain(BaseMainGui):
 
                 # remove the diagram
                 self.circuit.remove_diagram(diagram_widget.diagram)
+
+                # remove it from the layout list
+                self.remove_all_diagram_widgets()
 
                 # update view
                 self.set_diagrams_list_view()
@@ -1056,7 +1087,6 @@ class DiagramsMain(BaseMainGui):
                     bus.graphic_obj.set_position(x=bus.x, y=bus.y)
         else:
             info_msg('Choose some elements from the schematic', 'Fix buses locations')
-
 
     def colour_next_simulation_step(self):
         """

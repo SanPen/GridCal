@@ -71,7 +71,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
     GeneratorGraphicItem
     """
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj, scene):
         """
 
         :param parent:
@@ -83,7 +83,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
 
         self.api_object = api_obj
 
-        self.diagramScene = diagramScene
+        self.scene = scene
 
         self.w = 40
         self.h = 40
@@ -107,7 +107,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        parent.scene().addItem(self.nexus)
+        self.scene.addItem(self.nexus)
 
         pen = QPen(self.color, self.width, self.style)
 
@@ -219,7 +219,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         ok = yes_no_question('Are you sure that you want to convert this generator into a battery?',
                              'Convert generator')
         if ok:
-            editor = self.diagramScene.parent()
+            editor = self.scene.parent()
             editor.convert_generator_to_battery(gen=self.api_object)
 
     def remove(self, ask=True):
@@ -233,8 +233,8 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.scene.removeItem(self.nexus)
+            self.scene.removeItem(self)
             if self.api_object in self.api_object.bus.generators:
                 self.api_object.bus.generators.remove(self.api_object)
 
@@ -249,13 +249,13 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.scene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
@@ -289,7 +289,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         Plot API objects profiles
         """
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.scene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -309,9 +309,9 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :return:
         """
 
-        if self.diagramScene.circuit.has_time_series:
+        if self.scene.circuit.has_time_series:
 
-            time_array = self.diagramScene.circuit.time_profile
+            time_array = self.scene.circuit.time_profile
 
             dlg = SolarPvWizard(time_array=time_array,
                                 peak_power=self.api_object.Pmax,
@@ -336,9 +336,9 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :return:
         """
 
-        if self.diagramScene.circuit.has_time_series:
+        if self.scene.circuit.has_time_series:
 
-            time_array = self.diagramScene.circuit.time_profile
+            time_array = self.scene.circuit.time_profile
 
             dlg = WindFarmWizard(time_array=time_array,
                                  peak_power=self.api_object.Pmax,
@@ -365,14 +365,14 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         """
         mdl = ObjectsModel([self.api_object],
                            self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table,
+                           parent=self.scene.parent().object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies,
-                                                DeviceType.FuelDevice.value: self.diagramScene.circuit.fuels,
-                                                DeviceType.EmissionGasDevice.value: self.diagramScene.circuit.emission_gases,
+                           dictionary_of_lists={DeviceType.Technology.value: self.scene.circuit.technologies,
+                                                DeviceType.FuelDevice.value: self.scene.circuit.fuels,
+                                                DeviceType.EmissionGasDevice.value: self.scene.circuit.emission_gases,
                                                 })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+        self.scene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
         self.edit()

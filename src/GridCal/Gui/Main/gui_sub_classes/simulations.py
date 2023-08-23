@@ -2702,7 +2702,7 @@ class SimulationsMain(DiagramsMain):
 
             for bus in self.delete_and_reduce_driver.buses_merged:
                 if bus.graphic_obj is not None:
-                    bus.graphic_obj.create_children_icons()
+                    bus.graphic_obj.create_children_widgets()
                     bus.graphic_obj.arrange_children()
 
             self.redraw_current_diagram()

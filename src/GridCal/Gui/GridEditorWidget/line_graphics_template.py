@@ -725,7 +725,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                     self.diagramScene.removeItem(g.nexus)
                     self.diagramScene.removeItem(g)
                 # re-draw the children
-                updated_bus.graphic_obj.create_children_icons()
+                updated_bus.graphic_obj.create_children_widgets()
 
                 # remove bus
                 for g in removed_bus.graphic_obj.shunt_children:
