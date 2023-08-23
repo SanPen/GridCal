@@ -166,7 +166,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.scene.parent_.set_position(device=self.api_object,
                                         x=self.pos().x(),
-                                        y=self.pos().x(),
+                                        y=self.pos().y(),
                                         w=self.w,
                                         h=self.h,
                                         r=self.rotation())
@@ -273,7 +273,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.scene.parent_.set_position(device=self.api_object,
                                         x=self.pos().x(),
-                                        y=self.pos().x(),
+                                        y=self.pos().y(),
                                         w=w,
                                         h=h,
                                         r=self.rotation())

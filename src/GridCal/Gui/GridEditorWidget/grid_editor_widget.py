@@ -20,13 +20,13 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Callable
 import networkx as nx
-from warnings import warn
 
-from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, QDataStream
+from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, \
+    QDataStream, QModelIndex
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen, \
     QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent
 from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, \
-    QSplitter, QMessageBox, QLineEdit, QAbstractItemView, QGraphicsScene
+    QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
@@ -42,13 +42,12 @@ from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram, GraphicLocation
-from GridCal.Engine.basic_structures import Vec, CxVec, IntVec, BusMode
+from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
-from GridCal.Gui.GridEditorWidget.switch_graphics import SwitchGraphicItem
 from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
@@ -104,14 +103,14 @@ class LibraryModel(QStandardItemModel):
         """
         QStandardItemModel.__init__(self, parent)
 
-    def mimeTypes(self):
+    def mimeTypes(self) -> List[str]:
         """
 
         @return:
         """
         return ['component/name']
 
-    def mimeData(self, idxs):
+    def mimeData(self, idxs: List[QModelIndex]) -> QMimeData:
         """
 
         @param idxs:
@@ -525,7 +524,7 @@ class EditorGraphicsView(QGraphicsView):
         """
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
-            elm = None
+            graphic_obj = None
             bus_data = toQBytesArray('Bus')
             tr3w_data = toQBytesArray('3W-Transformer')
 
@@ -542,23 +541,26 @@ class EditorGraphicsView(QGraphicsView):
                           substation=self.diagram_scene.circuit.substations[0],
                           country=self.diagram_scene.circuit.countries[0])
 
-                # elm = BusGraphicItem(scene=self.scene(), editor=self.editor, bus=obj)
-                # obj.graphic_obj = elm
-
-                elm = self.add_bus(bus=obj, x=x0, y=y0)
-                obj.graphic_obj = elm
+                graphic_obj = self.add_bus(bus=obj, x=x0, y=y0)
+                obj.graphic_obj = graphic_obj
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_bus(obj)
 
+                # add to the diagram list
+                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0)
+
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
                 obj = Transformer3W(name=name)
-                elm = self.add_transformer_3w(elm=obj, x=x0, y=y0)
-                obj.graphic_obj = elm
+                graphic_obj = self.add_transformer_3w(elm=obj, x=x0, y=y0)
+                obj.graphic_obj = graphic_obj
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_transformer3w(obj)
+
+                # add to the diagram list
+                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -626,7 +628,7 @@ class GridEditorWidget(QSplitter):
     GridEditorWidget
     """
 
-    def __init__(self, circuit: MultiCircuit, name: str, diagram: BusBranchDiagram):
+    def __init__(self, circuit: MultiCircuit, diagram: Union[BusBranchDiagram, None]):
         """
         Creates the Diagram Editor
         Args:
@@ -635,13 +637,13 @@ class GridEditorWidget(QSplitter):
         QSplitter.__init__(self)
 
         # store a reference to the multi circuit instance
-        self.circuit = circuit
+        self.circuit: MultiCircuit = circuit
 
         # diagram to store the objects locations
         self.diagram: BusBranchDiagram = diagram
 
         # nodes distance "explosion" factor
-        self.expand_factor = 1.5
+        self.expand_factor = 1.1
 
         # Widget layout and child widgets:
         self.horizontalLayout = QHBoxLayout(self)
@@ -673,8 +675,6 @@ class GridEditorWidget(QSplitter):
         # set the objects list
         self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
 
-        # self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
-
         # Actual libraryView object
         self.libraryBrowserView.setModel(self.libraryModel)
         self.libraryBrowserView.setViewMode(self.libraryBrowserView.ViewMode.ListMode)
@@ -689,13 +689,6 @@ class GridEditorWidget(QSplitter):
         self.frame1_layout = QVBoxLayout()
         self.frame1_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.name_editor_frame = QFrame()
-        self.name_layout = QHBoxLayout()
-        self.name_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.name_editor_frame.setLayout(self.name_layout)
-
-        self.frame1_layout.addWidget(self.name_editor_frame)
         self.frame1_layout.addWidget(self.libraryBrowserView)
         self.frame1.setLayout(self.frame1_layout)
 
@@ -716,7 +709,8 @@ class GridEditorWidget(QSplitter):
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
 
-        self.draw()
+        if diagram is not None:
+            self.draw()
 
     def set_data(self, circuit: MultiCircuit, diagram: BusBranchDiagram):
         """
@@ -762,8 +756,6 @@ class GridEditorWidget(QSplitter):
                     bus_dict[idtag] = graphic_obj
                     # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
                     points_group.locations[idtag].graphic_object = graphic_obj
-
-                    print()
 
             elif category == DeviceType.Transformer3WDevice.value:
 
@@ -948,6 +940,14 @@ class GridEditorWidget(QSplitter):
                         # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
                         points_group.locations[idtag].graphic_object = graphic_obj
 
+        # last pass: arange children
+        for category, points_group in self.diagram.data.items():
+            if category == DeviceType.BusDevice.value:
+                for idtag, location in points_group.locations.items():
+
+                    # arrange children
+                    location.graphic_object.arrange_children()
+
     @property
     def name(self):
         """
@@ -989,7 +989,7 @@ class GridEditorWidget(QSplitter):
         port.setZValue(0)
         port.process_callbacks(port.parent.pos() + port.pos())
 
-    def scene_mouse_move_event(self, event):
+    def scene_mouse_move_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
 
         @param event:
@@ -999,7 +999,7 @@ class GridEditorWidget(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
-    def scene_mouse_release_event(self, event):
+    def scene_mouse_release_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         Finalize the branch creation if its drawing ends in a terminal
         @param event:
@@ -1192,19 +1192,20 @@ class GridEditorWidget(QSplitter):
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
 
-    def expand_node_distances(self):
+    def expand_node_distances(self) -> None:
         """
         Expand the grid
         """
         self.apply_expansion_factor(self.expand_factor)
 
-    def shrink_node_distances(self):
+    def shrink_node_distances(self) -> None:
         """
         Shrink node distances
         """
         self.apply_expansion_factor(1.0 / self.expand_factor)
 
-    def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int, margin_factor: float = 0.1) -> None:
+    def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,
+                   margin_factor: float = 0.1) -> None:
         """
         Set the picture limits
         :param min_x: Minimum x value of the buses location
@@ -1974,7 +1975,10 @@ class GridEditorWidget(QSplitter):
         max_flow = 1
 
         for i, bus in enumerate(buses):
-            if bus.graphic_obj is not None:
+
+            location = self.diagram.query_point(bus)
+
+            if location:
                 if bus.active:
                     a = 255
                     if cmap == palettes.Colormaps.Green2Red:
@@ -1993,7 +1997,7 @@ class GridEditorWidget(QSplitter):
                         b *= 255
                         a *= 255
 
-                    bus.graphic_obj.set_tile_color(QColor(r, g, b, a))
+                    location.graphic_object.set_tile_color(QColor(r, g, b, a))
 
                     tooltip = str(i) + ': ' + bus.name
                     if types is not None:
@@ -2007,14 +2011,14 @@ class GridEditorWidget(QSplitter):
                         tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
                         tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
 
-                    bus.graphic_obj.setToolTip(tooltip)
+                    location.graphic_object.setToolTip(tooltip)
 
                     if use_flow_based_width:
                         h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-                        bus.graphic_obj.change_size(bus.graphic_obj.w, h)
+                        location.graphic_object.change_size(location.graphic_object.w, h)
 
                 else:
-                    bus.graphic_obj.set_tile_color(Qt.gray)
+                    location.graphic_object.set_tile_color(Qt.gray)
 
         # color Branches
         if Sf is not None:
@@ -2034,12 +2038,15 @@ class GridEditorWidget(QSplitter):
                     Sfnorm = Sfabs
 
                 for i, branch in enumerate(branches):
-                    if branch.graphic_obj is not None:
+
+                    location = self.diagram.query_point(branch)
+
+                    if location:
 
                         if use_flow_based_width:
                             w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                         else:
-                            w = branch.graphic_obj.pen_width
+                            w = location.graphic_object.pen_width
 
                         if branch.active:
                             style = Qt.SolidLine
@@ -2094,20 +2101,23 @@ class GridEditorWidget(QSplitter):
                             if Beq is not None:
                                 tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 
-                        branch.graphic_obj.setToolTipText(tooltip)
-                        branch.graphic_obj.set_colour(color, w, style)
+                        location.graphic_object.setToolTipText(tooltip)
+                        location.graphic_object.set_colour(color, w, style)
 
-                        if hasattr(branch.graphic_obj, 'set_arrows_with_power'):
-                            branch.graphic_obj.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
-                                                                     St=St[i] if St is not None else None)
+                        if hasattr(location.graphic_object, 'set_arrows_with_power'):
+                            location.graphic_object.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
+                                                                          St=St[i] if St is not None else None)
 
         if failed_br_idx is not None:
             for i in failed_br_idx:
-                if branches[i].graphic_obj is not None:
-                    w = branches[i].graphic_obj.pen_width
+
+                location = self.diagram.query_point(branches[i])
+
+                if location:
+                    w = location.graphic_object.pen_width
                     style = Qt.DashLine
                     color = Qt.gray
-                    branches[i].graphic_obj.set_pen(QPen(color, w, style))
+                    location.graphic_object.set_pen(QPen(color, w, style))
 
         if hvdc_Pf is not None:
 
@@ -2115,13 +2125,15 @@ class GridEditorWidget(QSplitter):
 
             for i, elm in enumerate(hvdc_lines):
 
-                if elm.graphic_obj is not None:
+                location = self.diagram.query_point(branches[i])
+
+                if location:
 
                     if use_flow_based_width:
                         w = int(np.floor(
                             min_branch_width + hvdc_sending_power_norm[i] * (max_branch_width - min_branch_width)))
                     else:
-                        w = elm.graphic_obj.pen_width
+                        w = location.graphic_object.pen_width
 
                     if elm.active:
                         style = Qt.SolidLine
@@ -2158,8 +2170,8 @@ class GridEditorWidget(QSplitter):
                         tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
                         tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
-                    elm.graphic_obj.setToolTipText(tooltip)
-                    elm.graphic_obj.set_colour(color, w, style)
+                    location.graphic_object.setToolTipText(tooltip)
+                    location.graphic_object.set_colour(color, w, style)
 
 
 def generate_bus_branch_diagram(buses: List[Bus],
@@ -2308,8 +2320,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     window = GridEditorWidget(circuit=MultiCircuit(),
-                              diagram=BusBranchDiagram(),
-                              name='')
+                              diagram=BusBranchDiagram())
 
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

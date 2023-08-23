@@ -472,36 +472,6 @@ class BaseMainGui(QMainWindow):
 
         self.ui.outputTextEdit.setPlainText(txt)
 
-    def get_simulations(self):
-        """
-        Get all threads that have to do with simulation
-        :return: list of simulation threads
-        """
-
-        all_threads = list(self.session.drivers.values())
-
-        # TODO: check this
-        # # set the threads so that the diagram scene objects can plot them
-        # for diagram in self.diagram_widgets_list:
-        #     if isinstance(diagram, GridEditorWidget):
-        #         diagram.diagramScene.set_results_to_plot(all_threads)
-
-        return all_threads
-
-    def get_available_results(self):
-        """
-        Get a list of all the available results' objects
-        :return: list[object]
-        """
-        lst = list()
-
-        for drv in self.get_simulations():
-            if drv is not None:
-                if hasattr(drv, 'results'):
-                    if drv.results is not None:
-                        lst.append(drv)
-
-        return lst
 
     def get_all_objects_in_memory(self):
         """

@@ -22,7 +22,7 @@ class MapLocation:
     GraphicLocation
     """
 
-    def __init__(self, latitude: float = 0.0, longitude: float = 0.0, altitude: float = 0.0):
+    def __init__(self, latitude: float = 0.0, longitude: float = 0.0, altitude: float = 0.0, api_object=None):
         """
 
         :param latitude:
@@ -33,6 +33,7 @@ class MapLocation:
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude
+        self.api_object = api_object
 
     def get_properties_dict(self) -> Dict[str, float]:
         """

@@ -588,24 +588,27 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
     # create diagrams --------------------------------------------------------------------------------------------------
     if 'diagrams' in data.keys():
 
-        for diagram_dict in data['diagrams']:
+        if len(data['diagrams']):
+            obj_dict = circuit.gat_all_elemnts_dict_by_type()
 
-            if diagram_dict['type'] == 'BusBranchDiagram':
-                diagram = dev.BusBranchDiagram()
-                diagram.parse_data(diagram_dict)
-                circuit.add_diagram(diagram)
+            for diagram_dict in data['diagrams']:
 
-            if diagram_dict['type'] == 'NodeBreakerDiagram':
-                diagram = dev.NodeBreakerDiagram()
-                diagram.parse_data(diagram_dict)
-                circuit.add_diagram(diagram)
+                if diagram_dict['type'] == 'BusBranchDiagram':
+                    diagram = dev.BusBranchDiagram()
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    circuit.add_diagram(diagram)
 
-            if diagram_dict['type'] == 'MapDiagram':
-                diagram = dev.MapDiagram()
-                diagram.parse_data(diagram_dict)
-                circuit.add_diagram(diagram)
-            else:
-                pass
+                if diagram_dict['type'] == 'NodeBreakerDiagram':
+                    diagram = dev.NodeBreakerDiagram()
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    circuit.add_diagram(diagram)
+
+                if diagram_dict['type'] == 'MapDiagram':
+                    diagram = dev.MapDiagram()
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    circuit.add_diagram(diagram)
+                else:
+                    pass
 
     # Other actions ----------------------------------------------------------------------------------------------------
     circuit.logger += circuit.apply_all_branch_types()

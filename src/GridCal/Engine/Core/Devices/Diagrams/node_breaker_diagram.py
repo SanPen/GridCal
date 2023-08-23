@@ -21,7 +21,7 @@ from GridCal.Engine.Core.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 
 
-class NodeBreakerDiagram:
+class NodeBreakerDiagram(BaseDiagram):
     """
     Diagram
     """

@@ -708,7 +708,7 @@ class DiagramsMain(CompiledArraysMain):
                                               prog_func=None,
                                               text_func=None,
                                               name='All bus branches')
-        diagram_widget = GridEditorWidget(circuit=self.circuit, name='Bus-branch diagram', diagram=diagram)
+        diagram_widget = GridEditorWidget(circuit=self.circuit, diagram=diagram)
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
         self.add_diagram(diagram_widget)
@@ -719,14 +719,14 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add a bus-branch diagram of a particular area
         """
-        self.add_diagram(GridEditorWidget(self.circuit, 'area diagram'))
+        self.add_diagram(GridEditorWidget(self.circuit, diagram=None))
         self.set_diagrams_list_view()
 
     def add_zone_bus_branch_diagram(self):
         """
         Add a bus-branch diagram of a particular zone
         """
-        self.add_diagram(GridEditorWidget(self.circuit, 'zone diagram'))
+        self.add_diagram(GridEditorWidget(self.circuit, diagram=None))
         self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -791,7 +791,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def create_circuit_stored_diagrams(self):
         """
-
+        Create as Widgets the diagrams stored in the circuit
         :return:
         """
         self.diagram_widgets_list.clear()
@@ -800,10 +800,9 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.circuit.diagrams:
 
             if isinstance(diagram, dev.BusBranchDiagram):
-                diagram_widget = GridEditorWidget(self.circuit,
-                                                  name='Bus-branch diagram',
-                                                  diagram=diagram)
+                diagram_widget = GridEditorWidget(self.circuit, diagram=diagram)
                 diagram_widget.setStretchFactor(1, 10)
+                diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)
 
             elif isinstance(diagram, dev.MapDiagram):

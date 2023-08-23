@@ -23,7 +23,12 @@ class GraphicLocation:
     GraphicLocation
     """
 
-    def __init__(self, x: int = 0, y: int = 0, h: int = 80, w: int = 80, r: float = 0,
+    def __init__(self,
+                 x: int = 0,
+                 y: int = 0,
+                 h: int = 80,
+                 w: int = 80,
+                 r: float = 0,
                  poly_line: List[Tuple[int, int]] = list(), api_object: EditableDevice = None):
         """
 
@@ -35,7 +40,6 @@ class GraphicLocation:
         :param poly_line: List of poits to represent a polyline, if this object is to use one
         :param api_object: object to be linked to this representation
         """
-
         self.x = x
         self.y = y
         self.h = h
@@ -56,4 +60,4 @@ class GraphicLocation:
                 'w': self.w,
                 'r': self.r,
                 'poly_line': self.poly_line,
-                'api_object': self.api_object.idtag}
+                'api_object': self.api_object.idtag if self.api_object else ''}

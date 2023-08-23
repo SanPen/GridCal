@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import uuid
-from typing import Dict, Union
+from typing import Dict, Union, List, Tuple
 from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice
@@ -63,10 +63,12 @@ class PointsGroup:
 
         return points
 
-    def parse_data(self, data: Dict[str, Dict[str, Union[int, float]]]):
+    def parse_data(self, data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
+                   obj_dict: Dict[str, EditableDevice]):
         """
         Parse file data ito this class
         :param data: json dictionary
+        :param obj_dict: dicrtionary of relevant objects (idtag, object)
         """
         self.locations = dict()
 
@@ -77,11 +79,13 @@ class PointsGroup:
                                                         y=location['y'],
                                                         w=location['w'],
                                                         h=location['h'],
-                                                        r=location['r'])
+                                                        r=location['r'],
+                                                        api_object=obj_dict.get(idtag, None))
             if 'latitude' in location:
                 self.locations[idtag] = MapLocation(latitude=location['latitude'],
                                                     longitude=location['longitude'],
-                                                    altitude=location['altitude'])
+                                                    altitude=location['altitude'],
+                                                    api_object=obj_dict.get(idtag, None))
 
 
 class BaseDiagram:
@@ -153,10 +157,13 @@ class BaseDiagram:
                 'name': self.name,
                 'data': data}
 
-    def parse_data(self, data: Dict[str, Dict[str, Dict[str, Union[int, float]]]]):
+    def parse_data(self,
+                   data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
+                   obj_dict: Dict[str, Dict[str, EditableDevice]]):
         """
         Parse file data ito this class
         :param data: json dictionary
+        :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading
         """
         self.data = dict()
 
@@ -164,6 +171,7 @@ class BaseDiagram:
 
         for category, loc_dict in data['data'].items():
 
-            category = PointsGroup(name=category)
-            category.parse_data(loc_dict)
-            self.data[category] = category
+            points_group = PointsGroup(name=category)
+            points_group.parse_data(data=loc_dict,
+                                    obj_dict=obj_dict.get(category, dict()))
+            self.data[category] = points_group

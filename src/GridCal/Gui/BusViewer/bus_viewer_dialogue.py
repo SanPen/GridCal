@@ -50,7 +50,7 @@ class BusViewerGUI(QMainWindow):
         self.bus_idx = list()
 
         # create grid editor o
-        self.grid_editor = GridEditorWidget(self.circuit, name)
+        self.grid_editor = GridEditorWidget(self.circuit, diagram=None)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):
@@ -130,7 +130,7 @@ class BusViewerGUI(QMainWindow):
         """
         Create new editor
         """
-        self.grid_editor = GridEditorWidget(self.circuit, '')
+        self.grid_editor = GridEditorWidget(self.circuit, diagram=None)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):

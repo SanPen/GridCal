@@ -30,6 +30,7 @@ import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
+from GridCal.Gui.GridEditorWidget import GridEditorWidget
 from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
@@ -206,6 +207,36 @@ class SimulationsMain(TimeEventsMain):
         # Radio Button
         self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
         self.ui.optimalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_optimal)
+
+    def get_simulations(self):
+        """
+        Get all threads that have to do with simulation
+        :return: list of simulation threads
+        """
+
+        all_threads = list(self.session.drivers.values())
+
+        # # set the threads so that the diagram scene objects can plot them
+        for diagram in self.diagram_widgets_list:
+            if isinstance(diagram, GridEditorWidget):
+                diagram.diagramScene.set_results_to_plot(all_threads)
+
+        return all_threads
+
+    def get_available_results(self):
+        """
+        Get a list of all the available results' objects
+        :return: list[object]
+        """
+        lst = list()
+
+        for drv in self.get_simulations():
+            if drv is not None:
+                if hasattr(drv, 'results'):
+                    if drv.results is not None:
+                        lst.append(drv)
+
+        return lst
 
     def get_time_indices(self) -> np.ndarray:
         """

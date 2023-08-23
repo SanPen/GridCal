@@ -1128,6 +1128,9 @@ class MultiCircuit:
         elif element_type == dev.DeviceType.DCLineDevice:
             return self.dc_lines
 
+        elif element_type == dev.DeviceType.SwitchDevice:
+            return self.switch_devices
+
         elif element_type == dev.DeviceType.SubstationDevice:
             return self.substations
 
@@ -1287,6 +1290,36 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
+    def gat_all_elemnts_dict_by_type(self) -> Dict[str, Dict[str, dev.EditableDevice]]:
+        """
+        Get a dictionary of all elements by type
+        :return:
+        """
+        data = dict()
+        for tpe in [dev.DeviceType.BusDevice,
+                    dev.DeviceType.LoadDevice,
+                    dev.DeviceType.StaticGeneratorDevice,
+                    dev.DeviceType.GeneratorDevice,
+                    dev.DeviceType.BatteryDevice,
+                    dev.DeviceType.ShuntDevice,
+                    dev.DeviceType.ExternalGridDevice,
+                    dev.DeviceType.SubstationDevice,
+                    dev.DeviceType.AreaDevice,
+                    dev.DeviceType.ZoneDevice,
+                    dev.DeviceType.CountryDevice,
+                    dev.DeviceType.LineDevice,
+                    dev.DeviceType.DCLineDevice,
+                    dev.DeviceType.Transformer2WDevice,
+                    dev.DeviceType.Transformer3WDevice,
+                    dev.DeviceType.UpfcDevice,
+                    dev.DeviceType.VscDevice,
+                    dev.DeviceType.HVDCLineDevice,
+                    dev.DeviceType.SwitchDevice,
+                    dev.DeviceType.WindingDevice, ]:
+            data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
+
+        return data
+
     def get_elements_dict_by_type(self, element_type: dev.DeviceType,
                                   use_secondary_key=False) -> Dict[str, dev.EditableDevice]:
         """
@@ -1337,6 +1370,33 @@ class MultiCircuit:
 
         elif element_type == dev.DeviceType.CountryDevice:
             return [x.country for x in self.buses]
+
+        elif element_type == dev.DeviceType.LineDevice:
+            return self.get_lines()
+
+        elif element_type == dev.DeviceType.DCLineDevice:
+            return self.get_dc_lines()
+
+        elif element_type == dev.DeviceType.Transformer2WDevice:
+            return self.get_transformers2w()
+
+        elif element_type == dev.DeviceType.Transformer3WDevice:
+            return self.get_transformers3w()
+
+        elif element_type == dev.DeviceType.UpfcDevice:
+            return self.get_upfc()
+
+        elif element_type == dev.DeviceType.VscDevice:
+            return self.get_vsc()
+
+        elif element_type == dev.DeviceType.HVDCLineDevice:
+            return self.get_hvdc()
+
+        elif element_type == dev.DeviceType.SwitchDevice:
+            return self.get_switches()
+
+        elif element_type == dev.DeviceType.WindingDevice:
+            return self.get_windings()
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1802,7 +1862,7 @@ class MultiCircuit:
         self.switch_devices.append(obj)
 
     def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-                                    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
+    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
@@ -1842,7 +1902,7 @@ class MultiCircuit:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
     def delete_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-                                       dev.UPFC, dev.Winding, dev.Switch, dev.Branch]):
+    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]):
         """
         Delete a :ref:`Branch<branch>` object from the grid.
 
