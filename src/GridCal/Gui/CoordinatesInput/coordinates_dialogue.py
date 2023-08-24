@@ -6,7 +6,7 @@ from typing import List
 from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 from GridCal.Engine.Core.Devices.Substation.bus import Bus
-from GridCal.Gui.GridEditorWidget.messages import error_msg
+from GridCal.Gui.messages import error_msg
 
 
 def get_list_model(iterable):

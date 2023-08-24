@@ -17,8 +17,9 @@
 import os
 import json
 
-from typing import Callable, Union
+from typing import Callable, Union, List
 from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 from GridCal.Engine.IO.gridcal.json_parser import save_json_file_v3
 from GridCal.Engine.IO.cim.cim16.cim_parser import CIMExport
@@ -33,7 +34,7 @@ from GridCal.Engine.IO.gridcal.json_parser import parse_json, parse_json_data_v2
 from GridCal.Engine.IO.psse.raw_parser import read_raw
 from GridCal.Engine.IO.psse.psse_to_gridcal import psse_to_gridcal
 from GridCal.Engine.IO.power_world.power_world_parser import PowerWorldParser
-from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
+# from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCal.Engine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
@@ -49,18 +50,22 @@ class FileOpen:
     File open interface
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name: Union[str, List[str]]):
         """
         File open handler
         :param file_name: name of the file
         """
-        self.file_name = file_name
+        self.file_name: Union[str, List[str]] = file_name
 
-        self.circuit = MultiCircuit()
+        self.circuit: Union[MultiCircuit, None] = None
+
+        self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
         self.json_files = dict()
 
         self.logger = Logger()
+
+        self.cgmes_logger = DataLogger()
 
     def open(self, text_func: Union[None, Callable] = None, progress_func: Union[None, Callable] = None):
         """
@@ -78,11 +83,9 @@ class FileOpen:
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
-            # parser = CIMImport(text_func=text_func, progress_func=progress_func)
-            # self.circuit = parser.load_cim_file(self.file_name)
-            cgmes = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.logger)
-            cgmes.parse_files(cim_files=self.file_name)
-            self.circuit = cgmes_to_gridcal(cgmes_model=cgmes, logger=self.logger)
+            self.cgmes_circuit = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+            self.cgmes_circuit.parse_files(cim_files=self.file_name)
+            self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
         else:
 
@@ -207,9 +210,11 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    parser = CIMImport(text_func=text_func, progress_func=progress_func)
-                    self.circuit = parser.load_cim_file(self.file_name)  # file_name might be a list of files
-                    self.logger += parser.logger
+                    self.cgmes_circuit = CgmesCircuit(text_func=text_func,
+                                                      progress_func=progress_func,
+                                                      logger=self.cgmes_logger)
+                    self.cgmes_circuit.parse_files(cim_files=[self.file_name])
+                    self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_hdf5(self.file_name, self.logger)

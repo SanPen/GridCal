@@ -23,8 +23,8 @@ import requests
 import pvlib
 from matplotlib import pyplot as plt
 from PySide6 import QtCore, QtWidgets
-from GridCal.Gui.GridEditorWidget.messages import error_msg
-from GridCal.Engine.basic_structures import Logger, DateVec
+from GridCal.Gui.messages import error_msg
+from GridCal.Engine.basic_structures import DateVec
 from GridCal.Gui.SolarPowerWizard.gui import Ui_MainWindow
 from GridCal.Gui.GuiFunctions import PandasModel
 

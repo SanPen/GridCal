@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.base import Base, str2num, index_find
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 
 class IdentifiedObject(Base):

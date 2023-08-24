@@ -15,33 +15,43 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
+from typing import Union, List
 from PySide6.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
 from GridCal.Engine.IO.file_handler import FileOpen, FileSave
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCal.Engine.data_logger import DataLogger
 
 
 class FileOpenThread(QThread):
+    """
+    FileOpenThread
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, file_name):
+    def __init__(self, file_name: Union[str, List[str]]):
         """
         Constructor
-        :param file_name: file name were to save
+        :param file_name: file name (s)
         """
         QThread.__init__(self)
 
-        self.file_name = file_name
+        self.file_name: Union[str, List[str]] = file_name
 
         self.valid = False
 
         self.logger = Logger()
 
         self.circuit: MultiCircuit | None = None
+
+        self.cgmes_circuit: CgmesCircuit | None = None
+
+        self.cgmes_logger: DataLogger = DataLogger()
 
         self.json_files = dict()
 
@@ -96,6 +106,9 @@ class FileOpenThread(QThread):
                                          progress_func=self.progress_signal.emit)
 
         self.json_files = file_handler.json_files
+
+        self.cgmes_circuit = file_handler.cgmes_circuit
+        self.cgmes_logger = file_handler.cgmes_logger
 
         self.logger += file_handler.logger
         self.valid = True

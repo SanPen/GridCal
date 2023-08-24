@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from typing import Union
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu
@@ -31,7 +31,7 @@ from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGenerat
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.external_grid_graphics import ExternalGridGraphicItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Engine.Core.Devices.enumerations import DeviceType, FaultType
 
 

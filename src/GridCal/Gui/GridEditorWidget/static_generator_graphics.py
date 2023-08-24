@@ -20,7 +20,7 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup, QGraphicsTextItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 
 
 class StaticGeneratorGraphicItem(QGraphicsItemGroup):

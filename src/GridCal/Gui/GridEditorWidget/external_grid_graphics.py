@@ -19,7 +19,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from GridCal.Engine.Core.Devices.Injections.battery import Battery, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 
 
 class ExternalGridGraphicItem(QtWidgets.QGraphicsItemGroup):

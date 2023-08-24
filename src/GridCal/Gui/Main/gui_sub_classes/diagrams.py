@@ -34,7 +34,7 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, info_msg
+from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
@@ -124,8 +124,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
         self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_branch_diagram)
-        self.ui.actionAdd_area_bus_branch_diagram.triggered.connect(self.add_area_bus_branch_diagram)
-        self.ui.actionAdd_zone_bus_branch_diagram.triggered.connect(self.add_zone_bus_branch_diagram)
+        self.ui.actionAdd_selection_bus_branch_diagram.triggered.connect(self.add_selection_bus_branch_diagram)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
@@ -322,7 +321,8 @@ class DiagramsMain(CompiledArraysMain):
                 t2 = self.circuit.time_profile[end]
                 t1 = pd.to_datetime(t1).strftime('%d/%m/%Y %H:%M')
                 t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
-                self.ui.profile_label.setText(str(t1) + ' -> ' + str(t2))
+                self.ui.start_label.setText(str(t1))
+                self.ui.end_label.setText(str(t2) + ' [{0}]'.format(end - start))
 
     def grid_colour_function(self, plot_function, current_study: str, current_step: int) -> None:
         """
@@ -701,19 +701,18 @@ class DiagramsMain(CompiledArraysMain):
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram_widget)
 
-    def add_area_bus_branch_diagram(self):
+    def add_selection_bus_branch_diagram(self):
         """
         Add a bus-branch diagram of a particular area
         """
-        self.add_diagram(GridEditorWidget(self.circuit, diagram=None))
-        self.set_diagrams_list_view()
+        diagram_widget = self.get_selected_diagram_widget()
 
-    def add_zone_bus_branch_diagram(self):
-        """
-        Add a bus-branch diagram of a particular zone
-        """
-        self.add_diagram(GridEditorWidget(self.circuit, diagram=None))
-        self.set_diagrams_list_view()
+        if diagram_widget:
+
+            if isinstance(diagram_widget, GridEditorWidget):
+                diagram = diagram_widget.get_selection_diagram()
+                self.add_diagram(GridEditorWidget(self.circuit, diagram=diagram))
+                self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
         """

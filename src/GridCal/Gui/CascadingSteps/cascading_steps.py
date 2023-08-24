@@ -16,15 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 from PySide6 import QtWidgets, QtGui
-from typing import List
 
 from GridCal.Gui.CascadingSteps.gui import Ui_Dialog
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-import GridCal.Gui.GuiFunctions as gf
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Simulations as sim
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
+from GridCal.Gui.messages import warning_msg
 
 
 class CascadingStepsGUI(QtWidgets.QDialog):

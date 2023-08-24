@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, warning_msg, info_msg
+from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI

@@ -23,9 +23,11 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
+from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, ContingencyGroup
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import IntVec, Vec, Mat
+from GridCal.Engine.data_logger import DataLogger
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
 import GridCal
 
 
@@ -1103,6 +1105,351 @@ class ObjectHistory:
         return len(self.undo_stack) > 0
 
 
+class RosetaObjectsModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a Qt table view with the properties of objects
+    """
+    def __init__(self, objects, editable_headers, parent=None, editable=False,
+                 non_editable_attributes=list(), transposed=False, check_unique=list(),
+                 dictionary_of_lists={}):
+        """
+
+        :param objects: list of objects associated to the editor
+        :param editable_headers: Dictionary with the properties and the units and type {attribute: ('unit', type)}
+        :param parent: Parent object: the QTableView object
+        :param editable: Is the table editable?
+        :param non_editable_attributes: List of attributes that are not enabled for editing
+        :param transposed: Display the table transposed?
+        :param dictionary_of_lists: dictionary of lists for the Delegates
+        """
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.parent = parent
+
+        self.attributes = list(editable_headers.keys())
+
+        self.attribute_types = [editable_headers[attr].class_type for attr in self.attributes]
+
+        self.units = [editable_headers[attr].get_unit() for attr in self.attributes]
+
+        self.tips = [editable_headers[attr].description for attr in self.attributes]
+
+        self.objects = objects
+
+        self.editable = editable
+
+        self.non_editable_attributes = non_editable_attributes
+
+        self.check_unique = check_unique
+
+        self.r = len(self.objects)
+
+        self.c = len(self.attributes)
+
+        self.formatter = lambda x: "%.2f" % x
+
+        self.transposed = transposed
+
+        self.dictionary_of_lists = dictionary_of_lists
+
+        self.set_delegates()
+
+    def set_delegates(self):
+        """
+        Set the cell editor types depending on the attribute_types array
+        :return:
+        """
+
+        if self.transposed:
+            F = self.parent.setItemDelegateForRow
+        else:
+            F = self.parent.setItemDelegateForColumn
+
+        for i in range(self.c):
+            tpe = self.attribute_types[i]
+
+            if tpe is bool:
+                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                F(i, delegate)
+
+            elif tpe is float:
+                delegate = FloatDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is complex:
+                delegate = ComplexDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is None:
+                F(i, None)
+                if len(self.non_editable_attributes) == 0:
+                    self.non_editable_attributes.append(self.attributes[i])
+
+            elif isinstance(tpe, EnumMeta):
+                objects = list(tpe)
+                values = [x.value for x in objects]
+                delegate = ComboDelegate(self.parent, objects, values)
+                F(i, delegate)
+
+            # elif tpe in []:
+            #
+            #     objects = self.dictionary_of_lists[tpe.value]
+            #     values = [x.name for x in objects]
+            #     delegate = ComboDelegate(self.parent, objects, values)
+            #     F(i, delegate)
+
+            else:
+                F(i, None)
+
+    def update(self):
+        """
+        update table
+        """
+        row = self.rowCount()
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # whatever code
+        self.endInsertRows()
+
+    def flags(self, index):
+        """
+        Get the display mode
+        :param index:
+        :return:
+        """
+        if self.transposed:
+            attr_idx = index.row()
+        else:
+            attr_idx = index.column()
+
+        if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        """
+        Get number of rows
+        :param parent:
+        :return:
+        """
+        if self.transposed:
+            return self.c
+        else:
+            return self.r
+
+    def columnCount(self, parent=None):
+        """
+        Get number of columns
+        :param parent:
+        :return:
+        """
+        if self.transposed:
+            return self.r
+        else:
+            return self.c
+
+    def data_raw(self, r, c):
+        """
+        Get the data to display
+        :param index:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = c
+            attr_idx = r
+        else:
+            obj_idx = r
+            attr_idx = c
+
+        attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[attr_idx]
+
+        return getattr(self.objects[obj_idx], attr)
+
+    def data_with_type(self, index):
+        """
+        Get the data to display
+        :param index:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[attr_idx]
+
+        return getattr(self.objects[obj_idx], attr)
+
+    def data(self, index, role=None):
+        """
+        Get the data to display
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            return str(self.data_with_type(index))
+
+        return None
+
+    def setData(self, index, value, role=None):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        tpe = self.attribute_types[attr_idx]
+
+        # check taken values
+        if self.attributes[attr_idx] in self.check_unique:
+            taken = self.attr_taken(self.attributes[attr_idx], value)
+        else:
+            taken = False
+
+        if not taken:
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
+
+        return True
+
+    def attr_taken(self, attr, val):
+        """
+        Checks if the attribute value is taken
+        :param attr:
+        :param val:
+        :return:
+        """
+        for obj in self.objects:
+            if val == getattr(obj, attr):
+                return True
+        return False
+
+    def headerData(self, p_int, orientation, role):
+        """
+        Get the headers to display
+        :param p_int:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.DisplayRole:
+
+            if self.transposed:
+                # for the properties in the schematic view
+                if orientation == QtCore.Qt.Horizontal:
+                    return 'Value'
+                elif orientation == QtCore.Qt.Vertical:
+                    if self.units[p_int] != '':
+                        return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[p_int]
+            else:
+                # Normal
+                if orientation == QtCore.Qt.Horizontal:
+                    if self.units[p_int] != '':
+                        return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[p_int]
+                elif orientation == QtCore.Qt.Vertical:
+                    return str(p_int)  # + ':' + str(self.objects[p_int])
+
+        # add a tooltip
+        if role == QtCore.Qt.ToolTipRole:
+            if p_int < self.c:
+                if self.units[p_int] != "":
+                    unit = '\nUnits: ' + self.units[p_int]
+                else:
+                    unit = ''
+                return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+            else:
+                # somehow the index is out of range
+                return ""
+
+        return None
+
+    def copy_to_column(self, index):
+        """
+        Copy the value pointed by the index to all the other cells in the column
+        :param index: QModelIndex instance
+        :return:
+        """
+        value = self.data_with_type(index=index)
+        col = index.column()
+
+        for row in range(self.rowCount()):
+
+            if self.transposed:
+                obj_idx = col
+                attr_idx = row
+            else:
+                obj_idx = row
+                attr_idx = col
+
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
+
+    def get_data(self):
+        """
+
+        :return:
+        """
+        nrows = self.rowCount()
+        ncols = self.columnCount()
+        data = np.empty((nrows, ncols), dtype=object)
+
+        for j in range(ncols):
+            for i in range(nrows):
+                data[i, j] = self.data_raw(r=i, c=j)
+
+        columns = [self.headerData(i, orientation=QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole) for i in range(ncols)]
+        index = [self.headerData(i, orientation=QtCore.Qt.Vertical, role=QtCore.Qt.DisplayRole) for i in range(nrows)]
+
+        return index, columns, data
+
+    def copy_to_clipboard(self):
+        """
+
+        :return:
+        """
+        if self.columnCount() > 0:
+
+            index, columns, data = self.get_data()
+
+            data = data.astype(str)
+
+            # header first
+            txt = '\t' + '\t'.join(columns) + '\n'
+
+            # data
+            for t, index_value in enumerate(index):
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
+
+
 class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
@@ -1539,6 +1886,67 @@ def get_list_model(lst: List[str], checks=False, check_value=False) -> QtGui.QSt
     return list_model
 
 
+
+def get_logger_tree_model(logger: DataLogger):
+    """
+    Fill logger tree
+    :param logger: Logger instance
+    :return: QStandardItemModel instance
+    """
+    d = logger.to_dict()
+    editable = False
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels(['Time', 'Element', 'Class', 'Property', 'Value', 'Expected value', 'comment'])
+    parent = model.invisibleRootItem()
+
+    for severity, messages_dict in d.items():
+        severity_child = QtGui.QStandardItem(severity)
+
+        # print(severity)
+
+        for message, data_list in messages_dict.items():
+            message_child = QtGui.QStandardItem(message)
+
+            # print('\t', message)
+
+            for time, elm, elm_class, elm_property, value, expected_value, comment in data_list:
+
+                # print('\t', '\t', time, elm, value, expected_value)
+
+                time_child = QtGui.QStandardItem(time)
+                time_child.setEditable(editable)
+
+                elm_child = QtGui.QStandardItem(elm)
+                elm_child.setEditable(editable)
+
+                elm_class_child = QtGui.QStandardItem(elm_class)
+                elm_class_child.setEditable(editable)
+
+                elm_property_child = QtGui.QStandardItem(elm_property)
+                elm_property_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(value)
+                value_child.setEditable(editable)
+
+                expected_val_child = QtGui.QStandardItem(expected_value)
+                expected_val_child.setEditable(editable)
+
+                comment_val_child = QtGui.QStandardItem(comment)
+                comment_val_child.setEditable(editable)
+
+                message_child.appendRow([time_child, elm_child, elm_class_child,
+                                         elm_property_child, value_child, expected_val_child, comment_val_child])
+
+            message_child.setEditable(editable)
+
+            severity_child.appendRow(message_child)
+
+        severity_child.setEditable(editable)
+        parent.appendRow(severity_child)
+
+    return model
+
+
 def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
 
@@ -1685,3 +2093,121 @@ def fast_data_to_numpy_text(data: np.ndarray):
         txt = '[]'
 
     return txt
+
+
+def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, already_visited=list()):
+    """
+
+    :param class_tag:
+    :param device:
+    :param editable:
+    :param already_visited:
+    :return:
+    """
+    if class_tag is None:
+        if hasattr(device, 'name'):
+            if device.name is not None:
+                if device.name != '':
+                    class_tag = device.name
+                else:
+                    class_tag = device.rdfid
+            else:
+                class_tag = device.rdfid
+        else:
+            class_tag = device.rdfid
+
+    # create root node
+    device_child = QtGui.QStandardItem(class_tag)
+
+    # register visit to avoid cyclic recursion
+    already_visited.append(device)
+
+    for property_name, cim_prop in device.declared_properties.items():
+
+        property_value = getattr(device, property_name)
+
+        if hasattr(property_value, 'rdfid'):
+
+            we_are_in_a_recursive_loop = False
+            if len(already_visited) > 7:
+                for e in already_visited:
+                    if property_value.rdfid == e.rdfid:
+                        we_are_in_a_recursive_loop = True
+
+            if not we_are_in_a_recursive_loop:
+
+                # if the property is an object, recursively add it
+                tpe = str(property_value.tpe)
+                class_name_child = add_cim_object_node(tpe,
+                                                       property_value,
+                                                       editable=editable,
+                                                       already_visited=already_visited)
+                class_name_child.setEditable(editable)
+
+                property_name_child = QtGui.QStandardItem(tpe)
+                property_name_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(property_value.rdfid)
+                value_child.setEditable(editable)
+            else:
+                # print('Recursive loop...')
+                # return device_child
+                class_name_child = QtGui.QStandardItem("Recursive object (" + str(len(already_visited)) + ")")
+                class_name_child.setEditable(editable)
+
+                property_name_child = QtGui.QStandardItem(property_name)
+                property_name_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(str(property_value))
+                value_child.setEditable(editable)
+        else:
+            # if the property is a value (float, str, bool, etc.) just add it
+
+            tpe = str(type(property_value)).replace('class', '')\
+                .replace("'", "")\
+                .replace("<", "")\
+                .replace(">", "").strip()
+
+            class_name_child = QtGui.QStandardItem(tpe)
+            class_name_child.setEditable(editable)
+
+            property_name_child = QtGui.QStandardItem(property_name)
+            property_name_child.setEditable(editable)
+
+            value_child = QtGui.QStandardItem(str(property_value))
+            value_child.setEditable(editable)
+
+        device_child.appendRow([class_name_child, property_name_child, value_child])
+
+    return device_child
+
+
+def get_cim_tree_model(cim_model: CgmesCircuit):
+    """
+    Fill logger tree
+    :param cim_model: Logger instance
+    :return: QStandardItemModel instance
+    """
+
+    editable = False
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels(['Object class', 'Property', 'Value'])
+    root_node = model.invisibleRootItem()
+
+    for class_name, device_list in cim_model.elements_by_type.items():
+
+        class_child = QtGui.QStandardItem(class_name + " (" + str(len(device_list)) + ")")
+
+        for device in device_list:
+
+            # add device with all it's properties
+            device_child = add_cim_object_node(class_tag=None, device=device, editable=editable, already_visited=list())
+
+            device_child.setEditable(editable)
+
+            class_child.appendRow(device_child)
+
+        class_child.setEditable(editable)
+        root_node.appendRow(class_child)
+
+    return model

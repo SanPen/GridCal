@@ -20,7 +20,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import PhaseCode, cgmesProfile
 import GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.acdc_terminal as acdc_terminal  # the other type of import has a circular dependency ...
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 import GridCal
 
 
@@ -103,7 +103,7 @@ class Terminal(acdc_terminal.ACDCTerminal):
         else:
             return None
 
-    def check(self, logger: Logger):
+    def check(self, logger: DataLogger):
         """
 
         :param logger:

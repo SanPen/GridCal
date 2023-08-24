@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="upfc.svg"
+   id="svg6"
+   version="1.1"
+   viewBox="0 0 48 48"
+   height="48"
+   width="48">
+  <g
+     transform="matrix(0,-0.7304881,0.7304881,0,7.829384,42.670977)"
+     id="g922"
+     style="stroke:#ffffff;fill:#ffffff">
+    <path
+       id="path836-6"
+       d="M 37.4877,-5.7125492 37.4557,49.088062"
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:3.82297802;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:2.64841461;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.843674,1.3473713 9.7207529,8.1947182"
+       id="path836-6-2"
+       inkscape:connector-curvature="0" />
+    <path
+       id="path836-6-3"
+       d="m 10.682386,5.0397942 25.214565,0.04334"
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:3.01766157;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:7.43930387;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path4541"
+       cx="35.814079"
+       cy="-37.681953"
+       transform="rotate(90)"
+       r="6.2550402" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:7.43930387;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path4541-7"
+       cx="5.0614643"
+       cy="-22.144968"
+       r="6.2550402"
+       transform="rotate(90)" />
+    <path
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:2.18053126;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6.8055407,2.5633212 6.6826194,7.2049987"
+       id="path836-6-2-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:1.30620348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 4.2855768,3.4421703 4.2175447,6.4516132"
+       id="path836-6-2-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:1.36894774px;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 21.694675,13.440639 v 23.035387 l 8.541337,-0.076"
+       id="path4596"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+  </g>
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     inkscape:document-rotation="0"
+     inkscape:current-layer="g922"
+     inkscape:window-maximized="1"
+     inkscape:window-y="25"
+     inkscape:window-x="72"
+     inkscape:cy="41.895783"
+     inkscape:cx="-34.041191"
+     inkscape:zoom="6.2708333"
+     showgrid="false"
+     id="namedview8"
+     inkscape:window-height="1018"
+     inkscape:window-width="1848"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+</svg>

@@ -1,0 +1,61 @@
+<RCC>
+  <qresource prefix="Icons">
+    <file>icons/tree.svg</file>
+    <file>icons/roseta.svg</file>
+    <file>icons/histogram.svg</file>
+    <file>icons/import_models.svg</file>
+    <file>icons/stats.svg</file>
+    <file>icons/inputs_analysis 2.svg</file>
+    <file>icons/fusion.svg</file>
+    <file>icons/area_transfer.svg</file>
+    <file>icons/array.svg</file>
+    <file>icons/clear_runs.svg</file>
+    <file>icons/load_add.svg</file>
+    <file>icons/magnifying_glass2.svg</file>
+    <file>icons/delete2.svg</file>
+    <file>icons/down.svg</file>
+    <file>icons/minus (gray).svg</file>
+    <file>icons/plus (gray).svg</file>
+    <file>icons/copy2up.svg</file>
+    <file>icons/calculator.svg</file>
+    <file>icons/magnifying_glass.svg</file>
+    <file>icons/up.svg</file>
+    <file>icons/undo.svg</file>
+    <file>icons/export_pickle.svg</file>
+    <file>icons/check_all.svg</file>
+    <file>icons/copy2down.svg</file>
+    <file>icons/next.svg</file>
+    <file>icons/prev.svg</file>
+    <file>icons/color_grid.svg</file>
+    <file>icons/data.svg</file>
+    <file>icons/schematic.svg</file>
+    <file>icons/plot.svg</file>
+    <file>icons/import_profiles.svg</file>
+    <file>icons/copy2left.svg</file>
+    <file>icons/copy2right.svg</file>
+    <file>icons/paste.svg</file>
+    <file>icons/new2c.svg</file>
+    <file>icons/loadc.svg</file>
+    <file>icons/savec.svg</file>
+    <file>icons/console.svg</file>
+    <file>icons/run_cascade_step.svg</file>
+    <file>icons/delete.svg</file>
+    <file>icons/save.svg</file>
+    <file>icons/load.svg</file>
+    <file>icons/gear.svg</file>
+    <file>icons/bars.svg</file>
+    <file>icons/new2.svg</file>
+    <file>icons/minus.svg</file>
+    <file>icons/clock.svg</file>
+    <file>icons/squares.svg</file>
+    <file>icons/copy.svg</file>
+    <file>icons/plus.svg</file>
+    <file>icons/new.svg</file>
+    <file>icons/edit.svg</file>
+    <file>icons/automatic_layout.svg</file>
+    <file>icons/to_roseta.svg</file>
+    <file>icons/to_psse.svg</file>
+    <file>icons/to_cgmes.svg</file>
+  </qresource>
+  <qresource prefix="Program icon"/>
+</RCC>

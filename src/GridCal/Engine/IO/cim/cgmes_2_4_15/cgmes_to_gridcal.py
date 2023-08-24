@@ -23,7 +23,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.power_transformer_end import PowerTransformerEnd
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 
 def find_terms_connections(cgmes_terminal,
@@ -60,7 +60,7 @@ def find_connections(cgmes_elm: IdentifiedObject,
                      device_to_terminal_dict: Dict[str, List[Terminal]],
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
-                     logger: Logger):
+                     logger: DataLogger):
     """
 
     :param cgmes_elm:
@@ -168,7 +168,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                     calc_node_dict: Dict[str, gcdev.Bus],
                     cn_dict: Dict[str, gcdev.ConnectivityNode],
                     device_to_terminal_dict: Dict[str, List[Terminal]],
-                    logger: Logger) -> None:
+                    logger: DataLogger) -> None:
     """
     Convert the CGMES loads to gcdev
     :param cgmes_model: CgmesCircuit
@@ -216,7 +216,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                          calc_node_dict: Dict[str, gcdev.Bus],
                          cn_dict: Dict[str, gcdev.ConnectivityNode],
                          device_to_terminal_dict: Dict[str, List[Terminal]],
-                         logger: Logger) -> None:
+                         logger: DataLogger) -> None:
     """
     Convert the CGMES generators to gcdev
     :param cgmes_model: CgmesCircuit
@@ -381,7 +381,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                        calc_node_dict: Dict[str, gcdev.Bus],
                        cn_dict: Dict[str, gcdev.ConnectivityNode],
                        device_to_terminal_dict: Dict[str, List[Terminal]],
-                       logger: Logger,
+                       logger: DataLogger,
                        Sbase: float) -> None:
     """
     Convert the CGMES ac lines to gcdev
@@ -443,7 +443,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                               calc_node_dict: Dict[str, gcdev.Bus],
                               cn_dict: Dict[str, gcdev.ConnectivityNode],
                               device_to_terminal_dict: Dict[str, List[Terminal]],
-                              logger: Logger,
+                              logger: DataLogger,
                               Sbase: float) -> None:
     """
     Convert the CGMES ac lines to gcdev
@@ -525,7 +525,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                  expected_value=2)
 
 
-def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: Logger) -> MultiCircuit:
+def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCircuit:
     """
     convert CGMES model to gcdev
     :param cgmes_model: CgmesCircuit

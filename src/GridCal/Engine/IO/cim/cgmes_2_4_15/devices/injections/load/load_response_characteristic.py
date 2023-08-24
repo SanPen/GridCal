@@ -18,7 +18,7 @@ import numpy as np
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 
 class LoadResponseCharacteristic(IdentifiedObject):
@@ -142,7 +142,7 @@ class LoadResponseCharacteristic(IdentifiedObject):
             description="Portion of reactive power load modeled as constant power.",
             profiles=[cgmesProfile.EQ])
 
-    def check(self, logger: Logger):
+    def check(self, logger: DataLogger):
         """
         Check OCL rules
         :param logger:

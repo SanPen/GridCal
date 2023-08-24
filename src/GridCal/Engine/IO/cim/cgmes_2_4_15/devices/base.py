@@ -19,7 +19,7 @@ from uuid import uuid4
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_poperty import CgmesProperty
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 
 def str2num(val: str):
@@ -101,7 +101,7 @@ class Base:
 
         self.parsed_properties = dict()
 
-    def parse_dict(self, data: Dict[str, str], logger: Logger):
+    def parse_dict(self, data: Dict[str, str], logger: DataLogger):
 
         self.parsed_properties = data
 
@@ -131,7 +131,7 @@ class Base:
     def __eq__(self, other):
         return self.rdfid == other.rdfid
 
-    def check(self, logger: Logger):
+    def check(self, logger: DataLogger):
         """
         Check specific OCL rules
         :param logger: Logger instance

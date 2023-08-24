@@ -17,7 +17,7 @@
 
 import os
 from warnings import warn
-
+from typing import Union
 import pandas as pd
 from PySide6 import QtWidgets
 
@@ -31,8 +31,9 @@ from GridCal.Engine.IO.gridcal.contingency_parser import import_contingencies_fr
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, warning_msg, info_msg
+from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.gui_sub_classes.configuration import ConfigurationMain
 
 
@@ -49,6 +50,8 @@ class IoMain(ConfigurationMain):
 
         # create main window
         ConfigurationMain.__init__(self, parent)
+
+        self.rosetta_gui: Union[RosetaExplorerGUI, None] = None
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
@@ -291,9 +294,7 @@ class IoMain(ConfigurationMain):
 
         if self.open_file_thread_object is not None:
 
-            if len(self.open_file_thread_object.logger) > 0:
-                dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                dlg.exec_()
+
 
             if self.open_file_thread_object.valid:
 
@@ -349,6 +350,21 @@ class IoMain(ConfigurationMain):
                 self.clear_results()
 
                 self.ui.grid_name_line_edit.setText(self.circuit.name)
+
+                # if this was a cgmes file, launch the roseta GUI
+                if self.open_file_thread_object.cgmes_circuit:
+                    # if there is a CGMES file, show Rosetta and the loguer there
+                    self.rosetta_gui = RosetaExplorerGUI()
+                    self.rosetta_gui.set_grid_model(self.open_file_thread_object.cgmes_circuit)
+                    self.rosetta_gui.set_logger(self.open_file_thread_object.cgmes_logger)
+                    self.rosetta_gui.update_combo_boxes()
+                    self.rosetta_gui.show()
+
+                else:
+                    # else, show the logger if it is necessary
+                    if len(self.open_file_thread_object.logger) > 0:
+                        dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                        dlg.exec_()
 
             else:
                 warn('The file was not valid')

@@ -14,15 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
 
-from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
 from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 
 
 class UpfcGraphicItem(LineGraphicTemplateItem):

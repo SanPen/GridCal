@@ -106,7 +106,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.results.sv_shunt_compensator_sec
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.results.sv_tap_step import SvTapStep
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.inputs.curve import Curve
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.inputs.curve_data import CurveData
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_poperty import CgmesProperty
 from GridCal.Engine.IO.base.base_circuit import BaseCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
@@ -118,13 +118,13 @@ class CgmesCircuit(BaseCircuit):
     CgmesCircuit
     """
 
-    def __init__(self, text_func=None, progress_func=None, logger=Logger()):
+    def __init__(self, text_func=None, progress_func=None, logger=DataLogger()):
         """
         CIM circuit constructor
         """
         BaseCircuit.__init__(self)
 
-        self.logger: Logger = logger
+        self.logger: DataLogger = logger
 
         self.text_func = text_func
         self.progress_func = progress_func
@@ -331,11 +331,11 @@ class CgmesCircuit(BaseCircuit):
             if not hasattr(self, key + '_list'):
                 print('self.{0}_list: List[{0}] = list()'.format(key))
 
-    def add(self, elm: IdentifiedObject, logger: Logger):
+    def add(self, elm: IdentifiedObject, logger: DataLogger):
         """
         Add generic object to the circuit
         :param elm:
-        :param logger: Logger to record issues
+        :param logger: DataLogger to record issues
         :return: True if successful, False otherwise
         """
         """

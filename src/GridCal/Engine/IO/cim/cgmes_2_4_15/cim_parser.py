@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Callable, List
-from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cim_data_parser import CimDataParser
 
 
 def read_cgmes_files(cim_files: List[str],
-                     logger: Logger = Logger(),
+                     logger: DataLogger = DataLogger(),
                      progress_func: Callable = None,
                      text_func: Callable = None) -> CgmesCircuit:
     """

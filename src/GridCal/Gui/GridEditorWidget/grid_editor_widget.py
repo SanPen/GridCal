@@ -2177,6 +2177,60 @@ class GridEditorWidget(QSplitter):
                     location.graphic_object.setToolTipText(tooltip)
                     location.graphic_object.set_colour(color, w, style)
 
+    def get_selection_diagram(self) -> BusBranchDiagram:
+        """
+        Get a BusBranchDiagram of the current selection
+        :return: BusBranchDiagram
+        """
+        diagram = BusBranchDiagram(name="Selection diagram")
+
+        # first pass (only buses)
+        bus_dict = dict()
+        for item in self.diagramScene.selectedItems():
+            if isinstance(item, BusGraphicItem):
+                # check that the bus is in the original diagram
+                location = self.diagram.query_point(item.api_object)
+
+                if location:
+                    diagram.set_point(device=item.api_object, location=location)
+                    bus_dict[item.api_object.idtag] = item
+                else:
+                    raise Exception('Item was selected but was not registered!')
+
+        # second pass (Branches, and include their not selected buses)
+        for item in self.diagramScene.selectedItems():
+            if not isinstance(item, BusGraphicItem):
+
+                # add the element
+                rect = item.boundingRect()
+                diagram.set_point(device=item.api_object,
+                                  location=GraphicLocation(x=rect.x(),
+                                                           y=rect.y(),
+                                                           h=rect.height(),
+                                                           w=rect.width(),
+                                                           r=item.rotation(),
+                                                           api_object=item.api_object))
+
+                if hasattr(item.api_object, 'bus_from'):  # if the element is a branch ...
+
+                    # get the api buses from and to
+                    bus_from = item.api_object.bus_from
+                    bus_to = item.api_object.bus_to
+
+                    for bus in [bus_from, bus_to]:
+
+                        # check that the bus is in the original diagram
+                        location = self.diagram.query_point(bus)
+
+                        if location and (bus.idtag not in bus_dict):
+
+                            # if the bus was not added in the first pass and is in the original diagram, add it now
+                            diagram.set_point(device=bus,
+                                              location=location)
+                            bus_dict[bus.idtag] = location.graphic_object
+
+        return diagram
+
 
 def generate_bus_branch_diagram(buses: List[Bus],
                                 lines: List[Line],

@@ -113,7 +113,7 @@
              <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Designer</string>
+            <string>Diagrams</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_30">
             <property name="leftMargin">
@@ -137,6 +137,18 @@
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item>
                 <widget class="QSplitter" name="diagram_selection_splitter">
                  <property name="orientation">
@@ -209,7 +221,7 @@
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>34</height>
+                   <height>50</height>
                   </size>
                  </property>
                  <property name="frameShape">
@@ -231,7 +243,19 @@
                   <property name="bottomMargin">
                    <number>1</number>
                   </property>
-                  <item row="1" column="10">
+                  <item row="2" column="8">
+                   <widget class="QLabel" name="start_label">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="12">
                    <widget class="QSlider" name="profile_end_slider">
                     <property name="toolTip">
                      <string>Simulation end</string>
@@ -241,63 +265,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="7">
-                   <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
+                  <item row="1" column="0">
+                   <widget class="QLineEdit" name="grid_name_line_edit">
                     <property name="toolTip">
-                     <string>Previous</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="14">
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="1" column="8">
-                   <widget class="QSlider" name="profile_start_slider">
-                    <property name="toolTip">
-                     <string>Simulation start</string>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <spacer name="horizontalSpacer_19">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="1" column="9">
-                   <widget class="QSlider" name="simulation_results_step_slider">
-                    <property name="toolTip">
-                     <string>Simulation step</string>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <string>Name of the grid model</string>
                     </property>
                    </widget>
                   </item>
@@ -315,14 +286,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QLineEdit" name="grid_name_line_edit">
-                    <property name="toolTip">
-                     <string>Name of the grid model</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="4">
+                  <item row="1" column="15">
                    <widget class="QPushButton" name="colour_results_pushButton">
                     <property name="toolTip">
                      <string>Color the grid with the selected study</string>
@@ -336,14 +300,54 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="12">
+                  <item row="1" column="10">
+                   <widget class="QSlider" name="simulation_results_step_slider">
+                    <property name="toolTip">
+                     <string>Simulation step</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="10">
                    <widget class="QLabel" name="schematic_step_label">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                     </font>
+                    </property>
                     <property name="text">
                      <string>...</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="2">
+                  <item row="2" column="12">
+                   <widget class="QLabel" name="end_label">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <spacer name="horizontalSpacer_19">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="14">
                    <widget class="QComboBox" name="available_results_to_color_comboBox">
                     <property name="minimumSize">
                      <size>
@@ -356,12 +360,42 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="13">
-                   <widget class="QLabel" name="profile_label">
+                  <item row="1" column="9">
+                   <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
+                    <property name="toolTip">
+                     <string>Previous</string>
+                    </property>
                     <property name="text">
-                     <string>...</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
                     </property>
                    </widget>
+                  </item>
+                  <item row="1" column="8">
+                   <widget class="QSlider" name="profile_start_slider">
+                    <property name="toolTip">
+                     <string>Simulation start</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="13">
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>
@@ -377,7 +411,7 @@
              <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Objects</string>
+            <string>Objects DB</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <property name="leftMargin">
@@ -752,7 +786,7 @@ p, li { white-space: pre-wrap; }
              <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
            </attribute>
            <attribute name="title">
-            <string>Time events</string>
+            <string>Time series</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_14">
             <property name="leftMargin">
@@ -8273,7 +8307,6 @@ QProgressBar::chunk{
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
-    <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
@@ -8297,14 +8330,14 @@ QProgressBar::chunk{
      <addaction name="actionSetSelectedBusZone"/>
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
-    <addaction name="actionAdd_area_bus_branch_diagram"/>
-    <addaction name="actionAdd_zone_bus_branch_diagram"/>
+    <addaction name="menuSelect_buses_by"/>
+    <addaction name="actionAdd_selection_bus_branch_diagram"/>
     <addaction name="actionAdd_bus_vecinity_diagram"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionAdd_substation_diagram"/>
-    <addaction name="menuSelect_buses_by"/>
     <addaction name="separator"/>
     <addaction name="actionRemove_selected_diagram"/>
+    <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
@@ -8723,7 +8756,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/delete3.svg</normaloff>:/Icons/icons/delete3.svg</iconset>
    </property>
    <property name="text">
-    <string>Delete selected</string>
+    <string>Delete selected objects from the db</string>
    </property>
    <property name="toolTip">
     <string>Delete selected objects</string>
@@ -9269,22 +9302,13 @@ QProgressBar::chunk{
     <string>Ctrl+I, Ctrl+E</string>
    </property>
   </action>
-  <action name="actionAdd_area_bus_branch_diagram">
+  <action name="actionAdd_selection_bus_branch_diagram">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Add area bus-branch diagram</string>
-   </property>
-  </action>
-  <action name="actionAdd_zone_bus_branch_diagram">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Add zone bus-branch diagram</string>
+    <string>Add selection bus-branch diagram</string>
    </property>
   </action>
   <action name="actionAdd_bus_vecinity_diagram">
@@ -9326,7 +9350,7 @@ QProgressBar::chunk{
   <action name="actionRemove_selected_diagram">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
+     <normaloff>:/Icons/icons/minus (gray).svg</normaloff>:/Icons/icons/minus (gray).svg</iconset>
    </property>
    <property name="text">
     <string>Remove selected diagram</string>

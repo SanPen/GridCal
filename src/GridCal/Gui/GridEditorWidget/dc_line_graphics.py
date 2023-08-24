@@ -21,7 +21,7 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Engine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
 from GridCal.Engine.Core.Devices.Branches.branch import BranchType

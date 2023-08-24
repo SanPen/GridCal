@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup, QVBo
 from GridCal.Engine.Core.Devices.Injections.generator import Generator, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question, info_msg
+from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard

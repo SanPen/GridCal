@@ -17,12 +17,12 @@
 import numpy as np
 
 from typing import Union
-from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QTransform, QPolygonF
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY, OTHER
+from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
+from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Engine.Core.Devices.Branches.line import Line
 from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
