@@ -16,25 +16,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import numba as nb
 import pandas as pd
 from typing import Dict, List, Union, Any, Tuple
-from PySide6 import QtWidgets
 from PySide6 import QtCore, QtWidgets, QtGui, Qt
 from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
-from matplotlib import pyplot as plt
+
 from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.basic_structures import IntVec, Vec, Mat
+import GridCal
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
-    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
+    """
+    commitData = QtCore.Signal(object)
+    """
+    
     """
     def __init__(self, parent, data=defaultdict()):
         """
@@ -49,10 +51,19 @@ class TreeDelegate(QtWidgets.QItemDelegate):
 
     @QtCore.Slot()
     def double_click(self):
-        print('double clicked!')
+        """
+        double click
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
         tree = QtWidgets.QTreeView(parent)
 
         model = QtGui.QStandardItemModel()
@@ -74,12 +85,21 @@ class TreeDelegate(QtWidgets.QItemDelegate):
         return tree
 
     def setEditorData(self, editor, index):
+        """
 
+        :param editor:
+        :param index:
+        """
         print(editor)
         print(index)
 
     def setModelData(self, editor, model, index):
+        """
 
+        :param editor:
+        :param model:
+        :param index:
+        """
         print(editor)
         print(model)
         print(index)
@@ -88,12 +108,14 @@ class TreeDelegate(QtWidgets.QItemDelegate):
 
 
 class ComboDelegate(QtWidgets.QItemDelegate):
-    commitData = QtCore.Signal(object)
+
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, objects, object_names):
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent: QtWidgets.QTableView, objects: List[bool], object_names: List[str]) -> None:
         """
         Constructor
         :param parent: QTableView parent object
@@ -110,15 +132,30 @@ class ComboDelegate(QtWidgets.QItemDelegate):
 
     @QtCore.Slot()
     def currentIndexChanged(self):
+        """
+        currentIndexChanged
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
         combo = QtWidgets.QComboBox(parent)
         combo.addItems(self.object_names)
         combo.currentIndexChanged.connect(self.currentIndexChanged)
         return combo
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
         val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         try:
@@ -129,17 +166,25 @@ class ComboDelegate(QtWidgets.QItemDelegate):
             pass
 
     def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
         if len(self.objects) > 0:
             if editor.currentIndex() < len(self.objects):
                 model.setData(index, self.objects[editor.currentIndex()])
 
 
 class TextDelegate(QtWidgets.QItemDelegate):
-    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QLineEdit in every
     cell of the column to which it's applied
     """
+
+    commitData = QtCore.Signal(object)
+
     def __init__(self, parent):
         """
         Constructor
@@ -149,30 +194,53 @@ class TextDelegate(QtWidgets.QItemDelegate):
 
     @QtCore.Slot()
     def returnPressed(self):
+        """
+        returnPressed
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
         editor = QtWidgets.QLineEdit(parent)
         editor.returnPressed.connect(self.returnPressed)
         return editor
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
         val = index.model().data(index, role=QtCore.Qt.DisplayRole)
         editor.setText(val)
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
         model.setData(index, editor.text())
 
 
 class FloatDelegate(QtWidgets.QItemDelegate):
-    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, min_=-1e200, max_=1e200):
+
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent: QtWidgets.QTableView, min_: float = -1e200, max_: float = 1e200) -> None:
         """
         Constructor
         :param parent: QTableView parent object
@@ -183,9 +251,19 @@ class FloatDelegate(QtWidgets.QItemDelegate):
 
     @QtCore.Slot()
     def returnPressed(self):
+        """
+        returnPressed
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
         editor = QtWidgets.QDoubleSpinBox(parent)
         editor.setMaximum(self.max)
         editor.setMinimum(self.min)
@@ -194,21 +272,34 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         return editor
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
         val = float(index.model().data(index, role=QtCore.Qt.DisplayRole))
         editor.setValue(val)
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
         model.setData(index, editor.value())
 
 
 class ComplexDelegate(QtWidgets.QItemDelegate):
-    commitData = QtCore.Signal(object)
     """
     A delegate that places a fully functioning Complex Editor in every
     cell of the column to which it's applied
     """
+
+    commitData = QtCore.Signal(object)
+
     def __init__(self, parent):
         """
         Constructor
@@ -280,6 +371,9 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
 
 
 class ColorPickerDelegate(QtWidgets.QItemDelegate):
+    """
+    Color picker delegate
+    """
     commitData = QtCore.Signal(object)
 
     def __init__(self, parent):
@@ -1345,6 +1439,79 @@ class MeasurementsModel(QtCore.QAbstractListModel):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             return self.items[index.row()].value[0]
         return None
+
+
+class DiagramsModel(QtCore.QAbstractListModel):
+    """
+    Model for the diagrams
+    # from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+    # from GridCal.Gui.GridEditorWidget import GridEditorWidget
+    # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+    """
+    def __init__(self, list_of_diagrams: List[Union["GridEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
+        """
+        Enumeration model
+        :param list_of_diagrams: list of enumeration values to show
+        """
+        QtCore.QAbstractListModel.__init__(self)
+        self.items = list_of_diagrams
+
+        self.bus_branch_editor_icon = QtGui.QIcon()
+        self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
+
+        self.map_editor_icon = QtGui.QIcon()
+        self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
+
+    def flags(self, index):
+        """
+        Get the display mode
+        :param index:
+        :return:
+        """
+        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        """
+
+        :param parent:
+        :return:
+        """
+        return len(self.items)
+
+    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid():
+
+            diagram = self.items[index.row()]
+
+            if role == QtCore.Qt.DisplayRole:
+                return diagram.name
+            elif role == QtCore.Qt.DecorationRole:
+
+                if isinstance(diagram, GridCal.Gui.GridEditorWidget.GridEditorWidget):
+                    return self.bus_branch_editor_icon
+                elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
+                    return self.map_editor_icon
+
+        return None
+
+    def setData(self, index, value, role=None):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+
+        self.items[index.row()].name = value
+
+        return True
 
 
 def get_list_model(lst: List[str], checks=False, check_value=False) -> QtGui.QStandardItemModel:

@@ -46,7 +46,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, scene, parent=None, index=0, editor=None, bus: Bus = None, pos: QtCore.QPoint = None):
+    def __init__(self, scene, parent=None, index=0, editor=None, bus: Bus = None,
+                 h: int = 20, w: int = 80, x: int = 0, y: int = 0):
         """
 
         @param scene:
@@ -59,8 +60,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.min_w = 180.0
         self.min_h = 20.0
         self.offset = 10
-        self.h = bus.h if bus.h >= self.min_h else self.min_h
-        self.w = bus.w if bus.w >= self.min_w else self.min_w
+        self.h = h if h >= self.min_h else self.min_h
+        self.w = w if w >= self.min_w else self.min_w
 
         self.api_object = bus
 
@@ -78,9 +79,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # index
         self.index = index
-
-        if pos is not None:
-            self.setPos(pos)
 
         # color
         if self.api_object is not None:
@@ -127,6 +125,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # Update size:
         self.change_size(self.w, self.h)
+
+        self.set_position(x, y)
 
     def recolour_mode(self):
         """

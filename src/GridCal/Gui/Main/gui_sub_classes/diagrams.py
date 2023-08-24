@@ -30,15 +30,16 @@ import GridCal.Engine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
+from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.GridEditorWidget.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+
 
 
 class DiagramsMain(CompiledArraysMain):
@@ -213,6 +214,8 @@ class DiagramsMain(CompiledArraysMain):
                         if position:
                             if position.graphic_object:
                                 position.graphic_object.setPos(QtCore.QPoint(x, y))
+                                position.x = x
+                                position.y = y
 
                     # adjust the view
                     diagram_widget.center_nodes()
@@ -625,24 +628,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Create the diagrams list view
         """
-        bus_branch_editor_icon = QtGui.QIcon()
-        bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
-
-        map_editor_icon = QtGui.QIcon()
-        map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
-
-        lst = list()
-        for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, GridEditorWidget):
-                icon = bus_branch_editor_icon
-            if isinstance(diagram, GridMapWidget):
-                icon = map_editor_icon
-            else:
-                icon = bus_branch_editor_icon
-
-            lst.append((diagram.name, icon))
-
-        mdl = gf.get_icon_list_model(lst)
+        mdl = gf.DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
 
     def get_selected_diagram_widget(self) -> Union[None, GridEditorWidget, GridMapWidget, BusViewerGUI]:

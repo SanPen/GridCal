@@ -21,14 +21,15 @@ from GridCal.Engine.Core.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
 
 
-class MapDiagram:
+class MapDiagram(BaseDiagram):
     """
     Diagram
     """
 
-    def __init__(self, idtag=None, name=''):
+    def __init__(self, idtag: Union[None, str] = None, name: str = '') -> None:
         """
-
+        
+        :param idtag: UUID
         :param name: Diagram name
         """
         BaseDiagram.__init__(self, idtag=idtag, name=name)

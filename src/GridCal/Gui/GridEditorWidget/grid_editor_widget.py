@@ -41,6 +41,7 @@ from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram, GraphicLocation
 from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
@@ -145,7 +146,7 @@ class DiagramScene(QGraphicsScene):
         self.circuit = circuit
         self.results_dictionary = dict()
 
-    def set_results_to_plot(self, all_threads):
+    def set_results_to_plot(self, all_threads: List[DriverTemplate]):
         """
 
         :param all_threads:
@@ -441,8 +442,8 @@ class DiagramScene(QGraphicsScene):
                     quit_msg = str(api_object.name) + \
                                "\nAre you sure that you want to overwrite the active profile with the snapshot value?"
                     reply = QMessageBox.question(self.parent_, 'Overwrite the active profile', quit_msg,
-                                                 QMessageBox.Yes, QMessageBox.No)
-                    ok = reply == QMessageBox.Yes
+                                                 QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+                    ok = reply == QMessageBox.StandardButton.Yes
                 else:
                     ok = True
 
@@ -453,7 +454,7 @@ class DiagramScene(QGraphicsScene):
                     else:
                         api_object.active_prof = np.zeros(shape, dtype=bool)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
 
         @param event:
@@ -464,7 +465,7 @@ class DiagramScene(QGraphicsScene):
         # call the parent event
         super(DiagramScene, self).mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
 
         @param event:
@@ -541,7 +542,7 @@ class EditorGraphicsView(QGraphicsView):
                           substation=self.diagram_scene.circuit.substations[0],
                           country=self.diagram_scene.circuit.countries[0])
 
-                graphic_obj = self.add_bus(bus=obj, x=x0, y=y0)
+                graphic_obj = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
                 obj.graphic_obj = graphic_obj
 
                 # weird but it's the only way to have graphical-API communication
@@ -595,17 +596,18 @@ class EditorGraphicsView(QGraphicsView):
         """
         self.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
-    def add_bus(self, bus: Bus, x: int, y: int) -> BusGraphicItem:
+    def add_bus(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
         """
         Add bus
         :param bus: GridCal Bus object
         :param x: x coordinate
         :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
         :return: BusGraphicItem
         """
 
-        graphic_obj = BusGraphicItem(scene=self.scene(), editor=self.editor, bus=bus)
-        graphic_obj.setPos(QPoint(x, y))
+        graphic_obj = BusGraphicItem(scene=self.scene(), editor=self.editor, bus=bus, x=x, y=y, h=h, w=w)
         self.diagram_scene.addItem(graphic_obj)
         return graphic_obj
 
@@ -741,7 +743,9 @@ class GridEditorWidget(QSplitter):
                     # add the graphic object to the diagram view
                     graphic_obj = self.editor_graphics_view.add_bus(bus=location.api_object,
                                                                     x=location.x,
-                                                                    y=location.y)
+                                                                    y=location.y,
+                                                                    h=location.h,
+                                                                    w=location.w)
 
                     # add circuit pointer to the bus graphic element
                     graphic_obj.scene.circuit = self.circuit  # add pointer to the circuit
@@ -957,7 +961,7 @@ class GridEditorWidget(QSplitter):
         return self.diagram.name
 
     @name.setter
-    def name_setter(self, val: str):
+    def name(self, val: str):
         """
         Name setter
         :param val:
@@ -1386,7 +1390,7 @@ class GridEditorWidget(QSplitter):
                           r=0)
 
         # add the graphic object to the diagram view
-        graphic_obj = self.editor_graphics_view.add_bus(bus=bus, explode_factor=explode_factor)
+        graphic_obj = self.editor_graphics_view.add_bus(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
         # add circuit pointer to the bus graphic element
         graphic_obj.scene.circuit = self.circuit  # add pointer to the circuit
@@ -1544,7 +1548,7 @@ class GridEditorWidget(QSplitter):
         :param explode_factor: explode factor
         """
 
-        graphic_obj = self.editor_graphics_view.add_transformer_3w(elm=elm, explode_factor=explode_factor)
+        graphic_obj = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
 
         self.set_position(device=elm.idtag,
                           x=elm.x,

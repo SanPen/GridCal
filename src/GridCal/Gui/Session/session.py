@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from uuid import uuid4
 from PySide6.QtCore import QThread, Signal
-from typing import Dict
+from typing import Dict, Callable, Union
 
 # Module imports
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
@@ -144,7 +144,7 @@ class SimulationSession:
         self.name: str = name
 
         # dictionary of drivers
-        self.drivers = dict()
+        self.drivers: Dict[SimulationTypes, DriverTemplate] = dict()
         self.threads: Dict[GcThread] = dict()
 
     def __str__(self):
@@ -156,7 +156,7 @@ class SimulationSession:
         """
         self.drivers = dict()
 
-    def register(self, driver):
+    def register(self, driver: DriverTemplate):
         """
         Register driver
         :param driver: driver to register (must have a tpe variable in it)
@@ -164,7 +164,11 @@ class SimulationSession:
         # register
         self.drivers[driver.tpe] = driver
 
-    def run(self, driver, post_func=None, prog_func=None, text_func=None):
+    def run(self,
+            driver: DriverTemplate,
+            post_func: Union[None, Callable] = None,
+            prog_func: Union[None, Callable] = None,
+            text_func: Union[None, Callable] = None):
         """
         Register driver
         :param driver: driver to register (must have a tpe variable in it)

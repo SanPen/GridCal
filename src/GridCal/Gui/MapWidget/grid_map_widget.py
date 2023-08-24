@@ -60,7 +60,7 @@ class GridMapWidget(MapWidget):
         return self.diagram.name
 
     @name.setter
-    def name_setter(self, val: str):
+    def name(self, val: str):
         """
         Name setter
         :param val:
