@@ -865,8 +865,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return str(self.data_with_type(index))
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                return str(self.data_with_type(index))
+            elif role == QtCore.Qt.BackgroundRole:
+                if 'color' in self.attributes[index.column()]:
+                    return QtGui.QColor(str(self.data_with_type(index)))
 
         return None
 
