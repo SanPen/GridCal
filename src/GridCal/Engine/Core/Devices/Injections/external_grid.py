@@ -61,14 +61,14 @@ class ExternalGrid(EditableDevice):
 
     """
 
-    def __init__(self, name='External grid', idtag=None, active=True,
+    def __init__(self, name='External grid', idtag=None, code='', active=True,
                  Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
                  mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
-                                code='',
+                                code=code,
                                 active=active,
                                 device_type=DeviceType.ExternalGridDevice)
 

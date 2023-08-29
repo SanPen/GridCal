@@ -67,7 +67,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.con_names = con_names
 
         self.voltage = np.ones((ncon, nbus), dtype=complex)
-        self.S = np.zeros((ncon, nbus), dtype=complex)
+        self.Sbus = np.zeros((ncon, nbus), dtype=complex)
         self.Sf = np.zeros((ncon, nbr), dtype=complex)
         self.loading = np.zeros((ncon, nbr), dtype=complex)
 
@@ -92,8 +92,8 @@ class ContingencyAnalysisResults(ResultsTemplate):
         data = {
             'Vm': np.abs(self.voltage).tolist(),
             'Va': np.angle(self.voltage).tolist(),
-            'P': self.S.real.tolist(),
-            'Q': self.S.imag.tolist(),
+            'P': self.Sbus.real.tolist(),
+            'Q': self.Sbus.imag.tolist(),
             'Sbr_real': self.Sf.real.tolist(),
             'Sbr_imag': self.Sf.imag.tolist(),
             'loading': np.abs(self.loading).tolist()
@@ -124,7 +124,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
             # index = self.branch_names
 
         elif result_type == ResultTypes.BusActivePower:
-            data = self.S.real
+            data = self.Sbus.real
             y_label = '(MW)'
             title = 'Bus active power '
             labels = self.bus_names

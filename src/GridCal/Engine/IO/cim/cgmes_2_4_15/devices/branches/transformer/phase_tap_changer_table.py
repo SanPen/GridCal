@@ -17,7 +17,7 @@
 import GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.phase_tap_changer_tabular
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 
 
 class PhaseTapChangerTable(IdentifiedObject):

@@ -229,7 +229,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             else:
                 contingency_count += contingency.sum(axis=0)
 
-            results.S[it, :] = res_t.S.real.max(axis=0)
+            results.S[it, :] = res_t.Sbus.real.max(axis=0)
             results.worst_flows[it, :] = np.abs(res_t.Sf).max(axis=0)
             results.worst_loading[it, :] = np.abs(res_t.loading).max(axis=0)
             results.max_overload = np.maximum(results.max_overload, results.worst_loading[it, :])

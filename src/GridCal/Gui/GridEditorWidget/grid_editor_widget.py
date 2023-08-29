@@ -1891,17 +1891,19 @@ class GridEditorWidget(QSplitter):
                        branches: List[Union[Line, DcLine, Transformer2W, Warning, UPFC, VSC]],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
+                       bus_active: IntVec,
                        Sf: CxVec,
                        St: CxVec,
                        voltages: CxVec,
                        loadings: CxVec,
                        types: IntVec = None,
                        losses: CxVec = None,
+                       br_active: IntVec = None,
                        hvdc_Pf: Vec = None,
                        hvdc_Pt: Vec = None,
                        hvdc_losses: Vec = None,
                        hvdc_loading: Vec = None,
-                       failed_br_idx: IntVec = None,
+                       hvdc_active: IntVec = None,
                        loading_label: str = 'loading',
                        ma: Vec = None,
                        theta: Vec = None,
@@ -1917,29 +1919,30 @@ class GridEditorWidget(QSplitter):
         :param buses: list of matching bus objects
         :param branches: list of Branches without HVDC
         :param hvdc_lines: list of HVDC lines
-        :param Sbus: Buses power
-        :param Sf: Branches power from the "from" bus
-        :param St: Branches power from the "to" bus
+        :param Sbus: Buses power (MVA)
+        :param bus_active: Bus active status
+        :param Sf: Branches power from the "from" bus (MVA)
+        :param St: Branches power from the "to" bus (MVA)
         :param voltages: Buses voltage
-        :param loadings: Branches load
-        :param types: Buses type
-        :param losses: Branches losses
-        :param hvdc_Pf:
-        :param hvdc_Pt:
-        :param hvdc_losses:
-        :param hvdc_loading:
-        :param failed_br_idx: failed Branches
-        :param loading_label:
-        :param ma:
-        :param theta:
-        :param Beq:
-        :param use_flow_based_width:
-        :param min_branch_width:
-        :param max_branch_width:
-        :param min_bus_width:
-        :param max_bus_width:
-        :param cmap:
-        :return:
+        :param loadings: Branches load (%)
+        :param types: Buses type [PQ: 1, PV: 2, REF: 3, NONE: 4, STO_DISPATCH: 5, PVB: 6]
+        :param losses: Branches losses [%]
+        :param br_active: Branches active status
+        :param hvdc_Pf: HVDC branch flows "from" [MW]
+        :param hvdc_Pt: HVDC branch flows "to" [MW]
+        :param hvdc_losses: HVDC branch losses [MW]
+        :param hvdc_loading: HVDC Branch loading [%]
+        :param hvdc_active: HVDC Branch status
+        :param loading_label: String saling whatever the loading label means
+        :param ma: branch phase shift angle (rad)
+        :param theta: branch tap module (p.u.)
+        :param Beq: Branch equivanet susceptance (p.u.)
+        :param use_flow_based_width: use branch width based on the actual flow?
+        :param min_branch_width: Minimum branch width [px]
+        :param max_branch_width: Maximum branch width [px]
+        :param min_bus_width: Minimum bus width [px]
+        :param max_bus_width: Maximum bus width [px]
+        :param cmap: Color map [palettes.Colormaps]
         """
 
         # color nodes
@@ -1973,6 +1976,7 @@ class GridEditorWidget(QSplitter):
         REF = 3,
         NONE = 4,
         STO_DISPATCH = 5
+        PVB = 6
         '''
 
         bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'PVB']
@@ -1983,46 +1987,52 @@ class GridEditorWidget(QSplitter):
             location = self.diagram.query_point(bus)
 
             if location:
-                if bus.active:
-                    a = 255
-                    if cmap == palettes.Colormaps.Green2Red:
-                        b, g, r = palettes.green_to_red_bgr(vnorm[i])
 
-                    elif cmap == palettes.Colormaps.Heatmap:
-                        b, g, r = palettes.heatmap_palette_bgr(vnorm[i])
+                if location.graphic_object:
 
-                    elif cmap == palettes.Colormaps.TSO:
-                        b, g, r = palettes.tso_substation_palette_bgr(vnorm[i])
+                    if bus_active[i]:
+                        a = 255
+                        if cmap == palettes.Colormaps.Green2Red:
+                            b, g, r = palettes.green_to_red_bgr(vnorm[i])
+
+                        elif cmap == palettes.Colormaps.Heatmap:
+                            b, g, r = palettes.heatmap_palette_bgr(vnorm[i])
+
+                        elif cmap == palettes.Colormaps.TSO:
+                            b, g, r = palettes.tso_substation_palette_bgr(vnorm[i])
+
+                        else:
+                            r, g, b, a = voltage_cmap(vnorm[i])
+                            r *= 255
+                            g *= 255
+                            b *= 255
+                            a *= 255
+
+                        location.graphic_object.set_tile_color(QColor(r, g, b, a))
+
+                        tooltip = str(i) + ': ' + bus.name
+                        if types is not None:
+                            tooltip += ': ' + bus_types[types[i]]
+                        tooltip += '\n'
+
+                        tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
+                        tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
+
+                        if Sbus is not None:
+                            tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
+                            tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
+
+                        location.graphic_object.setToolTip(tooltip)
+
+                        if use_flow_based_width:
+                            h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+                            location.graphic_object.change_size(location.graphic_object.w, h)
 
                     else:
-                        r, g, b, a = voltage_cmap(vnorm[i])
-                        r *= 255
-                        g *= 255
-                        b *= 255
-                        a *= 255
-
-                    location.graphic_object.set_tile_color(QColor(r, g, b, a))
-
-                    tooltip = str(i) + ': ' + bus.name
-                    if types is not None:
-                        tooltip += ': ' + bus_types[types[i]]
-                    tooltip += '\n'
-
-                    tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
-                    tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
-
-                    if Sbus is not None:
-                        tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
-                        tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
-
-                    location.graphic_object.setToolTip(tooltip)
-
-                    if use_flow_based_width:
-                        h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-                        location.graphic_object.change_size(location.graphic_object.w, h)
+                        location.graphic_object.set_tile_color(Qt.gray)
 
                 else:
-                    location.graphic_object.set_tile_color(Qt.gray)
+                    print("Bus {0} {1} has no graphic object!!".format(bus.name, bus.idtag))
 
         # color Branches
         if Sf is not None:
@@ -2047,81 +2057,81 @@ class GridEditorWidget(QSplitter):
 
                     if location:
 
-                        if use_flow_based_width:
-                            w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-                        else:
-                            w = location.graphic_object.pen_width
+                        if location.graphic_object:
 
-                        if branch.active:
-                            style = Qt.SolidLine
+                            if br_active[i]:
 
-                            a = 255
-                            if cmap == palettes.Colormaps.Green2Red:
-                                b, g, r = palettes.green_to_red_bgr(lnorm[i])
+                                if use_flow_based_width:
+                                    w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                                else:
+                                    w = location.graphic_object.pen_width
 
-                            elif cmap == palettes.Colormaps.Heatmap:
-                                b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+                                if branch.active:
+                                    style = Qt.SolidLine
 
-                            elif cmap == palettes.Colormaps.TSO:
-                                b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+                                    a = 255
+                                    if cmap == palettes.Colormaps.Green2Red:
+                                        b, g, r = palettes.green_to_red_bgr(lnorm[i])
 
+                                    elif cmap == palettes.Colormaps.Heatmap:
+                                        b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+
+                                    elif cmap == palettes.Colormaps.TSO:
+                                        b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+
+                                    else:
+                                        r, g, b, a = loading_cmap(lnorm[i])
+                                        r *= 255
+                                        g *= 255
+                                        b *= 255
+                                        a *= 255
+
+                                    color = QColor(r, g, b, a)
+                                else:
+                                    style = Qt.DashLine
+                                    color = Qt.gray
+
+                                tooltip = str(i) + ': ' + branch.name
+                                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+
+                                tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+
+                                if St is not None:
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
+
+                                if losses is not None:
+                                    tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+
+                                if branch.device_type == DeviceType.Transformer2WDevice:
+                                    if ma is not None:
+                                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+
+                                    if theta is not None:
+                                        tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
+
+                                if branch.device_type == DeviceType.VscDevice:
+                                    if ma is not None:
+                                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+
+                                    if theta is not None:
+                                        tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
+
+                                    if Beq is not None:
+                                        tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
+
+                                location.graphic_object.setToolTipText(tooltip)
+                                location.graphic_object.set_colour(color, w, style)
+
+                                if hasattr(location.graphic_object, 'set_arrows_with_power'):
+                                    location.graphic_object.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
+                                                                                  St=St[i] if St is not None else None)
                             else:
-                                r, g, b, a = loading_cmap(lnorm[i])
-                                r *= 255
-                                g *= 255
-                                b *= 255
-                                a *= 255
-
-                            color = QColor(r, g, b, a)
+                                w = location.graphic_object.pen_width
+                                style = Qt.DashLine
+                                color = Qt.gray
+                                location.graphic_object.set_pen(QPen(color, w, style))
                         else:
-                            style = Qt.DashLine
-                            color = Qt.gray
-
-                        tooltip = str(i) + ': ' + branch.name
-                        tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-
-                        tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
-
-                        if St is not None:
-                            tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
-
-                        if losses is not None:
-                            tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
-
-                        if branch.device_type == DeviceType.Transformer2WDevice:
-                            if ma is not None:
-                                tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
-
-                            if theta is not None:
-                                tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
-
-                        if branch.device_type == DeviceType.VscDevice:
-                            if ma is not None:
-                                tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
-
-                            if theta is not None:
-                                tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
-
-                            if Beq is not None:
-                                tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
-
-                        location.graphic_object.setToolTipText(tooltip)
-                        location.graphic_object.set_colour(color, w, style)
-
-                        if hasattr(location.graphic_object, 'set_arrows_with_power'):
-                            location.graphic_object.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
-                                                                          St=St[i] if St is not None else None)
-
-        if failed_br_idx is not None:
-            for i in failed_br_idx:
-
-                location = self.diagram.query_point(branches[i])
-
-                if location:
-                    w = location.graphic_object.pen_width
-                    style = Qt.DashLine
-                    color = Qt.gray
-                    location.graphic_object.set_pen(QPen(color, w, style))
+                            print("Branch {0} {1} has no graphic object!!".format(branch.name, branch.idtag))
 
         if hvdc_Pf is not None:
 
@@ -2133,49 +2143,61 @@ class GridEditorWidget(QSplitter):
 
                 if location:
 
-                    if use_flow_based_width:
-                        w = int(np.floor(
-                            min_branch_width + hvdc_sending_power_norm[i] * (max_branch_width - min_branch_width)))
-                    else:
-                        w = location.graphic_object.pen_width
+                    if location.graphic_object:
 
-                    if elm.active:
-                        style = Qt.SolidLine
+                        if hvdc_active[i]:
 
-                        a = 1
-                        if cmap == palettes.Colormaps.Green2Red:
-                            b, g, r = palettes.green_to_red_bgr(abs(hvdc_loading[i]))
+                            if use_flow_based_width:
+                                w = int(np.floor(
+                                    min_branch_width + hvdc_sending_power_norm[i] * (max_branch_width - min_branch_width)))
+                            else:
+                                w = location.graphic_object.pen_width
 
-                        elif cmap == palettes.Colormaps.Heatmap:
-                            b, g, r = palettes.heatmap_palette_bgr(abs(hvdc_loading[i]))
+                            if elm.active:
+                                style = Qt.SolidLine
 
-                        elif cmap == palettes.Colormaps.TSO:
-                            b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(),
-                                                                    abs(hvdc_loading[i]))
+                                a = 1
+                                if cmap == palettes.Colormaps.Green2Red:
+                                    b, g, r = palettes.green_to_red_bgr(abs(hvdc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.Heatmap:
+                                    b, g, r = palettes.heatmap_palette_bgr(abs(hvdc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.TSO:
+                                    b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(),
+                                                                            abs(hvdc_loading[i]))
+
+                                else:
+                                    r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
+                                    r *= 255
+                                    g *= 255
+                                    b *= 255
+                                    a *= 255
+
+                                color = QColor(r, g, b, a)
+                            else:
+                                style = Qt.DashLine
+                                color = Qt.gray
+
+                            tooltip = str(i) + ': ' + elm.name
+                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                            tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+
+                            if hvdc_losses is not None:
+                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
+                                tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+
+                            location.graphic_object.setToolTipText(tooltip)
+                            location.graphic_object.set_colour(color, w, style)
 
                         else:
-                            r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
-                            r *= 255
-                            g *= 255
-                            b *= 255
-                            a *= 255
-
-                        color = QColor(r, g, b, a)
+                            w = location.graphic_object.pen_width
+                            style = Qt.DashLine
+                            color = Qt.gray
+                            location.graphic_object.set_pen(QPen(color, w, style))
                     else:
-                        style = Qt.DashLine
-                        color = Qt.gray
-
-                    tooltip = str(i) + ': ' + elm.name
-                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
-
-                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
-
-                    if hvdc_losses is not None:
-                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
-                        tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
-
-                    location.graphic_object.setToolTipText(tooltip)
-                    location.graphic_object.set_colour(color, w, style)
+                        print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
     def get_selection_diagram(self) -> BusBranchDiagram:
         """

@@ -17,8 +17,8 @@
 from typing import Union
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.thermal_generating_unit import ThermalGeneratingUnit
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import FuelType
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import FuelType
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
 
 

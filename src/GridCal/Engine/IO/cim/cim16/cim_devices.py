@@ -21,6 +21,7 @@ from GridCal.Engine.IO.cim.cim16.cim_enums import cgmesProfile
 from GridCal.Engine.IO.base.units import UnitSymbol, UnitMultiplier
 import GridCal.Engine.IO.cim.cim16.cim_enums as cim_enums
 from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.data_logger import DataLogger
 
 
 def rfid2uuid(val):
@@ -2033,7 +2034,7 @@ class ACLineSegment(DiPole):
         #                        unit=UnitSymbol.none,
         #                        description="")
 
-    def get_voltage(self):
+    def get_voltage(self, logger: DataLogger):
 
         if self.BaseVoltage is not None:
             return self.BaseVoltage.nominalVoltage
@@ -2044,7 +2045,7 @@ class ACLineSegment(DiPole):
                 if len(tps) > 0:
                     tp = tps[0]
 
-                    return tp.get_voltage()
+                    return tp.get_voltage(logger=logger)
                 else:
                     return None
             else:
@@ -2462,12 +2463,12 @@ class PowerTransformer(DiPole, ConductingEquipment):
 
         return R, X, G, B, R0, X0, G0, B0
 
-    def get_voltages(self):
+    def get_voltages(self, logger: DataLogger):
         """
 
         :return:
         """
-        return [x.get_voltage() for x in self.get_windings()]
+        return [x.get_voltage(logger=logger) for x in self.get_windings()]
 
     def get_rate(self):
 

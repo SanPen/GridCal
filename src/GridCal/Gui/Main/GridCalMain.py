@@ -21,11 +21,7 @@ import qdarktheme
 from PySide6 import QtWidgets
 
 from GridCal.Gui.Main.MainWindow import QApplication
-from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.gui_sub_classes.io import IoMain
-from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
-from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
-from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
@@ -44,14 +40,13 @@ class MainGUI(IoMain):
     MainGUI
     """
 
-    def __init__(self, parent=None):
+    def __init__(self):
         """
-
-        @param parent:
+        Main constructor
         """
 
         # create main window
-        IoMain.__init__(self, parent)
+        IoMain.__init__(self, parent=None)
 
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)

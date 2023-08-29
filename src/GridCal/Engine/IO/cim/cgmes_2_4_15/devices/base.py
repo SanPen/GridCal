@@ -17,7 +17,7 @@
 from typing import Dict, List
 from uuid import uuid4
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_poperty import CgmesProperty
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCal.Engine.data_logger import DataLogger
 
@@ -100,6 +100,24 @@ class Base:
         self.declared_properties: Dict[str, CgmesProperty] = dict()
 
         self.parsed_properties = dict()
+
+        self.boundary_set = False
+
+        self.used = False
+
+    def can_keep(self):
+        """
+        Can I keep this object?
+        :return:
+        """
+        return self.used # and not self.boundary_set
+
+    def has_references(self) -> bool:
+        """
+        Determine if there are references to this object
+        :return: Bool
+        """
+        return len(self.references_to_me) > 0
 
     def parse_dict(self, data: Dict[str, str], logger: DataLogger):
 

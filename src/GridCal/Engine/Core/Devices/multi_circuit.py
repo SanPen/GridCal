@@ -1582,7 +1582,11 @@ class MultiCircuit:
         """
         self.graph = nx.DiGraph()
 
-        self.bus_dictionary = {bus.idtag: i for i, bus in enumerate(self.buses)}
+        self.bus_dictionary = dict()
+
+        for i, bus in enumerate(self.buses):
+            self.graph.add_node(i)
+            self.bus_dictionary[bus.idtag] = i
 
         for branch_list in self.get_branch_lists():
             for branch in branch_list:

@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import Dict, List
-import GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums as cgmes_enums
+from typing import Dict, List, Tuple
+import GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums as cgmes_enums
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.terminal import Terminal
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
@@ -94,7 +94,8 @@ def find_connections(cgmes_elm: IdentifiedObject,
 
 def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                                 gc_model: MultiCircuit,
-                                v_dict: Dict[str, Terminal]) -> Dict[str, gcdev.Bus]:
+                                v_dict: Dict[str, Tuple[float, float]],
+                                logger: DataLogger) -> Dict[str, gcdev.Bus]:
     """
     Convert the TopologicalNodes to CalculationNodes
     :param cgmes_model: CgmesCircuit
@@ -108,8 +109,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.TopologicalNode_list:
 
         voltage = v_dict.get(cgmes_elm.uuid, None)
-        nominal_voltage = cgmes_elm.get_nominal_voltage()
-        if voltage is not None:
+        nominal_voltage = cgmes_elm.get_nominal_voltage(logger=logger)
+        if voltage is not None and nominal_voltage is not None:
             vm = voltage[0] / nominal_voltage
             va = np.deg2rad(voltage[1])
         else:
@@ -376,6 +377,51 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                  expected_value=1)
 
 
+def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
+                             gcdev_model: MultiCircuit,
+                             calc_node_dict: Dict[str, gcdev.Bus],
+                             cn_dict: Dict[str, gcdev.ConnectivityNode],
+                             device_to_terminal_dict: Dict[str, List[Terminal]],
+                             logger: DataLogger) -> None:
+    """
+    Convert the CGMES loads to gcdev
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger:
+    """
+    # convert loads
+    for device_list in [cgmes_model.EquivalentInjection_list]:
+        for cgmes_elm in device_list:
+            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                               device_to_terminal_dict=device_to_terminal_dict,
+                                               calc_node_dict=calc_node_dict,
+                                               cn_dict=cn_dict,
+                                               logger=logger)
+
+            if len(calc_nodes) == 1:
+                calc_node = calc_nodes[0]
+                cn = cns[0]
+
+                gcdev_elm = gcdev.ExternalGrid(idtag=cgmes_elm.uuid,
+                                               code=cgmes_elm.description,
+                                               name=cgmes_elm.name,
+                                               active=True,
+                                               P=cgmes_elm.p,
+                                               Q=cgmes_elm.q)
+
+                gcdev_model.add_external_grid(calc_node, gcdev_elm)
+            else:
+                logger.add_error(msg='Not exactly one terminal',
+                                 device=cgmes_elm.rdfid,
+                                 device_class=cgmes_elm.tpe,
+                                 device_property="number of associated terminals",
+                                 value=len(calc_nodes),
+                                 expected_value=1)
+
+
 def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                        gcdev_model: MultiCircuit,
                        calc_node_dict: Dict[str, gcdev.Bus],
@@ -410,7 +456,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = cgmes_elm.get_pu_values(Sbase)
+                r, x, g, b, r0, x0, g0, b0 = cgmes_elm.get_pu_values(logger, Sbase)
 
                 gcdev_elm = gcdev.Line(idtag=cgmes_elm.uuid,
                                        code=cgmes_elm.description,
@@ -544,7 +590,17 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
     # build the voltages dictionary
-    v_dict = {e.TopologicalNode.uuid: (e.v, e.angle) for e in cgmes_model.SvVoltage_list}
+    v_dict = dict()
+    for e in cgmes_model.SvVoltage_list:
+        if not isinstance(e.TopologicalNode, str):
+            v_dict[e.TopologicalNode.uuid] = (e.v, e.angle)
+        else:
+            logger.add_error(msg='Missing refference',
+                             device=e.rdfid,
+                             device_class=e.tpe,
+                             device_property="TopologicalNode",
+                             value=e.TopologicalNode,
+                             expected_value='object')
 
     # dictionary relating the conducting equipement to the terminal object
     device_to_terminal_dict: Dict[str, List[Terminal]] = dict()
@@ -555,9 +611,10 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
         else:
             lst.append(e)
 
-    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict)
+    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
     get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)

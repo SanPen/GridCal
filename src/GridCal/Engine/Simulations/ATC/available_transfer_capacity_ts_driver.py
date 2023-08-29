@@ -62,7 +62,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                 'time_array'
             ],
             time_array=time_array,
-            clustering_results=clustering_results
+            clustering_results=clustering_results,
         )
 
         # self.time_array = time_array

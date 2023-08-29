@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.base_voltage import BaseVoltage
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.dipole import DiPole
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
+from GridCal.Engine.data_logger import DataLogger
 
 
 class ACLineSegment(DiPole):
@@ -142,7 +143,7 @@ class ACLineSegment(DiPole):
         #                        unit=UnitSymbol.none,
         #                        description="")
 
-    def get_voltage(self):
+    def get_voltage(self, logger: DataLogger):
 
         if self.BaseVoltage is not None:
             return self.BaseVoltage.nominalVoltage
@@ -153,20 +154,20 @@ class ACLineSegment(DiPole):
                 if len(tps) > 0:
                     tp = tps[0]
 
-                    return tp.get_voltage()
+                    return tp.get_voltage(logger=logger)
                 else:
                     return None
             else:
                 return None
 
-    def get_pu_values(self, Sbase: float = 100.0):
+    def get_pu_values(self, logger: DataLogger, Sbase: float = 100.0):
         """
         Get the per-unit values of the equivalent PI model
         :param Sbase: Sbase in MVA
         :return: R, X, Gch, Bch
         """
         if self.BaseVoltage is not None:
-            Vnom = self.get_voltage()
+            Vnom = self.get_voltage(logger=logger)
 
             if Vnom is not None:
 

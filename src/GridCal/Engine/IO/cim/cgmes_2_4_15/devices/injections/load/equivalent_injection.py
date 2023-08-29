@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.reactive_capability_curve import ReactiveCapabilityCurve
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.equivalent_equipment import EquivalentEquipment
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
 

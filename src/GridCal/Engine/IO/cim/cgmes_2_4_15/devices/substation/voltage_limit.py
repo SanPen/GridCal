@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.aggregation.operational_limit_set import OperationalLimitSet
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.aggregation.operational_limit_type import OperationalLimitType

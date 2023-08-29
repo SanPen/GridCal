@@ -3,7 +3,6 @@ from typing import List
 from GridCal.Engine.IO.cim.db.base_db import BaseDb
 from GridCal.Engine.IO.cim.db.file_system import get_create_roseta_db_folder
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_parser import read_cgmes_files
 
 
 class CgmesLookUpDb(BaseDb):
@@ -35,9 +34,14 @@ class CgmesLookUpDb(BaseDb):
         :return:
         """
         pth = os.path.join(self.db_folder, file_name)
-        self.circuit: CgmesCircuit = read_cgmes_files(cim_files=[pth])
+        self.circuit: CgmesCircuit = CgmesCircuit()
+        self.circuit.parse_files(files=[pth], delete_unused=False, detect_circular_references=False)
 
     def get_structures_names(self) -> List[str]:
+        """
+
+        :return:
+        """
         classes = [prop.property_name for prop in self.circuit.get_class_properties()]
         classes.sort()
 

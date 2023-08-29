@@ -20,5 +20,6 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_input import PowerFlowTimeSeriesInput
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults

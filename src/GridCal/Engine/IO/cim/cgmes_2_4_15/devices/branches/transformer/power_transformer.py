@@ -15,11 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.conducting_equipment import ConductingEquipment
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.dipole import DiPole
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
-
+from GridCal.Engine.data_logger import DataLogger
 
 class PowerTransformer(DiPole, ConductingEquipment):
 
@@ -160,12 +160,12 @@ class PowerTransformer(DiPole, ConductingEquipment):
 
         return R, X, G, B, R0, X0, G0, B0
 
-    def get_voltages(self):
+    def get_voltages(self, logger: DataLogger):
         """
 
         :return:
         """
-        return [x.get_voltage() for x in self.get_windings()]
+        return [x.get_voltage(logger=logger) for x in self.get_windings()]
 
     def get_rate(self):
 

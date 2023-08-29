@@ -23,6 +23,7 @@ from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
 import GridCal.Engine.IO.cim.cim16.cim_devices as cimdev
 from GridCal.Engine.IO.cim.cim16.cim_circuit import CIMCircuit
+from GridCal.Engine.data_logger import DataLogger
 
 
 def read_cim_files(cim_files):
@@ -793,7 +794,7 @@ class CIMImport:
                 else:
                     self.logger.add_error('Bus not found', elm.rdfid)
 
-    def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
+    def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict, logger: DataLogger):
         """
 
         :param cim:
@@ -810,7 +811,7 @@ class CIMImport:
                     R, X, G, B = elm.get_pu_values()
                     rate = elm.get_rate()
 
-                    voltages = elm.get_voltages()
+                    voltages = elm.get_voltages(logger=logger)
                     voltages.sort()
 
                     if len(voltages) == 2:
@@ -982,7 +983,7 @@ class CIMImport:
         busbar_dict = self.parse_bus_bars(self.cim, circuit)
         self.parse_ac_line_segment(self.cim, circuit, busbar_dict)
         self.parse_ac_line_segment(self.cim, circuit, busbar_dict)
-        self.parse_power_transformer(self.cim, circuit, busbar_dict)
+        self.parse_power_transformer(self.cim, circuit, busbar_dict, logger=self.logger)
         self.parse_switches(self.cim, circuit, busbar_dict)
         self.parse_loads(self.cim, circuit, busbar_dict)
         self.parse_shunts(self.cim, circuit, busbar_dict)

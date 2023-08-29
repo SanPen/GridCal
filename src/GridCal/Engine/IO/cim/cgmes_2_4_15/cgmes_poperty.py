@@ -17,7 +17,7 @@
 from typing import List, Dict
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
 from GridCal.Engine.IO.base.base_property import BaseProperty
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 
 
 class CgmesProperty(BaseProperty):

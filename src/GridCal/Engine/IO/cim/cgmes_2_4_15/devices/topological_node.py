@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import GridCal
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.bus_bar_section import BusbarSection
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.base_voltage import BaseVoltage
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.connectivity_node_container import ConnectivityNodeContainer
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
@@ -201,13 +201,21 @@ class TopologicalNode(IdentifiedObject):
                                description="Container of this connectivity node",
                                profiles=[cgmesProfile.TP_BD, cgmesProfile.TP])
 
-    def get_nominal_voltage(self) -> float:
+    def get_nominal_voltage(self, logger) -> float:
         """
 
         :return:
         """
         if self.BaseVoltage is not None:
-            return float(self.BaseVoltage.nominalVoltage)
+            if not isinstance(self.BaseVoltage, str):
+                return float(self.BaseVoltage.nominalVoltage)
+            else:
+                logger.add_error(msg='Missing refference',
+                                 device=self.rdfid,
+                                 device_class=self.tpe,
+                                 device_property="BaseVoltage",
+                                 value=self.BaseVoltage,
+                                 expected_value='object')
         else:
             return 0.0
 

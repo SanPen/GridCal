@@ -17,7 +17,7 @@
 import zipfile
 from io import StringIO, TextIOWrapper, BytesIO
 from typing import List
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 
 

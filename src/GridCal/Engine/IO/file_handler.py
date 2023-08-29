@@ -84,7 +84,7 @@ class FileOpen:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
             self.cgmes_circuit = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
-            self.cgmes_circuit.parse_files(cim_files=self.file_name)
+            self.cgmes_circuit.parse_files(files=self.file_name)
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
         else:
@@ -213,7 +213,7 @@ class FileOpen:
                     self.cgmes_circuit = CgmesCircuit(text_func=text_func,
                                                       progress_func=progress_func,
                                                       logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(cim_files=[self.file_name])
+                    self.cgmes_circuit.parse_files(files=[self.file_name])
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
                 elif file_extension.lower() == '.hdf5':

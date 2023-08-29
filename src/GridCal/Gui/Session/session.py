@@ -227,6 +227,21 @@ class SimulationSession:
         else:
             return None, None
 
+    def get_results(self, driver_type: SimulationTypes):
+        """
+        Get the results of the driver
+        :param driver_type: driver type
+        :return: driver, results (None, None if not found)
+        """
+        if driver_type in self.drivers.keys():
+            drv = self.drivers[driver_type]
+            if hasattr(drv, 'results'):
+                return drv.results
+            else:
+                return None
+        else:
+            return None
+
     def delete_driver(self, driver_type: SimulationTypes):
         """
         Get the results of the driver

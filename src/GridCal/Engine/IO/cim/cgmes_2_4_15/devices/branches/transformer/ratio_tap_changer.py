@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.ratio_tap_changer_table import RatioTapChangerTable
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import TransformerControlMode, cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import TransformerControlMode, cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.power_transformer_end import PowerTransformerEnd
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.tap_changer import TapChanger
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol

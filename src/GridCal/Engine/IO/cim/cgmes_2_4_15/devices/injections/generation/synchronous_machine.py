@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.reactive_capability_curve import \
     ReactiveCapabilityCurve
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import ShortCircuitRotorKind, SynchronousMachineKind, \
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import ShortCircuitRotorKind, SynchronousMachineKind, \
     SynchronousMachineOperatingMode, cgmesProfile
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.base_voltage import BaseVoltage
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.generating_unit import GeneratingUnit

@@ -69,6 +69,10 @@ class GridMapWidget(MapWidget):
         self.diagram.name = val
 
     def setBranchData(self, data):
+        """
+
+        :param data:
+        """
         self.setLayerData(self.polyline_layer_id, data)
         self.update()
 
@@ -77,17 +81,19 @@ class GridMapWidget(MapWidget):
                        branches: List[Union[Line, DcLine, Transformer2W, Warning, UPFC, VSC]],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
+                       bus_active: IntVec,
                        Sf: CxVec,
                        St: CxVec,
                        voltages: CxVec,
                        loadings: CxVec,
                        types: IntVec = None,
                        losses: CxVec = None,
+                       br_active: IntVec = None,
                        hvdc_Pf: Vec = None,
                        hvdc_Pt: Vec = None,
                        hvdc_losses: Vec = None,
                        hvdc_loading: Vec = None,
-                       failed_br_idx: IntVec = None,
+                       hvdc_active: IntVec = None,
                        loading_label: str = 'loading',
                        ma: Vec = None,
                        theta: Vec = None,
@@ -98,6 +104,36 @@ class GridMapWidget(MapWidget):
                        min_bus_width=20,
                        max_bus_width=20,
                        cmap: palettes.Colormaps = None):
+        """
+        Color objects based on the results passed
+        :param buses: list of matching bus objects
+        :param branches: list of Branches without HVDC
+        :param hvdc_lines: list of HVDC lines
+        :param Sbus: Buses power (MVA)
+        :param bus_active: Bus active status
+        :param Sf: Branches power from the "from" bus (MVA)
+        :param St: Branches power from the "to" bus (MVA)
+        :param voltages: Buses voltage
+        :param loadings: Branches load (%)
+        :param types: Buses type [PQ: 1, PV: 2, REF: 3, NONE: 4, STO_DISPATCH: 5, PVB: 6]
+        :param losses: Branches losses [%]
+        :param br_active: Branches active status
+        :param hvdc_Pf: HVDC branch flows "from" [MW]
+        :param hvdc_Pt: HVDC branch flows "to" [MW]
+        :param hvdc_losses: HVDC branch losses [MW]
+        :param hvdc_loading: HVDC Branch loading [%]
+        :param hvdc_active: HVDC Branch status
+        :param loading_label: String saling whatever the loading label means
+        :param ma: branch phase shift angle (rad)
+        :param theta: branch tap module (p.u.)
+        :param Beq: Branch equivanet susceptance (p.u.)
+        :param use_flow_based_width: use branch width based on the actual flow?
+        :param min_branch_width: Minimum branch width [px]
+        :param max_branch_width: Maximum branch width [px]
+        :param min_bus_width: Minimum bus width [px]
+        :param max_bus_width: Maximum bus width [px]
+        :param cmap: Color map [palettes.Colormaps]
+        """
 
         # (polyline_points, placement, width, rgba, offset_x, offset_y, udata)
         data: List[PolylineData] = list()

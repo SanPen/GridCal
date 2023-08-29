@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.topological_node import TopologicalNode
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.connectivity_node import ConnectivityNode
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import PhaseCode, cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import PhaseCode, cgmesProfile
 import GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.acdc_terminal as acdc_terminal  # the other type of import has a circular dependency ...
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.base.units import UnitMultiplier, UnitSymbol
@@ -93,13 +93,13 @@ class Terminal(acdc_terminal.ACDCTerminal):
                                mandatory=True,
                                profiles=[cgmesProfile.EQ, cgmesProfile.DY, cgmesProfile.EQ_BD])
 
-    def get_voltage(self):
+    def get_voltage(self, logger: DataLogger):
         """
         Get the voltage of this terminal
         :return: Voltage or None
         """
         if self.TopologicalNode is not None:
-            return self.TopologicalNode.get_nominal_voltage()
+            return self.TopologicalNode.get_nominal_voltage(logger=logger)
         else:
             return None
 

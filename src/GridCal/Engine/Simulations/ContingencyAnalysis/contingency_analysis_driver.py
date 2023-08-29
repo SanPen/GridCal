@@ -150,7 +150,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                         V_guess=pf_res_0.voltage)
 
             results.Sf[ic, :] = pf_res.Sf
-            results.S[ic, :] = pf_res.Sbus
+            results.Sbus[ic, :] = pf_res.Sbus
             results.loading[ic, :] = pf_res.loading
             results.report.analyze(t=t,
                                    mon_idx=mon_idx,
@@ -247,7 +247,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             V, Sf, loading = helm_variations.compute_variations(contingency_br_indices=contingency_br_indices)
 
             results.Sf[ic, :] = Sf
-            results.S[ic, :] = numerical_circuit.Sbus
+            results.Sbus[ic, :] = numerical_circuit.Sbus
             results.loading[ic, :] = loading
             results.report.analyze(t=t,
                                    mon_idx=mon_idx,
@@ -332,7 +332,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
 
             results.Sf[ic, :] = c_flow  # already in MW
-            results.S[ic, :] = Pbus
+            results.Sbus[ic, :] = Pbus
             results.loading[ic, :] = c_loading
             results.report.analyze(t=t,
                                    mon_idx=mon_idx,

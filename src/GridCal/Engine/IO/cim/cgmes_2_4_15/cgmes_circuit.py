@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import pandas as pd
-from typing import Dict, List
+from typing import Dict, List, Union
 from enum import Enum, EnumMeta
 
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment
@@ -53,7 +53,8 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.load.load_group impor
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.load.load_response_characteristic import \
     LoadResponseCharacteristic
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.load.non_conform_load import NonConformLoad
-from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.nuclear_generating_unit import NuclearGeneratingUnit
+from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.nuclear_generating_unit import \
+    NuclearGeneratingUnit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.control_area_generating_unit import \
     ControlAreaGeneratingUnit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.aggregation.operational_limit_set import OperationalLimitSet
@@ -84,7 +85,8 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.phase_tap_c
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.phase_tap_changer_table_point import \
     PhaseTapChangerTablePoint
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.terminal import Terminal
-from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.thermal_generating_unit import ThermalGeneratingUnit
+from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.injections.generation.thermal_generating_unit import \
+    ThermalGeneratingUnit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.tie_flow import TieFlow
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.topological_node import TopologicalNode
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.substation.voltage_level import VoltageLevel
@@ -109,8 +111,211 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.inputs.curve_data import CurveDa
 from GridCal.Engine.data_logger import DataLogger
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_poperty import CgmesProperty
 from GridCal.Engine.IO.base.base_circuit import BaseCircuit
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cim_enums import cgmesProfile
-from GridCal.Engine.IO.cim.cim_data_parser import CimDataParser
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
+from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_data_parser import CgmesDataParser
+
+
+def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
+                    all_objects_dict: Dict[str, IdentifiedObject],
+                    all_objects_dict_boundary: Union[Dict[str, IdentifiedObject], None],
+                    logger: DataLogger,
+                    mark_used: bool) -> None:
+    """
+    Replaces the references in the "actual" properties of the objects
+    :param elements_by_type:
+    :param all_objects_dict:
+    :param all_objects_dict_boundary:
+    :param logger:
+    :param mark_used: mark objects as used?
+    :return: Nothing, it is done in place
+    """
+    added_from_the_boundary_set = list()
+
+    # find cross-references
+    for class_name, elements in elements_by_type.items():
+        for element in elements:  # for every element of the type
+            if mark_used:
+                element.used = True
+
+            # check the declared properties
+            for property_name, cim_prop in element.declared_properties.items():
+
+                # try to get the property value, else, fill with None
+                # at this point val is always the string that came in the XML
+                value = getattr(element, property_name)
+
+                if value is not None:  # if the value is something...
+
+                    if cim_prop.class_type in [str, float, int, bool]:
+                        # set the referenced object in the property
+                        try:
+                            setattr(element, property_name, cim_prop.class_type(value))
+                        except ValueError:
+                            logger.add_error(msg='Value error',
+                                             device=element.rdfid,
+                                             device_class=class_name,
+                                             device_property=property_name,
+                                             value=value,
+                                             expected_value=str(cim_prop.class_type))
+
+                    elif isinstance(cim_prop.class_type, Enum) or isinstance(cim_prop.class_type, EnumMeta):
+
+                        if type(value) == str:
+                            chunks = value.split('.')
+                            value2 = chunks[-1]
+                            try:
+                                enum_val = cim_prop.class_type(value2)
+                                setattr(element, property_name, enum_val)
+                            except TypeError as e:
+                                logger.add_error(msg='Could not convert Enum',
+                                                 device=element.rdfid,
+                                                 device_class=class_name,
+                                                 device_property=property_name,
+                                                 value=value2 + " (value)",
+                                                 expected_value=str(cim_prop.class_type))
+
+                    else:
+                        # search for the reference, if not found -> return None
+                        referenced_object = all_objects_dict.get(value, None)
+
+                        if referenced_object is None and all_objects_dict_boundary:
+                            # search for the reference in the boundary set
+                            referenced_object = all_objects_dict_boundary.get(value, None)
+
+                            # add to the normal data if it wasn't added before
+                            if referenced_object.rdfid not in all_objects_dict:
+                                all_objects_dict[referenced_object.rdfid] = referenced_object
+                                added_from_the_boundary_set.append(referenced_object)
+
+                        # if the reference was found in the data of the boundary set ...
+                        if referenced_object is not None:
+                            if mark_used:
+                                referenced_object.used = True
+
+                            # set the referenced object in the property
+                            setattr(element, property_name, referenced_object)
+
+                            # register the inverse reference
+                            referenced_object.add_reference(element)
+
+                            # check that the type matches the expected type
+                            if cim_prop.class_type in [ConnectivityNodeContainer, IdentifiedObject]:
+                                # the container class is too generic...
+                                pass
+                            else:
+                                if not isinstance(referenced_object, cim_prop.class_type) and \
+                                        cim_prop.class_type != EquipmentContainer:
+                                    # if the class specification does not match but the
+                                    # required type is also not a generic polymorphic object ...
+                                    cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
+                                    logger.add_error(msg='Object type different from expected',
+                                                     device=element.rdfid,
+                                                     device_class=class_name,
+                                                     device_property=property_name,
+                                                     value=referenced_object.tpe,
+                                                     expected_value=cls)
+                        else:
+
+                            # I want to know that it was not found
+                            element.missing_references[property_name] = value
+
+                            if hasattr(element, 'rdfid'):
+                                logger.add_error(msg='Reference not found',
+                                                 device=element.rdfid,
+                                                 device_class=class_name,
+                                                 device_property=property_name,
+                                                 value='Not found',
+                                                 expected_value=value)
+                            else:
+                                logger.add_error(msg='Reference not found for (debugger error)',
+                                                 device=element.rdfid,
+                                                 device_class=class_name,
+                                                 device_property=property_name,
+                                                 value='Not found',
+                                                 expected_value=value)
+
+                    if cim_prop.out_of_the_standard:
+                        logger.add_warning(msg='Property supported but out of the standard',
+                                           device=element.rdfid,
+                                           device_class=class_name,
+                                           device_property=property_name,
+                                           value=value,
+                                           expected_value="")
+
+                else:
+                    if cim_prop.mandatory:
+                        logger.add_error(msg='Required property not provided',
+                                         device=element.rdfid,
+                                         device_class=class_name,
+                                         device_property=property_name,
+                                         value='not provided',
+                                         expected_value=property_name)
+                    else:
+                        pass
+
+            # check the object rules
+            element.check(logger=logger)
+
+    # modify the elements_by_type here adding the elements from the boundary set
+    # all_elements_dict was modified in the previous loop
+    for referenced_object in added_from_the_boundary_set:
+        objects_list_ = elements_by_type.get(referenced_object.tpe, None)
+        if objects_list_:
+            objects_list_.append(referenced_object)
+        else:
+            elements_by_type[referenced_object.tpe] = [referenced_object]
+
+
+def consolidate_data(data: Dict,
+                     all_objects_dict: Dict,
+                     all_objects_dict_boundary: Union[Dict, None],
+                     elements_by_type: Dict,
+                     class_dict: Dict,
+                     logger: DataLogger):
+    """
+
+    :param data:
+    :param all_objects_dict:
+    :param all_objects_dict_boundary:
+    :param elements_by_type:
+    :param circuit_class:
+    :param class_dict: CgmesCircuit or None
+    :param logger:
+    :return:
+    """
+    for class_name, objects_dict in data.items():
+
+        objects_list = list()
+        for rdfid, object_data in objects_dict.items():
+
+            object_template = class_dict.get(class_name, None)
+
+            if object_template is not None:
+
+                parsed_object = object_template(rdfid=rdfid, tpe=class_name)
+                parsed_object.parse_dict(data=object_data, logger=logger)
+
+                found = all_objects_dict.get(parsed_object.rdfid, None)
+
+                if found is None:
+                    all_objects_dict[parsed_object.rdfid] = parsed_object
+                else:
+                    if "Sv" not in class_name:
+                        logger.add_error("Duplicated RDFID", device=class_name, value=parsed_object.rdfid)
+
+                objects_list.append(parsed_object)
+
+            else:
+                logger.add_error("Class not recognized", device_class=class_name)
+
+        elements_by_type[class_name] = objects_list
+
+    # replace refferences by actual objects
+    find_references(elements_by_type=elements_by_type,
+                    all_objects_dict=all_objects_dict,
+                    all_objects_dict_boundary=all_objects_dict_boundary,
+                    logger=logger,
+                    mark_used=True)
 
 
 class CgmesCircuit(BaseCircuit):
@@ -289,37 +494,92 @@ class CgmesCircuit(BaseCircuit):
         self.SvShuntCompensatorSections_list: List[SvShuntCompensatorSections] = list()
         self.SvTapStep_list: List[SvTapStep] = list()
 
-        # dictionary with all objects, usefull to find repeated ID's
-        self.all_objects_dict: Dict[str, IdentifiedObject] = dict()
-
-        # dictionary with elements by type
-        self.elements_by_type: Dict[str, List[IdentifiedObject]] = dict()
-
         # classes to read, theo others are ignored
         self.classes = [key for key, va in self.class_dict.items()]
 
+        # dictionary with all objects, usefull to find repeated ID's
+        self.all_objects_dict: Dict[str, IdentifiedObject] = dict()
+        self.all_objects_dict_boundary: Dict[str, IdentifiedObject] = dict()
+
+        # dictionary with elements by type
+        self.elements_by_type: Dict[str, List[IdentifiedObject]] = dict()
+        self.elements_by_type_boundary: Dict[str, List[IdentifiedObject]] = dict()
+
         # dictionary representation of the xml data
-        self.cim_data: Dict[str, Dict[str, Dict[str, str]]] = dict()
+        self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
+        self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
-    def parse_files(self, cim_files: List[str]):
+    def parse_files(self, files: List[str], delete_unused=True, detect_circular_references=False):
+        """
+        Parse CGMES files into this class
+        :param files: list of CGMES files
+        :param delete_unused: Detele the unused boundary set?
+        :param detect_circular_references: report the circular references
         """
 
-        :param cim_files:
-        :return:
-        """
-        # read the data
-        data_parser = CimDataParser(text_func=self.text_func, progress_func=self.progress_func, logger=self.logger)
-        data_parser.load_cim_file(cim_files=cim_files)
-        self.set_cim_data(data_parser.cim_data)
-        self.consolidate()
+        # read the CGMES data as dictionaries
+        data_parser = CgmesDataParser(text_func=self.text_func,
+                                      progress_func=self.progress_func,
+                                      logger=self.logger)
+        data_parser.load_files(files=files)
 
-    def set_cim_data(self, data: Dict[str, Dict[str, Dict[str, str]]]):
+        # set the data
+        self.set_data(data=data_parser.data,
+                      boundary_set=data_parser.boudary_set)
+
+        # convert the dictionaries to the internal class model for the boundary set
+        # do not mark the boundary set objects as used
+        consolidate_data(data=self.boundary_set,
+                         all_objects_dict=self.all_objects_dict_boundary,
+                         all_objects_dict_boundary=None,
+                         elements_by_type=self.elements_by_type_boundary,
+                         class_dict=self.class_dict,
+                         logger=self.logger)
+
+        # convert the dictionaries to the internal class model,
+        # this marks as used only the boundary set objects that are refferenced,
+        # this allows to delete the excess of boundary set objects later
+        consolidate_data(data=self.data,
+                         all_objects_dict=self.all_objects_dict,
+                         all_objects_dict_boundary=self.all_objects_dict_boundary,
+                         elements_by_type=self.elements_by_type,
+                         class_dict=self.class_dict,
+                         logger=self.logger)
+
+        # Assign the data from all_objects_dict to the appropriate lists in the circuit
+        self.assign_data_to_lists()
+
+        if delete_unused:
+            # delete the unused objects from the boundary set
+            self.delete_unused()
+
+        if detect_circular_references:
+            # for reporting porpuses, detect the circular references in the model due to polymorphism
+            self.detect_circular_references()
+
+    def assign_data_to_lists(self) -> None:
+        """
+        Assign the data from all_objects_dict to the appropriate lists in the circuit
+        :return: Nothing
+        """
+        for object_id, parsed_object in self.all_objects_dict.items():
+
+            # add to its list
+            list_name = parsed_object.tpe + '_list'
+            if hasattr(self, list_name):
+                getattr(self, list_name).append(parsed_object)
+            else:
+                print('Missing list:', list_name)
+
+    def set_data(self, data: Dict[str, Dict[str, Dict[str, str]]], boundary_set: Dict[str, Dict[str, Dict[str, str]]]):
         """
 
         :param data:
+        :param boundary_set:
         :return:
         """
-        self.cim_data = data
+        self.data = data
+        self.boundary_set = boundary_set
 
     def meta_programmer(self):
         """
@@ -450,167 +710,31 @@ class CgmesCircuit(BaseCircuit):
         # otherwise, this is neither the beginning nor the end of an object
         return False, False, ""
 
-    def consolidate(self):
+    def delete_unused(self) -> None:
         """
+        Delete elements that have no refferences to them
+        """
+        elements_by_type = dict()
+        all_objects_dict = dict()
 
-        :return:
-        """
-        for class_name, objects_dict in self.cim_data.items():
+        # delete elements without references
+        for class_name, elements in self.elements_by_type.items():
 
             objects_list = list()
-            for rdfid, object_data in objects_dict.items():
 
-                object_template = self.class_dict.get(class_name, None)
-
-                if object_template is not None:
-
-                    parsed_object = object_template(rdfid=rdfid, tpe=class_name)
-                    parsed_object.parse_dict(data=object_data, logger=self.logger)
-
-                    found = self.all_objects_dict.get(parsed_object.rdfid, None)
-
-                    if found is None:
-                        self.all_objects_dict[parsed_object.rdfid] = parsed_object
-                    else:
-                        if "Sv" not in class_name:
-                            self.logger.add_error("Duplicated RDFID", device=class_name, value=parsed_object.rdfid)
-
-                    objects_list.append(parsed_object)
-
-                    # add to its list
-                    list_name = parsed_object.tpe + '_list'
-                    if hasattr(self, list_name):
-                        getattr(self, list_name).append(parsed_object)
-                    else:
-                        print('Missing list:', list_name)
-
-                else:
-                    self.logger.add_error("Class not recognized", device_class=class_name)
-
-            self.elements_by_type[class_name] = objects_list
-
-        # replace refferences by actual objects
-        self.find_references()
-        self.detect_circular_references()
-
-    def find_references(self) -> None:
-        """
-        Replaces the references in the "actual" properties of the objects
-        :return: Nothing, it is done in place
-        """
-
-        found_classes = list(self.elements_by_type.keys())
-
-        # find cross-references
-        for class_name, elements in self.elements_by_type.items():
             for element in elements:  # for every element of the type
 
-                # check the declared properties
-                for property_name, cim_prop in element.declared_properties.items():
+                if element.can_keep():
+                    all_objects_dict[element.rdfid] = element
+                    objects_list.append(element)
+                else:
+                    print('deleted', element)
 
-                    # try to get the property value, else, fill with None
-                    # at this point val is always the string that came in the XML
-                    value = getattr(element, property_name)
+            elements_by_type[class_name] = objects_list
 
-                    if value is not None:
-
-                        if cim_prop.class_type in [str, float, int, bool]:
-                            # set the referenced object in the property
-                            try:
-                                setattr(element, property_name, cim_prop.class_type(value))
-                            except ValueError:
-                                self.logger.add_error(msg='Value error',
-                                                      device=element.rdfid,
-                                                      device_class=class_name,
-                                                      device_property=property_name,
-                                                      value=value,
-                                                      expected_value=str(cim_prop.class_type))
-
-                        elif isinstance(cim_prop.class_type, Enum) or isinstance(cim_prop.class_type, EnumMeta):
-
-                            if type(value) == str:
-                                chunks = value.split('.')
-                                value2 = chunks[-1]
-                                try:
-                                    enum_val = cim_prop.class_type(value2)
-                                    setattr(element, property_name, enum_val)
-                                except TypeError as e:
-                                    self.logger.add_error(msg='Could not convert Enum',
-                                                          device=element.rdfid,
-                                                          device_class=class_name,
-                                                          device_property=property_name,
-                                                          value=value2 + " (value)",
-                                                          expected_value=str(cim_prop.class_type))
-
-                        else:
-                            # search for the reference, if not found -> return None
-                            referenced_object = self.all_objects_dict.get(value, None)
-
-                            if referenced_object is not None:  # if the reference was found ...
-
-                                # set the referenced object in the property
-                                setattr(element, property_name, referenced_object)
-
-                                # register the inverse reference
-                                referenced_object.add_reference(element)
-
-                                # check that the type matches the expected type
-                                if cim_prop.class_type in [ConnectivityNodeContainer, IdentifiedObject]:
-                                    # the container class is too generic...
-                                    pass
-                                else:
-                                    if not isinstance(referenced_object, cim_prop.class_type) and \
-                                            cim_prop.class_type != EquipmentContainer:
-                                        # if the class specification does not match but the
-                                        # required type is also not a generic polymorphic object ...
-                                        cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
-                                        self.logger.add_error(msg='Object type different from expected',
-                                                              device=element.rdfid,
-                                                              device_class=class_name,
-                                                              device_property=property_name,
-                                                              value=referenced_object.tpe,
-                                                              expected_value=cls)
-                            else:
-
-                                # I want to know that it was not found
-                                element.missing_references[property_name] = value
-
-                                if hasattr(element, 'rdfid'):
-                                    self.logger.add_error(msg='Reference not found',
-                                                          device=element.rdfid,
-                                                          device_class=class_name,
-                                                          device_property=property_name,
-                                                          value='Not found',
-                                                          expected_value=value)
-                                else:
-                                    self.logger.add_error(msg='Reference not found for (debugger error)',
-                                                          device=element.rdfid,
-                                                          device_class=class_name,
-                                                          device_property=property_name,
-                                                          value='Not found',
-                                                          expected_value=value)
-
-                        if cim_prop.out_of_the_standard:
-                            self.logger.add_warning(msg='Property supported but out of the standard',
-                                                    device=element.rdfid,
-                                                    device_class=class_name,
-                                                    device_property=property_name,
-                                                    value=value,
-                                                    expected_value="")
-
-                    else:
-                        if cim_prop.mandatory:
-                            self.logger.add_error(msg='Required property not provided',
-                                                  device=element.rdfid,
-                                                  device_class=class_name,
-                                                  device_property=property_name,
-                                                  value='not provided',
-                                                  expected_value=property_name)
-                        else:
-                            pass
-
-                # check the object rules
-                element.check(logger=self.logger)
+        # replace
+        self.elements_by_type = elements_by_type
+        self.all_objects_dict = all_objects_dict
 
     def parse_xml_text(self, text_lines):
         """
@@ -741,7 +865,7 @@ class CgmesCircuit(BaseCircuit):
 
         root = ET.fromstring(xml_string)
         new_cim_data = parse_xml_to_dict(root)
-        merge(self.cim_data, new_cim_data)
+        merge(self.data, new_cim_data)
 
     def get_data_frames_dictionary(self):
         """
