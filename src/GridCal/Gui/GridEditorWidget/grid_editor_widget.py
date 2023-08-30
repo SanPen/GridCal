@@ -549,8 +549,9 @@ class EditorGraphicsView(QGraphicsView):
                 self.diagram_scene.circuit.add_bus(obj)
 
                 # add to the diagram list
-                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
-                                         graphic_object=graphic_obj)
+                self.editor.update_diagram_element(device=obj, x=x0, y=y0,
+                                                   w=graphic_obj.w, h=graphic_obj.h, r=0,
+                                                   graphic_object=graphic_obj)
 
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
@@ -562,8 +563,8 @@ class EditorGraphicsView(QGraphicsView):
                 self.diagram_scene.circuit.add_transformer3w(obj)
 
                 # add to the diagram list
-                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
-                                         graphic_object=graphic_obj)
+                self.editor.update_diagram_element(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
+                                                   graphic_object=graphic_obj)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -950,7 +951,6 @@ class GridEditorWidget(QSplitter):
         for category, points_group in self.diagram.data.items():
             if category == DeviceType.BusDevice.value:
                 for idtag, location in points_group.locations.items():
-
                     # arrange children
                     location.graphic_object.arrange_children()
 
@@ -971,10 +971,12 @@ class GridEditorWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def set_position(self, device: EditableDevice, x: int, y: int, w: int, h: int, r: float, graphic_object: object) -> None:
+    def update_diagram_element(self, device: EditableDevice,
+                               x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
+                               graphic_object: object = None) -> None:
         """
         Set the position of a device in the diagram
-        :param device: device idtag
+        :param device: EditableDevice
         :param x: x position (px)
         :param y: y position (px)
         :param h: height (px)
@@ -990,6 +992,13 @@ class GridEditorWidget(QSplitter):
                                                         r=r,
                                                         api_object=device,
                                                         graphic_object=graphic_object))
+
+    def delete_diagram_element(self, device: EditableDevice) -> None:
+        """
+        Delete device from the diagram registry
+        :param device: EditableDevice
+        """
+        self.diagram.delete_device(device=device)
 
     def start_connection(self, port: TerminalItem):
         """
@@ -1042,10 +1051,11 @@ class GridEditorWidget(QSplitter):
                                           bus_to=self.started_branch.bus_to.api_object,
                                           name=name)
 
-                                obj.graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                 toPort=self.started_branch.toPort,
-                                                                 diagramScene=self.diagramScene,
-                                                                 api_object=obj)
+                                graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
+                                                             toPort=self.started_branch.toPort,
+                                                             diagramScene=self.diagramScene,
+                                                             api_object=obj)
+                                self.update_diagram_element(device=obj, graphic_object=graphic_obj)
 
                             elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
                                 # both buses are DC
@@ -1055,10 +1065,11 @@ class GridEditorWidget(QSplitter):
                                              bus_to=self.started_branch.bus_to.api_object,
                                              name=name)
 
-                                obj.graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                    toPort=self.started_branch.toPort,
-                                                                    diagramScene=self.diagramScene,
-                                                                    api_object=obj)
+                                graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                toPort=self.started_branch.toPort,
+                                                                diagramScene=self.diagramScene,
+                                                                api_object=obj)
+                                self.update_diagram_element(device=obj, graphic_object=graphic_obj)
 
                             else:
                                 # Same DC status -> line / trafo
@@ -1071,10 +1082,11 @@ class GridEditorWidget(QSplitter):
                                                         bus_to=self.started_branch.bus_to.api_object,
                                                         name=name)
 
-                                    obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                             toPort=self.started_branch.toPort,
-                                                                             diagramScene=self.diagramScene,
-                                                                             api_object=obj)
+                                    graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                         toPort=self.started_branch.toPort,
+                                                                         diagramScene=self.diagramScene,
+                                                                         api_object=obj)
+                                    self.update_diagram_element(device=obj, graphic_object=graphic_obj)
 
                                 else:
                                     name = 'Line ' + str(len(self.circuit.lines) + 1)
@@ -1082,20 +1094,21 @@ class GridEditorWidget(QSplitter):
                                                bus_to=self.started_branch.bus_to.api_object,
                                                name=name)
 
-                                    obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                      toPort=self.started_branch.toPort,
-                                                                      diagramScene=self.diagramScene,
-                                                                      api_object=obj)
+                                    graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                  toPort=self.started_branch.toPort,
+                                                                  diagramScene=self.diagramScene,
+                                                                  api_object=obj)
+                                    self.update_diagram_element(device=obj, graphic_object=graphic_obj)
 
                             # add the new object to the circuit
                             self.circuit.add_branch(obj)
 
                             # update the connection placement
-                            obj.graphic_obj.fromPort.update()
-                            obj.graphic_obj.toPort.update()
+                            graphic_obj.fromPort.update()
+                            graphic_obj.toPort.update()
 
                             # set the connection placement
-                            obj.graphic_obj.setZValue(-1)
+                            graphic_obj.setZValue(-1)
 
                         elif isinstance(self.started_branch.bus_from.api_object, Transformer3W):
 
@@ -1119,6 +1132,7 @@ class GridEditorWidget(QSplitter):
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
                                 obj.graphic_obj.update_conn()
+                                self.update_diagram_element(device=obj, graphic_object=obj.graphic_obj)
 
                         elif isinstance(self.started_branch.bus_to.api_object, Transformer3W):
 
@@ -1142,6 +1156,7 @@ class GridEditorWidget(QSplitter):
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
                                 obj.graphic_obj.update_conn()
+                                self.update_diagram_element(device=obj, graphic_object=obj.graphic_obj)
 
                         else:
                             print('unknown connection')
@@ -1352,7 +1367,7 @@ class GridEditorWidget(QSplitter):
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
-        branch.graphic_obj = graphic_obj
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
     def add_dc_line(self, branch: DcLine):
         """
@@ -1366,7 +1381,7 @@ class GridEditorWidget(QSplitter):
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
-        branch.graphic_obj = graphic_obj
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
     def add_transformer(self, branch: Transformer2W):
         """
@@ -1380,7 +1395,7 @@ class GridEditorWidget(QSplitter):
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
-        branch.graphic_obj = graphic_obj
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
     def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
         """
@@ -1403,13 +1418,13 @@ class GridEditorWidget(QSplitter):
         # arrange the children
         graphic_obj.arrange_children()
 
-        self.set_position(device=bus,
-                          x=x,
-                          y=y,
-                          w=bus.w,
-                          h=bus.h,
-                          r=0,
-                          graphic_object=graphic_obj)
+        self.update_diagram_element(device=bus,
+                                    x=x,
+                                    y=y,
+                                    w=bus.w,
+                                    h=bus.h,
+                                    r=0,
+                                    graphic_object=graphic_obj)
 
         return graphic_obj
 
@@ -1431,7 +1446,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1454,7 +1469,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1477,7 +1492,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1500,7 +1515,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1523,7 +1538,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1546,7 +1561,7 @@ class GridEditorWidget(QSplitter):
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             return None
@@ -1580,13 +1595,13 @@ class GridEditorWidget(QSplitter):
 
         graphic_obj.update_conn()
 
-        self.set_position(device=elm.idtag,
-                          x=elm.x,
-                          y=elm.y,
-                          w=80,
-                          h=80,
-                          r=0,
-                          graphic_object=graphic_obj)
+        self.update_diagram_element(device=elm.idtag,
+                                    x=elm.x,
+                                    y=elm.y,
+                                    w=80,
+                                    h=80,
+                                    r=0,
+                                    graphic_object=graphic_obj)
 
         return graphic_obj
 
@@ -1599,14 +1614,17 @@ class GridEditorWidget(QSplitter):
         hvdc = self.circuit.convert_line_to_hvdc(line)
 
         # add device to the schematic
-        hvdc.graphic_obj = self.add_api_hvdc(hvdc)
+        graphic_obj = self.add_api_hvdc(hvdc)
 
         # update position
-        hvdc.graphic_obj.fromPort.update()
-        hvdc.graphic_obj.toPort.update()
+        graphic_obj.fromPort.update()
+        graphic_obj.toPort.update()
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
+
+        self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=line)
 
     def convert_line_to_transformer(self, line: Line):
         """
@@ -1617,14 +1635,17 @@ class GridEditorWidget(QSplitter):
         transformer = self.circuit.convert_line_to_transformer(line)
 
         # add device to the schematic
-        transformer.graphic_obj = self.add_api_transformer(transformer)
+        graphic_obj = self.add_api_transformer(transformer)
 
         # update position
-        transformer.graphic_obj.fromPort.update()
-        transformer.graphic_obj.toPort.update()
+        graphic_obj.fromPort.update()
+        graphic_obj.toPort.update()
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
+
+        self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=line)
 
     def convert_line_to_vsc(self, line: Line):
         """
@@ -1635,14 +1656,17 @@ class GridEditorWidget(QSplitter):
         vsc = self.circuit.convert_line_to_vsc(line)
 
         # add device to the schematic
-        vsc.graphic_obj = self.add_api_vsc(vsc)
+        graphic_obj = self.add_api_vsc(vsc)
 
         # update position
-        vsc.graphic_obj.fromPort.update()
-        vsc.graphic_obj.toPort.update()
+        graphic_obj.fromPort.update()
+        graphic_obj.toPort.update()
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
+
+        self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=line)
 
     def convert_line_to_upfc(self, line: Line):
         """
@@ -1653,14 +1677,17 @@ class GridEditorWidget(QSplitter):
         upfc = self.circuit.convert_line_to_upfc(line)
 
         # add device to the schematic
-        upfc.graphic_obj = self.add_api_upfc(upfc)
+        graphic_obj = self.add_api_upfc(upfc)
 
         # update position
-        upfc.graphic_obj.fromPort.update()
-        upfc.graphic_obj.toPort.update()
+        graphic_obj.fromPort.update()
+        graphic_obj.toPort.update()
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
+
+        self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=line)
 
     def convert_generator_to_battery(self, gen: Generator):
         """
@@ -2073,7 +2100,8 @@ class GridEditorWidget(QSplitter):
                             if br_active[i]:
 
                                 if use_flow_based_width:
-                                    w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                                    w = int(
+                                        np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                                 else:
                                     w = location.graphic_object.pen_width
 
@@ -2088,7 +2116,8 @@ class GridEditorWidget(QSplitter):
                                         b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
 
                                     elif cmap == palettes.Colormaps.TSO:
-                                        b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+                                        b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(),
+                                                                                lnorm[i])
 
                                     else:
                                         r, g, b, a = loading_cmap(lnorm[i])
@@ -2160,7 +2189,8 @@ class GridEditorWidget(QSplitter):
 
                             if use_flow_based_width:
                                 w = int(np.floor(
-                                    min_branch_width + hvdc_sending_power_norm[i] * (max_branch_width - min_branch_width)))
+                                    min_branch_width + hvdc_sending_power_norm[i] * (
+                                                max_branch_width - min_branch_width)))
                             else:
                                 w = location.graphic_object.pen_width
 
@@ -2191,7 +2221,8 @@ class GridEditorWidget(QSplitter):
                                 color = Qt.gray
 
                             tooltip = str(i) + ': ' + elm.name
-                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
+                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                abs(hvdc_loading[i]) * 100) + ' [%]'
 
                             tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
 
@@ -2256,7 +2287,6 @@ class GridEditorWidget(QSplitter):
                         location = self.diagram.query_point(bus)
 
                         if location and (bus.idtag not in bus_dict):
-
                             # if the bus was not added in the first pass and is in the original diagram, add it now
                             diagram.set_point(device=bus,
                                               location=location)

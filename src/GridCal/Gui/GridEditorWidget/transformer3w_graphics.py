@@ -185,13 +185,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.diagramScene.parent_.set_position(device=self.api_object,
-                                               x=self.pos().x(),
-                                               y=self.pos().y(),
-                                               w=self.w,
-                                               h=self.h,
-                                               r=self.rotation(),
-                                               graphic_object=self)
+        self.diagramScene.parent_.update_diagram_element(device=self.api_object,
+                                                         x=self.pos().x(),
+                                                         y=self.pos().y(),
+                                                         w=self.w,
+                                                         h=self.h,
+                                                         r=self.rotation(),
+                                                         graphic_object=self)
 
         self.update_conn()
 
@@ -238,13 +238,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         # Keep for compatibility
 
-        self.diagramScene.parent_.set_position(idtag=self.api_object.idtag,
-                                               x=self.pos().x(),
-                                               y=self.pos().y(),
-                                               w=w,
-                                               h=h,
-                                               r=self.rotation(),
-                                               graphic_object=self)
+        self.diagramScene.parent_.update_diagram_element(idtag=self.api_object.idtag,
+                                                         x=self.pos().x(),
+                                                         y=self.pos().y(),
+                                                         w=w,
+                                                         h=h,
+                                                         r=self.rotation(),
+                                                         graphic_object=self)
 
     def set_position(self, x: float, y: float) -> None:
         """

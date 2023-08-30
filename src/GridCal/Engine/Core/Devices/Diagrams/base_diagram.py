@@ -46,6 +46,17 @@ class PointsGroup:
         """
         self.locations[device.idtag] = location
 
+    def delete_device(self, device: EditableDevice):
+        """
+        Delete location
+        :param device:
+        :return:
+        """
+        loc = self.query_point(device)
+
+        if loc:
+            del self.locations[device.idtag]
+
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
         """
 
@@ -129,6 +140,18 @@ class BaseDiagram:
         else:
             # the category does exists, add point
             d.set_point(device, location)  # the category, exists, just add
+
+    def delete_device(self, device: EditableDevice):
+
+        # check if the category exists ...
+        d = self.data.get(device.device_type.value, None)
+
+        if d:
+            # the category does exist, delete from it
+            d.delete_device(device=device)
+        else:
+            # not found so we're ok
+            pass
 
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
         """
