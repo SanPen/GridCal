@@ -190,7 +190,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                                                y=self.pos().y(),
                                                w=self.w,
                                                h=self.h,
-                                               r=self.rotation())
+                                               r=self.rotation(),
+                                               graphic_object=self)
 
         self.update_conn()
 
@@ -242,7 +243,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                                                y=self.pos().y(),
                                                w=w,
                                                h=h,
-                                               r=self.rotation())
+                                               r=self.rotation(),
+                                               graphic_object=self)
 
     def set_position(self, x: float, y: float) -> None:
         """

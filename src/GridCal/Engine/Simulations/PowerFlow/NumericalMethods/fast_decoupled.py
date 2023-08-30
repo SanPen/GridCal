@@ -13,8 +13,9 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
-    :param Sbus: array of power Injections
-    :param Ibus: array of current Injections
+    :param S0: array of power Injections
+    :param I0: array of current Injections
+    :param Y0: array of admittance Injections
     :param Ybus: Admittance matrix
     :param B1: B' matrix for the fast decoupled algorithm
     :param B2: B'' matrix for the fast decoupled algorithm
@@ -35,8 +36,8 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     Vm = np.abs(voltage)
 
     # Factorize B1 and B2
-    J1 = splu(B1[np.ix_(pqpv, pqpv)])
-    J2 = splu(B2[np.ix_(pq, pq)])
+    B1_factorization = splu(B1[np.ix_(pqpv, pqpv)])
+    B2_factorization = splu(B2[np.ix_(pq, pq)])
 
     # evaluate initial mismatch
     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
@@ -58,7 +59,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
 
             # ----------------------------- P iteration to update Va ----------------------
             # solve voltage angles
-            dVa = J1.solve(dP)
+            dVa = B1_factorization.solve(dP)
 
             # update voltage
             Va[pqpv] -= dVa
@@ -78,7 +79,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
             else:
                 # ----------------------------- Q iteration to update Vm ----------------------
                 # Solve voltage modules
-                dVm = J2.solve(dQ)
+                dVm = B2_factorization.solve(dQ)
 
                 # update voltage
                 Vm[pq] -= dVm

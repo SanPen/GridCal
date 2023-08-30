@@ -17,6 +17,7 @@
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
+from typing import Union
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -145,7 +146,7 @@ class SigmaAnalysisResults:
 
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> Union[None, "ResultsTable"]:
         """
 
         :param result_type:
@@ -180,8 +181,12 @@ class SigmaAnalysisResults:
                 y_label = '(p.u.)'
                 title = 'Sigma and distances'
 
-                mdl = ResultsTable(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
-                                   title=title, ylabel=y_label, units=y_label)
+                mdl = ResultsTable(data=y,
+                                   index=labels,
+                                   columns=['σ real', 'σ imaginary', 'Distances'],
+                                   title=title,
+                                   ylabel=y_label,
+                                   units=y_label)
                 return mdl
 
             else:
@@ -191,15 +196,20 @@ class SigmaAnalysisResults:
                 title = ''
 
             # assemble model
-            mdl = ResultsTable(data=y, index=labels, columns=[result_type.value[0]],
-                               title=title, ylabel=y_label, units=y_label)
+            mdl = ResultsTable(data=y,
+                               index=labels,
+                               columns=np.array([result_type.value[0]]),
+                               title=title,
+                               ylabel=y_label,
+                               units=y_label)
             return mdl
 
         else:
             return None
 
 
-def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions,
+def multi_island_sigma(multi_circuit: MultiCircuit,
+                       options: PowerFlowOptions,
                        logger=Logger()) -> "SigmaAnalysisResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
@@ -301,12 +311,15 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions,
             Sig_im = np.zeros(n, dtype=float)
 
             try:
-                Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
-                Sig_re[calculation_input.pqpv] = np.real(Sigma)
-                Sig_im[calculation_input.pqpv] = np.imag(Sigma)
+                if iter_ > 1:
+                    Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
+                    Sig_re[calculation_input.pqpv] = np.real(Sigma)
+                    Sig_im[calculation_input.pqpv] = np.imag(Sigma)
+                else:
+                    Sig_re = np.zeros(n, dtype=float)
+                    Sig_im = np.zeros(n, dtype=float)
             except np.linalg.LinAlgError:
                 print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
-                Sigma = np.zeros(n, dtype=complex)
                 Sig_re = np.zeros(n, dtype=float)
                 Sig_im = np.zeros(n, dtype=float)
 
@@ -408,7 +421,7 @@ class SigmaAnalysisDriver(DriverTemplate):
         # Options to use
         self.options = options
 
-        self.results: SigmaAnalysisResults = None
+        self.results: Union[None, SigmaAnalysisResults] = None
 
         self.logger = Logger()
 

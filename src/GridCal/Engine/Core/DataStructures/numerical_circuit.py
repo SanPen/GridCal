@@ -1474,17 +1474,30 @@ class NumericalCircuit:
             )
 
         elif structure_type == "B'":
-            names = self.bus_names[self.pqpv]
+
+            if self.B1.shape[0] == len(self.pqpv):
+                data = self.B1.toarray()
+                names = self.bus_names[self.pqpv]
+            else:
+                data = self.B1[np.ix_(self.pqpv, self.pqpv)].toarray()
+                names = self.bus_names[self.pqpv]
+
             df = pd.DataFrame(
-                data=self.B1.toarray(),
+                data=data,
                 columns=names,
                 index=names,
             )
 
         elif structure_type == "B''":
-            names = self.bus_names[self.pq]
+            if self.B2.shape[0] == len(self.pq):
+                data = self.B2.toarray()
+                names = self.bus_names[self.pq]
+            else:
+                data = self.B2[np.ix_(self.pq, self.pq)].toarray()
+                names = self.bus_names[self.pq]
+
             df = pd.DataFrame(
-                data=self.B2.toarray(),
+                data=data,
                 columns=names,
                 index=names,
             )

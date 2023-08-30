@@ -29,7 +29,9 @@ class GraphicLocation:
                  h: int = 80,
                  w: int = 80,
                  r: float = 0,
-                 poly_line: List[Tuple[int, int]] = list(), api_object: EditableDevice = None):
+                 poly_line: List[Tuple[int, int]] = list(),
+                 api_object: EditableDevice = None,
+                 graphic_object: object = None):
         """
 
         :param x: x position (px)
@@ -47,7 +49,7 @@ class GraphicLocation:
         self.r = r
         self.poly_line = poly_line
         self.api_object = api_object
-        self.graphic_object = None  # filled by the widget if needed
+        self.graphic_object = graphic_object  # filled by the widget if needed
 
     def get_properties_dict(self) -> Dict[str, int]:
         """

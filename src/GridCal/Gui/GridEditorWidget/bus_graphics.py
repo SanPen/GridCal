@@ -169,7 +169,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                         y=self.pos().y(),
                                         w=self.w,
                                         h=self.h,
-                                        r=self.rotation())
+                                        r=self.rotation(),
+                                        graphic_object=self)
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """
@@ -276,7 +277,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                         y=self.pos().y(),
                                         w=w,
                                         h=h,
-                                        r=self.rotation())
+                                        r=self.rotation(),
+                                        graphic_object=self)
 
         return w, h
 

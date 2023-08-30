@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import pandas as pd
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Callable
 from enum import Enum, EnumMeta
 
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment
@@ -122,10 +122,11 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                     mark_used: bool) -> None:
     """
     Replaces the references in the "actual" properties of the objects
-    :param elements_by_type:
-    :param all_objects_dict:
-    :param all_objects_dict_boundary:
-    :param logger:
+    :param elements_by_type: Dictionary of elements by type to fill in (same as all_objects_dict but by categories)
+    :param all_objects_dict: dictionary of all model objects to add Parsed objects
+    :param all_objects_dict_boundary: dictionary of all boundary set objects to
+                                      add Parsed objects used to find references
+    :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
     """
@@ -266,22 +267,22 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
             elements_by_type[referenced_object.tpe] = [referenced_object]
 
 
-def consolidate_data(data: Dict,
-                     all_objects_dict: Dict,
-                     all_objects_dict_boundary: Union[Dict, None],
-                     elements_by_type: Dict,
-                     class_dict: Dict,
-                     logger: DataLogger):
+def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
+                            all_objects_dict: Dict[str, IdentifiedObject],
+                            all_objects_dict_boundary: Union[Dict[str, IdentifiedObject], None],
+                            elements_by_type: Dict[str, List[IdentifiedObject]],
+                            class_dict: Dict[str, IdentifiedObject],
+                            logger: DataLogger) -> None:
     """
-
-    :param data:
-    :param all_objects_dict:
-    :param all_objects_dict_boundary:
-    :param elements_by_type:
-    :param circuit_class:
+    Convert CGMES data dictionaries to proper CGMES objects
+    :param data: source data to convert
+    :param all_objects_dict: dictionary of all model objects to add Parsed objects
+    :param all_objects_dict_boundary: dictionary of all boundary set objects to
+                                      add Parsed objects used to find references
+    :param elements_by_type: Dictionary of elements by type to fill in (same as all_objects_dict but by categories)
     :param class_dict: CgmesCircuit or None
-    :param logger:
-    :return:
+    :param logger:DataLogger
+    :return: None
     """
     for class_name, objects_dict in data.items():
 
@@ -323,7 +324,10 @@ class CgmesCircuit(BaseCircuit):
     CgmesCircuit
     """
 
-    def __init__(self, text_func=None, progress_func=None, logger=DataLogger()):
+    def __init__(self,
+                 text_func: Union[Callable, None] = None,
+                 progress_func: Union[Callable, None] = None,
+                 logger=DataLogger()):
         """
         CIM circuit constructor
         """
@@ -529,22 +533,22 @@ class CgmesCircuit(BaseCircuit):
 
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
-        consolidate_data(data=self.boundary_set,
-                         all_objects_dict=self.all_objects_dict_boundary,
-                         all_objects_dict_boundary=None,
-                         elements_by_type=self.elements_by_type_boundary,
-                         class_dict=self.class_dict,
-                         logger=self.logger)
+        convert_data_to_objects(data=self.boundary_set,
+                                all_objects_dict=self.all_objects_dict_boundary,
+                                all_objects_dict_boundary=None,
+                                elements_by_type=self.elements_by_type_boundary,
+                                class_dict=self.class_dict,
+                                logger=self.logger)
 
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are refferenced,
         # this allows to delete the excess of boundary set objects later
-        consolidate_data(data=self.data,
-                         all_objects_dict=self.all_objects_dict,
-                         all_objects_dict_boundary=self.all_objects_dict_boundary,
-                         elements_by_type=self.elements_by_type,
-                         class_dict=self.class_dict,
-                         logger=self.logger)
+        convert_data_to_objects(data=self.data,
+                                all_objects_dict=self.all_objects_dict,
+                                all_objects_dict_boundary=self.all_objects_dict_boundary,
+                                elements_by_type=self.elements_by_type,
+                                class_dict=self.class_dict,
+                                logger=self.logger)
 
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
         self.assign_data_to_lists()

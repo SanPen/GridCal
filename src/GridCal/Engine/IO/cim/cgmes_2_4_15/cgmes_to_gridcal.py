@@ -21,6 +21,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.terminal import Terminal
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.transformer.power_transformer_end import PowerTransformerEnd
+from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as gcdev
 from GridCal.Engine.data_logger import DataLogger
@@ -270,44 +271,24 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
 
                     if cgmes_elm.RegulatingControl is not None:
                         if cgmes_elm.RegulatingControl.mode == cgmes_enums.RegulatingControlModeKind.voltage:
-                            control_terminal = cgmes_elm.RegulatingControl.Terminal
-                            v_control_value = cgmes_elm.RegulatingControl.targetValue
 
                             if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
+                                v_control_value = cgmes_elm.RegulatingControl.targetValue  # kV
                                 v_set = v_control_value / cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
+                                is_controlled = True
 
                                 # find the control node
-                                calc_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
-                                                                       calc_node_dict=calc_node_dict,
-                                                                       cn_dict=cn_dict)
+                                control_terminal = cgmes_elm.RegulatingControl.Terminal
+                                control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
+                                                                          calc_node_dict=calc_node_dict,
+                                                                          cn_dict=cn_dict)
 
-                                # try and see if the plant was created already:
-                                # plant = plants_dict.get(control_terminal.uuid, None)
-                                #
-                                # if plant is None:
-                                #     # create a control plant object
-                                #     plant = gcdev.aggregation.Plant(idtag='',
-                                #                                     code='',
-                                #                                     name=calc_node.name if calc_node is not None else "",
-                                #                                     cn=cn,
-                                #                                     calc_node=calc_node,
-                                #                                     v_set=v_set)
-                                #
-                                #     gcdev_model.plants.append(plant)
-                                #     plants_dict[control_terminal.uuid] = plant
-                                # else:
-                                #     # check
-                                #     if plant.v_set != v_set:
-                                #         logger.add_warning(msg='More than one voltage control set point',
-                                #                            device=cgmes_elm.rdfid,
-                                #                            device_class=cgmes_elm.tpe,
-                                #                            device_property="EquipmentContainer",
-                                #                            value=v_set,
-                                #                            expected_value=plant.v_set)
+                                print(end='')
 
                             else:
-                                control_terminal = None
-                                plant = None
+                                control_node = None
+                                v_set = 1.0
+                                is_controlled = False
                                 logger.add_warning(msg='SynchronousMachine has no voltage control',
                                                    device=cgmes_elm.rdfid,
                                                    device_class=cgmes_elm.tpe,
@@ -316,8 +297,9 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                    expected_value='BaseVoltage')
 
                         else:
-                            control_terminal = None
-                            plant = None
+                            control_node = None
+                            v_set = 1.0
+                            is_controlled = False
                             logger.add_warning(msg='SynchronousMachine has no voltage control',
                                                device=cgmes_elm.rdfid,
                                                device_class=cgmes_elm.tpe,
@@ -325,8 +307,9 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                value='None',
                                                expected_value='BaseVoltage')
                     else:
-                        control_terminal = None
-                        plant = None
+                        control_node = None
+                        v_set = 1.0
+                        is_controlled = False
                         logger.add_warning(msg='SynchronousMachine has no voltage control',
                                            device=cgmes_elm.rdfid,
                                            device_class=cgmes_elm.tpe,
@@ -352,7 +335,9 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 p_max=cgmes_elm.GeneratingUnit.maxOperatingP,
                                                 power_factor=pf,
                                                 Qmax=cgmes_elm.maxQ,
-                                                Qmin=cgmes_elm.minQ)
+                                                Qmin=cgmes_elm.minQ,
+                                                voltage_module=v_set,
+                                                is_controlled=is_controlled)
 
                     gcdev_model.add_generator(calc_node, gcdev_elm)
 
@@ -436,10 +421,19 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param logger:
+    :param logger: DataLogger
     :param Sbase: system base power in MVA
-    :return:
+    :return: None
     """
+
+    # build the ratings dictionary
+    rates_dict = dict()
+    for e in cgmes_model.CurrentLimit_list:
+        if not isinstance(e.OperationalLimitSet, str):
+            if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, ACLineSegment):
+                branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                rates_dict[branch_id] = e.value
+
     # convert ac lines
     for device_list in [cgmes_model.ACLineSegment_list]:
         for cgmes_elm in device_list:
@@ -458,6 +452,14 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 # get per unit vlaues
                 r, x, g, b, r0, x0, g0, b0 = cgmes_elm.get_pu_values(logger, Sbase)
 
+                current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
+                if current_rate:
+                    # rate in MVA = kA * kV * sqrt(3)
+                    rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                                    4)
+                else:
+                    rate = 1e-20
+
                 gcdev_elm = gcdev.Line(idtag=cgmes_elm.uuid,
                                        code=cgmes_elm.description,
                                        name=cgmes_elm.name,
@@ -472,7 +474,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                        r0=r0,
                                        x0=x0,
                                        b0=b0,
-                                       rate=1e-20,
+                                       rate=rate,
                                        length=cgmes_elm.length)
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:
@@ -498,9 +500,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param logger:
+    :param logger: DataLogger
     :param Sbase: system base power in MVA
-    :return:
+    :return: None
     """
 
     # convert ac lines

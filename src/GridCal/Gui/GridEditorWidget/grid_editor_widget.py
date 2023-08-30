@@ -549,7 +549,8 @@ class EditorGraphicsView(QGraphicsView):
                 self.diagram_scene.circuit.add_bus(obj)
 
                 # add to the diagram list
-                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0)
+                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
+                                         graphic_object=graphic_obj)
 
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
@@ -561,7 +562,8 @@ class EditorGraphicsView(QGraphicsView):
                 self.diagram_scene.circuit.add_transformer3w(obj)
 
                 # add to the diagram list
-                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0)
+                self.editor.set_position(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
+                                         graphic_object=graphic_obj)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -969,7 +971,7 @@ class GridEditorWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def set_position(self, device: EditableDevice, x: int, y: int, w: int, h: int, r: float) -> None:
+    def set_position(self, device: EditableDevice, x: int, y: int, w: int, h: int, r: float, graphic_object: object) -> None:
         """
         Set the position of a device in the diagram
         :param device: device idtag
@@ -978,9 +980,16 @@ class GridEditorWidget(QSplitter):
         :param h: height (px)
         :param w: width (px)
         :param r: rotation (deg)
+        :param graphic_object: Graphic object associated
         """
         self.diagram.set_point(device=device,
-                               location=GraphicLocation(x=x, y=y, h=h, w=w, r=r))
+                               location=GraphicLocation(x=x,
+                                                        y=y,
+                                                        h=h,
+                                                        w=w,
+                                                        r=r,
+                                                        api_object=device,
+                                                        graphic_object=graphic_object))
 
     def start_connection(self, port: TerminalItem):
         """
@@ -1379,15 +1388,8 @@ class GridEditorWidget(QSplitter):
         :param bus: Bus instance
         :param explode_factor: explode factor
         """
-
         x = int(bus.x * explode_factor)
         y = int(bus.y * explode_factor)
-        self.set_position(device=bus,
-                          x=x,
-                          y=y,
-                          w=bus.w,
-                          h=bus.h,
-                          r=0)
 
         # add the graphic object to the diagram view
         graphic_obj = self.editor_graphics_view.add_bus(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
@@ -1400,6 +1402,14 @@ class GridEditorWidget(QSplitter):
 
         # arrange the children
         graphic_obj.arrange_children()
+
+        self.set_position(device=bus,
+                          x=x,
+                          y=y,
+                          w=bus.w,
+                          h=bus.h,
+                          r=0,
+                          graphic_object=graphic_obj)
 
         return graphic_obj
 
@@ -1550,13 +1560,6 @@ class GridEditorWidget(QSplitter):
 
         graphic_obj = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
 
-        self.set_position(device=elm.idtag,
-                          x=elm.x,
-                          y=elm.y,
-                          w=80,
-                          h=80,
-                          r=0)
-
         # add circuit pointer to the bus graphic element
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
@@ -1576,6 +1579,14 @@ class GridEditorWidget(QSplitter):
         graphic_obj.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
         graphic_obj.update_conn()
+
+        self.set_position(device=elm.idtag,
+                          x=elm.x,
+                          y=elm.y,
+                          w=80,
+                          h=80,
+                          r=0,
+                          graphic_object=graphic_obj)
 
         return graphic_obj
 

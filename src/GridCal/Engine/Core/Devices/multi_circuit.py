@@ -29,6 +29,7 @@ from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
 from GridCal.Engine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat, ObjVec
+from GridCal.Engine.data_logger import DataLogger
 import GridCal.Engine.Core.Devices as dev
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Core.topology as tp
@@ -1764,7 +1765,7 @@ class MultiCircuit:
             print('Deleted', obj.name)
             self.buses.remove(obj)
 
-    def add_line(self, obj: dev.Line, logger: bs.Logger = bs.Logger()):
+    def add_line(self, obj: dev.Line, logger: Union[bs.Logger, DataLogger] = bs.Logger()):
         """
         Add a line object
         :param obj: Line instance
