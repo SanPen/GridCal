@@ -255,6 +255,7 @@ class StateEstimation(DriverTemplate):
                                              m=island.nbr,
                                              bus_names=island.bus_names,
                                              branch_names=island.branch_names,
+                                             hvdc_names=island.hvdc_names,
                                              bus_types=island.bus_types)
             results.Sbus = Sbus
             results.Sf = Sfb

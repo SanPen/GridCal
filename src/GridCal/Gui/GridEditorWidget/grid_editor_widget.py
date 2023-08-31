@@ -1317,7 +1317,7 @@ class GridEditorWidget(QSplitter):
                 x, y = pos[i] * 500
 
                 if location.graphic_object:
-                    location.graphic_obj.setPos(QPoint(x, y))
+                    location.graphic_object.setPos(QPoint(x, y))
 
                 # apply changes to the API objects
                 location.x = x
