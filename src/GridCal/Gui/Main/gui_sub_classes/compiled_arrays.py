@@ -113,7 +113,6 @@ class CompiledArraysMain(BaseMainGui):
         fig.tight_layout()
         plt.show()
 
-
     def recompile_circuits_for_display(self):
         """
         Recompile the circuits available to display

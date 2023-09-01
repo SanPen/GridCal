@@ -267,15 +267,12 @@ class NumericalCircuit:
         self.any_control: bool = False
         self.iPfsh: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Pf flow with theta sh
         self.iQfma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Qf with ma
-        self.iBeqz: IntVec = np.zeros(0,
-                                      dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqz: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
         self.iBeqv: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vf with Beq
         self.iVtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vt with ma
         self.iQtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp: IntVec = np.zeros(0,
-                                      dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0,
-                                         dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
+        self.iPfdp: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
         self.iVscL: IntVec = np.zeros(0, dtype=int)  # indices of the converters
         self.VfBeqbus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vf is controlled by Beq
         self.Vtmabus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vt is controlled by ma
@@ -361,7 +358,7 @@ class NumericalCircuit:
 
         return Sbus
 
-    def consolidate_information(self, use_stored_guess=False):
+    def consolidate_information(self, use_stored_guess: bool = False) -> None:
         """
         Consolidates the information of this object
         :return:
@@ -602,11 +599,11 @@ class NumericalCircuit:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        self.VfBeqbus = self.F[self.iBeqv]
+        self.VfBeqbus = self.F[iBeqv]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
-        self.Vtmabus = self.T[self.iVtma]
+        self.Vtmabus = self.T[iVtma]
 
         self.iPfsh = np.array(iPfsh, dtype=int)
         self.iQfma = np.array(iQfma, dtype=int)

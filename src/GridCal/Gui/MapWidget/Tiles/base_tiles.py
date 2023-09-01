@@ -8,7 +8,8 @@ For example, see gmt_local.py (local tiles) and osm_tiles.py
 
 import os
 import math
-from typing import Tuple, Union, List, Callable
+from typing import Tuple, Union, List
+from collections.abc import Callable
 from PySide6.QtGui import QPixmap
 from GridCal.Gui.MapWidget.Tiles.tiles_cache import TilesCache
 

@@ -15,7 +15,8 @@ from urllib.error import HTTPError
 import queue
 from PySide6.QtGui import QPixmap, QColor
 # from PySide6 import QtG
-from typing import List, Tuple, Callable
+from typing import List
+from collections.abc import Callable
 from GridCal.Gui.MapWidget.Tiles.base_tiles import BaseTiles
 import GridCal.Gui.MapWidget.Tiles.default_tile_data as std
 from GridCal.Gui.MapWidget.Tiles.tile_worker import TileWorker

@@ -55,7 +55,7 @@ def test_ieee_grids():
         for f1, f2 in files:
             print(f1, end=' ')
 
-            fname = os.path.join('data', 'grids', f1)
+            fname = os.path.join('data', 'grids', 'RAW', f1)
             main_circuit = FileOpen(fname).open()
             power_flow = PowerFlowDriver(main_circuit, options)
             power_flow.run()

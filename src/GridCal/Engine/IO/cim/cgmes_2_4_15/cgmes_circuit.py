@@ -16,7 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import pandas as pd
-from typing import Dict, List, Union, Callable
+from collections.abc import Callable
+from typing import Dict, List, Union
 from enum import Enum, EnumMeta
 
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment

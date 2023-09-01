@@ -10,7 +10,7 @@ def test_ptdf():
 
     # navigate to the grids folder
     grids_path = os.path.join(current_path, 'data', 'grids')
-    fname = os.path.join(grids_path, 'IEEE 30 bus.raw')
+    fname = os.path.join(grids_path, 'RAW', 'IEEE 30 bus.raw')
     main_circuit = FileOpen(fname).open()
 
     # run a HELM power flow --------------------------------------------------------------------------------------------

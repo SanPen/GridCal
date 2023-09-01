@@ -105,6 +105,20 @@ class EditableDevice:
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
         self.register(key='active', units='', tpe=bool, definition='Is active?')  # this one is overriden if active_prof is present
 
+    def get_rdfid(self) -> str:
+        """
+        Convert the idtag to RDFID
+        :return: UUID converted to RDFID
+        """
+        lenghts = [8, 4, 4, 4, 12]
+        chunks = list()
+        s = 0
+        for l in lenghts:
+            a = self.idtag[s:s + l]
+            chunks.append(a)
+            s += l
+        return "-".join(chunks)
+
     def register(self,
                  key: str,
                  units: str,

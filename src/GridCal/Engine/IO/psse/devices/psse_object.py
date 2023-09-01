@@ -52,6 +52,20 @@ class PSSeObject:
                                class_type=str,
                                description="Element UUID")
 
+    def get_rdfid(self) -> str:
+        """
+        Convert the idtag to RDFID
+        :return: UUID converted to RDFID
+        """
+        lenghts = [8, 4, 4, 4, 12]
+        chunks = list()
+        s = 0
+        for l in lenghts:
+            a = self.idtag[s:s + l]
+            chunks.append(a)
+            s += l
+        return "-".join(chunks)
+
     def get_properties(self) -> List[PsseProperty]:
         """
         Get list of properties

@@ -17,7 +17,8 @@
 import os
 import json
 
-from typing import Callable, Union, List
+from collections.abc import Callable
+from typing import Union, List
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.data_logger import DataLogger
 

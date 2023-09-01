@@ -16,7 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from uuid import uuid4
 from PySide6.QtCore import QThread, Signal
-from typing import Dict, Callable, Union
+from typing import Dict, Union
+from collections.abc import Callable
 
 # Module imports
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults

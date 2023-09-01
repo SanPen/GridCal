@@ -6,7 +6,7 @@ For example, see osm_tiles.py.
 """
 import queue
 from urllib import request
-from typing import Callable
+from collections.abc import Callable
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QThread
 from GridCal.Gui.MapWidget.logger import log

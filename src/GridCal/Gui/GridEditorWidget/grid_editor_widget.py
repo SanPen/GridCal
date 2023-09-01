@@ -18,7 +18,8 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Union, Callable
+from typing import List, Dict, Union
+from collections.abc import Callable
 import networkx as nx
 
 from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, \

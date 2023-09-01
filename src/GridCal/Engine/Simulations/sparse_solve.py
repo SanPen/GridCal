@@ -17,7 +17,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from enum import Enum
+from typing import Union
+from collections.abc import Callable
 from scipy.sparse import csr_matrix, csc_matrix
+from GridCal.Engine.basic_structures import Vec, Mat
 
 
 class SparseSolver(Enum):
@@ -79,7 +82,7 @@ except ImportError:
     # print(SparseSolver.UMFPACK.value + ' failed')
 
 
-preferred_type = SparseSolver.KLU
+preferred_type = SparseSolver.SuperLU
 
 if preferred_type not in available_sparse_solvers:
     if len(available_sparse_solvers) > 0:
@@ -106,7 +109,7 @@ def get_sparse_type(solver_type: SparseSolver = preferred_type):
         raise Exception('Unknown solver' + str(solver_type))
 
 
-def super_lu_linsolver(A, b):
+def super_lu_linsolver(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     """
     SuperLU wrapper function for linear system solve A x = b
     :param A: System matrix
@@ -116,7 +119,7 @@ def super_lu_linsolver(A, b):
     return splu(A).solve(b)
 
 
-def ilu_linsolver(A, b):
+def ilu_linsolver(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     """
     ILU wrapper function for linear system solve A x = b
     :param A: System matrix
@@ -126,7 +129,7 @@ def ilu_linsolver(A, b):
     return spilu(A).solve(b)
 
 
-def klu_linsolve(A, b):
+def klu_linsolve(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     """
     KLU wrapper function for linear system solve A x = b
     :param A: System matrix
@@ -140,7 +143,7 @@ def klu_linsolve(A, b):
     return np.array(x)[:, 0]
 
 
-def gmres_linsolve(A, b):
+def gmres_linsolve(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     """
 
     :param A:
@@ -151,7 +154,7 @@ def gmres_linsolve(A, b):
     return x
 
 
-def umfpack_linsolve(A, b):
+def umfpack_linsolve(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     """
 
     :param A:
@@ -161,9 +164,10 @@ def umfpack_linsolve(A, b):
     return spsolve_umfpack(A, b)
 
 
-def get_linear_solver(solver_type: SparseSolver = preferred_type):
+def get_linear_solver(solver_type: SparseSolver = preferred_type) -> Callable[[csc_matrix, Union[Vec, Mat]], Union[Vec, Mat]]:
     """
-    Privide the chosen linear solver_type function pointer to solver_type linear systems of the type A x = b, with x = f(A,b)
+    Privide the chosen linear solver_type function pointer to
+    solver_type linear systems of the type A x = b, with x = f(A,b)
     :param solver_type: SparseSolver option
     :return: function pointer f(A, b)
     """
@@ -183,8 +187,11 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type):
         return ilu_linsolver
 
     elif solver_type == SparseSolver.GMRES:
-            return gmres_linsolve
+        return gmres_linsolve
 
     elif solver_type == SparseSolver.UMFPACK:
-            return umfpack_linsolve
+        return umfpack_linsolve
+
+    else:
+        raise Exception('Unrecognized LU solver')
 
