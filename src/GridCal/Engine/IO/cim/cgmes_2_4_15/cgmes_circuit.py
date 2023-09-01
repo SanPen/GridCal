@@ -596,11 +596,10 @@ class CgmesCircuit(BaseCircuit):
             if not hasattr(self, key + '_list'):
                 print('self.{0}_list: List[{0}] = list()'.format(key))
 
-    def add(self, elm: IdentifiedObject, logger: DataLogger):
+    def add(self, elm: IdentifiedObject):
         """
         Add generic object to the circuit
-        :param elm:
-        :param logger: DataLogger to record issues
+        :param elm: any CGMES object
         :return: True if successful, False otherwise
         """
         """
@@ -613,12 +612,12 @@ class CgmesCircuit(BaseCircuit):
         collided = self.all_objects_dict.get(elm.rdfid, None)
 
         if collided is not None:
-            logger.add_error("RDFID collision, element not added",
-                             device_class=elm.tpe,
-                             device=elm.rdfid,
-                             comment="Collided object {0}:{1} ({2})".format(collided.tpe,
-                                                                            collided.rdfid,
-                                                                            collided.shortName))
+            self.logger.add_error("RDFID collision, element not added",
+                                  device_class=elm.tpe,
+                                  device=elm.rdfid,
+                                  comment="Collided object {0}:{1} ({2})".format(collided.tpe,
+                                                                                 collided.rdfid,
+                                                                                 collided.shortName))
             return False
 
         self.all_objects_dict[elm.rdfid] = elm
@@ -967,3 +966,11 @@ class CgmesCircuit(BaseCircuit):
                     else:
                         data[profile] = txt
         return data
+
+    def get_boundary_voltages_dict(self) -> Dict[float, BaseVoltage]:
+        """
+        Get the BaseVoltage objects from the boundary set as
+        a dictionary with the nominal voltage as key
+        :return: Dict[float, BaseVoltage]
+        """
+        return {e.nominalVoltage: e for e in self.elements_by_type_boundary['BaseVoltage']}
