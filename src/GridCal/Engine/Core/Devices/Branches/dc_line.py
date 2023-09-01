@@ -120,6 +120,8 @@ class DcLine(ParentBranch):
         # type template
         self.template = template
 
+        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
+        self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the mid-line fault.Used in short circuit studies.')
         self.register(key='x_fault', units='p.u.', tpe=float,
