@@ -20,7 +20,7 @@ import numpy as np
 import GridCal.Engine as gce
 import GridCal.api as gca
 
-from GridCal.Engine.IO.psse.raw_parser import read_raw
+from GridCal.Engine.IO.raw.raw_parser import read_raw
 from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.topological_node import TopologicalNode
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 

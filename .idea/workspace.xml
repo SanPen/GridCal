@@ -27,227 +27,52 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed callable future deprecation and imported it from collections">
-      <change afterPath="$PROJECT_DIR$/doc/auto_document_models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/make.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Engine.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/Architechture.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/Architechture.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/HVDC_diagrama2.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Refactor of the documentation structure&#10;Fixed documentation bugs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/about.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/about.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.32.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.64.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.64.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.32.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.64.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.data.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/modules.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/modules.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/benchmarks.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/benchmarks.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/change_log.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/data_sheets.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/data_sheets.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/development.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/development.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/BranchModel.dia" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/BranchModel.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/BranchModel.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/BranchModel.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/CompilationProcess.dia" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/CompilationProcess.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/CompilationProcess.eps" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/CompilationProcess.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/CompilationProcess.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/CompilationProcess.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/ElementBusAgregation.dia" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/ElementBusAgregation.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/ElementBusAgregation.eps" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/ElementBusAgregation.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/ElementBusAgregation.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/ElementBusAgregation.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/GUI_IEEE39.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/GUI_IEEE39.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/GeneralConverterModel.dia" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/GeneralConverterModel.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/GridCal.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/GridCal.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/OPF_results.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/OPF_results.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/analysis.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/analysis.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/coefficients_structure.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/coefficients_structure.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/console.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/console.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/diagnostic.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/diagnostic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/gridcal_gui.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/gridcal_gui.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/gui_ieee_39.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/gui_ieee_39.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/line_search_acceleratin_effect.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/line_search_acceleratin_effect.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/matrix-reduction.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/matrix-reduction.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-arrays.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-arrays.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-coments.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-coments.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-objects-2.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-objects-2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-objects.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-objects.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-schematic-2.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-schematic-2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-schematic.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-schematic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-time.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-time.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/model-types.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/model-types.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/pi_trafo.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/pi_trafo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/profiles_import.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/profiles_import.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/ptdf_result.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/ptdf_result.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/ptdf_ts.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/ptdf_ts.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/results-data.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/results-data.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/results.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/results.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/settings-opf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/settings-opf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/settings-pf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/settings-pf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/settings-stability.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/settings-stability.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/settings-stochastic.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/settings-stochastic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/settings-topology.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/settings-topology.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tower.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tower.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/awgsld.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/awgsld.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/busaddition.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/busaddition.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/downtriangle.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/downtriangle.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/filelocation.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/filelocation.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/fourhouses.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/fourhouses.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/importprofiles.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/importprofiles.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/isslack.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/isslack.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/loadprofilechart.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/loadprofilechart.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/loads.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/loads.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/morebuses.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/morebuses.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/morebuseslines.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/morebuseslines.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/noslackbus.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/noslackbus.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/overview.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/overview.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/plotoptions.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/plotoptions.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/plotprofiles.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/plotprofiles.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/pprofile.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/pprofile.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/profilegraph.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/profilegraph.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/profileplot.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/profileplot.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/profileselection.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/profileselection.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/qprofile.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/qprofile.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/results.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/results.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/resultselection.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/resultselection.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/resultsorting.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/resultsorting.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/runpf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/runpf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/runpftimeseries.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/runpftimeseries.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/scaling.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/scaling.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/snapshotpf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/snapshotpf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/threeawgsld.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/threeawgsld.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/threebusaddition.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/threebusaddition.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/timeevents.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/timeevents.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/timeselection.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/timeselection.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/transformer.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/transformer.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/transformerpower.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/transformerpower.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/typescatalogue.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/dg/typescatalogue.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/tower/editor1.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/tower/editor1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/tower/editorY.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/tower/editorY.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/tower/editorZ.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/tower/editorZ.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/tower/tower.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/tower/tower.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/tower/wires.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/tutorials/tower/wires.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/video_tutorial.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/video_tutorial.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/vtdf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/vtdf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/getting_started.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/getting_started.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/getting_started/code_tutorials.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/getting_started/code_tutorials.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/getting_started/install.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/getting_started/install.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/getting_started/run_with_interface.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/getting_started/run_with_interface.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/getting_started/video_tutorials.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/getting_started/video_tutorials.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/gui.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/gui.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/index.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/ClassDiagram.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/CoefficientsStructure.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/Compilation.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/Compilation.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/Matrix_reduction.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/MultiCircuitStructure.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/MultiCircuitStructure.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/PowerFlowDiagram.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/PowerFlowDiagram.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/PowerFlowTimeSeriesDiagram.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/PowerFlowTimeSeriesDiagram.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/TapChanger.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/TapChanger.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/Diagrams/pi-trafo.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Manual_of_GridCal.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/ClassDiagram.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/ClassDiagram.eps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/CoefficientsStructure.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/CoefficientsStructure.eps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/GridData.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/Matrix_reduction.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/Matrix_reduction.eps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/Settings.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/chapterhdr1.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/frontpage.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/pi-trafo.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/pi-trafo.eps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/Pictures/results.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/StyleInd.ist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/bibliography.bib" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/structure.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal/structureB.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/GridCal_banner.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/HVDC_modelling.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/HVDC_modelling.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/Pictures/GeneralConverterModel.dia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/Pictures/chapterhdr1.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/Pictures/frontpage.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/bibliography.bib" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/HVDC/structure.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/old_doc/source/make_docs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/texput.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/branch_model.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/branch_model.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/from_objects_to_matrices.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/from_objects_to_matrices.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/models.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/opf/opf.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/opf.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/opf/opf_ac_ts.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/opf_ac_ts.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/opf/opf_dc_ts.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/opf_dc_ts.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/continuation_power_flow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/continuation_power_flow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/dc_approximation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/dc_approximation.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/distributed_slack.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/distributed_slack.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/fast_decoupled.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/fast_decoupled.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/holomorphic_embedding.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/holomorphic_embedding.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/levenberg_marquardt.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/levenberg_marquardt.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/linear_ac_power_flow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/linear_ac_power_flow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/newton_raphson.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/newton_raphson.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/power_flow/post_power_flow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/post_power_flow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/ptdf.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/ptdf.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/short_circuit/3_phase_sc.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/short_circuit/3_phase_sc.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/simulations.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/theory/xfo_sc.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/xfo_sc.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid_library.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/distribution_grid_library.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid_standalone.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/distribution_grid_standalone.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/example_files.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/example_files.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/five_node_grid.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/five_node_grid.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/line_definition_from_tower.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/line_definition_from_tower.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/power_flow_script.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/power_flow_script.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/script_cheat_sheet.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/script_cheat_sheet.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/tutorials_module.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/tutorials/tutorials_module.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/auto_document_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/auto_document_models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/db/psse_lookup_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/db/psse_lookup_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/plexos/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/dgs/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/plexos/plexos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/plx/plx_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/power_factory/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/epc/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/power_factory/dgs_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/dgs/dgs_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/power_world/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/plx/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/power_world/power_world_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/epc/epc_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/area.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/area.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/branch.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/branch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/facts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/facts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/fixed_shunt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/fixed_shunt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/gne_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/gne_device.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/induction_machine.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/induction_machine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/inter_area.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/inter_area.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/load.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/load.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/owner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/owner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/psse_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/psse_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/psse_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/psse_object.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/psse_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/psse_property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/substation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/substation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/switched_shunt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/switched_shunt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/system_switching_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/system_switching_device.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/two_terminal_dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/two_terminal_dc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/vsc_dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/vsc_dc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/devices/zone.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/devices/zone.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/gridcal_to_psse.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/gridcal_to_raw.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/psse_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/psse_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/raw_parser_legacy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_parser_legacy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/raw_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/rawx_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse/rawx_parser_legacy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser_legacy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/raw_to_cgmes_mapping.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/raw_to_cgmes_mapping.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -414,7 +239,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/db" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.auto_document_models">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -454,6 +279,28 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -490,28 +337,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/auto_document_models.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -650,16 +475,16 @@
       <item itemvalue="JavaScript Debug.genindex.html" />
       <item itemvalue="JavaScript Debug.index.html" />
       <item itemvalue="Python.auto_document_models" />
-      <item itemvalue="Python.make" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Shell Script.make.sh" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.auto_document_models" />
         <item itemvalue="JavaScript Debug.index.html" />
         <item itemvalue="Shell Script.make.sh" />
         <item itemvalue="JavaScript Debug.genindex.html" />
-        <item itemvalue="Python.make" />
       </list>
     </recent_temporary>
   </component>
@@ -1443,7 +1268,7 @@
       <workItem from="1693546957819" duration="5215000" />
       <workItem from="1693809517086" duration="2349000" />
       <workItem from="1693845663065" duration="174000" />
-      <workItem from="1693896966056" duration="11370000" />
+      <workItem from="1693896966056" duration="13179000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1788,7 +1613,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="490" />
+    <option name="localTasksCounter" value="491" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1830,7 +1655,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved arrows and fixed some signs bug in the OPF visualization" />
     <MESSAGE value="Refactoring the map widget" />
     <MESSAGE value="Refactoring the map widget (2)" />
     <MESSAGE value="restructured the layers and its functions properly" />
@@ -1855,7 +1679,8 @@
     <MESSAGE value="Fixed some tests synthax bugs" />
     <MESSAGE value="Fixed DC lines not having R and length registered after inheritance change" />
     <MESSAGE value="Fixed callable future deprecation and imported it from collections" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed callable future deprecation and imported it from collections" />
+    <MESSAGE value="Refactor of the documentation structure&#10;Fixed documentation bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor of the documentation structure&#10;Fixed documentation bugs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2507,7 +2332,7 @@
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1689667945608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1693899827856" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1693930422472" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />

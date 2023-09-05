@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import pandas as pd
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCal.Engine.IO.psse.devices.psse_circuit import PsseCircuit
+from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
 

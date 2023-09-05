@@ -3,7 +3,7 @@ import pandas as pd
 
 from GridCal.Engine.IO.cim.db.base_db import BaseDb
 from GridCal.Engine.IO.cim.db.file_system import get_create_roseta_db_folder
-from GridCal.Engine.IO.psse.devices.psse_circuit import PsseCircuit
+from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
 
 
 class PSSeLookUpDb(BaseDb):

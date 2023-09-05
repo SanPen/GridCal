@@ -27,21 +27,21 @@ from GridCal.Engine.IO.cim.cim16.cim_parser import CIMExport
 from GridCal.Engine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCal.Engine.IO.gridcal.pack_unpack import create_data_frames, data_frames_to_circuit
 from GridCal.Engine.IO.matpower.matpower_parser import interpret_data_v1
-from GridCal.Engine.IO.power_factory.dgs_parser import dgs_to_circuit
+from GridCal.Engine.IO.dgs.dgs_parser import dgs_to_circuit
 from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.others.dpx_parser import load_dpx
 from GridCal.Engine.IO.others.ipa_parser import load_iPA
 from GridCal.Engine.IO.gridcal.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.psse.raw_parser import read_raw
-from GridCal.Engine.IO.psse.psse_to_gridcal import psse_to_gridcal
-from GridCal.Engine.IO.power_world.power_world_parser import PowerWorldParser
+from GridCal.Engine.IO.raw.raw_parser import read_raw
+from GridCal.Engine.IO.raw.raw_to_gridcal import psse_to_gridcal
+from GridCal.Engine.IO.epc.epc_parser import PowerWorldParser
 # from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCal.Engine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.gridcal.h5_interface import save_h5, open_h5
-from GridCal.Engine.IO.psse.rawx_parser import rawx_parse, rawx_writer
+from GridCal.Engine.IO.raw.rawx_parser import rawx_parse, rawx_writer
 from GridCal.Engine.IO.pypsa.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 

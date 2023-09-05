@@ -15,7 +15,7 @@ from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
-from GridCal.Engine.IO.psse.devices.psse_circuit import PsseCircuit
+from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCal.Engine.IO.cim.db.db_handler import DbHandler
 from GridCal.Engine.data_logger import DataLogger
 
