@@ -12,11 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-print('Loading GridCal...')
 import os
 import sys
-import matplotlib
-# matplotlib.use('Qt5Agg')
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
@@ -32,6 +29,7 @@ if platform.system() == 'Windows':
 
 
 if __name__ == "__main__":
+    print('Loading GridCal...')
     print(about_msg)
 
     # Set the application style to the clear theme

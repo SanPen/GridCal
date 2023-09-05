@@ -21,7 +21,7 @@ from GridCal.__version__ import __GridCal_VERSION__
 # -- Project information -----------------------------------------------------
 
 project = 'GridCal'
-copyright = '2019, Santiago Peñate Vera'
+copyright = '2023, Santiago Peñate Vera'
 author = 'Santiago Peñate Vera'
 
 # The short X.Y version
@@ -41,6 +41,8 @@ def setup(app):
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.imgmath',
@@ -63,7 +65,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -81,8 +83,6 @@ pygments_style = None
 #
 # html_theme = 'nature'
 html_theme = 'sphinx_rtd_theme'
-
-html_static_path = ['_static']
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -120,15 +120,11 @@ fh.close()
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
+    'pointsize': '10pt',
 
     # Latex figure (float) alignment
     #
@@ -143,8 +139,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GridCal.tex', 'GridCal Documentation',
-     'Santiago Pe\~nate Vera', 'manual'),
+    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Pe\~nate Vera', 'manual'),
 ]
 
 

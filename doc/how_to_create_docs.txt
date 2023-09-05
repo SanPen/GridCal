@@ -1,0 +1,13 @@
+
+
+make.bat: "Traditional" way of calling the system declared sphinx-build command under windows.
+
+make.sh: "Traditional" way of calling the system declared sphinx-build command under linux and macos.
+
+make.py: Compile the documentation using the python distribution you use for development.
+
+Any python that exeutes "sphinx-build" must have installed the same dependencies that GridCal has.
+
+In short, if you want to compile the documentation locally, better use make.py, the others are there for read-the-docs.
+
+
