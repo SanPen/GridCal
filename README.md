@@ -92,7 +92,7 @@ to be used from the user interface.
 
 ### Loading a grid
 
-```
+```python
 import GridCal.api as gca
 
 my_grid = gca.open_file("my_file.gridcal")
@@ -109,7 +109,7 @@ GridCal supports a plethora of file formats:
 
 ### Save a grid
 
-```
+```python
 import GridCal.api as gca
 
 gca.save_file(my_grid, "my_file.gridcal")
@@ -120,7 +120,7 @@ gca.save_file(my_grid, "my_file.gridcal")
 We are going to create a very simple 5-node grid from the excellent book 
 *Power System Load Flow Analysis by Lynn Powell*.
 
-```
+```python
 import GridCal.Engine as gce
 
 # declare a circuit object
@@ -164,7 +164,7 @@ grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 
 Using the simlified API:
 
-```
+```python
 import GridCal.Engine as gca
 
 results = gca.power_flow(grid)
@@ -179,7 +179,7 @@ print('\tConv:', results.converged)
 
 Using the more complex library objects:
 
-```
+```python
 import GridCal.Engine as gce
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -196,13 +196,13 @@ print('\tConv:', power_flow.results.converged)
 
 ### Linear analysis
 
-```
+```python
 
 ```
 
 ### Linear optimization
 
-```
+```python
 
 ```
 
