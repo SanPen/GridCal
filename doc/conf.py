@@ -41,12 +41,23 @@ def setup(app):
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+exclude_patterns = ['zzz']
+
+numfig = True
+
+extensions = list()
+extensions.append('sphinx.ext.todo')
+extensions.append('sphinx.ext.autodoc')
+#extensions.append('sphinx.ext.autosummary')
+extensions.append('sphinx.ext.intersphinx')
+extensions.append('sphinx.ext.imgmath')
+extensions.append('sphinx.ext.mathjax')
+extensions.append('sphinx.ext.viewcode')
+extensions.append('sphinx.ext.graphviz')
 
 
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.imgmath',
-]
+autosummary_generate = True
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

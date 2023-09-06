@@ -30,5 +30,6 @@ the author's
     rst_source/benchmarks
     rst_source/other_data_models
     rst_source/change_log
+    rst_source/api/auto/modules
 
 This documentation is generated using Sphinx and autodoc.
