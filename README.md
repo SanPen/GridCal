@@ -1,166 +1,238 @@
+# GridCal
+
+![](/home/santi/Documentos/Git/GitHub/GridCal/pics/GridCal.png)
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 [![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
 
-# What is this?
+GridCal is a tier-1 power systems planning and simulation software. 
+As such it has all the static analysis studies that you can think of, plus 
+linear and non-linear optimization functions. Some of these functions you 
+perfectly know and some others you may have never heard of as they are a 
+product of cutting-edge research.
 
-![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
+GridCal started in 2015 as a project to be able to work with, frustrated by 
+the available options. This led to design proper programming library and a 
+nice graphical user interface. This no-nonsense approach has fostered numerous 
+innovations; Some of them pushed by the need to use the software for commercial 
+work, and some ignited by research and curiosity.
 
-![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
+If you are a professional looking for a free software to get work done in time, 
+look no further. If you are a researcher looking for a real-world, TSO-tested platform, 
+you're in good hands. If you are a teacher willing to teach your students the ins-and-outs 
+of commercial grade software, this is it. And if you are a student willing to learn 
+about the algorithms of the books, but for real, we've been there.
 
-This software aims to be a complete platform for power systems research and simulation.
+Our commitment is with you: GridCal is a high quality product. It is free for ever. 
+For all of us now and for the generations to come.
 
-- [Watch the video](https://youtu.be/SY66WgLGo54)
-- Check out the [Documentation](https://gridcal.readthedocs.io/en/latest/about.html)
-- Explore the [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
-- Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6)
-- Join the [Discord GridCal community](https://discord.com/invite/dzxctaNbvu)
+## Installation
 
-# Installation
-
-You can choose to install GridCal through pip or just get a standalone setup ready to run.
-
-- From your python distribution on any OS: `pip install GridCal`
-
-- [GridCal standalone for windows x64](https://www.advancedgridinsights.com/gridcal)
-
-
-For more options and details follow the
-[installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
-
-
-## Execution
-
-If you have just installed GridCal on your python distribution, 
-you can call the GUI with the following command:
-
-`python3 -c "from GridCal.ExecuteGridCal import run; run()"`
-
-### Troubleshooting Ubuntu (maybe other Linux distributions too)
-
-Under Ubuntu you may need to install xcb by `sudo apt-get install libxcb-xinerama0` this will solve the following error:
+GridCal is a software made in the Python programming language. 
+Therefore, you need a python interpreter installed in your operative system. 
+We recommend to install the latest version of [Python](www.python.org) and then, 
+install GridCal with the following terminal command:
 
 ```
-Warning: Ignoring XDG_SESSION_TYPE=wayland on Gnome. Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.
+pip install GridCal
 ```
 
-## Running tests
+You may need to use `pip3` if you are under Linux or macOS, both of which 
+come with Python pre-installed already.
 
-    python3 -m venv venv
-    venv/bin/python -m pip install --upgrade -r requirements_venv.txt
-    venv/bin/python -m tox
+### Run th graphical user interface
 
- For detailed instructions, follow the
-[instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
-from the project's documentation.
+Once you install GridCal in your local Python distribution, you can run the 
+graphical user interface with the following terminal command:
 
+```
+python -c "from GridCal.ExecuteGridCal import run; run()"
+```
 
+### Standalone setup
 
-# Batteries included
+If you don't know what is this Python thing, we offer a windows installation:
 
-In an effort to ease the simulation and construction of grids, 
-We have included extra materials to work with. These are included in the standalone setups.
+[Windows setup](https://www.advancedgridinsights.com/gridcal)
 
-[Here](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles) you can find:
-- Load profiles for your projects
-- Standard IEEE grids as well as grids from open projects
-- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
-
-
-## Tutorials and examples
-
-- [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
-
-- [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
-
-- [Standalone GridCal setup (video)](https://youtu.be/SY66WgLGo54)
-
-- [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
-
-- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
-
-- [tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as a valuable source of examples.
+This will install GridCal as a normal windows program and you need not to worry 
+about any of the previous instructions.
 
 
+## Features
+
+- Large collection of devices to model electricity grids.
+- AC/DC multi-grid power flow
+- AC/DC multi-grid linear optimal power flow
+- AC linear analysis (PTDF & LODF)
+- AC linear net transfer capacity calculation
+- AC+HVDC optimal net transfer capacity calculation
+- AC/DC Stochastic power flow
+- AC Short circuit
+- AC Continuation power flow
+- Contingency analysis (Power flow and LODF variants)
+- Sigma analysis (one-shot stability analysis)
+- Investments analysis
+- Bus-branch schematic
+- Substation-line map diagram
+- Time series and snapshot for most simulations
+- Overhead tower designer
+- Inputs analysis
+- Model bug report and repair
+- Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
+- Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
 
 
-# Features overview
+## API
 
-It is in pure Python and it works for Windows, Linux and OSX.
+Since day one, GridCal was meant to be used as a library as much as it was meant 
+to be used from the user interface. 
 
-Some features you'll find already are:
+### Loading a grid
 
-- Compatible with other formats:
-  - **Import** (Drag & Drop)
-    - CIM (Common Information Model v16)
-    - PSS/e RAW versions 29, 30, 32, 33 and 34.
-    - Matpower (might not be fully compatible, notify me if not).
-    - DigSilent .DGS (not be fully compatible: Only positive sequence and devices like loads, generators, etc.)
-    
-  - **Export**
-    - Zip file `.gridcal` with CSV inside (fastest, normal GridCal format) 
-    - Sqlite
-    - Excel
-    - Custom JSON
-    - CIM (Common Information Model v16)
+```
+import GridCal.api as gca
 
-- **Power flow**:
-  - State of the art multi-terminal AC/DC Newton Raphson in power and current equations.
-  - Newton Raphson Iwamoto (optimal acceleration).
-  - Fast Decoupled Power Flow
-  - AC/DC multi-terminal Levenberg-Marquardt (Works very well with large ill-conditioned grids)
-  - Holomorphic Embedding Power Flow (Unicorn under investigation...)
-  - DC approximation.
-  - Linear AC approximation.
-  
-- **Optimal power flow (OPF)** and generation dispatch:
-  - Linear (DC) with losses.
-  - Linear (Ac) with losses.
-  - Loss-less simple generation dispatch.  
-  - All the modes can be split the runs in hours, days, weeks or months!
+my_grid = gca.open_file("my_file.gridcal")
+```
 
-- **Time series** with profiles in all the objects physical magnitudes.
+GridCal supports a plethora of file formats:
 
-- **PTDF** approximated branch flow time series for super fast estimation of the flows.
+- CIM 16 (.zip and .xml)
+- CGMES 2.4.15 (.zip and .xml)
+- PSS/e raw and rawx versions 29 to 35, including USA market excahnge RAW-30 specifics.
+- Matpower .m files directly.
+- DigSilent .DGS (not fully compatible)
+- PowerWorld .EPC (not fully compatible, supports substation coordinates)
 
-- Bifurcation point with predictor-corrector Newton-Raphson.
+### Save a grid
 
-- **Monte Carlo / Latin Hypercube** stochastic power flow based on the input profiles.
+```
+import GridCal.api as gca
 
-- **Blackout cascading** in simulation and step by step mode.
+gca.save_file(my_grid, "my_file.gridcal")
+```
 
-- Three-phase and unbalanced **short circuit**.
+### Creating a Grid from the API objects
 
-- Includes the Z-I-P load model, this means that the power flows can handle both power and current.
+We are going to create a very simple 5-node grid from the excellent book 
+*Power System Load Flow Analysis by Lynn Powell*.
 
-- The ability to handle island grids in all the simulation modes.
+```
+import GridCal.Engine as gce
 
-- **Profile editor** and importer from Excel and CSV.
+# declare a circuit object
+grid = gce.MultiCircuit()
 
-- **Grid elements' analysis** to discover data problems.
+# Add the buses and the generators and loads attached
+bus1 = gce.Bus('Bus 1', vnom=20)
+# bus1.is_slack = True
+grid.add_bus(bus1)
 
-- **Overhead line construction** from wire scheme.
+gen1 = gce.Generator('Slack Generator', voltage_module=1.0)
+grid.add_generator(bus1, gen1)
 
-- Device **templates** (lines and transformers).
+bus2 = gce.Bus('Bus 2', vnom=20)
+grid.add_bus(bus2)
+grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
-- **Grid reduction** based on branch type and filtering by impedance values
+bus3 = gce.Bus('Bus 3', vnom=20)
+grid.add_bus(bus3)
+grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
-- **Export** the schematic in SVG and PNG formats.
+bus4 = gce.Bus('Bus 4', vnom=20)
+grid.add_bus(bus4)
+grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
-[Check out the documentation](https://gridcal.readthedocs.io) to learn more and to get started.
+bus5 = gce.Bus('Bus 5', vnom=20)
+grid.add_bus(bus5)
+grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
-# Collaborators
+# add Branches (Lines in this case)
+grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
+grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
+grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
+grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
+grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
+grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
+grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+```
 
-- Michel Lavoie (Transformer automation)
-- Bengt Lüers (Better testing)
-- Josep Fanals Batllori (HELM, Sequence Short circuit)
-- Manuel Navarro Catalán (Better documentation)
-- Paul Schultz (Grid Generator)
-- Andrés Ramiro (Optimal net transfer capacity)
-- Ameer Carlo Lubang (Sequence short-circuit)
+### Power Flow
 
-# Contact
+Using the simlified API:
 
-Send feedback and requests to [santiago@gridcal.org](santiago@gridcal.org).
+```
+import GridCal.Engine as gca
 
+results = gca.power_flow(grid)
+
+print('\n\n', grid.name)
+print('\t|V|:', abs(results.voltage))
+print('\t|Sbranch|:', abs(results.Sf))
+print('\t|loading|:', abs(results.loading) * 100)
+print('\terr:', results.error)
+print('\tConv:', results.converged)
+```
+
+Using the more complex library objects:
+
+```
+import GridCal.Engine as gce
+
+options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+power_flow = gce.PowerFlowDriver(grid, options)
+power_flow.run()
+
+print('\n\n', grid.name)
+print('\t|V|:', abs(power_flow.results.voltage))
+print('\t|Sbranch|:', abs(power_flow.results.Sf))
+print('\t|loading|:', abs(power_flow.results.loading) * 100)
+print('\terr:', power_flow.results.error)
+print('\tConv:', power_flow.results.converged)
+```
+
+### Linear analysis
+
+```
+
+```
+
+### Linear optimization
+
+```
+
+```
+
+## Contact
+
+- Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
+- Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6).
+- Submit bugs or requests in the [Issues](https://github.com/SanPen/GridCal/issues) section.
+- Simply email [santiago@gridcal.org](santiago@gridcal.org)
+
+## License
+
+GridCal is licensed under the [Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) (LGPL)
+
+In practical terms this means that:
+
+- You can use GridCal for commercial work.
+- You can sell commercial services based on GridCal.
+- If you distrubute GridCal, you must distribute GridCal's source code as well. 
+That is always achieved in practice with python code.
+- GridCal license does not propagate to works that are not a derivative of GridCal. 
+An example of a derivative work is if you write a module of the program, the the license 
+of the modue must be LGPL too. An example of a non-derivative work is if you use 
+GridCal's API for something else without modifying the API itself, for instance, 
+using it as a library for another program.
+
+Nonetheless, read the license carefully.
+
+## Disclaimer
+
+[GridCal](http://consultas2.oepm.es/ceo/jsp/busqueda/consultaExterna.xhtml?numExp=1u6ec16k3hn1v05or1c1ah4va8re2e5810b4vrc1inj2ae0vz4sigbkzywc1id2ifqazajcdjwuvubmnxfjdz0vasw9rqs3u4u7i) is a trademark registered in the Spanish patents and trademarks office.
+
+All other trademarks mentioned belong to their respective owners.
