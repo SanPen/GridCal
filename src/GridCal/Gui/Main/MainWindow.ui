@@ -6961,13 +6961,6 @@ p, li { white-space: pre-wrap; }
                        </property>
                       </widget>
                      </item>
-                     <item row="15" column="0">
-                      <widget class="QCheckBox" name="dark_mode_checkBox">
-                       <property name="text">
-                        <string>Dark mode</string>
-                       </property>
-                      </widget>
-                     </item>
                      <item row="7" column="1">
                       <widget class="QSpinBox" name="max_node_size_spinBox">
                        <property name="minimum">
@@ -7440,7 +7433,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_7">
                <property name="topMargin">
-                <number>0</number>
+                <number>9</number>
                </property>
                <item>
                 <widget class="QFrame" name="frame_37">
@@ -8131,6 +8124,13 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="dark_mode_checkBox">
+             <property name="text">
+              <string>Dark mode</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

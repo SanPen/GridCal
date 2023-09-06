@@ -18,7 +18,7 @@
 import uuid
 from typing import Dict, Union
 from GridCal.Engine.Core.Devices.Diagrams.base_diagram import BaseDiagram
-from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
+from GridCal.Engine.Core.Devices.enumerations import DiagramType
 
 
 class BusBranchDiagram(BaseDiagram):
@@ -31,4 +31,4 @@ class BusBranchDiagram(BaseDiagram):
 
         :param name: Diagram name
         """
-        BaseDiagram.__init__(self, idtag=idtag, name=name)
+        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.BusBranch)

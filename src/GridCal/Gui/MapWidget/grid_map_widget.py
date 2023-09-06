@@ -30,7 +30,8 @@ from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
-from GridCal.Engine.Core.Devices.Diagrams.map_diagram import MapDiagram, MapLocation
+from GridCal.Engine.Core.Devices.Diagrams.map_diagram import MapDiagram
+from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
 

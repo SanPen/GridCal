@@ -16,10 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import uuid
+from enum import Enum
 from typing import Dict, Union, List, Tuple
 from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCal.Engine.Core.Devices.editable_device import EditableDevice
+from GridCal.Engine.Core.Devices.enumerations import DiagramType
 
 
 class PointsGroup:
@@ -104,7 +106,7 @@ class BaseDiagram:
     Diagram
     """
 
-    def __init__(self, idtag=None, name=''):
+    def __init__(self, idtag: Union[str, None], name: str, diagram_type: DiagramType = DiagramType):
         """
 
         :param name: Diagram name
@@ -118,6 +120,8 @@ class BaseDiagram:
 
         # device_type: {device uuid: {x, y, h, w, r}}
         self.data: Dict[str, PointsGroup] = dict()
+
+        self.diagram_type = diagram_type
 
     def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
         """
@@ -175,7 +179,7 @@ class BaseDiagram:
         """
         data = {category: group.get_dict() for category, group in self.data.items()}
 
-        return {'type': 'BusBranchDiagram',
+        return {'type': self.diagram_type.value,
                 'idtag': self.idtag,
                 'name': self.name,
                 'data': data}
@@ -191,6 +195,8 @@ class BaseDiagram:
         self.data = dict()
 
         self.name = data['name']
+
+        self.diagram_type = DiagramType(data['type'])
 
         for category, loc_dict in data['data'].items():
 

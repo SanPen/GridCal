@@ -3327,11 +3327,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.label_56, 5, 0, 1, 1)
 
-        self.dark_mode_checkBox = QCheckBox(self.frame_58)
-        self.dark_mode_checkBox.setObjectName(u"dark_mode_checkBox")
-
-        self.gridLayout.addWidget(self.dark_mode_checkBox, 15, 0, 1, 1)
-
         self.max_node_size_spinBox = QSpinBox(self.frame_58)
         self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
         self.max_node_size_spinBox.setMinimum(20)
@@ -3531,7 +3526,7 @@ class Ui_mainWindow(object):
         self.frame_3.setFrameShadow(QFrame.Raised)
         self.verticalLayout_7 = QVBoxLayout(self.frame_3)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.verticalLayout_7.setContentsMargins(-1, 0, -1, -1)
+        self.verticalLayout_7.setContentsMargins(-1, 9, -1, -1)
         self.frame_37 = QFrame(self.frame_3)
         self.frame_37.setObjectName(u"frame_37")
         self.frame_37.setFrameShape(QFrame.NoFrame)
@@ -3801,6 +3796,11 @@ class Ui_mainWindow(object):
         self.verticalSpacer_3 = QSpacerItem(20, 363, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_12.addItem(self.verticalSpacer_3)
+
+        self.dark_mode_checkBox = QCheckBox(self.frame_7)
+        self.dark_mode_checkBox.setObjectName(u"dark_mode_checkBox")
+
+        self.verticalLayout_12.addWidget(self.dark_mode_checkBox)
 
 
         self.gridLayout_8.addWidget(self.frame_7, 0, 0, 1, 1)
@@ -4842,7 +4842,6 @@ class Ui_mainWindow(object):
         self.label_76.setText("")
         self.label_49.setText(QCoreApplication.translate("mainWindow", u"Draw", None))
         self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
-        self.dark_mode_checkBox.setText(QCoreApplication.translate("mainWindow", u"Dark mode", None))
         self.label_112.setText("")
         self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
@@ -4899,6 +4898,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.engineComboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Engine to be used when available", None))
 #endif // QT_CONFIG(tooltip)
+        self.dark_mode_checkBox.setText(QCoreApplication.translate("mainWindow", u"Dark mode", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QCoreApplication.translate("mainWindow", u"Settings", None))
 #if QT_CONFIG(tooltip)
         self.cancelButton.setToolTip(QCoreApplication.translate("mainWindow", u"Cancel process", None))

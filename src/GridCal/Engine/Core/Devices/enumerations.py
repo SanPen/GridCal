@@ -48,6 +48,29 @@ class BranchType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class DiagramType(Enum):
+    BusBranch = 'bus-branch'
+    SubstationLineMap = 'substation-line-map'
+    NodeBreaker = 'node-breaker'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return DiagramType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class TransformerControlType(Enum):
 
     fixed = '0:Fixed'

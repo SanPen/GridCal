@@ -4,6 +4,7 @@ import pandas as pd
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+from GridCal.Engine.IO.gridcal.pack_unpack import get_objects_dictionary
 
 
 def get_cgmes_data_frames():
@@ -48,20 +49,20 @@ def get_gridcal_data_frames():
 
     info = dict()
 
+    obj_dict = get_objects_dictionary()
+
     circuit = MultiCircuit()
 
-    for prop in circuit.get_properties():
+    for obj_type_name, obj in obj_dict.items():
 
-        if prop.class_type not in [str, bool, int, float]:
+        class_name = obj.device_type.value
 
-            cls = prop.class_type
-            obj = prop.class_type(uuid="", secondary_id="", name="")
-            class_name = str(cls).split('.')[-1].split(' ')[0].replace("'>", "")
-            data = list()
-            for cls_prop in obj.get_properties():
-                data.append(cls_prop.get_dict())
+        data = list()
+        for prop_name, prop in obj.editable_headers.items():
 
-            info[class_name] = pd.DataFrame(data=data)
+            data.append(prop.get_dict())
+
+        info[class_name] = pd.DataFrame(data=data)
 
     return info
 
@@ -138,11 +139,11 @@ def write_models_to_rst(filename):
 
         cgmes_info = get_cgmes_data_frames()
         psse_info = get_psse_data_frames()
-        # gridcal_info = get_gridcal_data_frames()
+        gridcal_info = get_gridcal_data_frames()
 
         write_dataframes_to_rst2(w, cgmes_info,  "CGMES")
         write_dataframes_to_rst2(w, psse_info, "PSSE")
-        # write_dataframes_to_rst2(w, gridcal_info, "GridCal")
+        write_dataframes_to_rst2(w, gridcal_info, "GridCal")
 
 
 if __name__ == '__main__':

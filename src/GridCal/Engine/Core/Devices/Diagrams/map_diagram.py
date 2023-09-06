@@ -18,7 +18,7 @@
 import uuid
 from typing import Dict, Union
 from GridCal.Engine.Core.Devices.Diagrams.base_diagram import BaseDiagram
-from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
+from GridCal.Engine.Core.Devices.enumerations import DiagramType
 
 
 class MapDiagram(BaseDiagram):
@@ -32,5 +32,5 @@ class MapDiagram(BaseDiagram):
         :param idtag: UUID
         :param name: Diagram name
         """
-        BaseDiagram.__init__(self, idtag=idtag, name=name)
+        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.SubstationLineMap)
 

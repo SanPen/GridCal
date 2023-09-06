@@ -15,7 +15,8 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../src'))
-
+sys.path.append("..")
+from doc.auto_document_models import write_models_to_rst
 from GridCal.__version__ import __GridCal_VERSION__
 
 # -- Project information -----------------------------------------------------
@@ -58,6 +59,8 @@ extensions.append('sphinx.ext.graphviz')
 
 autosummary_generate = True
 
+# generate CGMES, PSSe and GridCal data models' rst files
+write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

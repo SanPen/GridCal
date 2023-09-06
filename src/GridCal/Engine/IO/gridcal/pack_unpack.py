@@ -22,6 +22,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Engine.Core.Devices as dev
 from GridCal.Engine.Core.Devices import DeviceType
+from GridCal.Engine.Core.Devices.enumerations import DiagramType
 
 
 def get_objects_dictionary():
@@ -593,22 +594,22 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
             for diagram_dict in data['diagrams']:
 
-                if diagram_dict['type'] == 'BusBranchDiagram':
+                if diagram_dict['type'] == DiagramType.BusBranch.value:
                     diagram = dev.BusBranchDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
                     circuit.add_diagram(diagram)
 
-                if diagram_dict['type'] == 'NodeBreakerDiagram':
+                elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
                     diagram = dev.NodeBreakerDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
                     circuit.add_diagram(diagram)
 
-                if diagram_dict['type'] == 'MapDiagram':
+                elif diagram_dict['type'] == DiagramType.SubstationLineMap.value:
                     diagram = dev.MapDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
                     circuit.add_diagram(diagram)
                 else:
-                    pass
+                    print('unrecognized diagram', diagram_dict['type'])
 
     # Other actions ----------------------------------------------------------------------------------------------------
     circuit.logger += circuit.apply_all_branch_types()

@@ -27,6 +27,7 @@ class GCProp:
     GridCal property
     """
     def __init__(self,
+                 prop_name: str,
                  units: str,
                  tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
                  definition: str,
@@ -35,6 +36,7 @@ class GCProp:
                  editable: bool = True):
         """
         GridCal property
+        :param prop_name:
         :param units: units of the property
         :param tpe: data type [Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]]
         :param definition: Definition of the property
@@ -42,6 +44,8 @@ class GCProp:
         :param display: Display the property in the GUI
         :param editable: Is this editable?
         """
+
+        self.name = prop_name
 
         self.units = units
 
@@ -54,6 +58,36 @@ class GCProp:
         self.display = display
 
         self.editable = editable
+
+    def get_class_name(self) -> str:
+        """
+        Convert the class name to a string
+        :return: str
+        """
+        tpe_name = str(self.tpe)
+        if '.' in tpe_name:
+            chunks = tpe_name.split('.')
+            return chunks[-1].replace("'", "") \
+                .replace("<", "") \
+                .replace(">", "").strip()
+        else:
+            return tpe_name.replace('class', '') \
+                .replace("'", "") \
+                .replace("<", "") \
+                .replace(">", "").strip()
+
+    def get_dict(self) -> Dict[str, str]:
+        """
+        Get the values of this property as a dictionary
+        :return: Dict[name, value]
+        """
+        return {'name': self.name,
+                'class_type': self.get_class_name(),
+                'unit': self.units,
+                'mandatory': False,
+                'max_chars': '',
+                "descriptions": self.definition,
+                'comment': ''}
 
 
 class EditableDevice:
@@ -141,7 +175,8 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
-        self.editable_headers[key] = GCProp(units=units,
+        self.editable_headers[key] = GCProp(prop_name=key,
+                                            units=units,
                                             tpe=tpe,
                                             definition=definition,
                                             profile_name=profile_name,

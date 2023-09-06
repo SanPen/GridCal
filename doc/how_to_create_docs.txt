@@ -11,3 +11,6 @@ Any python that exeutes "sphinx-build" must have installed the same dependencies
 In short, if you want to compile the documentation locally, better use make.py, the others are there for read-the-docs.
 
 
+Use: `sphinx-apidoc -o ./rst_source/api/auto ../src/GridCal --tocfile modules` to build the api rst files
+
+

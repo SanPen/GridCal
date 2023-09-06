@@ -43,7 +43,8 @@ from GridCal.Engine.Core.Devices.Injections.generator import Generator
 from GridCal.Engine.Core.Devices.enumerations import DeviceType
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram, GraphicLocation
+from GridCal.Engine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
+from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem

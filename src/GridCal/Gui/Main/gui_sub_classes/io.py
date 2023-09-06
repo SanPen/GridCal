@@ -294,8 +294,6 @@ class IoMain(ConfigurationMain):
 
         if self.open_file_thread_object is not None:
 
-
-
             if self.open_file_thread_object.valid:
 
                 # assign the loaded circuit
@@ -304,6 +302,7 @@ class IoMain(ConfigurationMain):
                 self.file_name = self.open_file_thread_object.file_name
 
                 if self.circuit.has_diagrams():
+                    # create the diagrams that came with the file
                     self.create_circuit_stored_diagrams()
 
                 else:
