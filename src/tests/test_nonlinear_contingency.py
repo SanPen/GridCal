@@ -2,8 +2,7 @@ import os
 from GridCal.Engine import *
 
 
-def test_ptdf():
-
+def test_non_linear_factors():
     # Prepare simulation
     # get the directory of this file
     current_path = os.path.dirname(__file__)
@@ -21,10 +20,11 @@ def test_ptdf():
     pf.run()
 
     # Run the nonlinear factors calculation ----------------------------------------------------------------------------
-    nl_options = NonLinearAnalysisOptions(distribute_slack=False,
-                                          correct_values=True,
-                                          pf_options=pf.options)
-    nl_simulation = NonLinearAnalysisDriver(grid=main_circuit, options=nl_options)
+    nl_options = ContingencyAnalysisOptions(distributed_slack=False,
+                                            correct_values=True,
+                                            pf_options=pf.options)
+    lmc = LinearMultiContingencies(grid=main_circuit)
+    nl_simulation = ContingencyAnalysisDriver(grid=main_circuit, options=nl_options, linear_multiple_contingencies=lmc)
     nl_simulation.run()
 
     # Check results, run pf with line out
@@ -60,5 +60,4 @@ def test_ptdf():
 
 
 if __name__ == '__main__':
-    test_ptdf()
-
+    test_non_linear_factors()

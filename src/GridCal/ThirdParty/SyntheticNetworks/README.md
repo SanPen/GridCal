@@ -39,9 +39,9 @@ g.initialise()
 # perform growth steps until the network has size n
 g.grow() 
 
-print g
+print(g)
 
-print g.stats
+print(g.stats)
 
 g.save_graph()
 

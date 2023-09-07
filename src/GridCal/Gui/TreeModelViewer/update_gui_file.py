@@ -2,7 +2,7 @@
 Script to update correctly the main GUI (.py) file from the Qt design (.ui) file
 """
 import os
-from RosetaGridConverter.Gui.update_gui_common import convert_resource_file, convert_ui_file
+from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 if __name__ == '__main__':
     # pyrcc5 icons.qrc -o icons_rc.py

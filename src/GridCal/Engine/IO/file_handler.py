@@ -32,7 +32,7 @@ from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.others.dpx_parser import load_dpx
 from GridCal.Engine.IO.others.ipa_parser import load_iPA
 from GridCal.Engine.IO.gridcal.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.raw.raw_parser import read_raw
+from GridCal.Engine.IO.raw.raw_parser_writer import read_raw
 from GridCal.Engine.IO.raw.raw_to_gridcal import psse_to_gridcal
 from GridCal.Engine.IO.epc.epc_parser import PowerWorldParser
 # from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
@@ -41,7 +41,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCal.Engine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.gridcal.h5_interface import save_h5, open_h5
-from GridCal.Engine.IO.raw.rawx_parser import rawx_parse, rawx_writer
+from GridCal.Engine.IO.raw.rawx_parser_writer import rawx_parse, rawx_writer
 from GridCal.Engine.IO.pypsa.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
@@ -402,9 +402,11 @@ class FileSave:
         Save the circuit information in json format
         :return:logger with information
         """
-
-        logger = rawx_writer(self.file_name, self.circuit)
-        return logger
+        # raw_circuit = to_psse
+        # logger = rawx_writer(self.file_name, self.circuit)
+        # return logger
+        # TODO: Implement rawx export
+        pass
 
     def save_newton(self):
         """

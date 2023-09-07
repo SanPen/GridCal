@@ -8266,9 +8266,9 @@ QProgressBar::chunk{
     <property name="title">
      <string>Simulations</string>
     </property>
+    <addaction name="actionInputs_analysis"/>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
-    <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="actionVoltage_stability"/>
@@ -9083,7 +9083,7 @@ QProgressBar::chunk{
     <string>Inputs analysis</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+I</string>
+    <string>F4</string>
    </property>
   </action>
   <action name="actionATC_clustering">

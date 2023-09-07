@@ -19,7 +19,7 @@ nice graphical user interface. This no-nonsense approach has fostered numerous
 innovations; Some of them pushed by the need to use the software for commercial 
 work, and some ignited by research and curiosity.
 
-If you are a professional looking for a free software to get work done in time, 
+If you are a professional looking for a free software to get work done on time, 
 look no further. If you are a researcher looking for a real-world, TSO-tested platform, 
 you're in good hands. If you are a teacher willing to teach your students the ins-and-outs 
 of commercial grade software, this is it. And if you are a student willing to learn 
@@ -39,7 +39,7 @@ install GridCal with the following terminal command:
 pip install GridCal
 ```
 
-You may need to use `pip3` if you are under Linux or macOS, both of which 
+You may need to use `pip3` if you are under Linux or MacOS, both of which 
 come with Python pre-installed already.
 
 ### Run th graphical user interface
@@ -56,6 +56,8 @@ python -c "from GridCal.ExecuteGridCal import run; run()"
 If you don't know what is this Python thing, we offer a windows installation:
 
 [Windows setup](https://www.advancedgridinsights.com/gridcal)
+
+[Setup tutorial (video)](https://youtu.be/SY66WgLGo54)
 
 This will install GridCal as a normal windows program and you need not to worry 
 about any of the previous instructions.
@@ -84,17 +86,39 @@ about any of the previous instructions.
 - Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
 - Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
 
+### Resources
+
+In an effort to ease the simulation and construction of grids, 
+We have included extra materials to work with. These are included in the standalone setups.
+
+- [Load profiles](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/equipment) for your projects
+- [Grids](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/grids) from IEEE and other open projects
+- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
+
+
+### Tutorials and examples
+
+- [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
+
+- [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
+
+- [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
+
+- [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
+
+- [tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as a valuable source of examples.
 
 ## API
 
 Since day one, GridCal was meant to be used as a library as much as it was meant 
-to be used from the user interface. 
+to be used from the user interface. Also, Check out the [documentation](https://gridcal.readthedocs.io).
 
 ### Loading a grid
 
 ```python
 import GridCal.api as gca
 
+# load a grid
 my_grid = gca.open_file("my_file.gridcal")
 ```
 
@@ -112,6 +136,10 @@ GridCal supports a plethora of file formats:
 ```python
 import GridCal.api as gca
 
+# create a grid
+...
+
+# save
 gca.save_file(my_grid, "my_file.gridcal")
 ```
 
@@ -128,29 +156,34 @@ grid = gce.MultiCircuit()
 
 # Add the buses and the generators and loads attached
 bus1 = gce.Bus('Bus 1', vnom=20)
-# bus1.is_slack = True
+# bus1.is_slack = True  # we may mark the bus a slack
 grid.add_bus(bus1)
 
+# add a generator to the bus 1
 gen1 = gce.Generator('Slack Generator', voltage_module=1.0)
 grid.add_generator(bus1, gen1)
 
+# add bus 2 with a load attached
 bus2 = gce.Bus('Bus 2', vnom=20)
 grid.add_bus(bus2)
 grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
+# add bus 3 with a load attached
 bus3 = gce.Bus('Bus 3', vnom=20)
 grid.add_bus(bus3)
 grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
+# add bus 4 with a load attached
 bus4 = gce.Bus('Bus 4', vnom=20)
 grid.add_bus(bus4)
 grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
+# add bus 5 with a load attached
 bus5 = gce.Bus('Bus 5', vnom=20)
 grid.add_bus(bus5)
 grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
-# add Branches (Lines in this case)
+# add Lines connecting the buses
 grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
 grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
 grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
@@ -235,4 +268,4 @@ Nonetheless, read the license carefully.
 
 [GridCal](http://consultas2.oepm.es/ceo/jsp/busqueda/consultaExterna.xhtml?numExp=1u6ec16k3hn1v05or1c1ah4va8re2e5810b4vrc1inj2ae0vz4sigbkzywc1id2ifqazajcdjwuvubmnxfjdz0vasw9rqs3u4u7i) is a trademark registered in the Spanish patents and trademarks office.
 
-All other trademarks mentioned belong to their respective owners.
+All trademarks mentioned in the documentation or the source code belong to their respective owners.
