@@ -27,7 +27,7 @@ from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCal.Engine.IO.raw.devices.psse_object import RawObject
 
 
-def rawx_parse(file_name: str, logger: Logger = Logger()) -> PsseCircuit:
+def parse_rawx(file_name: str, logger: Logger = Logger()) -> PsseCircuit:
     """
     Parse a rawx file from PSSe
     :param file_name: file name
@@ -89,7 +89,7 @@ def rawx_parse(file_name: str, logger: Logger = Logger()) -> PsseCircuit:
     return psse_grid
 
 
-def rawx_writer(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) -> Logger:
+def write_rawx(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) -> Logger:
     """
     RAWx export
     :param file_name: file name to save to

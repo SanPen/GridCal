@@ -32,8 +32,9 @@ from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.others.dpx_parser import load_dpx
 from GridCal.Engine.IO.others.ipa_parser import load_iPA
 from GridCal.Engine.IO.gridcal.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.raw.raw_parser_writer import read_raw
+from GridCal.Engine.IO.raw.raw_parser_writer import read_raw, write_raw
 from GridCal.Engine.IO.raw.raw_to_gridcal import psse_to_gridcal
+from GridCal.Engine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCal.Engine.IO.epc.epc_parser import PowerWorldParser
 # from GridCal.Engine.IO.cim.cim16.cim_parser import CIMImport
 from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
@@ -41,7 +42,7 @@ from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCal.Engine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.gridcal.h5_interface import save_h5, open_h5
-from GridCal.Engine.IO.raw.rawx_parser_writer import rawx_parse, rawx_writer
+from GridCal.Engine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCal.Engine.IO.pypsa.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
 
@@ -202,7 +203,7 @@ class FileOpen:
                     self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
 
                 elif file_extension.lower() == '.rawx':
-                    pss_grid = rawx_parse(self.file_name, logger=self.logger)
+                    pss_grid = parse_rawx(self.file_name, logger=self.logger)
                     self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
 
                 elif file_extension.lower() == '.epc':
@@ -306,6 +307,9 @@ class FileSave:
         elif self.file_name.endswith('.rawx'):
             logger = self.save_rawx()
 
+        elif self.file_name.endswith('.raw'):
+            logger = self.save_raw()
+
         elif self.file_name.endswith('.newton'):
             logger = self.save_newton()
 
@@ -397,16 +401,23 @@ class FileSave:
 
         return logger
 
+    def save_raw(self):
+        """
+        Save the circuit information in json format
+        :return:logger with information
+        """
+        raw_circuit = gridcal_to_raw(self.circuit)
+        logger = write_raw(self.file_name, raw_circuit)
+        return logger
+
     def save_rawx(self):
         """
         Save the circuit information in json format
         :return:logger with information
         """
-        # raw_circuit = to_psse
-        # logger = rawx_writer(self.file_name, self.circuit)
-        # return logger
-        # TODO: Implement rawx export
-        pass
+        raw_circuit = gridcal_to_raw(self.circuit)
+        logger = write_rawx(self.file_name, raw_circuit)
+        return logger
 
     def save_newton(self):
         """
