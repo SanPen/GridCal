@@ -25,11 +25,11 @@ from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Engine.Simulations as sim
+import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram

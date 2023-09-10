@@ -24,20 +24,20 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
 # Engine imports
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Engine.Simulations as sim
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.grid_analysis as grid_analysis
+import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Simulations as sim
+import GridCalEngine.basic_structures as bs
+import GridCalEngine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.GridEditorWidget import GridEditorWidget
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
+from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
-from GridCal.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
+from GridCalEngine.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
 
 
 class SimulationsMain(TimeEventsMain):

@@ -19,7 +19,7 @@ from io import StringIO
 import zipfile
 from PySide6.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger
 
 
 class ExportAllThread(QThread):

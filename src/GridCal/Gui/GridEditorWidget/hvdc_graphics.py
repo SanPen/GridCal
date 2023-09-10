@@ -18,7 +18,7 @@
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.messages import yes_no_question
 

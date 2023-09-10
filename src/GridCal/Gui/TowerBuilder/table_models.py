@@ -17,8 +17,8 @@
 
 
 from PySide6 import QtCore
-from GridCal.Engine.Core.Devices.Branches.wire import Wire
-from GridCal.Engine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
+from GridCalEngine.Core.Devices.Branches.wire import Wire
+from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
 
 """
 Equations source:

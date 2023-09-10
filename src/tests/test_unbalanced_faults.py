@@ -18,9 +18,9 @@ import os
 
 import numpy as np
 
-from GridCal.Engine import *
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Core.Devices.enumerations import FaultType
+from GridCalEngine import *
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Core.Devices.enumerations import FaultType
 
 
 def test_unbalanced_short_circuit():

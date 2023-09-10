@@ -20,7 +20,7 @@ from typing import List
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from GridCal.Engine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model, get_checked_indices
 
 

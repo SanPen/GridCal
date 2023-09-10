@@ -15,14 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-import pandas as pd
-import numpy as np
-import GridCal.Engine as gce
-import GridCal.api as gca
 
-from GridCal.Engine.IO.raw.raw_parser_writer import read_raw
-from GridCal.Engine.IO.cim.cgmes_2_4_15.devices.topological_node import TopologicalNode
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.raw.raw_parser_writer import read_raw
+from GridCalEngine.IO.cim.cgmes_2_4_15.devices.topological_node import TopologicalNode
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 
 
 this_dir = os.path.dirname(os.path.realpath(__file__))

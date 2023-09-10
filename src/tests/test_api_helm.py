@@ -17,9 +17,9 @@
 import os
 import numpy as np
 
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from tests.print_power_flow_results import print_power_flow_results
 
 

@@ -20,10 +20,10 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu
-from GridCal.Engine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Engine.Simulations.Topology.topology_driver import reduce_buses
+from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.GridEditorWidget.load_graphics import LoadGraphicItem
 from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
@@ -32,7 +32,7 @@ from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Engine.Core.Devices.enumerations import DeviceType, FaultType
+from GridCalEngine.Core.Devices.enumerations import DeviceType, FaultType
 
 
 class BusGraphicItem(QtWidgets.QGraphicsRectItem):

@@ -1,4 +1,4 @@
-from GridCal.Engine import *
+from GridCalEngine import *
 
 np.set_printoptions(linewidth=10000)
 

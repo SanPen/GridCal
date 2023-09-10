@@ -23,11 +23,11 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCal.Engine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, ContingencyGroup
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.basic_structures import IntVec, Vec, Mat
-from GridCal.Engine.data_logger import DataLogger
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, ContingencyGroup
+from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.basic_structures import IntVec, Vec, Mat
+from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
 import GridCal
 
 

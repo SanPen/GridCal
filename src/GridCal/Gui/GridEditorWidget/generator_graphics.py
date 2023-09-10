@@ -17,7 +17,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup, QVBoxLayout, QGraphicsTextItem, QDialog
-from GridCal.Engine.Core.Devices.Injections.generator import Generator, DeviceType
+from GridCalEngine.Core.Devices.Injections.generator import Generator, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, info_msg

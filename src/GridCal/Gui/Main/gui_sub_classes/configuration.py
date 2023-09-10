@@ -20,7 +20,7 @@ from typing import Dict, Union
 
 from PySide6 import QtWidgets
 
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
 
 

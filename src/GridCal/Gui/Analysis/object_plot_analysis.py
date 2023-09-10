@@ -22,10 +22,10 @@ from typing import List
 import math
 from PySide6 import QtGui
 
-from GridCal.Engine.basic_structures import LogSeverity
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Engine.basic_structures as bs
+from GridCalEngine.basic_structures import LogSeverity
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Core.Devices as dev
+import GridCalEngine.basic_structures as bs
 
 
 class GridErrorLog:

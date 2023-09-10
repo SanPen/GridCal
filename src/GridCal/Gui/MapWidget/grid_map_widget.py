@@ -20,19 +20,19 @@ from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Engine.Core.Devices.Substation.bus import Bus
-from GridCal.Engine.Core.Devices.Branches.line import Line
-from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
-from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
-from GridCal.Engine.Core.Devices.Branches.vsc import VSC
-from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCal.Engine.Core.Devices.Injections.generator import Generator
-from GridCal.Engine.Core.Devices.enumerations import DeviceType
-from GridCal.Engine.Core.Devices.Diagrams.map_diagram import MapDiagram
-from GridCal.Engine.Core.Devices.Diagrams.map_location import MapLocation
-from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Core.Devices.Branches.line import Line
+from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Core.Devices.Branches.vsc import VSC
+from GridCalEngine.Core.Devices.Branches.upfc import UPFC
+from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.Core.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 
 class GridMapWidget(MapWidget):

@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-import GridCal.Engine as gce
+import GridCalEngine as gce
 
 
 def test_1():

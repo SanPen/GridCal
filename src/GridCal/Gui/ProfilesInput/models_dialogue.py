@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.file_handler import FileOpen
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.IO.file_handler import FileOpen
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
 
 

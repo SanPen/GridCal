@@ -14,9 +14,9 @@ from GridCal.__version__ import __GridCal_VERSION__
 import os
 import sys
 
-call([sys.executable, 'setup.py', 'sdist'])
+call([sys.executable, 'setup_gridcal.py', 'sdist'])
 
-call([sys.executable, 'setup.py', 'bdist_wheel'])
+call([sys.executable, 'setup_gridcal.py', 'bdist_wheel'])
 
 name = 'GridCal-' + str(__GridCal_VERSION__) + '.tar.gz'
 fpath = os.path.join('dist', name)

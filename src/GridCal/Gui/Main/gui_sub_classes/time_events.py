@@ -19,7 +19,7 @@ import pandas as pd
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
-import GridCal.Engine.Core.Devices as dev
+import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg

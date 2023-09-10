@@ -21,13 +21,13 @@ from typing import Union
 import pandas as pd
 from PySide6 import QtWidgets
 
-import GridCal.Engine.Core as core
+import GridCalEngine.Core as core
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.export_results_driver as exprtdrv
 import GridCal.Gui.Session.file_handler as filedrv
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCal.Engine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCal.Gui.GridEditorWidget import GridEditorWidget

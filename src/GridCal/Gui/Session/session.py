@@ -20,26 +20,26 @@ from typing import Dict, Union
 from collections.abc import Callable
 
 # Module imports
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import \
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_ts_driver import \
     AvailableTransferCapacityTimeSeriesResults
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
-from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
     ContingencyAnalysisTimeSeriesResults
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesResults
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
-from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
-from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.basic_structures import Logger
+from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesResults
+from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
+from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.Session.results_model import ResultsModel
 
 

@@ -18,8 +18,8 @@ import sys
 from PySide6 import QtWidgets, QtGui
 
 from GridCal.Gui.CascadingSteps.gui import Ui_Dialog
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Simulations as sim
+import GridCalEngine.basic_structures as bs
+import GridCalEngine.Simulations as sim
 from GridCal.Gui.messages import warning_msg
 
 

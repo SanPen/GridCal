@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem
 
-from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem

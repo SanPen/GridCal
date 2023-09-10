@@ -18,12 +18,12 @@ import os
 from typing import Union, List
 from PySide6.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
-from GridCal.Engine.IO.file_handler import FileOpen, FileSave
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCal.Engine.data_logger import DataLogger
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
+from GridCalEngine.IO.file_handler import FileOpen, FileSave
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.data_logger import DataLogger
 
 
 class FileOpenThread(QThread):

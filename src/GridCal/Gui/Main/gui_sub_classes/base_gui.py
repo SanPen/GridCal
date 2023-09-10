@@ -31,15 +31,15 @@ import pandas as pd
 from PySide6 import QtGui, QtWidgets, QtCore
 
 # Engine imports
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
-import GridCal.Engine.Simulations as sim
-import GridCal.Engine.basic_structures as bs
+import GridCalEngine.Core as core
+import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Simulations as sim
+import GridCalEngine.basic_structures as bs
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.synchronization_driver as syncdrv
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCal.Engine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI

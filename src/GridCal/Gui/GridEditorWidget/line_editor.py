@@ -21,7 +21,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, \
     QDoubleSpinBox, QComboBox
 from GridCal.Gui.GuiFunctions import get_list_model
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
+from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
 
 class LineEditor(QDialog):

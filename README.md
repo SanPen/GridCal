@@ -116,7 +116,7 @@ to be used from the user interface. Also, Check out the [documentation](https://
 ### Loading a grid
 
 ```python
-import GridCal.api as gca
+import GridCalEngine.api as gca
 
 # load a grid
 my_grid = gca.open_file("my_file.gridcal")
@@ -134,7 +134,7 @@ GridCal supports a plethora of file formats:
 ### Save a grid
 
 ```python
-import GridCal.api as gca
+import GridCalEngine.api as gca
 
 # create a grid
 ...

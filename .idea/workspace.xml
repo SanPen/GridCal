@@ -28,22 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added synthax colouring">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="early rawx writer">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_parser_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/raw_writer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TreeModelViewer/update_gui_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TreeModelViewer/update_gui_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/results/comparison/extract_power_factory_values.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/extract_power_factory_values.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/raw_to_cgmes_mapping.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/raw_to_cgmes_mapping.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_nonlinear_contingency.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/gridcal_to_raw.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/gridcal_to_raw.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw/rawx_parser_writer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1268,7 +1256,7 @@
       <workItem from="1693896966056" duration="13179000" />
       <workItem from="1694004691266" duration="6060000" />
       <workItem from="1694030920174" duration="6891000" />
-      <workItem from="1694069771395" duration="9702000" />
+      <workItem from="1694069771395" duration="10100000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1613,7 +1601,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="495" />
+    <option name="localTasksCounter" value="496" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1655,7 +1643,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added color to some object tags&#10;Added color as an item delegate" />
     <MESSAGE value="added matpower to dictionary structure" />
     <MESSAGE value="Separated the cascading GUI" />
     <MESSAGE value="Implemented the base decoupling of diagrams" />
@@ -1680,7 +1667,8 @@
     <MESSAGE value="Added map types and fixed issues when loading diagrams from the files" />
     <MESSAGE value="re-wrotethe README.md" />
     <MESSAGE value="added synthax colouring" />
-    <option name="LAST_COMMIT_MESSAGE" value="added synthax colouring" />
+    <MESSAGE value="early rawx writer" />
+    <option name="LAST_COMMIT_MESSAGE" value="early rawx writer" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

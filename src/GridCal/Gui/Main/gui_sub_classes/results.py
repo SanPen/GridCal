@@ -18,7 +18,7 @@ import numpy as np
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
-import GridCal.Engine.Simulations as sim
+import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain

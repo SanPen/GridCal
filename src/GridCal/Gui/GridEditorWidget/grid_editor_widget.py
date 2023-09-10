@@ -30,22 +30,23 @@ from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView
     QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.Devices.Substation.bus import Bus, EditableDevice
-from GridCal.Engine.Core.Devices.Branches.line import Line
-from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
-from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
-from GridCal.Engine.Core.Devices.Branches.vsc import VSC
-from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCal.Engine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCal.Engine.Core.Devices.Injections.generator import Generator
-from GridCal.Engine.Core.Devices.enumerations import DeviceType
-from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.driver_template import DriverTemplate
-from GridCal.Engine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
-from GridCal.Engine.Core.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCal.Engine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Branches.line import Line
+from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Core.Devices.Branches.vsc import VSC
+from GridCalEngine.Core.Devices.Branches.upfc import UPFC
+from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
+from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem

@@ -4,8 +4,8 @@ from PySide6 import QtWidgets
 
 from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
 from GridCal.Gui.Session.results_model import ResultsModel
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
+from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):

@@ -13,11 +13,11 @@ from GridCal.Gui.messages import *
 from GridCal.Gui.RosetaExplorer.MainWindow import *
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
-from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
-from GridCal.Engine.IO.cim.db.db_handler import DbHandler
-from GridCal.Engine.data_logger import DataLogger
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
+from GridCalEngine.IO.cim.db.db_handler import DbHandler
+from GridCalEngine.data_logger import DataLogger
 
 try:
     from GridCal.Gui.RosetaExplorer.ConsoleWidget import ConsoleWidget

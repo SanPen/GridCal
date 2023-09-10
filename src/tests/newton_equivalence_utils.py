@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import newtonpa as npa
-import GridCal.Engine as gce
+import GridCalEngine as gce
 import scipy.sparse as sp
 from typing import List
-from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 npa.findAndActivateLicense()
 
 

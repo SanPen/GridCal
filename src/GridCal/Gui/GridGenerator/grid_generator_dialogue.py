@@ -5,9 +5,9 @@ import networkx as nx
 from PySide6 import QtWidgets
 
 from GridCal.Gui.GridGenerator.gui import Ui_MainWindow
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
+import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
 
 
 class GridGeneratorGUI(QtWidgets.QDialog):

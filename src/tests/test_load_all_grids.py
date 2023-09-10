@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 
-from GridCal.Engine.IO.file_handler import FileOpen
+from GridCalEngine.IO.file_handler import FileOpen
 
 
 def test_all_grids():

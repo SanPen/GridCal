@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-import GridCal.Engine as gce
+import GridCalEngine as gce
 
 np.set_printoptions(precision=4)
 grid = gce.MultiCircuit()

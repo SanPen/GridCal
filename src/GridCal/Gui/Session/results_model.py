@@ -17,7 +17,7 @@
 
 import io
 from PySide6 import QtCore, QtWidgets
-from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCalEngine.Simulations.results_table import ResultsTable
 
 
 def fast_data_to_numpy_text(data):

@@ -1,7 +1,7 @@
 
 #!/usr/bin/env bash
 
-sphinx-apidoc -o ./rst_source/api/auto ../src/GridCal --tocfile modules
+sphinx-apidoc -o ./rst_source/api/auto ../src/GridCalEngine --tocfile modules
 
 #sphinx-build -b html -E . _build/html
 sphinx-build -b html . build/html

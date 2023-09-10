@@ -24,8 +24,8 @@ from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Engine.Core.Devices.Branches.line import Line, SequenceLineType
-from GridCal.Engine.Core.Devices.Branches.branch import BranchType
+from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType
+from GridCalEngine.Core.Devices.Branches.branch import BranchType
 
 
 class LineGraphicItem(LineGraphicTemplateItem):

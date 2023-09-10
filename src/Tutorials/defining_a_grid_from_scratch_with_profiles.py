@@ -6,14 +6,14 @@ The added profile is just to demonstrate how to create load profiles properly
 
 Author: Santiago Peñate Vera (September 2018)
 """
-from GridCal.Engine import *
-from GridCal.Engine.Core.Devices import Bus
-from GridCal.Engine.Core.Devices import Generator
-from GridCal.Engine.Core.Devices import Load
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
+from GridCalEngine import *
+from GridCalEngine.Core.Devices import Bus
+from GridCalEngine.Core.Devices import Generator
+from GridCalEngine.Core.Devices import Load
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 
 
 def main():

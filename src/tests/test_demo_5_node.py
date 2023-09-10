@@ -17,14 +17,14 @@
 
 import numpy as np
 
-from GridCal.Engine.IO.file_handler import FileSave
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.Devices import Bus
-from GridCal.Engine.Core.Devices import Generator
-from GridCal.Engine.Core.Devices import Load
-from GridCal.Engine.Core.Devices import Line
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from GridCalEngine.IO.file_handler import FileSave
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices import Bus
+from GridCalEngine.Core.Devices import Generator
+from GridCalEngine.Core.Devices import Load
+from GridCalEngine.Core.Devices import Line
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from tests.print_power_flow_results import print_power_flow_results
 from tests.conftest import ROOT_PATH
 

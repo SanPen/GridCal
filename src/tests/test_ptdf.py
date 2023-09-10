@@ -1,5 +1,5 @@
 import os
-from GridCal.Engine import *
+from GridCalEngine import *
 
 
 def test_ptdf():

@@ -18,8 +18,8 @@ from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-import GridCal.Engine.Core as core
-import GridCal.Engine.Core.Devices as dev
+import GridCalEngine.Core as core
+import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg

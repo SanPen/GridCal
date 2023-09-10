@@ -19,8 +19,8 @@ from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
-import GridCal.Engine.Core.Devices as dev
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class BusViewerGUI(QMainWindow):

@@ -24,13 +24,13 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, O
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Engine.Core.Devices.Branches.line import Line
-from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W
-from GridCal.Engine.Core.Devices.Branches.vsc import VSC
-from GridCal.Engine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Engine.Core.Devices.Branches.dc_line import DcLine
-from GridCal.Engine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCalEngine.Core.Devices.Branches.line import Line
+from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Core.Devices.Branches.vsc import VSC
+from GridCalEngine.Core.Devices.Branches.upfc import UPFC
+from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
 class ArrowHead(QGraphicsPolygonItem):

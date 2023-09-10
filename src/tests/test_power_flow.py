@@ -18,10 +18,10 @@ import os
 import pandas as pd
 import numpy as np
 
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def test_ieee_grids():

@@ -18,8 +18,8 @@ import numpy as np
 from PySide6 import QtCore
 from matplotlib import pyplot as plt
 
-import GridCal.Engine.Core as core
-import GridCal.Engine.basic_structures as bs
+import GridCalEngine.Core as core
+import GridCalEngine.basic_structures as bs
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
 
@@ -128,11 +128,11 @@ class CompiledArraysMain(BaseMainGui):
                 self.calculation_inputs_to_display = calculation_inputs
 
             elif engine == bs.EngineType.Bentayga:
-                import GridCal.Engine.Core.Compilers.circuit_to_bentayga as ben
+                import GridCalEngine.Core.Compilers.circuit_to_bentayga as ben
                 self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
 
             elif engine == bs.EngineType.NewtonPA:
-                import GridCal.Engine.Core.Compilers.circuit_to_newton_pa as ne
+                import GridCalEngine.Core.Compilers.circuit_to_newton_pa as ne
                 self.calculation_inputs_to_display = ne.get_snapshots_from_newtonpa(self.circuit)
 
             else:

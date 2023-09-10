@@ -8,7 +8,7 @@ Author: Santiago Peñate Vera (September 2018)
 import numpy as np
 import pandas as pd
 
-from GridCal.Engine import *
+from GridCalEngine import *
 
 
 def main():

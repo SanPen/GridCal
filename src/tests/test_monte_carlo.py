@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 
-from GridCal.Engine import *
+from GridCalEngine import *
 
 
 def test_monte_carlo():

@@ -19,7 +19,7 @@ from typing import List, Tuple
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QGraphicsEllipseItem
 from GridCal.Gui.GuiFunctions import get_list_model
-from GridCal.Engine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
+from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
 
 
 def reverse_transformer_short_circuit_study(transformer_obj: Transformer2W, Sbase: float) -> Tuple[float, float, float, float]:
