@@ -1365,6 +1365,20 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
+    def compute_adjacency_matrix(self) -> sp.csc_matrix:
+        """
+        Compute the adjacency matrix
+        :return: csc_matrix
+        """
+        # compute the adjacency matrix
+        return tp.get_adjacency_matrix(
+            C_branch_bus_f=self.Cf,
+            C_branch_bus_t=self.Ct,
+            branch_active=self.branch_data.active,
+            bus_active=self.bus_data.active
+        )
+
+
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
@@ -1500,8 +1514,9 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Types':
+            data = self.bus_types
             df = pd.DataFrame(
-                data=[d.value for d in self.bus_types],
+                data=data,
                 columns=['Bus types'],
                 index=self.bus_data.names,
             )
@@ -1773,16 +1788,9 @@ class NumericalCircuit:
         :return: List[NumericCircuit]
         """
 
-        # compute the adjacency matrix
-        A = tp.get_adjacency_matrix(
-            C_branch_bus_f=self.Cf,
-            C_branch_bus_t=self.Ct,
-            branch_active=self.branch_data.active,
-            bus_active=self.bus_data.active
-        )
-
         # find the matching islands
-        idx_islands = tp.find_islands(adj=A, active=self.bus_data.active)
+        idx_islands = tp.find_islands(adj=self.compute_adjacency_matrix(),
+                                      active=self.bus_data.active)
 
         circuit_islands = list()  # type: List[NumericalCircuit]
 

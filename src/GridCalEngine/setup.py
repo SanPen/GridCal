@@ -38,26 +38,18 @@ This software aims to be a complete platform for power systems research and simu
 
 ## Installation
 
-pip install GridCal
+pip install GridCalEngine
 
 For more options (including a standalone setup one), follow the
 [installation instructions]( https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's [documentation](https://gridcal.readthedocs.io)
 '''
 
-# if os.path.exists(os.path.join(here, 'about.txt')):
-#     with open(os.path.join(here, 'about.txt'), encoding='utf-8') as f:
-#         description = f.read()
-#         print(description)
-# else:
-#     description = ''
-#     print('Unable to read the description file')
 description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 
 pkgs_to_exclude = ['docs', 'research', 'research.*', 'tests', 'tests.*', 'Tutorials', 'GridCal']
 
 packages = find_packages(exclude=pkgs_to_exclude)
-
 
 # ... so we have to do the filtering ourselves
 packages2 = list()
@@ -71,9 +63,7 @@ for package in packages:
     if not excluded:
         packages2.append(package)
 
-
 package_data = {'GridCalEngine': ['LICENSE.txt', ], }
-
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
@@ -103,8 +93,8 @@ dependencies = ['setuptools>=41.0.1',
                 ]
 
 extras_require = {
-        'gch5 files':  ["tables"]  # this is for h5 compatibility
-    }
+    'gch5 files': ["tables"]  # this is for h5 compatibility
+}
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
@@ -118,7 +108,7 @@ setup(
     url='https://github.com/SanPen/GridCal',  # Optional
     author='Santiago Peñate Vera et. Al.',  # Optional
     author_email='santiago@gridcal.org',  # Optional
-    classifiers=[ 
+    classifiers=[
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
         'Programming Language :: Python :: 3.10',
     ],

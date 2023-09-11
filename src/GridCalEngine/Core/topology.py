@@ -22,8 +22,7 @@ from scipy.sparse import csc_matrix, diags
 from GridCalEngine.basic_structures import BusMode, IntVec, Vec, Mat, CxVec
 
 
-# @nb.njit(cache=True)
-def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[List[int]]:
+def find_islands_numba_old(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[List[int]]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
@@ -35,7 +34,7 @@ def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active
     """
 
     # Mark all the vertices as not visited
-    visited = np.zeros(node_number, dtype=int)
+    visited = np.zeros(node_number, dtype=np.int32)
 
     # storage structure for the islands (list of lists)
     islands = list()  # type: List[List[int]]
@@ -90,6 +89,87 @@ def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active
     # sort each of the islands to maintain raccord
     for island in islands:
         island.sort()  # the sorting is done in-place
+
+    return islands
+
+
+@nb.njit(cache=True)
+def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[Vec]:
+    """
+    Method to get the islands of a graph
+    This is the non-recursive version
+    :param node_number:
+    :param indptr: index pointers in the CSC scheme
+    :param indices: column indices in the CSCS scheme
+    :param active: array of node active
+    :return: list of islands, where each element is a list of the node indices of the island
+    """
+
+    # Mark all the vertices as not visited
+    visited = np.zeros(node_number, dtype=np.int32)
+
+    # storage structure for the islands (2D Numpy array)
+    # there can be as many islands as nodes
+    islands = list()  # type: List[Vec]
+
+    node_count = 0
+    current_island = np.empty(node_number, dtype=np.int64)
+
+    # set the island index
+    island_idx = 0
+
+    # go though all the vertices...
+    for node in range(node_number):
+
+        # if the node has not been visited...
+        if not visited[node] and active[node]:
+
+            # ------------------------------------------------------------------------------------------------------
+            # DFS: store in the island all the reachable vertices from current vertex "node"
+            #
+            # declare a stack with the initial node to visit (node)
+            stack = list()  # type: List[int]
+            stack.append(node)
+
+            while len(stack) > 0:
+
+                # pick the first element of the stack
+                v = stack.pop(0)
+
+                # if v has not been visited...
+                if not visited[v]:
+
+                    # mark as visited
+                    visited[v] = 1
+
+                    # add element to the island
+                    current_island[node_count] = v
+                    node_count += 1
+
+                    # Add the neighbours of v to the stack
+                    start = indptr[v]
+                    end = indptr[v + 1]
+                    for i in range(start, end):
+                        k = indices[i]  # get the row index in the CSC scheme
+                        if not visited[k] and active[k]:
+                            stack.append(k)
+            # ------------------------------------------------------------------------------------------------------
+            # all the other connected vertices have been visited
+            # ------------------------------------------------------------------------------------------------------
+
+            # slice the current island to its actual size
+            island = current_island[:node_count].copy()
+            island.sort()  # sort in-place
+
+            # assign the current island
+            islands.append(island)
+
+            # increase the islands index, because
+            island_idx += 1
+
+            # reset the current island
+            # no need to re-allocate "current_island" since it is going to be overwritten
+            node_count = 0
 
     return islands
 
