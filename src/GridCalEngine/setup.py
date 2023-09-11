@@ -9,11 +9,6 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages
 import distutils.command.build
 import os
-# io.open is needed for projects that support Python 2.7
-# It ensures open() defaults to text mode with universal newlines,
-# and accepts an argument to specify the text encoding
-# Python 3 only projects can skip this import
-from io import open
 
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
@@ -22,7 +17,14 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Override build command
 class BuildCommand(distutils.command.build.build):
+    """
+    BuildCommand
+    """
+
     def initialize_options(self):
+        """
+        initialize_options
+        """
         distutils.command.build.build.initialize_options(self)
         self.build_base = 'build_gridcalengine'
 
@@ -47,7 +49,7 @@ from the project's [documentation](https://gridcal.readthedocs.io)
 
 description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 
-pkgs_to_exclude = ['docs', 'research', 'research.*', 'tests', 'tests.*', 'Tutorials', 'GridCal']
+pkgs_to_exclude = ['docs', 'research', 'tests', 'tutorials', 'GridCal']
 
 packages = find_packages(exclude=pkgs_to_exclude)
 
@@ -63,7 +65,7 @@ for package in packages:
     if not excluded:
         packages2.append(package)
 
-package_data = {'GridCalEngine': ['LICENSE.txt', ], }
+package_data = {'GridCalEngine': ['LICENSE.txt', 'setup.py'], }
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',

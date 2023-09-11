@@ -26,7 +26,7 @@ def publish(pkg_name: str, setup_path: str, version: str):
     call([sys.executable, setup_path, 'sdist'])
 
     # build the .whl file
-    call([sys.executable, setup_path, 'bdist_wheel'])
+    # call([sys.executable, setup_path, 'bdist_wheel'])
 
     name = pkg_name + '-' + str(version) + '.tar.gz'
     fpath = os.path.join('dist', name)

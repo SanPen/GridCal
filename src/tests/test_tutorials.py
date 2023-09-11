@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from Tutorials.defining_a_grid_from_scratch_with_profiles import main as main_with_profiles
-from Tutorials.defining_a_grid_from_scratch_without_profiles import main as main_without_profiles
+from tutorials.defining_a_grid_from_scratch_with_profiles import main as main_with_profiles
+from tutorials.defining_a_grid_from_scratch_without_profiles import main as main_without_profiles
 
 
 def test_define_grid_from_scratch_without_profiles():

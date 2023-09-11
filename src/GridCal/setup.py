@@ -1,3 +1,17 @@
+# This file is part of GridCal.g
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
 A setuptools based setup module.
 See:
@@ -64,10 +78,9 @@ description = 'GridCal is a Power Systems simulation program intended for profes
 
 base_path = os.path.join('GridCal')
 
-pkgs_to_exclude = ['docs', 'research', 'research.*', 'tests', 'tests.*', 'Tutorials', 'GridCalEngine']
+pkgs_to_exclude = ['docs', 'research', 'tests', 'tutorials', 'GridCalEngine']
 
 packages = find_packages(exclude=pkgs_to_exclude)
-
 
 # ... so we have to do the filtering ourselves
 packages2 = list()
@@ -85,6 +98,7 @@ for package in packages:
 package_data = {'GridCal': ['*.md',
                             '*.rst',
                             'LICENSE.txt',
+                            'setup.py',
                             'data/cables.csv',
                             'data/transformers.csv',
                             'data/wires.csv'],

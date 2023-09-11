@@ -1,3 +1,17 @@
+# This file is part of GridCal.g
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from typing import List
 from enum import Enum
 import datetime
@@ -5,6 +19,10 @@ import pandas as pd
 
 
 class DataLogSeverity(Enum):
+    """
+    DataLogSeverity
+    """
+
     Error = 'Error'
     Warning = 'Warning'
     Information = 'Information'
@@ -25,6 +43,9 @@ class DataLogSeverity(Enum):
 
 
 class DataLogEntry:
+    """
+    DataLogEntry
+    """
 
     def __init__(self, msg="", severity: DataLogSeverity = DataLogSeverity.Information, device="", device_class="",
                  property_name='', value="", expected_value="", comment=""):
@@ -38,7 +59,11 @@ class DataLogEntry:
         self.expected_value = str(expected_value)
         self.comment = comment
 
-    def to_list(self):
+    def to_list(self) -> List[str]:
+        """
+        Get list of arguments
+        """
+
         return [self.time, self.severity.value, self.msg, self.device, self.device_class,
                 self.property_name, self.value, self.expected_value, self.comment]
 
@@ -55,9 +80,14 @@ class DataLogEntry:
 
 
 class DataLogger:
+    """
+    DataLogger
+    """
 
-    def __init__(self):
-
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
         self.entries: List[DataLogEntry] = list()
 
         self.debug_entries: List[str] = list()
@@ -113,7 +143,7 @@ class DataLogger:
         :param msg:
         :param device:
         :param device_class:
-        :param property:
+        :param device_property:
         :param value:
         :param expected_value:
         :return:
@@ -223,13 +253,24 @@ class DataLogger:
         return df
 
     def to_csv(self, fname):
+        """
+        Save to CSV file
+        :param fname: name of the file
+        """
         self.to_df().to_csv(fname)
 
     def to_xlsx(self, fname, sheet_name='Logs'):
+        """
+        Save to excel file
+        :param fname: filename
+        :param sheet_name: sheet name
+        """
         self.to_df().to_excel(fname, sheet_name=sheet_name)
 
-    def __str__(self):
-
+    def __str__(self) -> str:
+        """
+        To string
+        """
         val = ''
         for e in self.entries:
             val += str(e) + '\n'
@@ -266,5 +307,8 @@ class DataLogger:
     def __len__(self):
         return len(self.entries)
 
-    def size(self):
+    def size(self) -> int:
+        """
+        Get size
+        """
         return len(self.entries)
