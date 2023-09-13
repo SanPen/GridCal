@@ -35,6 +35,7 @@ import GridCalEngine.Core as core
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCalEngine.basic_structures as bs
+from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.synchronization_driver as syncdrv
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
@@ -705,7 +706,7 @@ class BaseMainGui(QMainWindow):
         """
         Delete small islands, disconnected stuff and other garbage
         """
-        numerical_circuit_ = core.compile_numerical_circuit_at(circuit=self.circuit, )
+        numerical_circuit_ = compile_numerical_circuit_at(circuit=self.circuit, )
         islands = numerical_circuit_.split_into_islands()
         logger = bs.Logger()
         buses_to_delete = list()
@@ -789,10 +790,10 @@ class BaseMainGui(QMainWindow):
         Get a snapshot compilation
         :return: SnapshotData instance
         """
-        return core.compile_numerical_circuit_at(circuit=self.circuit)
+        return compile_numerical_circuit_at(circuit=self.circuit)
 
     @property
-    def numerical_circuit(self) -> core.NumericalCircuit:
+    def numerical_circuit(self) -> NumericalCircuit:
         """
         get the snapshot NumericalCircuit
         :return: NumericalCircuit
@@ -800,12 +801,12 @@ class BaseMainGui(QMainWindow):
         return self.get_snapshot_circuit()
 
     @property
-    def islands(self) -> List[core.NumericalCircuit]:
+    def islands(self) -> List[NumericalCircuit]:
         """
         get the snapshot islands
         :return: List[NumericalCircuit]
         """
-        numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
+        numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
 

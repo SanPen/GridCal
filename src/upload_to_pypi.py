@@ -9,14 +9,17 @@ import os
 import sys
 import tarfile
 from pathlib import Path
-from typing import List
-from io import StringIO
+from typing import List, Tuple
 from subprocess import call
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
 
 
 def build_setup_cfg() -> str:
+    """
+    Generate the content of setup.cgf
+    :return:
+    """
     val = '[egg_info]\n'
     val += 'tag_build = \n'
     val += 'tag_date = 0\n'
@@ -37,6 +40,23 @@ def build_pkg_info(name: str,
                    description_content_type: str,
                    provides_extra: str,
                    long_description: str):
+    """
+    Generate the content of PKG-INFO
+    :param name:
+    :param version:
+    :param summary:
+    :param home_page:
+    :param author:
+    :param email:
+    :param license_:
+    :param keywords:
+    :param classifiers_list:
+    :param requires_pyhon:
+    :param description_content_type:
+    :param provides_extra:
+    :param long_description:
+    :return:
+    """
     val = 'Metadata-Version: 2.1\n'
     val += "Name: " + name + '\n'
     val += "Version: " + version + '\n'
@@ -59,12 +79,12 @@ def build_pkg_info(name: str,
     return val
 
 
-def check_ext(filename, ext_filter):
+def check_ext(filename, ext_filter) -> bool:
     """
-
-    :param filename:
-    :param ext_filter:
-    :return:
+    Check of the file complies with the list of extensions
+    :param filename: filename
+    :param ext_filter: list of extnsions
+    :return: true/false
     """
     for ext in ext_filter:
         if filename.endswith(ext):
@@ -72,22 +92,21 @@ def check_ext(filename, ext_filter):
     return False
 
 
-def find_pkg_files(path: str, list_to_avoid: List[str] = (), ext_filter=['.py']):
+def find_pkg_files(path: str, ext_filter=['.py']) -> List[Tuple[str, str]]:
     """
-
-    :param path:
-    :param list_to_avoid:
-    :param ext_filter:
-    :return:
+    Get list
+    :param path: path to traverse
+    :param ext_filter: extensions of files to include
+    :return: list of [filename, complete path
     """
-    f = list()
+    files_list = list()
     for (dirpath, dirnames, filenames) in os.walk(path):
         for fname in filenames:
             if check_ext(filename=fname, ext_filter=ext_filter):
                 pth = os.path.join(dirpath, fname)
-                f.append((fname, pth))
+                files_list.append((fname, pth))
 
-    return f
+    return files_list
 
 
 def build_tar_gz_pkg(pkg_name: str,
@@ -104,7 +123,8 @@ def build_tar_gz_pkg(pkg_name: str,
                      description_content_type: str,
                      provides_extra: str,
                      long_description: str,
-                     folder_to_save='dist', ext_filter=['py']):
+                     folder_to_save='dist',
+                     ext_filter=['py']):
     """
 
     :param pkg_name:
@@ -130,7 +150,6 @@ def build_tar_gz_pkg(pkg_name: str,
     output_filename = os.path.join(folder_to_save, filename)
 
     files = find_pkg_files(path=pkg_name,
-                           list_to_avoid=[],
                            ext_filter=ext_filter)
 
     pkg_info = build_pkg_info(name=pkg_name,
@@ -173,8 +192,11 @@ def build_tar_gz_pkg(pkg_name: str,
     return output_filename
 
 
-def read_pypirc():
-
+def read_pypirc() -> Tuple[str, str]:
+    """
+    Read the pypirc file located in home
+    :return: user, password
+    """
     home = Path.home()
     path = os.path.join(home, 'pypirc')
 
@@ -225,7 +247,6 @@ def publish(pkg_name: str,
     :param description_content_type:
     :param provides_extra:
     :param long_description:
-    :return:
     """
 
     # build the tar.gz file

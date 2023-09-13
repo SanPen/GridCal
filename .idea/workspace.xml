@@ -28,46 +28,17 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Adapted find_islands to numba finally&#10;Added islands calculation tests">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="hand-rolled packaging for deployment">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/update_gui_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/update_gui_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/load_designer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner/load_designer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCal_icon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCal_icon.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCal_icon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCal_icon.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_dialog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_dialog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/excel_sheet_selection.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/sigma_analysis_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SigmaAnalysis/sigma_analysis_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/base_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/base_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/objects.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/numerical_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/setup.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/upload_to_pypi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/upload_to_pypi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -269,7 +240,7 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ExecuteGridCal (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -283,28 +254,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/src/ExecuteGridCal.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -500,18 +449,17 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal (1)" />
-      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python tests.Nosetests in test_islands.py" />
       <item itemvalue="Shell Script.test.sh" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Shell Script.test.sh" />
-        <item itemvalue="Python.ExecuteGridCal (1)" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Shell Script.test.sh" />
         <item itemvalue="Python tests.Nosetests in test_islands.py" />
       </list>
     </recent_temporary>
@@ -1305,7 +1253,7 @@
       <workItem from="1694462023491" duration="2697000" />
       <workItem from="1694499928389" duration="2577000" />
       <workItem from="1694587849959" duration="1575000" />
-      <workItem from="1694608032968" duration="6329000" />
+      <workItem from="1694608032968" duration="8680000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1650,7 +1598,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="498" />
+    <option name="localTasksCounter" value="499" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1692,7 +1640,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented the base decoupling of diagrams" />
     <MESSAGE value="Moved sliders to the designer tab" />
     <MESSAGE value="added CGMES trasnsformer and line conversions" />
     <MESSAGE value="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)" />
@@ -1717,7 +1664,8 @@
     <MESSAGE value="early rawx writer" />
     <MESSAGE value="the great split" />
     <MESSAGE value="Adapted find_islands to numba finally&#10;Added islands calculation tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adapted find_islands to numba finally&#10;Added islands calculation tests" />
+    <MESSAGE value="hand-rolled packaging for deployment" />
+    <option name="LAST_COMMIT_MESSAGE" value="hand-rolled packaging for deployment" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2184,7 +2132,7 @@
     <SUITE FILE_PATH="coverage/GridCal$fast_dSf_dV.coverage" NAME="fast_dSf_dV Coverage Results" MODIFIED="1615847239443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf.coverage" NAME="dc_opf Coverage Results" MODIFIED="1602504240684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1694420879621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1694616174358" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1694619562049" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$gui.coverage" NAME="gui Coverage Results" MODIFIED="1649779929647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue" />
     <SUITE FILE_PATH="coverage/GridCal$zip_interface.coverage" NAME="zip_interface Coverage Results" MODIFIED="1620029421103" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$newton_equivalence_test.coverage" NAME="newton_equivalence_test Coverage Results" MODIFIED="1678866293763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2351,7 +2299,7 @@
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1689667945608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1694588243948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1694620561342" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />

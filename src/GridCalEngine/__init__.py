@@ -16,18 +16,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # from GridCalEngine.Replacements import *
-from GridCalEngine.basic_structures import *
-from GridCalEngine.grid_analysis import *
-from GridCalEngine.Simulations import *
-from GridCalEngine.IO import *
-from GridCalEngine.Core import *
-
-from ortools.linear_solver import pywraplp
-from ortools.init import pywrapinit
-
-
-# pywrapinit.CppBridge.InitLogging('SuggestedFix.py')
-cpp_flags = pywrapinit.CppFlags()
-cpp_flags.logtostderr = True
-cpp_flags.log_prefix = False
-pywrapinit.CppBridge.SetFlags(cpp_flags)
+# from GridCalEngine.basic_structures import *
+# from GridCalEngine.grid_analysis import *
+# from GridCalEngine.Simulations import *
+# from GridCalEngine.IO import *
+# from GridCalEngine.Core import *
+#
+# from ortools.linear_solver import pywraplp
+# from ortools.init import pywrapinit
+#
+#
+# # pywrapinit.CppBridge.InitLogging('SuggestedFix.py')
+# cpp_flags = pywrapinit.CppFlags()
+# cpp_flags.logtostderr = True
+# cpp_flags.log_prefix = False
+# pywrapinit.CppBridge.SetFlags(cpp_flags)

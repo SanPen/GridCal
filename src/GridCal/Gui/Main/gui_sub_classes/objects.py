@@ -18,7 +18,7 @@ from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-import GridCalEngine.Core as core
+from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
@@ -47,7 +47,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
         self.expand_object_tree_nodes()
 
-        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(core.NumericalCircuit.available_structures))
+        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(NumericalCircuit.available_structures))
 
         # Buttons
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)

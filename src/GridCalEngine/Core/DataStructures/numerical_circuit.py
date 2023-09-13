@@ -25,7 +25,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import BranchImpedanceMode, Vec, IntVec, CxVec
 import GridCalEngine.Core.topology as tp
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
+
 from GridCalEngine.Core.topology import compile_types
 from GridCalEngine.Simulations.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
@@ -1522,6 +1522,8 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Jacobian':
+
+            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 
             pvpq = np.r_[self.pv, self.pq]
 
