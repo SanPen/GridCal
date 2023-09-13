@@ -116,6 +116,7 @@ setup(
     ],
     keywords='power systems planning',  # Optional
     packages=packages2,  # Required
+    package_dir={'': '.'},
     include_package_data=True,
     python_requires='>=3.6',
     install_requires=dependencies,
@@ -123,3 +124,4 @@ setup(
     package_data=package_data,
     cmdclass={"build": BuildCommand},
 )
+
