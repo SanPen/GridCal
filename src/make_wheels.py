@@ -8,8 +8,7 @@ twine upload dist/GridCal-2.30.tar.gz
 import os
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
-from packaging import publish
-
+from packaging import build_wheel
 
 if __name__ == "__main__":
 
@@ -52,37 +51,37 @@ if __name__ == "__main__":
 
         _license_ = 'LGPL'
 
-        publish(pkg_name='GridCalEngine',
-                setup_path=os.path.join('GridCalEngine', 'setup.py'),
-                version=__GridCalEngine_VERSION__,
-                summary=_summary,
-                home_page=_home_page,
-                author=_author,
-                email=_author_email,
-                license_=_license_,
-                keywords=_keywords,
-                classifiers_list=_classifiers_list,
-                requires_pyhon=_requires_pyhon,
-                description_content_type=_description_content_type,
-                provides_extra=_provides_extra,
-                long_description=_long_description
-                )
+        build_wheel(pkg_name='GridCalEngine',
+                    setup_path=os.path.join('GridCalEngine', 'setup.py'),
+                    version=__GridCalEngine_VERSION__,
+                    summary=_summary,
+                    home_page=_home_page,
+                    author=_author,
+                    email=_author_email,
+                    license_=_license_,
+                    keywords=_keywords,
+                    classifiers_list=_classifiers_list,
+                    requires_pyhon=_requires_pyhon,
+                    description_content_type=_description_content_type,
+                    provides_extra=_provides_extra,
+                    long_description=_long_description
+                    )
 
-        publish(pkg_name='GridCal',
-                setup_path=os.path.join('GridCal', 'setup.py'),
-                version=__GridCal_VERSION__,
-                summary=_summary,
-                home_page=_home_page,
-                author=_author,
-                email=_author_email,
-                license_=_license_,
-                keywords=_keywords,
-                classifiers_list=_classifiers_list,
-                requires_pyhon=_requires_pyhon,
-                description_content_type=_description_content_type,
-                provides_extra=_provides_extra,
-                long_description=_long_description
-                )
+        build_wheel(pkg_name='GridCal',
+                    setup_path=os.path.join('GridCal', 'setup.py'),
+                    version=__GridCal_VERSION__,
+                    summary=_summary,
+                    home_page=_home_page,
+                    author=_author,
+                    email=_author_email,
+                    license_=_license_,
+                    keywords=_keywords,
+                    classifiers_list=_classifiers_list,
+                    requires_pyhon=_requires_pyhon,
+                    description_content_type=_description_content_type,
+                    provides_extra=_provides_extra,
+                    long_description=_long_description
+                    )
 
     else:
 
