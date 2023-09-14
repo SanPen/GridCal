@@ -1589,11 +1589,28 @@ class MultiCircuit:
             self.graph.add_node(i)
             self.bus_dictionary[bus.idtag] = i
 
+        tuples = list()
         for branch_list in self.get_branch_lists():
             for branch in branch_list:
                 f = self.bus_dictionary[branch.bus_from.idtag]
                 t = self.bus_dictionary[branch.bus_to.idtag]
-                self.graph.add_edge(f, t)
+                if branch.device_type in [dev.DeviceType.LineDevice,
+                                          dev.DeviceType.DCLineDevice,
+                                          dev.DeviceType.HVDCLineDevice]:
+                    if hasattr(branch, 'X'):
+                        w = branch.X
+                    else:
+                        w = 1e-3
+                else:
+                    if hasattr(branch, 'X'):
+                        w = branch.X
+                    else:
+                        w = 1e-6
+
+                # self.graph.add_edge(f, t)
+                tuples.append((f, t, w))
+
+        self.graph.add_weighted_edges_from(tuples)
 
         return self.graph
 

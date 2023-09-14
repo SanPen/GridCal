@@ -28,11 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="working publishing to pipy">
-      <change afterPath="$PROJECT_DIR$/src/make_wheels.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/packaging.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="made wheels creation and moved things to the packaging file">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/upload_to_pypi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/upload_to_pypi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/make_wheels.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/make_wheels.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/packaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gridcal_packaging.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -167,7 +167,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/Grid2OpBackends&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -199,7 +199,7 @@
       <recent name="$PROJECT_DIR$/doc/rst_source" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.make_wheels">
+  <component name="RunManager" selected="Python.upload_to_pypi">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -472,9 +472,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.make_wheels" />
         <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.make_wheels" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Shell Script.test.sh" />
       </list>
@@ -1269,7 +1269,10 @@
       <workItem from="1694462023491" duration="2697000" />
       <workItem from="1694499928389" duration="2577000" />
       <workItem from="1694587849959" duration="1575000" />
-      <workItem from="1694608032968" duration="9607000" />
+      <workItem from="1694608032968" duration="9733000" />
+      <workItem from="1694689826416" duration="399000" />
+      <workItem from="1694690445301" duration="2131000" />
+      <workItem from="1694721364193" duration="1201000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1614,7 +1617,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="500" />
+    <option name="localTasksCounter" value="501" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1656,7 +1659,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added CGMES trasnsformer and line conversions" />
     <MESSAGE value="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)" />
     <MESSAGE value="split the Main gui into several subclasses" />
     <MESSAGE value="optimized imports" />
@@ -1681,7 +1683,8 @@
     <MESSAGE value="Adapted find_islands to numba finally&#10;Added islands calculation tests" />
     <MESSAGE value="hand-rolled packaging for deployment" />
     <MESSAGE value="working publishing to pipy" />
-    <option name="LAST_COMMIT_MESSAGE" value="working publishing to pipy" />
+    <MESSAGE value="made wheels creation and moved things to the packaging file" />
+    <option name="LAST_COMMIT_MESSAGE" value="made wheels creation and moved things to the packaging file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2316,7 +2319,7 @@
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1689667945608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1694620612108" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1694721964497" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />

@@ -8,7 +8,7 @@ twine upload dist/GridCal-2.30.tar.gz
 import os
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
-from packaging import build_wheel
+from gridcal_packaging import build_wheel
 
 if __name__ == "__main__":
 
