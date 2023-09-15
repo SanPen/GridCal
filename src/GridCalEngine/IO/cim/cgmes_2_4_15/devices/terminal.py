@@ -21,7 +21,6 @@ import GridCalEngine.IO.cim.cgmes_2_4_15.devices.substation.acdc_terminal as acd
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.data_logger import DataLogger
-import GridCal
 
 
 class Terminal(acdc_terminal.ACDCTerminal):

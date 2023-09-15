@@ -28,12 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="made wheels creation and moved things to the packaging file">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/make_wheels.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/make_wheels.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/packaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gridcal_packaging.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="made wheels creation and moved things to the packaging file" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1273,6 +1268,7 @@
       <workItem from="1694689826416" duration="399000" />
       <workItem from="1694690445301" duration="2131000" />
       <workItem from="1694721364193" duration="1201000" />
+      <workItem from="1694796411443" duration="2000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>

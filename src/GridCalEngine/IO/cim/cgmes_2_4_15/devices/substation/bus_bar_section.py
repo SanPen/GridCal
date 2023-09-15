@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import GridCal
+
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.substation.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
