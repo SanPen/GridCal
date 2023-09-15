@@ -330,13 +330,13 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 active=True,
                                                 technology=technology,
                                                 Snom=cgmes_elm.ratedS,
-                                                active_power=-cgmes_elm.p,
-                                                p_min=cgmes_elm.GeneratingUnit.minOperatingP,
-                                                p_max=cgmes_elm.GeneratingUnit.maxOperatingP,
+                                                P=-cgmes_elm.p,
+                                                Pmin=cgmes_elm.GeneratingUnit.minOperatingP,
+                                                Pmax=cgmes_elm.GeneratingUnit.maxOperatingP,
                                                 power_factor=pf,
                                                 Qmax=cgmes_elm.maxQ,
                                                 Qmin=cgmes_elm.minQ,
-                                                voltage_module=v_set,
+                                                vset=v_set,
                                                 is_controlled=is_controlled)
 
                     gcdev_model.add_generator(calc_node, gcdev_elm)
@@ -552,7 +552,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     g0=g0,
                                                     b0=b0,
                                                     tap=1.0,
-                                                    shift_angle=0.0,
+                                                    tap_phase=0.0,
                                                     rate=cgmes_elm.get_rate())
 
                     gcdev_model.add_transformer2w(gcdev_elm)

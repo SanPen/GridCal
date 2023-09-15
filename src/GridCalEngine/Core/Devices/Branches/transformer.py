@@ -29,118 +29,16 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 
 class Transformer2W(ParentBranch):
-    """
-    The **Branch** class represents the connections between nodes (i.e.
-    :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
-    transformer, etc.) with an electrical impedance. The basic **Branch** class
-    includes basic electrical attributes for most passive elements, but other device
-    types may be passed to the **Branch** constructor to configure it as a specific
-    type.
 
-    For example, a transformer may be created with the following code:
-
-    .. code:: ipython3
-
-        from GridCalEngine.Core.multi_circuit import MultiCircuit
-        from GridCalEngine.Core.Devices import *
-        from GridCalEngine.Core.Devices.types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      )
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Refer to the :class:`GridCalEngine.Devices.branch.TapChanger` class for an example
-    using a voltage regulator.
-
-    Arguments:
-
-        **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
-
-        **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
-
-        **name** (str, "Branch"): Name of the branch
-
-        **r** (float, 1e-20): Branch resistance in per unit
-
-        **x** (float, 1e-20): Branch reactance in per unit
-
-        **g** (float, 1e-20): Branch shunt conductance in per unit
-
-        **b** (float, 1e-20): Branch shunt susceptance in per unit
-
-        **rate** (float, 1.0): Branch rate in MVA
-
-        **tap** (float, 1.0): Branch tap module
-
-        **shift_angle** (int, 0): Tap shift angle in radians
-
-        **active** (bool, True): Is the branch active?
-
-        **tolerance** (float, 0): Tolerance specified for the branch impedance in %
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
-        **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
-
-        **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
-
-        **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-
-        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCalEngine.Devices.transformer.TransformerType`)
-
-        **length** (float, 0.0): Length of the branch in km
-
-        **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit
-
-        **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C
-
-        **temp_oper** (float, 20.0): Operating temperature in °C
-
-        **alpha** (float, 0.0033): Thermal constant of the material in °C
-
-        **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
-
-        **template** (BranchTemplate, BranchTemplate()): Basic branch template
-    """
-
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Branch', idtag=None, code='',
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 HV=None, LV=None,
+                 name='Branch', idtag=None, code='',
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0,
                  tap=1.0, tap_module_max=1.2, tap_module_min=0.5,
-                 shift_angle=0.0, theta_max=6.28, theta_min=-6.28,
+                 tap_phase=0.0, tap_phase_max=6.28, tap_phase_min=-6.28,
                  active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0,
                  vset=1.0, Pset=0, bus_to_regulated=False,
@@ -155,6 +53,62 @@ class Transformer2W(ParentBranch):
                  r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
                  conn: WindingsConnection = WindingsConnection.GG,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+        """
+        Transformer constructor
+        :param bus_from: "From" :ref:`bus<Bus>` object
+        :param bus_to: "To" :ref:`bus<Bus>` object
+        :param HV: Higher voltage value in kV
+        :param LV: Lower voltage value in kV
+        :param name: Name of the branch
+        :param idtag: UUID code
+        :param code: secondary id
+        :param r: resistance in per unit
+        :param x: reactance in per unit
+        :param g: shunt conductance in per unit
+        :param b: shunt susceptance in per unit
+        :param rate: rate in MVA
+        :param tap: tap module in p.u.
+        :param tap_module_max:
+        :param tap_module_min:
+        :param tap_phase: phase shift angle (rad)
+        :param tap_phase_max:
+        :param tap_phase_min:
+        :param active: Is the branch active?
+        :param tolerance:
+        :param cost:
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param vset: Voltage set-point of the voltage controlled bus in per unit
+        :param Pset:
+        :param bus_to_regulated: Is the `bus_to` voltage regulated by this branch?
+        :param temp_base:
+        :param temp_oper:
+        :param alpha:
+        :param control_mode:
+        :param template:
+        :param rate_prof:
+        :param Cost_prof:
+        :param active_prof:
+        :param temp_oper_prof:
+        :param tap_module_prof:
+        :param angle_prof:
+        :param contingency_factor:
+        :param contingency_enabled:
+        :param monitor_loading:
+        :param contingency_factor_prof:
+        :param r0:
+        :param x0:
+        :param g0:
+        :param b0:
+        :param r2:
+        :param x2:
+        :param g2:
+        :param b2:
+        :param conn:
+        :param capex:
+        :param opex:
+        :param build_status:
+        """
 
         ParentBranch.__init__(self,
                               name=name,
@@ -231,13 +185,13 @@ class Transformer2W(ParentBranch):
         self.tap_module_prof = tap_module_prof
 
         # Tap angle
-        self.angle = shift_angle
+        self.angle = tap_phase
         self.angle_prof = angle_prof
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
-        self.angle_max = theta_max
-        self.angle_min = theta_min
+        self.angle_max = tap_phase_max
+        self.angle_min = tap_phase_min
 
         # type template
         self.template = template
@@ -381,7 +335,7 @@ class Transformer2W(ParentBranch):
                           b=self.B,
                           rate=self.rate,
                           tap=self.tap_module,
-                          shift_angle=self.angle,
+                          tap_phase=self.angle,
                           active=self.active,
                           mttf=self.mttf,
                           mttr=self.mttr,
@@ -815,3 +769,30 @@ class Transformer2W(ParentBranch):
             errors = True
 
         return errors
+
+    def fill_design_properties(self, Pcu, Pfe, I0, Vsc, Sbase):
+        """
+        Fill R, X, G, B from the short circuit study values
+        :param Pcu: copper_losses (kW)
+        :param Pfe: Iron losses (kW)
+        :param I0: No load current in %
+        :param Vsc: Short circuit voltage (%)
+        :param Sbase: Base power in MVA (take always 100 MVA)
+        """
+        tpe = TransformerType(hv_nominal_voltage=self.HV,
+                              lv_nominal_voltage=self.LV,
+                              nominal_power=self.rate,
+                              copper_losses=Pcu,
+                              iron_losses=Pfe,
+                              no_load_current=I0,
+                              short_circuit_voltage=Vsc,
+                              gr_hv1=0.5,
+                              gx_hv1=0.5,
+                              name='type from ' + self.name)
+
+        z_series, y_shunt = tpe.get_impedances(VH=self.HV, VL=self.LV, Sbase=Sbase)
+
+        self.R = np.round(z_series.real, 6)
+        self.X = np.round(z_series.imag, 6)
+        self.G = np.round(y_shunt.real, 6)
+        self.B = np.round(y_shunt.imag, 6)

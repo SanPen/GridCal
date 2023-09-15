@@ -90,66 +90,14 @@ def get_q_limits(q_points: Mat, p: Vec) -> Tuple[Vec, Vec]:
 
 
 class Generator(EditableDevice):
-    """
-    Voltage controlled generator. This generators supports several reactive power
-    control modes (see
-    :class:`GridCalEngine.Simulations.PowerFlowDriver.power_flow_driver.ReactivePowerControlMode`)
-    to regulate the voltage on its :ref:`bus` during
-    :ref:`power flow simulations<gridcal_engine_simulations_PowerFlow>`.
 
-    Arguments:
-
-        **name** (str, "gen"): Name of the generator
-
-        **active_power** (float, 0.0): Active power in MW
-
-        **power_factor** (float, 0.8): Power factor
-
-        **voltage_module** (float, 1.0): Voltage setpoint in per unit
-
-        **is_controlled** (bool, True): Is the generator voltage controlled?
-
-        **Qmin** (float, -9999): Minimum reactive power in MVAr
-
-        **Qmax** (float, 9999): Maximum reactive power in MVAr
-
-        **Snom** (float, 9999): Nominal apparent power in MVA
-
-        **power_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW
-
-        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
-
-        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint profile in per unit
-
-        **active** (bool, True): Is the generator active?
-
-        **p_min** (float, 0.0): Minimum dispatchable power in MW
-
-        **p_max** (float, 9999): Maximum dispatchable power in MW
-
-        **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW
-
-        **Sbase** (float, 100): Nominal apparent power in MVA
-
-        **enabled_dispatch** (bool, True): Is the generator enabled for OPF?
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
-        **technology** (GeneratorTechnologyType): Instance of technology to use
-
-        **q_points**: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
-
-        **use_reactive_power_curve**: Use the reactive power curve? otherwise use the plain old limits
-    """
-
-    def __init__(self, name='gen',
+    def __init__(self,
+                 name='gen',
                  idtag: Union[str, None] = None,
                  code: str = '',
-                 active_power: float = 0.0,
+                 P: float = 0.0,
                  power_factor: float = 0.8,
-                 voltage_module: float = 1.0,
+                 vset: float = 1.0,
                  is_controlled=True,
                  Qmin: float = -9999,
                  Qmax: float = 9999,
@@ -159,8 +107,8 @@ class Generator(EditableDevice):
                  vset_prof: Union[Vec, None] = None,
                  active_prof: Union[Vec, None] = None,
                  active: bool = True,
-                 p_min: float = 0.0,
-                 p_max: float = 9999.0,
+                 Pmin: float = 0.0,
+                 Pmax: float = 9999.0,
                  Cost: float = 1.0,
                  Sbase: float = 100,
                  enabled_dispatch=True,
@@ -180,9 +128,47 @@ class Generator(EditableDevice):
                  build_status: BuildStatus = BuildStatus.Commissioned,
                  Cost_prof: Union[Vec, None] = None,
                  Cost2_prof: Union[Vec, None] = None,
-                 Cost0_prof: Union[Vec, None] = None,
-                 ):
-
+                 Cost0_prof: Union[Vec, None] = None):
+        """
+        Voltage controlled generator. This generators supports several reactive power
+        :param name: Name of the generator
+        :param idtag: UUID code
+        :param code: secondary code
+        :param P: Active power in MW
+        :param power_factor: Power factor
+        :param vset: Voltage setpoint in per unit
+        :param is_controlled: Is the generator voltage controlled?
+        :param Qmin: Minimum reactive power in MVAr
+        :param Qmax: Maximum reactive power in MVAr
+        :param Snom: Nominal apparent power in MVA
+        :param power_prof: active power profile in MW (array)
+        :param power_factor_prof: power factor profile (array)
+        :param vset_prof: voltage setpoint profile in per unit
+        :param active_prof:
+        :param active: Is the generator active?
+        :param Pmin:
+        :param Pmax:
+        :param Cost:
+        :param Sbase: Nominal apparent power in MVA
+        :param enabled_dispatch: Is the generator enabled for OPF?
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param technology:  Instance of technology to use
+        :param q_points: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
+        :param use_reactive_power_curve: Use the reactive power curve? otherwise use the plain old limits
+        :param r1:
+        :param x1:
+        :param r0:
+        :param x0:
+        :param r2:
+        :param x2:
+        :param capex:
+        :param opex:
+        :param build_status:
+        :param Cost_prof:
+        :param Cost2_prof:
+        :param Cost0_prof:
+        """
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
@@ -222,7 +208,7 @@ class Generator(EditableDevice):
         self.X2 = x2
 
         # Power (MVA)
-        self.P = active_power
+        self.P = P
 
         # Power factor
         self.Pf = power_factor
@@ -237,16 +223,16 @@ class Generator(EditableDevice):
         self._Snom = Snom
 
         # Minimum dispatched power in MW
-        self.Pmin = p_min
+        self.Pmin = Pmin
 
         # Maximum dispatched power in MW
-        self.Pmax = p_max
+        self.Pmax = Pmax
 
         # power profile for this load in MW
         self.P_prof = power_prof
 
         # Voltage module set point (p.u.)
-        self.Vset = voltage_module
+        self.Vset = vset
 
         # voltage set profile for this load in p.u.
         self.Vset_prof = vset_prof

@@ -661,13 +661,13 @@ class PSSeGenerator(PSSeObject):
         elm = dev.Generator(name=name,
                             idtag=None,
                             code=name,
-                            active_power=self.PG,
-                            voltage_module=self.VS,
+                            P=self.PG,
+                            vset=self.VS,
                             Qmin=self.QB,
                             Qmax=self.QT,
                             Snom=self.MBASE,
-                            p_max=self.PT,
-                            p_min=self.PB,
+                            Pmax=self.PT,
+                            Pmin=self.PB,
                             active=bool(self.STAT))
 
         return elm
@@ -745,8 +745,8 @@ class PSSeInductionMachine(PSSeObject):
         """
 
         elm = dev.Generator(name=str(self.I) + '_' + str(self.ID),
-                            active_power=self.PSET,
-                            voltage_module=self.RATEKV,
+                            P=self.PSET,
+                            vset=self.RATEKV,
                             Snom=self.MBASE,
                             active=bool(self.STATUS))
 
@@ -1776,7 +1776,7 @@ class PSSeTransformer(PSSeObject):
                                     rate=self.RATA1,
                                     contingency_factor=round(contingency_factor, 6),
                                     tap=tap_mod,
-                                    shift_angle=tap_angle,
+                                    tap_phase=tap_angle,
                                     active=bool(self.STAT),
                                     mttf=0,
                                     mttr=0)
@@ -1870,7 +1870,7 @@ class PSSeTransformer(PSSeObject):
                                      r=r12,
                                      x=x12,
                                      rate=max(self.RATA1, self.RATA2, self.RATA3),
-                                     shift_angle=self.ANG1,
+                                     tap_phase=self.ANG1,
                                      active=bool(self.STAT),
                                      mttf=0,
                                      mttr=0)
@@ -1884,7 +1884,7 @@ class PSSeTransformer(PSSeObject):
                                      r=r23,
                                      x=x23,
                                      rate=max(self.RATB1, self.RATB2, self.RATB3),
-                                     shift_angle=self.ANG2,
+                                     tap_phase=self.ANG2,
                                      active=bool(self.STAT),
                                      mttf=0,
                                      mttr=0)
@@ -1898,7 +1898,7 @@ class PSSeTransformer(PSSeObject):
                                      r=r31,
                                      x=x31,
                                      rate=max(self.RATC1, self.RATC2, self.RATC3),
-                                     shift_angle=self.ANG3,
+                                     tap_phase=self.ANG3,
                                      active=bool(self.STAT),
                                      mttf=0,
                                      mttr=0)

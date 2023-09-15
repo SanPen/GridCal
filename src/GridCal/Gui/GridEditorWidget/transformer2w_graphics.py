@@ -216,7 +216,8 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                                   iron_losses=Pfe,
                                   no_load_current=I0,
                                   short_circuit_voltage=Vsc,
-                                  gr_hv1=0.5, gx_hv1=0.5,
+                                  gr_hv1=0.5,
+                                  gx_hv1=0.5,
                                   name='type from ' + self.api_object.name)
 
             self.diagramScene.circuit.add_transformer_type(tpe)

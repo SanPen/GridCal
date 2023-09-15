@@ -238,12 +238,12 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logge
         bus_idx = bus_idx_dict[int(table[i, matpower_gen.GEN_BUS])]
         # TODO: Calculate pf based on reactive_power
         gen = dev.Generator(name=names[i],
-                            active_power=table[i, matpower_gen.PG],
-                            voltage_module=table[i, matpower_gen.VG],
+                            P=table[i, matpower_gen.PG],
+                            vset=table[i, matpower_gen.VG],
                             Qmax=table[i, matpower_gen.QMAX],
                             Qmin=table[i, matpower_gen.QMIN],
-                            p_min=table[i, matpower_gen.PMIN],
-                            p_max=table[i, matpower_gen.PMAX]
+                            Pmin=table[i, matpower_gen.PMIN],
+                            Pmax=table[i, matpower_gen.PMAX]
                             )
 
         gen_dict[i] = gen
@@ -407,7 +407,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                                b=table[i, matpower_branches.BR_B],
                                                rate=table[i, matpower_branches.RATE_A],
                                                tap=table[i, matpower_branches.TAP],
-                                               shift_angle=table[i, matpower_branches.SHIFT],
+                                               tap_phase=table[i, matpower_branches.SHIFT],
                                                active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_transformer2w(branch)
                     logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
@@ -439,7 +439,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                            b=table[i, matpower_branches.BR_B],
                                            rate=table[i, matpower_branches.RATE_A],
                                            tap=table[i, matpower_branches.TAP],
-                                           shift_angle=table[i, matpower_branches.SHIFT],
+                                           tap_phase=table[i, matpower_branches.SHIFT],
                                            active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_transformer2w(branch)
                 logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))

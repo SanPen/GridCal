@@ -902,8 +902,8 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
 
             gen = Generator(name=name,
                             power_prof=gen_profile,
-                            p_min=elm.p_min,
-                            p_max=elm.p_max)
+                            Pmin=elm.p_min,
+                            Pmax=elm.p_max)
 
             bus = bus_dict[elm.node.name]
             gen.ensure_profiles_exist(circuit.time_profile)

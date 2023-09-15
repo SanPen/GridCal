@@ -37,7 +37,7 @@ def test_demo_5_node(root_path=ROOT_PATH):
     # Add buses
     bus1 = Bus('Bus 1', vnom=20)
     grid.add_bus(bus1)
-    gen1 = Generator('Slack Generator', voltage_module=1.0)
+    gen1 = Generator('Slack Generator', vset=1.0)
     grid.add_generator(bus1, gen1)
 
     bus2 = Bus('Bus 2', vnom=20)

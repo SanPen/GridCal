@@ -94,11 +94,11 @@ class PyPSAParser:
             bus = self.buses[data['bus']]
             power_factor = data['p_set'] / math.sqrt(data['q_set'] ** 2 + data['p_set'] ** 2)
             is_controlled = data['control'] == 'PV'
-            generator = Generator(ix, active_power=data['p_set'] * data['sign'],
+            generator = Generator(ix, P=data['p_set'] * data['sign'],
                                   power_factor=power_factor,
                                   is_controlled=is_controlled,
-                                  p_min=data['p_nom_min'],
-                                  p_max=data['p_nom_max'],
+                                  Pmin=data['p_nom_min'],
+                                  Pmax=data['p_nom_max'],
                                   opex=data['marginal_cost'],
                                   Cost=data['marginal_cost'],
                                   capex=data['capital_cost'] * data['p_nom'])
@@ -226,7 +226,7 @@ class PyPSAParser:
             from_bus = self.buses[data['bus0']]
             to_bus = self.buses[data['bus1']]
             proto = Transformer2W(from_bus, to_bus, name=f'{ix}-proto', tap=data['tap_ratio'],
-                                  shift_angle=data['phase_shift'])
+                                  tap_phase=data['phase_shift'])
 
             copy_count = int(data['num_parallel'])
             if data['type']:

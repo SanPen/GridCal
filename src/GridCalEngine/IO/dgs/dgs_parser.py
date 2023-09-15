@@ -707,8 +707,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
             # add a generator to the bus
             gen = dev.Generator(name=external['loc_name'][i].decode(codification),
-                                active_power=p,
-                                voltage_module=vm, Qmin=-9999, Qmax=9999, Snom=9999,
+                                P=p,
+                                vset=vm, Qmin=-9999, Qmax=9999, Snom=9999,
                                 power_prof=None, vset_prof=None)
             circuit.add_generator(bus_obj, gen)
 
@@ -1117,8 +1117,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         vnom = synchronous_machine['usetp'][i]
         name = synchronous_machine['loc_name'][i].decode(codification)
         gen = dev.Generator(name=name,
-                            active_power=synchronous_machine['pgini'][i] * num_machines,
-                            voltage_module=vnom,
+                            P=synchronous_machine['pgini'][i] * num_machines,
+                            vset=vnom,
                             Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
                             Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
                             Snom=snom,

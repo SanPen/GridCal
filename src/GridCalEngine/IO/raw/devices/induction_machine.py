@@ -373,8 +373,8 @@ class RawInductionMachine(RawObject):
         """
 
         elm = dev.Generator(name=str(self.I) + '_' + str(self.ID),
-                            active_power=self.PSET,
-                            voltage_module=self.RATEKV,
+                            P=self.PSET,
+                            vset=self.RATEKV,
                             Snom=self.MBASE,
                             active=bool(self.STATUS))
 

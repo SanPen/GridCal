@@ -217,16 +217,16 @@ def parse_json_data(data) -> MultiCircuit:
 
                 # create a load in the bus
                 elm = dev.Generator(name=element['name'],
-                                    active_power=element["P"],
-                                    voltage_module=element["vset"],
+                                    P=element["P"],
+                                    vset=element["vset"],
                                     Qmin=element['qmin'],
                                     Qmax=element['qmax'],
                                     Snom=element['Snom'],
                                     power_prof=None,
                                     vset_prof=None,
                                     active=element['active'],
-                                    p_min=0.0,
-                                    p_max=element['Snom'],
+                                    Pmin=0.0,
+                                    Pmax=element['Snom'],
                                     Cost=1.0)
                 bus.generators.append(elm)
 
@@ -248,8 +248,8 @@ def parse_json_data(data) -> MultiCircuit:
 
                 # create a load in the bus
                 elm = dev.Battery(name=element['name'],
-                                  active_power=element["P"],
-                                  voltage_module=element["vset"],
+                                  P=element["P"],
+                                  vset=element["vset"],
                                   Qmin=element['qmin'],
                                   Qmax=element['qmax'],
                                   Snom=element['Snom'],
@@ -470,16 +470,16 @@ def parse_json_data_v3(data: dict, logger: Logger):
             for jentry in generators:
                 elm = dev.Generator(name=str(jentry['name']),
                                     idtag=str(jentry['id']),
-                                    active_power=float(jentry['p']),
+                                    P=float(jentry['p']),
                                     power_factor=float(jentry['pf']),
-                                    voltage_module=float(jentry['vset']),
+                                    vset=float(jentry['vset']),
                                     is_controlled=bool(jentry['is_controlled']),
                                     Qmin=float(jentry['qmin']),
                                     Qmax=float(jentry['qmax']),
                                     Snom=float(jentry['snom']),
                                     active=bool(jentry['active']),
-                                    p_min=float(jentry['pmin']),
-                                    p_max=float(jentry['pmax']),
+                                    Pmin=float(jentry['pmin']),
+                                    Pmax=float(jentry['pmax']),
                                     Cost=float(jentry['cost'] if "cost" in jentry else 1.0),
                                     )
 
@@ -506,16 +506,16 @@ def parse_json_data_v3(data: dict, logger: Logger):
             for jentry in batteries:
                 elm = dev.Battery(name=str(jentry['name']),
                                   idtag=str(jentry['id']),
-                                  active_power=float(jentry['p']),
+                                  P=float(jentry['p']),
                                   power_factor=float(jentry['pf']),
-                                  voltage_module=float(jentry['vset']),
+                                  vset=float(jentry['vset']),
                                   is_controlled=bool(jentry['is_controlled']),
                                   Qmin=float(jentry['qmin']),
                                   Qmax=float(jentry['qmax']),
                                   Snom=float(jentry['snom']),
                                   active=bool(jentry['active']),
-                                  p_min=float(jentry['pmin']),
-                                  p_max=float(jentry['pmax']),
+                                  Pmin=float(jentry['pmin']),
+                                  Pmax=float(jentry['pmax']),
                                   Cost=float(jentry['cost']),
                                   )
 
@@ -724,7 +724,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                         LV=LV,
                                         active=bool(entry['active']),
                                         tap=float(entry['tap_module']),
-                                        shift_angle=float(entry['tap_angle']),
+                                        tap_phase=float(entry['tap_angle']),
                                         bus_to_regulated=bool(
                                             entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
                                         vset=float(entry['vset']),
@@ -1041,16 +1041,16 @@ def parse_json_data_v2(data: dict, logger: Logger):
             for jentry in generators:
                 gen = dev.Generator(name=str(jentry['name']),
                                     idtag=str(jentry['id']),
-                                    active_power=float(jentry['p']),
+                                    P=float(jentry['p']),
                                     power_factor=float(jentry['pf']),
-                                    voltage_module=float(jentry['vset']),
+                                    vset=float(jentry['vset']),
                                     is_controlled=bool(jentry['is_controlled']),
                                     Qmin=float(jentry['qmin']),
                                     Qmax=float(jentry['qmax']),
                                     Snom=float(jentry['snom']),
                                     active=bool(jentry['active']),
-                                    p_min=float(jentry['pmin']),
-                                    p_max=float(jentry['pmax']),
+                                    Pmin=float(jentry['pmin']),
+                                    Pmax=float(jentry['pmax']),
                                     Cost=float(jentry['cost']),
                                     )
                 gen.bus = bus_dict[jentry['bus']]
@@ -1061,16 +1061,16 @@ def parse_json_data_v2(data: dict, logger: Logger):
             for jentry in batteries:
                 gen = dev.Battery(name=str(jentry['name']),
                                   idtag=str(jentry['id']),
-                                  active_power=float(jentry['p']),
+                                  P=float(jentry['p']),
                                   power_factor=float(jentry['pf']),
-                                  voltage_module=float(jentry['vset']),
+                                  vset=float(jentry['vset']),
                                   is_controlled=bool(jentry['is_controlled']),
                                   Qmin=float(jentry['qmin']),
                                   Qmax=float(jentry['qmax']),
                                   Snom=float(jentry['snom']),
                                   active=bool(jentry['active']),
-                                  p_min=float(jentry['pmin']),
-                                  p_max=float(jentry['pmax']),
+                                  Pmin=float(jentry['pmin']),
+                                  Pmax=float(jentry['pmax']),
                                   Cost=float(jentry['cost']),
                                   )
                 gen.bus = bus_dict[jentry['bus']]
@@ -1135,7 +1135,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                         rate=float(entry['rate']),
                                         active=bool(entry['active']),
                                         tap=float(entry['tap_module']),
-                                        shift_angle=float(entry['tap_angle']),
+                                        tap_phase=float(entry['tap_angle']),
                                         )
                 circuit.add_transformer2w(elm)
 

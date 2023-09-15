@@ -227,13 +227,13 @@ def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generat
     elm = dev.Generator(name=name,
                         idtag=None,
                         code=name,
-                        active_power=psse_elm.PG,
-                        voltage_module=psse_elm.VS,
+                        P=psse_elm.PG,
+                        vset=psse_elm.VS,
                         Qmin=psse_elm.QB,
                         Qmax=psse_elm.QT,
                         Snom=psse_elm.MBASE,
-                        p_max=psse_elm.PT,
-                        p_min=psse_elm.PB,
+                        Pmax=psse_elm.PT,
+                        Pmin=psse_elm.PB,
                         active=bool(psse_elm.STAT))
 
     return elm
@@ -330,7 +330,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 rate=psse_elm.RATE1_1,
                                 contingency_factor=round(contingency_factor, 6),
                                 tap=tap_module,
-                                shift_angle=tap_angle,
+                                tap_phase=tap_angle,
                                 active=bool(psse_elm.STAT),
                                 mttf=0,
                                 mttr=0)

@@ -140,7 +140,7 @@ class GridGeneratorGUI(QtWidgets.QDialog):
         for k, i in enumerate(gen_buses):
             bus = bus_dict[i]
             gen = dev.Generator(name='Generator@bus' + str(i + 1),
-                                active_power=pmax * factor[k])
+                                P=pmax * factor[k])
             self.circuit.add_generator(bus, gen)
 
         # generate lines

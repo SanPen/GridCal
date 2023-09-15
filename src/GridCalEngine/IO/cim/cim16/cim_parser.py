@@ -831,7 +831,7 @@ class CIMImport:
                                                b=B,
                                                rate=rate,
                                                tap=1.0,
-                                               shift_angle=0,
+                                               tap_phase=0,
                                                active=True,
                                                HV=hv,
                                                LV=lv)
@@ -942,9 +942,9 @@ class CIMImport:
 
                     gen = gcdev.Generator(idtag=elm.uuid,
                                           name=str(elm.name),
-                                          active_power=-elm.p,
+                                          P=-elm.p,
                                           # CGMES defines the generator P as negative to indicate a positive injection
-                                          voltage_module=1.0)
+                                          vset=1.0)
                     circuit.add_generator(B1, gen)
 
                 else:

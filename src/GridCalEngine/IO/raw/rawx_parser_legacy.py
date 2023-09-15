@@ -952,7 +952,7 @@ def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses
                                 rate=data['wdg1rate1'],
                                 contingency_factor=round(contingency_factor, 6),
                                 tap=tap_mod,
-                                shift_angle=tap_angle,
+                                tap_phase=tap_angle,
                                 active=bool(data['stat']),
                                 mttf=0,
                                 mttr=0)

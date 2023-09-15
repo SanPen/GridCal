@@ -325,10 +325,10 @@ def parse_transformers(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
                                 tap=1.0,
                                 tap_module_max=1.2,
                                 tap_module_min=0.5,
-                                shift_angle=0.0,
-                                theta_max=6.28,
-                                theta_min=-6.28,
-                                active=True,)
+                                tap_phase=0.0,
+                                tap_phase_max=6.28,
+                                tap_phase_min=-6.28,
+                                active=True, )
 
         data.append(elm)
 
@@ -481,10 +481,10 @@ def parse_generators(data_lst: List[List], buses_dict: Dict[int, dev.Bus], bus_v
         elm = dev.Generator(name=name,
                             idtag=None,
                             code=code,
-                            active_power=P,
-                            voltage_module=Vset,
-                            p_min=Pmin,
-                            p_max=Pmax,
+                            P=P,
+                            vset=Vset,
+                            Pmin=Pmin,
+                            Pmax=Pmax,
                             Qmin=Qmin,
                             Qmax=Qmax,
                             Snom=np.sqrt(Pmax*Pmax+Qmax*Qmax),

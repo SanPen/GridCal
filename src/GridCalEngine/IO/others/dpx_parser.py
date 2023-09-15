@@ -460,7 +460,7 @@ def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
                     v = float(df['V'].values[i])  # p.u.
-                    gen = dev.Generator(name=name, active_power=p, voltage_module=v)
+                    gen = dev.Generator(name=name, P=p, vset=v)
 
                     circuit.add_generator(bus, gen)
                 else:
