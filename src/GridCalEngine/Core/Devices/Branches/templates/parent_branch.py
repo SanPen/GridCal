@@ -18,12 +18,13 @@
 
 import pandas as pd
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger, Vec, BoolVec
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
@@ -35,10 +36,12 @@ class ParentBranch(EditableDevice):
 
     def __init__(self,
                  name: str,
-                 idtag: str,
+                 idtag: Union[str, None],
                  code: str,
-                 bus_from: Bus,
-                 bus_to: Bus,
+                 bus_from: Union[Bus, None],
+                 bus_to: Union[Bus, None],
+                 cn_from: Union[ConnectivityNode, None],
+                 cn_to: Union[ConnectivityNode, None],
                  active: bool,
                  active_prof: BoolVec,
                  rate: float,
@@ -54,31 +57,33 @@ class ParentBranch(EditableDevice):
                  opex: float,
                  Cost: float,
                  Cost_prof: Vec,
-                 device_type: DeviceType,
-                 branch_type: BranchType.Branch):
+                 device_type: DeviceType):
         """
 
-        :param name:
-        :param idtag:
-        :param code:
-        :param bus_from:
-        :param bus_to:
-        :param active:
-        :param active_prof:
-        :param rate:
-        :param rate_prof:
-        :param contingency_factor:
-        :param contingency_factor_prof:
-        :param contingency_enabled:
-        :param monitor_loading:
-        :param mttf:
-        :param mttr:
-        :param build_status:
-        :param capex:
-        :param opex:
-        :param Cost:
-        :param Cost_prof:
-        :param device_type:
+        :param name: name of the branch
+        :param idtag: UUID code
+        :param code: secondary id
+        :param bus_from: Name of the bus at the "from" side
+        :param bus_to: Name of the bus at the "to" side
+        :param cn_from: Name of the connectivity node at the "from" side
+        :param cn_to: Name of the connectivity node at the "to" side
+        :param active: Is active?
+        :param active_prof: Active profile
+        :param rate: Branch rating (MVA)
+        :param rate_prof: profile of rates
+        :param contingency_factor: Factor to multiply the rating in case of contingency
+        :param contingency_factor_prof: contingency factor profile
+        :param contingency_enabled: Enabled contingency (Legacy, better use contingency objects)
+        :param monitor_loading: Monitor loading (Legacy)
+        :param mttf: Mean time to failure
+        :param mttr: Mean time to repair
+        :param build_status: Branch build status. Used in expansion planning.
+        :param capex: Cost of investment. (€/MW)
+        :param opex: Cost of operation. (€/MWh)
+        :param Cost: Cost of overloads. Used in OPF (€/MWh)
+        :param Cost_prof: Cost of overload proile
+        :param device_type: device_type (passed on)
+        :param branch_type: branch type (Legacy)
         """
 
         EditableDevice.__init__(self,
@@ -91,6 +96,9 @@ class ParentBranch(EditableDevice):
         # connectivity
         self.bus_from = bus_from
         self.bus_to = bus_to
+
+        self.cn_from = cn_from
+        self.cn_to = cn_to
 
         # List of measurements
         self.measurements = list()
@@ -123,12 +131,20 @@ class ParentBranch(EditableDevice):
         self.contingency_factor_prof = contingency_factor_prof
 
         # line type: Line, Transformer, etc...
-        self.branch_type = branch_type
+        # self.branch_type = branch_type
 
         self.register('bus_from', units="", tpe=DeviceType.BusDevice,
                       definition='Name of the bus at the "from" side', editable=False)
+
         self.register('bus_to', units="", tpe=DeviceType.BusDevice,
                       definition='Name of the bus at the "to" side', editable=False)
+
+        self.register('cn_from', units="", tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Name of the connectivity node at the "from" side', editable=False)
+
+        self.register('cn_to', units="", tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Name of the connectivity node at the "to" side', editable=False)
+
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,

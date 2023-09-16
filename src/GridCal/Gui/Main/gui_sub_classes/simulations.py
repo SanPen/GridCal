@@ -112,7 +112,8 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
 
         # branch types for reduction
-        mdl = gf.get_list_model(dev.BranchType.list(), checks=True)
+        mdl = gf.get_list_model([dev.DeviceType.LineDevice.value,
+                                 dev.DeviceType.SwitchDevice.value], checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
 
         # OPF grouping modes
@@ -2281,7 +2282,7 @@ class SimulationsMain(TimeEventsMain):
                     selected_types = list()
                     for i in checked:
                         selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = dev.BranchType(selected_type_txt)
+                        selected_type = dev.DeviceType(selected_type_txt)
                         selected_types.append(selected_type)
 
                     # compose options
@@ -2290,6 +2291,7 @@ class SimulationsMain(TimeEventsMain):
                                                            selected_types=selected_types)
 
                     # find which Branches to remove
+                    # TODO: Fix this
                     br_to_remove = sim.select_branches_to_reduce(circuit=self.circuit,
                                                                  rx_criteria=options.rx_criteria,
                                                                  rx_threshold=options.rx_threshold,

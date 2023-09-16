@@ -86,13 +86,6 @@ class ObjectsTableMain(DiagramsMain):
                                    dev.DeviceType.CountryDevice.value: self.circuit.countries,
                                    }
 
-        elif elm_type == dev.DeviceType.BranchDevice.value:
-
-            elm = dev.Branch(None, None)
-            elements = list()
-
-            # self.view_template_controls(True)
-
         elif elm_type == dev.DeviceType.LoadDevice.value:
             elm = dev.Load()
 

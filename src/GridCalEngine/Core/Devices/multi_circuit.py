@@ -1720,12 +1720,16 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.ensure_profiles_exist(self.time_profile)
 
-    def get_bus_dict(self) -> Dict[str, dev.Bus]:
+    def get_bus_dict(self, by_idtag=False) -> Dict[str, dev.Bus]:
         """
         Return dictionary of buses
+        :param by_idtag if true, the key is the idtag else the key is the name
         :return: dictionary of buses {name:object}
         """
-        return {b.name: b for b in self.buses}
+        if by_idtag:
+            return {b.idtag: b for b in self.buses}
+        else:
+            return {b.name: b for b in self.buses}
 
     def get_bus_index_dict(self) -> Dict[dev.Bus, int]:
         """
@@ -1884,7 +1888,7 @@ class MultiCircuit:
         self.switch_devices.append(obj)
 
     def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
+                                    dev.UPFC, dev.Winding, dev.Switch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
@@ -1924,7 +1928,7 @@ class MultiCircuit:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
     def delete_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]):
+    dev.UPFC, dev.Winding, dev.Switch]):
         """
         Delete a :ref:`Branch<branch>` object from the grid.
 
@@ -2618,7 +2622,7 @@ class MultiCircuit:
                            vset=gen.Vset,
                            is_controlled=gen.is_controlled,
                            Qmin=gen.Qmin, Qmax=gen.Qmax, Snom=gen.Snom,
-                           power_prof=gen.P_prof,
+                           P_prof=gen.P_prof,
                            power_factor_prof=gen.Pf_prof,
                            vset_prof=gen.Vset_prof,
                            active=gen.active,

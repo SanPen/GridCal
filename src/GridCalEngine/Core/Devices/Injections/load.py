@@ -16,105 +16,82 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
-class Load(EditableDevice):
+class Load(InjectionTemplate):
     """
-    The load object implements the so-called ZIP model, in which the load can be
-    represented by a combination of power (P), current(I), and impedance (Z).
-
-    The sign convention is: Positive to act as a load, negative to act as a generator.
-
-    Arguments:
-
-        **name** (str, "Load"): Name of the load
-
-        **G** (float, 0.0): Conductance in equivalent MW
-
-        **B** (float, 0.0): Susceptance in equivalent MVAr
-
-        **Ir** (float, 0.0): Real current in equivalent MW
-
-        **Ii** (float, 0.0): Imaginary current in equivalent MVAr
-
-        **P** (float, 0.0): Active power in MW
-
-        **Q** (float, 0.0): Reactive power in MVAr
-
-        **G_prof** (DataFrame, None): Pandas DataFrame with the conductance profile in equivalent MW
-
-        **B_prof** (DataFrame, None): Pandas DataFrame with the susceptance profile in equivalent MVAr
-
-        **Ir_prof** (DataFrame, None): Pandas DataFrame with the real current profile in equivalent MW
-
-        **Ii_prof** (DataFrame, None): Pandas DataFrame with the imaginary current profile in equivalent MVAr
-
-        **P_prof** (DataFrame, None): Pandas DataFrame with the active power profile in equivalent MW
-
-        **Q_prof** (DataFrame, None): Pandas DataFrame with the reactive power profile in equivalent MVAr
-
-        **active** (bool, True): Is the load active?
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
+    Load
     """
 
-    def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=1200.0,
+    def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                 active=True, mttf=0.0, mttr=0.0):
-
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.LoadDevice)
-
-        self.bus = None
-
-        self.active_prof = None
-
-        self.mttf = mttf
-
-        self.mttr = mttr
-
-        self.Cost = cost
-
-        self.Cost_prof = None
-
-        # Impedance in equivalent MVA
+                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+        """
+        The load object implements the so-called ZIP model, in which the load can be
+        represented by a combination of power (P), current(I), and impedance (Z).
+        The sign convention is: Positive to act as a load, negative to act as a generator.
+        :param name: Name of the load
+        :param idtag: UUID code
+        :param code: secondary ID code
+        :param G: Conductance in equivalent MW
+        :param B: Susceptance in equivalent MVAr
+        :param Ir: Real current in equivalent MW
+        :param Ii: Imaginary current in equivalent MVAr
+        :param P: Active power in MW
+        :param Q: Reactive power in MVAr
+        :param Cost: Cost of load shedding
+        :param G_prof: conductance profile in equivalent MW
+        :param B_prof: susceptance profile in equivalent MVAr
+        :param Ir_prof: real current profile in equivalent MW
+        :param Ii_prof: imaginary current profile in equivalent MVAr
+        :param P_prof: active power profile in equivalent MW
+        :param Q_prof: reactive power profile in equivalent MVAr
+        :param active: Is the load active?
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        """
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=None,
+                                   cn=None,
+                                   active=active,
+                                   active_prof=None,
+                                   Cost=Cost,
+                                   Cost_prof=None,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=DeviceType.LoadDevice)
+        self.P = P
+        self.Q = Q
         self.G = G
         self.B = B
         self.Ir = Ir
         self.Ii = Ii
-        self.P = P
-        self.Q = Q
+
+        self.P_prof = P_prof
+        self.Q_prof = Q_prof
         self.G_prof = G_prof
         self.B_prof = B_prof
         self.Ir_prof = Ir_prof
         self.Ii_prof = Ii_prof
-        self.P_prof = P_prof
-        self.Q_prof = Q_prof
 
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
-        self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
-        self.register(key='Ir', units='MW', tpe=float, definition='Active power of the current component at V=1.0 p.u.',
-                      profile_name='Ir_prof')
+        self.register(key='Ir', units='MW', tpe=float,
+                      definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
         self.register(key='Ii', units='MVAr', tpe=float,
                       definition='Reactive power of the current component at V=1.0 p.u.', profile_name='Ii_prof')
         self.register(key='G', units='MW', tpe=float,
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
-        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
-                      profile_name='Cost_prof')
 
     def copy(self):
 

@@ -40,7 +40,7 @@ def test_non_linear_factors():
     pf.run()
 
     # Print results ----------------------------------------------------------------------------------------------------
-    Vcont = abs(nl_simulation.results.V_cont)
+    Vcont = abs(nl_simulation.results.voltage)
     Vexact = abs(pf.results.voltage)
 
     print('V when disconnecting first branch: ')

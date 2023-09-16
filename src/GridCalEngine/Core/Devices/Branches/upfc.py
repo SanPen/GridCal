@@ -20,7 +20,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
@@ -62,6 +62,8 @@ class UPFC(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -77,8 +79,7 @@ class UPFC(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=cost_prof,
-                              device_type=DeviceType.UpfcDevice,
-                              branch_type=BranchType.UPFC)
+                              device_type=DeviceType.UpfcDevice)
 
         # List of measurements
         self.measurements = list()
@@ -102,9 +103,6 @@ class UPFC(ParentBranch):
         self.Vsh = vp
         self.Pfset = Pset
         self.Qfset = Qset
-
-        # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.UPFC
 
         self.register(key='Rs', units='p.u.', tpe=float, definition='Series positive sequence resistance.')
         self.register(key='Xs', units='p.u.', tpe=float, definition='Series positive sequence reactance.')

@@ -22,18 +22,21 @@ from GridCalEngine.Core.Devices import Generator, Technology
 
 class GeneratorTechnology(EditableDevice):
 
-    def __init__(self, name='',
-                 code='',
-                 idtag=None,
+    def __init__(self,
+                 name: str = '',
+                 code: str = '',
+                 idtag: Union[str, None] = None,
                  generator: Union[Generator, None] = None,
                  technology: Union[Technology, None] = None,
                  proportion: float = 1.0):
         """
-
-        :param name:
-        :param idtag:
-        :param device_type:
-
+        Technology to generator association
+        :param name: name of the association
+        :param code: secondary id
+        :param idtag: UUID code
+        :param generator: Generator object
+        :param technology: Technology object
+        :param proportion: share of the generator associated to the technology
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -48,9 +51,10 @@ class GeneratorTechnology(EditableDevice):
 
         self.proportion = proportion
 
-        self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator')
-        self.register(key='technology', units='', tpe=DeviceType.Technology, definition='Technology')
-        self.register(key='proportion', units='p.u.', tpe=float, definition='Emissions rate')
+        self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator object')
+        self.register(key='technology', units='', tpe=DeviceType.Technology, definition='Technology object')
+        self.register(key='proportion', units='p.u.', tpe=float,
+                      definition='Share of the generator associated to the technology')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

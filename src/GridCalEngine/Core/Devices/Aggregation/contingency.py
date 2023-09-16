@@ -15,27 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCalEngine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
 
 
 class Contingency(EditableDevice):
     """
-    The Contingency object is the container of all the
-
-    Arguments:
-
-        **name** (str, "Contingency"): Name of the contingency
-
-        **type** (float, 10.0): Nominal voltage in kV
-
-        **loads** (list, list()): List of contingency elements
-
+    The Contingency object
     """
 
-    def __init__(self, idtag=None, device_idtag='', name="Contingency", code='', prop='active', value=0.0,
-                 group: ContingencyGroup=None):
+    def __init__(self,
+                 idtag: Union[str, None] = None,
+                 device_idtag='',
+                 name="Contingency",
+                 code='', prop='active', value=0.0,
+                 group: Union[None, ContingencyGroup] = None):
         """
         Contingency
         :param idtag: String. Element unique identifier
@@ -46,14 +41,12 @@ class Contingency(EditableDevice):
         :param group: ContingencyGroup. Contingency group
         """
 
-        EditableDevice.__init__(
-            self,
-            idtag=idtag,
-            code=code,
-            active=True,
-            name=name,
-            device_type=DeviceType.ContingencyDevice
-        )
+        EditableDevice.__init__(self,
+                                idtag=idtag,
+                                code=code,
+                                active=True,
+                                name=name,
+                                device_type=DeviceType.ContingencyDevice)
 
         # Contingency type
         self.device_idtag = device_idtag

@@ -105,7 +105,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
         self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.hosting_connections = list()
+        # self.hosting_connections = list()
 
         # Create corner for resize:
         self.sizer = HandleItem(self.terminal)
@@ -647,6 +647,22 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
+
+    def add_hosting_connection(self, graphic_obj):
+        """
+        Add object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        self.terminal.hosting_connections.append(graphic_obj)
+
+    def delete_hosting_connection(self, graphic_obj):
+        """
+        Delete object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        self.terminal.hosting_connections.remove(graphic_obj)
 
     def add_load(self, api_obj=None):
         """

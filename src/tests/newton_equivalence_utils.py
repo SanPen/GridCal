@@ -229,7 +229,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # shunt
     err_count += CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.active, tol, 'ShuntData', 'active')
     err_count += CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.admittance, tol, 'ShuntData', 'S')
-    err_count += CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus(), tol, 'ShuntData', 'Injections per bus')
+    err_count += CheckArr(nc_newton.shunt_data.Sbus, nc_gc.shunt_data.get_injections_per_bus(), tol, 'ShuntData', 'Injections per bus')
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare arrays and data

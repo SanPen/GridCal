@@ -901,7 +901,7 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
                 gen_profile = gen_df[name].values
 
             gen = Generator(name=name,
-                            power_prof=gen_profile,
+                            P_prof=gen_profile,
                             Pmin=elm.p_min,
                             Pmax=elm.p_max)
 

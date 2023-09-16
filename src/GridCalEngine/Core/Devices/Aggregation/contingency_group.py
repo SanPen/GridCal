@@ -21,19 +21,10 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 class ContingencyGroup(EditableDevice):
     """
-    The Contingency object is the container of all the
-
-    Arguments:
-
-        **name** (str, "Contingency"): Name of the contingency
-
-        **type** (float, 10.0): Nominal voltage in kV
-
-        **loads** (list, list()): List of contingency elements
-
+    The Contingency group
     """
 
-    def __init__(self, idtag: Union[str, None] = None,  name="ContingencyGroup", category=''):
+    def __init__(self, idtag: Union[str, None] = None, name="ContingencyGroup", category=''):
         """
         Contingency group
         :param idtag: Unique identifier
@@ -41,14 +32,12 @@ class ContingencyGroup(EditableDevice):
         :param category: tag to category the group
         """
 
-        EditableDevice.__init__(
-            self,
-            name=name,
-            idtag=idtag,
-            code='',
-            active=True,
-            device_type=DeviceType.ContingencyGroupDevice
-        )
+        EditableDevice.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code='',
+                                active=True,
+                                device_type=DeviceType.ContingencyGroupDevice)
 
         # Contingency type
         self.category = category
@@ -64,7 +53,6 @@ class ContingencyGroup(EditableDevice):
         self._name = val
         if self.graphic_obj is not None:
             self.graphic_obj.set_label(self._name)
-
 
     def get_properties_dict(self):
         """

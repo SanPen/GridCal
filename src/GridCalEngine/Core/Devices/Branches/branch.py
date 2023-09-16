@@ -19,9 +19,9 @@ import uuid
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-
+from enum import Enum
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
@@ -31,6 +31,37 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
+
+
+class BranchType(Enum):
+    Branch = 'branch'
+    Line = 'line'
+    DCLine = 'DC-line'
+    VSC = 'VSC'
+    UPFC = 'UPFC'
+    Transformer = 'transformer'
+    Reactance = 'reactance'
+    Switch = 'switch'
+    Winding = 'Winding'
+    BranchTemplate = 'BranchTemplate'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return BranchType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 
 class BranchTemplate:
@@ -68,113 +99,6 @@ class BranchTemplate:
 
 
 class Branch(ParentBranch):
-    """
-    * This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
-    The **Branch** class represents the connections between nodes (i.e.
-    :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
-    transformer, etc.) with an electrical impedance. The basic **Branch** class
-    includes basic electrical attributes for most passive elements, but other device
-    types may be passed to the **Branch** constructor to configure it as a specific
-    type.
-
-    For example, a transformer may be created with the following code:
-
-    .. code:: ipython3
-
-        from GridCalEngine.Core.multi_circuit import MultiCircuit
-        from GridCalEngine.Core.Devices import *
-        from GridCalEngine.Core.Devices.types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      )
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Refer to the :class:`GridCalEngine.Devices.branch.TapChanger` class for an example
-    using a voltage regulator.
-
-    Arguments:
-
-        **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
-
-        **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
-
-        **name** (str, "Branch"): Name of the branch
-
-        **r** (float, 1e-20): Branch resistance in per unit
-
-        **x** (float, 1e-20): Branch reactance in per unit
-
-        **g** (float, 1e-20): Branch shunt conductance in per unit
-
-        **b** (float, 1e-20): Branch shunt susceptance in per unit
-
-        **rate** (float, 1.0): Branch rate in MVA
-
-        **tap** (float, 1.0): Branch tap module
-
-        **shift_angle** (int, 0): Tap shift angle in radians
-
-        **active** (bool, True): Is the branch active?
-
-        **tolerance** (float, 0): Tolerance specified for the branch impedance in %
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
-        **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
-
-        **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
-
-        **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-
-        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCalEngine.Devices.transformer.TransformerType`)
-
-        **length** (float, 0.0): Length of the branch in km
-
-        **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit
-
-        **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C
-
-        **temp_oper** (float, 20.0): Operating temperature in °C
-
-        **alpha** (float, 0.0033): Thermal constant of the material in °C
-
-        **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
-
-        **template** (BranchTemplate, BranchTemplate()): Basic branch template
-    """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20,
                  b=1e-20,
@@ -183,12 +107,50 @@ class Branch(ParentBranch):
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  bus_to_regulated=False, template=BranchTemplate(), ):
+        """
+        This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
+        The **Branch** class represents the connections between nodes (i.e.
+        :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
+        transformer, etc.) with an electrical impedance. The basic **Branch** class
+        includes basic electrical attributes for most passive elements, but other device
+        types may be passed to the **Branch** constructor to configure it as a specific
+        type.
+        :param bus_from: "From" :ref:`bus<Bus>` object
+        :param bus_to: "To" :ref:`bus<Bus>` object
+        :param name: Name of the branch
+        :param idtag: UUID code
+        :param r: Branch resistance in per unit
+        :param x: Branch reactance in per unit
+        :param g: Branch shunt conductance in per unit
+        :param b: Branch shunt susceptance in per unit
+        :param rate: Branch rate in MVA
+        :param tap: Branch tap module
+        :param shift_angle: Tap shift angle in radians
+        :param active: Is the branch active?
+        :param tolerance: Tolerance specified for the branch impedance in %
+        :param cost:
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param r_fault: Mid-line fault resistance in per unit (SC only)
+        :param x_fault: Mid-line fault reactance in per unit (SC only)
+        :param fault_pos: Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
+        :param branch_type: Device type enumeration (ex.: :class:`GridCalEngine.Devices.transformer.TransformerType`)
+        :param length: Length of the branch in km
+        :param vset: Voltage set-point of the voltage controlled bus in per unit
+        :param temp_base: Base temperature at which `r` is measured in °C
+        :param temp_oper: Operating temperature in °C
+        :param alpha: Thermal constant of the material in °C
+        :param bus_to_regulated:  Is the `bus_to` voltage regulated by this branch?
+        :param template: Basic branch template
+        """
         ParentBranch.__init__(self,
                               name=name,
                               idtag=idtag,
                               code="",
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=None,
                               rate=rate,
@@ -204,8 +166,7 @@ class Branch(ParentBranch):
                               opex=0.0,
                               Cost=cost,
                               Cost_prof=None,
-                              device_type=DeviceType.BranchDevice,
-                              branch_type=BranchType.Branch)
+                              device_type=DeviceType.BranchDevice)
 
         # List of measurements
         self.measurements = list()

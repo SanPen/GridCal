@@ -18,7 +18,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 import networkx as nx
 
@@ -1002,6 +1002,25 @@ class GridEditorWidget(QSplitter):
         :param device: EditableDevice
         """
         self.diagram.delete_device(device=device)
+
+    def get_selected_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
+
+        if points_group:
+
+            bus_dict = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+
+            for bus_idtag, point in points_group.locations.items():
+
+                if point.graphic_object.isSelected():
+                    idx, bus = bus_dict[bus_idtag]
+                    lst.append((idx, bus, point.graphic_object))
+        return lst
 
     def start_connection(self, port: TerminalItem):
         """

@@ -15,27 +15,25 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from typing import Union
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation.investments_group import InvestmentsGroup
 
 
 class Investment(EditableDevice):
     """
-    The Contingency object is the container of all the
-
-    Arguments:
-
-        **name** (str, "Contingency"): Name of the contingency
-
-        **type** (float, 10.0): Nominal voltage in kV
-
-        **loads** (list, list()): List of contingency elements
-
+    Investment
     """
 
-    def __init__(self, idtag=None, device_idtag=None, name="Investment", code='', CAPEX=0.0, OPEX=0.0,
-                 group: InvestmentsGroup = None, comment: str = ""):
+    def __init__(self,
+                 idtag: Union[str, None] = None,
+                 device_idtag: Union[str, None] = None,
+                 name="Investment",
+                 code='',
+                 CAPEX=0.0,
+                 OPEX=0.0,
+                 group: InvestmentsGroup = None,
+                 comment: str = ""):
         """
         Contingency
         :param idtag: String. Element unique identifier
@@ -47,14 +45,12 @@ class Investment(EditableDevice):
         :param comment: Comment
         """
 
-        EditableDevice.__init__(
-            self,
-            idtag=idtag,
-            code=code,
-            active=True,
-            name=name,
-            device_type=DeviceType.InvestmentDevice
-        )
+        EditableDevice.__init__(self,
+                                idtag=idtag,
+                                code=code,
+                                active=True,
+                                name=name,
+                                device_type=DeviceType.InvestmentDevice)
 
         # Contingency type
         self.device_idtag = device_idtag
@@ -72,7 +68,11 @@ class Investment(EditableDevice):
         self.register(key='comment', units='', tpe=str, definition='Comments')
 
     @property
-    def group(self):
+    def group(self) -> InvestmentsGroup:
+        """
+        Group of investments
+        :return:
+        """
         return self._group
 
     @group.setter

@@ -23,7 +23,7 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Core.Devices import DeviceType, BranchTemplate, BranchType, Bus, ContingencyGroup
+from GridCalEngine.Core.Devices import DeviceType, BranchTemplate, Bus, ContingencyGroup
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec, Vec, Mat
 from GridCalEngine.data_logger import DataLogger
@@ -827,9 +827,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
-        elif tpe is BranchType:
-            # conv = BranchType(None)
-            return BranchType(getattr(self.objects[obj_idx], attr))
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -852,9 +849,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
-        elif tpe is BranchType:
-            # conv = BranchType(None)
-            return BranchType(getattr(self.objects[obj_idx], attr))
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -900,10 +894,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if not taken:
             if self.attributes[attr_idx] not in self.non_editable_attributes:
-                if tpe is BranchType:
-                    setattr(self.objects[obj_idx], self.attributes[attr_idx], BranchType(value))
-                    self.objects[obj_idx].graphic_obj.update_symbol()
-                elif tpe is ContingencyGroup:
+
+                if tpe is ContingencyGroup:
                     if value != "":
                         setattr(self.objects[obj_idx], self.attributes[attr_idx], ContingencyGroup(value))
                 else:

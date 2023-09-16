@@ -17,7 +17,6 @@
 
 from numpy import sqrt
 
-from GridCalEngine.Core.Devices.enumerations import BranchType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
@@ -51,7 +50,7 @@ class TransformerType(EditableDevice):
 
     def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0.001, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
-                 name='TransformerType', tpe=BranchType.Transformer, idtag=None):
+                 name='TransformerType', idtag=None):
         """
         Transformer template from the short circuit study
         :param hv_nominal_voltage: Nominal voltage of the high voltage side in kV
@@ -72,8 +71,6 @@ class TransformerType(EditableDevice):
                                 code='',
                                 active=True,
                                 device_type=DeviceType.TransformerTypeDevice)
-
-        self.tpe = tpe
 
         self.HV = hv_nominal_voltage
 

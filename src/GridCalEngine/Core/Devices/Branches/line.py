@@ -20,7 +20,7 @@ import numpy as np
 from typing import Union, Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.underground_line import UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
@@ -89,6 +89,8 @@ class Line(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -104,8 +106,7 @@ class Line(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=Cost_prof,
-                              device_type=DeviceType.LineDevice,
-                              branch_type=BranchType.Line)
+                              device_type=DeviceType.LineDevice)
 
         # List of measurements
         self.measurements = list()
@@ -142,9 +143,6 @@ class Line(ParentBranch):
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
-
-        # line type: Line, Transformer, etc...
-        self.branch_type = BranchType.Line
 
         # type template
         self.template = template
@@ -222,39 +220,36 @@ class Line(ParentBranch):
 
         if type(obj) is OverheadLineType:
 
-            if self.branch_type == BranchType.Line:
-                Vn = self.bus_to.Vnom
-                Zbase = (Vn * Vn) / Sbase
-                Ybase = 1 / Zbase
+            Vn = self.bus_to.Vnom
+            Zbase = (Vn * Vn) / Sbase
+            Ybase = 1 / Zbase
 
-                z1 = obj.z_series() * self.length / Zbase
-                y1 = obj.y_shunt() * self.length / Ybase
-                self.R = np.round(z1.real, 6)
-                self.X = np.round(z1.imag, 6)
-                self.B = np.round(y1.imag, 6)
+            z1 = obj.z_series() * self.length / Zbase
+            y1 = obj.y_shunt() * self.length / Ybase
+            self.R = np.round(z1.real, 6)
+            self.X = np.round(z1.imag, 6)
+            self.B = np.round(y1.imag, 6)
 
-                z0 = obj.z0_series() * self.length / Zbase
-                y0 = obj.y0_shunt() * self.length / Ybase
-                self.R = np.round(z0.real, 6)
-                self.X = np.round(z0.imag, 6)
-                self.B = np.round(y0.imag, 6)
+            z0 = obj.z0_series() * self.length / Zbase
+            y0 = obj.y0_shunt() * self.length / Ybase
+            self.R = np.round(z0.real, 6)
+            self.X = np.round(z0.imag, 6)
+            self.B = np.round(y0.imag, 6)
 
-                z2 = obj.z2_series() * self.length / Zbase
-                y2 = obj.y2_shunt() * self.length / Ybase
-                self.R = np.round(z2.real, 6)
-                self.X = np.round(z2.imag, 6)
-                self.B = np.round(y2.imag, 6)
+            z2 = obj.z2_series() * self.length / Zbase
+            y2 = obj.y2_shunt() * self.length / Ybase
+            self.R = np.round(z2.real, 6)
+            self.X = np.round(z2.imag, 6)
+            self.B = np.round(y2.imag, 6)
 
-                # get the rating in MVA = kA * kV
-                self.rate = obj.rating * Vn * np.sqrt(3)
+            # get the rating in MVA = kA * kV
+            self.rate = obj.rating * Vn * np.sqrt(3)
 
-                if self.template is not None:
-                    if obj != self.template:
-                        self.template = obj
-                else:
+            if self.template is not None:
+                if obj != self.template:
                     self.template = obj
             else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line line')
+                self.template = obj
 
         elif type(obj) is UndergroundLineType:
             Vn = self.bus_to.Vnom
@@ -308,8 +303,6 @@ class Line(ParentBranch):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
             if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 

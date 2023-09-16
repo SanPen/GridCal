@@ -16,23 +16,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices import Generator, Fuel
 
 
 class GeneratorFuel(EditableDevice):
 
-    def __init__(self, name='',
-                 code='',
-                 idtag=None,
+    def __init__(self,
+                 name: str = '',
+                 code: str = '',
+                 idtag: Union[str, None] = None,
                  generator: Union[Generator, None] = None,
                  fuel: Union[Fuel, None] = None,
                  rate: float = 0.0):
         """
-
-        :param name:
-        :param idtag:
-
+        Generator to fuel association
+        :param name: name of the association
+        :param code: secondary id
+        :param idtag: UUID code
+        :param generator: Generator object
+        :param fuel: Fuel object
+        :param rate: fuel consumption rate in the generator (t/MWh)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -49,7 +53,8 @@ class GeneratorFuel(EditableDevice):
 
         self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator')
         self.register(key='fuel', units='', tpe=DeviceType.FuelDevice, definition='Fuel')
-        self.register(key='rate', units='t/MWh', tpe=float, definition='Emissions rate')
+        self.register(key='rate', units='t/MWh', tpe=float,
+                      definition='Fuel consumption rate in the generator')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

@@ -24,11 +24,11 @@ class Country(GenericAreaGroup):
 
     def __init__(self, name='Country', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0):
         """
-
-        :param name:
-        :param idtag:
-        :param latitude:
-        :param longitude:
+        Country
+        :param name: name of the area
+        :param idtag: UUID code
+        :param latitude: latitude (deg)
+        :param longitude: longutide (deg)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,

@@ -31,24 +31,25 @@ class Fuel(EditableDevice):
 
     def __init__(self, name='',
                  code='',
-                 idtag=None,
-                 device_type=DeviceType.FuelDevice,
+                 idtag: Union[str, None] = None,
                  cost: float = 0.0,
                  cost_prof: Union[Vec, None] = None,
                  color: Union[str, None] = None):
         """
-
-        :param name:
-        :param idtag:
-        :param device_type:
-
+        Fuel
+        :param name: name of the generator fuel
+        :param code: secondary id
+        :param idtag: UUID code
+        :param cost: cost of the fuel per ton (€/t)
+        :param cost_prof: profile of costs
+        :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
                                 name=name,
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=device_type)
+                                device_type=DeviceType.FuelDevice)
 
         self.cost = cost
 

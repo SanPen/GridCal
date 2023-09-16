@@ -18,12 +18,12 @@
 
 import pandas as pd
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCalEngine.Core.Devices.Branches.line import LineTemplate, SequenceLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
@@ -31,17 +31,41 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 
 class DcLine(ParentBranch):
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Dc Line', idtag=None, code='', r=1e-20,
-                 rate=1.0, active=True, tolerance=0, cost=0.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 length=1, temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=None, rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+    def __init__(self,
+                 bus_from: Union[Bus, None] = None,
+                 bus_to: Union[Bus, None] = None,
+                 name: str = 'Dc Line',
+                 idtag: Union[str, None] = None,
+                 code: str = '',
+                 r=1e-20,
+                 rate=1.0,
+                 active=True,
+                 tolerance=0,
+                 cost=0.0,
+                 mttf=0,
+                 mttr=0,
+                 r_fault=0.0,
+                 fault_pos=0.5,
+                 length=1,
+                 temp_base=20,
+                 temp_oper=20,
+                 alpha=0.00330,
+                 template=None,
+                 rate_prof=None,
+                 Cost_prof=None,
+                 active_prof=None,
+                 temp_oper_prof=None,
+                 contingency_factor=1.0,
+                 contingency_enabled=True,
+                 monitor_loading=True,
+                 contingency_factor_prof=None,
+                 capex=0,
+                 opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
-
-        :param bus_from:
-        :param bus_to:
+        DC current line
+        :param bus_from: Bus from
+        :param bus_to: Bus to
         :param name:
         :param idtag:
         :param r:
@@ -52,7 +76,6 @@ class DcLine(ParentBranch):
         :param mttf:
         :param mttr:
         :param r_fault:
-        :param x_fault:
         :param fault_pos:
         :param length:
         :param temp_base:
@@ -70,6 +93,8 @@ class DcLine(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -85,8 +110,7 @@ class DcLine(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=Cost_prof,
-                              device_type=DeviceType.DCLineDevice,
-                              branch_type=BranchType.DCLine)
+                              device_type=DeviceType.DCLineDevice)
 
         # List of measurements
         self.measurements = list()
@@ -99,7 +123,6 @@ class DcLine(ParentBranch):
 
         # short circuit impedance
         self.r_fault = r_fault
-        self.x_fault = x_fault
         self.fault_pos = fault_pos
 
         # total impedance and admittance in p.u.
@@ -114,9 +137,6 @@ class DcLine(ParentBranch):
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
-        # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.DCLine
-
         # type template
         self.template = template
 
@@ -124,8 +144,6 @@ class DcLine(ParentBranch):
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the mid-line fault.Used in short circuit studies.')
-        self.register(key='x_fault', units='p.u.', tpe=float,
-                      definition='Reactance of the mid-line fault.Used in short circuit studies.')
         self.register(key='fault_pos', units='p.u.', tpe=float,
                       definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would '
                                  'be at the "to" side,therefore 0.5 is at the middle.')
@@ -230,24 +248,20 @@ class DcLine(ParentBranch):
 
         if type(obj) is OverheadLineType:
 
-            if self.branch_type == BranchType.Line:
-                Vn = self.bus_to.Vnom
-                Zbase = (Vn * Vn) / Sbase
-                Ybase = 1 / Zbase
+            Vn = self.bus_to.Vnom
+            Zbase = (Vn * Vn) / Sbase
+            Ybase = 1 / Zbase
 
-                z = obj.z_series() * self.length / Zbase
-                y = obj.y_shunt() * self.length / Ybase
+            z = obj.z_series() * self.length / Zbase
+            y = obj.y_shunt() * self.length / Ybase
 
-                self.R = np.round(z.real, 6)
+            self.R = np.round(z.real, 6)
 
-                # get the rating in MVA = kA * kV
-                self.rate = obj.rating * Vn * np.sqrt(3)
+            # get the rating in MVA = kA * kV
+            self.rate = obj.rating * Vn * np.sqrt(3)
 
-                if obj != self.template:
-                    self.template = obj
-                    self.branch_type = BranchType.Line
-            else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
+            if obj != self.template:
+                self.template = obj
 
         elif type(obj) is UndergroundLineType:
             Vn = self.bus_to.Vnom
@@ -264,7 +278,6 @@ class DcLine(ParentBranch):
 
             if obj != self.template:
                 self.template = obj
-                self.branch_type = BranchType.Line
 
         elif type(obj) is SequenceLineType:
 
@@ -279,7 +292,6 @@ class DcLine(ParentBranch):
 
             if obj != self.template:
                 self.template = obj
-                self.branch_type = BranchType.Line
 
         else:
             logger.add_error('Template not recognised', self.name)
@@ -293,8 +305,6 @@ class DcLine(ParentBranch):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
             if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 

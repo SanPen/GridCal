@@ -15,25 +15,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from typing import Union
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class InvestmentsGroup(EditableDevice):
     """
-    The Contingency object is the container of all the
-
-    Arguments:
-
-        **name** (str, "Contingency"): Name of the contingency
-
-        **type** (float, 10.0): Nominal voltage in kV
-
-        **loads** (list, list()): List of contingency elements
-
+    Investments group
     """
 
-    def __init__(self, idtag: str = None, name: str = "ContingencyGroup", category: str = '',
+    def __init__(self,
+                 idtag: Union[str, None] = None,
+                 name: str = "InvestmentGroup",
+                 category: str = '',
                  comment: str = ""):
         """
         Contingency group

@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, TransformerControlType, WindingsConnection, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import TransformerControlType, WindingsConnection, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
@@ -116,6 +116,8 @@ class Transformer2W(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -131,8 +133,7 @@ class Transformer2W(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=Cost_prof,
-                              device_type=DeviceType.Transformer2WDevice,
-                              branch_type=BranchType.Transformer)
+                              device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
         self.HV = 0
@@ -206,15 +207,6 @@ class Transformer2W(ParentBranch):
         if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
             print(self.name, self.idtag, 'Overriding to V controller')
             self.control_mode = TransformerControlType.Vt
-
-        # converter for enumerations
-        self.conv = {'branch': BranchType.Branch,
-                     'line': BranchType.Line,
-                     'transformer': BranchType.Transformer,
-                     'switch': BranchType.Switch,
-                     'reactance': BranchType.Reactance}
-
-        self.inv_conv = {val: key for key, val in self.conv.items()}
 
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -302,14 +294,6 @@ class Transformer2W(ParentBranch):
 
     def get_weight(self):
         return np.sqrt(self.R * self.R + self.X * self.X)
-
-    def branch_type_converter(self, val_string):
-        """
-        function to convert the branch type string into the BranchType
-        :param val_string:
-        :return: branch type conversion
-        """
-        return self.conv[val_string.lower()]
 
     def copy(self, bus_dict=None):
         """
@@ -505,10 +489,7 @@ class Transformer2W(ParentBranch):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
-
-            elif properties.tpe == DeviceType.BusDevice:
+            if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 
             elif properties.tpe == DeviceType.TransformerTypeDevice:

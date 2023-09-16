@@ -16,18 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCalEngine.Core.Devices.enumerations import BranchType
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 
 class LineTemplate:
 
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch, idtag=None):
+    def __init__(self, name='BranchTemplate', idtag=None):
         self.idtag = idtag
 
         self.name = name
-
-        self.tpe = tpe
 
         self.device_type = DeviceType.LineTypeDevice
 

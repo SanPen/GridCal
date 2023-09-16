@@ -20,7 +20,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, ConverterControlType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import ConverterControlType, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
@@ -83,6 +83,8 @@ class VSC(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -98,8 +100,7 @@ class VSC(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=cost_prof,
-                              device_type=DeviceType.VscDevice,
-                              branch_type=BranchType.VSC)
+                              device_type=DeviceType.VscDevice)
 
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it
@@ -158,9 +159,6 @@ class VSC(ParentBranch):
         self.alpha1 = alpha1
         self.alpha2 = alpha2
         self.alpha3 = alpha3
-
-        # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.VSC
 
         self.register(key='R1', units='p.u.', tpe=float, definition='Resistive positive sequence losses.')
         self.register(key='X1', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.')

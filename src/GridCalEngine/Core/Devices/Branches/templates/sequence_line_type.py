@@ -16,14 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCalEngine.Core.Devices.enumerations import BranchType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class SequenceLineType(EditableDevice):
 
     def __init__(self, name='SequenceLine', idtag=None, rating=1,
-                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
+                 R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0):
         """
         Constructor
         :param name: name of the model
@@ -44,8 +43,6 @@ class SequenceLineType(EditableDevice):
                                 code="",
                                 active=True,
                                 device_type=DeviceType.SequenceLineDevice)
-
-        self.tpe = tpe
 
         self.rating = rating
 

@@ -108,11 +108,8 @@ class TerminalItem(QGraphicsRectItem):
         @return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-
             self.process_callbacks(value)
-
             return value
-
         else:
             return super(TerminalItem, self).itemChange(change, value)
 

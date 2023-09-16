@@ -259,13 +259,11 @@ class DiagramsMain(CompiledArraysMain):
         Get the selected buses
         :return:
         """
-        # TODO: reformulate this
-        lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self.circuit.buses):
-            if bus.graphic_obj is not None:
-                if bus.graphic_obj.isSelected():
-                    lst.append((k, bus))
-        return lst
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, GridEditorWidget):
+            return diagram_widget.get_selected_buses()
+        else:
+            return list()
 
     def explosion_factor_change(self):
         """

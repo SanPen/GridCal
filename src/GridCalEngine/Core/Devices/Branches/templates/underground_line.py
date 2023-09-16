@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Core.Devices.enumerations import BranchType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
@@ -42,8 +41,6 @@ class UndergroundLineType(EditableDevice):
                                 code='',
                                 active=True,
                                 device_type=DeviceType.UnderGroundLineDevice)
-
-        self.tpe = BranchType.Line
 
         self.rating = rating
 

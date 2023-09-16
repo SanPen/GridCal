@@ -18,35 +18,6 @@
 from enum import Enum
 
 
-class BranchType(Enum):
-    Branch = 'branch'
-    Line = 'line'
-    DCLine = 'DC-line'
-    VSC = 'VSC'
-    UPFC = 'UPFC'
-    Transformer = 'transformer'
-    Reactance = 'reactance'
-    Switch = 'switch'
-    Winding = 'Winding'
-    BranchTemplate = 'BranchTemplate'
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return BranchType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-
 
 class DiagramType(Enum):
     BusBranch = 'bus-branch'

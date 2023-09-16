@@ -16,11 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.enumerations import DeviceType
 from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
-class Shunt(EditableDevice):
+class Shunt(InjectionTemplate):
     """
     Arguments:
 
@@ -48,23 +49,24 @@ class Shunt(EditableDevice):
                  G0=0, B0=0, G0_prof=None, B0_prof=None,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.ShuntDevice)
-
-        # The bus this element is attached to: Not necessary for calculations
-        self.bus = None
-
-        self.active_prof = active_prof
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=None,
+                                   cn=None,
+                                   active=active,
+                                   active_prof=None,
+                                   Cost=0.0,
+                                   Cost_prof=None,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=DeviceType.ShuntDevice)
 
         self.is_controlled = controlled
-
-        self.mttf = mttf
-
-        self.mttr = mttr
 
         # Impedance (MVA)
         self.G = G
@@ -81,14 +83,6 @@ class Shunt(EditableDevice):
         self.G0_prof = G0_prof
         self.B0_prof = B0_prof
 
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
-        self.register(key='active', units='', tpe=bool, definition='Is the shunt active?', profile_name='active_prof')
         self.register(key='is_controlled', units='', tpe=bool, definition='Is the shunt controllable?')
         self.register(key='G', units='MW', tpe=float,
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
@@ -102,13 +96,7 @@ class Shunt(EditableDevice):
         self.register(key='Bmax', units='MVAr', tpe=float, definition='Reactive power max control value at V=1.0 p.u.')
         self.register(key='Vset', units='p.u.', tpe=float,
                       definition='Set voltage. This is used for controlled shunts.')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
-        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
+
 
     def copy(self):
         """

@@ -45,7 +45,6 @@ class ArrowHead(QGraphicsPolygonItem):
                  under: bool = False,
                  backwards: bool = False,
                  separation: int = 5):
-
         QGraphicsPolygonItem.__init__(self, parent=parent)
 
         self.parent: QGraphicsLineItem = parent
@@ -98,51 +97,6 @@ class ArrowHead(QGraphicsPolygonItem):
         arrow_p1 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, 0))
         arrow_p2 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, p2))
         arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
-
-        # if line.p1().x() < line.p2().x():
-        #     if self.backwards:
-        #         if self.under:
-        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
-        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
-        #         else:
-        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
-        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(
-        #                 QPointF(self.w, -self.h))
-        #     else:
-        #         if self.under:
-        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
-        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(
-        #                 QPointF(self.w, -self.h))
-        #         else:
-        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
-        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
-        # else:
-        #     if self.backwards:
-        #         if self.under:
-        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
-        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, -self.sep).map(
-        #                 QPointF(self.w, -self.h))
-        #         else:
-        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
-        #             arrow_p1 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt + QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
-        #     else:
-        #         if self.under:
-        #             arrow_p0 = QTransform().translate(0, self.sep).map(base_pt)
-        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, self.sep).map(QPointF(self.w, self.h))
-        #         else:
-        #             arrow_p0 = QTransform().translate(0, -self.sep).map(base_pt)
-        #             arrow_p1 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(QPointF(self.w, 0))
-        #             arrow_p2 = base_pt - QTransform().rotate(-angle).translate(0, -self.sep).map(
-        #                 QPointF(self.w, -self.h))
-        #
-        # arrow_polygon = QPolygonF([arrow_p0, arrow_p1, arrow_p2])
 
         self.setPolygon(arrow_polygon)
 
@@ -237,7 +191,7 @@ class TransformerSymbol(QGraphicsRectItem):
 
 class VscSymbol(QGraphicsRectItem):
     """
-    TransformerSymbol
+    VscSymbol
     """
 
     def __init__(self, parent, pen_width, h=48, w=48, icon_route=":/Icons/icons/vsc.svg"):
@@ -312,7 +266,7 @@ class UpfcSymbol(VscSymbol):
 
 class HvdcSymbol(QGraphicsRectItem):
     """
-    TransformerSymbol
+    HvdcSymbol
     """
 
     def __init__(self, parent, pen_width, h=30, w=30):
@@ -511,9 +465,9 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                                    parent=self.diagramScene.parent().object_editor_table,
-                                    editable=True, transposed=True,
-                                    non_editable_attributes=self.api_object.non_editable_attributes)
+                               parent=self.diagramScene.parent().object_editor_table,
+                               editable=True, transposed=True,
+                               non_editable_attributes=self.api_object.non_editable_attributes)
 
             self.diagramScene.parent().object_editor_table.setModel(mdl)
 

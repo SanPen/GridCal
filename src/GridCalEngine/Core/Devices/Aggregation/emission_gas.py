@@ -23,26 +23,28 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 class EmissionGas(EditableDevice):
 
-    def __init__(self, name='',
-                 code='',
+    def __init__(self,
+                 name: str = '',
+                 code: str = '',
                  idtag: Union[str, None] = None,
-                 device_type=DeviceType.EmissionGasDevice,
                  cost: float = 0.0,
                  cost_prof: Union[Vec, None] = None,
                  color: Union[str, None] = None):
         """
-
-        :param name:
-        :param idtag:
-        :param device_type:
-
+        Emission gas object
+        :param name: name of the gas (CO2, NOx, etc.)
+        :param code: secondary id
+        :param idtag: UUID code
+        :param cost: cost per tonn (€/t)
+        :param cost_prof: profile of costs
+        :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
                                 name=name,
                                 code=code,
                                 idtag=idtag,
                                 active=True,
-                                device_type=device_type)
+                                device_type=DeviceType.EmissionGasDevice)
 
         self.cost = cost
 

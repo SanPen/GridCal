@@ -17,7 +17,7 @@
 
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.measurement import Measurement, MeasurementType
-from GridCalEngine.Core.Devices.enumerations import ConverterControlType, HvdcControlType, BranchType, WindingsConnection, GeneratorTechnologyType, TransformerControlType, DeviceType
+from GridCalEngine.Core.Devices.enumerations import ConverterControlType, HvdcControlType, WindingsConnection, GeneratorTechnologyType, TransformerControlType, DeviceType
 from GridCalEngine.Core.Devices.templates import get_transformer_catalogue, get_wires_catalogue, get_cables_catalogue
 
 from GridCalEngine.Core.Devices.Aggregation import *

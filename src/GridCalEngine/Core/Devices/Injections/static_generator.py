@@ -16,11 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
-class StaticGenerator(EditableDevice):
+class StaticGenerator(InjectionTemplate):
     """
     Arguments:
 
@@ -46,20 +46,22 @@ class StaticGenerator(EditableDevice):
                  mttf=0.0, mttr=0.0, cost=1200.0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.StaticGeneratorDevice)
-
-        self.bus = None
-
-        self.active_prof = None
-
-        self.mttf = mttf
-
-        self.mttr = mttr
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=None,
+                                   cn=None,
+                                   active=active,
+                                   active_prof=None,
+                                   Cost=cost,
+                                   Cost_prof=None,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=DeviceType.StaticGeneratorDevice)
 
         # Power (MW + jMVAr)
         self.P = P
@@ -69,28 +71,14 @@ class StaticGenerator(EditableDevice):
         self.P_prof = P_prof
         self.Q_prof = Q_prof
 
-        self.Cost = cost
-        self.Cost_prof = None
-
         self.capex = capex
 
         self.opex = opex
 
         self.build_status = build_status
 
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='', editable=False)
-        self.register(key='active', units='', tpe=bool, definition='', profile_name='active_prof')
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
-        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
-                      profile_name='Cost_prof')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
 
     def copy(self):
         """

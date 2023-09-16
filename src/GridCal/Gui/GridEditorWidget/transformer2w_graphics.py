@@ -22,7 +22,7 @@ from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.transformer_editor import TransformerEditor, reverse_transformer_short_circuit_study
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
-from GridCalEngine.Core.Devices.Branches.branch import BranchType
+from GridCalEngine.Core.Devices.enumerations import DeviceType
 
 
 class TransformerGraphicItem(LineGraphicTemplateItem):
@@ -136,12 +136,13 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         :return:
         """
 
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-            # trigger the editor
-            self.edit()
-        elif self.api_object.branch_type is BranchType.Switch:
-            # change state
-            self.enable_disable_toggle()
+        if self.api_object is not None:
+            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+                # trigger the editor
+                self.edit()
+            elif self.api_object.device_type is DeviceType.SwitchDevice:
+                # change state
+                self.enable_disable_toggle()
 
     def remove(self, ask=True):
         """

@@ -222,7 +222,7 @@ def parse_json_data(data) -> MultiCircuit:
                                     Qmin=element['qmin'],
                                     Qmax=element['qmax'],
                                     Snom=element['Snom'],
-                                    power_prof=None,
+                                    P_prof=None,
                                     vset_prof=None,
                                     active=element['active'],
                                     Pmin=0.0,
@@ -254,7 +254,7 @@ def parse_json_data(data) -> MultiCircuit:
                                   Qmax=element['qmax'],
                                   Snom=element['Snom'],
                                   Enom=element['Enom'],
-                                  power_prof=None,
+                                  P_prof=None,
                                   vset_prof=None,
                                   active=element['active'])
                 bus.batteries.append(elm)

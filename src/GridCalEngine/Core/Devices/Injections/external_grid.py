@@ -17,10 +17,11 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import ExternalGridMode
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
-class ExternalGrid(EditableDevice):
+class ExternalGrid(InjectionTemplate):
     """
     External grid device
     In essence, this is a slack-enforcer device
@@ -61,26 +62,31 @@ class ExternalGrid(EditableDevice):
 
     """
 
-    def __init__(self, name='External grid', idtag=None, code='', active=True,
+    def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
                  Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
-                 mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ):
+                 mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.ExternalGridDevice)
-
-        self.bus = None
-
-        self.active_prof = None
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=None,
+                                   cn=None,
+                                   active=active,
+                                   active_prof=None,
+                                   Cost=0.0,
+                                   Cost_prof=None,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=DeviceType.ExternalGridDevice)
 
         self.mode = mode
 
-        self.mttf = mttf
-
-        self.mttr = mttr
+        self.substituted_device_id = substituted_device_id
 
         # Impedance in equivalent MVA
         self.Vm = Vm
@@ -93,41 +99,14 @@ class ExternalGrid(EditableDevice):
         self.P_prof = P_prof
         self.Q_prof = Q_prof
 
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name', editable=False)
-        self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
         self.register(key='mode', units='', tpe=ExternalGridMode,
                       definition='Operation mode of the external grid (voltage or load)')
+        self.register(key='substituted_device_id', units='', tpe=str,
+                      definition='idtag of the device that was substituted by this external grid equivalent')
         self.register(key='Vm', units='p.u.', tpe=float, definition='Active power', profile_name='Vm_prof')
         self.register(key='Va', units='radians', tpe=float, definition='Reactive power', profile_name='Va_prof')
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
-        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
-
-    def copy(self):
-
-        elm = ExternalGrid()
-
-        elm.name = self.name
-        elm.active = self.active
-        elm.active_prof = self.active_prof
-        elm.Vm = self.Vm
-        elm.Va = self.Va
-        elm.Vm_prof = self.Vm_prof
-        elm.Va_prof = self.Va_prof
-
-        elm.P = self.P
-        elm.Q = self.Q
-        elm.P_prof = self.P_prof
-        elm.Q_prof = self.Q_prof
-
-        elm.mttf = self.mttf
-        elm.mttr = self.mttr
-
-        elm.Cost = self.Cost
-        elm.Cost_prof = self.Cost_prof
-
-        return elm
 
     def get_properties_dict(self, version=3):
         """
@@ -136,7 +115,7 @@ class ExternalGrid(EditableDevice):
         """
 
         d = {'id': self.idtag,
-             'type': 'load',
+             'type': 'external_grid',
              'phases': 'ps',
              'name': self.name,
              'bus': self.bus.idtag,

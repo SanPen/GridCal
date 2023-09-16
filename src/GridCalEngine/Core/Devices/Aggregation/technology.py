@@ -21,13 +21,16 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 class Technology(EditableDevice):
 
-    def __init__(self, name: str = '', code: str = '', idtag: Union[str, None] = None,
+    def __init__(self, name: str = '',
+                 code: str = '',
+                 idtag: Union[str, None] = None,
                  color: Union[str, None] = None):
         """
-
-        :param name:
-        :param code:
-        :param idtag:
+        Technology
+        :param name: name of the technology
+        :param code: secondary id
+        :param idtag: UUID code
+        :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
                                 name=name,

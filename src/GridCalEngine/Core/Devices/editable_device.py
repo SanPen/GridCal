@@ -18,8 +18,7 @@ import random
 import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
-from GridCalEngine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType, BranchType
-from GridCalEngine.basic_structures import ExternalGridMode
+from GridCalEngine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType
 
 
 class GCProp:
@@ -121,8 +120,6 @@ class EditableDevice:
 
         self.active = active
 
-        self.type_name = device_type.value
-
         self.device_type: DeviceType = device_type
 
         # associated graphic object
@@ -138,6 +135,14 @@ class EditableDevice:
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
         self.register(key='active', units='', tpe=bool, definition='Is active?')  # this one is overriden if active_prof is present
+
+    @property
+    def type_name(self) -> str:
+        """
+        Name of the device type
+        :return: name of the type (str)
+        """
+        return self.device_type.value
 
     def get_rdfid(self) -> str:
         """
@@ -157,7 +162,7 @@ class EditableDevice:
                  key: str,
                  units: str,
                  tpe: Union[Type[int], Type[bool], Type[float], Type[str],
-                            DeviceType, Type[BuildStatus], WindingsConnection, TransformerControlType, BranchType],
+                            DeviceType, Type[BuildStatus], WindingsConnection, TransformerControlType],
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
@@ -242,7 +247,7 @@ class EditableDevice:
     def name(self, val: str):
         self._name = val
 
-    def get_save_data(self):
+    def get_save_data(self) -> List[Union[str, float, int, bool, object]]:
         """
         Return the data that matches the edit_headers
         :return: list with data
@@ -404,13 +409,29 @@ class EditableDevice:
 
     @staticmethod
     def rgb2hex(r: int, g: int, b: int) -> str:
+        """
+        Convert R, G, B to hexadecimal tuple
+        :param r: Red amount (0, 255)
+        :param g: Green amount (0, 255)
+        :param b: Blue amount (0, 255)
+        :return: Hexadecimal string
+        """
         return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
     @staticmethod
     def hex2rgb(hexcode: int) -> Tuple[int, ...]:
+        """
+        Convert hexadecimal string to rgb tuple
+        :param hexcode: hexadecimal string
+        :return: (R, G, B)
+        """
         return tuple(map(ord, hexcode[1:].decode('hex')))
 
     def rnd_color(self) -> str:
+        """
+        Generate random colour
+        :return: hex string
+        """
         r = random.randint(0, 128)
         g = random.randint(0, 128)
         b = random.randint(0, 128)

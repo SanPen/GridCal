@@ -22,17 +22,21 @@ from GridCalEngine.Core.Devices import Generator, EmissionGas
 
 class GeneratorEmission(EditableDevice):
 
-    def __init__(self, name='',
-                 code='',
-                 idtag=None,
+    def __init__(self,
+                 name: str = '',
+                 code: str = '',
+                 idtag: Union[str, None] = None,
                  generator: Union[Generator, None] = None,
                  emission: Union[EmissionGas, None] = None,
                  rate: float = 0.0):
         """
-
-        :param name:
-        :param idtag:
-
+        Generator to emission association
+        :param name: name of the association
+        :param code: secondary id
+        :param idtag: UUID code
+        :param generator: Generator object
+        :param emission: EmissionGas object
+        :param rate: emissions rate of the gas in the generator (t/MWh)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -49,7 +53,8 @@ class GeneratorEmission(EditableDevice):
 
         self.register(key='generator', units='', tpe=DeviceType.GeneratorDevice, definition='Generator')
         self.register(key='emission', units='', tpe=DeviceType.EmissionGasDevice, definition='Emission')
-        self.register(key='rate', units='t/MWh', tpe=float, definition='Emissions rate')
+        self.register(key='rate', units='t/MWh', tpe=float,
+                      definition='Emissions rate of the gas in the generator (t/MWh)')
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

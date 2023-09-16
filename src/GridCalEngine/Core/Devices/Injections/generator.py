@@ -23,6 +23,7 @@ from GridCalEngine.basic_structures import Logger, Vec, IntVec, Mat
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, GCProp
 from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
 def make_default_q_curve(Snom: float, Qmin: float, Qmax: float, n: int = 3) -> Mat:
@@ -89,7 +90,7 @@ def get_q_limits(q_points: Mat, p: Vec) -> Tuple[Vec, Vec]:
     return qmin, qmax
 
 
-class Generator(EditableDevice):
+class Generator(InjectionTemplate):
 
     def __init__(self,
                  name='gen',
@@ -102,7 +103,7 @@ class Generator(EditableDevice):
                  Qmin: float = -9999,
                  Qmax: float = 9999,
                  Snom: float = 9999,
-                 power_prof: Union[Vec, None] = None,
+                 P_prof: Union[Vec, None] = None,
                  power_factor_prof: Union[Vec, None] = None,
                  vset_prof: Union[Vec, None] = None,
                  active_prof: Union[Vec, None] = None,
@@ -141,7 +142,7 @@ class Generator(EditableDevice):
         :param Qmin: Minimum reactive power in MVAr
         :param Qmax: Maximum reactive power in MVAr
         :param Snom: Nominal apparent power in MVA
-        :param power_prof: active power profile in MW (array)
+        :param P_prof: active power profile in MW (array)
         :param power_factor_prof: power factor profile (array)
         :param vset_prof: voltage setpoint profile in per unit
         :param active_prof:
@@ -169,20 +170,22 @@ class Generator(EditableDevice):
         :param Cost2_prof:
         :param Cost0_prof:
         """
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.GeneratorDevice)
-
-        self.bus: "Bus" = None
-
-        self.active_prof = active_prof
-
-        self.mttf = mttf
-
-        self.mttr = mttr
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=None,
+                                   cn=None,
+                                   active=active,
+                                   active_prof=active_prof,
+                                   Cost=Cost,
+                                   Cost_prof=Cost_prof,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=DeviceType.GeneratorDevice)
 
         self.technology = technology
 
@@ -207,9 +210,6 @@ class Generator(EditableDevice):
         # negative sequence reactance
         self.X2 = x2
 
-        # Power (MVA)
-        self.P = P
-
         # Power factor
         self.Pf = power_factor
 
@@ -228,8 +228,10 @@ class Generator(EditableDevice):
         # Maximum dispatched power in MW
         self.Pmax = Pmax
 
+        self.P = P
+
         # power profile for this load in MW
-        self.P_prof = power_prof
+        self.P_prof = P_prof
 
         # Voltage module set point (p.u.)
         self.Vset = vset
@@ -253,7 +255,6 @@ class Generator(EditableDevice):
             self.custom_q_points = False
 
         self.Cost2 = 0.0  # Cost of operation €/MW²
-        self.Cost = Cost  # Cost of operation €/MW
         self.Cost0 = 0.0  # Cost of operation €/MW
 
         self.StartupCost = 0.0
@@ -264,14 +265,7 @@ class Generator(EditableDevice):
         self.RampDown = 1e20
 
         self.Cost2_prof = Cost2_prof
-        self.Cost_prof = Cost_prof
         self.Cost0_prof = Cost0_prof
-
-        self.capex = capex
-
-        self.opex = opex
-
-        self.build_status = build_status
 
         # Dynamic vars
         # self.Ra = Ra
@@ -293,12 +287,6 @@ class Generator(EditableDevice):
         # system base power MVA
         self.Sbase = Sbase
 
-        self.register(key='name', units='', tpe=str, definition='Name of the generator')
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', )
-        self.register(key='code', units='', tpe=str, definition='Secondary ID')
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus name')
-        self.register(key='active', units='', tpe=bool, definition='Is the generator active?',
-                      profile_name='active_prof')
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pf', units='', tpe=float,
@@ -335,15 +323,8 @@ class Generator(EditableDevice):
                       definition='Maximum amount of generation increase per hour.')
         self.register(key='RampDown', units='MW/h', tpe=float,
                       definition='Maximum amount of generation decrease per hour.')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float,
-                      definition='Cost of maintenance. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
+
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure')
-        self.register(key='mttr', units='h', tpe=float, definition='Mean time to recovery')
 
     def copy(self):
         """

@@ -65,13 +65,13 @@ class GenericAreaGroup(EditableDevice):
 
 class Area(GenericAreaGroup):
 
-    def __init__(self, name='Area', idtag=None, code='', latitude=0.0, longitude=0.0):
+    def __init__(self, name: str = 'Area', idtag: Union[str, None] = None, code: str = '', latitude=0.0, longitude=0.0):
         """
-
-        :param name:
-        :param idtag:
-        :param latitude:
-        :param longitude:
+        Area constructor
+        :param name: name of the area
+        :param idtag: UUID code
+        :param latitude: latitude (deg)
+        :param longitude: longutide (deg)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,

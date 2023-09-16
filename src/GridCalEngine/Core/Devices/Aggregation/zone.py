@@ -15,20 +15,24 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Aggregation.area import GenericAreaGroup
 
 
 class Zone(GenericAreaGroup):
 
-    def __init__(self, name='Zone', idtag=None, code='',latitude=0.0, longitude=0.0):
+    def __init__(self, name='Zone',
+                 idtag: Union[str, None] = None,
+                 code='',
+                 latitude=0.0,
+                 longitude=0.0):
         """
-
-        :param name:
-        :param idtag:
-        :param latitude:
-        :param longitude:
+        Zone
+        :param name: name of the zone
+        :param idtag: UUID code
+        :param latitude: latitude (deg)
+        :param longitude: longutide (deg)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,

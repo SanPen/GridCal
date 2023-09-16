@@ -24,7 +24,7 @@ from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Core.Devices.Branches.branch import BranchType
+from GridCalEngine.Core.Devices.enumerations import DeviceType
 from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
 
 
@@ -307,13 +307,13 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         :param event:
         :return:
         """
-
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-            # trigger the editor
-            self.edit()
-        elif self.api_object.branch_type is BranchType.Switch:
-            # change state
-            self.enable_disable_toggle()
+        if self.api_object is not None:
+            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+                # trigger the editor
+                self.edit()
+            elif self.api_object.device_type is DeviceType.SwitchDevice:
+                # change state
+                self.enable_disable_toggle()
 
     def remove(self, ask=True):
         """

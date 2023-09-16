@@ -19,7 +19,6 @@ from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.enumerations import BranchType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Branches.wire import Wire
 
@@ -59,11 +58,10 @@ class WireInTower:
 
 class OverheadLineType(EditableDevice):
 
-    def __init__(self, name='Tower', tpe=BranchType.Branch, idtag=None):
+    def __init__(self, name='Tower', idtag=None):
         """
         Overhead line editor
         :param name: name
-        :param tpe: type
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -71,8 +69,6 @@ class OverheadLineType(EditableDevice):
                                 code='',
                                 active=True,
                                 device_type=DeviceType.OverheadLineTypeDevice)
-
-        self.tpe = tpe
 
         # list of wires in the tower
         self.wires_in_tower = list()

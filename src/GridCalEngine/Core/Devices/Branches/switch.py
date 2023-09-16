@@ -17,7 +17,7 @@
 
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, BuildStatus
+from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
@@ -53,11 +53,13 @@ class Switch(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
                               rate_prof=None,
-                              contingency_factor=1.0,
+                              contingency_factor=contingency_factor,
                               contingency_factor_prof=None,
                               contingency_enabled=True,
                               monitor_loading=True,
@@ -68,8 +70,7 @@ class Switch(ParentBranch):
                               opex=0,
                               Cost=0,
                               Cost_prof=None,
-                              device_type=DeviceType.SwitchDevice,
-                              branch_type=BranchType.Switch)
+                              device_type=DeviceType.SwitchDevice)
 
         # List of measurements
         self.measurements = list()
@@ -79,9 +80,6 @@ class Switch(ParentBranch):
         self.X = x
 
         self.active_prof = active_prof
-
-        # line type: Line, Transformer, etc...
-        self.branch_type = BranchType.Switch
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance')
@@ -120,8 +118,6 @@ class Switch(ParentBranch):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
             if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 

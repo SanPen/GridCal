@@ -21,42 +21,91 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BranchType, WindingsConnection, BuildStatus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.enumerations import WindingsConnection, BuildStatus
+from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Branches.transformer import TransformerControlType
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 
 
-class Winding(EditableDevice):
+class Winding(ParentBranch):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Winding', idtag=None, code='',
-                 r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0,
-                 tap=1.0, tap_module_max=1.2, tap_module_min=0.5,
-                 shift_angle=0.0, theta_max=6.28, theta_min=-6.28,
-                 active=True, tolerance=0, cost=100.0,
-                 mttf=0, mttr=0,
-                 vset=1.0, Pset=0, bus_to_regulated=False,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
-                 control_mode: TransformerControlType = TransformerControlType.fixed,
-                 template: TransformerType = None,
-                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 tap_module_prof=None, angle_prof=None,
-                 contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
-                 r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
-                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
-                 conn: WindingsConnection = WindingsConnection.GG,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None,
+                 name='Winding', idtag=None, code='', r=1e-20, x=1e-20, g=1e-20, b=1e-20, rate=1.0, tap=1.0,
+                 tap_module_max=1.2, tap_module_min=0.5, shift_angle=0.0, theta_max=6.28, theta_min=-6.28, active=True,
+                 tolerance=0, cost=100.0, mttf=0, mttr=0, vset=1.0, Pset=0, bus_to_regulated=False, temp_base=20,
+                 temp_oper=20, alpha=0.00330, control_mode: TransformerControlType = TransformerControlType.fixed,
+                 template: TransformerType = None, rate_prof=None, Cost_prof=None, active_prof=None,
+                 temp_oper_prof=None, tap_module_prof=None, angle_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None, r0=1e-20, x0=1e-20,
+                 g0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
+                 conn: WindingsConnection = WindingsConnection.GG, capex=0, opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
+        """
 
+        :param bus_from:
+        :param bus_to:
+        :param HV:
+        :param LV:
+        :param name:
+        :param idtag:
+        :param code:
+        :param r:
+        :param x:
+        :param g:
+        :param b:
+        :param rate:
+        :param tap:
+        :param tap_module_max:
+        :param tap_module_min:
+        :param shift_angle:
+        :param theta_max:
+        :param theta_min:
+        :param active:
+        :param tolerance:
+        :param cost:
+        :param mttf:
+        :param mttr:
+        :param vset:
+        :param Pset:
+        :param bus_to_regulated:
+        :param temp_base:
+        :param temp_oper:
+        :param alpha:
+        :param control_mode:
+        :param template:
+        :param rate_prof:
+        :param Cost_prof:
+        :param active_prof:
+        :param temp_oper_prof:
+        :param tap_module_prof:
+        :param angle_prof:
+        :param contingency_factor:
+        :param contingency_enabled:
+        :param monitor_loading:
+        :param contingency_factor_prof:
+        :param r0:
+        :param x0:
+        :param g0:
+        :param b0:
+        :param r2:
+        :param x2:
+        :param g2:
+        :param b2:
+        :param conn:
+        :param capex:
+        :param opex:
+        :param build_status:
+        """
         ParentBranch.__init__(self,
                               name=name,
                               idtag=idtag,
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
@@ -72,8 +121,7 @@ class Winding(EditableDevice):
                               opex=opex,
                               Cost=cost,
                               Cost_prof=Cost_prof,
-                              device_type=DeviceType.WindingDevice,
-                              branch_type=BranchType.Winding)
+                              device_type=DeviceType.WindingDevice)
 
         # set the high and low voltage values
         self.HV = 0
@@ -134,9 +182,6 @@ class Winding(EditableDevice):
         self.angle_max = theta_max
         self.angle_min = theta_min
 
-        # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.Transformer
-
         # type template
         self.template = template
 
@@ -150,15 +195,6 @@ class Winding(EditableDevice):
         if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
             print(self.name, self.idtag, 'Overriding to V controller')
             self.control_mode = TransformerControlType.Vt
-
-        # converter for enumerations
-        self.conv = {'branch': BranchType.Branch,
-                     'line': BranchType.Line,
-                     'transformer': BranchType.Transformer,
-                     'switch': BranchType.Switch,
-                     'reactance': BranchType.Reactance}
-
-        self.inv_conv = {val: key for key, val in self.conv.items()}
 
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -246,14 +282,6 @@ class Winding(EditableDevice):
 
     def get_weight(self):
         return np.sqrt(self.R * self.R + self.X * self.X)
-
-    def branch_type_converter(self, val_string):
-        """
-        function to convert the branch type string into the BranchType
-        :param val_string:
-        :return: branch type conversion
-        """
-        return self.conv[val_string.lower()]
 
     def copy(self, bus_dict=None):
         """
@@ -449,10 +477,7 @@ class Winding(EditableDevice):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
-
-            elif properties.tpe == DeviceType.BusDevice:
+            if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 
             elif properties.tpe == DeviceType.TransformerTypeDevice:
