@@ -127,15 +127,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
             ra3.setIcon(edit_icon)
             ra3.triggered.connect(self.edit)
 
-            rabf = menu.addAction('Re-assign bus from')
-            rabf.setIcon(edit_icon)
-            rabf.triggered.connect(self.re_assign_bus_from)
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
 
-            rabf = menu.addAction('Re-assign bus to')
-            rabf.setIcon(edit_icon)
-            rabf.triggered.connect(self.re_assign_bus_to)
-
-            # menu.addSeparator()
+            menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
@@ -264,53 +262,6 @@ class LineGraphicItem(LineGraphicTemplateItem):
         if dlg.exec_():
             pass
 
-    def re_assign_bus_from(self):
-        """
-
-        :return:
-        """
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
-
-        if len(idx_bus_list) == 1:
-            idx, bus, new_bus_graphic_item = idx_bus_list[0]
-
-            ok = yes_no_question(text="Are you sure that you want to relocate the bus_from to " +
-                                      bus.idtag + ':' + bus.name + '?',
-                                 title='relocate line bus connection')
-            if ok:
-                old_bus_graphic_item = editor.diagram.query_point(self.api_object.bus_from).graphic_object
-                self.api_object.bus_from = bus
-                new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
-                old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
-                self.setFromPort(new_bus_graphic_item.terminal)
-                new_bus_graphic_item.terminal.update()
-        else:
-            warning_msg("you can only select one bus!", title='relocate line bus connection')
-
-    def re_assign_bus_to(self):
-        """
-
-        :return:
-        """
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
-
-        if len(idx_bus_list) == 1:
-            idx, bus, new_bus_graphic_item = idx_bus_list[0]
-
-            ok = yes_no_question(text="Are you sure that you want to relocate the bus_to to " +
-                                      bus.idtag + ':' + bus.name + '?',
-                                 title='relocate line bus connection')
-            if ok:
-                old_bus_graphic_item = editor.diagram.query_point(self.api_object.bus_to).graphic_object
-                self.api_object.bus_to = bus
-                new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
-                old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
-                self.setToPort(new_bus_graphic_item.terminal)
-                new_bus_graphic_item.terminal.update()
-        else:
-            warning_msg("you can only select one bus!", title='relocate line bus connection')
 
     def show_line_editor(self):
         """

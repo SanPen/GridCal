@@ -63,6 +63,12 @@ class VscGraphicItem(LineGraphicTemplateItem):
             pe.setIcon(pe_icon)
             pe.triggered.connect(self.enable_disable_toggle)
 
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
+
             menu.addSeparator()
 
             ra2 = menu.addAction('Delete')

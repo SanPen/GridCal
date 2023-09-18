@@ -549,10 +549,10 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                 if gc_prop.tpe not in elements_dict_by_name.keys():
                                     elements_dict_by_name[gc_prop.tpe] = dict()
 
-                                if val in elements_dict[gc_prop.tpe].keys():
-                                    # the grouping exists as object, use it
-                                    grouping = elements_dict[gc_prop.tpe][val]
-                                else:
+                                # get the grouping
+                                grouping = elements_dict[gc_prop.tpe].get(val, None)
+
+                                if grouping is None:
                                     # create the grouping
 
                                     if val in elements_dict_by_name[gc_prop.tpe].keys():

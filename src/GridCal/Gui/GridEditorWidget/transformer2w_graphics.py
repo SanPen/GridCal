@@ -80,6 +80,14 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             ra3.setIcon(edit_icon)
             ra3.triggered.connect(self.edit)
 
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
+
+            menu.addSeparator()
+
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
             plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))

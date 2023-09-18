@@ -22,7 +22,7 @@ from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QP
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
@@ -694,3 +694,53 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 # update both buses
                 br.bus_from.graphic_obj.update()
                 br.bus_to.graphic_obj.update()
+
+    def change_bus(self):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        """
+
+        editor = self.diagramScene.parent()
+        idx_bus_list = editor.get_selected_buses()
+
+        if len(idx_bus_list) == 2:
+
+            # search
+            side = ''
+            if idx_bus_list[0][1] == self.api_object.bus_from:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
+                side = 'f'
+            elif idx_bus_list[1][1] == self.api_object.bus_from:
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
+                side = 'f'
+            elif idx_bus_list[0][1] == self.api_object.bus_to:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
+                side = 't'
+            elif idx_bus_list[1][1] == self.api_object.bus_to:
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
+                side = 't'
+            else:
+                error_msg("No selected bus is the from or bus bus of the branch!", 'change bus')
+                return
+
+            ok = yes_no_question(
+                text="Are you sure that you want to relocate the bus from {} to {}?".format(old_bus.name, new_bus.name),
+                title='relocate line bus connection')
+            if ok:
+                if side == 'f':
+                    self.api_object.bus_from = new_bus
+                    self.setFromPort(new_bus_graphic_item.terminal)
+                elif side == 't':
+                    self.api_object.bus_to = new_bus
+                    self.setToPort(new_bus_graphic_item.terminal)
+
+                new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
+                old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
+                new_bus_graphic_item.terminal.update()
+        else:
+            warning_msg("you have to select the origin and destination buses!",
+                        title='relocate line bus connection')

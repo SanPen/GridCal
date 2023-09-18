@@ -60,6 +60,14 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
             pe2 = menu.addAction('Convert to Multi-terminal')
             pe2.triggered.connect(self.convert_to_multi_terminal)
 
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
+
+            menu.addSeparator()
+
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
             plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
