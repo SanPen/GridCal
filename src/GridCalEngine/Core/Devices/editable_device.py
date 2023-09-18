@@ -206,6 +206,21 @@ class EditableDevice:
         if not editable:
             self.non_editable_attributes.append(key)
 
+    def get_property_name_replacements_dict(self) -> Dict[str, str]:
+        """
+        Get dictionary of old names related to their current name
+        This is useful for retro compatibility
+        :return: {old_name: new_name} dict
+        """
+        data = dict()
+        for key, prop in self.editable_headers.items():
+
+            for old_name in prop.old_names:
+                data[old_name] = prop.name
+
+        return data
+
+
     @property
     def graphic_obj(self):
         """
