@@ -32,7 +32,7 @@ optimal_power_flow_time_series = OptimalPowerFlowTimeSeriesDriver(grid=main_circ
 optimal_power_flow_time_series.run()
 
 v = optimal_power_flow_time_series.results.voltage
-print('Angles\n', np.angle(v))
+print('Angles\n', np.tap_phase(v))
 
 l = optimal_power_flow_time_series.results.loading
 print('Branch loading\n', l)

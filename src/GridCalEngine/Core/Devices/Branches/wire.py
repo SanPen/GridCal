@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
@@ -23,7 +24,7 @@ class Wire(EditableDevice):
     This class represents a wire (an actual wire)
     to compose towers
     """
-    def __init__(self, name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1):
+    def __init__(self, name='', idtag: Union[str, None] = None, gmr=0.01, r=0.01, x=0.0, max_current=1):
         """
         Wire definition
         :param name: Name of the wire type

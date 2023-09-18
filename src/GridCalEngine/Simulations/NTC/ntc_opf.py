@@ -2096,8 +2096,8 @@ class OpfNTC():
             nbus=self.numerical_circuit.nbus,
             vd=self.numerical_circuit.vd,
             bus_names=self.numerical_circuit.bus_data.names,
-            angle_min=self.numerical_circuit.bus_data.angle_min,
-            angle_max=self.numerical_circuit.bus_data.angle_max,
+            angle_min=self.numerical_circuit.bus_data.tap_phase_min,
+            angle_max=self.numerical_circuit.bus_data.tap_phase_max,
             logger=self.logger)
 
         # add shifter angles
@@ -2139,7 +2139,7 @@ class OpfNTC():
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            angles_max=self.numerical_circuit.bus_data.angle_max,
+            angles_max=self.numerical_circuit.bus_data.tap_phase_max,
             hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
@@ -2489,8 +2489,8 @@ class OpfNTC():
             nbus=self.numerical_circuit.nbus,
             vd=self.numerical_circuit.vd,
             bus_names=self.numerical_circuit.bus_data.names,
-            angle_min=self.numerical_circuit.bus_data.angle_min,
-            angle_max=self.numerical_circuit.bus_data.angle_max,
+            angle_min=self.numerical_circuit.bus_data.tap_phase_min,
+            angle_max=self.numerical_circuit.bus_data.tap_phase_max,
             logger=self.logger)
 
         # update angles with the shifter effect
@@ -2532,7 +2532,7 @@ class OpfNTC():
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            angles_max=self.numerical_circuit.bus_data.angle_max,
+            angles_max=self.numerical_circuit.bus_data.tap_phase_max,
             hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],

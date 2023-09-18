@@ -617,7 +617,7 @@ def get_twotermdc_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, i
 
         block.set_at(i, "name", elm.name)
         block.set_at(i,  "mdc", 1)
-        block.set_at(i,  "rdc", elm.r)
+        block.set_at(i,  "rdc", elm.R)
         block.set_at(i,  "setvl", elm.Pset)
         block.set_at(i,  "vschd", None)
         block.set_at(i,  "vcmod", None)
@@ -784,7 +784,7 @@ def get_transformers_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any
         block.set_at(i,   "anstar", 0)
         block.set_at(i,   "windv1", elm.tap_module)
         block.set_at(i,   "nomv1", 1.0)
-        block.set_at(i,   "ang1", elm.angle)
+        block.set_at(i,   "ang1", elm.tap_phase)
         block.set_at(i,   "wdg1rate1", elm.rate)
         block.set_at(i,   "wdg1rate2", elm.rate)
         block.set_at(i,   "wdg1rate3", elm.rate)
@@ -951,7 +951,7 @@ def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses
                                 b=b,
                                 rate=data['wdg1rate1'],
                                 contingency_factor=round(contingency_factor, 6),
-                                tap=tap_mod,
+                                tap_module=tap_mod,
                                 tap_phase=tap_angle,
                                 active=bool(data['stat']),
                                 mttf=0,

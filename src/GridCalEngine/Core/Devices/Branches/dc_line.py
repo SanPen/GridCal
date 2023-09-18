@@ -23,11 +23,10 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCalEngine.Core.Devices.Branches.line import LineTemplate, SequenceLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
 
 
 class DcLine(ParentBranch):
@@ -66,27 +65,36 @@ class DcLine(ParentBranch):
         DC current line
         :param bus_from: Bus from
         :param bus_to: Bus to
-        :param name:
-        :param idtag:
-        :param r:
-        :param rate:
-        :param active:
-        :param tolerance:
-        :param cost:
-        :param mttf:
-        :param mttr:
-        :param r_fault:
-        :param fault_pos:
-        :param length:
-        :param temp_base:
-        :param temp_oper:
-        :param alpha:
-        :param template:
-        :param rate_prof:
-        :param Cost_prof:
-        :param active_prof:
-        :param temp_oper_prof:
+        :param name: Name of the branch
+        :param idtag: UUID code
+        :param code: secondary ID
+        :param r: resistance in p.u.
+        :param rate: Branch rating (MW)
+        :param active: is it active?
+        :param tolerance: Tolerance specified for the branch impedance in %
+        :param cost: Cost of overload (€/MW)
+        :param mttf: Mean time too failure
+        :param mttr: Mean time to repair
+        :param r_fault: Fault resistance
+        :param fault_pos: Fault position
+        :param length: Length (km)
+        :param temp_base: base temperature (i.e 25º °C)
+        :param temp_oper: Operational temperature (°C)
+        :param alpha: Thermal constant of the material (°C)
+        :param template: Basic branch template
+        :param rate_prof: Rating profile
+        :param Cost_prof: Overload cost profile
+        :param active_prof: Active profile
+        :param temp_oper_prof: Operational temperature profile
+        :param contingency_factor: Rating factor in case of contingency
+        :param contingency_enabled: enabled for contingencies (Legacy)
+        :param monitor_loading: monitor the loading (used in OPF)
+        :param contingency_factor_prof: profile of contingency ratings
+        :param capex: Cost of investment (€/MW)
+        :param opex: Cost of operation (€/MWh)
+        :param build_status: build status (now time)
         """
+
         ParentBranch.__init__(self,
                               name=name,
                               idtag=idtag,
@@ -167,37 +175,6 @@ class DcLine(ParentBranch):
 
     def get_weight(self):
         return self.R
-
-    def get_max_bus_nominal_voltage(self):
-        return max(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_min_bus_nominal_voltage(self):
-        return min(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_virtual_taps(self) -> Tuple[float, float]:
-        """
-        Get the branch virtual taps
-
-        The virtual taps generate when a line nominal voltage ate the two connection buses differ
-
-        Returns:
-
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-
-        """
-        # resolve how the transformer is actually connected and set the virtual taps
-        bus_f_v = self.bus_from.Vnom
-        bus_t_v = self.bus_to.Vnom
-
-        if bus_f_v == bus_t_v:
-            return 1.0, 1.0
-        else:
-            if bus_f_v > 0.0 and bus_t_v > 0.0:
-                return bus_f_v / bus_t_v, 1.0
-            else:
-                return 1.0, 1.0
 
     def copy(self, bus_dict=None):
         """

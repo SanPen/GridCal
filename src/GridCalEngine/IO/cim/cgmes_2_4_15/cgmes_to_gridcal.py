@@ -551,7 +551,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     x0=x0,
                                                     g0=g0,
                                                     b0=b0,
-                                                    tap=1.0,
+                                                    tap_module=1.0,
                                                     tap_phase=0.0,
                                                     rate=cgmes_elm.get_rate())
 

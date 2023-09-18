@@ -1775,7 +1775,7 @@ class PSSeTransformer(PSSeObject):
                                     b=b,
                                     rate=self.RATA1,
                                     contingency_factor=round(contingency_factor, 6),
-                                    tap=tap_mod,
+                                    tap_module=tap_mod,
                                     tap_phase=tap_angle,
                                     active=bool(self.STAT),
                                     mttf=0,

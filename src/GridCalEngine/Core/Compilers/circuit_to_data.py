@@ -664,19 +664,19 @@ def get_branch_data(circuit: MultiCircuit,
                 data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
                 data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                data.tap_angle[ii] = elm.angle_prof[t_idx]
+                data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
         else:
             if opf_results is not None:
                 data.tap_module[ii] = elm.tap_module
                 data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
                 data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = elm.angle
+                data.tap_angle[ii] = elm.tap_phase
 
         data.tap_module_min[ii] = elm.tap_module_min
         data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_angle_min[ii] = elm.angle_min
-        data.tap_angle_max[ii] = elm.angle_max
+        data.tap_angle_min[ii] = elm.tap_phase_min
+        data.tap_angle_max[ii] = elm.tap_phase_max
 
         data.Pfset[ii] = elm.Pset
 
@@ -745,19 +745,19 @@ def get_branch_data(circuit: MultiCircuit,
                     data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
                 else:
                     data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                    data.tap_angle[ii] = elm.angle_prof[t_idx]
+                    data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
             else:
                 if opf_results is not None:
                     data.tap_module[ii] = elm.tap_module
                     data.tap_angle[ii] = opf_results.phase_shift[ii]
                 else:
                     data.tap_module[ii] = elm.tap_module
-                    data.tap_angle[ii] = elm.angle
+                    data.tap_angle[ii] = elm.tap_phase
 
             data.tap_module_min[ii] = elm.tap_module_min
             data.tap_module_max[ii] = elm.tap_module_max
-            data.tap_angle_min[ii] = elm.angle_min
-            data.tap_angle_max[ii] = elm.angle_max
+            data.tap_angle_min[ii] = elm.tap_phase_min
+            data.tap_angle_max[ii] = elm.tap_phase_max
 
             data.Pfset[ii] = elm.Pset
 
@@ -805,8 +805,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.F[ii] = f
         data.T[ii] = t
 
-        data.R[ii] = elm.R1
-        data.X[ii] = elm.X1
+        data.R[ii] = elm.R
+        data.X[ii] = elm.X
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
@@ -816,9 +816,9 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.G0sw[ii] = elm.G0sw
         data.Beq[ii] = elm.Beq
-        data.tap_module[ii] = elm.m
-        data.tap_module_max[ii] = elm.m_max
-        data.tap_module_min[ii] = elm.m_min
+        data.tap_module[ii] = elm.tap_module
+        data.tap_module_max[ii] = elm.tap_module_max
+        data.tap_module_min[ii] = elm.tap_module_min
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
@@ -828,15 +828,15 @@ def get_branch_data(circuit: MultiCircuit,
             if opf_results is not None:
                 data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
-                data.tap_angle[ii] = elm.theta
+                data.tap_angle[ii] = elm.tap_phase
         else:
             if opf_results is not None:
                 data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
-                data.tap_angle[ii] = elm.theta
+                data.tap_angle[ii] = elm.tap_phase
 
-        data.tap_angle_min[ii] = elm.theta_min
-        data.tap_angle_max[ii] = elm.theta_max
+        data.tap_angle_min[ii] = elm.tap_phase_min
+        data.tap_angle_max[ii] = elm.tap_phase_max
         data.Pfset[ii] = elm.Pdc_set
         data.Qtset[ii] = elm.Qac_set
         data.Kdp[ii] = elm.kdp

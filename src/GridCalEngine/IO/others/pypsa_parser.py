@@ -225,7 +225,7 @@ class PyPSAParser:
         for ix, data in self.src.transformers.iterrows():
             from_bus = self.buses[data['bus0']]
             to_bus = self.buses[data['bus1']]
-            proto = Transformer2W(from_bus, to_bus, name=f'{ix}-proto', tap=data['tap_ratio'],
+            proto = Transformer2W(from_bus, to_bus, name=f'{ix}-proto', tap_module=data['tap_ratio'],
                                   tap_phase=data['phase_shift'])
 
             copy_count = int(data['num_parallel'])

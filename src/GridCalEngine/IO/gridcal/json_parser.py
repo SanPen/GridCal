@@ -723,7 +723,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                         HV=HV,
                                         LV=LV,
                                         active=bool(entry['active']),
-                                        tap=float(entry['tap_module']),
+                                        tap_module=float(entry['tap_module']),
                                         tap_phase=float(entry['tap_angle']),
                                         bus_to_regulated=bool(
                                             entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
@@ -1134,7 +1134,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                         b=float(entry['b']),
                                         rate=float(entry['rate']),
                                         active=bool(entry['active']),
-                                        tap=float(entry['tap_module']),
+                                        tap_module=float(entry['tap_module']),
                                         tap_phase=float(entry['tap_angle']),
                                         )
                 circuit.add_transformer2w(elm)

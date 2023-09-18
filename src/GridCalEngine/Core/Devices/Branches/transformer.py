@@ -17,6 +17,7 @@
 
 import pandas as pd
 import numpy as np
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
@@ -37,7 +38,7 @@ class Transformer2W(ParentBranch):
                  name='Branch', idtag=None, code='',
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0,
-                 tap=1.0, tap_module_max=1.2, tap_module_min=0.5,
+                 tap_module=1.0, tap_module_max=1.2, tap_module_min=0.5,
                  tap_phase=0.0, tap_phase_max=6.28, tap_phase_min=-6.28,
                  active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0,
@@ -46,7 +47,7 @@ class Transformer2W(ParentBranch):
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
                  rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 tap_module_prof=None, angle_prof=None,
+                 tap_module_prof=None, tap_phase_prof=None,
                  contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
@@ -67,47 +68,47 @@ class Transformer2W(ParentBranch):
         :param g: shunt conductance in per unit
         :param b: shunt susceptance in per unit
         :param rate: rate in MVA
-        :param tap: tap module in p.u.
+        :param tap_module: tap module in p.u.
         :param tap_module_max:
         :param tap_module_min:
         :param tap_phase: phase shift angle (rad)
         :param tap_phase_max:
         :param tap_phase_min:
         :param active: Is the branch active?
-        :param tolerance:
-        :param cost:
+        :param tolerance: Tolerance specified for the branch impedance in %
+        :param cost: Cost of overload (€/MW)
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         :param vset: Voltage set-point of the voltage controlled bus in per unit
-        :param Pset:
+        :param Pset: Power set point
         :param bus_to_regulated: Is the `bus_to` voltage regulated by this branch?
-        :param temp_base:
-        :param temp_oper:
-        :param alpha:
-        :param control_mode:
-        :param template:
-        :param rate_prof:
-        :param Cost_prof:
-        :param active_prof:
-        :param temp_oper_prof:
-        :param tap_module_prof:
-        :param angle_prof:
-        :param contingency_factor:
-        :param contingency_enabled:
-        :param monitor_loading:
-        :param contingency_factor_prof:
-        :param r0:
-        :param x0:
-        :param g0:
-        :param b0:
-        :param r2:
-        :param x2:
-        :param g2:
-        :param b2:
-        :param conn:
-        :param capex:
-        :param opex:
-        :param build_status:
+        :param temp_base: Base temperature at which `r` is measured in °C
+        :param temp_oper: Operating temperature in °C
+        :param alpha: Thermal constant of the material in °C
+        :param control_mode: Control model
+        :param template: Branch template
+        :param rate_prof: Rating profile
+        :param Cost_prof: Overload cost profile
+        :param active_prof: Active profile
+        :param temp_oper_prof: Operational temperature profile
+        :param tap_module_prof: profile of tap modeules
+        :param tap_phase_prof: profile of tap angles
+        :param contingency_factor: Rating factor in case of contingency
+        :param contingency_enabled: enabled for contingencies (Legacy)
+        :param monitor_loading: monitor the loading (used in OPF)
+        :param contingency_factor_prof: profile of contingency ratings
+        :param r0: zero-sequence resistence (p.u.)
+        :param x0: zero-sequence reactance (p.u.)
+        :param g0: zero-sequence conductance (p.u.)
+        :param b0: zero-sequence susceptance (p.u.)
+        :param r2: negative-sequence resistence (p.u.)
+        :param x2: negative-sequence reactance (p.u.)
+        :param g2: negative-sequence conductance (p.u.)
+        :param b2: negative-sequence susceptance (p.u.)
+        :param conn: transformer connection type
+        :param capex: Cost of investment (€/MW)
+        :param opex: Cost of operation (€/MWh)
+        :param build_status: build status (now time)
         """
 
         ParentBranch.__init__(self,
@@ -177,8 +178,8 @@ class Transformer2W(ParentBranch):
         self.tap_changer = TapChanger()
 
         # Tap module
-        if tap != 0:
-            self.tap_module = tap
+        if tap_module != 0:
+            self.tap_module = tap_module
             self.tap_changer.set_tap(self.tap_module)
         else:
             self.tap_module = self.tap_changer.get_tap()
@@ -186,13 +187,13 @@ class Transformer2W(ParentBranch):
         self.tap_module_prof = tap_module_prof
 
         # Tap angle
-        self.angle = tap_phase
-        self.angle_prof = angle_prof
+        self.tap_phase = tap_phase
+        self.tap_phase_prof = tap_phase_prof
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
-        self.angle_max = tap_phase_max
-        self.angle_min = tap_phase_min
+        self.tap_phase_max = tap_phase_max
+        self.tap_phase_min = tap_phase_min
 
         # type template
         self.template = template
@@ -225,16 +226,21 @@ class Transformer2W(ParentBranch):
         self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
         self.register(key='conn', units='', tpe=WindingsConnection,
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
+
         self.register(key='tolerance', units='%', tpe=float,
-                      definition='Tolerance expected for the impedance values7% is expected for transformers0% for lines.')
+                      definition='Tolerance expected for the impedance values% '
+                                 'is expected for transformers0% for lines.')
+
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
-                      profile_name='tap_module_prof')
+                      profile_name='tap_module_prof', old_names=['tap'])
         self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
         self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value')
-        self.register(key='angle', units='rad', tpe=float, definition='Angle shift of the tap changer.',
-                      profile_name='angle_prof')
-        self.register(key='angle_max', units='rad', tpe=float, definition='Max angle.')
-        self.register(key='angle_min', units='rad', tpe=float, definition='Min angle.')
+
+        self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
+                      profile_name='tap_phase_prof', old_names=['angle'])
+        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
+        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
+
         self.register(key='control_mode', units='', tpe=TransformerControlType,
                       definition='Control type of the transformer')
         self.register(key='vset', units='p.u.', tpe=float,
@@ -250,7 +256,7 @@ class Transformer2W(ParentBranch):
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
 
-    def set_hv_and_lv(self, HV, LV):
+    def set_hv_and_lv(self, HV: float, LV: float):
         """
         set the high and low voltage values
         :param HV: higher voltage value (kV)
@@ -283,8 +289,12 @@ class Transformer2W(ParentBranch):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
-    def change_base(self, Sbase_old, Sbase_new):
-
+    def change_base(self, Sbase_old: float, Sbase_new: float):
+        """
+        Change the impedance base
+        :param Sbase_old: old base (MVA)
+        :param Sbase_new: new base (MVA)
+        """
         b = Sbase_new / Sbase_old
 
         self.R *= b
@@ -293,6 +303,10 @@ class Transformer2W(ParentBranch):
         self.B *= b
 
     def get_weight(self):
+        """
+        Get a weight for the graphs
+        :return: sqrt(r^2 + x^2)
+        """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
     def copy(self, bus_dict=None):
@@ -318,8 +332,8 @@ class Transformer2W(ParentBranch):
                           g=self.G,
                           b=self.B,
                           rate=self.rate,
-                          tap=self.tap_module,
-                          tap_phase=self.angle,
+                          tap_module=self.tap_module,
+                          tap_phase=self.tap_phase,
                           active=self.active,
                           mttf=self.mttf,
                           mttr=self.mttr,
@@ -390,13 +404,24 @@ class Transformer2W(ParentBranch):
             return bus_t_v, bus_f_v
 
     def get_max_bus_nominal_voltage(self):
+        """
+
+        :return:
+        """
         return max(self.bus_from.Vnom, self.bus_to.Vnom)
 
     def get_min_bus_nominal_voltage(self):
+        """
+
+        :return:
+        """
         return min(self.bus_from.Vnom, self.bus_to.Vnom)
 
     def get_from_to_nominal_voltages(self):
+        """
 
+        :return:
+        """
         bus_f_v = self.bus_from.Vnom
         bus_t_v = self.bus_to.Vnom
 
@@ -420,14 +445,9 @@ class Transformer2W(ParentBranch):
 
         The virtual taps generate when a transformer nominal winding voltage differs
         from the bus nominal voltage.
-
-        Returns:
-
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-
+        :return: Virtual tap at the *from* side, **tap_t** (float, 1.0): Virtual tap at the *to* side
         """
+
         # resolve how the transformer is actually connected and set the virtual taps
         bus_f_v = self.bus_from.Vnom
         bus_t_v = self.bus_to.Vnom
@@ -449,12 +469,11 @@ class Transformer2W(ParentBranch):
     def apply_template(self, obj: TransformerType, Sbase, logger=Logger()):
         """
         Apply a branch template to this object
-
-        Arguments:
-            **obj**: TransformerType or Tower object
-            **Sbase** (float): circuit base power in MVA
-            **logger** (list, []): Log list
+        :param obj: TransformerType or Tower object
+        :param Sbase: circuit base power in MVA
+        :param logger: Log list
         """
+
         if isinstance(obj, TransformerType):
 
             VH, VL = self.get_sorted_buses_voltages()
@@ -554,9 +573,9 @@ class Transformer2W(ParentBranch):
                  'max_tap_module': self.tap_module_max,
                  'id_tap_module_table': "",
 
-                 'tap_angle': self.angle,
-                 'min_tap_angle': self.angle_min,
-                 'max_tap_angle': self.angle_max,
+                 'tap_angle': self.tap_phase,
+                 'min_tap_angle': self.tap_phase_min,
+                 'max_tap_angle': self.tap_phase_max,
                  'id_tap_angle_table': "",
 
                  'control_mode': control_modes[self.control_mode],
@@ -604,9 +623,9 @@ class Transformer2W(ParentBranch):
                  'max_tap_module': self.tap_module_max,
                  'id_tap_module_table': "",
 
-                 'tap_angle': self.angle,
-                 'min_tap_angle': self.angle_min,
-                 'max_tap_angle': self.angle_max,
+                 'tap_angle': self.tap_phase,
+                 'min_tap_angle': self.tap_phase_min,
+                 'max_tap_angle': self.tap_phase_max,
                  'id_tap_angle_table': "",
 
                  'control_mode': control_modes[self.control_mode],
@@ -701,7 +720,7 @@ class Transformer2W(ParentBranch):
         if show_fig:
             plt.show()
 
-    def get_coordinates(self):
+    def get_coordinates(self) -> List[Tuple[float, float]]:
         """
         Get the branch defining coordinates
         """
@@ -714,12 +733,13 @@ class Transformer2W(ParentBranch):
         self.HV = max(self.bus_from.Vnom, self.bus_to.Vnom)
         self.LV = min(self.bus_from.Vnom, self.bus_to.Vnom)
 
-    def fix_inconsistencies(self, logger: Logger, maximum_difference=0.1):
+    def fix_inconsistencies(self, logger: Logger, maximum_difference=0.1) -> bool:
         """
         Fix the inconsistencies
         :param logger:
-        :param maximum_difference: proportion to be under or above (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
-        :return:
+        :param maximum_difference: proportion to be under or above
+        (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
+        :return: were there any errors?
         """
         errors = False
         HV = max(self.bus_from.Vnom, self.bus_to.Vnom)

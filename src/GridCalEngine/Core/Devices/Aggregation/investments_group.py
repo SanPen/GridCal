@@ -37,14 +37,12 @@ class InvestmentsGroup(EditableDevice):
         :param comment: comment
         """
 
-        EditableDevice.__init__(
-            self,
-            name=name,
-            idtag=idtag,
-            code='',
-            active=True,
-            device_type=DeviceType.InvestmentsGroupDevice
-        )
+        EditableDevice.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code='',
+                                active=True,
+                                device_type=DeviceType.InvestmentsGroupDevice)
 
         # Contingency type
         self.category = category

@@ -26,27 +26,24 @@ class Switch(ParentBranch):
     """
     The **Switch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
-
-    Arguments:
-
-        **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
-
-        **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
-
-        **name** (str, "Branch"): Name of the branch
-
-        **r** (float, 1e-20): Branch resistance in per unit
-
-        **x** (float, 1e-20): Branch reactance in per unit
-
-        **rate** (float, 1.0): Branch rate in MVA
-
-        **active** (bool, True): Is the branch active?
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Switch', idtag=None, code='',
                  r=1e-20, x=1e-20, rate=1.0, active=True, active_prof=None, contingency_factor=1.0):
-
+        """
+        Switch device
+        :param bus_from: Bus from
+        :param bus_to: Bus to
+        :param name: Name of the branch
+        :param idtag: UUID code
+        :param code: secondary ID
+        :param r: resistance in p.u.
+        :param x: reactance in p.u.
+        :param rate: Branch rating (MW)
+        :param active: is it active?
+        :param active_prof: Active profile
+        :param contingency_factor: Rating factor in case of contingency
+        """
         ParentBranch.__init__(self,
                               name=name,
                               idtag=idtag,

@@ -32,7 +32,8 @@ class GCProp:
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
-                 editable: bool = True):
+                 editable: bool = True,
+                 old_names: List[str] = list()):
         """
         GridCal property
         :param prop_name:
@@ -57,6 +58,8 @@ class GCProp:
         self.display = display
 
         self.editable = editable
+
+        self.old_names = old_names
 
     def get_class_name(self) -> str:
         """
@@ -162,11 +165,17 @@ class EditableDevice:
                  key: str,
                  units: str,
                  tpe: Union[Type[int], Type[bool], Type[float], Type[str],
-                            DeviceType, Type[BuildStatus], WindingsConnection, TransformerControlType],
+                            DeviceType,
+                            Type[BuildStatus],
+                            Type[WindingsConnection],
+                            Type[TransformerControlType],
+                            Type[ConverterControlType]
+                            ],
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
-                 editable: bool = True):
+                 editable: bool = True,
+                 old_names: List[str] = list()):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -177,6 +186,7 @@ class EditableDevice:
         :param profile_name: name of the profile property (if any)
         :param display: display this property?
         :param editable: is this editable?
+        :param old_names: List of old names
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
@@ -186,7 +196,8 @@ class EditableDevice:
                                             definition=definition,
                                             profile_name=profile_name,
                                             display=display,
-                                            editable=editable)
+                                            editable=editable,
+                                            old_names=old_names)
 
         if profile_name != '':
             assert (hasattr(self, profile_name))  # the property must exist, this avoids bugs in registering

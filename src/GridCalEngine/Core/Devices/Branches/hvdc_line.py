@@ -18,16 +18,23 @@
 
 import pandas as pd
 import numpy as np
+from typing import Tuple
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
-
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.enumerations import HvdcControlType
 
 
-def firing_angles_to_reactive_limits(P, alphamin, alphamax):
+def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:
+    """
+    Convert firing angles to reactive power limits
+    :param P: Active power (MW)
+    :param alphamin: minimum firing angle (rad)
+    :param alphamax: Maximum firing angle (rad)
+    :return: Qmin (MVAr), Qmax (MVAr)
+    """
     # minimum reactive power calculated under assumption of no overlap angle
     # i.e. power factor equals to tan(alpha)
     Qmin = P * np.tan(alphamin)
@@ -120,112 +127,9 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
     return Pf, Pt, loss
 
 
-class HvdcLine(EditableDevice):
+class HvdcLine(ParentBranch):
     """
-    The **Line** class represents the connections between nodes (i.e.
-    :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
-    transformer, etc.) with an electrical impedance. The basic **Branch** class
-    includes basic electrical attributes for most passive elements, but other device
-    types may be passed to the **Branch** constructor to configure it as a specific
-    type.
-
-    For example, a transformer may be created with the following code:
-
-    .. code:: ipython3
-
-        from GridCalEngine.Core.multi_circuit import MultiCircuit
-        from GridCalEngine.Core.Devices import *
-        from GridCalEngine.Core.Devices.types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      )
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Refer to the :class:`GridCalEngine.Devices.branch.TapChanger` class for an example
-    using a voltage regulator.
-
-    Arguments:
-
-        **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object
-
-        **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object
-
-        **name** (str, "Branch"): Name of the branch
-
-        **r** (float, 1e-20): Branch resistance in per unit
-
-        **x** (float, 1e-20): Branch reactance in per unit
-
-        **g** (float, 1e-20): Branch shunt conductance in per unit
-
-        **b** (float, 1e-20): Branch shunt susceptance in per unit
-
-        **rate** (float, 1.0): Branch rate in MVA
-
-        **tap** (float, 1.0): Branch tap module
-
-        **shift_angle** (int, 0): Tap shift angle in radians
-
-        **active** (bool, True): Is the branch active?
-
-        **tolerance** (float, 0): Tolerance specified for the branch impedance in %
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
-        **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only)
-
-        **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only)
-
-        **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-
-        **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCalEngine.Devices.transformer.TransformerType`)
-
-        **length** (float, 0.0): Length of the branch in km
-
-        **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit
-
-        **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C
-
-        **temp_oper** (float, 20.0): Operating temperature in °C
-
-        **alpha** (float, 0.0033): Thermal constant of the material in °C
-
-        **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
-
-        **template** (BranchTemplate, BranchTemplate()): Basic branch template
+    HvdcLine
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True, code='',
@@ -264,16 +168,30 @@ class HvdcLine(EditableDevice):
         :param overload_cost_prof: Profile of overload costs in EUR/MW
         """
 
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                active=active,
-                                device_type=DeviceType.HVDCLineDevice)
-
-        # connectivity
-        self.bus_from = bus_from
-        self.bus_to = bus_to
+        ParentBranch.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
+                              active=active,
+                              active_prof=active_prof,
+                              rate=rate,
+                              rate_prof=rate_prof,
+                              contingency_factor=contingency_factor,
+                              contingency_factor_prof=contingency_factor_prof,
+                              contingency_enabled=True,
+                              monitor_loading=True,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=overload_cost,
+                              Cost_prof=overload_cost_prof,
+                              device_type=DeviceType.HVDCLineDevice)
 
         # List of measurements
         self.measurements = list()
@@ -294,8 +212,6 @@ class HvdcLine(EditableDevice):
         self.mttf = mttf
 
         self.mttr = mttr
-
-        self.overload_cost = overload_cost
 
         self.Vset_f = Vset_f
         self.Vset_t = Vset_t
@@ -331,24 +247,8 @@ class HvdcLine(EditableDevice):
 
         self.angle_droop_prof = angle_droop_prof
 
-        # branch rating in MVA
-        self.rate = rate
-        self.contingency_factor = contingency_factor
-        self.rate_prof = rate_prof
-        self.contingency_factor_prof = contingency_factor_prof
-
-        self.register(key='name', units='', tpe=str, definition='Name of the line.')
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
-        self.register(key='bus_from', units='', tpe=DeviceType.BusDevice,
-                      definition='Name of the bus at the "from" side of the line.', editable=False)
-        self.register(key='bus_to', units='', tpe=DeviceType.BusDevice,
-                      definition='Name of the bus at the "to" side of the line.', editable=False)
-        self.register(key='active', units='', tpe=bool, definition='Is the line active?', profile_name='active_prof')
         self.register(key='dispatchable', units='', tpe=bool, definition='Is the line power optimizable?')
-        self.register(key='rate', units='MVA', tpe=float, definition='Thermal rating power of the line.',
-                      profile_name='rate_prof')
-        self.register(key='contingency_factor', units='p.u.', tpe=float,
-                      definition='Rating multiplier for contingencies.', profile_name='contingency_factor_prof')
+
         self.register(key='control_mode', units='-', tpe=HvdcControlType, definition='Control type.')
         self.register(key='Pset', units='MW', tpe=float, definition='Set power flow.', profile_name='Pset_prof')
         self.register(key='r', units='Ohm', tpe=float, definition='line resistance.')
@@ -366,17 +266,8 @@ class HvdcLine(EditableDevice):
                       definition='minimum firing angle at the "to" side.')
         self.register(key='max_firing_angle_t', units='rad', tpe=float,
                       definition='maximum firing angle at the "to" side.')
-        self.register(key='mttf', units='h', tpe=float, definition='Mean time to failure, used in reliability studies.')
-        self.register(key='mttr', units='h', tpe=float,
-                      definition='Mean time to recovery, used in reliability studies.')
+
         self.register(key='length', units='km', tpe=float, definition='Length of the branch (not used for calculation)')
-        self.register(key='overload_cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
-                      profile_name='overload_cost_prof')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """
@@ -507,7 +398,7 @@ class HvdcLine(EditableDevice):
                      length=self.length,
                      mttf=self.mttf,
                      mttr=self.mttr,
-                     overload_cost=self.overload_cost,
+                     overload_cost=self.Cost,
                      min_firing_angle_f=self.min_firing_angle_f,
                      max_firing_angle_f=self.max_firing_angle_f,
                      min_firing_angle_t=self.min_firing_angle_t,
@@ -572,7 +463,7 @@ class HvdcLine(EditableDevice):
                  'max_firing_angle_f': self.max_firing_angle_f,
                  'min_firing_angle_t': self.min_firing_angle_t,
                  'max_firing_angle_t': self.max_firing_angle_t,
-                 'overload_cost': self.overload_cost,
+                 'overload_cost': self.Cost,
                  'base_temperature': 20,
                  'operational_temperature': 20,
                  'alpha': 0.00330,
@@ -603,7 +494,7 @@ class HvdcLine(EditableDevice):
                  'max_firing_angle_f': self.max_firing_angle_f,
                  'min_firing_angle_t': self.min_firing_angle_t,
                  'max_firing_angle_t': self.max_firing_angle_t,
-                 'overload_cost': self.overload_cost,
+                 'overload_cost': self.Cost,
                  'base_temperature': 20,
                  'operational_temperature': 20,
                  'alpha': 0.00330,

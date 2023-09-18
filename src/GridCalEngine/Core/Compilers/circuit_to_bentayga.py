@@ -369,10 +369,10 @@ def get_transformer_data(
             tr2.rates = elm.rate_prof
             tr2.contingency_rates = elm.rate_prof * elm.contingency_factor
             tr2.tap = elm.tap_module_prof
-            tr2.phase = elm.angle_prof
+            tr2.phase = elm.tap_phase_prof
         else:
             tr2.tap = np.ones(ntime, dtype=float) * elm.tap_module
-            tr2.phase = np.ones(ntime, dtype=float) * elm.angle
+            tr2.phase = np.ones(ntime, dtype=float) * elm.tap_phase
 
         btg_circuit.add_transformer_all(tr2)
 
@@ -400,19 +400,19 @@ def get_vsc_data(
                       time_steps=ntime,
                       rate=elm.rate,
                       active_default=elm.active,
-                      r1=elm.R1,
-                      x1=elm.X1,
+                      r=elm.R,
+                      x=elm.X,
                       g0=elm.G0sw,
                       beq=elm.Beq,
                       beq_max=elm.Beq_max,
                       beq_min=elm.Beq_min,
                       k=elm.k,
-                      tap=elm.m,
-                      tap_max=elm.m_max,
-                      tap_min=elm.m_min,
-                      phase=elm.theta,
-                      phase_max=elm.theta_max,
-                      phase_min=elm.theta_min,
+                      tap=elm.tap_module,
+                      tap_max=elm.tap_module_max,
+                      tap_min=elm.tap_module_min,
+                      phase=elm.tap_phase,
+                      phase_max=elm.tap_phase_max,
+                      phase_min=elm.tap_phase_min,
                       Pf_set=elm.Pdc_set,
                       vac_set=elm.Vac_set,
                       vdc_set=elm.Vdc_set,
@@ -492,7 +492,7 @@ def get_hvdc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, t
                             length=elm.length,
                             rate=elm.rate,
                             active_default=elm.active,
-                            r1=elm.r,
+                            r1=elm.R,
                             Pset=elm.Pset,
                             v_set_f=elm.Vset_f,
                             v_set_t=elm.Vset_t,

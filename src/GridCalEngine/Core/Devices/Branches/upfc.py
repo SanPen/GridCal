@@ -39,6 +39,7 @@ class UPFC(ParentBranch):
         :param bus_from:
         :param bus_to:
         :param name:
+        :param code:
         :param idtag:
         :param active:
         :param rs: series resistance (p.u.)
@@ -46,14 +47,30 @@ class UPFC(ParentBranch):
         :param rp: shunt resistance (p.u.)
         :param xp: shunt reactance (p.u.)
         :param vp: shunt voltage set point (p.u.)
-        :param rate: Power rating (MVA)
         :param Pset: Power set point (MW)
+        :param Qset:
+        :param rate: Power rating (MVA)
         :param mttf:
         :param mttr:
         :param cost:
         :param cost_prof:
         :param rate_prof:
         :param active_prof:
+        :param contingency_factor:
+        :param contingency_enabled:
+        :param monitor_loading:
+        :param contingency_factor_prof:
+        :param rs0:
+        :param xs0:
+        :param rp0:
+        :param xp0:
+        :param rs2:
+        :param xs2:
+        :param rp2:
+        :param xp2:
+        :param capex:
+        :param opex:
+        :param build_status:
         """
 
         ParentBranch.__init__(self,

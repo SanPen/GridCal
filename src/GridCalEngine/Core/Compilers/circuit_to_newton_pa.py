@@ -611,7 +611,7 @@ def add_transformer_data(circuit: MultiCircuit,
                                     monitor_loading_default=elm.monitor_loading,
                                     monitor_contingency_default=elm.contingency_enabled,
                                     tap=elm.tap_module,
-                                    phase=elm.angle)
+                                    phase=elm.tap_phase)
         if time_series:
             contingency_rates = elm.rate_prof * elm.contingency_factor
             active_prof = elm.active_prof.astype(BINT)
@@ -620,7 +620,7 @@ def add_transformer_data(circuit: MultiCircuit,
             tr2.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
             tr2.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
             tr2.tap = elm.tap_module_prof if time_indices is None else elm.tap_module_prof[time_indices]
-            tr2.phase = elm.angle_prof if time_indices is None else elm.angle_prof[time_indices]
+            tr2.phase = elm.tap_phase_prof if time_indices is None else elm.tap_phase_prof[time_indices]
             tr2.overload_cost = elm.Cost_prof
         else:
             tr2.setAllOverloadCost(elm.Cost)
@@ -631,8 +631,8 @@ def add_transformer_data(circuit: MultiCircuit,
         else:
             tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
 
-        tr2.phase_min = elm.angle_min
-        tr2.phase_max = elm.angle_max
+        tr2.phase_min = elm.tap_phase_min
+        tr2.phase_max = elm.tap_phase_max
         tr2.tap_min = elm.tap_module_min
         tr2.tap_max = elm.tap_module_max
         npa_circuit.addTransformers2wFul(tr2)
@@ -716,8 +716,8 @@ def add_vsc_data(circuit: MultiCircuit,
                                 time_steps=n_time,
                                 active_default=elm.active)
 
-        vsc.r = elm.R1
-        vsc.x = elm.X1
+        vsc.r = elm.R
+        vsc.x = elm.X
         vsc.g0 = elm.G0sw
 
         vsc.setAllBeq(elm.Beq)
@@ -726,13 +726,13 @@ def add_vsc_data(circuit: MultiCircuit,
 
         vsc.k = elm.k
 
-        vsc.setAllTapModule(elm.m)
-        vsc.tap_max = elm.m_max
-        vsc.tap_min = elm.m_min
+        vsc.setAllTapModule(elm.tap_module)
+        vsc.tap_max = elm.tap_module_max
+        vsc.tap_min = elm.tap_module_min
 
-        vsc.setAllTapPhase(elm.theta)
-        vsc.phase_max = elm.theta_max
-        vsc.phase_min = elm.theta_min
+        vsc.setAllTapPhase(elm.tap_phase)
+        vsc.phase_max = elm.tap_phase_max
+        vsc.phase_min = elm.tap_phase_min
 
         vsc.setAllPdcSet(elm.Pdc_set)
         vsc.setAllVacSet(elm.Vac_set)
@@ -840,7 +840,7 @@ def add_hvdc_data(circuit: MultiCircuit,
                             P=elm.Pset,
                             Vf=elm.Vset_f,
                             Vt=elm.Vset_t,
-                            r=elm.r,
+                            r=elm.R,
                             angle_droop=elm.angle_droop,
                             length=elm.length,
                             min_firing_angle_f=elm.min_firing_angle_f,
@@ -867,7 +867,7 @@ def add_hvdc_data(circuit: MultiCircuit,
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
-            hvdc.setAllOverloadCost(elm.overload_cost)
+            hvdc.setAllOverloadCost(elm.Cost)
             hvdc.setAllControlMode(cmode_dict[elm.control_mode])
 
         npa_circuit.addHvdcLine(hvdc)

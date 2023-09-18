@@ -329,7 +329,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 b=b,
                                 rate=psse_elm.RATE1_1,
                                 contingency_factor=round(contingency_factor, 6),
-                                tap=tap_module,
+                                tap_module=tap_module,
                                 tap_phase=tap_angle,
                                 active=bool(psse_elm.STAT),
                                 mttf=0,
@@ -428,9 +428,9 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                  rate12=psse_elm.RATE1_1, rate23=psse_elm.RATE2_1, rate31=psse_elm.RATE3_1,
                                  x=0.0, y=0.0)
 
-        tr3w.winding1.angle = psse_elm.ANG1
-        tr3w.winding2.angle = psse_elm.ANG2
-        tr3w.winding3.angle = psse_elm.ANG3
+        tr3w.winding1.tap_phase = psse_elm.ANG1
+        tr3w.winding2.tap_phase = psse_elm.ANG2
+        tr3w.winding3.tap_phase = psse_elm.ANG3
 
         return tr3w, 3
 

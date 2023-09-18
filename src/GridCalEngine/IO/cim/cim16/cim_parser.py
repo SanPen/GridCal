@@ -547,7 +547,7 @@ class CIMExport:
             text_file.write(model.get_xml(1))
 
             # add tap changer at the "to" winding
-            if branch.tap_module != 1.0 and branch.angle != 0.0:
+            if branch.tap_module != 1.0 and branch.tap_phase != 0.0:
                 Vnom = branch.bus_to.Vnom
                 SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
 
@@ -560,7 +560,7 @@ class CIMExport:
                 model.parsed_properties['step'] = 0
                 model.parsed_properties['lowStep'] = -1
                 model.parsed_properties['highStep'] = 1
-                model.parsed_properties['subsequentDelay'] = branch.angle
+                model.parsed_properties['subsequentDelay'] = branch.tap_phase
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
@@ -830,7 +830,7 @@ class CIMImport:
                                                g=G,
                                                b=B,
                                                rate=rate,
-                                               tap=1.0,
+                                               tap_module=1.0,
                                                tap_phase=0,
                                                active=True,
                                                HV=hv,

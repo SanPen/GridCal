@@ -322,7 +322,7 @@ def parse_transformers(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
                                 g=1e-20,
                                 b=1e-20,
                                 rate=rate,
-                                tap=1.0,
+                                tap_module=1.0,
                                 tap_module_max=1.2,
                                 tap_module_min=0.5,
                                 tap_phase=0.0,

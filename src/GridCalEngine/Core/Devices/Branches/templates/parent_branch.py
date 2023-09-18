@@ -83,7 +83,6 @@ class ParentBranch(EditableDevice):
         :param Cost: Cost of overloads. Used in OPF (€/MWh)
         :param Cost_prof: Cost of overload proile
         :param device_type: device_type (passed on)
-        :param branch_type: branch type (Legacy)
         """
 
         EditableDevice.__init__(self,
@@ -130,8 +129,8 @@ class ParentBranch(EditableDevice):
         self.contingency_factor = contingency_factor
         self.contingency_factor_prof = contingency_factor_prof
 
-        # line type: Line, Transformer, etc...
-        # self.branch_type = branch_type
+        # List of measurements
+        self.measurements = list()
 
         self.register('bus_from', units="", tpe=DeviceType.BusDevice,
                       definition='Name of the bus at the "from" side', editable=False)
@@ -146,15 +145,19 @@ class ParentBranch(EditableDevice):
                       definition='Name of the connectivity node at the "to" side', editable=False)
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
+
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,
                       definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
+
         self.register('monitor_loading', units="", tpe=bool,
                       definition="Monitor this device loading for OPF, NTC or contingency studies.")
         self.register('mttf', units="h", tpe=float, definition="Mean time to failure")
         self.register('mttr', units="h", tpe=float, definition="Mean time to repair")
+
         self.register('Cost', units="€/MWh", tpe=float,
                       definition="Cost of overloads. Used in OPF", profile_name="Cost_prof")
+
         self.register('build_status', units="", tpe=BuildStatus,
                       definition="Branch build status. Used in expansion planning.")
         self.register('capex', units="€/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")

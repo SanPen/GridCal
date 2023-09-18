@@ -2658,10 +2658,10 @@ class MultiCircuit:
                       name='VSC',
                       active=line.active,
                       rate=line.rate,
-                      r1=line.R,
-                      x1=line.X,
+                      r=line.R,
+                      x=line.X,
                       Beq=line.B,
-                      m=1.0,
+                      tap_module=1.0,
                       active_prof=line.active_prof,
                       rate_prof=line.rate_prof)
 
@@ -2892,20 +2892,20 @@ class MultiCircuit:
                 x_arr = list()
                 y_arr = list()
                 for i in idx:
-                    x_arr.append(self.buses[i].graphic_obj.x())
+                    x_arr.append(self.buses[i].graphic_obj.X())
                     y_arr.append(self.buses[i].graphic_obj.y())
 
                 x_m = np.mean(x_arr)
                 y_m = np.mean(y_arr)
 
-                delta_i = np.sqrt((bus.x - x_m) ** 2 + (bus.y - y_m) ** 2)
+                delta_i = np.sqrt((bus.X - x_m) ** 2 + (bus.y - y_m) ** 2)
 
                 if delta_i < delta:
                     delta = delta_i
 
-                bus.x = x_m.copy()
+                bus.X = x_m.copy()
                 bus.y = y_m.copy()
-                bus.graphic_obj.set_position(x=bus.x, y=bus.y)
+                bus.graphic_obj.set_position(x=bus.X, y=bus.y)
 
     def get_center_location(self):
         """
@@ -3167,8 +3167,8 @@ class MultiCircuit:
 
         # assign the values
         for i, bus in enumerate(self.buses):
-            if destructive or (bus.x == 0.0 and bus.y == 0.0):
-                bus.x = x[i]
+            if destructive or (bus.X == 0.0 and bus.y == 0.0):
+                bus.X = x[i]
                 bus.y = -y[i]
 
         return logger
@@ -3186,7 +3186,7 @@ class MultiCircuit:
         x = np.zeros(n)
         y = np.zeros(n)
         for i, bus in enumerate(self.buses):
-            x[i] = bus.x * factor + offset_x
+            x[i] = bus.X * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
         logger = bs.Logger()
@@ -3205,7 +3205,7 @@ class MultiCircuit:
 
         # assign the values
         for i, bus in enumerate(self.buses):
-            if destructive or (bus.x == 0.0 and bus.y == 0.0):
+            if destructive or (bus.X == 0.0 and bus.y == 0.0):
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
 

@@ -420,7 +420,7 @@ def get_pgm_transformer_data(circuit: MultiCircuit, bus_dict, idx0):
         # winding and the other side is not Y(N) winding.
         # Odd number is not possible, if both sides are Y(N)
         # winding or both sides are not Y(N) winding.
-        phase_int = int(np.round(np.rad2deg(elm.angle) / 30)) % 12
+        phase_int = int(np.round(np.rad2deg(elm.tap_phase) / 30)) % 12
         xfo['clock'][i] = phase_int
 
         xfo['winding_from'][i] = pgm.WindingType.wye  # WindingType object

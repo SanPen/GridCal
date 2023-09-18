@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import copy
 import numpy as np
 from typing import Union, Tuple
 from GridCalEngine.basic_structures import Logger
@@ -41,12 +40,12 @@ class Line(ParentBranch):
                  r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
-        The **Line** class represents the connections between nodes
+        AC current Line
         :param bus_from: "From" :ref:`bus<Bus>` object
         :param bus_to: "To" :ref:`bus<Bus>` object
         :param name: Name of the branch
-        :param idtag:
-        :param code:
+        :param idtag: UUID code
+        :param code: secondary ID
         :param r: Branch resistance in per unit
         :param x: Branch reactance in per unit
         :param b: Branch shunt susceptance in per unit
@@ -64,23 +63,23 @@ class Line(ParentBranch):
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
         :param template: Basic branch template
-        :param rate_prof:
-        :param Cost_prof:
-        :param active_prof:
-        :param temp_oper_prof:
-        :param contingency_factor:
-        :param contingency_enabled:
-        :param monitor_loading:
-        :param contingency_factor_prof:
-        :param r0:
-        :param x0:
-        :param b0:
-        :param r2:
-        :param x2:
-        :param b2:
-        :param capex:
-        :param opex:
-        :param build_status:
+        :param rate_prof: Rating profile
+        :param Cost_prof: Overload cost profile
+        :param active_prof: Active profile
+        :param temp_oper_prof: Operational temperature profile
+        :param contingency_factor: Rating factor in case of contingency
+        :param contingency_enabled: enabled for contingencies (Legacy)
+        :param monitor_loading: monitor the loading (used in OPF)
+        :param contingency_factor_prof: profile of contingency ratings
+        :param r0: zero-sequence resistence (p.u.)
+        :param x0: zero-sequence reactance (p.u.)
+        :param b0: zero-sequence susceptance (p.u.)
+        :param r2: negative-sequence resistence (p.u.)
+        :param x2: negative-sequence reactance (p.u.)
+        :param b2: negative-sequence susceptance (p.u.)
+        :param capex: Cost of investment (€/MW)
+        :param opex: Cost of operation (€/MWh)
+        :param build_status: build status (now time)
         """
 
         ParentBranch.__init__(self,
@@ -107,9 +106,6 @@ class Line(ParentBranch):
                               Cost=cost,
                               Cost_prof=Cost_prof,
                               device_type=DeviceType.LineDevice)
-
-        # List of measurements
-        self.measurements = list()
 
         # line length in km
         self.length = length
@@ -157,13 +153,18 @@ class Line(ParentBranch):
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
         self.register(key='tolerance', units='%', tpe=float,
-                      definition='Tolerance expected for the impedance values % is expected for transformers0% for lines.')
+                      definition='Tolerance expected for the impedance values % is expected '
+                                 'for transformers0% for lines.')
+
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')
         self.register(key='alpha', units='1/ºC', tpe=float,
-                      definition='Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
+                      definition='Thermal coefficient to modify R,around a reference temperatureusing a '
+                                 'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
+                                 'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
+
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
                       profile_name='Cost_prof')
         self.register(key='capex', units='e/MW', tpe=float,
@@ -176,7 +177,10 @@ class Line(ParentBranch):
         self.register(key='x_fault', units='p.u.', tpe=float,
                       definition='Reactance of the mid-line fault.Used in short circuit studies.')
         self.register(key='fault_pos', units='p.u.', tpe=float,
-                      definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.')
+                      definition='Per-unit positioning of the fault:'
+                                 '0 would be at the "from" side,'
+                                 '1 would be at the "to" side,'
+                                 'therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='')
 
     @property
@@ -511,7 +515,7 @@ class Line(ParentBranch):
         middle_bus.delete_children()
 
         # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-        middle_bus.x = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position
+        middle_bus.X = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position
         middle_bus.y = self.bus_from.y + (self.bus_to.y - self.bus_from.y) * position
 
         props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale

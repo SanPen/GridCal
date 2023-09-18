@@ -365,14 +365,14 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                  bus_to=t,
                                  name='VSC' + str(len(circuit.vsc_devices) + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
-                                 r1=table[i, matpower_branches.BR_R],
-                                 x1=table[i, matpower_branches.BR_X],
-                                 m=m,
-                                 m_max=table[i, matpower_branches.MA_MAX],
-                                 m_min=table[i, matpower_branches.MA_MIN],
-                                 theta=table[i, matpower_branches.SHIFT],
-                                 theta_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
-                                 theta_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
+                                 r=table[i, matpower_branches.BR_R],
+                                 x=table[i, matpower_branches.BR_X],
+                                 tap_module=m,
+                                 tap_module_max=table[i, matpower_branches.MA_MAX],
+                                 tap_module_min=table[i, matpower_branches.MA_MIN],
+                                 tap_phase=table[i, matpower_branches.SHIFT],
+                                 tap_phase_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
+                                 tap_phase_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
                                  G0sw=table[i, matpower_branches.GSW],
                                  Beq=table[i, matpower_branches.BEQ],
                                  Beq_max=table[i, matpower_branches.BEQ_MAX],
@@ -394,9 +394,10 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
 
             else:
 
-                if f.Vnom != t.Vnom or (
-                        table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or table[
-                    i, matpower_branches.SHIFT] != 0.0:
+                if (f.Vnom != t.Vnom or
+                        (table[i, matpower_branches.TAP] != 1.0 and
+                         table[i, matpower_branches.TAP] != 0) or
+                        table[i, matpower_branches.SHIFT] != 0.0):
 
                     branch = dev.Transformer2W(bus_from=f,
                                                bus_to=t,
@@ -406,7 +407,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                                g=0,
                                                b=table[i, matpower_branches.BR_B],
                                                rate=table[i, matpower_branches.RATE_A],
-                                               tap=table[i, matpower_branches.TAP],
+                                               tap_module=table[i, matpower_branches.TAP],
                                                tap_phase=table[i, matpower_branches.SHIFT],
                                                active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_transformer2w(branch)
@@ -438,7 +439,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                                            g=0,
                                            b=table[i, matpower_branches.BR_B],
                                            rate=table[i, matpower_branches.RATE_A],
-                                           tap=table[i, matpower_branches.TAP],
+                                           tap_module=table[i, matpower_branches.TAP],
                                            tap_phase=table[i, matpower_branches.SHIFT],
                                            active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_transformer2w(branch)
@@ -772,10 +773,10 @@ def get_branches(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> List[Di
         angmin = -360.0  # deg
         angmax = 360.0  # deg
         if isinstance(elm, dev.Transformer2W):
-            angle = elm.angle * 57.2958  # deg
+            angle = elm.tap_phase * 57.2958  # deg
             ratio = elm.tap_module
-            angmin = elm.angle_min * 57.2958  # deg
-            angmax = elm.angle_max * 57.2958  # deg
+            angmin = elm.tap_phase_min * 57.2958  # deg
+            angmax = elm.tap_phase_max * 57.2958  # deg
 
         data.append({'fbus': f,
                      'tbus': t,

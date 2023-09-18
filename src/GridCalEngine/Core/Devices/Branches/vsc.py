@@ -18,6 +18,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from typing import List, Tuple
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.enumerations import ConverterControlType, BuildStatus
@@ -28,13 +29,13 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 class VSC(ParentBranch):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, code='', active=True,
-                 r1=0.0001, x1=0.05,
-                 m=1.0, m_max=1.1, m_min=0.8,
-                 theta=0.1, theta_max=6.28, theta_min=-6.28,
+                 r=0.0001, x=0.05,
+                 tap_module=1.0, tap_module_max=1.1, tap_module_min=0.8,
+                 tap_phase=0.1, tap_phase_max=6.28, tap_phase_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
                  G0sw=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
-                 Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
+                 Pfset=0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
@@ -46,26 +47,28 @@ class VSC(ParentBranch):
         :param bus_to:
         :param name:
         :param idtag:
+        :param code:
         :param active:
-        :param r1:
-        :param x1:
-        :param m:
-        :param m_max:
-        :param m_min:
-        :param theta:
-        :param theta_max:
-        :param theta_min:
-        :param G0sw:
+        :param r:
+        :param x:
+        :param tap_module:
+        :param tap_module_max:
+        :param tap_module_min:
+        :param tap_phase:
+        :param tap_phase_max:
+        :param tap_phase_min:
         :param Beq:
         :param Beq_min:
         :param Beq_max:
+        :param G0sw:
         :param rate:
         :param kdp:
+        :param k:
         :param control_mode:
         :param Pfset:
+        :param Qfset:
         :param Vac_set:
         :param Vdc_set:
-        :param Qfset:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -75,6 +78,17 @@ class VSC(ParentBranch):
         :param cost_prof:
         :param rate_prof:
         :param active_prof:
+        :param contingency_factor:
+        :param contingency_enabled:
+        :param monitor_loading:
+        :param contingency_factor_prof:
+        :param r0:
+        :param x0:
+        :param r2:
+        :param x2:
+        :param capex:
+        :param opex:
+        :param build_status:
         """
 
         ParentBranch.__init__(self,
@@ -128,8 +142,8 @@ class VSC(ParentBranch):
         self.measurements = list()
 
         # total impedance and admittance in p.u.
-        self.R1 = r1
-        self.X1 = x1
+        self.R = r
+        self.X = x
 
         self.R0 = r0
         self.X0 = x0
@@ -139,13 +153,14 @@ class VSC(ParentBranch):
 
         self.G0sw = G0sw
         self.Beq = Beq
-        self.m = m
-        self.theta = theta
+        self.tap_module = tap_module
+        self.tap_module_max = tap_module_max
+        self.tap_module_min = tap_module_min
+
         self.k = k
-        self.m_max = m_max
-        self.m_min = m_min
-        self.theta_max = theta_max
-        self.theta_min = theta_min
+        self.tap_phase = tap_phase
+        self.tap_phase_max = tap_phase_max
+        self.tap_phase_min = tap_phase_min
         self.Beq_min = Beq_min
         self.Beq_max = Beq_max
 
@@ -160,22 +175,34 @@ class VSC(ParentBranch):
         self.alpha2 = alpha2
         self.alpha3 = alpha3
 
-        self.register(key='R1', units='p.u.', tpe=float, definition='Resistive positive sequence losses.')
-        self.register(key='X1', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.')
+        self.register(key='R', units='p.u.', tpe=float, definition='Resistive positive sequence losses.',
+                      old_names=['R1'])
+        self.register(key='X', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.',
+                      old_names=['X1'])
         self.register(key='R0', units='p.u.', tpe=float, definition='Resistive zero sequence losses.')
         self.register(key='X0', units='p.u.', tpe=float, definition='Magnetic zero sequence losses.')
         self.register(key='R2', units='p.u.', tpe=float, definition='Resistive negative sequence losses.')
         self.register(key='X2', units='p.u.', tpe=float, definition='Magnetic negative sequence losses.')
+
         self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
         self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
         self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
         self.register(key='Beq_min', units='p.u.', tpe=float, definition='Min total shunt susceptance.')
-        self.register(key='m', units='', tpe=float, definition='Tap changer module, it a value close to 1.0')
-        self.register(key='m_max', units='', tpe=float, definition='Max tap changer module')
-        self.register(key='m_min', units='', tpe=float, definition='Min tap changer module')
-        self.register(key='theta', units='rad', tpe=float, definition='Converter firing angle.')
-        self.register(key='theta_max', units='rad', tpe=float, definition='Max converter firing angle.')
-        self.register(key='theta_min', units='rad', tpe=float, definition='Min converter firing angle.')
+
+        self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
+                      old_names=['m'])
+        self.register(key='tap_module_max', units='', tpe=float, definition='Max tap changer module',
+                      old_names=['m_max'])
+        self.register(key='tap_module_min', units='', tpe=float, definition='Min tap changer module',
+                      old_names=['m_min'])
+
+        self.register(key='tap_phase', units='rad', tpe=float, definition='Converter firing angle.',
+                      old_names=['theta'])
+        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max converter firing angle.',
+                      old_names=['theta_max'])
+        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min converter firing angle.',
+                      old_names=['theta_min'])
+
         self.register(key='alpha1', units='', tpe=float,
                       definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
         self.register(key='alpha2', units='', tpe=float,
@@ -191,37 +218,33 @@ class VSC(ParentBranch):
         self.register(key='Vdc_set', units='p.u.', tpe=float, definition='DC voltage set point.')
 
     def get_weight(self):
-        return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
+        """
+        Get a weight of this line for graph porpuses
+        the weight is the impedance moudule (sqrt(r^2 + x^2))
+        :return: weight value
+        """
+        return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def get_max_bus_nominal_voltage(self):
-        return max(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_min_bus_nominal_voltage(self):
-        return min(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    @property
-    def R(self):
-        return self.R1
-
-    @property
-    def X(self):
-        return self.X1
-
-    def change_base(self, Sbase_old, Sbase_new):
+    def change_base(self, Sbase_old: float, Sbase_new: float):
+        """
+        Change the inpedance base
+        :param Sbase_old: old base (MVA)
+        :param Sbase_new: new base (MVA)
+        """
         b = Sbase_new / Sbase_old
 
-        self.R1 *= b
-        self.X1 *= b
+        self.R *= b
+        self.X *= b
         self.G0sw *= b
         self.Beq *= b
 
-    def get_coordinates(self):
+    def get_coordinates(self) -> List[Tuple[float, float]]:
         """
         Get the line defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
-    def correct_buses_connection(self):
+    def correct_buses_connection(self) -> None:
         """
         Fix the buses connection (from: DC, To: AC)
         """
@@ -279,17 +302,17 @@ class VSC(ParentBranch):
                  'active': self.active,
 
                  'rate': self.rate,
-                 'r': self.R1,
-                 'x': self.X1,
+                 'r': self.R,
+                 'x': self.X,
                  'G0sw': self.G0sw,
 
-                 'm': self.m,
-                 'm_min': self.m_min,
-                 'm_max': self.m_max,
+                 'm': self.tap_module,
+                 'm_min': self.tap_module_min,
+                 'm_max': self.tap_module_max,
 
-                 'theta': self.theta,
-                 'theta_min': self.theta_min,
-                 'theta_max': self.theta_max,
+                 'theta': self.tap_phase,
+                 'theta_min': self.tap_phase_min,
+                 'theta_max': self.tap_phase_max,
 
                  'Beq': self.Beq,
                  'Beq_min': self.Beq_min,
@@ -323,17 +346,17 @@ class VSC(ParentBranch):
                  'contingency_factor2': self.contingency_factor,
                  'contingency_factor3': self.contingency_factor,
 
-                 'r': self.R1,
-                 'x': self.X1,
+                 'r': self.R,
+                 'x': self.X,
                  'g': self.G0sw,
 
-                 'm': self.m,
-                 'm_min': self.m_min,
-                 'm_max': self.m_max,
+                 'm': self.tap_module,
+                 'm_min': self.tap_module_min,
+                 'm_max': self.tap_module_max,
 
-                 'theta': self.theta,
-                 'theta_min': self.theta_min,
-                 'theta_max': self.theta_max,
+                 'theta': self.tap_phase,
+                 'theta_min': self.tap_phase_min,
+                 'theta_max': self.tap_phase_max,
 
                  'Beq': self.Beq,
                  'Beq_min': self.Beq_min,

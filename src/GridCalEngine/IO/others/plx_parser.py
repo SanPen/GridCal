@@ -662,10 +662,10 @@ class PlxModel:
                     self.branches_by_type[cls][name].units = float(row['value'])
 
                 elif prop == 'Resistance':
-                    self.branches_by_type[cls][name].r = float(row['value'])
+                    self.branches_by_type[cls][name].R = float(row['value'])
 
                 elif prop == 'Reactance':
-                    self.branches_by_type[cls][name].x = float(row['value'])
+                    self.branches_by_type[cls][name].X = float(row['value'])
 
                 elif prop == 'Max Flow':
                     self.branches_by_type[cls][name].rate_max = float(row['value'])
@@ -932,8 +932,8 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
                     bus_to=bus_t,
                     name=name,
                     active=elm.units,
-                    r=elm.r,
-                    x=elm.x,
+                    r=elm.R,
+                    x=elm.X,
                     rate=rating,
                     branch_type=BranchType.Line)
         br.rate_prof = profile
@@ -963,8 +963,8 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
                     bus_to=bus_t,
                     name=name,
                     active=elm.units,
-                    r=elm.r,
-                    x=elm.x,
+                    r=elm.R,
+                    x=elm.X,
                     rate=rating,
                     branch_type=BranchType.Transformer)
         br.rate_prof = profile
