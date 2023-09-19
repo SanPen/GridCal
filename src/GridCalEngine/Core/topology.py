@@ -18,7 +18,7 @@
 from typing import List, Dict, Tuple
 import numpy as np
 import numba as nb
-from scipy.sparse import csc_matrix, diags
+from scipy.sparse import csc_matrix, csr_matrix, diags
 from GridCalEngine.basic_structures import BusMode, IntVec, Vec, Mat, CxVec
 
 
@@ -291,3 +291,13 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     pqpv.sort()
 
     return ref, pq, pv, pqpv
+
+
+def get_csr_bus_indices(C: csr_matrix):
+    arr = np.zeros(C.shape[1], dtype=int)
+    for j in range(C.shape[0]):  # para cada columna j ...
+        for k in range(C.indptr[j], C.indptr[j + 1]):  # para cada entrada de la columna ....
+            i = C.indices[k]  # obtener el índice de la fila
+            # value = data[k]  # obtener el valor de i, j
+            arr[i] = j
+    return arr

@@ -157,3 +157,10 @@ class LoadData:
 
     def __len__(self) -> int:
         return self.nelm
+
+    def get_bus_indices(self) -> IntVec:
+        """
+        Get the bus indices
+        :return: array with the bus indices
+        """
+        return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
