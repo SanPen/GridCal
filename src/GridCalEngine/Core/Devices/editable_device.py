@@ -112,7 +112,7 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        if idtag is None:
+        if idtag is None or idtag == '':
             self.idtag = uuid.uuid4().hex
         else:
             self.idtag = idtag.replace('_', '').replace('-', '')

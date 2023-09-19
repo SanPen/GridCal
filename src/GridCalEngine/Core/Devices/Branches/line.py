@@ -547,7 +547,7 @@ class Line(ParentBranch):
         """
         R = r_ohm * length
         X = x_ohm * length
-        B = (2 * np.pi * freq * c_nf * 1e9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        B = (2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
 
         Vf = self.get_max_bus_nominal_voltage()
 
