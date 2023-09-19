@@ -30,7 +30,7 @@ import GridCalEngine.basic_structures as bs
 import GridCalEngine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
@@ -219,7 +219,7 @@ class SimulationsMain(TimeEventsMain):
 
         # # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, GridEditorWidget):
+            if isinstance(diagram, BusBranchEditorWidget):
                 diagram.diagramScene.set_results_to_plot(all_threads)
 
         return all_threads

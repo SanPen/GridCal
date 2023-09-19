@@ -1836,7 +1836,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
                 return diagram.name
             elif role == QtCore.Qt.DecorationRole:
 
-                if isinstance(diagram, GridCal.Gui.GridEditorWidget.GridEditorWidget):
+                if isinstance(diagram, GridCal.Gui.GridEditorWidget.BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
                 elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
                     return self.map_editor_icon

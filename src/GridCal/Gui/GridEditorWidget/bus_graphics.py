@@ -25,14 +25,15 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, F
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.GridEditorWidget.load_graphics import LoadGraphicItem
-from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
-from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.GridEditorWidget.external_grid_graphics import ExternalGridGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.load_graphics import LoadGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.battery_graphics import BatteryGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.enumerations import DeviceType, FaultType
+from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 
 class BusGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -664,51 +665,78 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.terminal.hosting_connections.remove(graphic_obj)
 
+    def add_object(self, api_obj: Union[None, EditableDevice] = None):
+        """
+        Add any recognized object
+        :param api_obj: EditableDevice
+        """
+
+        if api_obj.device_type == DeviceType.GeneratorDevice:
+            self.add_generator(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.LoadDevice:
+            self.add_load(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.StaticGeneratorDevice:
+            self.add_static_generator(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.ShuntDevice:
+            self.add_shunt(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.BatteryDevice:
+            self.add_battery(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.ExternalGridDevice:
+            self.add_external_grid(api_obj=api_obj)
+
+        else:
+            raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
+
     def add_load(self, api_obj=None):
         """
         Add load object to bus
+        :param api_obj:
+        :return:
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_load(bus=self.api_object)
 
-        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, scene=self.scene)
+        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_shunt(self, api_obj=None):
         """
-
-        Returns:
-
+        Add shunt device
+        :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_shunt(bus=self.api_object)
 
-        _grph = ShuntGraphicItem(self, api_obj, self.scene)
+        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_generator(self, api_obj=None):
         """
-
-        Returns:
-
+        Add generator
+        :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_generator(bus=self.api_object)
 
-        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, scene=self.scene)
+        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
 
     def add_static_generator(self, api_obj=None):
         """
-
-        Returns:
-
+        Add static generator
+        :param api_obj: If none, a new static generator is created
+        :return:
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_static_generator(bus=self.api_object)
@@ -727,7 +755,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_battery(bus=self.api_object)
 
-        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, scene=self.scene)
+        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
@@ -741,7 +769,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.scene.circuit.add_external_grid(bus=self.api_object)
 
-        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, scene=self.scene)
+        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()

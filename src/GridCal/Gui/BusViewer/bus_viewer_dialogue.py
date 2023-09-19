@@ -18,7 +18,7 @@ import sys
 from PySide6 import QtWidgets
 
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
-from GridCal.Gui.GridEditorWidget import GridEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 
@@ -50,7 +50,7 @@ class BusViewerGUI(QMainWindow):
         self.bus_idx = list()
 
         # create grid editor o
-        self.grid_editor = GridEditorWidget(self.circuit, diagram=None)
+        self.grid_editor = BusBranchEditorWidget(self.circuit, diagram=None)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):
@@ -130,7 +130,7 @@ class BusViewerGUI(QMainWindow):
         """
         Create new editor
         """
-        self.grid_editor = GridEditorWidget(self.circuit, diagram=None)
+        self.grid_editor = BusBranchEditorWidget(self.circuit, diagram=None)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):

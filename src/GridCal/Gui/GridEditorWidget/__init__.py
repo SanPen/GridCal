@@ -14,4 +14,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Gui.GridEditorWidget.grid_editor_widget import GridEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, generate_bus_branch_diagram

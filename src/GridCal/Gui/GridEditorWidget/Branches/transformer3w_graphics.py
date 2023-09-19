@@ -24,7 +24,7 @@ from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
 

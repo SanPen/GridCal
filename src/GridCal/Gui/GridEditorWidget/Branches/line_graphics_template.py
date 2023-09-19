@@ -705,8 +705,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if len(idx_bus_list) == 2:
 
-            # search
-            side = ''
+            # detect the bus and its combinations
             if idx_bus_list[0][1] == self.api_object.bus_from:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
                 idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
@@ -724,12 +723,15 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
                 side = 't'
             else:
-                error_msg("No selected bus is the from or bus bus of the branch!", 'change bus')
+                error_msg("The 'from' or 'to' bus to change has not been selected!",
+                          'Change bus')
                 return
 
             ok = yes_no_question(
-                text="Are you sure that you want to relocate the bus from {} to {}?".format(old_bus.name, new_bus.name),
-                title='relocate line bus connection')
+                text="Are you sure that you want to relocate the bus from {0} to {1}?".format(old_bus.name,
+                                                                                              new_bus.name),
+                title='Change bus')
+
             if ok:
                 if side == 'f':
                     self.api_object.bus_from = new_bus
@@ -737,10 +739,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 elif side == 't':
                     self.api_object.bus_to = new_bus
                     self.setToPort(new_bus_graphic_item.terminal)
+                else:
+                    raise Exception('Unsupported side value {}'.format(side))
 
                 new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
                 old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
                 new_bus_graphic_item.terminal.update()
         else:
             warning_msg("you have to select the origin and destination buses!",
-                        title='relocate line bus connection')
+                        title='Change bus')
+

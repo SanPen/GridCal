@@ -14,24 +14,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup, QGraphicsTextItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
+from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 
-class StaticGeneratorGraphicItem(QGraphicsItemGroup):
+class InjectionTemplateGraphicItem(QGraphicsItemGroup):
+    """
+    InjectionTemplateGraphicItem
+    """
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj: EditableDevice, diagramScene, device_type_name, w, h):
         """
 
         :param parent:
         :param api_obj:
         """
-        super(StaticGeneratorGraphicItem, self).__init__(parent)
+        super(InjectionTemplateGraphicItem, self).__init__(parent)
+
+        self.w = w
+        self.h = h
 
         self.parent = parent
 
@@ -39,14 +45,14 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        self.w = 40
-        self.h = 40
+        self.device_type_name = device_type_name
 
         # Properties of the container:
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.width = 4
+
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -62,17 +68,6 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         self.diagramScene.addItem(self.nexus)
-
-        pen = QPen(self.color, self.width, self.style)
-
-        self.glyph = Square(parent)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('S', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -93,9 +88,8 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
             self.style = ACTIVE['style']
 
         pen = QPen(self.color, self.width, self.style)
-        self.glyph.setPen(pen)
         self.nexus.setPen(pen)
-        self.label.setDefaultTextColor(self.color)
+        return pen
 
     def update_line(self, pos):
         """
@@ -113,97 +107,21 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         self.setZValue(-1)
         self.nexus.setZValue(-1)
 
-    def contextMenuEvent(self, event):
-        """
-        Display context menu
-        @param event:
-        @return:
-        """
-        menu = QMenu()
-        menu.addSection("Static generator")
-
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
-
-        pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pa.setIcon(plot_icon)
-        pa.triggered.connect(self.plot)
-
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
-
-        menu.exec_(event.screenPos())
-
     def remove(self, ask=True):
         """
         Remove this element
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this static generator', 'Remove static generator')
+            ok = yes_no_question('Are you sure that you want to remove this ' + self.device_type_name + '?',
+                                 'Remove load')
         else:
             ok = True
 
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)
-            self.api_object.bus.static_generators.remove(self.api_object)
-
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.diagramScene.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def set_enable(self, val=True):
-        """
-        Set the enable value, graphically and in the API
-        @param val:
-        @return:
-        """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
-
-    def plot(self):
-        """
-        Plot API objects profiles
-        """
-        # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
-
-        # plot the profiles
-        self.api_object.plot_profiles(time=ts)
+            self.api_object.bus.loads.remove(self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -215,3 +133,36 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
+    def change_bus(self):
+        """
+        Change the generator bus
+        """
+        editor = self.diagramScene.parent()
+        idx_bus_list = editor.get_selected_buses()
+
+        if len(idx_bus_list) == 2:
+
+            # detect the bus and its combinations
+            if idx_bus_list[0][1] == self.api_object.bus:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
+            elif idx_bus_list[1][1] == self.api_object.bus:
+                idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
+            else:
+                error_msg("The bus to change has not been selected!", 'Change bus')
+                return
+
+            ok = yes_no_question(
+                text="Are you sure that you want to relocate the bus from {0} to {1}?".format(old_bus.name,
+                                                                                              new_bus.name),
+                title='Change bus')
+
+            if ok:
+                self.api_object.bus = new_bus
+                new_bus_graphic_item.add_object(api_obj=self.api_object)
+                new_bus_graphic_item.update()
+                self.remove(ask=False)
+        else:
+            warning_msg("you have to select the origin and destination buses!",
+                        title='Change bus')

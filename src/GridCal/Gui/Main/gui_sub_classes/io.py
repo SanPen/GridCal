@@ -30,7 +30,7 @@ from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
-from GridCal.Gui.GridEditorWidget import GridEditorWidget
+from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
@@ -371,7 +371,7 @@ class IoMain(ConfigurationMain):
             # center nodes
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, GridEditorWidget):
+                if isinstance(diagram, BusBranchEditorWidget):
                     diagram.center_nodes()
 
         self.collect_memory()
@@ -642,7 +642,7 @@ class IoMain(ConfigurationMain):
             # set circuit name
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, GridEditorWidget):
+                if isinstance(diagram, BusBranchEditorWidget):
                     diagram.name.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
 
             # set base magnitudes

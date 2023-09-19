@@ -14,22 +14,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Union
+
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCalEngine.Core.Devices.Branches.vsc import VSC
+from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.messages import yes_no_question
-from GridCalEngine.Core.Devices.Branches.switch import Switch
-from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
 
 
-class SwitchGraphicItem(LineGraphicTemplateItem):
+class VscGraphicItem(LineGraphicTemplateItem):
+    """
+    Graphics item for the VSC converter
+    """
 
-    def __init__(self, fromPort: TerminalItem,
-                 toPort: Union[TerminalItem, None],
-                 diagramScene,
-                 width=5,
-                 api_object: Switch = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
+                 api_object: VSC = None):
         """
 
         :param fromPort:
@@ -53,11 +53,14 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
         """
         if self.api_object is not None:
             menu = QMenu()
-            menu.addSection("Line")
 
-            pe = menu.addAction('Active')
-            pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe = menu.addAction('Enable/Disable')
+            pe_icon = QIcon()
+            if self.api_object.active:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
+            else:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
+            pe.setIcon(pe_icon)
             pe.triggered.connect(self.enable_disable_toggle)
 
             rabf = menu.addAction('Change bus')
@@ -65,6 +68,14 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
             move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
             rabf.setIcon(move_bus_icon)
             rabf.triggered.connect(self.change_bus)
+
+            menu.addSeparator()
+
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
 
             menu.addSeparator()
 
@@ -86,7 +97,7 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
-            # menu.addSeparator()
+            menu.addSeparator()
 
             re = menu.addAction('Reduce')
             re_icon = QIcon()
@@ -94,15 +105,18 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
             re.setIcon(re_icon)
             re.triggered.connect(self.reduce)
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
-
             menu.exec_(event.screenPos())
         else:
             pass
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        On double click, edit
+        :param event:
+        :return:
+        """
+
+        pass
 
     def remove(self, ask=True):
         """
@@ -110,11 +124,11 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Do you want to remove this winding?', 'Remove winding')
+            ok = yes_no_question('Do you want to remove this VSC?', 'Remove VSC')
         else:
             ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_winding(self.api_object)
+            self.diagramScene.circuit.delete_vsc_converter(self.api_object)
             self.diagramScene.removeItem(self)
 

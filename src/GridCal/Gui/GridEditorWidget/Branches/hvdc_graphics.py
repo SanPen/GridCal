@@ -18,15 +18,15 @@
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCalEngine.Core.Devices.Branches.upfc import UPFC
-from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
+from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.messages import yes_no_question
 
 
-class UpfcGraphicItem(LineGraphicTemplateItem):
+class HvdcGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
-                 api_object: UPFC = None):
+                 api_object: HvdcLine = None):
         """
 
         :param fromPort:
@@ -50,29 +50,21 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("HVDC line")
 
-            pe = menu.addAction('Enable/Disable')
-            pe_icon = QIcon()
-            if self.api_object.active:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-            else:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-            pe.setIcon(pe_icon)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            pe2 = menu.addAction('Convert to Multi-terminal')
+            pe2.triggered.connect(self.convert_to_multi_terminal)
 
             rabf = menu.addAction('Change bus')
             move_bus_icon = QIcon()
             move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
             rabf.setIcon(move_bus_icon)
             rabf.triggered.connect(self.change_bus)
-
-            menu.addSeparator()
-
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
 
             menu.addSeparator()
 
@@ -94,13 +86,11 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
-            menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
 
             menu.exec_(event.screenPos())
         else:
@@ -112,10 +102,16 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Do you want to remove this UPFC?', 'Remove UPFC')
+            ok = yes_no_question('Do you want to remove this HVDC line?', 'Remove HVDC line')
         else:
             ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.circuit.delete_hvdc_line(self.api_object)
             self.diagramScene.removeItem(self)
+
+    def convert_to_multi_terminal(self):
+        """
+
+        """
+        pass

@@ -1,74 +1,56 @@
 # GridCal
 # Copyright (C) 2015 - 2023 Santiago Peñate Vera
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 3 of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+
+from PySide6 import QtWidgets, QtGui, QtCore
+from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GridEditorWidget.generic_graphics import Polygon
 
 
-class LoadGraphicItem(QGraphicsItemGroup):
-
-    def __init__(self, parent, api_obj, scene):
+class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
+    """
+    ExternalGrid graphic item
+    """
+    def __init__(self, parent, api_obj: Battery, diagramScene):
         """
 
         :param parent:
         :param api_obj:
         """
-        super(LoadGraphicItem, self).__init__(parent)
+        InjectionTemplateGraphicItem.__init__(self,
+                                              parent=parent,
+                                              api_obj=api_obj,
+                                              diagramScene=diagramScene,
+                                              device_type_name='generator',
+                                              w=40,
+                                              h=40)
 
-        self.w = 20.0
-        self.h = 20.0
+        pen = QtGui.QPen(self.color, self.width, self.style)
 
-        self.parent = parent
-
-        self.api_object = api_obj
-
-        self.scene = scene
-
-        # Properties of the container:
-        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.width = 4
-
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
-        self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.scene.addItem(self.nexus)
-
-        # triangle
-        self.glyph = Polygon(self)
-        self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.glyph = Square(self)
+        self.glyph.setRect(0, 0, self.h, self.w)
+        self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
+
+        self.label = QtWidgets.QGraphicsTextItem('E', parent=self.glyph)
+        self.label.setDefaultTextColor(self.color)
+        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -88,9 +70,10 @@ class LoadGraphicItem(QGraphicsItemGroup):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        pen = QPen(self.color, self.width, self.style)
-        self.nexus.setPen(pen)
+        pen = QtGui.QPen(self.color, self.width, self.style)
         self.glyph.setPen(pen)
+        self.nexus.setPen(pen)
+        self.label.setDefaultTextColor(self.color)
 
     def update_line(self, pos):
         """
@@ -114,8 +97,8 @@ class LoadGraphicItem(QGraphicsItemGroup):
         @param event:
         @return:
         """
-        menu = QMenu()
-        menu.addSection("Load")
+        menu = QtWidgets.QMenu()
+        menu.addSection("External grid")
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
@@ -123,16 +106,22 @@ class LoadGraphicItem(QGraphicsItemGroup):
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        plot_icon = QtGui.QIcon()
+        plot_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/plot.svg"))
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
 
         da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        del_icon = QtGui.QIcon()
+        del_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/delete3.svg"))
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
+
+        rabf = menu.addAction('Change bus')
+        move_bus_icon = QtGui.QIcon()
+        move_bus_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/move_bus.svg"))
+        rabf.setIcon(move_bus_icon)
+        rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
 
@@ -142,14 +131,14 @@ class LoadGraphicItem(QGraphicsItemGroup):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
+            ok = yes_no_question('Are you sure that you want to remove this external grid', 'Remove external grid')
         else:
             ok = True
 
         if ok:
-            self.scene.removeItem(self.nexus)
-            self.scene.removeItem(self)
-            self.api_object.bus.loads.remove(self.api_object)
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -162,13 +151,13 @@ class LoadGraphicItem(QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
-            if self.scene.circuit.has_time_series:
+            if self.diagramScene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -187,11 +176,15 @@ class LoadGraphicItem(QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.glyph.setPen(QtGui.QPen(self.color, self.width, self.style))
+        self.label.setDefaultTextColor(self.color)
 
     def plot(self):
+        """
+        Plot API objects profiles
+        """
         # time series object from the last simulation
-        ts = self.scene.circuit.time_profile
+        ts = self.diagramScene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -203,6 +196,7 @@ class LoadGraphicItem(QGraphicsItemGroup):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.scene.parent().object_editor_table, editable=True, transposed=True)
-        self.scene.parent().object_editor_table.setModel(mdl)
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
+                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
 

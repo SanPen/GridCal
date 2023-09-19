@@ -50,14 +50,14 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
-from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
-from GridCal.Gui.GridEditorWidget.winding_graphics import WindingGraphicItem
-from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
-from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
-from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
-from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
-from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
-from GridCal.Gui.GridEditorWidget.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.vsc_graphics import VscGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
@@ -138,7 +138,7 @@ class DiagramScene(QGraphicsScene):
     DiagramScene
     """
 
-    def __init__(self, parent: "GridEditorWidget", circuit: MultiCircuit):
+    def __init__(self, parent: "BusBranchEditorWidget", circuit: MultiCircuit):
         """
 
         :param parent:
@@ -485,7 +485,7 @@ class EditorGraphicsView(QGraphicsView):
     EditorGraphicsView (Handles the drag and drop)
     """
 
-    def __init__(self, diagram_scene: DiagramScene, editor: "GridEditorWidget"):
+    def __init__(self, diagram_scene: DiagramScene, editor: "BusBranchEditorWidget"):
         """
         Editor where the diagram is displayed
         @param diagram_scene: DiagramScene object
@@ -631,7 +631,7 @@ class EditorGraphicsView(QGraphicsView):
         return graphic_obj
 
 
-class GridEditorWidget(QSplitter):
+class BusBranchEditorWidget(QSplitter):
     """
     GridEditorWidget
     """
@@ -2462,8 +2462,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    window = GridEditorWidget(circuit=MultiCircuit(),
-                              diagram=BusBranchDiagram())
+    window = BusBranchEditorWidget(circuit=MultiCircuit(),
+                                   diagram=BusBranchDiagram())
 
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

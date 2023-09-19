@@ -25,7 +25,7 @@ from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.enumerations import DeviceType
-from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 
 class DcLineEditor(QDialog):

@@ -14,74 +14,37 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from PySide6 import QtWidgets
-from PySide6.QtCore import QPointF, QLineF
-from PySide6.QtGui import QPen, QIcon, QPixmap
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
+from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.GridEditorWidget.generic_graphics import Polygon
 
 
-class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
+class LoadGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj, scene):
+    def __init__(self, parent, api_obj, diagramScene):
         """
 
         :param parent:
         :param api_obj:
         """
-        super(ShuntGraphicItem, self).__init__(parent)
+        InjectionTemplateGraphicItem.__init__(self,
+                                              parent=parent,
+                                              api_obj=api_obj,
+                                              diagramScene=diagramScene,
+                                              device_type_name='generator',
+                                              w=20,
+                                              h=20)
 
-        self.w = 15.0
-        self.h = 30.0
-
-        self.parent = parent
-
-        self.api_object = api_obj
-
-        self.scene = scene
-
-        self.width = 4
-
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-
-        pen = QPen(self.color, self.width, self.style)
-
-        # Properties of the container:
-        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        # self.setCursor(QCursor(Qt.PointingHandCursor))
-
-        # line to tie this object with the original bus (the parent)
-        self.nexus = QtWidgets.QGraphicsLineItem()
-        self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.scene.addItem(self.nexus)
-
-        lines_data = list()
-        lines_data.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
-        lines_data.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
-        lines_data.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
-        lines_data.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
-        lines_data.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
-        lines_data.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
-        lines_data.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
-
-        self.lines = list()
-        for l in lines_data:
-            l1 = Line(self)
-            l1.setLine(l)
-            l1.setPen(pen)
-            self.lines.append(l1)
-            self.addToGroup(l1)
+        # triangle
+        self.glyph = Polygon(self)
+        self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.addToGroup(self.glyph)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -103,8 +66,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
         pen = QPen(self.color, self.width, self.style)
         self.nexus.setPen(pen)
-        for l in self.lines:
-            l.setPen(pen)
+        self.glyph.setPen(pen)
 
     def update_line(self, pos):
         """
@@ -128,18 +90,13 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         @param event:
         @return:
         """
-        menu = QtWidgets.QMenu()
-        menu.addSection("Shunt")
+        menu = QMenu()
+        menu.addSection("Load")
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
-
-        pc = menu.addAction('Voltage control')
-        pc.setCheckable(True)
-        pc.setChecked(self.api_object.is_controlled)
-        pc.triggered.connect(self.enable_disable_control_toggle)
 
         pa = menu.addAction('Plot profiles')
         plot_icon = QIcon()
@@ -153,6 +110,12 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
+        rabf = menu.addAction('Change bus')
+        move_bus_icon = QIcon()
+        move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+        rabf.setIcon(move_bus_icon)
+        rabf.triggered.connect(self.change_bus)
+
         menu.exec_(event.screenPos())
 
     def remove(self, ask=True):
@@ -161,18 +124,19 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
+            ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
         else:
             ok = True
 
         if ok:
-            self.scene.removeItem(self.nexus)
-            self.scene.removeItem(self)
-            self.api_object.bus.shunts.remove(self.api_object)
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.loads.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
-        Enable / Disable device
+
+        @return:
         """
         if self.api_object is not None:
             if self.api_object.active:
@@ -180,20 +144,13 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
-            if self.scene.circuit.has_time_series:
+            if self.diagramScene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def enable_disable_control_toggle(self):
-        """
-        Enable / Disable device voltage control
-        """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
+                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -212,18 +169,11 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-
-        pen = QPen(self.color, self.width, self.style)
-
-        for l in self.childItems():
-            l.setPen(pen)
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
 
     def plot(self):
-        """
-        Plot API objects profiles
-        """
         # time series object from the last simulation
-        ts = self.scene.circuit.time_profile
+        ts = self.diagramScene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -235,6 +185,6 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.scene.parent().object_editor_table, editable=True, transposed=True)
-        self.scene.parent().object_editor_table.setModel(mdl)
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
 

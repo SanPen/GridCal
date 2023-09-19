@@ -1,5 +1,3 @@
-
-
 # GridCal
 # Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
@@ -21,17 +19,17 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
-from GridCalEngine.Core.Devices.Branches.winding import Winding
-from GridCal.Gui.GridEditorWidget.line_graphics_template import LineGraphicTemplateItem
+from GridCalEngine.Core.Devices.Branches.switch import Switch
+from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 
-class WindingGraphicItem(LineGraphicTemplateItem):
+class SwitchGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
                  diagramScene,
                  width=5,
-                 api_object: Winding = None):
+                 api_object: Switch = None):
         """
 
         :param fromPort:
@@ -62,7 +60,13 @@ class WindingGraphicItem(LineGraphicTemplateItem):
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
-            # menu.addSeparator()
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
+
+            menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
