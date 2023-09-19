@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 
-from GridCalEngine import *
+from GridCalEngine.api import *
 from tests.zip_file_mgmt import open_data_frame_from_zip
 
 

@@ -15,30 +15,44 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
-import GridCalEngine as gce
+from GridCalEngine.basic_structures import *
+from GridCalEngine.grid_analysis import *
+from GridCalEngine.Simulations import *
+from GridCalEngine.IO import *
+from GridCalEngine.Core import *
+from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+
+from ortools.linear_solver import pywraplp
+from ortools.init import pywrapinit
+
+# pywrapinit.CppBridge.InitLogging('SuggestedFix.py')
+cpp_flags = pywrapinit.CppFlags()
+cpp_flags.logtostderr = True
+cpp_flags.log_prefix = False
+pywrapinit.CppBridge.SetFlags(cpp_flags)
 
 
-def open_file(filename: str) -> gce.MultiCircuit:
+def open_file(filename: str) -> MultiCircuit:
     """
     Open file
     :param filename: name of the file (.gridcal, .ejson, .m, etc.)
     :return: MultiCircuit instance
     """
-    return gce.FileOpen(file_name=filename).open()
+    return FileOpen(file_name=filename).open()
 
 
-def save_file(grid: gce.MultiCircuit, filename: str):
+def save_file(grid: MultiCircuit, filename: str):
     """
     Save file
     :param grid: MultiCircuit instance
     :param filename: name of the file (.gridcal, .ejson)
     """
-    gce.FileSave(circuit=grid, file_name=filename).save()
+    FileSave(circuit=grid, file_name=filename).save()
 
 
-def power_flow(grid: gce.MultiCircuit,
-               options: gce.PowerFlowOptions = gce.PowerFlowOptions(),
-               engine=gce.EngineType.GridCal) -> gce.PowerFlowResults:
+def power_flow(grid: MultiCircuit,
+               options: PowerFlowOptions = PowerFlowOptions(),
+               engine=EngineType.GridCal) -> PowerFlowResults:
     """
     Run power flow on the snapshot
     :param grid: MultiCircuit instance
@@ -46,17 +60,17 @@ def power_flow(grid: gce.MultiCircuit,
     :param engine: Engine to run with
     :return: PowerFlowResults instance
     """
-    driver = gce.PowerFlowDriver(grid=grid, options=options, engine=engine)
+    driver = PowerFlowDriver(grid=grid, options=options, engine=engine)
 
     driver.run()
 
     return driver.results
 
 
-def power_flow_ts(grid: gce.MultiCircuit,
-                  options: gce.PowerFlowOptions = gce.PowerFlowOptions(),
-                  time_indices: Union[gce.IntVec, None] = None,
-                  engine=gce.EngineType.GridCal) -> gce.PowerFlowResults:
+def power_flow_ts(grid: MultiCircuit,
+                  options: PowerFlowOptions = PowerFlowOptions(),
+                  time_indices: Union[IntVec, None] = None,
+                  engine=EngineType.GridCal) -> PowerFlowResults:
     """
     Run power flow on the time series
     :param grid: MultiCircuit instance
@@ -70,10 +84,10 @@ def power_flow_ts(grid: gce.MultiCircuit,
     ti = grid.get_all_time_indices() if time_indices is None else time_indices
 
     # create the driver
-    driver = gce.PowerFlowTimeSeriesDriver(grid=grid,
-                                           options=options,
-                                           time_indices=ti,
-                                           engine=engine)
+    driver = PowerFlowTimeSeriesDriver(grid=grid,
+                                       options=options,
+                                       time_indices=ti,
+                                       engine=engine)
     # run
     driver.run()
 

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from scipy.sparse import diags
-from GridCalEngine import *
+from GridCalEngine.api import *
 
 
 def __check__(fname):

@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 
-from GridCalEngine import *
+from GridCalEngine.api import *
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Core.Devices.enumerations import FaultType
 

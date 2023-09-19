@@ -1,5 +1,5 @@
 import os
-from GridCalEngine import *
+from GridCalEngine.api import *
 
 
 def test_v_control_true():

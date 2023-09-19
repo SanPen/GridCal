@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import newtonpa as npa
-import GridCalEngine as gce
+import GridCalEngine.api as gce
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import to_newton_pa
 npa.findAndActivateLicense()
 from tests.newton_equivalence_utils import compare_inputs, compare_inputs_at
