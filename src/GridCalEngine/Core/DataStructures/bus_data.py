@@ -35,6 +35,7 @@ class BusData:
         self.Vbus: np.ndarray = np.ones(nbus, dtype=complex)
         self.Vmin: np.ndarray = np.ones(nbus, dtype=float)
         self.Vmax: np.ndarray = np.ones(nbus, dtype=float)
+        self.Vnom: np.ndarray = np.ones(nbus, dtype=float)
         self.angle_min: np.ndarray = np.full(nbus, fill_value=-3.14, dtype=float)
         self.angle_max: np.ndarray = np.full(nbus, fill_value=3.14, dtype=float)
         self.bus_types: np.ndarray = np.empty(nbus, dtype=int)
@@ -60,6 +61,7 @@ class BusData:
         data.Vbus = self.Vbus[elm_idx]
         data.Vmin = self.Vmin[elm_idx]
         data.Vmax = self.Vmax[elm_idx]
+        data.Vnom = self.Vnom[elm_idx]
         data.angle_min = self.angle_min[elm_idx]
         data.angle_max = self.angle_max[elm_idx]
 
@@ -87,6 +89,7 @@ class BusData:
         data.Vbus = self.Vbus.copy()
         data.Vmin = self.Vmin.copy()
         data.Vmax = self.Vmax.copy()
+        data.Vnom = self.Vnom.copy()
         data.angle_min = self.angle_min.copy()
         data.angle_max = self.angle_max.copy()
 

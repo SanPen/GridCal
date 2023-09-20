@@ -47,6 +47,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.idtag[i] = bus.idtag
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
+        bus_data.Vnom[i] = bus.Vnom
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
         bus_data.angle_min[i] = bus.angle_min
