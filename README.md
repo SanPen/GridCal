@@ -1,5 +1,11 @@
 # GridCal
 
+GridCal is a top tier power systems planning and simulation software. 
+As such it has all the static analysis studies that you can think of, plus 
+linear and non-linear optimization functions. Some of these functions are 
+well know, while others you may have never heard of as they are a 
+product of cutting-edge research.
+
 ![](/home/santi/Documentos/Git/GitHub/GridCal/pics/GridCal.png)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
@@ -7,31 +13,26 @@
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 [![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
 
-GridCal is a tier-1 power systems planning and simulation software. 
-As such it has all the static analysis studies that you can think of, plus 
-linear and non-linear optimization functions. Some of these functions you 
-perfectly know and some others you may have never heard of as they are a 
-product of cutting-edge research.
 
-GridCal started in 2015 as a project to be able to work with, frustrated by 
-the available options. This led to design proper programming library and a 
-nice graphical user interface. This no-nonsense approach has fostered numerous 
-innovations; Some of them pushed by the need to use the software for commercial 
-work, and some ignited by research and curiosity.
+GridCal started in 2015 as a project to be able to work with, out of frustration with 
+the available options. This led to design a proper programming library and a 
+nice graphical user interface for everyone. This no-nonsense approach has fostered numerous 
+innovations; Some of them pushed by the need to use the software in commercial 
+environments, and some ignited by curiosity and research.
 
-If you are a professional looking for a free software to get work done on time, 
+If you are a professional looking for a free software to get the job done on time, 
 look no further. If you are a researcher looking for a real-world, TSO-tested platform, 
 you're in good hands. If you are a teacher willing to teach your students the ins-and-outs 
 of commercial grade software, this is it. And if you are a student willing to learn 
-about the algorithms of the books, but for real, we've been there.
+about the algorithms of the books, but for real, we've got you covered.
 
 Our commitment is with you: GridCal is a high quality product. It is free for ever. 
-For all of us now and for the generations to come.
+For all of us now and the generations to come.
 
 ## Installation
 
 GridCal is a software made in the Python programming language. 
-Therefore, you need a python interpreter installed in your operative system. 
+Therefore, it needs a python interpreter installed in your operative system. 
 We recommend to install the latest version of [Python](www.python.org) and then, 
 install GridCal with the following terminal command:
 
@@ -51,19 +52,32 @@ graphical user interface with the following terminal command:
 python -c "from GridCal.ExecuteGridCal import run; run()"
 ```
 
+### Install only the engine
+
+Some of you may only need GridCal as a library for some other purpose 
+like batch calculations, AI training or simple scripting. Whatever it may be, 
+you can get the GridCal engine the following terminal command:
+
+```
+pip install GridCalEngine
+```
+
+Again, you may need to use `pip3` if you are under Linux or MacOS.
+
 ### Standalone setup
 
 If you don't know what is this Python thing, we offer a windows installation:
 
 [Windows setup](https://www.advancedgridinsights.com/gridcal)
 
-[Setup tutorial (video)](https://youtu.be/SY66WgLGo54)
-
 This will install GridCal as a normal windows program and you need not to worry 
-about any of the previous instructions.
+about any of the previous instructions. Still, if you need some guidance, the 
+following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
 
 ## Features
+
+GridCal is packed with feautures:
 
 - Large collection of devices to model electricity grids.
 - AC/DC multi-grid power flow
@@ -85,6 +99,10 @@ about any of the previous instructions.
 - Model bug report and repair
 - Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
 - Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
+
+All of these are industry tested algoriths, some of which surpass most comemercially available software.
+The aim is to be a drop-in replacement for the expensive and less usable commercial
+software, so that you can work, research and learn with it.
 
 ### Resources
 
@@ -111,15 +129,17 @@ We have included extra materials to work with. These are included in the standal
 ## API
 
 Since day one, GridCal was meant to be used as a library as much as it was meant 
-to be used from the user interface. Also, Check out the [documentation](https://gridcal.readthedocs.io).
+to be used from the user interface. Following, we include some usage examples, but 
+feel free to check the [documentation](https://gridcal.readthedocs.io) out where you will find a complete
+description of the theory, the models and the objects.
 
 ### Loading a grid
 
 ```python
-import GridCalEngine.api as gca
+import GridCalEngine.api as gce
 
 # load a grid
-my_grid = gca.open_file("my_file.gridcal")
+my_grid = gce.open_file("my_file.gridcal")
 ```
 
 GridCal supports a plethora of file formats:
@@ -134,13 +154,13 @@ GridCal supports a plethora of file formats:
 ### Save a grid
 
 ```python
-import GridCalEngine.api as gca
+import GridCalEngine.api as gce
 
 # create a grid
 ...
 
 # save
-gca.save_file(my_grid, "my_file.gridcal")
+gce.save_file(my_grid, "my_file.gridcal")
 ```
 
 ### Creating a Grid from the API objects
@@ -149,7 +169,7 @@ We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
 
 ```python
-import GridCal.Engine as gce
+import GridCalEngine.api as gce
 
 # declare a circuit object
 grid = gce.MultiCircuit()
@@ -160,7 +180,7 @@ bus1 = gce.Bus('Bus 1', vnom=20)
 grid.add_bus(bus1)
 
 # add a generator to the bus 1
-gen1 = gce.Generator('Slack Generator', voltage_module=1.0)
+gen1 = gce.Generator('Slack Generator', vset=1.0)
 grid.add_generator(bus1, gen1)
 
 # add bus 2 with a load attached
@@ -198,9 +218,9 @@ grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 Using the simlified API:
 
 ```python
-import GridCal.Engine as gca
+import GridCalEngine.api as gce
 
-results = gca.power_flow(grid)
+results = gce.power_flow(grid)
 
 print('\n\n', grid.name)
 print('\t|V|:', abs(results.voltage))
@@ -213,7 +233,7 @@ print('\tConv:', results.converged)
 Using the more complex library objects:
 
 ```python
-import GridCal.Engine as gce
+import GridCalEngine.api as gce
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
 power_flow = gce.PowerFlowDriver(grid, options)
