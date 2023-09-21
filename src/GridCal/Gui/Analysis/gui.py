@@ -76,6 +76,27 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.label_4 = QLabel(self.frame)
         self.label_4.setObjectName(u"label_4")
+        palette = QPalette()
+        brush = QBrush(QColor(119, 118, 123, 255))
+        brush.setStyle(Qt.SolidPattern)
+        palette.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette.setBrush(QPalette.Active, QPalette.Text, brush)
+        palette.setBrush(QPalette.Active, QPalette.ButtonText, brush)
+        brush1 = QBrush(QColor(0, 0, 0, 255))
+        brush1.setStyle(Qt.SolidPattern)
+        palette.setBrush(QPalette.Inactive, QPalette.WindowText, brush1)
+        palette.setBrush(QPalette.Inactive, QPalette.Text, brush1)
+        palette.setBrush(QPalette.Inactive, QPalette.ButtonText, brush1)
+        brush2 = QBrush(QColor(190, 190, 190, 255))
+        brush2.setStyle(Qt.SolidPattern)
+        palette.setBrush(QPalette.Disabled, QPalette.WindowText, brush2)
+        palette.setBrush(QPalette.Disabled, QPalette.Text, brush2)
+        palette.setBrush(QPalette.Disabled, QPalette.ButtonText, brush2)
+        self.label_4.setPalette(palette)
+        font = QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        self.label_4.setFont(font)
 
         self.gridLayout.addWidget(self.label_4, 3, 0, 1, 1)
 
@@ -111,6 +132,18 @@ class Ui_MainWindow(object):
 
         self.label_12 = QLabel(self.frame)
         self.label_12.setObjectName(u"label_12")
+        palette1 = QPalette()
+        palette1.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Active, QPalette.Text, brush)
+        palette1.setBrush(QPalette.Active, QPalette.ButtonText, brush)
+        palette1.setBrush(QPalette.Inactive, QPalette.WindowText, brush1)
+        palette1.setBrush(QPalette.Inactive, QPalette.Text, brush1)
+        palette1.setBrush(QPalette.Inactive, QPalette.ButtonText, brush1)
+        palette1.setBrush(QPalette.Disabled, QPalette.WindowText, brush2)
+        palette1.setBrush(QPalette.Disabled, QPalette.Text, brush2)
+        palette1.setBrush(QPalette.Disabled, QPalette.ButtonText, brush2)
+        self.label_12.setPalette(palette1)
+        self.label_12.setFont(font)
 
         self.gridLayout.addWidget(self.label_12, 0, 0, 1, 1)
 
@@ -169,6 +202,18 @@ class Ui_MainWindow(object):
 
         self.label_14 = QLabel(self.frame)
         self.label_14.setObjectName(u"label_14")
+        palette2 = QPalette()
+        palette2.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette2.setBrush(QPalette.Active, QPalette.Text, brush)
+        palette2.setBrush(QPalette.Active, QPalette.ButtonText, brush)
+        palette2.setBrush(QPalette.Inactive, QPalette.WindowText, brush1)
+        palette2.setBrush(QPalette.Inactive, QPalette.Text, brush1)
+        palette2.setBrush(QPalette.Inactive, QPalette.ButtonText, brush1)
+        palette2.setBrush(QPalette.Disabled, QPalette.WindowText, brush2)
+        palette2.setBrush(QPalette.Disabled, QPalette.Text, brush2)
+        palette2.setBrush(QPalette.Disabled, QPalette.ButtonText, brush2)
+        self.label_14.setPalette(palette2)
+        self.label_14.setFont(font)
 
         self.gridLayout.addWidget(self.label_14, 13, 0, 1, 1)
 
@@ -194,7 +239,7 @@ class Ui_MainWindow(object):
         self.transformerVccMinSpinBox.setDecimals(1)
         self.transformerVccMinSpinBox.setMinimum(0.000000000000000)
         self.transformerVccMinSpinBox.setMaximum(100.000000000000000)
-        self.transformerVccMinSpinBox.setValue(8.000000000000000)
+        self.transformerVccMinSpinBox.setValue(1.000000000000000)
 
         self.gridLayout.addWidget(self.transformerVccMinSpinBox, 11, 1, 1, 1)
 
@@ -222,7 +267,28 @@ class Ui_MainWindow(object):
         self.label_8 = QLabel(self.frame_2)
         self.label_8.setObjectName(u"label_8")
 
-        self.gridLayout_2.addWidget(self.label_8, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label_8, 1, 0, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 373, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_2.addItem(self.verticalSpacer_2, 3, 0, 1, 1)
+
+        self.label_16 = QLabel(self.frame_2)
+        self.label_16.setObjectName(u"label_16")
+        palette3 = QPalette()
+        palette3.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette3.setBrush(QPalette.Active, QPalette.Text, brush)
+        palette3.setBrush(QPalette.Active, QPalette.ButtonText, brush)
+        palette3.setBrush(QPalette.Inactive, QPalette.WindowText, brush1)
+        palette3.setBrush(QPalette.Inactive, QPalette.Text, brush1)
+        palette3.setBrush(QPalette.Inactive, QPalette.ButtonText, brush1)
+        palette3.setBrush(QPalette.Disabled, QPalette.WindowText, brush2)
+        palette3.setBrush(QPalette.Disabled, QPalette.Text, brush2)
+        palette3.setBrush(QPalette.Disabled, QPalette.ButtonText, brush2)
+        self.label_16.setPalette(palette3)
+        self.label_16.setFont(font)
+
+        self.gridLayout_2.addWidget(self.label_16, 0, 0, 1, 1)
 
         self.activePowerImbalanceSpinBox = QDoubleSpinBox(self.frame_2)
         self.activePowerImbalanceSpinBox.setObjectName(u"activePowerImbalanceSpinBox")
@@ -230,11 +296,7 @@ class Ui_MainWindow(object):
         self.activePowerImbalanceSpinBox.setMaximum(999.000000000000000)
         self.activePowerImbalanceSpinBox.setValue(3.000000000000000)
 
-        self.gridLayout_2.addWidget(self.activePowerImbalanceSpinBox, 1, 0, 1, 1)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 373, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_2.addItem(self.verticalSpacer_2, 2, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.activePowerImbalanceSpinBox, 1, 1, 1, 1)
 
 
         self.horizontalLayout.addWidget(self.frame_2)
@@ -279,7 +341,7 @@ class Ui_MainWindow(object):
         self.actionAnalyze.setToolTip(QCoreApplication.translate("MainWindow", u"Analyze the grid data", None))
 #endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Analysis", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Transformer", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Transformers", None))
 #if QT_CONFIG(tooltip)
         self.label_5.setToolTip(QCoreApplication.translate("MainWindow", u"VCC: Short circuit voltage from the short circuit study", None))
 #endif // QT_CONFIG(tooltip)
@@ -291,12 +353,15 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.virtualTapToleranceSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Tap angles", None))
-        self.label_12.setText(QCoreApplication.translate("MainWindow", u"Generator", None))
+        self.label_12.setText(QCoreApplication.translate("MainWindow", u"Generators", None))
         self.label_11.setText("")
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Tap module", None))
+#if QT_CONFIG(tooltip)
+        self.label_15.setToolTip(QCoreApplication.translate("MainWindow", u"Percentual difference between the nominal voltages at both sides of a line", None))
+#endif // QT_CONFIG(tooltip)
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"Vnom difference", None))
 #if QT_CONFIG(tooltip)
-        self.lineNominalVoltageToleranceSpinBox.setToolTip(QCoreApplication.translate("MainWindow", u"This is the tolerance for the difference between a transformer winding nominal voltage and the nominal voltage of the bus it is connected to.", None))
+        self.lineNominalVoltageToleranceSpinBox.setToolTip(QCoreApplication.translate("MainWindow", u"Percentual difference between the nominal voltages at both sides of a line", None))
 #endif // QT_CONFIG(tooltip)
         self.lineNominalVoltageToleranceSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))
         self.label_13.setText("")
@@ -305,6 +370,7 @@ class Ui_MainWindow(object):
         self.fixTimeSeriesCheckBox.setText(QCoreApplication.translate("MainWindow", u"Fix time series values", None))
         self.transformerVccMinSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Active power imbalance", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"System", None))
         self.activePowerImbalanceSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
