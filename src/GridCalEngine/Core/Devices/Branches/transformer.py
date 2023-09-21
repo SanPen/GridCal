@@ -797,3 +797,11 @@ class Transformer2W(ParentBranch):
         self.X = np.round(z_series.imag, 6)
         self.G = np.round(y_shunt.real, 6)
         self.B = np.round(y_shunt.imag, 6)
+
+    def get_vcc(self) -> float:
+        """
+        Get the short circuit voltage in %
+        This is the value from the short circuit study
+        :return: value in %
+        """
+        return 100.0 * np.sqrt(self.R * self.R + self.X * self.X)

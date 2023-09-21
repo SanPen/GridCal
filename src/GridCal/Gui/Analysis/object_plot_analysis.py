@@ -222,6 +222,8 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                   tap_max=1.05,
                   transformer_virtual_tap_tolerance=0.1,
                   branch_connection_voltage_tolerance=0.1,
+                  min_vcc=8,
+                  max_vcc=18,
                   logger=GridErrorLog()):
     """
     Analyze the model data
@@ -543,6 +545,19 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                upper=str(1.0 + transformer_virtual_tap_tolerance))
                     fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
                                                                   maximum_difference=transformer_virtual_tap_tolerance))
+
+                # check VCC
+                vcc = elm.get_vcc()
+                if vcc < min_vcc or vcc > max_vcc:
+                    logger.add(object_type=object_type.value,
+                               element_name=elm.name,
+                               element_index=i,
+                               severity=LogSeverity.Warning,
+                               propty='Vcc',
+                               message='The short circuit value is suspicious',
+                               lower=str(min_vcc),
+                               upper=str(max_vcc),
+                               val=vcc)
 
         elif object_type == dev.DeviceType.BusDevice:
             elements = circuit.buses

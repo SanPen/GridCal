@@ -90,137 +90,44 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout">
-           <item row="5" column="0" colspan="2">
-            <widget class="QLabel" name="label_5">
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_4">
              <property name="text">
-              <string/>
+              <string>Transformer</string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="toolTip">
+              <string>VCC: Short circuit voltage from the short circuit study</string>
+             </property>
+             <property name="text">
+              <string>VCC </string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="2">
+            <widget class="QDoubleSpinBox" name="transformerVccMaxSpinBox">
+             <property name="suffix">
+              <string> %</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <double>20.000000000000000</double>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QDoubleSpinBox" name="genVsetMinSpinBox">
-             <property name="value">
-              <double>0.950000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="12" column="0" colspan="2">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>Line nominal voltage difference</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="1">
-            <widget class="QDoubleSpinBox" name="transformerTapAngleMaxSpinBox">
-             <property name="minimum">
-              <double>-99.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>3.140000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="14" column="0" colspan="2">
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>94</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="11" column="0" colspan="2">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0" colspan="2">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Transformer tap angles</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="15" column="0" colspan="2">
-            <widget class="QCheckBox" name="fixTimeSeriesCheckBox">
-             <property name="text">
-              <string>Fix time series values</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QDoubleSpinBox" name="transformerTapAngleMinSpinBox">
-             <property name="minimum">
-              <double>-99999.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>99999.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>-3.140000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0" colspan="2">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="9" column="0" colspan="2">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Transformer virtual tap tolerance</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="genVsetMaxSpinBox">
-             <property name="value">
-              <double>1.050000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Transformer tap module</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QDoubleSpinBox" name="transformerTapModuleMaxSpinBox">
-             <property name="value">
-              <double>1.050000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>Generator voltage set point</string>
+              <string>Voltage set point</string>
              </property>
             </widget>
            </item>
-           <item row="10" column="0" colspan="2">
+           <item row="9" column="1" colspan="2">
             <widget class="QDoubleSpinBox" name="virtualTapToleranceSpinBox">
              <property name="toolTip">
               <string>This is the tolerance for the difference between a transformer winding nominal voltage and the nominal voltage of the bus it is connected to.</string>
@@ -239,14 +146,85 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Tap angles</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Generator</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="15" column="1" colspan="2">
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>94</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="7" column="2">
+            <widget class="QDoubleSpinBox" name="transformerTapAngleMaxSpinBox">
+             <property name="minimum">
+              <double>-99.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>3.140000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QDoubleSpinBox" name="transformerTapAngleMinSpinBox">
+             <property name="minimum">
+              <double>-99999.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>99999.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>-3.140000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Tap module</string>
+             </property>
+            </widget>
+           </item>
+           <item row="14" column="0">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Vnom difference</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
             <widget class="QDoubleSpinBox" name="transformerTapModuleMinSpinBox">
              <property name="value">
               <double>0.950000000000000</double>
              </property>
             </widget>
            </item>
-           <item row="13" column="0" colspan="2">
+           <item row="14" column="1" colspan="2">
             <widget class="QDoubleSpinBox" name="lineNominalVoltageToleranceSpinBox">
              <property name="toolTip">
               <string>This is the tolerance for the difference between a transformer winding nominal voltage and the nominal voltage of the bus it is connected to.</string>
@@ -262,6 +240,77 @@
              </property>
              <property name="value">
               <double>10.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="12" column="1">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="13" column="0">
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Lines</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Virtual tap tolerance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="16" column="1" colspan="2">
+            <widget class="QCheckBox" name="fixTimeSeriesCheckBox">
+             <property name="text">
+              <string>Fix time series values</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QDoubleSpinBox" name="genVsetMaxSpinBox">
+             <property name="value">
+              <double>1.050000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="1">
+            <widget class="QDoubleSpinBox" name="transformerVccMinSpinBox">
+             <property name="suffix">
+              <string> %</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>0.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>100.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>8.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="genVsetMinSpinBox">
+             <property name="value">
+              <double>0.950000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QDoubleSpinBox" name="transformerTapModuleMaxSpinBox">
+             <property name="value">
+              <double>1.050000000000000</double>
              </property>
             </widget>
            </item>

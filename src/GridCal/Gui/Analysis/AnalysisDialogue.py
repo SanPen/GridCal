@@ -91,6 +91,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             tap_max=self.ui.transformerTapModuleMaxSpinBox.value(),
             transformer_virtual_tap_tolerance=self.ui.virtualTapToleranceSpinBox.value() / 100.0,
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
+            min_vcc=self.ui.transformerVccMinSpinBox.value(),
+            max_vcc=self.ui.transformerVccMaxSpinBox.value(),
             logger=self.log)
 
         # set logs
