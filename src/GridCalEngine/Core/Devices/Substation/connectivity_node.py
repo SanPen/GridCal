@@ -33,7 +33,6 @@ class ConnectivityNode(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.ConnectivityNodeDevice)
 
         self.dc = dc

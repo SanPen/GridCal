@@ -39,7 +39,6 @@ class UndergroundLineType(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                active=True,
                                 device_type=DeviceType.UnderGroundLineDevice)
 
         self.rating = rating

@@ -41,7 +41,6 @@ class SequenceLineType(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code="",
-                                active=True,
                                 device_type=DeviceType.SequenceLineDevice)
 
         self.rating = rating

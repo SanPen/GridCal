@@ -41,7 +41,6 @@ class InvestmentsGroup(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                active=True,
                                 device_type=DeviceType.InvestmentsGroupDevice)
 
         # Contingency type

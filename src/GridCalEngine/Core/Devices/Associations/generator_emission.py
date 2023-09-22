@@ -42,7 +42,6 @@ class GeneratorEmission(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.GeneratorEmissionAssociation)
 
         self.generator = generator

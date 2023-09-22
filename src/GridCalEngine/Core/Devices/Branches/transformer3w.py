@@ -49,7 +49,6 @@ class Transformer3W(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
-                                active=active,
                                 code=code,
                                 device_type=DeviceType.Transformer3WDevice)
 
@@ -58,6 +57,9 @@ class Transformer3W(EditableDevice):
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3
+
+        self.active = active
+        self.active_prof = None
 
         self._V1 = V1
         self._V2 = V2
@@ -87,6 +89,8 @@ class Transformer3W(EditableDevice):
         self.register(key='bus1', units='', tpe=DeviceType.BusDevice, definition='Bus 1.', editable=False)
         self.register(key='bus2', units='', tpe=DeviceType.BusDevice, definition='Bus 2.', editable=False)
         self.register(key='bus3', units='', tpe=DeviceType.BusDevice, definition='Bus 3.', editable=False)
+
+        self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
 
         self.register(key='winding1', units='', tpe=DeviceType.WindingDevice, definition='Winding 1.', editable=False)
         self.register(key='winding2', units='', tpe=DeviceType.WindingDevice, definition='Winding 2.', editable=False)

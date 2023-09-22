@@ -77,7 +77,6 @@ class TransformerType(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                active=True,
                                 device_type=DeviceType.TransformerTypeDevice)
 
         self.HV = hv_nominal_voltage

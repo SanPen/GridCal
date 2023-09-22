@@ -35,7 +35,6 @@ class GenericAreaGroup(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=device_type)
 
         self.latitude = latitude

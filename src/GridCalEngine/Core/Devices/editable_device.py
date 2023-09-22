@@ -101,12 +101,10 @@ class EditableDevice:
                  name: str,
                  idtag: Union[str, None],
                  code: str,
-                 active: bool,
                  device_type: DeviceType):
         """
         Class to generalize any editable device
         :param name: Asset's name
-        :param active: is active
         :param device_type: DeviceType instance
         :param idtag: unique ID, if not provided it is generated
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
@@ -120,8 +118,6 @@ class EditableDevice:
         self._name = name
 
         self.code = code
-
-        self.active = active
 
         self.device_type: DeviceType = device_type
 
@@ -137,7 +133,6 @@ class EditableDevice:
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
-        self.register(key='active', units='', tpe=bool, definition='Is active?')  # this one is overriden if active_prof is present
 
     @property
     def type_name(self) -> str:

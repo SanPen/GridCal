@@ -67,7 +67,6 @@ class OverheadLineType(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                active=True,
                                 device_type=DeviceType.OverheadLineTypeDevice)
 
         # list of wires in the tower

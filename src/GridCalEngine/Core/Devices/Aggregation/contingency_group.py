@@ -36,7 +36,6 @@ class ContingencyGroup(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                active=True,
                                 device_type=DeviceType.ContingencyGroupDevice)
 
         # Contingency type

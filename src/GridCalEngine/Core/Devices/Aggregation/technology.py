@@ -36,7 +36,6 @@ class Technology(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.Technology)
 
         self.name2 = ""

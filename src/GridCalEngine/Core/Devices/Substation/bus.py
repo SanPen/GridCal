@@ -113,9 +113,11 @@ class Bus(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
-                                active=active,
                                 code=code,
                                 device_type=DeviceType.BusDevice)
+
+        self.active = active
+        self.active_prof = None
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -146,8 +148,6 @@ class Bus(EditableDevice):
 
         # is the bus active?
         self.active = active
-
-        self.active_prof = None
 
         self.country: Country = country
 

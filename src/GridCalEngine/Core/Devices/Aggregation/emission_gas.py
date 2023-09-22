@@ -43,7 +43,6 @@ class EmissionGas(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.EmissionGasDevice)
 
         self.cost = cost

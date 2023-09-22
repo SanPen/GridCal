@@ -42,7 +42,6 @@ class GeneratorFuel(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.GeneratorFuelAssociation)
 
         self.generator = generator

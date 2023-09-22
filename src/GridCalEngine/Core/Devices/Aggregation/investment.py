@@ -48,7 +48,6 @@ class Investment(EditableDevice):
         EditableDevice.__init__(self,
                                 idtag=idtag,
                                 code=code,
-                                active=True,
                                 name=name,
                                 device_type=DeviceType.InvestmentDevice)
 

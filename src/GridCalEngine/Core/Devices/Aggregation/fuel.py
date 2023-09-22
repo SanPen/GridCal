@@ -48,7 +48,6 @@ class Fuel(EditableDevice):
                                 name=name,
                                 code=code,
                                 idtag=idtag,
-                                active=True,
                                 device_type=DeviceType.FuelDevice)
 
         self.cost = cost

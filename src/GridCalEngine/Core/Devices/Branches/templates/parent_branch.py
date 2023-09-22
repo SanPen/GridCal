@@ -89,7 +89,6 @@ class ParentBranch(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code=code,
-                                active=active,
                                 device_type=device_type)
 
         # connectivity
@@ -98,6 +97,9 @@ class ParentBranch(EditableDevice):
 
         self.cn_from = cn_from
         self.cn_to = cn_to
+
+        self.active = active
+        self.active_prof = active_prof
 
         # List of measurements
         self.measurements = list()
@@ -119,8 +121,6 @@ class ParentBranch(EditableDevice):
         self.opex = opex
 
         self.build_status = build_status
-
-        self.active_prof = active_prof
 
         # line rating in MVA
         self.rate = rate

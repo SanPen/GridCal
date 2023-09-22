@@ -103,13 +103,13 @@ class InjectionTemplate(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code=code,
-                                active=active,
                                 device_type=device_type)
 
         self.bus = bus
 
         self.cn = cn
 
+        self.active = active
         self.active_prof = active_prof
 
         self.mttf = mttf
