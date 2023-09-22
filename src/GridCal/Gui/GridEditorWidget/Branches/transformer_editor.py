@@ -114,7 +114,7 @@ class TransformerEditor(QDialog):
                         self.catalogue_combo.setCurrentIndex(idx)
 
                         # set the template parameters
-                        Sn = self.current_template.rating  # MVA
+                        Sn = self.current_template.Sn  # MVA
                         Pcu = self.current_template.Pcu  # kW
                         Pfe = self.current_template.Pfe  # kW
                         I0 = self.current_template.I0  # %
@@ -284,7 +284,7 @@ class TransformerEditor(QDialog):
         :param template:
         :return:
         """
-        self.sn_spinner.setValue(template.rating)  # MVA
+        self.sn_spinner.setValue(template.Sn)  # MVA
         self.pcu_spinner.setValue(template.Pcu)  # kW
         self.pfe_spinner.setValue(template.Pfe)  # kW
         self.I0_spinner.setValue(template.I0)  # %

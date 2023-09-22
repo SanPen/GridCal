@@ -17,11 +17,12 @@
 
 import uuid
 from enum import Enum
+import networkx as nx
 from typing import Dict, Union, List, Tuple
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.enumerations import DiagramType
+from GridCalEngine.Core.Devices.enumerations import DiagramType, DeviceType
 
 
 class PointsGroup:
@@ -146,7 +147,11 @@ class BaseDiagram:
             d.set_point(device, location)  # the category, exists, just add
 
     def delete_device(self, device: EditableDevice):
+        """
 
+        :param device:
+        :return:
+        """
         # check if the category exists ...
         d = self.data.get(device.device_type.value, None)
 
@@ -204,3 +209,48 @@ class BaseDiagram:
             points_group.parse_data(data=loc_dict,
                                     obj_dict=obj_dict.get(category, dict()))
             self.data[category] = points_group
+
+    def build_graph(self):
+        """
+        Returns a networkx DiGraph object of the grid.
+        """
+        graph = nx.DiGraph()
+
+        bus_dictionary = dict()
+
+        buses_groups = self.data.get(DeviceType.BusDevice.value, None)
+        buses = list()
+        if buses_groups:
+            for i, (idtag, location) in enumerate(buses_groups.locations.items()):
+                graph.add_node(i)
+                bus_dictionary[idtag] = i
+                buses.append(location.api_object)
+
+            # branch_groups = dict()
+            tuples = list()
+            for dev_type in [DeviceType.LineDevice,
+                             DeviceType.DCLineDevice,
+                             DeviceType.HVDCLineDevice,
+                             DeviceType.Transformer2WDevice,
+                             DeviceType.VscDevice,
+                             DeviceType.UpfcDevice]:
+
+                groups = self.data.get(dev_type.value, None)
+
+                if groups:
+                    for i, (idtag, location) in enumerate(groups.locations.items()):
+                        branch = location.api_object
+                        f = bus_dictionary[branch.bus_from.idtag]
+                        t = bus_dictionary[branch.bus_to.idtag]
+
+                        if hasattr(branch, 'X'):
+                            w = branch.X
+                        else:
+                            w = 1e-6
+
+                        # self.graph.add_edge(f, t)
+                        tuples.append((f, t, w))
+
+            graph.add_weighted_edges_from(tuples)
+
+        return graph, buses

@@ -231,11 +231,13 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
     :param imbalance_threshold: Allowed percentage of imbalance
     :param v_low: lower voltage setting
     :param v_high: higher voltage setting
-    :param tap_min:
-    :param tap_max:
+    :param tap_min: minimum tap value
+    :param tap_max: maximum tap value
     :param transformer_virtual_tap_tolerance:
     :param branch_connection_voltage_tolerance:
-    :param logger:
+    :param max_vcc: maximum short circuit voltage (%)
+    :param min_vcc: Minimum short circuit voltage (%)
+    :param logger: GridErrorLog
     :return: list of fixable error objects
     """
     if circuit.time_profile is not None:
@@ -558,6 +560,25 @@ def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
                                lower=str(min_vcc),
                                upper=str(max_vcc),
                                val=vcc)
+
+                # check the nominal power
+                if elm.Sn > 0:
+                    sn_ratio = elm.rate / elm.Sn
+                    if not (0.9 < sn_ratio < 1.1):
+                        logger.add(object_type=object_type.value,
+                                   element_name=elm.name,
+                                   element_index=i,
+                                   severity=LogSeverity.Warning,
+                                   propty='Vcc',
+                                   message='Transformer rating is too different from the nominal power',
+                                   lower=str(elm.Sn * 0.9),
+                                   upper=str(elm.Sn * 1.1),
+                                   val=elm.rate)
+                        fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                                     property_name='rate',
+                                                                     value=elm.rate,
+                                                                     lower_limit=elm.Sn,
+                                                                     upper_limit=elm.Sn))
 
         elif object_type == dev.DeviceType.BusDevice:
             elements = circuit.buses

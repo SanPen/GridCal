@@ -48,8 +48,16 @@ class TransformerType(EditableDevice):
 
     """
 
-    def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0.001, copper_losses=0, iron_losses=0,
-                 no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
+    def __init__(self,
+                 hv_nominal_voltage=0.0,
+                 lv_nominal_voltage=0.0,
+                 nominal_power=0.001,
+                 copper_losses=0.0,
+                 iron_losses=0.0,
+                 no_load_current=0.0,
+                 short_circuit_voltage=0.0,
+                 gr_hv1=0.5,
+                 gx_hv1=0.5,
                  name='TransformerType', idtag=None):
         """
         Transformer template from the short circuit study
@@ -63,7 +71,7 @@ class TransformerType(EditableDevice):
         :param gr_hv1: proportion of the resistance in the HV side (i.e. 0.5)
         :param gx_hv1: proportion of the reactance in the HV side (i.e. 0.5)
         :param name: Name of the device template
-        :param tpe: Kind of template
+        :param idtag: device UUID
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -76,7 +84,7 @@ class TransformerType(EditableDevice):
 
         self.LV = lv_nominal_voltage
 
-        self.rating = nominal_power
+        self.Sn = nominal_power
 
         self.Pcu = copper_losses
 
@@ -92,7 +100,7 @@ class TransformerType(EditableDevice):
 
         self.register(key='HV', units='kV', tpe=float, definition='Nominal voltage al the high voltage side')
         self.register(key='LV', units='kV', tpe=float, definition='Nominal voltage al the low voltage side')
-        self.register(key='rating', units='MVA', tpe=float, definition='Nominal power')
+        self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power', old_names=['rating'])
         self.register(key='Pcu', units='kW', tpe=float, definition='Copper losses')
         self.register(key='Pfe', units='kW', tpe=float, definition='Iron losses')
         self.register(key='I0', units='%', tpe=float, definition='No-load current')
@@ -108,7 +116,7 @@ class TransformerType(EditableDevice):
         :return: Zseries and Yshunt in system per unit
         """
 
-        Sn = self.rating  # Nominal power (MVA)
+        Sn = self.Sn  # Nominal power (MVA)
         Pcu = self.Pcu    # Copper losses, AKA resistive losses (kW)
         Pfe = self.Pfe    # Iron losses, AKA magnetic losses (kW)
         I0 = self.I0      # No-load current (%)

@@ -31,7 +31,7 @@ import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
@@ -57,7 +57,7 @@ class DiagramsMain(CompiledArraysMain):
         CompiledArraysMain.__init__(self, parent)
 
         # list of diagrams
-        self.diagram_widgets_list: List[Union[BusBranchEditorWidget, BusViewerGUI, GridMapWidget]] = list()
+        self.diagram_widgets_list: List[Union[BusBranchEditorWidget, BusViewerWidget, GridMapWidget]] = list()
 
         # Declare the map
         palettes_list = [palettes.Colormaps.GridCal,
@@ -163,46 +163,47 @@ class DiagramsMain(CompiledArraysMain):
         Automatic layout of the nodes
         """
 
-        # guilty assumption
-        do_it = True
+        diagram_widget = self.get_selected_diagram_widget()
 
-        # if the ask, checkbox is checked, then ask
-        if self.ui.ask_before_appliying_layout_checkBox.isChecked():
-            reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                   'Are you sure that you want to try an automatic layout?',
-                                                   QtWidgets.QMessageBox.StandardButton.Yes,
-                                                   QtWidgets.QMessageBox.StandardButton.No)
+        if diagram_widget:
+            if isinstance(diagram_widget, BusBranchEditorWidget) or isinstance(diagram_widget, BusViewerWidget):
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
+                # guilty assumption
                 do_it = True
-            else:
-                do_it = False
 
-        if do_it:
-            graph = self.circuit.build_graph()
+                # if the ask, checkbox is checked, then ask
+                if self.ui.ask_before_appliying_layout_checkBox.isChecked():
+                    reply = QtWidgets.QMessageBox.question(self, 'Message',
+                                                           'Are you sure that you want to try an automatic layout?',
+                                                           QtWidgets.QMessageBox.StandardButton.Yes,
+                                                           QtWidgets.QMessageBox.StandardButton.No)
 
-            sel = self.ui.automatic_layout_comboBox.currentText()
-            pos_alg = self.layout_algorithms_dict[sel]
+                    if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
+                        do_it = True
+                    else:
+                        do_it = False
 
-            # get the positions of a spring layout of the graph
-            if sel == 'random_layout':
-                pos = pos_alg(graph)
-            elif sel == 'spring_layout':
-                pos = pos_alg(graph, iterations=100, scale=10)
-            elif sel == 'graphviz_neato':
-                pos = pos_alg(graph, prog='neato')
-            elif sel == 'graphviz_dot':
-                pos = pos_alg(graph, prog='dot')
-            else:
-                pos = pos_alg(graph, scale=10)
+                if do_it:
 
-            diagram_widget = self.get_selected_diagram_widget()
+                    graph, buses = diagram_widget.diagram.build_graph()
 
-            if diagram_widget:
-                if isinstance(diagram_widget, BusBranchEditorWidget):
+                    sel = self.ui.automatic_layout_comboBox.currentText()
+                    pos_alg = self.layout_algorithms_dict[sel]
+
+                    # get the positions of a spring layout of the graph
+                    if sel == 'random_layout':
+                        pos = pos_alg(graph)
+                    elif sel == 'spring_layout':
+                        pos = pos_alg(graph, iterations=100, scale=10)
+                    elif sel == 'graphviz_neato':
+                        pos = pos_alg(graph, prog='neato')
+                    elif sel == 'graphviz_dot':
+                        pos = pos_alg(graph, prog='dot')
+                    else:
+                        pos = pos_alg(graph, scale=10)
 
                     # assign the positions to the graphical objects of the nodes
-                    for i, bus in enumerate(self.circuit.buses):
+                    for i, bus in enumerate(buses):
                         x = pos[i][0] * 500
                         y = pos[i][1] * 500
                         position = diagram_widget.diagram.query_point(bus)
@@ -216,6 +217,8 @@ class DiagramsMain(CompiledArraysMain):
                     # adjust the view
                     diagram_widget.center_nodes()
 
+            else:
+                info_msg("The current diagram cannot be automatically layed out")
         else:
             pass  # asked and decided ot to change the layout
 
@@ -225,7 +228,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, BusBranchEditorWidget):
+            if isinstance(diagram, BusBranchEditorWidget) or isinstance(diagram, BusViewerWidget):
                 diagram.expand_node_distances()
 
     def smaller_nodes(self):
@@ -234,7 +237,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, BusBranchEditorWidget):
+            if isinstance(diagram, BusBranchEditorWidget) or isinstance(diagram, BusViewerWidget):
                 diagram.shrink_node_distances()
 
     def center_nodes(self):
@@ -244,7 +247,7 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, BusBranchEditorWidget):
+            if isinstance(diagram, BusBranchEditorWidget) or isinstance(diagram, BusViewerWidget):
                 selected = self.get_selected_buses()
 
                 if len(selected) == 0:
@@ -696,6 +699,10 @@ class DiagramsMain(CompiledArraysMain):
                                               current_study=current_study,
                                               current_step=current_step)
 
+                elif isinstance(diagram, BusViewerWidget):
+                    self.grid_colour_function(plot_function=diagram.colour_results,
+                                              current_study=current_study,
+                                              current_step=current_step)
                 elif isinstance(diagram, GridMapWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
@@ -708,7 +715,7 @@ class DiagramsMain(CompiledArraysMain):
         mdl = gf.DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
 
-    def get_selected_diagram_widget(self) -> Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerGUI]:
+    def get_selected_diagram_widget(self) -> Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget]:
         """
         Get the currently selected diagram
         :return: None, GridEditorWidget, GridMapWidget, BusViewerGUI
@@ -844,10 +851,10 @@ class DiagramsMain(CompiledArraysMain):
                         root_bus = sel_obj.bus_from
 
                     if root_bus is not None:
-                        diagram = BusViewerGUI(circuit=self.circuit,
-                                               root_bus=root_bus,
-                                               name=root_bus.name + ' vecinity',
-                                               view_toolbar=False)
+                        diagram = BusViewerWidget(circuit=self.circuit,
+                                                  root_bus=root_bus,
+                                                  name=root_bus.name + ' vecinity',
+                                                  view_toolbar=False)
                         self.add_diagram(diagram)
                         self.set_diagrams_list_view()
 
@@ -897,10 +904,10 @@ class DiagramsMain(CompiledArraysMain):
 
         if len(sel_buses):
             bus_idx, root_bus = sel_buses[0]
-            diagram = BusViewerGUI(circuit=self.circuit,
-                                   root_bus=root_bus,
-                                   name=root_bus.name + ' vecinity',
-                                   view_toolbar=False)
+            diagram = BusViewerWidget(circuit=self.circuit,
+                                      root_bus=root_bus,
+                                      name=root_bus.name + ' vecinity',
+                                      view_toolbar=False)
             self.add_diagram(diagram)
             self.set_diagrams_list_view()
 
@@ -928,7 +935,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         self.set_diagrams_list_view()
 
-    def add_diagram(self, diagram_widget: Union[BusBranchEditorWidget, GridMapWidget, BusViewerGUI]):
+    def add_diagram(self, diagram_widget: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
         """
         Add diagram
         :param diagram_widget:
@@ -986,7 +993,7 @@ class DiagramsMain(CompiledArraysMain):
             # remove it from the gui
             widget_to_remove.setParent(None)
 
-    def set_diagram_widget(self, diagram: Union[BusBranchEditorWidget, GridMapWidget, BusViewerGUI]):
+    def set_diagram_widget(self, diagram: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
         """
         Set the current diagram in the container
         :param diagram: GridEditorWidget, GridMapWidget, BusViewerGUI

@@ -455,7 +455,7 @@ class Winding(ParentBranch):
             self.G = np.round(y_shunt.real, 6)
             self.B = np.round(y_shunt.imag, 6)
 
-            self.rate = obj.rating
+            self.rate = obj.Sn
 
             self.HV = obj.HV
             self.LV = obj.LV

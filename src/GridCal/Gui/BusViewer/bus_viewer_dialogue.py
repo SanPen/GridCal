@@ -17,13 +17,15 @@
 import sys
 from PySide6 import QtWidgets
 
+from typing import List, Dict, Union, Tuple
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices.Substation import Bus
 
 
-class BusViewerGUI(QMainWindow):
+class BusViewerWidget(QMainWindow):
 
     def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, name='', parent=None, view_toolbar=True):
         """
@@ -118,13 +120,18 @@ class BusViewerGUI(QMainWindow):
         if self.grid_editor is not None:
             self.grid_editor.shrink_node_distances()
 
-    def center_nodes(self):
+    def center_nodes(self, margin_factor: float = 0.1, buses: Union[None, List[Bus]] = None):
         """
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
-            # self.grid_editor.align_schematic()
-            self.grid_editor.center_nodes()
+            self.grid_editor.center_nodes(margin_factor=margin_factor,
+                                          buses=buses)
+
+    def colour_results(self, **kwargs):
+
+        if self.grid_editor is not None:
+            self.grid_editor.colour_results(**kwargs)
 
     def new_editor(self):
         """
@@ -256,7 +263,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     circuit_ = MultiCircuit()
     circuit_.add_bus(dev.Bus('bus1'))
-    window = BusViewerGUI(circuit=circuit_, root_bus=circuit_.buses[0])
+    window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.buses[0])
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec())

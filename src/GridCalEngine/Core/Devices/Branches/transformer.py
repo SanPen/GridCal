@@ -32,10 +32,15 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 class Transformer2W(ParentBranch):
 
     def __init__(self,
+                 name='Branch', idtag=None, code='',
                  bus_from: Bus = None,
                  bus_to: Bus = None,
                  HV=None, LV=None,
-                 name='Branch', idtag=None, code='',
+                 nominal_power=0.001,
+                 copper_losses=0.0,
+                 iron_losses=0.0,
+                 no_load_current=0.0,
+                 short_circuit_voltage=0.0,
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0,
                  tap_module=1.0, tap_module_max=1.2, tap_module_min=0.5,
@@ -56,13 +61,18 @@ class Transformer2W(ParentBranch):
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Transformer constructor
+        :param name: Name of the branch
+        :param idtag: UUID code
+        :param code: secondary id
         :param bus_from: "From" :ref:`bus<Bus>` object
         :param bus_to: "To" :ref:`bus<Bus>` object
         :param HV: Higher voltage value in kV
         :param LV: Lower voltage value in kV
-        :param name: Name of the branch
-        :param idtag: UUID code
-        :param code: secondary id
+        :param nominal_power: Nominal power of the machine in MVA
+        :param copper_losses: Copper losses in kW
+        :param iron_losses: Iron losses in kW
+        :param no_load_current: No load current in %
+        :param short_circuit_voltage: Short circuit voltage in %
         :param r: resistance in per unit
         :param x: reactance in per unit
         :param g: shunt conductance in per unit
@@ -141,6 +151,16 @@ class Transformer2W(ParentBranch):
         self.LV = 0
         self.set_hv_and_lv(HV, LV)
 
+        self.Sn = nominal_power
+
+        self.Pcu = copper_losses
+
+        self.Pfe = iron_losses
+
+        self.I0 = no_load_current
+
+        self.Vsc = short_circuit_voltage
+
         # List of measurements
         self.measurements = list()
 
@@ -211,6 +231,11 @@ class Transformer2W(ParentBranch):
 
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
+        self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power')
+        self.register(key='Pcu', units='kW', tpe=float, definition='Copper losses (optional)')
+        self.register(key='Pfe', units='kW', tpe=float, definition='Iron losses (optional)')
+        self.register(key='I0', units='%', tpe=float, definition='No-load current (optional)')
+        self.register(key='Vsc', units='%', tpe=float, definition='Short-circuit voltage (optional)')
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
@@ -486,7 +511,13 @@ class Transformer2W(ParentBranch):
             self.G = np.round(y_shunt.real, 6)
             self.B = np.round(y_shunt.imag, 6)
 
-            self.rate = obj.rating
+            self.rate = obj.Sn
+
+            self.Sn = obj.Sn
+            self.Pcu = obj.Pcu
+            self.Pfe = obj.Pfe
+            self.I0 = obj.I0
+            self.Vsc = obj.Vsc
 
             self.HV = obj.HV
             self.LV = obj.LV
