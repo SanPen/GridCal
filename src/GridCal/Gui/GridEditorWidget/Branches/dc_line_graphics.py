@@ -84,15 +84,15 @@ class DcLineEditor(QDialog):
                         self.catalogue_combo.setCurrentIndex(idx)
 
                         if isinstance(self.current_template, SequenceLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R
 
                         if isinstance(self.current_template, UndergroundLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R1
 
                     except:
@@ -194,19 +194,19 @@ class DcLineEditor(QDialog):
         :return:
         """
         if isinstance(template, SequenceLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
 
             self.selected_template = template
 
         elif isinstance(template, UndergroundLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
 
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R1)
 
             self.selected_template = template

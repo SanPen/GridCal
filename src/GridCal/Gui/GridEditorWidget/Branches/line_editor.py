@@ -91,19 +91,19 @@ class LineEditor(QDialog):
                         self.catalogue_combo.setCurrentIndex(idx)
 
                         if isinstance(self.current_template, SequenceLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R
                             X = self.current_template.X
                             B = self.current_template.B
 
                         if isinstance(self.current_template, UndergroundLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R
                             X = self.current_template.X
                             B = self.current_template.B
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.rating
+                            I = self.current_template.Imax
                             R = self.current_template.R1
                             X = self.current_template.X1
                             B = self.current_template.Bsh1
@@ -175,7 +175,7 @@ class LineEditor(QDialog):
         self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
+        self.layout.addWidget(QLabel("B: Susceptance [uS/Km]"))
         self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.accept_btn)
@@ -189,26 +189,26 @@ class LineEditor(QDialog):
         Set the values
         :return:
         """
-        length = self.l_spinner.value()
-        I = self.i_spinner.value()
-        R = self.r_spinner.value() * length
-        X = self.x_spinner.value() * length
-        B = self.b_spinner.value() * length
-
-        Vf = self.line.bus_from.Vnom
-        Vt = self.line.bus_to.Vnom
-
-        Zbase = (Vf * Vf) / self.Sbase
-        Ybase = 1.0 / Zbase
-
-        self.line.R = np.round(R / Zbase, 6)
-        self.line.X = np.round(X / Zbase, 6)
-        self.line.B = np.round(B / Ybase, 6)
-        self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
-        self.line.length = length
 
         if self.selected_template is not None:
-            self.line.template = self.selected_template
+            self.line.apply_template(self.selected_template, Sbase=self.Sbase)
+        else:
+            length = self.l_spinner.value()
+            I = self.i_spinner.value()
+            R = self.r_spinner.value() * length
+            X = self.x_spinner.value() * length
+            B = self.b_spinner.value() * length
+
+            Vf = self.line.get_max_bus_nominal_voltage()
+
+            Zbase = (Vf * Vf) / self.Sbase
+            Ybase = 1.0 / Zbase
+
+            self.line.R = np.round(R / Zbase, 6)
+            self.line.X = np.round(X / Zbase, 6)
+            self.line.B = np.round(B / Ybase, 6)
+            self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
+            self.line.length = length
 
         self.accept()
 
@@ -219,7 +219,7 @@ class LineEditor(QDialog):
         :return:
         """
         if isinstance(template, SequenceLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
             self.b_spinner.setValue(template.B)
@@ -227,7 +227,7 @@ class LineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, UndergroundLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
             self.b_spinner.setValue(template.B)
@@ -235,7 +235,7 @@ class LineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            self.i_spinner.setValue(template.rating)
+            self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R1)
             self.x_spinner.setValue(template.X1)
             self.b_spinner.setValue(template.Bsh1)

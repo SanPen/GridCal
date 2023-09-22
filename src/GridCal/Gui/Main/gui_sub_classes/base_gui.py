@@ -56,6 +56,7 @@ from GridCal.Gui.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.templates import get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue, get_sequence_lines_catalogue
 
 try:
     from GridCal.Gui.ConsoleWidget import ConsoleWidget
@@ -545,8 +546,6 @@ class BaseMainGui(QMainWindow):
             self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.Checked)
             self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.Checked)
 
-
-
     def fix_generators_active_based_on_the_power(self, ask_before=True):
         """
         set the generators active based on the active power values
@@ -781,9 +780,11 @@ class BaseMainGui(QMainWindow):
         """
         Add default catalogue to circuit
         """
-        self.circuit.transformer_types += dev.get_transformer_catalogue()
-        self.circuit.underground_cable_types += dev.get_cables_catalogue()
-        self.circuit.wire_types += dev.get_wires_catalogue()
+
+        self.circuit.transformer_types += get_transformer_catalogue()
+        self.circuit.underground_cable_types += get_cables_catalogue()
+        self.circuit.wire_types += get_wires_catalogue()
+        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
 
     def get_snapshot_circuit(self):
         """

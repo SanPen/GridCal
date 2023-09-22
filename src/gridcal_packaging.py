@@ -321,7 +321,8 @@ def publish(pkg_name: str,
             requires_pyhon: str,
             description_content_type: str,
             provides_extra: str,
-            long_description: str):
+            long_description: str,
+            ext_filter=['.py', '.csv', '.txt']):
     """
     Publish package to Pypi using twine
     :param pkg_name: name of the package (i.e GridCal)
@@ -356,7 +357,7 @@ def publish(pkg_name: str,
                              provides_extra=provides_extra,
                              long_description=long_description,
                              folder_to_save='dist',
-                             ext_filter=['.py', '.csv', '.txt'])
+                             ext_filter=ext_filter)
 
     # check the tar.gz file
     call([sys.executable, '-m', 'twine', 'check', fpath])

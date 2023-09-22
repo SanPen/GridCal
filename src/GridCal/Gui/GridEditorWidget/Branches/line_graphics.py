@@ -256,12 +256,20 @@ class LineGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types + self.diagramScene.circuit.sequence_line_types
+        Vnom = self.api_object.get_max_bus_nominal_voltage()
+        templates = list()
+
+        for lst in [self.diagramScene.circuit.sequence_line_types,
+                    self.diagramScene.circuit.underground_cable_types,
+                    self.diagramScene.circuit.overhead_line_types]:
+            for temp in lst:
+                if Vnom == temp.Vnom:
+                    templates.append(temp)
+
         current_template = self.api_object.template
         dlg = LineEditor(self.api_object, Sbase, templates, current_template)
         if dlg.exec_():
             pass
-
 
     def show_line_editor(self):
         """
@@ -287,14 +295,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
             tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
                                    idtag=None,
-                                   rating=rated_current,
+                                   Imax=rated_current,
+                                   Vnom=self.api_object.Vf,
                                    R=self.api_object.R / self.api_object.length,
                                    X=self.api_object.X / self.api_object.length,
-                                   G=0.0,
                                    B=self.api_object.B / self.api_object.length,
                                    R0=self.api_object.R0 / self.api_object.length,
                                    X0=self.api_object.X0 / self.api_object.length,
-                                   G0=0,
                                    B0=self.api_object.B0 / self.api_object.length)
 
             self.diagramScene.circuit.add_sequence_line(tpe)

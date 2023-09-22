@@ -17,22 +17,20 @@
 
 import os
 import pandas as pd
-from GridCalEngine.Core.Devices.Branches.line import SequenceLineType
+from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.transformer import TransformerType
 from GridCalEngine.Core.Devices.Branches.wire import Wire
 
 
 def get_transformer_catalogue():
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    fname = os.path.join(path, '../..', '..', 'data', 'transformers.csv')
+    here = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(here, 'data', 'transformers.csv')
 
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
         lst = list()
         for i, item in df.iterrows():
-
             tpe = TransformerType(hv_nominal_voltage=item['HV (kV)'],
                                   lv_nominal_voltage=item['LV (kV)'],
                                   nominal_power=item['Rate (MVA)'],
@@ -51,9 +49,12 @@ def get_transformer_catalogue():
 
 
 def get_cables_catalogue():
+    """
 
-    path = os.path.dirname(os.path.abspath(__file__))
-    fname = os.path.join(path, '../..', '..', 'data', 'cables.csv')
+    :return:
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(here, 'data', 'cables.csv')
 
     if os.path.exists(fname):
         df = pd.read_csv(fname)
@@ -72,16 +73,15 @@ def get_cables_catalogue():
             X0  [Ohm/km]
             L0 [mH/km]
             """
-            tpe = SequenceLineType(name=item['Name'],
-                                   rating=item['Rated current [kA]'],
-                                   R=item['R [Ohm/km AC@20°C]'],
-                                   X=item['X [Ohm/km]'],
-                                   G=0.0,
-                                   B=0.0,
-                                   R0=item['R0 (AC) [Ohm/km]'],
-                                   X0=item['X0  [Ohm/km]'],
-                                   G0=0.0,
-                                   B0=0.0)
+            tpe = UndergroundLineType(name=item['Name'],
+                                      Imax=item['Rated current [kA]'],
+                                      Vnom=item['Rated voltage [kV]'],
+                                      R=item['R [Ohm/km AC@20°C]'],
+                                      X=item['X [Ohm/km]'],
+                                      B=0.0,
+                                      R0=item['R0 (AC) [Ohm/km]'],
+                                      X0=item['X0  [Ohm/km]'],
+                                      B0=0.0)
 
             lst.append(tpe)
 
@@ -91,16 +91,14 @@ def get_cables_catalogue():
 
 
 def get_wires_catalogue():
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    fname = os.path.join(path, '../..', '..', 'data', 'wires.csv')
+    here = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(here, 'data', 'wires.csv')
 
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
         lst = list()
         for i, item in df.iterrows():
-
             '''
             Size,Stranding,Material,Diameter [cm],GMR [m],R [Ohm/km],Rating [kA]
             '''
@@ -116,3 +114,43 @@ def get_wires_catalogue():
     else:
         return list()
 
+
+def get_sequence_lines_catalogue():
+    """
+
+    :return:
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(here, 'data', 'sequence_lines.csv')
+
+    if os.path.exists(fname):
+        df = pd.read_csv(fname)
+
+        lst = list()
+        for i, item in df.iterrows():
+            """
+            Name,
+            Vnom (kV)	
+            r (ohm/km)	
+            x (ohm/km)	
+            b (uS/km)	
+            r0 (ohm/km)	
+            x0 (ohm/km)	
+            b0 (uS/km)	
+            Imax (kA)
+            """
+            tpe = SequenceLineType(name=item['Name'],
+                                   Vnom=item['Vnom (kV)'],
+                                   Imax=item['Imax (kA)'],
+                                   R=item['r (ohm/km)'],
+                                   X=item['x (ohm/km)'],
+                                   B=item['b (uS/km)'],
+                                   R0=item['r0 (ohm/km)'],
+                                   X0=item['x0 (ohm/km)'],
+                                   B0=item['b0 (uS/km)'])
+
+            lst.append(tpe)
+
+        return lst
+    else:
+        return list()

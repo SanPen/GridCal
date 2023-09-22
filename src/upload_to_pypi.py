@@ -65,7 +65,8 @@ if __name__ == "__main__":
                 requires_pyhon=_requires_pyhon,
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
-                long_description=_long_description
+                long_description=_long_description,
+                ext_filter=['.py', '.csv', '.txt']
                 )
 
         publish(pkg_name='GridCal',
@@ -81,7 +82,8 @@ if __name__ == "__main__":
                 requires_pyhon=_requires_pyhon,
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
-                long_description=_long_description
+                long_description=_long_description,
+                ext_filter=['.py', '.csv', '.txt']
                 )
 
     else:

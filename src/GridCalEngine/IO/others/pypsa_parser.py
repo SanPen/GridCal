@@ -150,7 +150,7 @@ class PyPSAParser:
             # Compute shunt susceptance in S/km from shunt capacitance in nF/km.
             omega = 2 * math.pi * data['f_nom']  # Hz
             b = data['c_per_length'] * omega * 1e-9
-            kind = SequenceLineType(name=ix, rating=data['i_nom'], R=data['r_per_length'], X=data['x_per_length'], B=b)
+            kind = SequenceLineType(name=ix, Imax=data['i_nom'], R=data['r_per_length'], X=data['x_per_length'], B=b)
             self.dest.add_sequence_line(kind)
             by_name[ix] = kind
         return by_name

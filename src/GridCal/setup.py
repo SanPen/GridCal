@@ -101,7 +101,8 @@ package_data = {'GridCal': ['*.md',
                             'setup.py',
                             'data/cables.csv',
                             'data/transformers.csv',
-                            'data/wires.csv'],
+                            'data/wires.csv',
+                            'data/sequence_lines.csv'],
                 }
 
 dependencies = ['setuptools>=41.0.1',

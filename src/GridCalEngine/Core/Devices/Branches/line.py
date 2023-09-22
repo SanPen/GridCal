@@ -222,72 +222,10 @@ class Line(ParentBranch):
         :param logger: Logger
         """
 
-        if type(obj) is OverheadLineType:
+        if type(obj) in [OverheadLineType, UndergroundLineType, SequenceLineType]:
 
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            z1 = obj.z_series() * self.length / Zbase
-            y1 = obj.y_shunt() * self.length / Ybase
-            self.R = np.round(z1.real, 6)
-            self.X = np.round(z1.imag, 6)
-            self.B = np.round(y1.imag, 6)
-
-            z0 = obj.z0_series() * self.length / Zbase
-            y0 = obj.y0_shunt() * self.length / Ybase
-            self.R = np.round(z0.real, 6)
-            self.X = np.round(z0.imag, 6)
-            self.B = np.round(y0.imag, 6)
-
-            z2 = obj.z2_series() * self.length / Zbase
-            y2 = obj.y2_shunt() * self.length / Ybase
-            self.R = np.round(z2.real, 6)
-            self.X = np.round(z2.imag, 6)
-            self.B = np.round(y2.imag, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
-
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
-
-        elif type(obj) is UndergroundLineType:
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            z = obj.z_series() * self.length / Zbase
-            y = obj.y_shunt() * self.length / Ybase
-
-            self.R = np.round(z.real, 6)
-            self.X = np.round(z.imag, 6)
-            self.B = np.round(y.imag, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
-
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
-
-        elif type(obj) is SequenceLineType:
-
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            self.R = np.round(obj.R * self.length / Zbase, 6)
-            self.X = np.round(obj.X * self.length / Zbase, 6)
-            self.B = np.round(obj.B * self.length / Ybase, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
+            self.R, self.X, self.B, self.R0, self.X0, self.B0, self.rate = obj.get_values(Sbase=Sbase,
+                                                                                          length=self.length)
 
             if self.template is not None:
                 if obj != self.template:

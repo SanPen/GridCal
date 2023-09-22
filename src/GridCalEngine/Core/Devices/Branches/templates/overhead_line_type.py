@@ -72,6 +72,8 @@ class OverheadLineType(EditableDevice):
         # list of wires in the tower
         self.wires_in_tower = list()
 
+        self.Vnom = 1.0
+
         # properties
         # self.tower_name = name
         self.earth_resistivity = 100
@@ -82,7 +84,6 @@ class OverheadLineType(EditableDevice):
         self.X1 = 0.0
 
         # total shunt admittance (positive sequence)
-        self.Gsh1 = 0.0
         self.Bsh1 = 0.0
 
         # total series impedance (positive sequence)
@@ -90,11 +91,10 @@ class OverheadLineType(EditableDevice):
         self.X0 = 0.0
 
         # total shunt admittance (positive sequence)
-        self.Gsh0 = 0.0
         self.Bsh0 = 0.0
 
         # current rating of the tower in kA
-        self.rating = 0.0
+        self.Imax = 0.0
 
         # impedances
         self.z_abcn = None
@@ -119,13 +119,12 @@ class OverheadLineType(EditableDevice):
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
         self.register(key='R1', units='Ohm/km', tpe=float, definition='Positive sequence resistance')
         self.register(key='X1', units='Ohm/km', tpe=float, definition='Positive sequence reactance')
-        self.register(key='Gsh1', units='S/km', tpe=float, definition='Positive sequence shunt conductance')
-        self.register(key='Bsh1', units='S/km', tpe=float, definition='Positive sequence shunt susceptance')
+        self.register(key='Bsh1', units='uS/km', tpe=float, definition='Positive sequence shunt susceptance')
         self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance')
         self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero sequence reactance')
-        self.register(key='Gsh0', units='S/km', tpe=float, definition='Zero sequence shunt conductance')
-        self.register(key='Bsh0', units='S/km', tpe=float, definition='Zero sequence shunt susceptance')
-        self.register(key='rating', units='kA', tpe=float, definition='Current rating of the tower')
+        self.register(key='Bsh0', units='uS/km', tpe=float, definition='Zero sequence shunt susceptance')
+        self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
+        self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
     def add_wire(self, w: Wire):
         """
@@ -157,19 +156,19 @@ class OverheadLineType(EditableDevice):
         """
         positive sequence shunt admittance in S per unit of length
         """
-        return self.Gsh1 + 1j * self.Bsh1
+        return 1j * self.Bsh1
 
     def y0_shunt(self):
         """
         zero sequence shunt admittance in S per unit of length
         """
-        return self.Gsh0 + 1j * self.Bsh0
+        return 1j * self.Bsh0
 
     def y2_shunt(self):
         """
         negative sequence shunt admittance in S per unit of length
         """
-        return self.Gsh0 + 1j * self.Bsh0
+        return 1j * self.Bsh0
 
     def plot(self, ax=None):
         """
@@ -277,17 +276,15 @@ class OverheadLineType(EditableDevice):
                 self.y_seq = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
-            self.rating = self.compute_rating()
+            self.Imax = self.compute_rating()
 
             self.R0 = self.z_seq[0, 0].real
             self.X0 = self.z_seq[0, 0].imag
-            self.Gsh0 = self.y_seq[0, 0].real
-            self.Bsh0 = self.y_seq[0, 0].imag
+            self.Bsh0 = self.y_seq[0, 0].imag * 1e6
 
             self.R1 = self.z_seq[1, 1].real
             self.X1 = self.z_seq[1, 1].imag
-            self.Gsh1 = self.y_seq[1, 1].real
-            self.Bsh1 = self.y_seq[1, 1].imag
+            self.Bsh1 = self.y_seq[1, 1].imag * 1e6
         else:
             pass
 
@@ -301,6 +298,40 @@ class OverheadLineType(EditableDevice):
         for i in range(n - 1, -1, -1):
             if self.wires_in_tower[i].wire.name == wire.name:
                 return True
+
+    def get_values(self, Sbase, length):
+        """
+
+        :param Sbase:
+        :param length:
+        :return:
+        """
+        Vn = self.Vnom
+        Zbase = (Vn * Vn) / Sbase
+        Ybase = 1 / Zbase
+
+        z1 = self.z_series() * length / Zbase
+        y1 = self.y_shunt() * length * -1e6 / Ybase
+        R1 = np.round(z1.real, 6)
+        X1 = np.round(z1.imag, 6)
+        B1 = np.round(y1.imag, 6)
+
+        z0 = self.z0_series() * length / Zbase
+        y0 = self.y0_shunt() * length * -1e6 / Ybase
+        R0 = np.round(z0.real, 6)
+        X0 = np.round(z0.imag, 6)
+        B0 = np.round(y0.imag, 6)
+
+        z2 = self.z2_series() * length / Zbase
+        y2 = self.y2_shunt() * length * -1e6 / Ybase
+        R2 = np.round(z2.real, 6)
+        X2 = np.round(z2.imag, 6)
+        B2 = np.round(y2.imag, 6)
+
+        # get the rating in MVA = kA * kV
+        rate = self.Imax * Vn * np.sqrt(3)
+
+        return R1, X1, B1, R0, X0, B0, rate
 
     def __str__(self):
         return self.name
