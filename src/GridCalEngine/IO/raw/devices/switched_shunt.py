@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawSwitchedShunt(RawObject):
@@ -30,14 +29,12 @@ class RawSwitchedShunt(RawObject):
         '''
         MODSW:
         0 - locked
-        1 - discrete adjustment, controlling voltage locally or at bus SWREG
-        2 - continuous adjustment, controlling voltage locally or at bus SWREG
-        3 - discrete adjustment, controlling the reactive power output of the plant at bus SWREG
-        4 - discrete adjustment, controlling the reactive power output of the VSC dc line converter 
-            at bus SWREG of the VSC dc line for which the name is specified as RMIDNT
-        5 - discrete adjustment, controlling the admittance setting of the switched shunt at bus SWREG
-        6 - discrete adjustment, controlling the reactive power output of the shunt element of the 
-            FACTS device for which the name is specified as RMIDNT
+        1 - discrete adjustment, local voltage control
+        2 - continuous adjustment, local voltage control
+        3 - discrete adjustment, local generator reactive power control (WTF?)
+        4 - discrete adjustment, branch voltage control (see RMIDNT)
+        5 - discrete adjustment, local admittance control (WTF?)
+        6 - discrete adjustment, reactive power control for FACTS (see RMIDNT)
         '''
         self.MODSW = 0
         self.ADJM = 0
@@ -116,13 +113,13 @@ class RawSwitchedShunt(RawObject):
                                rawx_key="vswhi",
                                class_type=float,
                                description="Controlled voltage upper limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="VSWLO",
                                rawx_key="vswlo",
                                class_type=float,
                                description="Controlled voltage upper limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="SWREG",
                                rawx_key="swreg",
@@ -141,8 +138,7 @@ class RawSwitchedShunt(RawObject):
         self.register_property(property_name="RMPCT",
                                rawx_key="rmpct",
                                class_type=float,
-                               description="Percent of the total Mvar required to hold the voltage at the bus "
-                                           "controlled by bus I that are to be contributed by the generation at bus I;",
+                               description="Percent of the total Mvar required to hold the voltage at the control bus",
                                min_value=0,
                                max_value=100.0,
                                unit=Unit.get_percent())
@@ -156,7 +152,7 @@ class RawSwitchedShunt(RawObject):
                                rawx_key="binit",
                                class_type=float,
                                description="Initial switched shunt admittance",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         for i in range(8):
             self.register_property(property_name="S{}".format(i+1),

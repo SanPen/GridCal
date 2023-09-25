@@ -15,11 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import Dict
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawBus(RawObject):
@@ -58,13 +56,13 @@ class RawBus(RawObject):
                                rawx_key="baskv",
                                class_type=float,
                                description="Bus base voltage",
-                               unit=Unit(UnitMultiplier.k, UnitSymbol.V),
+                               unit=Unit.get_kv(),
                                min_value=0.0)
 
         self.register_property(property_name="IDE",
                                rawx_key="ide",
                                class_type=int,
-                               description="Bus type",
+                               description="Bus type (0:Disconnected, 1:PQ, 2:PV, 3:Slack)",
                                min_value=1,
                                max_value=4)
 
@@ -93,7 +91,7 @@ class RawBus(RawObject):
                                rawx_key="vm",
                                class_type=float,
                                description="Bus voltage magnitude",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu),
+                               unit=Unit.get_pu(),
                                min_value=0.0,
                                max_value=2.0)
 
@@ -101,7 +99,7 @@ class RawBus(RawObject):
                                rawx_key="va",
                                class_type=float,
                                description="Bus voltage angle",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg),
+                               unit=Unit.get_deg(),
                                min_value=0.0,
                                max_value=360.0)
 
@@ -109,22 +107,25 @@ class RawBus(RawObject):
                                rawx_key="nvhi",
                                class_type=float,
                                description="Normal voltage magnitude high limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="NVLO",
                                rawx_key="nvlo",
                                class_type=float,
                                description="Normal voltage magnitude low limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="EVHI",
                                rawx_key="evhi",
                                class_type=float,
                                description="Emergency voltage magnitude high limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="EVLO",
                                rawx_key="evlo",
                                class_type=float,
                                description="Emergency voltage magnitude low limit",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
     def parse(self, data, version, logger: Logger):
         """

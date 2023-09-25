@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class RawFACTS(RawObject):
@@ -53,127 +51,98 @@ class RawFACTS(RawObject):
         self.register_property(property_name='NAME',
                                rawx_key='name',
                                class_type=str,
-                               description='The non-blank alphanumeric identifier assigned to this FACTS device',
+                               description='Device name',
                                max_chars=12)
 
         self.register_property(property_name='I',
                                rawx_key='ibus',
                                class_type=int,
-                               description='Sending end bus number',
+                               description='Bus from number',
                                min_value=1,
                                max_value=999997)
 
         self.register_property(property_name='J',
                                rawx_key='jbus',
                                class_type=int,
-                               description='Terminal end bus number',
+                               description='Bus to number',
                                min_value=0,
                                max_value=999997)
 
         self.register_property(property_name='MODE',
                                rawx_key='mode',
                                class_type=int,
-                               description='Control mode:\n'
-                                           'For a STATCON (i.e., a FACTS devices with a shunt element but no '
-                                           'series element),J must be 0 and MODE must be either 0 or 1):\n'
-                                           '•  0 - out-of-service (i.e., shunt link open)\n'
-                                           '•  1 - shunt link operating\n'
-                                           'For a FACTS device with a series element (i.e., J is not 0), MODE may be:\n'
-                                           '•  0 - out-of-service (i.e., series and shunt links open)\n'
-                                           '•  1 - series and shunt links operating\n'
-                                           '•  2 - series link bypassed (i.e., like a zero impedance line) '
-                                           'and shunt link operating as a STATCON\n'
-                                           '•  3 - series and shunt links operating with series link at constant '
-                                           'series impedance\n'
-                                           '•  4 - series and shunt links operating with series link at constant '
-                                           'series voltage\n'
-                                           '•  5 - master device of an IPFC with P and Q setpoints specified; '
-                                           'another FACTS device must be designated as the slave device '
-                                           '(i.e., its MODE is 6 or 8) of this IPFC\n'
-                                           '•  6 - slave device of an IPFC with P and Q setpoints specified; '
-                                           'the FACTS device specified in MNAME must be the master device '
-                                           '(i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is ignored '
-                                           'as the master device dictates the active power exchanged between '
-                                           'the two devices.\n'
-                                           '•  7 - master device of an IPFC with constant series voltage setpoints '
-                                           'specified;another FACTS device must be designated as the slave device '
-                                           '(i.e., its MODEis 6 or 8) of this IPFC\n'
-                                           '•  8 - slave device of an IPFC with constant series voltage setpoints '
-                                           'specified;the FACTS device specified in MNAME must be the master '
-                                           'device (i.e., itsMODE is 5 or 7) of this IPFC. '
-                                           'The complex Vd + jVq setpoint is modified during power flow solutions '
-                                           'to reflect the active power exchange determined by the master device',
+                               description='Control mode',
                                min_value=0,
                                max_value=8)
 
         self.register_property(property_name='PDES',
                                rawx_key='pdes',
                                class_type=float,
-                               description='Desired active power flow arriving at the terminal end bus;',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W))
+                               description='Desired active power flow arriving at the "to" bus;',
+                               unit=Unit.get_mw())
 
         self.register_property(property_name='QDES',
                                rawx_key='qdes',
                                class_type=float,
-                               description='Desired reactive power flow arriving at the terminal end bus',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               description='Desired reactive power flow arriving at the "to" bus',
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name='VSET',
                                rawx_key='vset',
                                class_type=float,
-                               description='Voltage setpoint at the sending end bus',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Voltage set point at the "from" bus',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='SHMX',
                                rawx_key='shmx',
                                class_type=float,
-                               description='Maximum shunt current at the sending end bus',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='Maximum shunt current at the "from" bus',
+                               unit=Unit.get_mva())
 
         self.register_property(property_name='TRMX',
                                rawx_key='trmx',
                                class_type=float,
                                description='Maximum bridge active power transfer',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W))
+                               unit=Unit.get_mw())
 
         self.register_property(property_name='VTMN',
                                rawx_key='vtmn',
                                class_type=float,
-                               description='Minimum voltage at the terminal end bus',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Minimum voltage at the "to" bus',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='VTMX',
                                rawx_key='vtmx',
                                class_type=float,
-                               description='Maximum voltage at the terminal end bus',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Maximum voltage at the "to" bus',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='VSMX',
                                rawx_key='vsmx',
                                class_type=float,
                                description='Maximum series voltage',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='IMX',
                                rawx_key='imx',
                                class_type=int,
-                               description='Maximum series current, or zero for no series current limit',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='Maximum series current. Zero for no series current limit',
+                               unit=Unit.get_mva())
 
         self.register_property(property_name='LINX',
                                rawx_key='linx',
                                class_type=float,
-                               description='Reactance of the dummy series element used during power flow solutions',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Reactance of the series element used during power flow solutions',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='RMPCT',
                                rawx_key='rmpct',
                                class_type=float,
-                               description='Percent of the total Mvar required to hold the voltage at the bus '
-                                           'controlled by the shunt element of this FACTS device that are to '
-                                           'be contributed by the shunt element',
+                               description='Percentage of the total Mvar required to hold the voltage at the bus '
+                                           'controlled by the shunt element',
                                min_value=0.0,
-                               max_value=100.0)
+                               max_value=100.0,
+                               unit=Unit.get_percent())
 
         self.register_property(property_name='OWNER',
                                rawx_key='owner',
@@ -185,32 +154,17 @@ class RawFACTS(RawObject):
         self.register_property(property_name='SET1',
                                rawx_key='set1',
                                class_type=float,
-                               description='If MODE is 3, resistance and reactance respectively of the '
-                                           'constant impedance, entered in pu; if MODE is 4, the magnitude '
-                                           '(in pu) and angle (in degrees) of the constant series voltage '
-                                           'with respect to the quantity indicated by VSREF; if MODE is 7 '
-                                           'or 8, the real (Vd) and imaginary (Vq) components (in pu) of the '
-                                           'constant series voltage with respect to the quantity indicated by '
-                                           'VSREF; for other values of MODE, SET1 and SET2 are read, but not '
-                                           'saved or used during power flow solutions.')
+                               description='Set value 1 (see manual)')
 
         self.register_property(property_name='SET2',
                                rawx_key='set2',
                                class_type=float,
-                               description='If MODE is 3, resistance and reactance respectively of the '
-                                           'constant impedance, entered in pu; if MODE is 4, the magnitude '
-                                           '(in pu) and angle (in degrees) of the constant series voltage '
-                                           'with respect to the quantity indicated by VSREF; if MODE is 7 '
-                                           'or 8, the real (Vd) and imaginary (Vq) components (in pu) of the '
-                                           'constant series voltage with respect to the quantity indicated by '
-                                           'VSREF; for other values of MODE, SET1 and SET2 are read, but not '
-                                           'saved or used during power flow solutions.')
+                               description='Set value  (see manual)')
 
         self.register_property(property_name='VSREF',
                                rawx_key='vsref',
                                class_type=int,
-                               description='Series voltage reference code to indicate the series voltage '
-                                           'reference of SET1 and SET2 when MODE is 4, 7 or 8',
+                               description='Series voltage reference code',
                                min_value=0,
                                max_value=1)
 
@@ -231,14 +185,14 @@ class RawFACTS(RawObject):
         self.register_property(property_name='REMOT',
                                rawx_key='remot',
                                class_type=int,
-                               description='',
+                               description='Remote bus number',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='MNAME',
                                rawx_key='mname',
                                class_type=str,
-                               description='')
+                               description='device name')
 
     def parse(self, data, version, logger: Logger):
         """

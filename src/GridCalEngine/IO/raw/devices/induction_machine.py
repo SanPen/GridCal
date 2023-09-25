@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.Devices as dev
@@ -74,16 +74,13 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='ID',
                                rawx_key='imid',
                                class_type=str,
-                               description='One or  two character  uppercase  non-blank  alphanumeric  machine '
-                                           'identifier used to distinguish among multiple induction machines at bus I. '
-                                           'It is recommend-ed that, at buses for which a single induction machine is '
-                                           'present, it be designated as having the machine identifier "1".',
+                               description='One or  two character ID',
                                max_chars=2)
 
         self.register_property(property_name='STATUS',
                                rawx_key='stat',
                                class_type=int,
-                               description='Machine status of 1 for in-service and 0 for out-of-service',
+                               description='Status',
                                min_value=0,
                                max_value=1)
 
@@ -99,7 +96,7 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='DCODE',
                                rawx_key='dcode',
                                class_type=int,
-                               description='Machine design code. Following are allowed machine design codes:\n'
+                               description='Machine design code.\n'
                                            '•  0 - for Custom design with equivalent circuit reactances specified\n'
                                            '•  1 - for NEMA Design A\n'
                                            '•  2 - for NEMA Design B / IEC Design N\n'
@@ -112,24 +109,24 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='AREA',
                                rawx_key='area',
                                class_type=int,
-                               description='Area to which the induction machine is assigned ',)
+                               description='Area number',)
 
         self.register_property(property_name='ZONE',
                                rawx_key='zone',
                                class_type=int,
-                               description='Zone to which the induction machine is assigned ',)
+                               description='Zone number',)
 
         self.register_property(property_name='OWNER',
                                rawx_key='owner',
                                class_type=int,
-                               description='Owner to which the induction machine is assigned ',)
+                               description='Owner number',)
 
         self.register_property(property_name='TCODE',
                                rawx_key='tcode',
                                class_type=int,
                                description='Type of mechanical load torque variation:\n'
-                                           '•  1 - for the simple power law\n'
-                                           '•  2 - for the WECC model',
+                                           '•  1 - Simple power law\n'
+                                           '•  2 - WECC model',
                                min_value=1,
                                max_value=2)
 
@@ -137,26 +134,22 @@ class RawInductionMachine(RawObject):
                                rawx_key='bcode',
                                class_type=int,
                                description='Machine base power code:\n'
-                                           '•  1 - for 1 for mechanical power (MW) output of the machine\n'
-                                           '•  2 - for apparent electrical power (MVA) drawn by the machine',
+                                           '•  1 - Mechanical power (MW) output of the machine\n'
+                                           '•  2 - Apparent electrical power (MVA) drawn by the machine',
                                min_value=1,
                                max_value=2)
 
         self.register_property(property_name='MBASE',
                                rawx_key='mbase',
                                class_type=float,
-                               description='Machine base power; entered in MW or MVA. '
-                                           'This value is specified according toBCODE, and could be either '
-                                           'the mechanical rating of the machine or the electrical input. '
-                                           'It is necessary only that the per unit values entered for the '
-                                           'equivalent circuit parameters match the base power.',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='Nominal power (see the manual for more funkyness).',
+                               unit=Unit.get_mva())
 
         self.register_property(property_name='RATEKV',
                                rawx_key='ratekv',
                                class_type=float,
                                description='Rated voltage',
-                               unit=Unit(UnitMultiplier.k, UnitSymbol.V))
+                               unit=Unit.get_kv())
 
         self.register_property(property_name='PCODE',
                                rawx_key='pcode',
@@ -168,117 +161,88 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='PSET',
                                rawx_key='pset',
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
-                               description='Scheduled  active  power  for  a  terminal  voltage  at  the  '
-                                           'machine  of  1.0  pu  of  the machine rated voltage; entered in MW. '
-                                           'This value is specified according to PCODE,and is either the '
-                                           'mechanical power output of the machine or the real electrical power  '
-                                           'drawn  by  the  machine.  The  sign  convention  used  is  that  '
-                                           'PSET  specifies power supplied to the machine:A positive value of '
-                                           'electrical power means that the machine is operating as a mo-tor;  '
-                                           'similarly,  a  positive  value  of  mechanical  power  output  means  '
-                                           'that the machine is driving a mechanical load and operating as a motor.')
+                               unit=Unit.get_mw(),
+                               description='Scheduled  active  power (see the manual).')
 
         self.register_property(property_name='H',
                                rawx_key='hconst',
                                class_type=float,
-                               description='Machine inertia; entered in per unit on MBASE base.',
+                               description='Machine inertia, in per unit on MBASE base.',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='A',
                                rawx_key='aconst',
                                class_type=float,
-                               description='Constants that describe the variation of the torque of the '
-                                           'mechanical load with speed. If TCODE is 1 (simple power law model), '
-                                           'only D is used; if TCODE is 2 (WECCmodel), all of these constants '
-                                           'are used.')
+                               description='A parameter to model the torque of the mechanical load with speed. (see manual)')
 
         self.register_property(property_name='B',
                                rawx_key='bconst',
                                class_type=float,
-                               description='Constants that describe the variation of the torque of the '
-                                           'mechanical load withspeed. If TCODE is 1 (simple power law model), '
-                                           'only D is used; if TCODE is 2 (WECCmodel), all of these constants '
-                                           'are used.')
+                               description='B parameter to model the torque of the mechanical load with speed. (see manual)')
 
         self.register_property(property_name='D',
                                rawx_key='dconst',
                                class_type=float,
-                               description='Constants that describe the variation of the torque of the '
-                                           'mechanical load withspeed. If TCODE is 1 (simple power law model), '
-                                           'only D is used; if TCODE is 2 (WECCmodel), all of these constants '
-                                           'are used.')
+                               description='D parameter to model the torque of the mechanical load with speed. (see manual)')
 
         self.register_property(property_name='E',
                                rawx_key='econst',
                                class_type=float,
-                               description='Constants that describe the variation of the torque of the '
-                                           'mechanical load withspeed. If TCODE is 1 (simple power law model), '
-                                           'only D is used; if TCODE is 2 (WECCmodel), all of these constants '
-                                           'are used.')
+                               description='E parameter to model the torque of the mechanical load with speed. (see manual)')
 
         self.register_property(property_name='RA',
                                rawx_key='ra',
                                class_type=float,
-                               description='rmature resistance, Ra (> 0.0); entered in per unit on '
-                                           'the power base MBASE and voltage base RATEKV',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Armature resistance',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='XA',
                                rawx_key='xa',
                                class_type=float,
-                               description='Armature leakage reactance, Xa (> 0.0); '
-                                           'entered in per unit on the power baseMBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Armature leakage reactance.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='XM',
                                rawx_key='xm',
                                class_type=float,
-                               description='Unsaturated magnetizing reactance, Xm (> 0.0); entered in per unit '
-                                           'on the powerbase MBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Unsaturated magnetizing reactance.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='R1',
                                rawx_key='r1',
                                class_type=float,
-                               description='Resistance of the first rotor winding ("cage"), r1 (> 0.0); '
-                                           'entered in per unit on the power base MBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Resistance of the first rotor winding.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X1',
                                rawx_key='x1',
                                class_type=float,
-                               description='Reactance of the first rotor winding ("cage"), X1 (>0.0); '
-                                           'entered in per unit on the power base MBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Reactance of the first rotor winding.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='R2',
                                rawx_key='r2',
                                class_type=float,
-                               description='Resistance of the second rotor winding ("cage"), r2 (> 0.0); '
-                                           'entered in per unit on the power base MBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Resistance of the second rotor winding.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X2',
                                rawx_key='x2',
                                class_type=float,
-                               description='Reactance of the second rotor winding ("cage"), X2 (>0.0); '
-                                           'entered in per unit onthe power base MBASE and voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Reactance of the second rotor winding.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X3',
                                rawx_key='x3',
                                class_type=float,
-                               description='Third rotor reactance, X3 (> 0.0); '
-                                           'entered in per unit on the power base MBASEand voltage base RATEKV.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Third rotor reactance.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='E1',
                                rawx_key='e1',
                                class_type=float,
-                               description='First  terminal  voltage  point  from  the  open  circuit  '
-                                           'saturation  curve,  E1  (>  0.0);entered in per unit on RATEKV base.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='First terminal voltage point from the open circuit saturation  curve.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='SE1',
                                rawx_key='se1',
@@ -288,9 +252,8 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='E2',
                                rawx_key='e2',
                                class_type=float,
-                               description='Second terminal voltage point from the open circuit saturation curve,'
-                                           'E2 (> 0.0);entered in per unit on RATEKV base.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='Second terminal voltage point from the open circuit saturation curve.',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='SE2',
                                rawx_key='se2',
@@ -302,20 +265,20 @@ class RawInductionMachine(RawObject):
                                class_type=float,
                                description='Stator currents in PU specifying saturation of the stator '
                                            'leakage reactance, XA.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='IA2',
                                rawx_key='ia2',
                                class_type=float,
                                description='Stator currents in PU specifying saturation of the stator '
                                            'leakage reactance, XA.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='XAMULT',
                                rawx_key='xamult',
                                class_type=float,
                                description='Multiplier for the saturated value. Allowed value 0 to 1.0.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
     def parse(self, data, version, logger: Logger):
         """

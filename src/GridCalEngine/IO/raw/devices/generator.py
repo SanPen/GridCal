@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.Devices as dev
@@ -72,32 +72,32 @@ class RawGenerator(RawObject):
         self.register_property(property_name="PG",
                                rawx_key="pg",
                                class_type=float,
-                               description="Generator active power output",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W))
+                               description="Active power output",
+                               unit=Unit.get_mw())
 
         self.register_property(property_name="QG",
                                rawx_key="qg",
                                class_type=float,
-                               description="Generator reactive power output",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               description="Reactive power output",
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name="QT",
                                rawx_key="qt",
                                class_type=float,
                                description="Maximum generator reactive power output;",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name="QB",
                                rawx_key="qb",
                                class_type=float,
                                description="Minimum generator reactive power output",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name="VS",
                                rawx_key="vs",
                                class_type=float,
-                               description="Regulated voltage setpoint",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description="Regulated voltage set point",
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="IREG",
                                rawx_key="ireg",
@@ -116,39 +116,39 @@ class RawGenerator(RawObject):
         self.register_property(property_name="MBASE",
                                rawx_key="mbase",
                                class_type=float,
-                               description="Total MVA base of the units represented by this machine",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description="Nominal power",
+                               unit=Unit.get_mva())
 
         self.register_property(property_name="ZR",
                                rawx_key="zr",
                                class_type=float,
                                description="Machine resistance in p.u. of MBASE",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="ZX",
                                rawx_key="zx",
                                class_type=float,
                                description="Machine reactance in p.u. of MBASE",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="RT",
                                rawx_key="rt",
                                class_type=float,
                                description="Step-up transformer resistance in p.u. of MBASE",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="XT",
                                rawx_key="xt",
                                class_type=float,
                                description="Step-up transformer reactance in p.u. of MBASE",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="GTAP",
                                rawx_key="gtap",
                                class_type=float,
                                description="Step-up transformer off-nominal turns ratio; "
                                            "entered in pu on a system base.",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="STAT",
                                rawx_key="stat",
@@ -160,8 +160,7 @@ class RawGenerator(RawObject):
         self.register_property(property_name="RMPCT",
                                rawx_key="rmpct",
                                class_type=float,
-                               description="Percent of the total Mvar required to hold the voltage at the bus "
-                                           "controlled by bus I that are to be contributed by the generation at bus I;",
+                               description="Percent of the total Mvar required to hold the voltage at the control bus",
                                min_value=0,
                                max_value=100.0,
                                unit=Unit.get_percent())
@@ -170,18 +169,18 @@ class RawGenerator(RawObject):
                                rawx_key="pt",
                                class_type=float,
                                description="Maximum generator active power output;",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               unit=Unit.get_mw())
 
         self.register_property(property_name="PB",
                                rawx_key="pb",
                                class_type=float,
                                description="Minimum generator active power output",
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr))
+                               unit=Unit.get_mw())
 
         self.register_property(property_name="BASLOD",
                                rawx_key="baslod",
                                class_type=int,
-                               description="Baseload flag",
+                               description="Base load flag",
                                min_value=0,
                                max_value=2)
 
@@ -209,9 +208,8 @@ class RawGenerator(RawObject):
         self.register_property(property_name="WPF",
                                rawx_key="wpf",
                                class_type=float,
-                               description="Power factor used in calculating reactive power limits "
-                                           "or output when WMOD is 2 or 3",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description="Power factor",
+                               unit=Unit.get_pu())
 
     def parse(self, data, version, logger: Logger):
         """

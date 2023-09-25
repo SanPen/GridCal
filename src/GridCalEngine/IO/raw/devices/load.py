@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 import numpy as np
 
 
@@ -83,38 +82,38 @@ class RawLoad(RawObject):
         self.register_property(property_name="PL",
                                rawx_key="pl",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
-                               description="Active power component of constant MVA load")
+                               unit=Unit.get_mw(),
+                               description="Active power load")
 
         self.register_property(property_name="QL",
                                rawx_key="ql",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr),
-                               description="Reactive power component of constant MVA load")
+                               unit=Unit.get_mvar(),
+                               description="Reactive power load")
 
         self.register_property(property_name="IP",
                                rawx_key="ip",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
-                               description="Active current component of constant MVA load")
+                               unit=Unit.get_mw(),
+                               description="Active current load @v=1 p.u.")
 
         self.register_property(property_name="IQ",
                                rawx_key="iq",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr),
-                               description="Reactive current component of constant MVAr load")
+                               unit=Unit.get_mvar(),
+                               description="Reactive current load @v=1 p.u.")
 
         self.register_property(property_name="YP",
                                rawx_key="yp",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
-                               description="Active admittance component of constant MVA load")
+                               unit=Unit.get_mw(),
+                               description="Active admittance power load @v=1 p.u.")
 
         self.register_property(property_name="YQ",
                                rawx_key="yq",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr),
-                               description="Reactive admittance component of constant MVAr load")
+                               unit=Unit.get_mvar(),
+                               description="Reactive admittance power load @v=1 p.u.")
 
         self.register_property(property_name="OWNER",
                                rawx_key="owner",
@@ -126,26 +125,26 @@ class RawLoad(RawObject):
         self.register_property(property_name="SCALE",
                                rawx_key="scale",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu),
+                               unit=Unit.get_pu(),
                                description="Load scaling flag of one for a scalable load and zero for a fixed load")
 
         self.register_property(property_name="INTRPT",
                                rawx_key="intrpt",
                                class_type=float,
-                               description="nterruptible load flag of one for an interruptible load for zero for a non interruptible load.",
+                               description="Interruptible load flag.",
                                min_value=0,
                                max_value=1)
 
         self.register_property(property_name="DGENP",
                                rawx_key="dgenp",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
+                               unit=Unit.get_mw(),
                                description="Distributed Generation active power component")
 
         self.register_property(property_name="DGENQ",
                                rawx_key="dgenq",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr),
+                               unit=Unit.get_mvar(),
                                description="Distributed Generation reactive power component")
 
         self.register_property(property_name="DGENM",

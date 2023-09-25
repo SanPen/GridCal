@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawArea(RawObject):
@@ -41,38 +40,24 @@ class RawArea(RawObject):
         self.register_property(property_name="ISW",
                                rawx_key='isw',
                                class_type=int,
-                               description="Bus number, or extended bus name enclosed in single quotes "
-                                           "(refer to Extended Bus Names), of the area slack bus for area "
-                                           "interchange control. The bus must be a generator (Type 2) bus in "
-                                           "the specified area. Any area containing a system swing bus (Type 3) "
-                                           "must have either that swing bus or a bus number of zero specified "
-                                           "for its area slack bus number. Any area with an area slack bus number "
-                                           "of zero is considered a floating area by the area interchange control "
-                                           "option of the power flow solution activities.")
+                               description="Bus number of the area slack bus for area interchange control. ")
 
         self.register_property(property_name="PDES",
                                rawx_key='pdes',
                                class_type=float,
-                               description="Desired net interchange leaving the area (export); entered in MW. "
-                                           "PDES must be specified such that is consistent with the area interchange "
-                                           "definition implied by the area interchange control code (tie lines only, "
-                                           "or tie lines and loads) to be specified during power flow solutions "
-                                           "(refer to Section 6.3.20, Automatic Adjustments and Area Interchange "
-                                           "Control).")
+                               description="Desired net interchange leaving the area (export)",
+                               unit=Unit.get_mw())
 
         self.register_property(property_name="PTOL",
                                rawx_key='ptol',
                                class_type=float,
-                               description="Interchange tolerance bandwidth; entered in MW.")
+                               description="Interchange tolerance bandwidth.",
+                               unit=Unit.get_mw())
 
         self.register_property(property_name="ARNAME",
                                rawx_key='arname',
                                class_type=str,
-                               description="Alphanumeric identifier assigned to area I. "
-                                           "ARNAME may be up to twelve characters and may contain any combination "
-                                           "of blanks, uppercase letters, numbers and special characters. "
-                                           "ARNAME must be enclosed in single or double quotes if it contains "
-                                           "any blanks or special characters.",
+                               description="Area name",
                                max_chars=12)
 
     def parse(self, data, version, logger: Logger):

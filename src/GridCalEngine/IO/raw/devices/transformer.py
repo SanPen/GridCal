@@ -44,25 +44,6 @@ class RawTransformer(RawObject):
         self.VECGRP = ""
         self.ZCOD = 0
 
-        """
-        The measured impedance of the transformer between the buses to which its first
-        and second windings are connected.
-        
-        When CZ is 1, they are the resistance and reactance, respectively, in pu 
-        on systemMVA base and winding voltage base.
-        
-        When CZ is 2, they are the resistance and reactance, respectively, in pu on 
-        Winding1 to 2 MVA base (SBASE1-2) and winding voltage base.
-        
-        When CZ is 3, R1-2 is the load loss in watts, and X1-2 is the impedance 
-        magnitude in  pu  on  Winding  1  to  2  MVA  base  (SBASE1-2)  and  
-        winding  voltage  base. 
-         
-         For three-phase transformers or three-phase banks of single phase transformers, 
-         R1-2should specify the three-phase load loss.
-         R1-2 = 0.0 by default, but no default is allowed for X1-2
-        """
-
         self.R1_2 = 0.0
         self.X1_2 = 0.0
         self.R2_3 = 0.0
@@ -195,7 +176,7 @@ class RawTransformer(RawObject):
         self.register_property(property_name='K',
                                rawx_key='kbus',
                                class_type=int,
-                               description='K bus number',
+                               description='Bus K number',
                                min_value=0,
                                max_value=999999)
 
@@ -208,86 +189,38 @@ class RawTransformer(RawObject):
         self.register_property(property_name='CW',
                                rawx_key='cw',
                                class_type=int,
-                               description='The winding data I/O code defines the units in which the turns ratios '
-                                           'WINDV1,WINDV2 and WINDV3 are specified (the units of RMAn and RMIn are '
-                                           'also governed by CW when CODn is 1 or 2):\n'
-                                           '• 1 for off-nominal turns ratio in pu of winding bus base voltage\n'
-                                           '• 2 for winding voltage in kV\n'
-                                           '• 3 for off-nominal turns ratio in pu of nominal winding '
-                                           '  voltage, NOMV1,NOMV2 and NOMV3.',
+                               description='Winding input mode (see manual)',
                                min_value=1,
                                max_value=3)
 
         self.register_property(property_name='CZ',
                                rawx_key='cz',
                                class_type=int,
-                               description='The impedance data I/O code defines the units in which the winding '
-                                           'impedances R1-2, X1-2, R2-3, X2-3, R3-1 and X3-1 are specified:'
-                                           '• 1 for resistance and reactance in pu on system MVA base and '
-                                           'winding voltage base\n'
-                                           '• 2 for resistance and reactance in pu on a specified MVA base and '
-                                           'winding voltage base\n'
-                                           '• 3 for transformer load loss in watts and impedance magnitude '
-                                           'in pu on a specified MVA base and winding voltage base\n'
-                                           'In specifying transformer leakage impedances, the base voltage '
-                                           'values are al-ways the nominal winding voltages that are '
-                                           ' specified on the third, fourth and fifth records of the transformer '
-                                           'data block (NOMV1, NOMV2 and NOMV3). If the default NOMVn is not '
-                                           'specified, it is assumed to be identical to the winding n bus base '
-                                           'voltage.',
+                               description='Series Impedance input mode (see manual)',
                                min_value=1,
                                max_value=3)
 
         self.register_property(property_name='CM',
                                rawx_key='cm',
                                class_type=int,
-                               description='The magnetizing admittance I/O code defines the units in which '
-                                           'MAG1 and MAG2are specified:\n'
-                                           '• 1 for complex  admittance  in pu  on  system  MVA  base  and  '
-                                           'Winding 1 bus voltage base\n'
-                                           '• 2 for no load loss in watts and exciting current in pu on '
-                                           'Winding 1 to twoMVA base (SBASE1-2) and nominal Winding 1 voltage, NOMV1.',
+                               description='Magnetizing impedance input mode (see manual)',
                                min_value=1,
                                max_value=2)
 
         self.register_property(property_name='MAG1',
                                rawx_key='mag1',
                                class_type=int,
-                               description='The transformer magnetizing admittance connected to ground at bus I.'
-                                           'When CM is 1, MAG1 and MAG2 are the magnetizing conductance and '
-                                           'susceptance, respectively, in pu on system MVA base and Winding 1 '
-                                           'bus voltage base.When a non-zero MAG2 is specified, it should be '
-                                           'entered as a negative quantity.When CM is 2, MAG1 is the no load loss '
-                                           'in watts and MAG2 is the exciting cur-rent  in  pu  on  Winding  1  to '
-                                           'two  MVA  base  (SBASE1-2)  and  nominal  Winding  1voltage  (NOMV1).  '
-                                           'For  three-phase  transformers  or  three-phase  banks  of  singlephase '
-                                           'transformers, MAG1 should specify the three-phase no-load loss. '
-                                           'When anon-zero MAG2 is specified, it should be entered as a '
-                                           'positive quantity.')
+                               description='Magnetizing admittance 1 (see manual)')
 
         self.register_property(property_name='MAG2',
                                rawx_key='mag2',
                                class_type=int,
-                               description='The transformer magnetizing admittance connected to ground at bus I.'
-                                           'When CM is 1, MAG1 and MAG2 are the magnetizing conductance and '
-                                           'susceptance, respectively, in pu on system MVA base and Winding 1 '
-                                           'bus voltage base.When a non-zero MAG2 is specified, it should be '
-                                           'entered as a negative quantity.When CM is 2, MAG1 is the no load loss '
-                                           'in watts and MAG2 is the exciting cur-rent  in  pu  on  Winding  1  to '
-                                           'two  MVA  base  (SBASE1-2)  and  nominal  Winding  1voltage  (NOMV1).  '
-                                           'For  three-phase  transformers  or  three-phase  banks  of  singlephase '
-                                           'transformers, MAG1 should specify the three-phase no-load loss. '
-                                           'When anon-zero MAG2 is specified, it should be entered as a '
-                                           'positive quantity.')
+                               description='Magnetizing admittance 2 (see manual)')
 
         self.register_property(property_name='NMETR',
                                rawx_key='nmet',
                                class_type=int,
-                               description='The nonmetered end code of either '
-                                           '1 (for the Winding 1 bus) or '
-                                           '2 (for the Winding2 bus). In addition, '
-                                           'for a three-winding transformer, 3 (for the Winding 3 bus) is'
-                                           'a valid specification of NMETR.',
+                               description='Non-metered end code (see manual)',
                                min_value=1,
                                max_value=3)
 
@@ -300,204 +233,118 @@ class RawTransformer(RawObject):
         self.register_property(property_name='STAT',
                                rawx_key='stat',
                                class_type=int,
-                               description='0: all windings out of service,'
-                                           '1: all windings in service,'
-                                           '2: winding 2 out of service,'
-                                           '3: winding 3 out of service,'
-                                           '4: winding 1 out of service',
+                               description='Status of the several windings (see manual)',
                                min_value=0,
                                max_value=4)
 
         self.register_property(property_name='VECGRP',
                                rawx_key='vecgrp',
                                class_type=str,
-                               description='Alphanumeric identifier specifying vector group based  '
-                                           'on transformer winding connections and phase angles. '
-                                           'VECGRP value is used for information purpose only',
+                               description='Vector group (has zero effect, information only)',
                                max_chars=12)
 
         self.register_property(property_name='ZCOD',
                                rawx_key='zcod',
                                class_type=int,
-                               description='Method to be used in deriving actual transformer '
-                                           'impedances in applying trans-former impedance adjustment '
-                                           'tables:\n'
-                                           '•  0 apply impedance adjustment factors to winding impedances\n'
-                                           '•  1 apply impedance adjustment factors to bus-to-bus impedances\n'
-                                           'ZCOD = 0 by default'
-                                           'ZCOD value is used only for three winding transformers.  '
-                                           'It  is  not  used  for  two winding transformers.'
-                                           'For three winding transformers, winding impedances are the equivalent '
-                                           'T-model impedances Z1, Z2 and Z3; and the bus-to-bus impedances are '
-                                           'impedances Z12,Z23 and Z31.'
-                                           'For three winding transformers and bus-to-bus impedance correction '
-                                           'factors, on-ly one of the three windings must be adjustable '
-                                           '(only one of COD1, COD2 andCOD3 can be non-zero).',
+                               description='Impedance code (see manual)',
                                min_value=0,
                                max_value=1)
 
         self.register_property(property_name='R1_2',
                                rawx_key='r1_2',
                                class_type=float,
-                               description='Resistance measured from bus I->J.\n'
-                                           'The measured impedance of the transformer between the buses to which '
-                                           'its first and second windings are connected.When CZ is 1, they are the '
-                                           'resistance and reactance, respectively, in pu on systemMVA base and '
-                                           'winding voltage base.When CZ is 2, they are the resistance and reactance, '
-                                           'respectively, in pu on Winding1 to 2 MVA base (SBASE1-2) and winding '
-                                           'voltage base.When CZ is 3, R1-2 is the load loss in watts, and X1-2 is '
-                                           'the impedance magnitude in  pu  on  Winding  1  to  2  MVA  base (SBASE1-2)'
-                                           'and  winding  voltage  base.  For three-phase transformers or three-phase '
-                                           'banks of single phase transformers, R1-2 should specify the three-phase '
-                                           'load loss.')
+                               description='1->2 resistance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X1_2',
                                rawx_key='x1_2',
                                class_type=float,
-                               description='Reactance measured from bus I->J. See R1_2')
+                               description='1->2 reactance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='R2_3',
                                rawx_key='r2_3',
                                class_type=float,
-                               description='Resistance measured from bus J->K\n'
-                                           'The measured impedance of a three-winding transformer between the buses to'
-                                           ' which  its  second  and  third  windings  are  connected;  ignored  for  '
-                                           'a  two-winding transformer.When CZ is 1, they are the resistance and '
-                                           'reactance, respectively, in pu on systemMVA base and winding voltage base.'
-                                           'When CZ is 2, they are the resistance and reactance, respectively, in '
-                                           'pu on Winding2 to 3 MVA base (SBASE2-3) and winding voltage base.'
-                                           'When CZ is 3, R2-3 is the load loss in watts, and X2-3 is the impedance '
-                                           'magnitude in  pu  on  Winding  2  to  3  MVA  base  (SBASE2-3)  and  '
-                                           'winding  voltage  base.  For three-phase transformers or three-phase '
-                                           'banks of single phase transformers, R2-3should specify the three-phase '
-                                           'load loss')
+                               description='2->3 resistance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X2_3',
                                rawx_key='x2_3',
                                class_type=float,
-                               description='Reactance measured from bus J->K. See R2_3')
+                               description='2->3 reactance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='R3_1',
                                rawx_key='r3_1',
                                class_type=float,
-                               description='Resistance measured from bus K->I\n'
-                                           'The measured impedance of a three-winding transformer between the buses to'
-                                           'which its third and first windings are connected; ignored for a '
-                                           'two-winding trans-former.When CZ is 1, they are the resistance and '
-                                           'reactance, respectively, in pu on systemMVA base and winding voltage base.'
-                                           'When CZ is 2, they are the resistance and reactance, respectively, in pu '
-                                           'on Winding3 to 1 MVA base (SBASE3-1) and winding voltage base.'
-                                           'When CZ is 3, R3-1 is the load loss in watts, and X3-1 is the impedance '
-                                           'magnitude in  pu  on  Winding 3 to 1  MVA base (SBASE3-1) and winding '
-                                           'voltage  base. For three-phase transformers or three-phase banks of '
-                                           'single phase transformers, R3-1should specify the three-phase load loss.')
+                               description='3->1 resistance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='X3_1',
                                rawx_key='x3_1',
                                class_type=float,
-                               description='Reactance measured from bus K->I')
+                               description='3->1 reactance or other stuff (see manual)',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='SBASE1_2',
                                rawx_key='sbase1_2',
                                class_type=float,
-                               description='The Winding 1 to 2 three-phase base MVA of the transformer',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='1->2 base power',
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name='SBASE2_3',
                                rawx_key='sbase2_3',
                                class_type=float,
-                               description='The Winding 2 to 3 three-phase base MVA of the transformer',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='2->3 base power',
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name='SBASE3_1',
                                rawx_key='sbase3_1',
                                class_type=float,
-                               description='The Winding 3 to 1 three-phase base MVA of the transformer',
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                               description='3->1 base power',
+                               unit=Unit.get_mvar())
 
         self.register_property(property_name='VMSTAR',
                                rawx_key='vmstar',
                                class_type=float,
-                               description='The voltage magnitude at the hidden star point bus',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu))
+                               description='The voltage magnitude at the center star point',
+                               unit=Unit.get_pu())
 
         self.register_property(property_name='ANSTAR',
                                rawx_key='anstar',
                                class_type=float,
-                               description='The bus voltage phase angle at the hidden star point bus.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg))
+                               description='The bus voltage phase angle at the center star point.',
+                               unit=Unit.get_deg())
 
         # --------------------------------------------------------------------------------------------------------------
 
         self.register_property(property_name='WINDV1',
                                rawx_key='windv1',
                                class_type=float,
-                               description='When CW is 1, WINDV1 is the Winding 1 off-nominal turns ratio '
-                                           'in pu of Winding1 bus base voltage; '
-                                           'WINDV1 = 1.0 by default.'
-                                           'When CW is 2, WINDV1 is the actual Winding 1 voltage in kV; '
-                                           'WINDV1 is equal to the base voltage of bus I by default.'
-                                           'When CW is 3, WINDV1 is the Winding 1 off-nominal turns '
-                                           'ratio in pu of nominal Winding 1 voltage, NOMV1;')
+                               description='Winding 1 off-nominal turns ratio or other stuff (see manual)')
 
         self.register_property(property_name='NOMV1',
                                rawx_key='nomv1',
                                class_type=float,
-                               description='The nominal (rated) Winding 1 voltage base in kV, or zero to '
-                                           'indicate that nominal  Winding 1 voltage is assumed to be identical '
-                                           'to  the  base  voltage  of  bus  I.'
-                                           'NOMV1 is used in converting magnetizing data between physical units and '
-                                           'perunit admittance values when CM is 2. NOMV1 is used in converting '
-                                           'tap ratio data between values in per unit of nominal Winding 1 voltage '
-                                           'and values in per unit of Winding 1 bus base voltage when CW is 3.',
-                               unit=Unit(UnitMultiplier.k, UnitSymbol.V))
+                               description='Winding 1 voltage base in kV or other stuff (see manual)',
+                               unit=Unit.get_kv())
 
         self.register_property(property_name='ANG1',
                                rawx_key='ang1',
                                class_type=int,
-                               description='The winding one phase shift angle in degrees.  '
-                                           'For a two-winding  transformer,ANG1 is positive when the '
-                                           'winding one bus voltage leads the winding two busvoltage; '
-                                           'for a three-winding transformer, ANG1 is positive when the '
-                                           'winding one bus voltage leads the T (or star) point bus voltage. '
-                                           'ANG1 must be greater than-180.0º and less than or equal to +180.0º',
+                               description='Winding 1 phase shift angle in degrees.',
                                unit=Unit(UnitMultiplier.none, UnitSymbol.deg))
 
         self.register_property(property_name='COD1',
                                rawx_key='cod1',
                                class_type=int,
-                               description='The transformer control mode for automatic adjustments of the '
-                                           'Winding 1 tap or phase shift angle during power flow solutions:'
-                                           '•  0 - for fixed tap and fixed phase shift'
-                                           '•  ±1 - for voltage control'
-                                           '•  ±2 - for reactive power flow control'
-                                           '•  ±3 - for active power flow control'
-                                           '•  ±4 - for control of a dc line quantity (valid only for two-winding transformers)'
-                                           '•  ±5 - for asymmetric active power flow control'
-                                           'If the control '
-                                           'mode is entered as a positive number, automatic adjustment of this'
-                                           'transformer winding is enabled when the corresponding adjustment '
-                                           'is activated during power flow solutions; a negative control mode '
-                                           'suppresses the automatic adjustment of this transformer winding.',
+                               description='Winding 1 control mode.',
                                min_value=-5,
                                max_value=5)
         self.register_property(property_name='CONT1',
                                rawx_key='cont1',
                                class_type=int,
-                               description='The  bus  number,  or  extended  bus  name  enclosed  in  single  '
-                                           'quotes  (refer  to  Ex-tended Bus Names), of the bus for which voltage '
-                                           'is to be controlled by the trans-former turns ratio adjustment option '
-                                           'of the power flow solution activities whenCOD1  is  1.  CONT1  should  '
-                                           'be  non-zero  only  for  voltage  controlling  transformer windings.'
-                                           'CONT1  may  specify  a  bus  other  than  I,  J,  or  K;  in  this  '
-                                           'case,  the  sign  of  CONT1defines  the  location  of  the  controlled  '
-                                           'bus  relative  to  the  transformer  winding.If CONT1 is entered as a '
-                                           'positive number, or a quoted extended bus name, the ratio  is  adjusted  '
-                                           'as  if  bus  CONT1  is  on  the  Winding  2  or  Winding  3  side  of  '
-                                           'the transformer; if CONT1 is entered as a negative number, or a quoted '
-                                           'extended bus name with a minus sign preceding the first character, '
-                                           'the ratio is adjusted as if bus CONT1 is on the Winding 1 side of the '
-                                           'transformer.',
+                               description='control bus for the winding 1.',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='NODE1',

@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawNode(RawObject):
@@ -69,7 +68,7 @@ class RawNode(RawObject):
                                rawx_key="vm",
                                class_type=float,
                                description="Bus voltage magnitude",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.pu),
+                               unit=Unit.get_pu(),
                                min_value=0.0,
                                max_value=2.0)
 
@@ -77,7 +76,7 @@ class RawNode(RawObject):
                                rawx_key="va",
                                class_type=float,
                                description="Bus voltage angle",
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg),
+                               unit=Unit.get_deg(),
                                min_value=0.0,
                                max_value=360.0)
 

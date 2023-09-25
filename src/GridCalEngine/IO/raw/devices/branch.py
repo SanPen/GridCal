@@ -17,7 +17,6 @@
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawBranch(RawObject):
@@ -88,40 +87,50 @@ class RawBranch(RawObject):
         self.register_property(property_name="R",
                                rawx_key="rpu",
                                class_type=float,
-                               description="Branch resistance")
+                               description="Branch resistance",
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="X",
                                rawx_key="xpu",
                                class_type=float,
-                               description="Branch reactance")
+                               description="Branch reactance",
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="B",
                                rawx_key="bpu",
                                class_type=float,
-                               description="Branch shunt susceptance")
+                               description="Branch shunt susceptance",
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="NAME",
                                rawx_key="name",
                                class_type=str,
-                               description="Branch shunt susceptance",
+                               description="Branch name",
                                max_chars=40)
 
         self.register_property(property_name="GI",
                                rawx_key="gi",
                                class_type=float,
-                               description="Branch shunt condictance at I")
+                               description="Branch shunt conductance at the from side",
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="BI",
                                rawx_key="bi",
                                class_type=float,
-                               description="Branch shunt susceptance at I")
+                               description="Branch shunt susceptance at the from side",
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="GJ",
                                rawx_key="gj",
                                class_type=float,
-                               description="Branch shunt condictance at J")
+                               description="Branch shunt condictance at the to side",
+                               unit=Unit.get_pu())
+
         self.register_property(property_name="BJ",
                                rawx_key="bj",
                                class_type=float,
-                               description="Branch shunt susceptance at J")
+                               description="Branch shunt susceptance at the to side",
+                               unit=Unit.get_pu())
 
         self.register_property(property_name="ST",
                                rawx_key="stat",
@@ -133,7 +142,7 @@ class RawBranch(RawObject):
         self.register_property(property_name="MET",
                                rawx_key="met",
                                class_type=int,
-                               description="Metered end flag, <=1: Bus I, >=2: bus J",
+                               description="Metered end flag, <=1: Bus from, >=2: bus to",
                                min_value=0,
                                max_value=999)
 

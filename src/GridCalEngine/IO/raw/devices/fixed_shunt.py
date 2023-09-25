@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.Devices as dev
@@ -54,14 +54,14 @@ class RawFixedShunt(RawObject):
         self.register_property(property_name="GL",
                                rawx_key="gl",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.W),
-                               description="Active component of shunt admittance to ground")
+                               unit=Unit.get_mw(),
+                               description="Active power load at v=1.0 p.u.")
 
         self.register_property(property_name="BL",
                                rawx_key="bl",
                                class_type=float,
-                               unit=Unit(UnitMultiplier.M, UnitSymbol.VAr),
-                               description="Reactive component of shunt admittance to ground")
+                               unit=Unit.get_mvar(),
+                               description="Reactive power load at v=1.0 p.u.")
 
     def parse(self, data, version, logger: Logger):
         """

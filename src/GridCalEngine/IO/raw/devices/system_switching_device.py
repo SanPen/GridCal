@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
 
 
 class RawSystemSwitchingDevice(RawObject):
@@ -98,15 +97,15 @@ class RawSystemSwitchingDevice(RawObject):
         self.register_property(property_name="NAME",
                                rawx_key='name',
                                class_type=str,
-                               description="System switching device name",
+                               description="Device name",
                                max_chars=12)
 
         for i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
             self.register_property(property_name="RATE{}".format(i),
                                    rawx_key="rate{}".format(i),
                                    class_type=float,
-                                   description="Branch rating power",
-                                   unit=Unit(UnitMultiplier.M, UnitSymbol.VA))
+                                   description="Rating power",
+                                   unit=Unit.get_mva())
 
     def parse(self, data, version, logger: Logger):
         """

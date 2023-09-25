@@ -41,16 +41,13 @@ class RawSubstation(RawObject):
         self.register_property(property_name="NAME",
                                rawx_key='name',
                                class_type=str,
-                               description="ubstation name, NAME may be up to forty characters and may contain "
-                                           "any combi-nation of blanks, uppercase letters, numbers and special "
-                                           "characters. NAME must beenclosed in single or double quotes if it "
-                                           "contains any blanks or special characters.",
+                               description="Substation name.",
                                max_chars=40)
 
         self.register_property(property_name="LATI",
                                rawx_key='lati',
                                class_type=float,
-                               description="Substation latitude in degrees",
+                               description="Substation latitude.",
                                min_value=-90,
                                max_chars=90,
                                unit=Unit.get_deg())
@@ -58,7 +55,7 @@ class RawSubstation(RawObject):
         self.register_property(property_name="LONG",
                                rawx_key='long',
                                class_type=float,
-                               description="Substation longitude in degrees..",
+                               description="Substation longitude.",
                                min_value=-180,
                                max_chars=180,
                                unit=Unit.get_deg())
