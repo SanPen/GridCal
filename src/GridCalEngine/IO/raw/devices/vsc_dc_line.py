@@ -78,8 +78,7 @@ class RawVscDCLine(RawObject):
         self.register_property(property_name='NAME',
                                rawx_key='name',
                                class_type=str,
-                               description='he non-blank alphanumeric identifier assigned to this dc line. '
-                                           'Each VSC dc line must have a unique NAME.',
+                               description='Device name',
                                max_chars=12)
 
         self.register_property(property_name='MDC',
@@ -94,8 +93,7 @@ class RawVscDCLine(RawObject):
         self.register_property(property_name='RDC',
                                rawx_key='rdc',
                                class_type=float,
-                               description='The dc line resistance entered in ohms. '
-                                           'RDC must be positive.',
+                               description='The dc line resistance',
                                min_value=0,
                                max_value=999999,
                                unit=Unit.get_ohm())
@@ -125,115 +123,91 @@ class RawVscDCLine(RawObject):
                                rawx_key='mode1',
                                class_type=int,
                                description='Converter ac control mode:'
-                                           '•  1 - for ac voltage control\n'
-                                           '•  2 - for fixed ac power factor\n',
-                               min_value=1,
+                                           '1 -> AC voltage control\n'
+                                           '2 -> fixed AC power factor\n',
+                               min_value=0,
                                max_value=2)
 
         self.register_property(property_name='DCSET1',
                                rawx_key='dcset1',
                                class_type=float,
-                               description='Converter dc setpoint. '
-                                           'For TYPE = 1, DCSET is the scheduled dc voltage on the dcside '
-                                           'of the converter bus; entered in kV. For TYPE = 2, '
-                                           'DCSET is the power demand,where a positive value specifies '
-                                           'that the converter is feeding active power intothe ac network at '
-                                           'bus IBUS, and a negative value specifies that the converter is'
-                                           'withdrawing active power from the ac network at bus IBUS; entered in MW.',
+                               description='Converter dc setpoint (see manual)',
                                unit=Unit.get_mw())
 
         self.register_property(property_name='ACSET1',
                                rawx_key='acset1',
                                class_type=float,
-                               description='Converter ac setpoint. For MODE = 1, ACSET is the regulated ac voltage '
-                                           'setpoint;entered in pu. For MODE = 2, ACSET is the power factor setpoint.',
+                               description='Converter ac setpoint. 1-> AC voltage, 2-> power factor',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='ALOSS1',
                                rawx_key='aloss1',
                                class_type=float,
-                               description='Coefficients of the linear equation used to calculate converter losses:'
-                                           'KWconv loss = ALOSS + (Idc * BLOSS)',
+                               description='Losses constant coefficient: loss = ALOSS + (Idc * BLOSS)',
                                unit=Unit.get_kw())
 
         self.register_property(property_name='BLOSS1',
                                rawx_key='bloss1',
                                class_type=float,
-                               description='Coefficients of the linear equation used to calculate converter losses:'
-                                           'KWconv loss = ALOSS + (Idc * BLOSS)',
+                               description='Losses proportional coefficient: loss = ALOSS + (Idc * BLOSS)',
                                unit=Unit.get_kw(),
-                               denominator_unit=Unit(UnitMultiplier.none, UnitSymbol.A))
+                               denominator_unit=Unit.get_a())
 
         self.register_property(property_name='MINLOSS1',
                                rawx_key='minloss1',
                                class_type=int,
-                               description='Minimum converter losses;',
+                               description='Minimum converter losses',
                                unit=Unit.get_kw())
 
         self.register_property(property_name='SMAX1',
                                rawx_key='smax1',
                                class_type=float,
-                               description='Converter MVA rating;',
+                               description='Converter MVA rating',
                                unit=Unit.get_mw())
 
         self.register_property(property_name='IMAX1',
                                rawx_key='imax1',
                                class_type=float,
-                               description='Converter ac current rating; entered in amps. '
-                                           'IMAX = 0.0 to allow unlimited converter current loading. '
-                                           'If a positive IMAX is specified, the base voltage assigned to bus '
-                                           'IBUS must be positive',
+                               description='Converter ac current rating',
                                unit=Unit.get_a())
 
         self.register_property(property_name='PWF1',
                                rawx_key='pwf1',
                                class_type=float,
-                               description='Power weighting factor fraction (0.0 <= PWF <= 1.0) '
-                                           'used in reducing the active power order and either the '
-                                           'reactive power order (when MODE is 2) or the reactive power limits '
-                                           '(when MODE is 1) when the converter MVA or current rating is violated. '
-                                           'When PWF is 0.0, only the active power is reduced; when PWF is 1.0, '
-                                           'only the reactive power is reduced; otherwise, a weighted reduction of '
-                                           'both active and reactive power is applied.')
+                               description='Power weighting factor fraction (see manual)',
+                               min_value=0.0,
+                               max_value=1.0)
 
         self.register_property(property_name='MAXQ1',
                                rawx_key='maxq1',
                                class_type=float,
-                               description='Reactive power upper limit; entered in Mvar. '
-                                           'A positive value of reactive power indicates reactive power flowing '
-                                           'into the ac network from the converter; a negative value of reactive '
-                                           'power indicates reactive power withdrawn from the ac network. '
-                                           'Not used if MODE = 2.',
+                               description='Reactive power upper limit (see manual)',
                                unit=Unit.get_mvar())
 
         self.register_property(property_name='MINQ1',
                                rawx_key='minq1',
                                class_type=float,
-                               description='Reactive power lower limit; entered in Mvar. '
-                                           'A positive value of reactive power indicates reactive power flowing '
-                                           'into the ac network from the converter; a negative value of reactive '
-                                           'power indicates reactive power withdrawn from the ac network. '
-                                           'Not used if MODE = 2.',
+                               description='Reactive power lower limit (see manual)',
                                unit=Unit.get_mvar())
 
         self.register_property(property_name='REMOT1',
                                rawx_key='remot1',
                                class_type=int,
-                               description='Control bus',
+                               description='Control bus (see manual)',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='VSREG1',
                                rawx_key='vseg1',
                                class_type=int,
-                               description='Control bus',
+                               description='Control bus (see manual)',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='NREG1',
                                rawx_key='nreg1',
                                class_type=int,
-                               description='Control node',
+                               description='Control node (see manual)',
                                min_value=0,
                                max_value=999999)
 
@@ -241,11 +215,7 @@ class RawVscDCLine(RawObject):
                                rawx_key='rmpct1',
                                class_type=float,
                                description='Percent of the total Mvar required to hold the voltage at '
-                                           'the bus controlled by busIBUS that are to be contributed by this '
-                                           'VSC converter; RMPCT must be positive.RMPCT is needed only if there '
-                                           'is more than one local or remote setpoint mode voltage controlling '
-                                           'device (plant, switched shunt, FACTS device shunt element,or VSC dc '
-                                           'line converter) controlling the voltage at bus VSREG',
+                                           'the bus controlled by IBUS (see manual)',
                                unit=Unit.get_percent())
 
         # --------------------------------------------------------------------------------------------------------------
@@ -253,19 +223,17 @@ class RawVscDCLine(RawObject):
         self.register_property(property_name='IBUS2',
                                rawx_key='ibus2',
                                class_type=int,
-                               description='Converter bus number, ',
+                               description='Converter bus number',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='TYPE2',
                                rawx_key='type2',
                                class_type=int,
-                               description='Code for the type of converter dc control:\n'
-                                           '•  0 - for converter out-of-service\n'
-                                           '•  1 - for dc voltage control\n'
-                                           '•  2 -for MW control\n'
-                                           'When both converters are in-service, exactly one '
-                                           'converter of each VSC dc line must be TYPE 1.',
+                               description='Converter ac control mode:'
+                                           '0 -> out of service\n'
+                                           '1 -> AC voltage control\n'
+                                           '2 -> fixed AC power factor\n',
                                min_value=0,
                                max_value=2)
 
@@ -273,115 +241,89 @@ class RawVscDCLine(RawObject):
                                rawx_key='mode2',
                                class_type=int,
                                description='Converter ac control mode:'
-                                           '•  1 - for ac voltage control\n'
-                                           '•  2 - for fixed ac power factor\n',
+                                           '1 -> AC voltage control\n'
+                                           '2 -> fixed AC power factor\n',
                                min_value=1,
                                max_value=2)
 
         self.register_property(property_name='DCSET2',
                                rawx_key='dcset2',
                                class_type=float,
-                               description='Converter dc setpoint. '
-                                           'For TYPE = 1, DCSET is the scheduled dc voltage on the dcside '
-                                           'of the converter bus; entered in kV. For TYPE = 2, '
-                                           'DCSET is the power demand,where a positive value specifies '
-                                           'that the converter is feeding active power intothe ac network at '
-                                           'bus IBUS, and a negative value specifies that the converter is'
-                                           'withdrawing active power from the ac network at bus IBUS; entered in MW.',
+                               description='Converter dc setpoint (see manual)',
                                unit=Unit.get_mw())
 
         self.register_property(property_name='ACSET2',
                                rawx_key='acset2',
                                class_type=float,
-                               description='Converter ac setpoint. For MODE = 1, ACSET is the regulated ac voltage '
-                                           'setpoint;entered in pu. For MODE = 2, ACSET is the power factor setpoint.',
+                               description='Converter ac setpoint. 1-> AC voltage, 2-> power factor',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='ALOSS2',
                                rawx_key='aloss2',
                                class_type=float,
-                               description='Coefficients of the linear equation used to calculate converter losses:'
-                                           'KWconv loss = ALOSS + (Idc * BLOSS)',
+                               description='Losses constant coefficient: loss = ALOSS + (Idc * BLOSS)',
                                unit=Unit.get_kw())
 
         self.register_property(property_name='BLOSS2',
                                rawx_key='bloss2',
                                class_type=float,
-                               description='Coefficients of the linear equation used to calculate converter losses:'
-                                           'KWconv loss = ALOSS + (Idc * BLOSS)',
+                               description='Losses proportional coefficient: loss = ALOSS + (Idc * BLOSS)',
                                unit=Unit.get_kw(),
-                               denominator_unit=Unit(UnitMultiplier.none, UnitSymbol.A))
+                               denominator_unit=Unit.get_a())
 
         self.register_property(property_name='MINLOSS2',
                                rawx_key='minloss2',
                                class_type=int,
-                               description='Minimum converter losses;',
+                               description='Minimum converter losses',
                                unit=Unit.get_kw())
 
         self.register_property(property_name='SMAX2',
                                rawx_key='smax2',
                                class_type=float,
-                               description='Converter MVA rating;',
+                               description='Converter MVA rating',
                                unit=Unit.get_mw())
 
         self.register_property(property_name='IMAX2',
                                rawx_key='imax2',
                                class_type=float,
-                               description='Converter ac current rating; entered in amps. '
-                                           'IMAX = 0.0 to allow unlimited converter current loading. '
-                                           'If a positive IMAX is specified, the base voltage assigned to bus '
-                                           'IBUS must be positive',
+                               description='Converter ac current rating',
                                unit=Unit.get_a())
 
         self.register_property(property_name='PWF2',
                                rawx_key='pwf2',
                                class_type=float,
-                               description='Power weighting factor fraction (0.0 <= PWF <= 1.0) '
-                                           'used in reducing the active power order and either the '
-                                           'reactive power order (when MODE is 2) or the reactive power limits '
-                                           '(when MODE is 1) when the converter MVA or current rating is violated. '
-                                           'When PWF is 0.0, only the active power is reduced; when PWF is 1.0, '
-                                           'only the reactive power is reduced; otherwise, a weighted reduction of '
-                                           'both active and reactive power is applied.')
+                               description='Power weighting factor fraction (see manual)')
 
         self.register_property(property_name='MAXQ2',
                                rawx_key='maxq2',
                                class_type=float,
-                               description='Reactive power upper limit; entered in Mvar. '
-                                           'A positive value of reactive power indicates reactive power flowing '
-                                           'into the ac network from the converter; a negative value of reactive '
-                                           'power indicates reactive power withdrawn from the ac network. '
-                                           'Not used if MODE = 2.',
+                               description='Reactive power upper limit (see manual)',
                                unit=Unit.get_mvar())
 
         self.register_property(property_name='MINQ2',
                                rawx_key='minq2',
                                class_type=float,
-                               description='Reactive power lower limit; entered in Mvar. '
-                                           'A positive value of reactive power indicates reactive power flowing '
-                                           'into the ac network from the converter; a negative value of reactive '
-                                           'power indicates reactive power withdrawn from the ac network. '
-                                           'Not used if MODE = 2.',
+                               description='Reactive power lower limit (see manual)',
                                unit=Unit.get_mvar())
 
         self.register_property(property_name='REMOT2',
                                rawx_key='remot2',
                                class_type=int,
-                               description='Control bus',
+                               description='Control bus (see manual)',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='VSREG2',
                                rawx_key='vseg2',
                                class_type=int,
-                               description='Control bus',
+                               description='Control bus (see manual)',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='NREG2',
                                rawx_key='nreg2',
                                class_type=int,
-                               description='Control node',
+                               description='Control node (see manual)',
                                min_value=0,
                                max_value=999999)
 
@@ -389,11 +331,7 @@ class RawVscDCLine(RawObject):
                                rawx_key='rmpct2',
                                class_type=float,
                                description='Percent of the total Mvar required to hold the voltage at '
-                                           'the bus controlled by busIBUS that are to be contributed by this '
-                                           'VSC converter; RMPCT must be positive.RMPCT is needed only if there '
-                                           'is more than one local or remote setpoint mode voltage controlling '
-                                           'device (plant, switched shunt, FACTS device shunt element,or VSC dc '
-                                           'line converter) controlling the voltage at bus VSREG',
+                                           'the bus controlled by IBUS (see manual)',
                                unit=Unit.get_percent())
 
         # --------------------------------------------------------------------------------------------------------------

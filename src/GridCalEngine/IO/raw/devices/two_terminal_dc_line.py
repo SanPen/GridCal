@@ -134,7 +134,7 @@ class RawTwoTerminalDCLine(RawObject):
         self.register_property(property_name='DCVMIN',
                                rawx_key='dcvmin',
                                class_type=float,
-                               description='Minimum compounded dc voltage;',
+                               description='Minimum dc voltage;',
                                unit=Unit(UnitMultiplier.k, UnitSymbol.V))
 
         self.register_property(property_name='CCCITMX',
