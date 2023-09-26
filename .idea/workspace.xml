@@ -28,8 +28,7 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="raw descriptions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/two_terminal_dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/two_terminal_dc_line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/vsc_dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/vsc_dc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -995,13 +994,6 @@
       <workItem from="1674823262666" duration="1341000" />
       <workItem from="1674988874398" duration="514000" />
     </task>
-    <task id="LOCAL-00301" summary="Fixed serious bug where the compiler was not considering the load active profiles">
-      <created>1653569314433</created>
-      <option name="number" value="00301" />
-      <option name="presentableId" value="LOCAL-00301" />
-      <option name="project" value="LOCAL" />
-      <updated>1653569314433</updated>
-    </task>
     <task id="LOCAL-00302" summary="added newton pa compatibility">
       <created>1653913923717</created>
       <option name="number" value="00302" />
@@ -1338,7 +1330,14 @@
       <option name="project" value="LOCAL" />
       <updated>1695740570287</updated>
     </task>
-    <option name="localTasksCounter" value="350" />
+    <task id="LOCAL-00350" summary="raw descriptions">
+      <created>1695742027581</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
+      <option name="project" value="LOCAL" />
+      <updated>1695742027581</updated>
+    </task>
+    <option name="localTasksCounter" value="351" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

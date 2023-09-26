@@ -136,7 +136,7 @@ def runGridCal() -> None:
     window_ = MainGUI()
 
     h_ = 780
-    window_.resize(int(1.61 * h_), h_)  # golden ratio :)
+    window_.resize(int(1.7 * h_), h_)  # almost the golden ratio :)
     window_.show()
     sys.exit(app.exec_())
 
