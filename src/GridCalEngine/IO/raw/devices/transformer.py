@@ -333,7 +333,7 @@ class RawTransformer(RawObject):
                                rawx_key='ang1',
                                class_type=int,
                                description='Winding 1 phase shift angle in degrees.',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg))
+                               unit=Unit.get_deg())
 
         self.register_property(property_name='COD1',
                                rawx_key='cod1',
@@ -344,7 +344,7 @@ class RawTransformer(RawObject):
         self.register_property(property_name='CONT1',
                                rawx_key='cont1',
                                class_type=int,
-                               description='control bus for the winding 1.',
+                               description='Control bus for the winding 1.',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='NODE1',
@@ -353,93 +353,53 @@ class RawTransformer(RawObject):
                                description='A node number of bus CONT1.',
                                min_value=0,
                                max_value=999999)
+
         self.register_property(property_name='RMA1',
                                rawx_key='rma1',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1 is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMA1 = 1.1 by default')
+                               description='Winding 1 upper limit depending of COD1 and CW')
+
         self.register_property(property_name='RMI1',
                                rawx_key='rmi1',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the lower limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMI1 = 0.9 by default')
+                               description='Winding 1 lower limit depending of COD1 and CW')
 
         self.register_property(property_name='VMA1',
                                rawx_key='vma1',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper, of one ofthe following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 1 upper voltage limit depending of COD1.')
 
         self.register_property(property_name='VMI1',
                                rawx_key='vmi1',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, lower limits, of one of the following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 1 lower voltage limit depending of COD1.')
 
         self.register_property(property_name='NTP1',
                                rawx_key='ntp1',
                                class_type=int,
-                               description='The number of tap positions available; used when COD1 is 1 or 2. '
-                                           'NTP1 must be between 2 and 9999.',
+                               description='Winding 1 number of tap positions available (see manual)',
                                min_value=2,
                                max_value=9999)
+
         self.register_property(property_name='TAB1',
                                rawx_key='tab1',
                                class_type=int,
-                               description='The  number  of  a  transformer  impedance  correction  table  if  '
-                                           'this  transformer winding’s impedance is to be a function of either '
-                                           'off-nominal turns ratio or phase shift angle (refer to Transformer '
-                                           'Impedance Correction Tables), or 0 if no trans-former impedance '
-                                           'correction is to be applied to this transformer winding. '
-                                           'TAB1= 0 by default.For three winding transformers, these impedance '
-                                           'correction factors are applied to  the  equivalent  T-model  impedance  '
-                                           'Z1  when  ZCOD=0  and  to  the  bus-to-bus impedance Z12 when ZCOD=1.',
+                               description='Winding 1  number  of  a  transformer  impedance  correction  table (see manual)',
                                min_value=0,
                                max_value=999999)
+
         self.register_property(property_name='CR1',
                                rawx_key='cr1',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 1 load drop compensation resistance (see manual)',
                                unit=Unit.get_pu())
+
         self.register_property(property_name='CX1',
                                rawx_key='cx1',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 1 load drop compensation reactance (see manual)',
                                unit=Unit.get_pu())
+
         self.register_property(property_name='CNXA1',
                                rawx_key='cnxa1',
                                class_type=int,
@@ -451,7 +411,7 @@ class RawTransformer(RawObject):
             self.register_property(property_name='RATE1_{}'.format(i),
                                    rawx_key='wdg1rate{}'.format(i),
                                    class_type=float,
-                                   description='Winding rating',
+                                   description='Winding rating {}'.format(i),
                                    unit=Unit.get_mva())
 
         # --------------------------------------------------------------------------------------------------------------
@@ -459,73 +419,30 @@ class RawTransformer(RawObject):
         self.register_property(property_name='WINDV2',
                                rawx_key='windv2',
                                class_type=float,
-                               description='When CW is 1, WINDV2 is the Winding 2 off-nominal turns ratio '
-                                           'in pu of Winding2 bus base voltage; '
-                                           'WINDV1 = 1.0 by default.When CW is 2, '
-                                           'WINDV1 is the actual Winding 1 voltage in kV; '
-                                           'WINDV1 is equal to the base voltage of bus I by default.'
-                                           'When CW is 3, WINDV2 is the Winding 2 off-nominal turns '
-                                           'ratio in pu of nominal Winding 1 voltage, NOMV2;')
+                               description='Winding 2 off-nominal turns ratio or other stuff (see manual)')
 
         self.register_property(property_name='NOMV2',
                                rawx_key='nomv2',
                                class_type=float,
-                               description='The nominal (rated) Winding 1 voltage base in kV, or zero to '
-                                           'indicate that nominal  Winding 1 voltage is assumed to be identical '
-                                           'to  the  base  voltage  of  bus  I.'
-                                           'NOMV1 is used in converting magnetizing data between physical units and '
-                                           'perunit admittance values when CM is 2. NOMV1 is used in converting '
-                                           'tap ratio data between values in per unit of nominal Winding 1 voltage '
-                                           'and values in per unit of Winding 1 bus base voltage when CW is 3.',
-                               unit=Unit(UnitMultiplier.k, UnitSymbol.V))
+                               description='Winding 2 voltage base in kV or other stuff (see manual)',
+                               unit=Unit.get_kv())
 
         self.register_property(property_name='ANG2',
                                rawx_key='ang2',
                                class_type=int,
-                               description='The winding one phase shift angle in degrees.  '
-                                           'For a two-winding  transformer,ANG1 is positive when the '
-                                           'winding one bus voltage leads the winding two busvoltage; '
-                                           'for a three-winding transformer, ANG1 is positive when the '
-                                           'winding one bus voltage leads the T (or star) point bus voltage. '
-                                           'ANG1 must be greater than-180.0º and less than or equal to +180.0º',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg))
+                               description='Winding 2 phase shift angle in degrees.',
+                               unit=Unit.get_deg())
 
         self.register_property(property_name='COD2',
                                rawx_key='cod2',
                                class_type=int,
-                               description='The transformer control mode for automatic adjustments of the '
-                                           'Winding 1 tap or phase shift angle during power flow solutions:'
-                                           '•  0 - for fixed tap and fixed phase shift'
-                                           '•  ±1 - for voltage control'
-                                           '•  ±2 - for reactive power flow control'
-                                           '•  ±3 - for active power flow control'
-                                           '•  ±4 - for control of a dc line quantity (valid only for '
-                                           'two-winding transform-ers)'
-                                           '•  ±5 - for asymmetric active power flow control'
-                                           'If the control '
-                                           'mode is entered as a positive number, automatic adjustment of this'
-                                           'transformer winding is enabled when the corresponding adjustment '
-                                           'is activated during power flow solutions; a negative control mode '
-                                           'suppresses the automatic adjustment of this transformer winding.',
+                               description='Winding 2 control mode.',
                                min_value=-5,
                                max_value=5)
         self.register_property(property_name='CONT2',
                                rawx_key='cont2',
                                class_type=int,
-                               description='The  bus  number,  or  extended  bus  name  enclosed  in  single  '
-                                           'quotes  (refer  to  Ex-tended Bus Names), of the bus for which voltage '
-                                           'is to be controlled by the trans-former turns ratio adjustment option '
-                                           'of the power flow solution activities whenCOD1  is  1.  CONT1  should  '
-                                           'be  non-zero  only  for  voltage  controlling  transformer windings.'
-                                           'CONT1  may  specify  a  bus  other  than  I,  J,  or  K;  in  this  '
-                                           'case,  the  sign  of  CONT1defines  the  location  of  the  controlled  '
-                                           'bus  relative  to  the  transformer  winding.If CONT1 is entered as a '
-                                           'positive number, or a quoted extended bus name, the ratio  is  adjusted  '
-                                           'as  if  bus  CONT1  is  on  the  Winding  2  or  Winding  3  side  of  '
-                                           'the transformer; if CONT1 is entered as a negative number, or a quoted '
-                                           'extended bus name with a minus sign preceding the first character, '
-                                           'the ratio is adjusted as if bus CONT1 is on the Winding 1 side of the '
-                                           'transformer.',
+                               description='Control bus for the winding 2.',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='NODE2',
@@ -537,89 +454,43 @@ class RawTransformer(RawObject):
         self.register_property(property_name='RMA2',
                                rawx_key='rma2',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMA1 = 1.1 by default')
+                               description='Winding 2 upper limit depending of COD1 and CW')
         self.register_property(property_name='RMI2',
                                rawx_key='rmi2',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the lower limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMI1 = 0.9 by default')
+                               description='Winding 2 lower limit depending of COD1 and CW')
 
         self.register_property(property_name='VMA2',
                                rawx_key='vma2',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper, of one ofthe following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 2 upper voltage limit depending of COD1.')
 
         self.register_property(property_name='VMI2',
                                rawx_key='vmi2',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, lower limits, of one of the following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 2 lower voltage limit depending of COD1.')
 
         self.register_property(property_name='NTP2',
                                rawx_key='ntp2',
                                class_type=int,
-                               description='The number of tap positions available; used when COD1 is 1 or 2. '
-                                           'NTP1 must bebetween 2 and 9999.',
+                               description='Winding 2 number of tap positions available (see manual)',
                                min_value=2,
                                max_value=9999)
         self.register_property(property_name='TAB2',
                                rawx_key='tab2',
                                class_type=int,
-                               description='The  number  of  a  transformer  impedance  correction  table  if  '
-                                           'this  transformer winding’s impedance is to be a function of either '
-                                           'off-nominal turns ratio or phase shift angle (refer to Transformer '
-                                           'Impedance Correction Tables), or 0 if no trans-former impedance '
-                                           'correction is to be applied to this transformer winding. '
-                                           'TAB1= 0 by default.For three winding transformers, these impedance '
-                                           'correction factors are applied to  the  equivalent  T-model  impedance  '
-                                           'Z1  when  ZCOD=0  and  to  the  bus-to-bus impedance Z12 when ZCOD=1.',
+                               description='Winding 2 number  of  a  transformer  impedance  correction  table (see manual)',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='CR2',
                                rawx_key='cr2',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 2 load drop compensation resistance (see manual)',
                                unit=Unit.get_pu())
         self.register_property(property_name='CX2',
                                rawx_key='cx2',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 1 load drop compensation reactance (see manual)',
                                unit=Unit.get_pu())
         self.register_property(property_name='CNXA2',
                                rawx_key='cnxa2',
@@ -640,168 +511,85 @@ class RawTransformer(RawObject):
         self.register_property(property_name='WINDV3',
                                rawx_key='windv3',
                                class_type=float,
-                               description='When CW is 1, WINDV3 is the Winding 3 off-nominal turns ratio '
-                                           'in pu of Winding3 bus base voltage; '
-                                           'WINDV3 = 1.0 by default.When CW is 2, '
-                                           'WINDV3 is the actual Winding 1 voltage in kV; '
-                                           'WINDV3 is equal to the base voltage of bus I by default.'
-                                           'When CW is 3, WINDV3 is the Winding 1 off-nominal turns '
-                                           'ratio in pu of nominal Winding 3 voltage, NOMV3;')
+                               description='Winding 3 off-nominal turns ratio or other stuff (see manual)')
 
         self.register_property(property_name='NOMV3',
                                rawx_key='nomv3',
                                class_type=float,
-                               description='The nominal (rated) Winding 3 voltage base in kV, or zero to '
-                                           'indicate that nominal  Winding 3 voltage is assumed to be identical '
-                                           'to  the  base  voltage  of  bus  K.'
-                                           'NOMV3 is used in converting magnetizing data between physical units and '
-                                           'perunit admittance values when CM is 2. NOMV3 is used in converting '
-                                           'tap ratio data between values in per unit of nominal Winding 1 voltage '
-                                           'and values in per unit of Winding 3 bus base voltage when CW is 3.',
-                               unit=Unit(UnitMultiplier.k, UnitSymbol.V))
+                               description='Winding 3 voltage base in kV or other stuff (see manual)',
+                               unit=Unit.get_kv())
 
         self.register_property(property_name='ANG3',
                                rawx_key='ang3',
                                class_type=int,
-                               description='The winding one phase shift angle in degrees.  '
-                                           'For a two-winding  transformer,ANG1 is positive when the '
-                                           'winding one bus voltage leads the winding two busvoltage; '
-                                           'for a three-winding transformer, ANG1 is positive when the '
-                                           'winding one bus voltage leads the T (or star) point bus voltage. '
-                                           'ANG1 must be greater than-180.0º and less than or equal to +180.0º',
-                               unit=Unit(UnitMultiplier.none, UnitSymbol.deg))
+                               description='Winding 3 phase shift angle in degrees.',
+                               unit=Unit.get_deg())
 
         self.register_property(property_name='COD3',
                                rawx_key='cod3',
                                class_type=int,
-                               description='The transformer control mode for automatic adjustments of the '
-                                           'Winding 1 tap or phase shift angle during power flow solutions:'
-                                           '•  0 - for fixed tap and fixed phase shift'
-                                           '•  ±1 - for voltage control'
-                                           '•  ±2 - for reactive power flow control'
-                                           '•  ±3 - for active power flow control'
-                                           '•  ±4 - for control of a dc line quantity (valid only for '
-                                           'two-winding transform-ers)'
-                                           '•  ±5 - for asymmetric active power flow control'
-                                           'If the control '
-                                           'mode is entered as a positive number, automatic adjustment of this'
-                                           'transformer winding is enabled when the corresponding adjustment '
-                                           'is activated during power flow solutions; a negative control mode '
-                                           'suppresses the automatic adjustment of this transformer winding.',
+                               description='Winding 3 control mode.',
                                min_value=-5,
                                max_value=5)
         self.register_property(property_name='CONT3',
                                rawx_key='cont3',
                                class_type=int,
-                               description='The  bus  number,  or  extended  bus  name  enclosed  in  single  '
-                                           'quotes  (refer  to  Ex-tended Bus Names), of the bus for which voltage '
-                                           'is to be controlled by the trans-former turns ratio adjustment option '
-                                           'of the power flow solution activities whenCOD1  is  1.  CONT1  should  '
-                                           'be  non-zero  only  for  voltage  controlling  transformer windings.'
-                                           'CONT1  may  specify  a  bus  other  than  I,  J,  or  K;  in  this  '
-                                           'case,  the  sign  of  CONT1defines  the  location  of  the  controlled  '
-                                           'bus  relative  to  the  transformer  winding.If CONT1 is entered as a '
-                                           'positive number, or a quoted extended bus name, the ratio  is  adjusted  '
-                                           'as  if  bus  CONT1  is  on  the  Winding  2  or  Winding  3  side  of  '
-                                           'the transformer; if CONT1 is entered as a negative number, or a quoted '
-                                           'extended bus name with a minus sign preceding the first character, '
-                                           'the ratio is adjusted as if bus CONT1 is on the Winding 1 side of the '
-                                           'transformer.',
+                               description='Control bus for the winding 3',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='NODE3',
                                rawx_key='node3',
                                class_type=int,
-                               description='A node number of bus CONT1.',
+                               description='A node number of bus CONT3.',
                                min_value=0,
                                max_value=999999)
+
         self.register_property(property_name='RMA3',
                                rawx_key='rma3',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMA1 = 1.1 by default')
+                               description='Winding 3 upper limit depending of COD1 and CW')
+
         self.register_property(property_name='RMI3',
                                rawx_key='rmi3',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the lower limits, '
-                                           'of one of the following:\n'
-                                           '•  Off-nominal turns ratio in pu of Winding 1 bus base voltage '
-                                           'when COD1is 1 or 2 and CW is 1; RMI1 = 0.9 by default.\n'
-                                           '•  Actual Winding 1 voltage in kV when COD1 is 1 or 2 and CW is 2. '
-                                           'No default is allowed.\n'
-                                           '•  Off-nominal turns ratio in pu of nominal Winding 1 voltage '
-                                           '(NOMV1) whenCOD1 is 1 or 2 and CW is 3; RMI1 = 0.9 '
-                                           'by default.\n'
-                                           '•  Phase shift angle in degrees when COD1 is 3 or 5. '
-                                           'No default is allowed.Not used when COD1 is 0 or 4; '
-                                           'RMI1 = 0.9 by default')
+                               description='Winding 3 lower limit depending of COD1 and CW')
 
         self.register_property(property_name='VMA3',
                                rawx_key='vma3',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, the upper, of one ofthe following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 3 upper voltage limit depending of COD1.')
 
         self.register_property(property_name='VMI3',
                                rawx_key='vmi3',
                                class_type=float,
-                               description='When COD1 is 1, 2, 3, or 5, lower limits, of one of the following:\n'
-                                           '•  Voltage at the controlled bus (bus CONT1) in pu when COD1 is 1. '
-                                           'VMA1= 1.1 and VMI1 = 0.9 by default.\n'
-                                           '•  Reactive power flow into the transformer at the Winding 1 bus end '
-                                           'in Mvarwhen COD1 is 2. No default is allowed.\n'
-                                           '•  Active  power  flow  into  the  transformer  at  the  Winding  1  '
-                                           'bus  end  in  MWwhen COD1 is 3 or 5.\n'
-                                           'No default is allowed.Not used when COD1 is 0 or 4.')
+                               description='Winding 3 lower voltage limit depending of COD1.')
 
         self.register_property(property_name='NTP3',
                                rawx_key='ntp3',
                                class_type=int,
-                               description='The number of tap positions available; used when COD1 is 1 or 2. '
-                                           'NTP1 must bebetween 2 and 9999.',
+                               description='Winding 3 number of tap positions available (see manual)',
                                min_value=2,
                                max_value=9999)
+
         self.register_property(property_name='TAB3',
                                rawx_key='tab3',
                                class_type=int,
-                               description='The  number  of  a  transformer  impedance  correction  table  if  '
-                                           'this  transformer winding’s impedance is to be a function of either '
-                                           'off-nominal turns ratio or phase shift angle (refer to Transformer '
-                                           'Impedance Correction Tables), or 0 if no trans-former impedance '
-                                           'correction is to be applied to this transformer winding. '
-                                           'TAB1= 0 by default.For three winding transformers, these impedance '
-                                           'correction factors are applied to  the  equivalent  T-model  impedance  '
-                                           'Z1  when  ZCOD=0  and  to  the  bus-to-bus impedance Z12 when ZCOD=1.',
+                               description='Winding 1  number  of  a  transformer  impedance  correction  table (see manual)',
                                min_value=0,
                                max_value=999999)
+
         self.register_property(property_name='CR3',
                                rawx_key='cr3',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 3 load drop compensation resistance (see manual)',
                                unit=Unit.get_pu())
+
         self.register_property(property_name='CX3',
                                rawx_key='cx3',
                                class_type=float,
-                               description='The load drop compensation impedance for voltage controlling '
-                                           'transformers entered in pu on system base quantities; used when COD1 is 1.',
+                               description='Winding 3 load drop compensation reactance (see manual)',
                                unit=Unit.get_pu())
+
         self.register_property(property_name='CNXA3',
                                rawx_key='cnxa3',
                                class_type=int,
@@ -813,7 +601,7 @@ class RawTransformer(RawObject):
             self.register_property(property_name='RATE3_{}'.format(i),
                                    rawx_key='wdg3rate{}'.format(i),
                                    class_type=float,
-                                   description='Winding rating',
+                                   description='Winding 3 rating {}'.format(i),
                                    unit=Unit.get_mva())
 
         # --------------------------------------------------------------------------------------------------------------
