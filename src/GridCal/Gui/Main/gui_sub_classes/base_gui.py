@@ -45,7 +45,7 @@ from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, CheckListDialogue
+from GridCal.Gui.GeneralDialogues import LogsDialogue, clear_qt_layout, CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow
@@ -162,6 +162,10 @@ class BaseMainGui(QMainWindow):
         self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
 
+        # simulation start end
+        self.simulation_start_index: int = 0
+        self.simulation_end_index: int = 0
+
         # window pointers ------------------------------------------------------------------------------------------
         self.file_sync_window: Union[SyncDialogueWindow, None] = None
         self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
@@ -176,6 +180,7 @@ class BaseMainGui(QMainWindow):
         self.tower_builder_window: Union[TowerBuilderGUI, None] = None
         self.investment_checks_diag: Union[CheckListDialogue, None] = None
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
+        self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
 
         # available engines
         engine_lst = [bs.EngineType.GridCal]
@@ -500,22 +505,26 @@ class BaseMainGui(QMainWindow):
             index = proxy.index(row, 0)
             self.ui.dataStructuresTreeView.expand(index)
 
-    def set_up_profile_sliders(self):
+    def get_simulation_start(self) -> int:
         """
-        Set up profiles
+        Get the start simulation index
         """
-        if self.circuit.time_profile is not None:
-            t = len(self.circuit.time_profile) - 1
+        return self.simulation_start_index
 
-            self.ui.profile_start_slider.setMinimum(0)
-            self.ui.profile_start_slider.setMaximum(t)
-            self.ui.profile_start_slider.setValue(0)
+    def get_simulation_end(self) -> int:
+        """
+        Get the end simulation index
+        """
+        return self.simulation_end_index
 
-            self.ui.profile_end_slider.setMinimum(0)
-            self.ui.profile_end_slider.setMaximum(t)
-            self.ui.profile_end_slider.setValue(t)
-        else:
-            pass
+    def setup_sim_indices(self, st: int, en: int):
+        """
+        Set the simulation indices
+        :param st: start index
+        :param en: end index
+        """
+        self.simulation_start_index = st
+        self.simulation_end_index = en
 
     def update_date_dependent_combos(self):
         """
@@ -524,7 +533,9 @@ class BaseMainGui(QMainWindow):
         if self.circuit.time_profile is not None:
             mdl = gf.get_list_model(self.circuit.time_profile)
             # setup profile sliders
-            self.set_up_profile_sliders()
+            t = len(self.circuit.time_profile) - 1
+            self.setup_sim_indices(0, t)
+
         else:
             mdl = QtGui.QStandardItemModel()
         self.ui.profile_time_selection_comboBox.setModel(mdl)

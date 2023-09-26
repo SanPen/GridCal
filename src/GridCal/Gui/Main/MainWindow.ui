@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1379</width>
-    <height>785</height>
+    <width>1426</width>
+    <height>805</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -243,25 +243,17 @@
                   <property name="bottomMargin">
                    <number>1</number>
                   </property>
-                  <item row="2" column="8">
-                   <widget class="QLabel" name="start_label">
-                    <property name="font">
-                     <font>
-                      <pointsize>9</pointsize>
-                     </font>
+                  <item row="1" column="8">
+                   <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
+                    <property name="toolTip">
+                     <string>Previous</string>
                     </property>
                     <property name="text">
-                     <string>...</string>
+                     <string/>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="12">
-                   <widget class="QSlider" name="profile_end_slider">
-                    <property name="toolTip">
-                     <string>Simulation end</string>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
                     </property>
                    </widget>
                   </item>
@@ -272,21 +264,48 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="11">
-                   <widget class="QPushButton" name="view_next_simulation_step_pushButton">
-                    <property name="toolTip">
-                     <string>Next</string>
+                  <item row="2" column="9">
+                   <widget class="QLabel" name="schematic_step_label">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                     </font>
                     </property>
                     <property name="text">
-                     <string/>
+                     <string>...</string>
                     </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="15">
+                  <item row="1" column="12">
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="9">
+                   <widget class="QSlider" name="simulation_results_step_slider">
+                    <property name="toolTip">
+                     <string>Simulation step</string>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="14">
                    <widget class="QPushButton" name="colour_results_pushButton">
                     <property name="toolTip">
                      <string>Color the grid with the selected study</string>
@@ -301,53 +320,20 @@
                    </widget>
                   </item>
                   <item row="1" column="10">
-                   <widget class="QSlider" name="simulation_results_step_slider">
+                   <widget class="QPushButton" name="view_next_simulation_step_pushButton">
                     <property name="toolTip">
-                     <string>Simulation step</string>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="10">
-                   <widget class="QLabel" name="schematic_step_label">
-                    <property name="font">
-                     <font>
-                      <pointsize>9</pointsize>
-                     </font>
+                     <string>Next</string>
                     </property>
                     <property name="text">
-                     <string>...</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="12">
-                   <widget class="QLabel" name="end_label">
-                    <property name="font">
-                     <font>
-                      <pointsize>9</pointsize>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <spacer name="horizontalSpacer_19">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="1" column="14">
+                  <item row="1" column="13">
                    <widget class="QComboBox" name="available_results_to_color_comboBox">
                     <property name="minimumSize">
                      <size>
@@ -360,34 +346,13 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="9">
-                   <widget class="QPushButton" name="view_previous_simulation_step_pushButton">
-                    <property name="toolTip">
-                     <string>Previous</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="icons.qrc">
-                      <normaloff>:/Icons/icons/prev.svg</normaloff>:/Icons/icons/prev.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="8">
-                   <widget class="QSlider" name="profile_start_slider">
-                    <property name="toolTip">
-                     <string>Simulation start</string>
-                    </property>
+                  <item row="1" column="1">
+                   <spacer name="horizontalSpacer_19">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="13">
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -396,6 +361,20 @@
                      </size>
                     </property>
                    </spacer>
+                  </item>
+                  <item row="1" column="11">
+                   <widget class="QPushButton" name="editTimeIntervalButton">
+                    <property name="toolTip">
+                     <string>Edit the start and end points of the simulations</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>
@@ -8205,8 +8184,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1379</width>
-     <height>22</height>
+     <width>1426</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

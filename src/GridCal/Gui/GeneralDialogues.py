@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
 from enum import Enum
+import pandas as pd
 from typing import List
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -588,6 +589,98 @@ class InputNumberDialogue(QtWidgets.QDialog):
         self.is_accepted = True
 
         self.value = self.input_box.value()
+        self.accept()
+
+
+class StartEndSelectionDialogue(QtWidgets.QDialog):
+    """
+    New StartEndSelectionDialogue window
+    """
+
+    def __init__(self, min_value: int, max_value: int, time_array,
+                 title='Simulation limits selection', h=80, w=240):
+        """
+
+        :param min_value:
+        :param max_value:
+        :param time_array:
+        :param title:
+        :param h:
+        :param w:
+        """
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+
+        self.time_array = time_array
+        nt = len(time_array) - 1
+
+        self.start_slider = QtWidgets.QSlider()
+        self.start_slider.setMinimum(0)
+        self.start_slider.setMaximum(nt)
+        self.start_slider.setValue(min_value)
+        self.start_slider.valueChanged.connect(self.slider_change)
+        self.start_slider.setOrientation(QtCore.Qt.Orientation.Horizontal)
+
+        self.start_label = QtWidgets.QLabel()
+
+        self.end_slider = QtWidgets.QSlider()
+        self.end_slider.setMinimum(0)
+        self.end_slider.setMaximum(nt)
+        self.end_slider.setValue(max_value)
+        self.end_slider.valueChanged.connect(self.slider_change)
+        self.end_slider.setOrientation(QtCore.Qt.Orientation.Horizontal)
+
+        self.end_label = QtWidgets.QLabel()
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.start_slider)
+        self.main_layout.addWidget(self.start_label)
+        self.main_layout.addWidget(self.end_slider)
+        self.main_layout.addWidget(self.end_label)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        self.start_value = min_value
+        self.end_value = max_value
+
+        self.resize(w, h)
+
+        self.slider_change()
+
+    def slider_change(self):
+        """
+        On any slider change...
+        """
+        self.start_value = self.start_slider.value()
+        self.end_value = self.end_slider.value()
+
+        if self.start_value > self.end_value:
+            self.end_slider.setValue(self.start_value)
+            self.end_value = self.start_value
+
+        t1 = pd.to_datetime(self.time_array[self.start_value]).strftime('%d/%m/%Y %H:%M')
+        t2 = pd.to_datetime(self.time_array[self.end_value]).strftime('%d/%m/%Y %H:%M')
+        self.start_label.setText(str(t1))
+        self.end_label.setText(str(t2) + ' [{0}]'.format(self.end_value - self.start_value))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
         self.accept()
 
 

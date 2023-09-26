@@ -30,7 +30,7 @@ import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue
+from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
@@ -139,6 +139,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
         self.ui.busViewerButton.clicked.connect(self.add_bus_vecinity_diagram_from_model)
+        self.ui.editTimeIntervalButton.clicked.connect(self.edit_time_interval)
 
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
@@ -148,8 +149,6 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
         # sliders
-        self.ui.profile_start_slider.valueChanged.connect(self.profile_sliders_changed)
-        self.ui.profile_end_slider.valueChanged.connect(self.profile_sliders_changed)
         self.ui.simulation_results_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
 
         # spinbox change
@@ -302,25 +301,24 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, BusBranchEditorWidget):
                 diagram.editor_graphics_view.zoom_out()
 
-    def profile_sliders_changed(self):
+    def edit_time_interval(self):
         """
-        Correct sliders if they change
+        Run the simulation limits adjust window
         """
-        start = self.ui.profile_start_slider.value()
-        end = self.ui.profile_end_slider.value()
 
-        if start > end:
-            self.ui.profile_end_slider.setValue(start)
-            end = start
+        if self.circuit.has_time_series:
+            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                       max_value=self.simulation_end_index,
+                                                                       time_array=self.circuit.time_profile)
 
-        if self.circuit.time_profile is not None:
-            if len(self.circuit.time_profile) > 0:
-                t1 = self.circuit.time_profile[start]
-                t2 = self.circuit.time_profile[end]
-                t1 = pd.to_datetime(t1).strftime('%d/%m/%Y %H:%M')
-                t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
-                self.ui.start_label.setText(str(t1))
-                self.ui.end_label.setText(str(t2) + ' [{0}]'.format(end - start))
+            self.start_end_dialogue_window.setModal(True)
+            self.start_end_dialogue_window.exec()
+
+            if self.start_end_dialogue_window.is_accepted:
+                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                       en=self.start_end_dialogue_window.end_value)
+        else:
+            info_msg("There are no time series :/")
 
     def grid_colour_function(self, plot_function, current_study: str, current_step: int) -> None:
         """

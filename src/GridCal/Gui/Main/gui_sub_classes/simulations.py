@@ -245,12 +245,8 @@ class SimulationsMain(TimeEventsMain):
         :return: np.array[int]
         """
 
-        start = self.ui.profile_start_slider.value()
-        end = self.ui.profile_end_slider.value()
-
-        if start > end:
-            self.ui.profile_end_slider.setValue(start)
-            end = start
+        start = self.get_simulation_start()
+        end = self.get_simulation_end()
 
         return np.arange(start, end + 1)
 
