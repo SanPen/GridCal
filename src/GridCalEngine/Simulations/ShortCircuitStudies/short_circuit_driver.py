@@ -29,7 +29,7 @@ from GridCalEngine.Core.Devices import Branch, Bus
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Devices.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType
 
 
 

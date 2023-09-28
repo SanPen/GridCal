@@ -16,11 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):
@@ -51,43 +52,34 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
                 ResultTypes.BranchActivePowerFrom,
                 ResultTypes.BranchLoading
             ],
-            data_variables=[
-                'bus_names',
-                'bus_types',
-                'time',
-                'branch_names',
-                'voltage',
-                'S',
-                'Sf',
-                'loading',
-                'losses'
-            ],
             time_array=time_array,
-            clustering_results=clustering_results
+            clustering_results=clustering_results,
+            study_results_type=StudyResultsType.LinearAnalysisTimeSeries
         )
 
-        self.nt: int = len(time_array)
-        self.m: int = m
-        self.n: int = n
-        # self.time_array: DateVec = time_array
+        nt: int = len(time_array)
 
         self.bus_names: StrVec = bus_names
-
         self.bus_types: IntVec = bus_types
-
         self.branch_names: StrVec = branch_names
 
-        self.voltage: CxVec = np.ones((self.nt, n), dtype=complex)
+        self.voltage: CxMat = np.ones((nt, n), dtype=complex)
+        self.S: CxMat = np.zeros((nt, n), dtype=complex)
+        self.Sf: CxMat = np.zeros((nt, m), dtype=complex)
+        self.loading: Mat = np.zeros((nt, m), dtype=float)
+        self.losses: CxMat = np.zeros((nt, m), dtype=float)
 
-        self.S: CxVec = np.zeros((self.nt, n), dtype=complex)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
 
-        self.Sf: CxVec = np.zeros((self.nt, m), dtype=complex)
+        self.register(name='voltage', tpe=CxMat)
+        self.register(name='Sf', tpe=CxMat)
+        self.register(name='S', tpe=CxMat)
+        self.register(name='losses', tpe=CxMat)
+        self.register(name='loading', tpe=CxMat)
 
-        self.loading: Vec = np.zeros((self.nt, m), dtype=float)
-
-        self.losses: CxVec = np.zeros((self.nt, m), dtype=float)
-
-    def apply_new_time_series_rates(self, nc: NumericalCircuit) -> Mat:
+    def apply_new_time_series_rates(self, nc: NumericalCircuit) -> None:
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
 

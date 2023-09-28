@@ -32,7 +32,7 @@ from GridCal.Gui.GridEditorWidget.Injections.battery_graphics import BatteryGrap
 from GridCal.Gui.GridEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
-from GridCalEngine.Core.Devices.enumerations import DeviceType, FaultType
+from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 

@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import TransformerControlType, WindingsConnection, BuildStatus
+from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger

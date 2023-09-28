@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union, List
 import numpy as np
-from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
@@ -27,11 +27,7 @@ from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Diagrams.map_diagram import MapDiagram
-from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 

@@ -22,9 +22,9 @@ from typing import Tuple
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.enumerations import HvdcControlType
+from GridCalEngine.enumerations import HvdcControlType
 
 
 def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:

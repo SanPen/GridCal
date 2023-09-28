@@ -17,7 +17,7 @@
 
 from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.enumerations import BuildStatus, DeviceType
+from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.basic_structures import Vec
 
 

@@ -20,7 +20,8 @@ import pandas as pd
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class ClusteringResults(ResultsTemplate):
@@ -39,22 +40,18 @@ class ClusteringResults(ResultsTemplate):
             available_results=[
                 ResultTypes.ClusteringReport
             ],
-            data_variables=[
-                'time_indices',
-                'sampled_probabilities',
-                'time_array',
-                'original_sample_idx'
-            ],
             clustering_results=None,
-            time_array=time_array
+            time_array=time_array,
+            study_results_type=StudyResultsType.Clustering
         )
 
         self.time_indices = time_indices
-
         self.sampled_probabilities = sampled_probabilities
-
-        # self.time_array = time_array
         self.original_sample_idx = original_sample_idx
+
+        self.register(name='time_indices', tpe=IntVec)
+        self.register(name='sampled_probabilities', tpe=Vec)
+        self.register(name='original_sample_idx', tpe=IntVec)
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """

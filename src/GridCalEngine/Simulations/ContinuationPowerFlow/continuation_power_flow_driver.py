@@ -27,6 +27,8 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 ########################################################################################################################
@@ -77,7 +79,7 @@ class ContinuationPowerFlowOptions:
 
 class ContinuationPowerFlowInput:
 
-    def __init__(self, Sbase, Vbase, Starget, base_overload_number=0):
+    def __init__(self, Sbase: CxVec, Vbase: CxVec, Starget: CxVec, base_overload_number=0):
         """
         ContinuationPowerFlowInput constructor
         @param Sbase: Initial power array
@@ -116,44 +118,39 @@ class ContinuationPowerFlowResults(ResultsTemplate):
                                                                                 ResultTypes.BranchReactiveLosses,
                                                                                 ResultTypes.BranchLoading]
                                                     },
-                                 data_variables=['bus_names',
-                                                 'branch_names',
-                                                 'voltages',
-                                                 'lambdas',
-                                                 'error',
-                                                 'converged',
-                                                 'Sf',
-                                                 'St',
-                                                 'loading',
-                                                 'losses',
-                                                 'Sbus',
-                                                 'bus_types'],
                                  time_array=None,
-                                 clustering_results=None
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.ContinuationPowerFlow
                                  )
 
-        self.bus_names = bus_names
+        self.bus_names: StrVec = bus_names
+        self.branch_names: StrVec = branch_names
+        self.bus_types: IntVec = bus_types
 
-        self.branch_names = branch_names
+        self.voltages: CxMat = np.zeros((nval, nbus), dtype=complex)
 
-        self.voltages = np.zeros((nval, nbus), dtype=complex)
+        self.lambdas: Vec = np.zeros(nval)
+        self.error: Vec = np.zeros(nval)
+        self.converged: BoolVec = np.zeros(nval, dtype=bool)
 
-        self.lambdas = np.zeros(nval)
+        self.Sf: CxMat = np.zeros((nval, nbr), dtype=complex)
+        self.St: CxMat = np.zeros((nval, nbr), dtype=complex)
+        self.loading: Mat = np.zeros((nval, nbr))
+        self.losses: CxMat = np.zeros((nval, nbr), dtype=complex)
+        self.Sbus: CxMat = np.zeros((nval, nbus), dtype=complex)
 
-        self.error = np.zeros(nval)
-
-        self.converged = np.zeros(nval, dtype=bool)
-
-        self.Sf = np.zeros((nval, nbr), dtype=complex)
-        self.St = np.zeros((nval, nbr), dtype=complex)
-
-        self.loading = np.zeros((nval, nbr))
-
-        self.losses = np.zeros((nval, nbr), dtype=complex)
-
-        self.Sbus = np.zeros((nval, nbus), dtype=complex)
-
-        self.bus_types = bus_types
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+        self.register(name='voltages', tpe=CxMat)
+        self.register(name='lambdas', tpe=Vec)
+        self.register(name='error', tpe=Vec)
+        self.register(name='converged', tpe=BoolVec)
+        self.register(name='Sf', tpe=CxMat)
+        self.register(name='St', tpe=CxMat)
+        self.register(name='loading', tpe=CxMat)
+        self.register(name='losses', tpe=CxMat)
+        self.register(name='Sbus', tpe=CxMat)
 
     def get_results_dict(self):
         """

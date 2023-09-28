@@ -22,7 +22,7 @@ That means that solves the OPF problem for a complete time series at once
 from typing import List, Tuple
 import numpy as np
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
+from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCalEngine.basic_structures import Logger
 

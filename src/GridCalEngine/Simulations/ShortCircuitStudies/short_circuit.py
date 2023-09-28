@@ -2,8 +2,8 @@ import numpy as np
 from typing import Tuple
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csc_matrix
-from GridCalEngine.Core.Devices.enumerations import FaultType
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.enumerations import FaultType
+from GridCalEngine.basic_structures import CxVec
 
 
 def short_circuit_3p(bus_idx: int, Ybus: csc_matrix, Vbus: CxVec, Zf: CxVec, baseMVA: float) -> Tuple[CxVec, float]:

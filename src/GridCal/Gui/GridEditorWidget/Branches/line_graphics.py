@@ -25,7 +25,7 @@ from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType
-from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType
 
 
 class LineGraphicItem(LineGraphicTemplateItem):

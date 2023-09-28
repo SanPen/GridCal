@@ -15,23 +15,23 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
     tpe = 'Investments Evaluation Results'
 
-    def __init__(self, grid: MultiCircuit, max_eval: int):
+    def __init__(self, investment_groups_names: StrVec, max_eval: int):
         """
         Construct the analysis
-        :param grid: MultiCircuit
+        :param investment_groups_names: List of investment groups names
         :param max_eval: maximum number of evaluations
         """
         available_results = {
@@ -43,23 +43,39 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='Investments Evaluation',
                                  available_results=available_results,
-                                 data_variables=[],
                                  time_array=None,
-                                 clustering_results=None)
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.InvestmentEvaluations)
 
-        self.grid = grid
-        self.n_groups = len(grid.investments_groups)
-        self.max_eval = max_eval
+        n_groups = len(investment_groups_names)
 
-        self._combinations: IntVec = np.zeros((max_eval, self.n_groups), dtype=int)
+        self.investment_groups_names: StrVec = investment_groups_names
+        self._combinations: IntVec = np.zeros((max_eval, n_groups), dtype=int)
         self._capex: Vec = np.zeros(max_eval, dtype=float)
         self._opex: Vec = np.zeros(max_eval, dtype=float)
         self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._overload_score: Vec = np.zeros(max_eval, dtype=float)
         self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
-        self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
+
+        self.register(name='investment_groups_names', tpe=StrVec)
+        self.register(name='_combinations', tpe=Vec)
+        self.register(name='_capex', tpe=Vec)
+        self.register(name='_opex', tpe=Vec)
+        self.register(name='_losses', tpe=Vec)
+        self.register(name='_overload_score', tpe=Vec)
+        self.register(name='_voltage_score', tpe=Vec)
+        self.register(name='_f_obj', tpe=Vec)
+        self.register(name='_index_names', tpe=Vec)
+
+    @property
+    def n_groups(self) -> int:
+        return self._combinations.shape[1]
+
+    @property
+    def max_eval(self) -> int:
+        return self._combinations.shape[0]
 
     def get_index(self) -> StrVec:
         """
@@ -105,7 +121,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                        "Losses (MW)",
                        "Overload cost (€)",
                        "Voltage deviations cost (€)",
-                       "Objective function"] + self.grid.get_investment_groups_names()
+                       "Objective function"] + self.investment_groups_names
             data = np.c_[self._capex,
                          self._opex,
                          self._losses,

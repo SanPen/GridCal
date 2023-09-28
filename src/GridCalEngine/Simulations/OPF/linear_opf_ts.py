@@ -35,7 +35,7 @@ from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
 import GridCalEngine.ThirdParty.ortools.ortools_extra as pl
-from GridCalEngine.Core.Devices.enumerations import TransformerControlType, HvdcControlType
+from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
 
 

@@ -21,6 +21,8 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class ContingencyAnalysisResults(ResultsTemplate):
@@ -28,7 +30,8 @@ class ContingencyAnalysisResults(ResultsTemplate):
     Contingency analysis results
     """
 
-    def __init__(self, ncon, nbus, nbr, bus_names, branch_names, bus_types, con_names):
+    def __init__(self, ncon: int, nbus: int, nbr: int,
+                 bus_names: StrVec, branch_names: StrVec, bus_types: IntVec, con_names: StrVec):
         """
         ContingencyAnalysisResults
         :param ncon: number of contingencies
@@ -48,17 +51,9 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 ResultTypes.BranchLoading,
                 ResultTypes.ContingencyAnalysisReport
             ],
-            data_variables=[
-                'bus_types',
-                'branch_names',
-                'bus_names',
-                'voltage',
-                'S',
-                'Sf',
-                'loading'
-            ],
             time_array=None,
-            clustering_results=None
+            clustering_results=None,
+            study_results_type=StudyResultsType.ContingencyAnalysis
         )
 
         self.branch_names = branch_names
@@ -66,12 +61,24 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.bus_types = bus_types
         self.con_names = con_names
 
-        self.voltage = np.ones((ncon, nbus), dtype=complex)
-        self.Sbus = np.zeros((ncon, nbus), dtype=complex)
-        self.Sf = np.zeros((ncon, nbr), dtype=complex)
-        self.loading = np.zeros((ncon, nbr), dtype=complex)
+        self.voltage: CxMat = np.ones((ncon, nbus), dtype=complex)
+        self.Sbus: CxMat = np.zeros((ncon, nbus), dtype=complex)
+        self.Sf: CxMat = np.zeros((ncon, nbr), dtype=complex)
+        self.loading: CxMat = np.zeros((ncon, nbr), dtype=complex)
 
         self.report: ContingencyResultsReport = ContingencyResultsReport()
+
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='con_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+
+        self.register(name='voltage', tpe=CxMat)
+        self.register(name='Sbus', tpe=CxMat)
+        self.register(name='Sf', tpe=CxMat)
+        self.register(name='loading', tpe=CxMat)
+
+        self.register(name='report', tpe=ContingencyResultsReport)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """

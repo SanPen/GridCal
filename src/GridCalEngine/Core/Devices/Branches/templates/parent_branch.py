@@ -24,7 +24,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger, Vec, BoolVec
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 

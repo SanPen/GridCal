@@ -19,7 +19,7 @@ import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TransformerControlType
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.basic_structures import SolverType, ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions

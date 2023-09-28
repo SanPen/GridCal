@@ -22,7 +22,7 @@ from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.Branches.transformer_editor import TransformerEditor, reverse_transformer_short_circuit_study
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
-from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType
 
 
 class TransformerGraphicItem(LineGraphicTemplateItem):

@@ -18,7 +18,7 @@ import random
 import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
-from GridCalEngine.Core.Devices.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType, HvdcControlType
+from GridCalEngine.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType
 
 
 class GCProp:
@@ -122,7 +122,7 @@ class EditableDevice:
         self.device_type: DeviceType = device_type
 
         # associated graphic object
-        self._graphic_obj = None
+        self._graphic_obj = None  # todo: this should disappear
 
         self.editable_headers: Dict[str, GCProp] = dict()
 

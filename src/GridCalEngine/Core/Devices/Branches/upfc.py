@@ -20,7 +20,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 

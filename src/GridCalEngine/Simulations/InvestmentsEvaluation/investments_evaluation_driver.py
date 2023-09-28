@@ -51,7 +51,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.pf_options: PowerFlowOptions = pf_options
 
-        self.results = InvestmentsEvaluationResults(grid=grid, max_eval=0)
+        self.results = InvestmentsEvaluationResults(investment_groups_names=grid.get_investment_groups_names(),
+                                                    max_eval=0)
 
         self.__eval_index = 0
 
@@ -119,7 +120,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
-        self.results = InvestmentsEvaluationResults(grid=self.grid,
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=len(self.grid.investments_groups) + 1)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
@@ -163,7 +164,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
-        self.results = InvestmentsEvaluationResults(grid=self.grid,
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.max_eval + 1)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
@@ -199,7 +200,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
-        self.results = InvestmentsEvaluationResults(grid=self.grid,
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.max_eval + 1)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)

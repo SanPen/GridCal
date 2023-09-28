@@ -21,7 +21,21 @@ import numpy as np
 
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec
+from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat
+from GridCalEngine.enumerations import StudyResultsType
+
+
+class ResultsProperty:
+
+    def __init__(self, name: str,
+                 tpe: Union[Vec, Mat, CxVec, CxMat],
+                 old_names: List[str]):
+
+        self.name = name
+
+        self.tpe = tpe
+
+        self.old_names = old_names
 
 
 class ResultsTemplate:
@@ -33,19 +47,24 @@ class ResultsTemplate:
             self,
             name: str,
             available_results: Union[Dict[ResultTypes, List[ResultTypes]], List[ResultTypes]],
-            data_variables: List[str],
             time_array: Union[DateVec, None],
-            clustering_results: Union["ClusteringResults", None]):
+            clustering_results: Union["ClusteringResults", None],
+            study_results_type: StudyResultsType):
         """
         Results template class
         :param name: Name of the class
         :param available_results: list of stuff to represent the results
-        :param data_variables: list of class variables to persist to disk
         :param clustering_results: ClusteringResults object (optional)
+        :param study_results_type: StudyResultsType Instance
         """
         self.name: str = name
+
+        self.study_results_type: StudyResultsType = study_results_type
+
         self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
-        self.data_variables: List[str] = data_variables
+
+        self.data_variables: Dict[str, ResultsProperty] = dict()
+
         self.time_array: Union[DateVec, None] = time_array
 
         if clustering_results:
@@ -60,6 +79,20 @@ class ResultsTemplate:
             self.time_indices = None
             self.sampled_probabilities = None
             self.original_sample_idx = None
+
+    def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: List[str] = list()):
+        """
+        Register a results variable for disk persistence
+        :param name: name of the variable to register (is checked)
+        :param tpe: type of the variable
+        :param old_names: list of old names for retro compatibility
+        """
+
+        assert (hasattr(self, name))  # the property must exist, this avoids bugs when registering
+
+        self.data_variables[name] = ResultsProperty(name=name,
+                                                    tpe=tpe,
+                                                    old_names=old_names)
 
     def consolidate_after_loading(self):
         """

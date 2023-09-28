@@ -7,6 +7,8 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class InputsAnalysisResults(ResultsTemplate):
@@ -43,9 +45,9 @@ class InputsAnalysisResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='Inputs analysis',
                                  available_results=available_results,
-                                 data_variables=[],
                                  time_array=None,
-                                 clustering_results=None)
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.InputsAnalysis)
 
         self.grid = grid
 

@@ -19,7 +19,7 @@
 import numpy as np
 import scipy.sparse as sp
 from typing import Union, Tuple, List
-from GridCalEngine.Core.Devices.enumerations import WindingsConnection
+from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import ObjVec, Vec, CxVec, IntVec
 
 

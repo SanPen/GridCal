@@ -24,7 +24,7 @@ from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 

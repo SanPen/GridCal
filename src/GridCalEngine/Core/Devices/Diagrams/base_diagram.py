@@ -16,13 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import uuid
-from enum import Enum
 import networkx as nx
 from typing import Dict, Union, List, Tuple
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.enumerations import DiagramType, DeviceType
+from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
 class PointsGroup:

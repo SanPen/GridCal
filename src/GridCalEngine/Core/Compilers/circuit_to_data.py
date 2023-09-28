@@ -20,7 +20,7 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import BusMode, BranchImpedanceMode, CxVec, ExternalGridMode
-from GridCalEngine.Core.Devices.enumerations import ConverterControlType, TransformerControlType
+from GridCalEngine.enumerations import ConverterControlType, TransformerControlType
 import GridCalEngine.Core.DataStructures as ds
 
 

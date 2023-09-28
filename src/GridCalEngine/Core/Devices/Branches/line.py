@@ -19,7 +19,7 @@ import numpy as np
 from typing import Union, Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.underground_line import UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W

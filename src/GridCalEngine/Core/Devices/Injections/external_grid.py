@@ -17,7 +17,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import ExternalGridMode
-from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 

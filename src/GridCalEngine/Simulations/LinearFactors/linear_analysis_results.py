@@ -19,7 +19,8 @@ import numpy as np
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class LinearAnalysisResults(ResultsTemplate):
@@ -42,39 +43,39 @@ class LinearAnalysisResults(ResultsTemplate):
                                                     ResultTypes.LODF,
                                                     ResultTypes.BranchActivePowerFrom,
                                                     ResultTypes.BranchLoading],
-                                 data_variables=['branch_names',
-                                                 'bus_names',
-                                                 'bus_types',
-                                                 'PTDF',
-                                                 'LODF',
-                                                 'Sf',
-                                                 'loading'],
                                  time_array=None,
-                                 clustering_results=None)
-        # number of Branches
-        self.n_br = n_br
-
-        self.n_bus = n_bus
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.LinearAnalysis)
 
         # names of the Branches
-        self.branch_names = br_names
+        self.branch_names: StrVec = br_names
+        self.bus_names: StrVec = bus_names
+        self.bus_types: IntVec = bus_types
 
-        self.bus_names = bus_names
+        self.PTDF: Mat = np.zeros((n_br, n_bus))
+        self.LODF: Mat = np.zeros((n_br, n_br))
+        self.Sf: Vec = np.zeros(self.n_br)
+        self.Sbus: Vec = np.zeros(self.n_bus)
+        self.voltage: CxVec = np.ones(self.n_bus, dtype=complex)
+        self.loading: Vec = np.zeros(self.n_br)
 
-        self.bus_types = bus_types
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+        self.register(name='PTDF', tpe=Mat)
+        self.register(name='LODF', tpe=Mat)
+        self.register(name='Sf', tpe=Vec)
+        self.register(name='Sbus', tpe=Vec)
+        self.register(name='voltage', tpe=CxVec)
+        self.register(name='loading', tpe=Vec)
 
-        self.logger = bs.Logger()
+    @property
+    def n_br(self):
+        return self.PTDF.shape[0]
 
-        self.PTDF = np.zeros((n_br, n_bus))
-        self.LODF = np.zeros((n_br, n_br))
-
-        self.Sf = np.zeros(self.n_br)
-
-        self.Sbus = np.zeros(self.n_bus)
-
-        self.voltage = np.ones(self.n_bus, dtype=complex)
-
-        self.loading = np.zeros(self.n_br)
+    @property
+    def n_bus(self):
+        return self.PTDF.shape[1]
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """

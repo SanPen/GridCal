@@ -726,12 +726,12 @@ class MultiCircuit:
 
         return res
 
-    def get_investment_groups_names(self) -> List[str]:
+    def get_investment_groups_names(self) -> StrVec:
         """
 
         :return:
         """
-        return [e.name for e in self.investments_groups]
+        return np.array([e.name for e in self.investments_groups])
 
     def get_lines(self) -> List[dev.Line]:
         """

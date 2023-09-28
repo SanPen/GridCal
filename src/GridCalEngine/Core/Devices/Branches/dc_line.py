@@ -17,16 +17,13 @@
 
 
 import pandas as pd
-import numpy as np
-from typing import Tuple, Union
+from typing import Union
 from matplotlib import pyplot as plt
 
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
-from GridCalEngine.Core.Devices.Branches.line import LineTemplate, SequenceLineType, UndergroundLineType
+from GridCalEngine.Core.Devices.Branches.line import LineTemplate
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus
 
 
 class DcLine(ParentBranch):

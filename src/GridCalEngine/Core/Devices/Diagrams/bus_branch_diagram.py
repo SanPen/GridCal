@@ -15,10 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import uuid
-from typing import Dict, Union
 from GridCalEngine.Core.Devices.Diagrams.base_diagram import BaseDiagram
-from GridCalEngine.Core.Devices.enumerations import DiagramType
+from GridCalEngine.enumerations import DiagramType
 
 
 class BusBranchDiagram(BaseDiagram):

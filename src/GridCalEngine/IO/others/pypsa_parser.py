@@ -13,7 +13,7 @@ except ImportError:
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, Line
 from GridCalEngine.Core.Devices.Injections.load import Load
 from GridCalEngine.Core.Devices.Injections.generator import Generator

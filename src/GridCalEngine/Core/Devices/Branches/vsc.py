@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 from typing import List, Tuple
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import ConverterControlType, BuildStatus
+from GridCalEngine.enumerations import ConverterControlType, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 

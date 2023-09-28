@@ -21,13 +21,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from enum import Enum
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
-from GridCalEngine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
+from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.line import Line
 
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)

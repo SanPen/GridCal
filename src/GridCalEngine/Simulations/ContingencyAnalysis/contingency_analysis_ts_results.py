@@ -17,11 +17,14 @@
 
 import numpy as np
 import pandas as pd
+from typing import Union
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
@@ -29,18 +32,24 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
     Contingency analysis time series results
     """
 
-    def __init__(self, n, nbr, nc, time_array, bus_names, branch_names, bus_types, con_names, clustering_results):
+    def __init__(self, n: int, nbr: int, nc: int,
+                 time_array: DateVec,
+                 bus_names: StrVec,
+                 branch_names: StrVec,
+                 bus_types: IntVec,
+                 con_names: StrVec,
+                 clustering_results: Union["ClusteringResults", None]):
         """
         ContingencyAnalysisTimeSeriesResults
-        :param n: 
-        :param nbr: 
-        :param nc: 
-        :param time_array: 
-        :param bus_names: 
-        :param branch_names: 
-        :param bus_types: 
-        :param con_names:
-        :param clustering_results:
+        :param n: number of nodes
+        :param nbr: number of branches
+        :param nc: number of contingencies
+        :param time_array: array of time values
+        :param bus_names: rray of bus names
+        :param branch_names: array of branch names
+        :param bus_types: array of bus types
+        :param con_names: array of contingency names
+        :param clustering_results: Clustering results if applicable
         """
 
         ResultsTemplate.__init__(
@@ -54,45 +63,59 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 ResultTypes.WorstContingencyLoading,
                 ResultTypes.ContingencyAnalysisReport
             ],
-            data_variables=[
-                'branch_names',
-                'bus_names',
-                'bus_types',
-                'time_array',
-                'worst_flows',
-                'worst_loading',
-                'overload_count',
-                'relative_frequency',
-                'max_overload'
-            ],
             time_array=time_array,
-            clustering_results=clustering_results
+            clustering_results=clustering_results,
+            study_results_type=StudyResultsType.ContingencyAnalysisTimeSeries
         )
 
         nt = len(time_array)
 
-        self.nbus = n
-        self.nbranch = nbr
-        self.ncon = nc
+        self.branch_names: StrVec = branch_names
+        self.bus_names: StrVec = bus_names
+        self.con_names: StrVec = con_names
+        self.bus_types: IntVec = bus_types
 
-        self.branch_names = branch_names
-        self.bus_names = bus_names
-        self.con_names = con_names
-        self.bus_types = bus_types
-
-        # self.time_array = time_array
-
-        self.S = np.zeros((nt, n))
-
-        self.worst_flows = np.zeros((nt, nbr))
-        self.worst_loading = np.zeros((nt, nbr))
-        self.overload_count = np.zeros(nbr, dtype=int)
-
-        self.relative_frequency = np.zeros(nbr)
-
-        self.max_overload = np.zeros(nbr)
-
+        self.S: Mat = np.zeros((nt, n))
+        self.worst_flows: Mat = np.zeros((nt, nbr))
+        self.worst_loading: Mat = np.zeros((nt, nbr))
+        self.overload_count: IntMat = np.zeros(nbr, dtype=int)
+        self.relative_frequency: Vec = np.zeros(nbr)
+        self.max_overload: Vec = np.zeros(nbr)
         self.report: ContingencyResultsReport = ContingencyResultsReport()
+
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+        self.register(name='con_names', tpe=StrVec)
+
+        self.register(name='S', tpe=Mat)
+        self.register(name='worst_flows', tpe=Mat)
+        self.register(name='worst_loading', tpe=Mat)
+        self.register(name='overload_count', tpe=IntMat)
+        self.register(name='relative_frequency', tpe=Vec)
+        self.register(name='max_overload', tpe=Vec)
+        self.register(name='report', tpe=ContingencyResultsReport)
+
+    @property
+    def nbus(self) -> int:
+        """
+        Number of buses
+        """
+        return len(self.bus_names)
+
+    @property
+    def nbranch(self) -> int:
+        """
+        Number of branches
+        """
+        return len(self.branch_names)
+
+    @property
+    def ncon(self) -> int:
+        """
+        Number of contingencies
+        """
+        return len(self.con_names)
 
     def apply_new_time_series_rates(self, nc: NumericalCircuit):
         """

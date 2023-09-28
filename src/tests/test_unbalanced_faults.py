@@ -16,11 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 
-import numpy as np
-
 from GridCalEngine.api import *
 from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Core.Devices.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType
 
 
 def test_unbalanced_short_circuit():

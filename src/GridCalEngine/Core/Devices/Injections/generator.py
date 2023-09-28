@@ -17,11 +17,10 @@
 
 import numpy as np
 import pandas as pd
-from typing import Union, List, Tuple
+from typing import Union, Tuple
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, Mat
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, GCProp
-from GridCalEngine.Core.Devices.enumerations import DeviceType, BuildStatus
+from GridCalEngine.basic_structures import Logger, Vec, Mat
+from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 

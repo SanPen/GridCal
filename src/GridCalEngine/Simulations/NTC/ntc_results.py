@@ -4,7 +4,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 
-from GridCalEngine.Core.Devices.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TransformerControlType
 
 
 def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,

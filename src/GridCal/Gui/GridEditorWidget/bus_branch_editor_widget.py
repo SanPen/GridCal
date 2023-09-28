@@ -41,7 +41,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram

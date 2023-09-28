@@ -20,7 +20,7 @@ import pandas as pd
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Core.Devices.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType
 
 
 class ShortCircuitResults(ResultsTemplate):

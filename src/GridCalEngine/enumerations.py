@@ -327,3 +327,40 @@ class BuildStatus(Enum):
     def list(cls):
         return list(map(lambda c: c.value, cls))
 
+
+class StudyResultsType(Enum):
+    PowerFlow = 'PowerFlow'
+    PowerFlowTimeSeries = 'PowerFlowTimeSeries'
+    OptimalPowerFlow = 'PowerFlow'
+    OptimalPowerFlowTimeSeries = 'PowerFlowTimeSeries'
+    ShortCircuit = 'ShortCircuit'
+    ContinuationPowerFlow = 'ContinuationPowerFlow'
+    ContingencyAnalysis = 'ContingencyAnalysis'
+    ContingencyAnalysisTimeSeries = 'ContingencyAnalysisTimeSeries'
+    SigmaAnalysis = 'SigmaAnalysis'
+    LinearAnalysis = 'LinearAnalysis'
+    LinearAnalysisTimeSeries = 'LinearAnalysisTimeSeries'
+    AvailableTransferCapacity = 'AvailableTransferCapacity'
+    AvailableTransferCapacityTimeSeries = 'AvailableTransferCapacityTimeSeries'
+    Clustering = 'Clustering'
+    StateEstimation = 'StateEstimation'
+    InputsAnalysis = 'InputsAnalysis'
+    InvestmentEvaluations = 'InvestmentEvaluations'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ResultsType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
