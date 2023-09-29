@@ -43,6 +43,8 @@ def test_unbalanced_short_circuit():
     print('\t|V1|:', np.abs(sc.results.voltage1))
     print('\t|V2|:', np.abs(sc.results.voltage2))
 
+    # TODO: These results assume the power flow not to take into account the transformer
+    #       connection phase changes applied in the admittance matrix building
     V0_book = [0.12844037, 0.05963303, 0.32110092, 0.09633028, 0.0]
     V1_book = [0.88073394, 0.88990826, 0.79816514, 0.92844037, 0.93394495]
     V2_book = [0.11926606, 0.11009174, 0.20183486, 0.07155963, 0.06605505]

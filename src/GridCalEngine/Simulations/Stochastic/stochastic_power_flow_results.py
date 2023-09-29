@@ -20,6 +20,8 @@ from GridCalEngine.basic_structures import CDF
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class StochasticPowerFlowResults(ResultsTemplate):
@@ -33,49 +35,38 @@ class StochasticPowerFlowResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='Stochastic Power Flow',
-                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageAverage,
-                                                                             ResultTypes.BusVoltageStd,
-                                                                             ResultTypes.BusVoltageCDF,
-                                                                             ResultTypes.BusPowerCDF],
-                                                    ResultTypes.BranchResults: [ResultTypes.BranchPowerAverage,
-                                                                                ResultTypes.BranchPowerStd,
-                                                                                ResultTypes.BranchPowerCDF,
-                                                                                ResultTypes.BranchLoadingAverage,
-                                                                                ResultTypes.BranchLoadingStd,
-                                                                                ResultTypes.BranchLoadingCDF,
-                                                                                ResultTypes.BranchLossesAverage,
-                                                                                ResultTypes.BranchLossesStd,
-                                                                                ResultTypes.BranchLossesCDF]
-                                                    },
-                                 data_variables=[],
+                                 available_results={
+                                     ResultTypes.BusResults: [ResultTypes.BusVoltageAverage,
+                                                              ResultTypes.BusVoltageStd,
+                                                              ResultTypes.BusVoltageCDF,
+                                                              ResultTypes.BusPowerCDF],
+                                     ResultTypes.BranchResults: [ResultTypes.BranchPowerAverage,
+                                                                 ResultTypes.BranchPowerStd,
+                                                                 ResultTypes.BranchPowerCDF,
+                                                                 ResultTypes.BranchLoadingAverage,
+                                                                 ResultTypes.BranchLoadingStd,
+                                                                 ResultTypes.BranchLoadingCDF,
+                                                                 ResultTypes.BranchLossesAverage,
+                                                                 ResultTypes.BranchLossesStd,
+                                                                 ResultTypes.BranchLossesCDF]
+                                 },
                                  time_array=None,
-                                 clustering_results=None)
-
-        self.n = n
-
-        self.m = m
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.StochasticPowerFlow)
 
         self.points_number = p
 
         self.bus_names = bus_names
-
         self.branch_names = branch_names
-
         self.bus_types = bus_types
 
         self.S_points = np.zeros((p, n), dtype=complex)
-
         self.V_points = np.zeros((p, n), dtype=complex)
-
         self.Sbr_points = np.zeros((p, m), dtype=complex)
-
         self.loading_points = np.zeros((p, m), dtype=complex)
-
         self.losses_points = np.zeros((p, m), dtype=complex)
 
         self.error_series = list()
-
-        self.bus_types = np.zeros(n, dtype=int)
 
         self.voltage = np.zeros(n)
         self.loading = np.zeros(m)
@@ -93,6 +84,8 @@ class StochasticPowerFlowResults(ResultsTemplate):
         self.s_avg_conv = None
         self.l_avg_conv = None
         self.loss_avg_conv = None
+
+        # TODO: Register results
 
     def append_batch(self, mcres):
         """
@@ -255,7 +248,8 @@ class StochasticPowerFlowResults(ResultsTemplate):
             if len(many_idx) > 0:
                 idx.append(i)
                 val.append(cdf.arr[many_idx[0], i])
-                prob.append(1 - cdf.prob[many_idx[0]])  # the CDF stores the chance of beign leq than the value, hence the overload is the complementary
+                prob.append(1 - cdf.prob[many_idx[
+                    0]])  # the CDF stores the chance of beign leq than the value, hence the overload is the complementary
 
         return idx, val, prob, cdf.arr[-1, :]
 

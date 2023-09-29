@@ -21,8 +21,7 @@ import numpy as np
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices import DeviceType
-from GridCalEngine.enumerations import DiagramType
+from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
 def get_objects_dictionary():

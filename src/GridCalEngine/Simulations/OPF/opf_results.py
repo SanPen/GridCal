@@ -19,7 +19,8 @@ import numpy as np
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class OptimalPowerFlowResults(ResultsTemplate):
@@ -93,28 +94,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                                               ResultTypes.LossesPercentPerArea,
                                                                               ResultTypes.LossesPerGenPerArea]
                                                     },
-                                 data_variables=['bus_names',
-                                                 'branch_names',
-                                                 'load_names',
-                                                 'generator_names',
-                                                 'battery_names',
-                                                 'Sbus',
-                                                 'voltage',
-                                                 'load_shedding',
-                                                 'generator_shedding',
-                                                 'Sf',
-                                                 'bus_types',
-                                                 'overloads',
-                                                 'loading',
-                                                 'hvdc_names',
-                                                 'hvdc_Pf',
-                                                 'hvdc_loading',
-                                                 'phase_shift',
-                                                 'battery_power',
-                                                 'generator_power',
-                                                 'converged'],
                                  time_array=None,
-                                 clustering_results=None)
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.OptimalPowerFlow)
 
         n = len(bus_names)
         m = len(branch_names)
@@ -128,11 +110,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
-
-        self.Sbus = np.zeros(n, dtype=complex)
-        self.voltage = np.zeros(n, dtype=complex)
-        self.bus_shadow_prices = np.zeros(n, dtype=float)
+        self.hvdc_names = hvdc_names
         self.bus_types = bus_types
+
+        self.voltage = np.zeros(n, dtype=complex)
+        self.Sbus = np.zeros(n, dtype=complex)
+        self.bus_shadow_prices = np.zeros(n, dtype=float)
 
         self.load_shedding = np.zeros(nload, dtype=float)
 
@@ -145,15 +128,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.rates = np.zeros(m, dtype=float)
         self.contingency_rates = np.zeros(m, dtype=float)
 
-        self.hvdc_names = hvdc_names
         self.hvdc_Pf = np.zeros(nhvdc, dtype=float)
         self.hvdc_loading = np.zeros(nhvdc, dtype=float)
         self.hvdc_losses = np.zeros(nhvdc, dtype=float)
 
-        self.battery_power = np.zeros(nbat, dtype=float)
-
         self.generator_shedding = np.zeros(ngen, dtype=float)
         self.generator_power = np.zeros(ngen, dtype=float)
+        self.battery_power = np.zeros(nbat, dtype=float)
 
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
@@ -168,6 +149,49 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.hvdc_T = T_hvdc
         self.bus_area_indices = bus_area_indices
         self.area_names = area_names
+
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='load_names', tpe=StrVec)
+        self.register(name='generator_names', tpe=StrVec)
+        self.register(name='battery_names', tpe=StrVec)
+        self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+
+        self.register(name='voltage', tpe=CxVec)
+        self.register(name='Sbus', tpe=CxVec)
+        self.register(name='bus_shadow_prices', tpe=Vec)
+
+        self.register(name='load_shedding', tpe=Vec)
+
+        self.register(name='Sf', tpe=CxVec)
+        self.register(name='St', tpe=CxVec)
+        self.register(name='overloads', tpe=Vec)
+        self.register(name='loading', tpe=Vec)
+        self.register(name='losses', tpe=Vec)
+        self.register(name='phase_shift', tpe=Vec)
+        self.register(name='rates', tpe=Vec)
+        self.register(name='contingency_rates', tpe=Vec)
+
+        self.register(name='hvdc_Pf', tpe=Vec)
+        self.register(name='hvdc_loading', tpe=Vec)
+        self.register(name='hvdc_losses', tpe=Vec)
+
+        self.register(name='generator_power', tpe=Vec)
+        self.register(name='generator_shedding', tpe=Vec)
+        self.register(name='battery_power', tpe=Vec)
+
+        self.register(name='converged', tpe=bool)
+        self.register(name='contingency_flows_list', tpe=list)
+        self.register(name='contingency_indices_list', tpe=list)
+        self.register(name='contingency_flows_slacks_list', tpe=list)
+
+        self.register(name='F', tpe=IntVec)
+        self.register(name='T', tpe=IntVec)
+        self.register(name='hvdc_F', tpe=IntVec)
+        self.register(name='hvdc_T', tpe=IntVec)
+        self.register(name='bus_area_indices', tpe=IntVec)
+        self.register(name='area_names', tpe=IntVec)
 
         self.plot_bars_limit = 100
 

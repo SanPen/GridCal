@@ -33,6 +33,7 @@ from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.topology as tp
+from GridCalEngine.enumerations import DeviceType
 
 
 def get_system_user() -> str:
@@ -277,7 +278,7 @@ class MultiCircuit:
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
 
-        self.device_type_name_dict: Dict[str, dev.DeviceType] = dict()
+        self.device_type_name_dict: Dict[str, DeviceType] = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -1062,116 +1063,116 @@ class MultiCircuit:
                 lst.append(elm.Enom)
         return np.array(lst)
 
-    def get_elements_by_type(self, element_type: dev.DeviceType):
+    def get_elements_by_type(self, element_type: DeviceType):
         """
         Get set of elements and their parent nodes
         :param element_type: DeviceTYpe instance
         :return: List of elements, it raises an exception if the elements are unknown
         """
 
-        if element_type == dev.DeviceType.LoadDevice:
+        if element_type == DeviceType.LoadDevice:
             return self.get_loads()
 
-        elif element_type == dev.DeviceType.StaticGeneratorDevice:
+        elif element_type == DeviceType.StaticGeneratorDevice:
             return self.get_static_generators()
 
-        elif element_type == dev.DeviceType.GeneratorDevice:
+        elif element_type == DeviceType.GeneratorDevice:
             return self.get_generators()
 
-        elif element_type == dev.DeviceType.BatteryDevice:
+        elif element_type == DeviceType.BatteryDevice:
             return self.get_batteries()
 
-        elif element_type == dev.DeviceType.ShuntDevice:
+        elif element_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == dev.DeviceType.ExternalGridDevice:
+        elif element_type == DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
-        elif element_type == dev.DeviceType.LineDevice:
+        elif element_type == DeviceType.LineDevice:
             return self.lines
 
-        elif element_type == dev.DeviceType.Transformer2WDevice:
+        elif element_type == DeviceType.Transformer2WDevice:
             return self.transformers2w
 
-        elif element_type == dev.DeviceType.Transformer3WDevice:
+        elif element_type == DeviceType.Transformer3WDevice:
             return self.transformers3w
 
-        elif element_type == dev.DeviceType.WindingDevice:
+        elif element_type == DeviceType.WindingDevice:
             return self.windings
 
-        elif element_type == dev.DeviceType.HVDCLineDevice:
+        elif element_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
-        elif element_type == dev.DeviceType.UpfcDevice:
+        elif element_type == DeviceType.UpfcDevice:
             return self.upfc_devices
 
-        elif element_type == dev.DeviceType.VscDevice:
+        elif element_type == DeviceType.VscDevice:
             return self.vsc_devices
 
-        elif element_type == dev.DeviceType.BusDevice:
+        elif element_type == DeviceType.BusDevice:
             return self.buses
 
-        elif element_type == dev.DeviceType.OverheadLineTypeDevice:
+        elif element_type == DeviceType.OverheadLineTypeDevice:
             return self.overhead_line_types
 
-        elif element_type == dev.DeviceType.TransformerTypeDevice:
+        elif element_type == DeviceType.TransformerTypeDevice:
             return self.transformer_types
 
-        elif element_type == dev.DeviceType.UnderGroundLineDevice:
+        elif element_type == DeviceType.UnderGroundLineDevice:
             return self.underground_cable_types
 
-        elif element_type == dev.DeviceType.SequenceLineDevice:
+        elif element_type == DeviceType.SequenceLineDevice:
             return self.sequence_line_types
 
-        elif element_type == dev.DeviceType.WireDevice:
+        elif element_type == DeviceType.WireDevice:
             return self.wire_types
 
-        elif element_type == dev.DeviceType.DCLineDevice:
+        elif element_type == DeviceType.DCLineDevice:
             return self.dc_lines
 
-        elif element_type == dev.DeviceType.SwitchDevice:
+        elif element_type == DeviceType.SwitchDevice:
             return self.switch_devices
 
-        elif element_type == dev.DeviceType.SubstationDevice:
+        elif element_type == DeviceType.SubstationDevice:
             return self.substations
 
-        elif element_type == dev.DeviceType.AreaDevice:
+        elif element_type == DeviceType.AreaDevice:
             return self.areas
 
-        elif element_type == dev.DeviceType.ZoneDevice:
+        elif element_type == DeviceType.ZoneDevice:
             return self.zones
 
-        elif element_type == dev.DeviceType.CountryDevice:
+        elif element_type == DeviceType.CountryDevice:
             return self.countries
 
-        elif element_type == dev.DeviceType.ContingencyDevice:
+        elif element_type == DeviceType.ContingencyDevice:
             return self.contingencies
 
-        elif element_type == dev.DeviceType.ContingencyGroupDevice:
+        elif element_type == DeviceType.ContingencyGroupDevice:
             return self.contingency_groups
 
-        elif element_type == dev.DeviceType.Technology:
+        elif element_type == DeviceType.Technology:
             return self.technologies
 
-        elif element_type == dev.DeviceType.InvestmentDevice:
+        elif element_type == DeviceType.InvestmentDevice:
             return self.investments
 
-        elif element_type == dev.DeviceType.InvestmentsGroupDevice:
+        elif element_type == DeviceType.InvestmentsGroupDevice:
             return self.investments_groups
 
-        elif element_type == dev.DeviceType.FuelDevice:
+        elif element_type == DeviceType.FuelDevice:
             return self.fuels
 
-        elif element_type == dev.DeviceType.EmissionGasDevice:
+        elif element_type == DeviceType.EmissionGasDevice:
             return self.emission_gases
 
-        elif element_type == dev.DeviceType.GeneratorTechnologyAssociation:
+        elif element_type == DeviceType.GeneratorTechnologyAssociation:
             return self.generators_technologies
 
-        elif element_type == dev.DeviceType.GeneratorFuelAssociation:
+        elif element_type == DeviceType.GeneratorFuelAssociation:
             return self.generators_fuels
 
-        elif element_type == dev.DeviceType.GeneratorEmissionAssociation:
+        elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.generators_emissions
 
         else:
@@ -1186,106 +1187,106 @@ class MultiCircuit:
 
         element_type = obj.device_type
 
-        if element_type == dev.DeviceType.LoadDevice:
+        if element_type == DeviceType.LoadDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.StaticGeneratorDevice:
+        elif element_type == DeviceType.StaticGeneratorDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.GeneratorDevice:
+        elif element_type == DeviceType.GeneratorDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.BatteryDevice:
+        elif element_type == DeviceType.BatteryDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.ShuntDevice:
+        elif element_type == DeviceType.ShuntDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.ExternalGridDevice:
+        elif element_type == DeviceType.ExternalGridDevice:
             raise Exception(element_type.value + ' cannot be deleted by index')
 
-        elif element_type == dev.DeviceType.LineDevice:
+        elif element_type == DeviceType.LineDevice:
             return self.delete_line(obj)
 
-        elif element_type == dev.DeviceType.Transformer2WDevice:
+        elif element_type == DeviceType.Transformer2WDevice:
             return self.delete_transformer2w(obj)
 
-        elif element_type == dev.DeviceType.Transformer3WDevice:
+        elif element_type == DeviceType.Transformer3WDevice:
             return self.delete_transformer3w(obj)
 
-        elif element_type == dev.DeviceType.WindingDevice:
+        elif element_type == DeviceType.WindingDevice:
             return self.delete_winding(obj)
 
-        elif element_type == dev.DeviceType.HVDCLineDevice:
+        elif element_type == DeviceType.HVDCLineDevice:
             return self.delete_hvdc_line(obj)
 
-        elif element_type == dev.DeviceType.UpfcDevice:
+        elif element_type == DeviceType.UpfcDevice:
             return self.delete_upfc_converter(obj)
 
-        elif element_type == dev.DeviceType.VscDevice:
+        elif element_type == DeviceType.VscDevice:
             return self.delete_vsc_converter(obj)
 
-        elif element_type == dev.DeviceType.BusDevice:
+        elif element_type == DeviceType.BusDevice:
             return self.delete_bus(obj, False)
 
-        elif element_type == dev.DeviceType.OverheadLineTypeDevice:
+        elif element_type == DeviceType.OverheadLineTypeDevice:
             return self.delete_overhead_line(obj)
 
-        elif element_type == dev.DeviceType.TransformerTypeDevice:
+        elif element_type == DeviceType.TransformerTypeDevice:
             return self.delete_transformer_type(obj)
 
-        elif element_type == dev.DeviceType.UnderGroundLineDevice:
+        elif element_type == DeviceType.UnderGroundLineDevice:
             return self.delete_underground_line(obj)
 
-        elif element_type == dev.DeviceType.SequenceLineDevice:
+        elif element_type == DeviceType.SequenceLineDevice:
             return self.delete_sequence_line(obj)
 
-        elif element_type == dev.DeviceType.WireDevice:
+        elif element_type == DeviceType.WireDevice:
             return self.delete_wire(obj)
 
-        elif element_type == dev.DeviceType.DCLineDevice:
+        elif element_type == DeviceType.DCLineDevice:
             return self.delete_dc_line(obj)
 
-        elif element_type == dev.DeviceType.SubstationDevice:
+        elif element_type == DeviceType.SubstationDevice:
             return self.delete_substation(obj)
 
-        elif element_type == dev.DeviceType.AreaDevice:
+        elif element_type == DeviceType.AreaDevice:
             return self.delete_area(obj)
 
-        elif element_type == dev.DeviceType.ZoneDevice:
+        elif element_type == DeviceType.ZoneDevice:
             return self.delete_zone(obj)
 
-        elif element_type == dev.DeviceType.CountryDevice:
+        elif element_type == DeviceType.CountryDevice:
             return self.delete_country(obj)
 
-        elif element_type == dev.DeviceType.ContingencyDevice:
+        elif element_type == DeviceType.ContingencyDevice:
             return self.delete_contingency(obj)
 
-        elif element_type == dev.DeviceType.ContingencyGroupDevice:
+        elif element_type == DeviceType.ContingencyGroupDevice:
             return self.delete_contingency_group(obj)
 
-        elif element_type == dev.DeviceType.Technology:
+        elif element_type == DeviceType.Technology:
             return self.delete_technology(obj)
 
-        elif element_type == dev.DeviceType.InvestmentDevice:
+        elif element_type == DeviceType.InvestmentDevice:
             return self.delete_investment(obj)
 
-        elif element_type == dev.DeviceType.InvestmentsGroupDevice:
+        elif element_type == DeviceType.InvestmentsGroupDevice:
             return self.delete_investment_groups(obj)
 
-        elif element_type == dev.DeviceType.FuelDevice:
+        elif element_type == DeviceType.FuelDevice:
             return self.delete_fuel(obj)
 
-        elif element_type == dev.DeviceType.EmissionGasDevice:
+        elif element_type == DeviceType.EmissionGasDevice:
             return self.delete_emission_gas(obj)
 
-        elif element_type == dev.DeviceType.GeneratorTechnologyAssociation:
+        elif element_type == DeviceType.GeneratorTechnologyAssociation:
             return self.delete_generator_technology(obj)
 
-        elif element_type == dev.DeviceType.GeneratorFuelAssociation:
+        elif element_type == DeviceType.GeneratorFuelAssociation:
             return self.delete_generator_fuel(obj)
 
-        elif element_type == dev.DeviceType.GeneratorEmissionAssociation:
+        elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.delete_generator_emission(obj)
 
         else:
@@ -1297,31 +1298,31 @@ class MultiCircuit:
         :return:
         """
         data = dict()
-        for tpe in [dev.DeviceType.BusDevice,
-                    dev.DeviceType.LoadDevice,
-                    dev.DeviceType.StaticGeneratorDevice,
-                    dev.DeviceType.GeneratorDevice,
-                    dev.DeviceType.BatteryDevice,
-                    dev.DeviceType.ShuntDevice,
-                    dev.DeviceType.ExternalGridDevice,
-                    dev.DeviceType.SubstationDevice,
-                    dev.DeviceType.AreaDevice,
-                    dev.DeviceType.ZoneDevice,
-                    dev.DeviceType.CountryDevice,
-                    dev.DeviceType.LineDevice,
-                    dev.DeviceType.DCLineDevice,
-                    dev.DeviceType.Transformer2WDevice,
-                    dev.DeviceType.Transformer3WDevice,
-                    dev.DeviceType.UpfcDevice,
-                    dev.DeviceType.VscDevice,
-                    dev.DeviceType.HVDCLineDevice,
-                    dev.DeviceType.SwitchDevice,
-                    dev.DeviceType.WindingDevice, ]:
+        for tpe in [DeviceType.BusDevice,
+                    DeviceType.LoadDevice,
+                    DeviceType.StaticGeneratorDevice,
+                    DeviceType.GeneratorDevice,
+                    DeviceType.BatteryDevice,
+                    DeviceType.ShuntDevice,
+                    DeviceType.ExternalGridDevice,
+                    DeviceType.SubstationDevice,
+                    DeviceType.AreaDevice,
+                    DeviceType.ZoneDevice,
+                    DeviceType.CountryDevice,
+                    DeviceType.LineDevice,
+                    DeviceType.DCLineDevice,
+                    DeviceType.Transformer2WDevice,
+                    DeviceType.Transformer3WDevice,
+                    DeviceType.UpfcDevice,
+                    DeviceType.VscDevice,
+                    DeviceType.HVDCLineDevice,
+                    DeviceType.SwitchDevice,
+                    DeviceType.WindingDevice, ]:
             data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
 
         return data
 
-    def get_elements_dict_by_type(self, element_type: dev.DeviceType,
+    def get_elements_dict_by_type(self, element_type: DeviceType,
                                   use_secondary_key=False) -> Dict[str, dev.EditableDevice]:
         """
         Get dictionary of elements
@@ -1335,68 +1336,68 @@ class MultiCircuit:
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
-    def get_node_elements_by_type2(self, element_type: dev.DeviceType) -> List[dev.EditableDevice]:
+    def get_node_elements_by_type2(self, element_type: DeviceType) -> List[dev.EditableDevice]:
         """
         Get set of elements and their parent nodes
         :param element_type: DeviceTYpe instance
         :return: List of elements, it raises an exception if the elements are unknown
         """
 
-        if element_type == dev.DeviceType.LoadDevice:
+        if element_type == DeviceType.LoadDevice:
             return self.get_loads()
 
-        elif element_type == dev.DeviceType.StaticGeneratorDevice:
+        elif element_type == DeviceType.StaticGeneratorDevice:
             return self.get_static_generators()
 
-        elif element_type == dev.DeviceType.GeneratorDevice:
+        elif element_type == DeviceType.GeneratorDevice:
             return self.get_generators()
 
-        elif element_type == dev.DeviceType.BatteryDevice:
+        elif element_type == DeviceType.BatteryDevice:
             return self.get_batteries()
 
-        elif element_type == dev.DeviceType.ShuntDevice:
+        elif element_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == dev.DeviceType.ExternalGridDevice:
+        elif element_type == DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
-        elif element_type == dev.DeviceType.SubstationDevice:
+        elif element_type == DeviceType.SubstationDevice:
             return [x.substation for x in self.buses]
 
-        elif element_type == dev.DeviceType.AreaDevice:
+        elif element_type == DeviceType.AreaDevice:
             return [x.area for x in self.buses]
 
-        elif element_type == dev.DeviceType.ZoneDevice:
+        elif element_type == DeviceType.ZoneDevice:
             return [x.zone for x in self.buses]
 
-        elif element_type == dev.DeviceType.CountryDevice:
+        elif element_type == DeviceType.CountryDevice:
             return [x.country for x in self.buses]
 
-        elif element_type == dev.DeviceType.LineDevice:
+        elif element_type == DeviceType.LineDevice:
             return self.get_lines()
 
-        elif element_type == dev.DeviceType.DCLineDevice:
+        elif element_type == DeviceType.DCLineDevice:
             return self.get_dc_lines()
 
-        elif element_type == dev.DeviceType.Transformer2WDevice:
+        elif element_type == DeviceType.Transformer2WDevice:
             return self.get_transformers2w()
 
-        elif element_type == dev.DeviceType.Transformer3WDevice:
+        elif element_type == DeviceType.Transformer3WDevice:
             return self.get_transformers3w()
 
-        elif element_type == dev.DeviceType.UpfcDevice:
+        elif element_type == DeviceType.UpfcDevice:
             return self.get_upfc()
 
-        elif element_type == dev.DeviceType.VscDevice:
+        elif element_type == DeviceType.VscDevice:
             return self.get_vsc()
 
-        elif element_type == dev.DeviceType.HVDCLineDevice:
+        elif element_type == DeviceType.HVDCLineDevice:
             return self.get_hvdc()
 
-        elif element_type == dev.DeviceType.SwitchDevice:
+        elif element_type == DeviceType.SwitchDevice:
             return self.get_switches()
 
-        elif element_type == dev.DeviceType.WindingDevice:
+        elif element_type == DeviceType.WindingDevice:
             return self.get_windings()
 
         else:
@@ -1594,9 +1595,9 @@ class MultiCircuit:
             for branch in branch_list:
                 f = self.bus_dictionary[branch.bus_from.idtag]
                 t = self.bus_dictionary[branch.bus_to.idtag]
-                if branch.device_type in [dev.DeviceType.LineDevice,
-                                          dev.DeviceType.DCLineDevice,
-                                          dev.DeviceType.HVDCLineDevice]:
+                if branch.device_type in [DeviceType.LineDevice,
+                                          DeviceType.DCLineDevice,
+                                          DeviceType.HVDCLineDevice]:
                     if hasattr(branch, 'X'):
                         w = branch.X
                     else:
@@ -1625,7 +1626,7 @@ class MultiCircuit:
         graph_real_power_flow = nx.DiGraph()
 
         current_flow_direction = np.real(current_flow) > 0
-        bus_dictionary = self.get_elements_dict_by_type(element_type=dev.DeviceType.BusDevice,
+        bus_dictionary = self.get_elements_dict_by_type(element_type=DeviceType.BusDevice,
                                                         use_secondary_key=False)
 
         for branch_list in self.get_branch_lists():
@@ -1894,31 +1895,31 @@ class MultiCircuit:
         :param obj: any class inheriting from ParentBranch
         """
 
-        if obj.device_type == dev.DeviceType.LineDevice:
+        if obj.device_type == DeviceType.LineDevice:
             self.add_line(obj)
 
-        elif obj.device_type == dev.DeviceType.DCLineDevice:
+        elif obj.device_type == DeviceType.DCLineDevice:
             self.add_dc_line(obj)
 
-        elif obj.device_type == dev.DeviceType.Transformer2WDevice:
+        elif obj.device_type == DeviceType.Transformer2WDevice:
             self.add_transformer2w(obj)
 
-        elif obj.device_type == dev.DeviceType.HVDCLineDevice:
+        elif obj.device_type == DeviceType.HVDCLineDevice:
             self.add_hvdc(obj)
 
-        elif obj.device_type == dev.DeviceType.VscDevice:
+        elif obj.device_type == DeviceType.VscDevice:
             self.add_vsc(obj)
 
-        elif obj.device_type == dev.DeviceType.UpfcDevice:
+        elif obj.device_type == DeviceType.UpfcDevice:
             self.add_upfc(obj)
 
-        elif obj.device_type == dev.DeviceType.WindingDevice:
+        elif obj.device_type == DeviceType.WindingDevice:
             self.add_winding(obj)
 
-        elif obj.device_type == dev.DeviceType.SwitchDevice:
+        elif obj.device_type == DeviceType.SwitchDevice:
             self.add_switch(obj)
 
-        elif obj.device_type == dev.DeviceType.BranchDevice:
+        elif obj.device_type == DeviceType.BranchDevice:
 
             if obj.should_this_be_a_transformer():
                 self.add_transformer2w(obj.get_equivalent_transformer())
@@ -3105,7 +3106,7 @@ class MultiCircuit:
                 val.add(obj)
 
                 # if it is a tower, add the wire templates too
-                if obj.device_type == dev.DeviceType.OverheadLineTypeDevice:
+                if obj.device_type == DeviceType.OverheadLineTypeDevice:
                     for wire in obj.wires_in_tower:
                         val.add(wire)
 

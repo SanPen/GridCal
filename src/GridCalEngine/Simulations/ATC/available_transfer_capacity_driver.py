@@ -354,7 +354,6 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.report = None
         self.report_headers = None
         self.report_indices = None
-
         self.raw_report = None
 
     def get_steps(self):

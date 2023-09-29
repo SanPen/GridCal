@@ -38,6 +38,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.ThirdParty.ortools.ortools_extra import get_or_tools_available_solvers
+from GridCalEngine.enumerations import DeviceType
 
 
 class SimulationsMain(TimeEventsMain):
@@ -112,8 +113,8 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
 
         # branch types for reduction
-        mdl = gf.get_list_model([dev.DeviceType.LineDevice.value,
-                                 dev.DeviceType.SwitchDevice.value], checks=True)
+        mdl = gf.get_list_model([DeviceType.LineDevice.value,
+                                 DeviceType.SwitchDevice.value], checks=True)
         self.ui.removeByTypeListView.setModel(mdl)
 
         # OPF grouping modes
@@ -2278,7 +2279,7 @@ class SimulationsMain(TimeEventsMain):
                     selected_types = list()
                     for i in checked:
                         selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = dev.DeviceType(selected_type_txt)
+                        selected_type = DeviceType(selected_type_txt)
                         selected_types.append(selected_type)
 
                     # compose options
@@ -2679,7 +2680,7 @@ class SimulationsMain(TimeEventsMain):
 
             if len(objects) > 0:
 
-                if objects[0].device_type == dev.DeviceType.BusDevice:
+                if objects[0].device_type == DeviceType.BusDevice:
 
                     if len(sel_idx) > 0:
 

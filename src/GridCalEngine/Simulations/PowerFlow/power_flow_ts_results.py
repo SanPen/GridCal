@@ -16,124 +16,149 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import json
-import pandas as pd
 import numpy as np
+import pandas as pd
 from typing import Union
+
+from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Simulations.results_template import ResultsTemplate
+from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, CxMat, Mat
+from GridCalEngine.enumerations import StudyResultsType
 
 
-class PowerFlowTimeSeriesResults(PowerFlowResults):
+class PowerFlowTimeSeriesResults(ResultsTemplate):
 
-    def __init__(
-            self,
-            n: int,
-            m: int,
-            n_hvdc: int,
-            bus_names: np.ndarray,
-            branch_names: np.ndarray,
-            hvdc_names: np.ndarray,
-            time_array: np.ndarray,
-            bus_types: np.ndarray,
-            area_names: Union[np.ndarray, None] = None,
-            clustering_results=None):
+    def __init__(self,
+                 n: int,
+                 m: int,
+                 n_hvdc: int,
+                 bus_names: np.ndarray,
+                 branch_names: np.ndarray,
+                 hvdc_names: np.ndarray,
+                 time_array: np.ndarray,
+                 bus_types: np.ndarray,
+                 area_names: Union[np.ndarray, None] = None,
+                 clustering_results=None):
         """
-        TimeSeriesResults constructor
-        :param n: number of buses
-        :param m: number of Branches
+
+        :param n:
+        :param m:
         :param n_hvdc:
         :param bus_names:
         :param branch_names:
         :param hvdc_names:
         :param time_array:
         :param bus_types:
+        :param area_names:
+        :param clustering_results:
         """
-        PowerFlowResults.__init__(
-            self,
-            n=n,
-            m=m,
-            n_hvdc=n_hvdc,
-            bus_names=bus_names,
-            branch_names=branch_names,
-            hvdc_names=hvdc_names,
-            bus_types=bus_types,
-            area_names=area_names,
-            clustering_results=clustering_results
-        )
+        ResultsTemplate.__init__(self,
+                                 name='Power flow time series',
+                                 available_results={
+                                     ResultTypes.BusResults: [
+                                         ResultTypes.BusVoltageModule,
+                                         ResultTypes.BusVoltageAngle,
+                                         ResultTypes.BusActivePower,
+                                         ResultTypes.BusReactivePower
+                                     ],
+                                     ResultTypes.BranchResults: [
+                                         ResultTypes.BranchActivePowerFrom,
+                                         ResultTypes.BranchReactivePowerFrom,
+                                         ResultTypes.BranchLoading,
+                                         ResultTypes.BranchActiveLosses,
+                                         ResultTypes.BranchReactiveLosses,
+                                         ResultTypes.BranchActiveLossesPercentage,
+                                         ResultTypes.BranchVoltage,
+                                         ResultTypes.BranchAngles
+                                     ],
+                                     ResultTypes.HvdcResults: [
+                                         ResultTypes.HvdcLosses,
+                                         ResultTypes.HvdcPowerFrom,
+                                         ResultTypes.HvdcPowerTo
+                                     ],
+                                     ResultTypes.AreaResults: [
+                                         ResultTypes.InterAreaExchange,
+                                         ResultTypes.ActivePowerFlowPerArea,
+                                         ResultTypes.LossesPerArea,
+                                         ResultTypes.LossesPercentPerArea
+                                     ],
+                                     ResultTypes.InfoResults: [
+                                         ResultTypes.SimulationError
+                                     ]
+                                 },
+                                 time_array=None,
+                                 clustering_results=clustering_results,
+                                 study_results_type=StudyResultsType.PowerFlowTimeSeries
+                                 )
 
-        self.data_variables.append('time')  # this is missing from the base class
-
-        # results available (different from the base class)
-        self.available_results = {
-            ResultTypes.BusResults: [
-                ResultTypes.BusVoltageModule,
-                ResultTypes.BusVoltageAngle,
-                ResultTypes.BusActivePower,
-                ResultTypes.BusReactivePower
-            ],
-            ResultTypes.BranchResults: [
-                ResultTypes.BranchActivePowerFrom,
-                ResultTypes.BranchReactivePowerFrom,
-                ResultTypes.BranchLoading,
-                ResultTypes.BranchActiveLosses,
-                ResultTypes.BranchReactiveLosses,
-                ResultTypes.BranchActiveLossesPercentage,
-                ResultTypes.BranchVoltage,
-                ResultTypes.BranchAngles
-            ],
-            ResultTypes.HvdcResults: [
-                ResultTypes.HvdcLosses,
-                ResultTypes.HvdcPowerFrom,
-                ResultTypes.HvdcPowerTo
-            ],
-            ResultTypes.AreaResults: [
-                ResultTypes.InterAreaExchange,
-                ResultTypes.ActivePowerFlowPerArea,
-                ResultTypes.LossesPerArea,
-                ResultTypes.LossesPercentPerArea
-            ],
-            ResultTypes.InfoResults: [
-                ResultTypes.SimulationError
-            ]
-        }
-
-        self.name = 'Time series'
-        self.nt = len(time_array)
-        self.m = m
-        self.n = n
-
-        # this is from the template
+        self.bus_names: StrVec = bus_names
+        self.branch_names: StrVec = branch_names
+        self.hvdc_names: StrVec = hvdc_names
+        self.bus_types: IntVec = bus_types
         self.time_array = time_array
-
         self.bus_types = np.zeros(n, dtype=int)
 
-        self.voltage = np.zeros((self.nt, n), dtype=complex)
+        # vars for the inter-area computation
+        self.F: IntVec = None
+        self.T: IntVec = None
+        self.hvdc_F: IntVec = None
+        self.hvdc_T: IntVec = None
+        self.bus_area_indices: IntVec = None
+        self.area_names: StrVec = area_names
 
-        self.S = np.zeros((self.nt, n), dtype=complex)
+        nt = len(time_array)
 
-        self.Sf = np.zeros((self.nt, m), dtype=complex)
+        self.voltage = np.zeros((nt, n), dtype=complex)
 
-        self.St = np.zeros((self.nt, m), dtype=complex)
+        self.S = np.zeros((nt, n), dtype=complex)
 
-        self.Vbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Sf = np.zeros((nt, m), dtype=complex)
+        self.St = np.zeros((nt, m), dtype=complex)
+        self.Vbranch = np.zeros((nt, m), dtype=complex)
+        self.loading = np.zeros((nt, m), dtype=complex)
+        self.losses = np.zeros((nt, m), dtype=complex)
 
-        self.loading = np.zeros((self.nt, m), dtype=complex)
+        self.hvdc_losses = np.zeros((nt, n_hvdc))
+        self.hvdc_Pf = np.zeros((nt, n_hvdc))
+        self.hvdc_Pt = np.zeros((nt, n_hvdc))
+        self.hvdc_loading = np.zeros((nt, n_hvdc))
 
-        self.losses = np.zeros((self.nt, m), dtype=complex)
+        self.error_values = np.zeros(nt)
+        self.converged_values = np.ones(nt, dtype=bool)  # guilty assumption
 
-        self.hvdc_losses = np.zeros((self.nt, self.n_hvdc))
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+        self.register(name='time_array', tpe=DateVec)
 
-        self.hvdc_Pf = np.zeros((self.nt, self.n_hvdc))
+        self.register(name='F', tpe=IntVec)
+        self.register(name='T', tpe=IntVec)
+        self.register(name='hvdc_F', tpe=IntVec)
+        self.register(name='hvdc_T', tpe=IntVec)
+        self.register(name='bus_area_indices', tpe=IntVec)
+        self.register(name='area_names', tpe=IntVec)
 
-        self.hvdc_Pt = np.zeros((self.nt, self.n_hvdc))
+        self.register(name='S', tpe=CxMat)
+        self.register(name='voltage', tpe=CxMat)
 
-        self.hvdc_loading = np.zeros((self.nt, self.n_hvdc))
+        self.register(name='Sf', tpe=CxMat)
+        self.register(name='St', tpe=CxMat)
+        # self.register(name='tap_module', tpe=Vec)
+        # self.register(name='tap_angle', tpe=Vec)
+        # self.register(name='Beq', tpe=Vec)
+        self.register(name='Vbranch', tpe=CxMat)
+        self.register(name='loading', tpe=CxMat)
+        self.register(name='losses', tpe=CxMat)
 
-        self.error_values = np.zeros(self.nt)
-
-        self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
+        self.register(name='hvdc_losses', tpe=Mat)
+        self.register(name='hvdc_Pf', tpe=Mat)
+        self.register(name='hvdc_Pt', tpe=Mat)
+        self.register(name='hvdc_loading', tpe=Mat)
 
     def apply_new_time_series_rates(self, nc: NumericalCircuit):
         """
@@ -141,6 +166,32 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         :param nc: NumericalCircuit instance
         """
         self.loading = self.Sf / (nc.rates + 1e-9)
+
+    def fill_circuit_info(self, grid: MultiCircuit):
+        """
+
+        :param grid:
+        :return:
+        """
+        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
+        bus_dict = grid.get_bus_index_dict()
+
+        self.area_names = [a.name for a in grid.get_areas()]
+        self.bus_area_indices = np.array([area_dict.get(b.area, 0) for b in grid.buses])
+
+        branches = grid.get_branches_wo_hvdc()
+        self.F = np.zeros(len(branches), dtype=int)
+        self.T = np.zeros(len(branches), dtype=int)
+        for k, elm in enumerate(branches):
+            self.F[k] = bus_dict[elm.bus_from]
+            self.T[k] = bus_dict[elm.bus_to]
+
+        hvdc = grid.get_hvdc()
+        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
+        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
+        for k, elm in enumerate(hvdc):
+            self.hvdc_F[k] = bus_dict[elm.bus_from]
+            self.hvdc_T[k] = bus_dict[elm.bus_to]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -184,14 +235,12 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         return df
 
-    def apply_from_island(
-            self,
-            results: "PowerFlowResults",
-            b_idx: np.ndarray,
-            br_idx: np.ndarray,
-            t_index: np.ndarray,
-            grid_idx: np.ndarray
-    ):
+    def apply_from_island(self,
+                          results: "PowerFlowResults",
+                          b_idx: np.ndarray,
+                          br_idx: np.ndarray,
+                          t_index: np.ndarray,
+                          grid_idx: np.ndarray):
         """
         Apply results from another island circuit to the circuit results represented here
         :param results: PowerFlowResults
@@ -284,6 +333,10 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
             output_file.write(json_str)
 
     def get_ordered_area_names(self):
+        """
+
+        :return:
+        """
         na = len(self.area_names)
         x = [''] * (na * na)
         for i, a in enumerate(self.area_names):
@@ -292,7 +345,10 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         return x
 
     def get_inter_area_flows(self):
+        """
 
+        :return:
+        """
         na = len(self.area_names)
         nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=complex)
@@ -313,8 +369,12 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         return x
 
-    def get_branch_values_per_area(self, branch_values: np.ndarray):
+    def get_branch_values_per_area(self, branch_values: Union[Mat, CxMat]) -> Union[Mat, CxMat]:
+        """
 
+        :param branch_values:
+        :return:
+        """
         na = len(self.area_names)
         nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=branch_values.dtype)
@@ -327,7 +387,11 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         return x
 
     def get_hvdc_values_per_area(self, hvdc_values: np.ndarray):
+        """
 
+        :param hvdc_values:
+        :return:
+        """
         na = len(self.area_names)
         nt = len(self.time_array)
         x = np.zeros((nt, na * na), dtype=hvdc_values.dtype)
@@ -468,8 +532,10 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         elif result_type == ResultTypes.LossesPercentPerArea:
             labels = self.get_ordered_area_names()
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(
+                np.abs(self.hvdc_Pf))
+            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(
+                np.abs(self.hvdc_losses))
 
             data = Pl / (Pf + 1e-20) * 100.0
             y_label = '(%)'
@@ -477,14 +543,16 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
 
         elif result_type == ResultTypes.LossesPerArea:
             labels = self.get_ordered_area_names()
-            data = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
+            data = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(
+                np.abs(self.hvdc_losses))
 
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = self.get_ordered_area_names()
-            data = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf))
+            data = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(
+                np.abs(self.hvdc_Pf))
 
             y_label = '(MW)'
             title = result_type.value[0]
@@ -495,9 +563,7 @@ class PowerFlowTimeSeriesResults(PowerFlowResults):
         if self.time_array is not None:
             index = pd.to_datetime(self.time_array)
         else:
-            index = list(range(data.shape[0]))
+            index = np.array(list(range(data.shape[0])))
 
         # assemble model
-        mdl = ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
-        return mdl
-
+        return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)

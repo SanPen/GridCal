@@ -26,10 +26,19 @@ from GridCalEngine.enumerations import StudyResultsType
 
 
 class ResultsProperty:
+    """
+    ResultsProperty
+    """
 
     def __init__(self, name: str,
                  tpe: Union[Vec, Mat, CxVec, CxMat],
                  old_names: List[str]):
+        """
+        ResultsProperty
+        :param name: name of the property
+        :param tpe: type of the property (Vec, Mat, double, ...)
+        :param old_names: list of previous names. Use in case of renaming a registered property
+        """
 
         self.name = name
 
@@ -228,7 +237,9 @@ class ResultsTemplate:
 
         return x
 
-    def get_branch_values_per_area(self, branch_values: Vec, area_names: StrVec, bus_area_indices: IntVec,
+    def get_branch_values_per_area(self, branch_values: Vec,
+                                   area_names: StrVec,
+                                   bus_area_indices: IntVec,
                                    F: IntVec, T: IntVec):
         """
         Split array of branch-related values per area

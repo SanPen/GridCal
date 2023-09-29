@@ -22,6 +22,8 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
@@ -66,30 +68,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                               ResultTypes.HvdcLoading],
 
                                                     },
-                                 data_variables=['bus_names',
-                                                 'branch_names',
-                                                 'load_names',
-                                                 'generator_names',
-                                                 'battery_names',
-                                                 'bus_types',
-                                                 'time',
-                                                 'Sbus',
-                                                 'voltage',
-                                                 'load_shedding',
-                                                 'hvdc_Pf',
-                                                 'hvdc_loading',
-                                                 'Sf',
-                                                 'overloads',
-                                                 'loading',
-                                                 'losses',
-                                                 'battery_power',
-                                                 'battery_energy',
-                                                 'generator_shedding',
-                                                 'generator_power',
-                                                 'shadow_prices',
-                                                 'converged'],
                                  time_array=time_array,
-                                 clustering_results=clustering_results)
+                                 clustering_results=clustering_results,
+                                 study_results_type=StudyResultsType.OptimalPowerFlowTimeSeries)
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -97,55 +78,61 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_names = generator_names
         self.battery_names = battery_names
         self.hvdc_names = hvdc_names
-
         self.bus_types = bus_types
 
-        self.n = n
-
-        self.m = m
-
-        self.nt = nt
-
-        # self.time_array = time_array
-
         self.voltage = np.zeros((nt, n), dtype=complex)
-
         self.load_shedding = np.zeros((nt, nload), dtype=float)
-
         self.loading = np.zeros((nt, m), dtype=float)
-
         self.losses = np.zeros((nt, m), dtype=float)
-
         self.overloads = np.zeros((nt, m), dtype=float)
-
         self.Sbus = np.zeros((nt, n), dtype=complex)
-
         self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
-
         self.Sf = np.zeros((nt, m), dtype=complex)
         self.St = np.zeros((nt, m), dtype=complex)
-
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
-
         self.phase_shift = np.zeros((nt, m), dtype=float)
-
         self.generator_power = np.zeros((nt, ngen), dtype=float)
-
         self.generator_shedding = np.zeros((nt, ngen), dtype=float)
-
         self.battery_power = np.zeros((nt, nbat), dtype=float)
-
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
-
+        self.rates = np.zeros(m)
+        self.contingency_rates = np.zeros(m)
+        self.converged = np.empty(nt, dtype=bool)
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
 
-        self.rates = np.zeros(m)
-        self.contingency_rates = np.zeros(m)
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='load_names', tpe=StrVec)
+        self.register(name='generator_names', tpe=StrVec)
+        self.register(name='battery_names', tpe=StrVec)
+        self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
 
-        self.converged = np.empty(nt, dtype=bool)
+        self.register(name='voltage', tpe=CxMat)
+        self.register(name='load_shedding', tpe=Mat)
+        self.register(name='loading', tpe=Mat)
+        self.register(name='losses', tpe=Mat)
+        self.register(name='overloads', tpe=Mat)
+        self.register(name='Sbus', tpe=CxMat)
+        self.register(name='bus_shadow_prices', tpe=Mat)
+        self.register(name='Sf', tpe=CxMat)
+        self.register(name='St', tpe=CxMat)
+        self.register(name='hvdc_Pf', tpe=Mat)
+        self.register(name='hvdc_loading', tpe=Mat)
+        self.register(name='phase_shift', tpe=Mat)
+        self.register(name='generator_power', tpe=Mat)
+        self.register(name='generator_shedding', tpe=Mat)
+        self.register(name='battery_power', tpe=Mat)
+        self.register(name='battery_energy', tpe=Mat)
+        self.register(name='rates', tpe=Vec)
+        self.register(name='contingency_rates', tpe=Vec)
+        self.register(name='converged', tpe=BoolVec)
+        self.register(name='contingency_flows_list', tpe=list)
+        self.register(name='contingency_indices_list', tpe=list)
+        self.register(name='contingency_flows_slacks_list', tpe=list)
 
     def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
         """
@@ -154,16 +141,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         """
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
-
-    def init_object_results(self, ngen, nbat):
-        """
-        declare the generator results. This is done separately since these results are known at the end of the simulation
-        :param ngen: number of generators
-        :param nbat: number of batteries
-        """
-        self.generator_power = np.zeros((self.nt, ngen), dtype=float)
-
-        self.battery_power = np.zeros((self.nt, nbat), dtype=float)
 
     def set_at(self, t, res: OptimalPowerFlowResults):
         """

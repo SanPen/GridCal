@@ -40,13 +40,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit,
                  options: ContingencyAnalysisOptions,
-                 linear_multiple_contingencies: LinearMultiContingencies,
+                 linear_multiple_contingencies: Union[LinearMultiContingencies, None],
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         ContingencyAnalysisDriver constructor
         :param grid: MultiCircuit Object
         :param options: N-k options
-        :param linear_multiple_contingencies: LinearMultiContingencies instance
+        :param linear_multiple_contingencies: LinearMultiContingencies instance (required for linear contingencies)
         :param engine Calculation engine to use
         """
         DriverTemplate.__init__(self, grid=grid, engine=engine)
@@ -86,10 +86,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
         numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=t)
 
         if self.options.pf_options is None:
-            pf_opts = PowerFlowOptions(
-                solver_type=SolverType.DC,
-                ignore_single_node_islands=True
-            )
+            pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
+                                       ignore_single_node_islands=True)
 
         else:
             pf_opts = self.options.pf_options
@@ -152,6 +150,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             results.Sf[ic, :] = pf_res.Sf
             results.Sbus[ic, :] = pf_res.Sbus
             results.loading[ic, :] = pf_res.loading
+            results.voltage[ic, :] = pf_res.voltage
             results.report.analyze(t=t,
                                    mon_idx=mon_idx,
                                    calc_branches=calc_branches,

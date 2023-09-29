@@ -25,7 +25,8 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class NumericPowerFlowResults:
@@ -147,42 +148,15 @@ class PowerFlowResults(ResultsTemplate):
                     ResultTypes.BusVoltagePolarPlot
                 ]
             },
-            data_variables=[
-                'bus_types',
-                'bus_names',
-                'branch_names',
-                'transformer_names',
-                'hvdc_names',
-                'Sbus',
-                'voltage',
-                'Sf',
-                'St',
-                'If',
-                'It',
-                'tap_module',
-                'theta',
-                'Beq',
-                'Vbranch',
-                'loading',
-                'losses',
-                'hvdc_losses',
-                'hvdc_Pf',
-                'hvdc_Pt',
-                'hvdc_loading'
-            ],
             time_array=None,
-            clustering_results=clustering_results
+            clustering_results=clustering_results,
+            study_results_type=StudyResultsType.PowerFlow
         )
-
-        self.n = n
-        self.m = m
-        self.n_hvdc = n_hvdc
-
-        self.bus_types: IntVec = bus_types
 
         self.bus_names: StrVec = bus_names
         self.branch_names: StrVec = branch_names
         self.hvdc_names: StrVec = hvdc_names
+        self.bus_types: IntVec = bus_types
 
         # vars for the inter-area computation
         self.F: IntVec = None
@@ -193,36 +167,57 @@ class PowerFlowResults(ResultsTemplate):
         self.area_names: StrVec = area_names
 
         self.Sbus: CxVec = np.zeros(n, dtype=complex)
-
         self.voltage: CxVec = np.zeros(n, dtype=complex)
 
         self.Sf: CxVec = np.zeros(m, dtype=complex)
         self.St: CxVec = np.zeros(m, dtype=complex)
-
         self.If: CxVec = np.zeros(m, dtype=complex)
         self.It: CxVec = np.zeros(m, dtype=complex)
-
         self.tap_module: Vec = np.zeros(m, dtype=float)
         self.tap_angle: Vec = np.zeros(m, dtype=float)
         self.Beq: Vec = np.zeros(m, dtype=float)
-
         self.Vbranch: CxVec = np.zeros(m, dtype=complex)
-
         self.loading: CxVec = np.zeros(m, dtype=complex)
-
         self.losses: CxVec = np.zeros(m, dtype=complex)
 
-        self.hvdc_losses: Vec = np.zeros(self.n_hvdc)
-
-        self.hvdc_Pf: Vec = np.zeros(self.n_hvdc)
-
-        self.hvdc_Pt: Vec = np.zeros(self.n_hvdc)
-
-        self.hvdc_loading: Vec = np.zeros(self.n_hvdc)
+        self.hvdc_losses: Vec = np.zeros(n_hvdc)
+        self.hvdc_Pf: Vec = np.zeros(n_hvdc)
+        self.hvdc_Pt: Vec = np.zeros(n_hvdc)
+        self.hvdc_loading: Vec = np.zeros(n_hvdc)
 
         self.plot_bars_limit: int = 100
-
         self.convergence_reports = list()
+
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+
+        self.register(name='F', tpe=IntVec)
+        self.register(name='T', tpe=IntVec)
+        self.register(name='hvdc_F', tpe=IntVec)
+        self.register(name='hvdc_T', tpe=IntVec)
+        self.register(name='bus_area_indices', tpe=IntVec)
+        self.register(name='area_names', tpe=IntVec)
+
+        self.register(name='Sbus', tpe=CxVec)
+        self.register(name='voltage', tpe=CxVec)
+
+        self.register(name='Sf', tpe=CxVec)
+        self.register(name='St', tpe=CxVec)
+        self.register(name='If', tpe=CxVec)
+        self.register(name='It', tpe=CxVec)
+        self.register(name='tap_module', tpe=Vec)
+        self.register(name='tap_angle', tpe=Vec)
+        self.register(name='Beq', tpe=Vec)
+        self.register(name='Vbranch', tpe=CxVec)
+        self.register(name='loading', tpe=CxVec)
+        self.register(name='losses', tpe=CxVec)
+
+        self.register(name='hvdc_losses', tpe=Vec)
+        self.register(name='hvdc_Pf', tpe=Vec)
+        self.register(name='hvdc_Pt', tpe=Vec)
+        self.register(name='hvdc_loading', tpe=Vec)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """
@@ -290,28 +285,6 @@ class PowerFlowResults(ResultsTemplate):
         val = 0.0
         for conv in self.convergence_reports:
             val = max(val, conv.elapsed())
-        return val
-
-    def copy(self):
-        """
-        Return a copy of this
-        @return:
-        """
-        val = PowerFlowResults(n=self.n,
-                               m=self.m,
-                               n_hvdc=self.n_hvdc,
-                               bus_names=self.bus_names,
-                               branch_names=self.branch_names,
-                               hvdc_names=self.hvdc_names,
-                               bus_types=self.bus_types)
-        val.Sbus = self.Sbus.copy()
-        val.voltage = self.voltage.copy()
-        val.Sf = self.Sf.copy()
-        val.If = self.If.copy()
-        val.Vbranch = self.Vbranch.copy()
-        val.loading = self.loading.copy()
-        val.losses = self.losses.copy()
-
         return val
 
     def apply_from_island(self,

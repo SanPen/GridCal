@@ -29,15 +29,19 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import
     sigma_function
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.basic_structures import Vec
 
 
-class SigmaAnalysisResults:
+class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
+    """
+    SigmaAnalysisResults
+    """
 
     def __init__(self, n):
 
         self.n = n
 
-        self.name = 'Power flow'
+        self.name = 'Sigma analysis'
 
         self.lambda_value = 1.0
 
@@ -183,7 +187,7 @@ class SigmaAnalysisResults:
 
                 mdl = ResultsTable(data=y,
                                    index=labels,
-                                   columns=['σ real', 'σ imaginary', 'Distances'],
+                                   columns=np.array(['σ real', 'σ imaginary', 'Distances']),
                                    title=title,
                                    ylabel=y_label,
                                    units=y_label)
@@ -341,7 +345,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
 
 
 @nb.jit(cache=True, nopython=True)
-def sigma_distance(sigma_real, sigma_imag):
+def sigma_distance(sigma_real, sigma_imag) -> Vec:
     """
     Distance to the collapse in the sigma space
 
@@ -429,8 +433,7 @@ class SigmaAnalysisDriver(DriverTemplate):
 
         self.__cancel__ = False
 
-    @staticmethod
-    def get_steps():
+    def get_steps(self):
         """
 
         :return:

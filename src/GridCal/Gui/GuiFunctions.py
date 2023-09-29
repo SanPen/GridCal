@@ -23,7 +23,8 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Core.Devices import DeviceType, BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec, Vec, Mat
 from GridCalEngine.data_logger import DataLogger

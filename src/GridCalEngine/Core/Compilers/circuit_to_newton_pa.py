@@ -19,7 +19,7 @@ import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.basic_structures import SolverType, ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -820,8 +820,8 @@ def add_hvdc_data(circuit: MultiCircuit,
     :param time_indices: Array of time indices
     """
 
-    cmode_dict = {dev.HvdcControlType.type_0_free: npa.HvdcControlMode.HvdcControlAngleDroop,
-                  dev.HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
+    cmode_dict = {HvdcControlType.type_0_free: npa.HvdcControlMode.HvdcControlAngleDroop,
+                  HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
 
     for i, elm in enumerate(circuit.hvdc_lines):
         hvdc = npa.HvdcLine(uuid=elm.idtag,

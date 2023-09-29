@@ -346,6 +346,9 @@ class StudyResultsType(Enum):
     StateEstimation = 'StateEstimation'
     InputsAnalysis = 'InputsAnalysis'
     InvestmentEvaluations = 'InvestmentEvaluations'
+    NetTransferCapacity = 'NetTransferCapacity'
+    NetTransferCapacityTimeSeries = 'NetTransferCapacityTimeSeries'
+    StochasticPowerFlow = 'StochasticPowerFlow'
 
     def __str__(self):
         return self.value

@@ -1,10 +1,26 @@
+# GridCal
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-
-from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
+from GridCalEngine.enumerations import StudyResultsType, TransformerControlType
 
 
 def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,
@@ -19,14 +35,13 @@ def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, re
     :return: Extended y, columns with required data
     """
 
-
     columns.extend([
         'Alpha',
     ])
 
     if report_contigency_alpha:
         if alpha_n1.shape[1] > 1:
-            c_str = str_separator.join(['cnt'+str(i) for i in range(alpha_n1.shape[1])])
+            c_str = str_separator.join(['cnt' + str(i) for i in range(alpha_n1.shape[1])])
             c_name = f'Alpha [{c_str}]'
         else:
             c_name = f'Alpha cnt'
@@ -38,7 +53,7 @@ def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, re
     if alpha_n1 is not None:
         if np.any([len(a) > 1 for a in alpha_n1]):
             max_n = np.max([len(a) for a in alpha_n1])
-            c_str = str_separator.join(['c'+str(i) for i in range(max_n)])
+            c_str = str_separator.join(['c' + str(i) for i in range(max_n)])
             c_name = f'Alpha n-1 [{c_str}]'
         else:
             c_name = f'Alpha n-1'
@@ -158,10 +173,10 @@ def add_ntc_data(y, columns, ttc, trm):
     """
 
     columns = [
-        'TTC',
-        'NTC',
-        'TRM',
-    ] + columns  # to append to beginning of columns
+                  'TTC',
+                  'NTC',
+                  'TRM',
+              ] + columns  # to append to beginning of columns
 
     if y.shape[0] == 0:
         # empty data, return
@@ -245,63 +260,45 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  monitor_by_unrealistic_ntc=None,
                  monitor_by_zero_exchange=None,
                  loading_threshold=0.0,
-                 reversed_sort_loading=True,
-                 ):
+                 reversed_sort_loading=True):
 
-        ResultsTemplate.__init__(
-            self,
-            name='OPF',
-            available_results={
-                ResultTypes.FlowReports: [
-                    ResultTypes.ContingencyFlowsReport,
-                    ResultTypes.ContingencyFlowsBranchReport,
-                    ResultTypes.ContingencyFlowsGenerationReport,
-                    ResultTypes.ContingencyFlowsHvdcReport,
-                ],
-                ResultTypes.BusResults: [
-                    ResultTypes.BusVoltageModule,
-                    ResultTypes.BusVoltageAngle,
-                ],
-                ResultTypes.BranchResults: [
-                    ResultTypes.BranchPower,
-                    ResultTypes.BranchLoading,
-                    ResultTypes.BranchTapAngle,
-                    ResultTypes.BranchMonitoring
-                ],
-                ResultTypes.HvdcResults: [
-                    ResultTypes.HvdcPowerFrom,
-                ],
-                ResultTypes.DispatchResults: [
-                    ResultTypes.BatteryPower,
-                    ResultTypes.GeneratorPower,
-                    ResultTypes.GenerationDelta,
-                ],
-                ResultTypes.AreaResults: [
-                    ResultTypes.AvailableTransferCapacityAlpha,
-                    ResultTypes.AvailableTransferCapacityAlphaN1,
-                    ResultTypes.InterAreaExchange,
-                ]
-            },
-            data_variables=[
-                'bus_names',
-                'branch_names',
-                'load_names',
-                'generator_names',
-                'battery_names',
-                'Sbus',
-                'voltage',
-                'Sf',
-                'bus_types',
-                'overloads',
-                'loading',
-                'battery_power',
-                'generator_power',
-                'converged'
-            ],
-            time_array=None,
-            clustering_results=None
-        )
-        nbr = len(branch_names)
+        ResultsTemplate.__init__(self,
+                                 name='NTC',
+                                 available_results={
+                                     ResultTypes.FlowReports: [
+                                         ResultTypes.ContingencyFlowsReport,
+                                         ResultTypes.ContingencyFlowsBranchReport,
+                                         ResultTypes.ContingencyFlowsGenerationReport,
+                                         ResultTypes.ContingencyFlowsHvdcReport,
+                                     ],
+                                     ResultTypes.BusResults: [
+                                         ResultTypes.BusVoltageModule,
+                                         ResultTypes.BusVoltageAngle,
+                                     ],
+                                     ResultTypes.BranchResults: [
+                                         ResultTypes.BranchPower,
+                                         ResultTypes.BranchLoading,
+                                         ResultTypes.BranchTapAngle,
+                                         ResultTypes.BranchMonitoring
+                                     ],
+                                     ResultTypes.HvdcResults: [
+                                         ResultTypes.HvdcPowerFrom,
+                                     ],
+                                     ResultTypes.DispatchResults: [
+                                         ResultTypes.BatteryPower,
+                                         ResultTypes.GeneratorPower,
+                                         ResultTypes.GenerationDelta,
+                                     ],
+                                     ResultTypes.AreaResults: [
+                                         ResultTypes.AvailableTransferCapacityAlpha,
+                                         ResultTypes.AvailableTransferCapacityAlphaN1,
+                                         ResultTypes.InterAreaExchange,
+                                     ]
+                                 },
+                                 time_array=None,
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.NetTransferCapacityTimeSeries
+                                 )
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -710,7 +707,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         # filter results if required
         if loading_threshold != 0.0:
-
             y, labels = apply_filter(
                 y=y,
                 labels=labels,
@@ -1444,7 +1440,7 @@ def get_contingency_flow_table(
     y = np.array([
         monitor_names[m],
         cnt_names,  # Contingency name
-        np.round(flow[m].real,decimals=decimals),  # Branch flow
+        np.round(flow[m].real, decimals=decimals),  # Branch flow
         np.round(flow[m] / rates[m] * 100, decimals=decimals),  # Branch loading
         np.round(rates[m], decimals=decimals),  # Rates
         np.round(contingency_flow.real, decimals=decimals),  # Contingency flow
@@ -1499,4 +1495,3 @@ def apply_filter(y, labels, col, threshold):
 
     idx = np.where(np.abs(y[:, col]) >= threshold)
     return y[idx], labels[idx]
-

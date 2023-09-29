@@ -21,6 +21,8 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import FaultType
+from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class ShortCircuitResults(ResultsTemplate):
@@ -41,100 +43,54 @@ class ShortCircuitResults(ResultsTemplate):
 
         ResultsTemplate.__init__(self,
                                  name='Short circuit',
-                                 available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageModule0,
-                                                                             ResultTypes.BusVoltageModule1,
-                                                                             ResultTypes.BusVoltageModule2,
+                                 available_results={
+                                     ResultTypes.BusResults: [ResultTypes.BusVoltageModule0,
+                                                              ResultTypes.BusVoltageModule1,
+                                                              ResultTypes.BusVoltageModule2,
 
-                                                                             ResultTypes.BusVoltageAngle0,
-                                                                             ResultTypes.BusVoltageAngle1,
-                                                                             ResultTypes.BusVoltageAngle2,
+                                                              ResultTypes.BusVoltageAngle0,
+                                                              ResultTypes.BusVoltageAngle1,
+                                                              ResultTypes.BusVoltageAngle2,
 
-                                                                             ResultTypes.BusShortCircuitActivePower,
-                                                                             ResultTypes.BusShortCircuitReactivePower],
+                                                              ResultTypes.BusShortCircuitActivePower,
+                                                              ResultTypes.BusShortCircuitReactivePower],
 
-                                                    ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom0,
-                                                                                ResultTypes.BranchActivePowerFrom1,
-                                                                                ResultTypes.BranchActivePowerFrom2,
+                                     ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom0,
+                                                                 ResultTypes.BranchActivePowerFrom1,
+                                                                 ResultTypes.BranchActivePowerFrom2,
 
-                                                                                ResultTypes.BranchReactivePowerFrom0,
-                                                                                ResultTypes.BranchReactivePowerFrom1,
-                                                                                ResultTypes.BranchReactivePowerFrom2,
+                                                                 ResultTypes.BranchReactivePowerFrom0,
+                                                                 ResultTypes.BranchReactivePowerFrom1,
+                                                                 ResultTypes.BranchReactivePowerFrom2,
 
-                                                                                ResultTypes.BranchActiveCurrentFrom0,
-                                                                                ResultTypes.BranchActiveCurrentFrom1,
-                                                                                ResultTypes.BranchActiveCurrentFrom2,
+                                                                 ResultTypes.BranchActiveCurrentFrom0,
+                                                                 ResultTypes.BranchActiveCurrentFrom1,
+                                                                 ResultTypes.BranchActiveCurrentFrom2,
 
-                                                                                ResultTypes.BranchReactiveCurrentFrom0,
-                                                                                ResultTypes.BranchReactiveCurrentFrom1,
-                                                                                ResultTypes.BranchReactiveCurrentFrom2,
+                                                                 ResultTypes.BranchReactiveCurrentFrom0,
+                                                                 ResultTypes.BranchReactiveCurrentFrom1,
+                                                                 ResultTypes.BranchReactiveCurrentFrom2,
 
-                                                                                ResultTypes.BranchLoading0,
-                                                                                ResultTypes.BranchLoading1,
-                                                                                ResultTypes.BranchLoading2,
+                                                                 ResultTypes.BranchLoading0,
+                                                                 ResultTypes.BranchLoading1,
+                                                                 ResultTypes.BranchLoading2,
 
-                                                                                ResultTypes.BranchActiveLosses0,
-                                                                                ResultTypes.BranchActiveLosses1,
-                                                                                ResultTypes.BranchActiveLosses2,
+                                                                 ResultTypes.BranchActiveLosses0,
+                                                                 ResultTypes.BranchActiveLosses1,
+                                                                 ResultTypes.BranchActiveLosses2,
 
-                                                                                ResultTypes.BranchReactiveLosses0,
-                                                                                ResultTypes.BranchReactiveLosses1,
-                                                                                ResultTypes.BranchReactiveLosses2],
+                                                                 ResultTypes.BranchReactiveLosses0,
+                                                                 ResultTypes.BranchReactiveLosses1,
+                                                                 ResultTypes.BranchReactiveLosses2],
 
-                                                    ResultTypes.InfoResults: [ResultTypes.ShortCircuitInfo],
-                                                    },
-                                 data_variables=['bus_types',
-                                                 'bus_names',
-                                                 'branch_names',
-                                                 'transformer_names',
-                                                 'hvdc_names',
-                                                 'F',
-                                                 'T',
-                                                 'hvdc_F',
-                                                 'hvdc_T',
-                                                 'bus_area_indices',
-                                                 'area_names',
-                                                 'Sbus1',
-                                                 'voltage1',
-                                                 'Sf1',
-                                                 'St1',
-                                                 'If1',
-                                                 'It1',
-                                                 'Vbranch1',
-                                                 'loading1',
-                                                 'losses1',
-                                                 'Sbus0',
-                                                 'voltage0',
-                                                 'Sf0',
-                                                 'St0',
-                                                 'If0',
-                                                 'It0',
-                                                 'Vbranch0',
-                                                 'loading0',
-                                                 'losses0',
-                                                 'Sbus2',
-                                                 'voltage2',
-                                                 'Sf2',
-                                                 'St2',
-                                                 'If2',
-                                                 'It2',
-                                                 'Vbranch2',
-                                                 'loading2',
-                                                 'losses2',
-                                                 'hvdc_losses',
-                                                 'hvdc_Pf',
-                                                 'hvdc_Pt',
-                                                 'hvdc_loading',
-                                                 ],
+                                     ResultTypes.InfoResults: [ResultTypes.ShortCircuitInfo],
+                                 },
                                  time_array=None,
-                                 clustering_results=None
+                                 clustering_results=None,
+                                 study_results_type=StudyResultsType.ShortCircuit
                                  )
 
-        self.n = n
-        self.m = m
-        self.n_hvdc = n_hvdc
-
         self.bus_types = bus_types
-
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.hvdc_names = hvdc_names
@@ -177,14 +133,16 @@ class ShortCircuitResults(ResultsTemplate):
         self.loading2 = np.zeros(m, dtype=complex)
         self.losses2 = np.zeros(m, dtype=complex)
 
-        self.hvdc_losses = np.zeros(self.n_hvdc)
-        self.hvdc_Pf = np.zeros(self.n_hvdc)
-        self.hvdc_Pt = np.zeros(self.n_hvdc)
-        self.hvdc_loading = np.zeros(self.n_hvdc)
+        self.hvdc_losses = np.zeros(n_hvdc)
+        self.hvdc_Pf = np.zeros(n_hvdc)
+        self.hvdc_Pt = np.zeros(n_hvdc)
+        self.hvdc_loading = np.zeros(n_hvdc)
 
         self.sc_bus_index = 0
         self.sc_type = FaultType.ph3
         self.SCpower = np.zeros(n, dtype=complex)
+
+        # TODO: Register results
 
     @property
     def elapsed(self):
