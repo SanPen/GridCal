@@ -21,33 +21,12 @@ https://github.com/pypa/sampleproject
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-import distutils.command.build
 import os
-# io.open is needed for projects that support Python 2.7
-# It ensures open() defaults to text mode with universal newlines,
-# and accepts an argument to specify the text encoding
-# Python 3 only projects can skip this import
-from io import open
 
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-# Override build command
-class BuildCommand(distutils.command.build.build):
-    def initialize_options(self):
-        distutils.command.build.build.initialize_options(self)
-        self.build_base = 'build_gridcal'
-
-
 here = os.path.abspath(os.path.dirname(__file__))
-
-# Get the long description from the README file
-# if os.path.exists(os.path.join(here, 'README.md')):
-#     with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-#         long_description = f.read()
-#         print(long_description)
-# else:
-#     long_description = ''
 
 long_description = '''# GridCal
 
@@ -67,13 +46,6 @@ For more options (including a standalone setup one), follow the
 from the project's [documentation](https://gridcal.readthedocs.io)
 '''
 
-# if os.path.exists(os.path.join(here, 'about.txt')):
-#     with open(os.path.join(here, 'about.txt'), encoding='utf-8') as f:
-#         description = f.read()
-#         print(description)
-# else:
-#     description = ''
-#     print('Unable to read the description file')
 description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 
 base_path = os.path.join('GridCal')
@@ -163,5 +135,4 @@ setup(
     install_requires=dependencies,
     extras_require=extras_require,
     package_data=package_data,
-    cmdclass={"build": BuildCommand},
 )

@@ -1,4 +1,4 @@
-# This file is part of GridCal.g
+# This file is part of GridCal
 #
 # GridCal is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@ import datetime
 _current_year_ = datetime.datetime.now().year
 
 # do not forget to keep a three-number version!!!
-__GridCal_VERSION__ = "5.0.0a17"
+__GridCal_VERSION__ = "5.0.0a18"
 
 url = 'https://github.com/SanPen/GridCal'
 

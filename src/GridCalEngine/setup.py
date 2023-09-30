@@ -7,27 +7,11 @@ https://github.com/pypa/sampleproject
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-import distutils.command.build
 import os
 
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
-
-
-# Override build command
-class BuildCommand(distutils.command.build.build):
-    """
-    BuildCommand
-    """
-
-    def initialize_options(self):
-        """
-        initialize_options
-        """
-        distutils.command.build.build.initialize_options(self)
-        self.build_base = 'build_gridcalengine'
-
 
 long_description = '''# GridCal
 
@@ -122,6 +106,4 @@ setup(
     install_requires=dependencies,
     extras_require=extras_require,
     package_data=package_data,
-    cmdclass={"build": BuildCommand},
 )
-
