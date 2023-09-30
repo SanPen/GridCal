@@ -17,10 +17,11 @@
 import sys
 from PySide6 import QtWidgets
 
-from typing import List, Dict, Union, Tuple
+from typing import List, Union
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
 
@@ -84,14 +85,15 @@ class BusViewerWidget(QMainWindow):
         return self.grid_editor.diagram
 
     @diagram.setter
-    def diagram_setter(self, val: dev.BusBranchDiagram):
+    def diagram(self, val: dev.BusBranchDiagram):
         """
         Set the diagram object
         :param val: BusBranchDiagram
         """
         self.grid_editor.diagram = val
 
-    def msg(self, text, title="Warning"):
+    @staticmethod
+    def msg(text: str, title: str = "Warning"):
         """
         Message box
         :param text: Text to display
@@ -212,28 +214,28 @@ class BusViewerWidget(QMainWindow):
 
             self.branch_idx.append(branch_dict[obj])
 
-            if obj.device_type == dev.DeviceType.LineDevice:
+            if obj.device_type == DeviceType.LineDevice:
                 lines.append(obj)
 
-            elif obj.device_type == dev.DeviceType.DCLineDevice:
+            elif obj.device_type == DeviceType.DCLineDevice:
                 dc_lines.append(obj)
 
-            elif obj.device_type == dev.DeviceType.Transformer2WDevice:
+            elif obj.device_type == DeviceType.Transformer2WDevice:
                 transformers2w.append(obj)
 
-            elif obj.device_type == dev.DeviceType.Transformer3WDevice:
+            elif obj.device_type == DeviceType.Transformer3WDevice:
                 transformers3w.append(obj)
 
-            elif obj.device_type == dev.DeviceType.HVDCLineDevice:
+            elif obj.device_type == DeviceType.HVDCLineDevice:
                 hvdc_lines.append(obj)
 
-            elif obj.device_type == dev.DeviceType.VscDevice:
+            elif obj.device_type == DeviceType.VscDevice:
                 vsc_converters.append(obj)
 
-            elif obj.device_type == dev.DeviceType.UpfcDevice:
+            elif obj.device_type == DeviceType.UpfcDevice:
                 upfc_devices.append(obj)
 
-            elif obj.device_type == dev.DeviceType.BranchDevice:
+            elif obj.device_type == DeviceType.BranchDevice:
                 # we need to convert it :D
                 obj2 = dev.convert_branch(obj)
                 lines.append(obj2)  # call this again, but this time it is not a Branch object
@@ -264,6 +266,6 @@ if __name__ == "__main__":
     circuit_ = MultiCircuit()
     circuit_.add_bus(dev.Bus('bus1'))
     window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.buses[0])
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
+    window.resize(int(1.61 * 700.0), 600)  # golden ratio
     window.show()
     sys.exit(app.exec())

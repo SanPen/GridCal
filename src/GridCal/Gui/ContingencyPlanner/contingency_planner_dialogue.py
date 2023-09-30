@@ -20,6 +20,7 @@ from typing import List
 
 from GridCal.Gui.ContingencyPlanner.gui import Ui_MainWindow
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCal.Gui.GuiFunctions as gf
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import generate_automatic_contingency_plan
@@ -42,14 +43,14 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
 
         self.circuit = grid
 
-        self.contingency_branch_types = [dev.DeviceType.LineDevice,
-                                         dev.DeviceType.DCLineDevice,
-                                         dev.DeviceType.Transformer2WDevice,
-                                         dev.DeviceType.VscDevice,
-                                         dev.DeviceType.UpfcDevice]
+        self.contingency_branch_types = [DeviceType.LineDevice,
+                                         DeviceType.DCLineDevice,
+                                         DeviceType.Transformer2WDevice,
+                                         DeviceType.VscDevice,
+                                         DeviceType.UpfcDevice]
 
-        self.contingency_injection_types = [dev.DeviceType.GeneratorDevice,
-                                            dev.DeviceType.BatteryDevice]
+        self.contingency_injection_types = [DeviceType.GeneratorDevice,
+                                            DeviceType.BatteryDevice]
 
         self.ui.contingencyBranchTypesListView.setModel(gf.get_list_model(self.contingency_branch_types,
                                                                           checks=True, check_value=True))

@@ -1354,7 +1354,7 @@ class SimulationsMain(TimeEventsMain):
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
                         else:
                             # pick the selected nodes
-                            sel_bus_idx = np.array([k for k, bus in sel_buses])
+                            sel_bus_idx = np.array([k for k, bus, graphic_obj in sel_buses])
                             alpha_vec[sel_bus_idx] = alpha_vec[sel_bus_idx] * alpha
 
                     use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()

@@ -19,8 +19,8 @@ import pandas as pd
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
-import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
+from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.objects import ObjectsTableMain
@@ -94,7 +94,7 @@ class TimeEventsMain(ObjectsTableMain):
 
             self.display_profiles()
 
-            self.set_up_profile_sliders()
+            # self.set_up_profile_sliders()
 
             self.update_date_dependent_combos()
 
@@ -115,7 +115,7 @@ class TimeEventsMain(ObjectsTableMain):
                     bus.delete_profiles()
                 self.circuit.time_profile = None
                 self.ui.profiles_tableView.setModel(None)
-                self.set_up_profile_sliders()
+                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.update_area_combos()
             else:
@@ -177,20 +177,20 @@ class TimeEventsMain(ObjectsTableMain):
                         print(elm.name, 'skipped')
 
                 # set up sliders
-                self.set_up_profile_sliders()
+                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.display_profiles()
 
                 # ask to update active profile when magnitude is P for generators and loads
                 if len(objects) > 0:
                     if magnitude == 'P':
-                        if objects[0].device_type == dev.DeviceType.GeneratorDevice:
+                        if objects[0].device_type == DeviceType.GeneratorDevice:
                             ok = yes_no_question(
                                 "Do you want to correct the generators active profile based on the active power profile?",
                                 "Match")
                             if ok:
                                 self.fix_generators_active_based_on_the_power(ask_before=False)
-                        elif objects[0].device_type == dev.DeviceType.LoadDevice:
+                        elif objects[0].device_type == DeviceType.LoadDevice:
                             ok = yes_no_question(
                                 "Do you want to correct the loads active profile based on the active power profile?",
                                 "Match")
@@ -459,7 +459,7 @@ class TimeEventsMain(ObjectsTableMain):
                 self.models_input_dialogue.process(main_grid=self.circuit)
 
                 # set up sliders
-                self.set_up_profile_sliders()
+                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.display_profiles()
 

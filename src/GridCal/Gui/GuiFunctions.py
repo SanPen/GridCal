@@ -1858,7 +1858,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
         return True
 
 
-def get_list_model(lst: List[str], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """

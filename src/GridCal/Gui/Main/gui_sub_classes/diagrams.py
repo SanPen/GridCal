@@ -252,14 +252,14 @@ class DiagramsMain(CompiledArraysMain):
                 if len(selected) == 0:
                     buses = self.circuit.buses
                 else:
-                    buses = [b for i, b in selected]
+                    buses = [b for i, b, graphic in selected]
 
                 diagram.center_nodes(buses=buses)
 
-    def get_selected_buses(self) -> List[Tuple[int, dev.Bus]]:
+    def get_selected_buses(self) -> List[Tuple[int, dev.Bus, "BusGraphicItem"]]:
         """
         Get the selected buses
-        :return:
+        :return: list of (bus position, bus object, bus_graphics object)
         """
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, BusBranchEditorWidget):
@@ -901,7 +901,7 @@ class DiagramsMain(CompiledArraysMain):
         sel_buses = self.get_selected_buses()
 
         if len(sel_buses):
-            bus_idx, root_bus = sel_buses[0]
+            bus_idx, root_bus, graphic_item = sel_buses[0]
             diagram = BusViewerWidget(circuit=self.circuit,
                                       root_bus=root_bus,
                                       name=root_bus.name + ' vecinity',
@@ -1128,11 +1128,8 @@ class DiagramsMain(CompiledArraysMain):
                 if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
 
                     # remove the buses (from the schematic and the circuit)
-                    for k, bus in selected:
-                        if bus.graphic_obj is not None:
-                            # this is a more complete function than the circuit one because it removes the
-                            # graphical items too, and for loads and generators it deletes them properly
-                            bus.graphic_obj.remove(ask=False)
+                    for k, bus, graphic_obj in selected:
+                        graphic_obj.remove(ask=False)
                 else:
                     pass
             else:
@@ -1148,9 +1145,8 @@ class DiagramsMain(CompiledArraysMain):
         selected_buses = self.get_selected_buses()
         if len(selected_buses) > 0:
             self.circuit.try_to_fix_buses_location(buses_selection=selected_buses)
-            for k, bus in selected_buses:
-                if bus.graphic_obj is not None:
-                    bus.graphic_obj.set_position(x=bus.x, y=bus.y)
+            for k, bus, graphic_obj in selected_buses:
+                graphic_obj.set_position(x=bus.x, y=bus.y)
         else:
             info_msg('Choose some elements from the schematic', 'Fix buses locations')
 
@@ -1312,7 +1308,7 @@ class DiagramsMain(CompiledArraysMain):
             self.object_select_window.exec_()
 
             if self.object_select_window.selected_object is not None:
-                for k, bus in self.get_selected_buses():
+                for k, bus, graphic_obj in self.get_selected_buses():
                     bus.area = self.object_select_window.selected_object
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
@@ -1322,7 +1318,7 @@ class DiagramsMain(CompiledArraysMain):
             self.object_select_window.exec_()
 
             if self.object_select_window.selected_object is not None:
-                for k, bus in self.get_selected_buses():
+                for k, bus, graphic_obj in self.get_selected_buses():
                     bus.country = self.object_select_window.selected_object
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
@@ -1332,7 +1328,7 @@ class DiagramsMain(CompiledArraysMain):
             self.object_select_window.exec_()
 
             if self.object_select_window.selected_object is not None:
-                for k, bus in self.get_selected_buses():
+                for k, bus, graphic_pbj in self.get_selected_buses():
                     bus.zone = self.object_select_window.selected_object
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
         else:
