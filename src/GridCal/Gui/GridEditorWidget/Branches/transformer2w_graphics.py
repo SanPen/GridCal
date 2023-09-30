@@ -18,7 +18,7 @@
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.Branches.transformer_editor import TransformerEditor, reverse_transformer_short_circuit_study
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W, TransformerType

@@ -231,7 +231,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                              'Convert generator')
         if ok:
             editor = self.diagramScene.parent()
-            editor.convert_generator_to_battery(gen=self.api_object)
+            editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
 
     def remove(self, ask=True):
         """

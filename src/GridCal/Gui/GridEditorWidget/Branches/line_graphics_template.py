@@ -21,7 +21,7 @@ from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Branches.line import Line
@@ -371,7 +371,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             self.symbol = VscSymbol(parent=self, pen_width=width, h=48, w=48)
         elif isinstance(api_object, UPFC):
             self.symbol = UpfcSymbol(parent=self, pen_width=width, h=48, w=48)
-        elif isinstance(api_object, HvdcSymbol):
+        elif isinstance(api_object, HvdcLine):
             self.symbol = HvdcSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
@@ -437,7 +437,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param style: PenStyle instance
         :return:
         """
-        self.setPen(QPen(color, w, style))
+        self.setPen(QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin))
         self.arrow_from_1.set_colour(color, w, style)
         self.arrow_from_2.set_colour(color, w, style)
         self.arrow_to_1.set_colour(color, w, style)
@@ -647,9 +647,25 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             self.arrow_to_2.set_value(-Qt if Qt != 0.0 else -Pt, True)
 
             self.arrow_from_1.setToolTip("Pf: {} MW".format(Pf))
-            self.arrow_from_2.setToolTip("Qf: {} MW".format(Qf))
+            self.arrow_from_2.setToolTip("Qf: {} MVAr".format(Qf))
             self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
-            self.arrow_to_2.setToolTip("Qt: {} MW".format(Qt))
+            self.arrow_to_2.setToolTip("Qt: {} MVAr".format(Qt))
+
+    def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
+        """
+        Set the arrow directions
+        :param Pf: Complex power from
+        :param Pt: Complex power to
+        """
+        self.arrow_from_1.set_value(Pf, True)
+        self.arrow_from_2.set_value(Pf, True)
+        self.arrow_to_1.set_value(-Pt, True)
+        self.arrow_to_2.set_value(-Pt, True)
+
+        self.arrow_from_1.setToolTip("Pf: {} MW".format(Pf))
+        self.arrow_from_2.setToolTip("Pf: {} MW".format(Pf))
+        self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
+        self.arrow_to_2.setToolTip("Pt: {} MW".format(Pt))
 
     def reduce(self):
         """

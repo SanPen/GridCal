@@ -95,7 +95,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
-        # self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -105,8 +104,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        # self.hosting_connections = list()
+        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
         self.sizer = HandleItem(self.terminal)

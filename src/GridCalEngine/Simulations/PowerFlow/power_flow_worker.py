@@ -696,7 +696,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc
     results.hvdc_Pf = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
     results.hvdc_Pt = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
-    results.hvdc_loading = loading_hvdc * 100.0
+    results.hvdc_loading = loading_hvdc
     results.hvdc_losses = Losses_hvdc * nc.Sbase
 
     return results

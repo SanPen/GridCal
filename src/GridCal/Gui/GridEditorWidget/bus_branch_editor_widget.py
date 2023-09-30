@@ -49,7 +49,7 @@ from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
@@ -58,6 +58,7 @@ from GridCal.Gui.GridEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.GridEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
@@ -1627,7 +1628,7 @@ class BusBranchEditorWidget(QSplitter):
 
         return graphic_obj
 
-    def convert_line_to_hvdc(self, line: Line):
+    def convert_line_to_hvdc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
         :param line: Line instance
@@ -1643,12 +1644,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line.graphic_obj)
+        self.diagramScene.removeItem(line_graphic)
 
         self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
 
-    def convert_line_to_transformer(self, line: Line):
+    def convert_line_to_transformer(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to Transformer
         :param line: Line instance
@@ -1664,12 +1665,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line.graphic_obj)
+        self.diagramScene.removeItem(line_graphic)
 
         self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
 
-    def convert_line_to_vsc(self, line: Line):
+    def convert_line_to_vsc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to voltage source converter
         :param line: Line instance
@@ -1685,12 +1686,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line.graphic_obj)
+        self.diagramScene.removeItem(line_graphic)
 
         self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
 
-    def convert_line_to_upfc(self, line: Line):
+    def convert_line_to_upfc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to voltage source converter
         :param line: Line instance
@@ -1706,12 +1707,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line.graphic_obj)
+        self.diagramScene.removeItem(line_graphic)
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
 
-    def convert_generator_to_battery(self, gen: Generator):
+    def convert_generator_to_battery(self, gen: Generator, graphic_object: GeneratorGraphicItem):
         """
         Convert a generator to a battery
         :param gen: Generator instance
@@ -1723,7 +1724,7 @@ class BusBranchEditorWidget(QSplitter):
         battery.graphic_obj = gen.bus.graphic_obj.add_battery(battery)
 
         # delete from the schematic
-        gen.graphic_obj.remove(ask=False)
+        graphic_object.remove(ask=False)
 
     def add_elements_to_schematic(self,
                                   buses: List[Bus],
@@ -2201,7 +2202,7 @@ class BusBranchEditorWidget(QSplitter):
 
             for i, elm in enumerate(hvdc_lines):
 
-                location = self.diagram.query_point(branches[i])
+                location = self.diagram.query_point(elm)
 
                 if location:
 
@@ -2251,10 +2252,12 @@ class BusBranchEditorWidget(QSplitter):
                             if hvdc_losses is not None:
                                 tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
                                 tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                                location.graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
+                            else:
+                                location.graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                             location.graphic_object.setToolTipText(tooltip)
                             location.graphic_object.set_colour(color, w, style)
-
                         else:
                             w = location.graphic_object.pen_width
                             style = Qt.DashLine

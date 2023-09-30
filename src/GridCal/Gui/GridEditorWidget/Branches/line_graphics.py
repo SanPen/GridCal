@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
-from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
@@ -350,7 +350,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a transformer?', 'Convert line')
         if ok:
             editor = self.diagramScene.parent()
-            editor.convert_line_to_transformer(self.api_object)
+            editor.convert_line_to_transformer(line=self.api_object, line_graphic=self)
 
     def to_hvdc(self):
         """
@@ -360,7 +360,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a HVDC line?', 'Convert line')
         if ok:
             editor = self.diagramScene.parent()
-            editor.convert_line_to_hvdc(self.api_object)
+            editor.convert_line_to_hvdc(line=self.api_object, line_graphic=self)
 
     def to_vsc(self):
         """
@@ -371,7 +371,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
             ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
             if ok:
                 editor = self.diagramScene.parent()
-                editor.convert_line_to_vsc(self.api_object)
+                editor.convert_line_to_vsc(line=self.api_object, line_graphic=self)
         else:
             warning_msg('Unable to convert to VSC. One of the buses must be DC and the other AC.')
 
@@ -383,4 +383,4 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
         if ok:
             editor = self.diagramScene.parent()
-            editor.convert_line_to_upfc(self.api_object)
+            editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)

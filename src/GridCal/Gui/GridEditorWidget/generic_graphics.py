@@ -14,23 +14,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import darkdetect
 from PySide6.QtCore import Qt
-from PySide6.QtCore import Qt, QPoint, QLineF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem, QDialog, QGraphicsRectItem, QGraphicsEllipseItem
+from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
+                               QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
 
 try:
-    import darkdetect
     is_dark = darkdetect.theme() == "Dark"
 except ImportError:
     is_dark = False
-
-from PySide6 import QtWidgets, QtGui, QtCore
 
 # Declare colors
 ACTIVE = {'style': Qt.SolidLine,
           'color': Qt.white if is_dark else Qt.black,
           'text': Qt.white if is_dark else Qt.black}
+
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
 OTHER = ACTIVE
@@ -84,6 +82,9 @@ class Line(LineUpdateMixin, QGraphicsLineItem):
 
 
 class ParameterDialog(QDialog):
+    """
+    ParameterDialog
+    """
 
     def __init__(self, parent=None):
         super(ParameterDialog, self).__init__(parent)
