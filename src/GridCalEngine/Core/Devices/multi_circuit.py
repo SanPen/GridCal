@@ -149,6 +149,9 @@ class MultiCircuit:
         # Should accept buses
         self.buses: List[dev.Bus] = list()
 
+        # array of connectivity nodes
+        self.connectivity_nodes: List[dev.ConnectivityNode] = list()
+
         # array of bus indices in the master circuit
         self.bus_original_idx: List[int] = list()
 
@@ -1174,6 +1177,9 @@ class MultiCircuit:
 
         elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.generators_emissions
+
+        elif element_type == DeviceType.ConnectivityNodeDevice:
+            return self.connectivity_nodes
 
         else:
             raise Exception('Element type not understood ' + str(element_type))

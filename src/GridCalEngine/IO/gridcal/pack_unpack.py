@@ -48,6 +48,8 @@ def get_objects_dictionary():
 
                     'bus': dev.Bus(),
 
+                    DeviceType.ConnectivityNodeDevice.value.lower(): dev.ConnectivityNode(),
+
                     'load': dev.Load(),
 
                     'static_generator': dev.StaticGenerator(),
@@ -527,7 +529,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.InvestmentsGroupDevice,
                                                  DeviceType.FuelDevice,
                                                  DeviceType.EmissionGasDevice,
-                                                 DeviceType.GeneratorDevice]:
+                                                 DeviceType.GeneratorDevice,
+                                                 DeviceType.ConnectivityNodeDevice]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -614,6 +617,11 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
                             elif gc_prop.tpe == str:
                                 val = gc_prop.tpe(property_value).replace('nan', '')
+                                setattr(devices[i], gc_prop.name, val)
+
+                            elif gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                val = dev.GeneratorQCurve()
+                                val.parse(property_value)
                                 setattr(devices[i], gc_prop.name, val)
 
                             else:

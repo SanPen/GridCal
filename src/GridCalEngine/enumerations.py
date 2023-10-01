@@ -255,6 +255,8 @@ class DeviceType(Enum):
 
     DiagramDevice = 'Diagram'
 
+    GeneratorQCurve = 'Generator Q curve'
+
     def __str__(self):
         return self.value
 

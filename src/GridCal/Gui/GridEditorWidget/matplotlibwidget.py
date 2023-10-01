@@ -221,24 +221,32 @@ class MatplotlibWidget(QtWidgets.QWidget):
         """
         self.canvas.ax.figure.canvas.draw()
 
-    def plot(self, x, y, title='', xlabel='', ylabel=''):
+    def plot(self, x, y, title='', xlabel='', ylabel='', color=None, marker=None, linestyle=None, linewidth=None, markersize=None):
         """
-        Plot series
-        Args:
-            x: X values
-            y: Y values
-            title: Title
-            xlabel: Label for X
-            ylabel: Label for Y
 
-        Returns:
-
+        :param x:
+        :param y:
+        :param title:
+        :param xlabel:
+        :param ylabel:
+        :param color:
+        :param marker:
+        :param linestyle:
+        :param linewidth:
+        :param markersize:
+        :return:
         """
         self.setTitle(title)
-        self.canvas.ax.plot(x, y)
+        self.canvas.ax.plot(x, y, color=color, marker=marker, linestyle=linestyle, linewidth=linewidth, markersize=markersize)
         self.canvas.ax.set_xlabel(xlabel)
         self.canvas.ax.set_ylabel(ylabel)
         self.redraw()
 
+    def setXlabel(self, val: str):
+        self.canvas.ax.set_xlabel(val)
+        self.redraw()
 
+    def setYlabel(self, val: str):
+        self.canvas.ax.set_ylabel(val)
+        self.redraw()
 

@@ -21,3 +21,4 @@ from GridCalEngine.Core.Devices.Injections.generator import Generator
 from GridCalEngine.Core.Devices.Injections.load import Load
 from GridCalEngine.Core.Devices.Injections.shunt import Shunt
 from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator
+from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve

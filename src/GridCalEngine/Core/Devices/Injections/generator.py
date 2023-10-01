@@ -23,70 +23,7 @@ from GridCalEngine.basic_structures import Logger, Vec, Mat
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
-
-
-def make_default_q_curve(Snom: float, Qmin: float, Qmax: float, n: int = 3) -> Mat:
-    """
-    Compute the generator capability curve
-    :param Snom: Nominal power
-    :param Qmin: Minimum reactive power
-    :param Qmax: Maximum reactive power
-    :param n: number of points, at least 3
-    :return: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
-    """
-    assert (n > 2)
-    pts = np.zeros((n, 3))
-    s2 = Snom * Snom
-
-    Qmax2 = Qmax if Qmax < Snom else Snom
-    Qmin2 = Qmin if Qmin > -Snom else -Snom
-
-    # Compute the intersections of the Qlimits with the natural curve
-    p0_max = np.sqrt(s2 - Qmax2 * Qmax2)
-    p0_min = np.sqrt(s2 - Qmin2 * Qmin2)
-    p0 = min(p0_max, p0_min)  # pick the lower limit as the starting point for sampling
-
-    pts[1:, 0] = np.linspace(p0, Snom, n - 1)
-    pts[0, 0] = 0
-    pts[0, 1] = Qmin2
-    pts[0, 2] = Qmax2
-
-    for i in range(1, n):
-        p2 = pts[i, 0] * pts[i, 0]  # P^2
-        q = np.sqrt(s2 - p2)  # point that naturally matches Q = sqrt(S^2 - P^2)
-
-        # assign the natural point if it does not violates the limits imposes, else set the limit
-        qmin = -q if -q > Qmin2 else Qmin2
-        qmax = q if q < Qmax2 else Qmax2
-
-        # Enforce that Qmax > Qmin
-        if qmax < qmin:
-            qmax = qmin
-        if qmin > qmax:
-            qmin = qmax
-
-        # Assign the points
-        pts[i, 1] = qmin
-        pts[i, 2] = qmax
-
-    return pts
-
-
-def get_q_limits(q_points: Mat, p: Vec) -> Tuple[Vec, Vec]:
-    """
-    Get the reactive power limits
-    :param q_points: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
-    :param p: active power value (or array)
-    :return:
-    """
-    all_p = q_points[:, 0]
-    all_qmin = q_points[:, 1]
-    all_qmax = q_points[:, 2]
-
-    qmin = np.interp(p, all_p, all_qmin)
-    qmax = np.interp(p, all_p, all_qmax)
-
-    return qmin, qmax
+from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 
 
 class Generator(InjectionTemplate):
@@ -246,11 +183,14 @@ class Generator(InjectionTemplate):
         # Maximum reactive power in MVAr
         self.qmax_set = Qmax
 
+        # declare the generation curve
+        self.q_curve = GeneratorQCurve()
+
         if q_points is not None:
-            self.q_points = np.array(q_points)
+            self.q_curve.set_data(np.array(q_points))
             self.custom_q_points = True
         else:
-            self.q_points = make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set)
+            self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
             self.custom_q_points = False
 
         self.Cost2 = 0.0  # Cost of operation €/MW²
@@ -298,6 +238,9 @@ class Generator(InjectionTemplate):
         self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
         self.register(key='use_reactive_power_curve', units='', tpe=bool,
                       definition='Use the reactive power capability curve?')
+        self.register(key='q_curve', units='MVAr', tpe=DeviceType.GeneratorQCurve,
+                      definition='Capability curve data (double click on the generator to edit)',
+                      editable=False, display=False)
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
         self.register(key='R1', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
@@ -429,6 +372,8 @@ class Generator(InjectionTemplate):
                     'snom': self.Snom,
                     'qmin': self.Qmin,
                     'qmax': self.Qmax,
+                    'q_curve': self.q_curve.str(),
+
                     'pmin': self.Pmin,
                     'pmax': self.Pmax,
                     'cost2': self.Cost2,
@@ -558,12 +503,7 @@ class Generator(InjectionTemplate):
         Return the reactive power upper limit
         :return: value
         """
-        if self.use_reactive_power_curve:
-            all_p = self.q_points[:, 0]
-            all_qmax = self.q_points[:, 2]
-            return np.interp(self.P, all_p, all_qmax)
-        else:
-            return self.qmax_set
+        return self.qmax_set
 
     @Qmax.setter
     def Qmax(self, val):
@@ -575,12 +515,7 @@ class Generator(InjectionTemplate):
         Return the reactive power lower limit
         :return: value
         """
-        if self.use_reactive_power_curve:
-            all_p = self.q_points[:, 0]
-            all_qmin = self.q_points[:, 1]
-            return np.interp(self.P, all_p, all_qmin)
-        else:
-            return self.qmin_set
+        return self.qmin_set
 
     @Qmin.setter
     def Qmin(self, val):
@@ -602,5 +537,5 @@ class Generator(InjectionTemplate):
         :param val: float value
         """
         self._Snom = val
-        if not self.custom_q_points:
-            self.q_points = make_default_q_curve(self._Snom, self.qmin_set, self.qmax_set)
+        # if not self.custom_q_points:
+        #     self.q_curve.make_default_q_curve(self._Snom, self.qmin_set, self.qmax_set)

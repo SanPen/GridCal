@@ -534,10 +534,14 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         self.data_c[:, col] = self.data_c[row, col]
 
-    def is_complex(self):
+    def is_complex(self) -> bool:
+        """
+        id the data type complex?
+        :return: True / False
+        """
         return self.data_c.dtype == complex
 
-    def is_2d(self):
+    def is_2d(self) -> bool:
         """
         actually check if the array is 1D or 2D
         :return: true if it is really a 2D data set
@@ -695,10 +699,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.set_delegates()
 
-    def set_delegates(self):
+    def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
-        :return:
         """
 
         if self.transposed:
@@ -759,6 +762,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
+
             else:
                 F(i, None)
 

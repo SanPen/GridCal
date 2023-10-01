@@ -133,6 +133,9 @@ class LibraryModel(QStandardItemModel):
                 mimedata.setData('component/name', data)
         return mimedata
 
+    def flags(self, index):
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+
 
 class DiagramScene(QGraphicsScene):
     """

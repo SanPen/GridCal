@@ -277,15 +277,17 @@ class EditableDevice:
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
-            if properties.tpe not in [str, float, int, bool]:
+            if properties.tpe in [str, float, int, bool]:
+                data.append(obj)
+            elif properties.tpe == DeviceType.GeneratorQCurve:
+                data.append(obj.str())
+            else:
                 # if the object is not of a primary type, get the idtag instead
                 if hasattr(obj, 'idtag'):
                     data.append(obj.idtag)
                 else:
                     # some data types might not have the idtag, ten just use the str method
                     data.append(str(obj))
-            else:
-                data.append(obj)
         return data
 
     def get_headers(self) -> List[AnyStr]:

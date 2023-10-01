@@ -292,8 +292,7 @@ def get_generator_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.qmin[k] = elm.Qmin
-        data.qmax[k] = elm.Qmax
+
         data.controllable[k] = elm.is_controlled
         data.installed_p[k] = elm.Snom
 
@@ -363,6 +362,14 @@ def get_generator_data(circuit: MultiCircuit,
                     elif elm.Vset != Vbus[i]:
                         logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
+        # reactive power limits, for the given power value
+        if elm.use_reactive_power_curve:
+            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
+            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
+        else:
+            data.qmin[k] = elm.Qmin
+            data.qmax[k] = elm.Qmax
+
         data.C_bus_elm[i, k] = 1
 
     return data
@@ -401,9 +408,6 @@ def get_battery_data(circuit: MultiCircuit,
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
-
-        data.qmin[k] = elm.Qmin
-        data.qmax[k] = elm.Qmax
 
         data.controllable[k] = elm.is_controlled
         data.installed_p[k] = elm.Snom
@@ -480,6 +484,14 @@ def get_battery_data(circuit: MultiCircuit,
                         Vbus[i] = complex(elm.Vset, 0)
                     elif elm.Vset != Vbus[i]:
                         logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
+
+        # reactive power limits, for the given power value
+        if elm.use_reactive_power_curve:
+            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
+            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
+        else:
+            data.qmin[k] = elm.Qmin
+            data.qmax[k] = elm.Qmax
 
         data.C_bus_elm[i, k] = 1
 
