@@ -33,7 +33,7 @@ class GraphicLocation:
                  api_object: EditableDevice = None,
                  graphic_object: object = None):
         """
-
+        GraphicLocation
         :param x: x position (px)
         :param y: y position (px)
         :param h: height (px)

@@ -3,7 +3,7 @@
 GridCal is a top tier power systems planning and simulation software. 
 As such it has all the static analysis studies that you can think of, plus 
 linear and non-linear optimization functions. Some of these functions are 
-well know, while others you may have never heard of as they are a 
+well known, while others you may have never heard of as they are a 
 product of cutting-edge research.
 
 ![](/home/santi/Documentos/Git/GitHub/GridCal/pics/GridCal.png)
@@ -17,17 +17,15 @@ product of cutting-edge research.
 GridCal started in 2015 as a project to be able to work with, out of frustration with 
 the available options. This led to design a proper programming library and a 
 nice graphical user interface for everyone. This no-nonsense approach has fostered numerous 
-innovations; Some of them pushed by the need to use the software in commercial 
+innovations. Some of them, pushed by the need to use the software in commercial 
 environments, and some ignited by curiosity and research.
 
 If you are a professional looking for a free software to get the job done on time, 
-look no further. If you are a researcher looking for a real-world, TSO-tested platform, 
-you're in good hands. If you are a teacher willing to teach your students the ins-and-outs 
-of commercial grade software, this is it. And if you are a student willing to learn 
-about the algorithms of the books, but for real, we've got you covered.
-
-Our commitment is with you: GridCal is a high quality product. It is free for ever. 
-For all of us now and the generations to come.
+or a researcher looking for a real-world, TSO-tested platform, 
+or a teacher willing to teach your students the ins-and-outs 
+of commercial grade software, or a student willing to learn 
+about the algorithms of the books, but for real, our commitment is with you; 
+GridCal is a high quality product and it is free for all of us now and for the generations to come.
 
 ## Installation
 
@@ -52,15 +50,19 @@ graphical user interface with the following terminal command:
 python -c "from GridCal.ExecuteGridCal import run; run()"
 ```
 
+You may save this command in a shortcut for easy future access.
+
 ### Install only the engine
 
 Some of you may only need GridCal as a library for some other purpose 
 like batch calculations, AI training or simple scripting. Whatever it may be, 
-you can get the GridCal engine the following terminal command:
+you can get the GridCal engine with the following terminal command:
 
 ```
 pip install GridCalEngine
 ```
+
+This will install the `GridCalEngine` package that is a dependency of `GridCal`.
 
 Again, you may need to use `pip3` if you are under Linux or MacOS.
 
@@ -79,7 +81,7 @@ following video might be of assistance: [Setup tutorial (video)](https://youtu.b
 
 GridCal is packed with feautures:
 
-- Large collection of devices to model electricity grids.
+- Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
 - AC/DC multi-grid linear optimal power flow
 - AC linear analysis (PTDF & LODF)
@@ -109,9 +111,9 @@ software, so that you can work, research and learn with it.
 In an effort to ease the simulation and construction of grids, 
 We have included extra materials to work with. These are included in the standalone setups.
 
-- [Load profiles](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/equipment) for your projects
-- [Grids](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/grids) from IEEE and other open projects
-- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
+- [Load profiles](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/equipment) for your projects.
+- [Grids](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/grids) from IEEE and other open projects.
+- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal.
 
 
 ### Tutorials and examples
@@ -132,6 +134,36 @@ Since day one, GridCal was meant to be used as a library as much as it was meant
 to be used from the user interface. Following, we include some usage examples, but 
 feel free to check the [documentation](https://gridcal.readthedocs.io) out where you will find a complete
 description of the theory, the models and the objects.
+
+### Understanding the structure
+
+GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
+
+A **snapshot** is the grid for a particular moment in time.
+This includes the infrastructure plus the variable values of that infraestructure 
+such as the load, the generation, the rating, etc.
+
+The **time series** record the variations of the magnitudes that can vary. These are aplied along with
+the infrastructure definition.
+
+In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
+maintaining the independence of the inputs and outputs, allowing the replicability of the results. 
+This key feature is not true for other open-source of comercial programs.
+
+A snapshot or any point of the time series, may be compiled to a `NumericalCircuit`. This object holds the
+numerical arrays and matrices of a time step, ready for the numerical methods. 
+For those simulations that require many time steps, a collection of `NumericalCircuit` is compiled and used.
+
+<img height="300" src="/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/figures/DataModel.png"/>
+
+It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations, 
+which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are 
+aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented 
+(despite beign packed into objects)
+
+The simulation process is handled by the simulation drivers. 
+
+<img height="250" src="/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/figures/DataModelSimulation.png"/>
 
 ### Loading a grid
 
@@ -163,7 +195,7 @@ import GridCalEngine.api as gce
 gce.save_file(my_grid, "my_file.gridcal")
 ```
 
-### Creating a Grid from the API objects
+### Creating a Grid using the API objects
 
 We are going to create a very simple 5-node grid from the excellent book 
 *Power System Load Flow Analysis by Lynn Powell*.
@@ -215,7 +247,7 @@ grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 
 ### Power Flow
 
-Using the simlified API:
+Using the simplified API:
 
 ```python
 import GridCalEngine.api as gce

@@ -209,12 +209,11 @@ class DiagramScene(QGraphicsScene):
                 # plot the profiles
                 plt.show()
 
-    def plot_branch(self, i, api_object):
+    def plot_branch(self, i: int, api_object: Union[Line, DcLine, Transformer2W, VSC, UPFC]):
         """
         Plot branch results
         :param i: branch index (not counting HVDC lines because those are not real Branches)
         :param api_object: API object
-        :return:
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
@@ -321,11 +320,11 @@ class DiagramScene(QGraphicsScene):
                 # plot the profiles
                 plt.show()
 
-    def plot_hvdc_branch(self, i, api_object):
+    def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
         """
-
-        :param api_object:
-        :return:
+        HVDC branch
+        :param i: index of the object
+        :param api_object: HvdcGraphicItem
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
@@ -1017,7 +1016,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
 
             for bus_idtag, point in points_group.locations.items():
 
@@ -2043,7 +2042,7 @@ class BusBranchEditorWidget(QSplitter):
         PVB = 6
         '''
 
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'PVB']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'P', 'PQV']
         max_flow = 1
 
         for i, bus in enumerate(buses):
@@ -2053,6 +2052,8 @@ class BusBranchEditorWidget(QSplitter):
             if location:
 
                 if location.graphic_object:
+
+                    graphic_object: BusGraphicItem = location.graphic_object
 
                     if bus_active[i]:
                         a = 255
@@ -2072,7 +2073,7 @@ class BusBranchEditorWidget(QSplitter):
                             b *= 255
                             a *= 255
 
-                        location.graphic_object.set_tile_color(QColor(r, g, b, a))
+                        graphic_object.set_tile_color(QColor(r, g, b, a))
 
                         tooltip = str(i) + ': ' + bus.name
                         if types is not None:
@@ -2086,14 +2087,14 @@ class BusBranchEditorWidget(QSplitter):
                             tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
                             tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
 
-                        location.graphic_object.setToolTip(tooltip)
+                        graphic_object.setToolTip(tooltip)
 
                         if use_flow_based_width:
                             h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-                            location.graphic_object.change_size(location.graphic_object.w, h)
+                            graphic_object.change_size(graphic_object.w, h)
 
                     else:
-                        location.graphic_object.set_tile_color(Qt.gray)
+                        graphic_object.set_tile_color(Qt.gray)
 
                 else:
                     print("Bus {0} {1} has no graphic object!!".format(bus.name, bus.idtag))
@@ -2123,13 +2124,15 @@ class BusBranchEditorWidget(QSplitter):
 
                         if location.graphic_object:
 
+                            graphic_object: LineGraphicItem = location.graphic_object
+
                             if br_active[i]:
 
                                 if use_flow_based_width:
                                     w = int(
                                         np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                                 else:
-                                    w = location.graphic_object.pen_width
+                                    w = graphic_object.pen_width
 
                                 if branch.active:
                                     style = Qt.SolidLine
@@ -2185,17 +2188,17 @@ class BusBranchEditorWidget(QSplitter):
                                     if Beq is not None:
                                         tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 
-                                location.graphic_object.setToolTipText(tooltip)
-                                location.graphic_object.set_colour(color, w, style)
+                                graphic_object.setToolTipText(tooltip)
+                                graphic_object.set_colour(color, w, style)
 
                                 if hasattr(location.graphic_object, 'set_arrows_with_power'):
                                     location.graphic_object.set_arrows_with_power(Sf=Sf[i] if Sf is not None else None,
                                                                                   St=St[i] if St is not None else None)
                             else:
-                                w = location.graphic_object.pen_width
+                                w = graphic_object.pen_width
                                 style = Qt.DashLine
                                 color = Qt.gray
-                                location.graphic_object.set_pen(QPen(color, w, style))
+                                graphic_object.set_pen(QPen(color, w, style))
                         else:
                             print("Branch {0} {1} has no graphic object!!".format(branch.name, branch.idtag))
 
@@ -2211,6 +2214,8 @@ class BusBranchEditorWidget(QSplitter):
 
                     if location.graphic_object:
 
+                        graphic_object: HvdcGraphicItem = location.graphic_object
+
                         if hvdc_active[i]:
 
                             if use_flow_based_width:
@@ -2218,7 +2223,7 @@ class BusBranchEditorWidget(QSplitter):
                                     min_branch_width + hvdc_sending_power_norm[i] * (
                                                 max_branch_width - min_branch_width)))
                             else:
-                                w = location.graphic_object.pen_width
+                                w = graphic_object.pen_width
 
                             if elm.active:
                                 style = Qt.SolidLine
@@ -2255,17 +2260,17 @@ class BusBranchEditorWidget(QSplitter):
                             if hvdc_losses is not None:
                                 tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
                                 tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
-                                location.graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
+                                graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
                             else:
-                                location.graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
+                                graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
-                            location.graphic_object.setToolTipText(tooltip)
-                            location.graphic_object.set_colour(color, w, style)
+                            graphic_object.setToolTipText(tooltip)
+                            graphic_object.set_colour(color, w, style)
                         else:
-                            w = location.graphic_object.pen_width
+                            w = graphic_object.pen_width
                             style = Qt.DashLine
                             color = Qt.gray
-                            location.graphic_object.set_pen(QPen(color, w, style))
+                            graphic_object.set_pen(QPen(color, w, style))
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
