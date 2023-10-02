@@ -6,7 +6,7 @@ linear and non-linear optimization functions. Some of these functions are
 well known, while others you may have never heard of as they are a 
 product of cutting-edge research.
 
-![](/home/santi/Documentos/Git/GitHub/GridCal/pics/GridCal.png)
+![](pics/GridCal.png)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
@@ -135,7 +135,7 @@ to be used from the user interface. Following, we include some usage examples, b
 feel free to check the [documentation](https://gridcal.readthedocs.io) out where you will find a complete
 description of the theory, the models and the objects.
 
-### Understanding the structure
+### Understanding the program structure
 
 GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
@@ -154,7 +154,7 @@ A snapshot or any point of the time series, may be compiled to a `NumericalCircu
 numerical arrays and matrices of a time step, ready for the numerical methods. 
 For those simulations that require many time steps, a collection of `NumericalCircuit` is compiled and used.
 
-<img height="300" src="/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/figures/DataModel.png"/>
+<img height="300" src="doc/rst_source/figures/DataModel.png"/>
 
 It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations, 
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are 
@@ -163,7 +163,12 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 
 The simulation process is handled by the simulation drivers. 
 
-<img height="250" src="/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/figures/DataModelSimulation.png"/>
+<img height="250" src="doc/rst_source/figures/DataModelSimulation.png"/>
+
+Any driver inputs  the data model (`MultiCircuit` object), the respective driver options, and often another 
+object relative to specific inputs for that driver. The driver is run, and it stores the
+respective driver results object. Although this may seem overly complicated, it has proven to be
+maintainable and very convenient.
 
 ### Loading a grid
 

@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="minimal improvement in fcn synthax">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1294,6 +1294,7 @@
       <workItem from="1695752204912" duration="4842000" />
       <workItem from="1695888913853" duration="7038000" />
       <workItem from="1696062297677" duration="3418000" />
+      <workItem from="1696275387120" duration="1224000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1638,7 +1639,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="520" />
+    <option name="localTasksCounter" value="521" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1680,7 +1681,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="early rawx writer" />
     <MESSAGE value="the great split" />
     <MESSAGE value="Adapted find_islands to numba finally&#10;Added islands calculation tests" />
     <MESSAGE value="hand-rolled packaging for deployment" />
@@ -1705,7 +1705,8 @@
     <MESSAGE value="improved the GUI representation by taking the start and end sliders to a separated dialogue" />
     <MESSAGE value="started the var registry in the results" />
     <MESSAGE value="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()" />
+    <MESSAGE value="minimal improvement in fcn synthax" />
+    <option name="LAST_COMMIT_MESSAGE" value="minimal improvement in fcn synthax" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
