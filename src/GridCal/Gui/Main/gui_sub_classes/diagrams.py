@@ -1303,7 +1303,9 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         if prop == 'area':
-            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas, parent=self)
+            self.object_select_window = ObjectSelectWindow(title='Area',
+                                                           object_list=self.circuit.areas,
+                                                           parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -1313,7 +1315,9 @@ class DiagramsMain(CompiledArraysMain):
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
         elif prop == 'country':
-            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries, parent=self)
+            self.object_select_window = ObjectSelectWindow(title='country',
+                                                           object_list=self.circuit.countries,
+                                                           parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -1323,7 +1327,9 @@ class DiagramsMain(CompiledArraysMain):
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
         elif prop == 'zone':
-            self.object_select_window = ObjectSelectWindow('Zones', self.circuit.zones)
+            self.object_select_window = ObjectSelectWindow(title='Zones',
+                                                           object_list=self.circuit.zones,
+                                                           parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
