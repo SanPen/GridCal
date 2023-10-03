@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+import pandas as pd
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
@@ -25,7 +26,7 @@ from GridCalEngine.enumerations import StudyResultsType
 
 class LinearAnalysisResults(ResultsTemplate):
     """
-
+    LinearAnalysisResults
     """
 
     def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
@@ -39,7 +40,7 @@ class LinearAnalysisResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='Linear Analysis',
-                                 available_results=[ResultTypes.PTDFBranchesSensitivity,
+                                 available_results=[ResultTypes.PTDF,
                                                     ResultTypes.LODF,
                                                     ResultTypes.BranchActivePowerFrom,
                                                     ResultTypes.BranchLoading],
@@ -77,6 +78,26 @@ class LinearAnalysisResults(ResultsTemplate):
     def n_bus(self):
         return self.PTDF.shape[1]
 
+    def get_bus_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the buses results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Vm': np.abs(self.voltage),
+                                  'Va': np.angle(self.voltage, deg=True),
+                                  'P': self.Sbus.real,
+                                  'Q': self.Sbus.imag},
+                            index=self.bus_names)
+
+    def get_branch_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the branches results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Pf': self.Sf.real,
+                                  'loading': self.loading.real * 100.0},
+                            index=self.branch_names)
+
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Plot the results.
@@ -88,7 +109,7 @@ class LinearAnalysisResults(ResultsTemplate):
         Returns: ResultsModel
         """
 
-        if result_type == ResultTypes.PTDFBranchesSensitivity:
+        if result_type == ResultTypes.PTDF:
             labels = self.bus_names
             y = self.PTDF
             y_label = '(p.u.)'

@@ -16,8 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-
-import GridCalEngine.basic_structures as bs
+from typing import Union, Tuple
+from GridCalEngine.basic_structures import Vec, ConvergenceReport, SolverType
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -27,6 +27,9 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 
 class StateEstimationInput:
+    """
+    StateEstimationInput
+    """
 
     def __init__(self):
         """
@@ -34,7 +37,7 @@ class StateEstimationInput:
         """
 
         # Node active power measurements vector of pointers
-        self.p_inj =list()
+        self.p_inj = list()
 
         # Node  reactive power measurements vector of pointers
         self.q_inj = list()
@@ -87,10 +90,11 @@ class StateEstimationInput:
         self.i_flow_idx.clear()
         self.vm_m_idx.clear()
 
-    def consolidate(self):
+    def consolidate(self) -> Tuple[Vec, Vec]:
         """
         consolidate the measurements into "measurements" and "sigma"
-        :return: measurements, sigma
+        ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm
+        :return: measurements vector, sigma vector
         """
 
         nz = len(self.p_inj) + len(self.p_flow) + len(self.q_inj) + len(self.q_flow) + len(self.i_flow) + len(self.vm_m)
@@ -140,7 +144,7 @@ class StateEstimation(DriverTemplate):
 
         DriverTemplate.__init__(self, grid=circuit)
 
-        self.results = None
+        self.results: Union[StateEstimationResults, None] = None
 
     @staticmethod
     def collect_measurements(circuit: MultiCircuit, bus_idx, branch_idx):
@@ -226,7 +230,7 @@ class StateEstimation(DriverTemplate):
                                                  branch_idx=island.original_branch_idx)
 
             # run solver
-            report = bs.ConvergenceReport()
+            report = ConvergenceReport()
             solution = solve_se_lm(Ybus=island.Ybus,
                                    Yf=island.Yf,
                                    Yt=island.Yt,
@@ -237,7 +241,7 @@ class StateEstimation(DriverTemplate):
                                    pq=island.pq,
                                    pv=island.pv)
 
-            report.add(method=bs.SolverType.LM,
+            report.add(method=SolverType.LM,
                        converged=solution.converged,
                        error=solution.norm_f,
                        elapsed=solution.elapsed,

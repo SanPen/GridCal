@@ -1,17 +1,18 @@
-from GridCalEngine.api import *
+import os
+import GridCalEngine.api as gce
 
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/South Island of New Zealand.gridcal'
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
 
-grid = FileOpen(fname).open()
+grid = gce.open_file(filename=fname)
 
-pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
-                              verbose=False,  # Verbose option where available
-                              tolerance=1e-6,  # power error in p.u.
-                              max_iter=25,  # maximum iteration number
-                              )
-pf = PowerFlowDriver(grid, pf_options)
+pf_options = gce.PowerFlowOptions()
+pf = gce.PowerFlowDriver(grid, pf_options)
 pf.run()
 
-sc_options = ShortCircuitOptions(bus_index=[2], fault_type=FaultType.LG)
-sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
+fault_index = 2
+sc_options = gce.ShortCircuitOptions(bus_index=fault_index, fault_type=gce.FaultType.LG)
+sc = gce.ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
 sc.run()
+
+print("Short circuit power: ", sc.results.SCpower[fault_index])

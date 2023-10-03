@@ -104,7 +104,7 @@ class ResultTypes(Enum):
     BusShortCircuitReactivePower = 'Short circuit reactive power', DeviceType.BusDevice
 
     # PTDF
-    PTDFBranchesSensitivity = 'PTDF', DeviceType.BranchDevice
+    PTDF = 'PTDF', DeviceType.BranchDevice
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity', DeviceType.BusDevice
 
     LODF = 'LODF', DeviceType.BranchDevice

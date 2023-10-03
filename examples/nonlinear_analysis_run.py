@@ -10,6 +10,6 @@ main_circuit = FileOpen(fname).open()
 options = NonLinearAnalysisOptions()
 simulation = NonLinearAnalysisDriver(grid=main_circuit, options=options)
 simulation.run()
-ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
+ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDF)
 
 print(ptdf_df.get_data_frame())

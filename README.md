@@ -256,7 +256,6 @@ Using the simplified API:
 
 ```python
 import os
-import numpy as np
 import GridCalEngine.api as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
@@ -265,38 +264,83 @@ main_circuit = gce.open_file(fname)
 
 results = gce.power_flow(main_circuit)
 
-print('\n\n', main_circuit.name)
-print('\t|V|:', np.abs(results.voltage))
-print('\t|Sbranch|:', np.abs(results.Sf))
-print('\t|loading|:', np.abs(results.loading) * 100)
-print('\terr:', results.error)
-print('\tConv:', results.converged)
+print(main_circuit.name)
+print('Converged:', results.converged, 'error:', results.error)
+print(results.get_bus_df())
+print(results.get_branch_df())
 ```
 
 Using the more complex library objects:
 
 ```python
 import os
-import numpy as np
 import GridCalEngine.api as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
 main_circuit = gce.open_file(fname)
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
 power_flow = gce.PowerFlowDriver(main_circuit, options)
 power_flow.run()
 
-print('\n\n', main_circuit.name)
-print('\t|V|:', np.abs(power_flow.results.voltage))
-print('\t|Sbranch|:', np.abs(power_flow.results.Sf))
-print('\t|loading|:', np.abs(power_flow.results.loading) * 100)
-print('\terr:', power_flow.results.error)
-print('\tConv:', power_flow.results.converged)
+print(main_circuit.name)
+print('Converged:', power_flow.results.converged, 'error:', power_flow.results.error)
+print(power_flow.results.get_bus_df())
+print(power_flow.results.get_branch_df())
 ```
 
+Output:
+```text
+IEEE14_from_raw
+
+Converged: True error: 5.98e-08
+
+Bus resuts:
+           Vm     Va      P      Q
+BUS 1    1.06   0.00 232.39 -16.55
+BUS 2    1.04  -4.98  18.30  30.86
+BUS 3    1.01 -12.73 -94.20   6.08
+BUS 4    1.02 -10.31 -47.80   3.90
+BUS 5    1.02  -8.77  -7.60  -1.60
+BUS 6    1.07 -14.22 -11.20   5.23
+BUS 7    1.06 -13.36   0.00   0.00
+BUS 8    1.09 -13.36   0.00  17.62
+BUS 9    1.06 -14.94 -29.50 -16.60
+BUS 10   1.05 -15.10  -9.00  -5.80
+BUS 11   1.06 -14.79  -3.50  -1.80
+BUS 12   1.06 -15.08  -6.10  -1.60
+BUS 13   1.05 -15.16 -13.50  -5.80
+BUS 14   1.04 -16.03 -14.90  -5.00
+
+Branch results:
+            Pf     Qf      Pt     Qt               loading
+1_2_1   156.88 -20.40 -152.59  27.68 -2,040,429,074,673.33
+1_5_1    75.51   3.85  -72.75   2.23    385,498,944,321.99
+2_3_1    73.24   3.56  -70.91   1.60    356,020,306,394.25
+2_4_1    56.13  -1.55  -54.45   3.02   -155,035,233,483.95
+2_5_1    41.52   1.17  -40.61  -2.10    117,099,586,051.68
+3_4_1   -23.29   4.47   23.66  -4.84    447,311,351,720.93
+4_5_1   -61.16  15.82   61.67 -14.20  1,582,364,180,487.11
+6_11_1    7.35   3.56   -7.30  -3.44    356,047,085,671.01
+6_12_1    7.79   2.50   -7.71  -2.35    250,341,387,213.42
+6_13_1   17.75   7.22  -17.54  -6.80    721,657,405,311.13
+7_8_1    -0.00 -17.16    0.00  17.62 -1,716,296,745,837.05
+7_9_1    28.07   5.78  -28.07  -4.98    577,869,015,291.12
+9_10_1    5.23   4.22   -5.21  -4.18    421,913,877,670.92
+9_14_1    9.43   3.61   -9.31  -3.36    361,000,694,981.35
+10_11_1  -3.79  -1.62    3.80   1.64   -161,506,127,162.22
+12_13_1   1.61   0.75   -1.61  -0.75     75,395,885,855.71
+13_14_1   5.64   1.75   -5.59  -1.64    174,717,248,747.17
+4_7_1    28.07  -9.68  -28.07  11.38   -968,106,634,094.39
+4_9_1    16.08  -0.43  -16.08   1.73    -42,761,145,748.20
+5_6_1    44.09  12.47  -44.09  -8.05  1,247,068,151,943.25
+```
+
+
 ### Inputs analysis
+
+GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
 
 ```python
 import os
@@ -325,12 +369,14 @@ IEEE118-1  174.0  1967.0  1793.0    0.0      0.0 -250000.0  250000.0 -616.0 -331
 
 ### Linear analysis
 
+We can run an PTDF equivalent of the power flow with the linear analysys drivers:
+
 ```python
 import os
 import GridCalEngine.api as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
 
 main_circuit = gce.open_file(fname)
 
@@ -340,10 +386,51 @@ options_ = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=True
 sn_driver = gce.LinearAnalysisDriver(grid=main_circuit, options=options_)
 sn_driver.run()
 
-# time series
-ts_driver = gce.LinearAnalysisTimeSeriesDriver(grid=main_circuit, options=options_)
-ts_driver.run()
+print("Bus results:\n", sn_driver.results.get_bus_df())
+print("Branch results:\n", sn_driver.results.get_branch_df())
+print("PTDF:\n", sn_driver.results.mdl(gce.ResultTypes.PTDF).to_df())
+print("LODF:\n", sn_driver.results.mdl(gce.ResultTypes.LODF).to_df())
 ```
+
+Output:
+
+```text
+Bus results:
+         Vm   Va       P    Q
+Bus 0  1.0  0.0  2.1000  0.0
+Bus 1  1.0  0.0 -3.0000  0.0
+Bus 2  1.0  0.0  0.2349  0.0
+Bus 3  1.0  0.0 -0.9999  0.0
+Bus 4  1.0  0.0  4.6651  0.0
+
+Branch results:
+                   Pf   loading
+Branch 0-1  2.497192  0.624298
+Branch 0-3  1.867892  0.832394
+Branch 0-4 -2.265084 -0.828791
+Branch 1-2 -0.502808 -0.391900
+Branch 2-3 -0.267908 -0.774300
+Branch 3-4 -2.400016 -1.000006
+
+PTDF:
+                Bus 0     Bus 1     Bus 2  Bus 3     Bus 4
+Branch 0-1  0.193917 -0.475895 -0.348989    0.0  0.159538
+Branch 0-3  0.437588  0.258343  0.189451    0.0  0.360010
+Branch 0-4  0.368495  0.217552  0.159538    0.0 -0.519548
+Branch 1-2  0.193917  0.524105 -0.348989    0.0  0.159538
+Branch 2-3  0.193917  0.524105  0.651011    0.0  0.159538
+Branch 3-4 -0.368495 -0.217552 -0.159538    0.0 -0.480452
+
+LODF:
+             Branch 0-1  Branch 0-3  Branch 0-4  Branch 1-2  Branch 2-3  Branch 3-4
+Branch 0-1   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.307071
+Branch 0-3    0.542857   -1.000000    0.692929    0.542857    0.542857   -0.692929
+Branch 0-4    0.457143    0.655205   -1.000000    0.457143    0.457143    1.000000
+Branch 1-2   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.307071
+Branch 2-3   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.307071
+Branch 3-4   -0.457143   -0.655205    1.000000   -0.457143   -0.457143   -1.000000
+```
+
 
 Now let's make a comparison between the linear flows and the non-linear flows from Newton-Raphson:
 
@@ -429,6 +516,104 @@ print('Angles\n', np.angle(opf_ts_driver.results.voltage))
 print('Branch loading\n', opf_ts_driver.results.loading)
 print('Gen power\n', opf_ts_driver.results.generator_power)
 print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)
+```
+
+### Short circuit
+
+GridCal has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
+the South island of New Zealand grid example from refference book _Computer Analys of Power Systems by J.Arrillaga and C.P. Arnord_
+
+```python
+import os
+import GridCalEngine.api as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+grid = gce.open_file(filename=fname)
+
+pf_options = gce.PowerFlowOptions()
+pf = gce.PowerFlowDriver(grid, pf_options)
+pf.run()
+
+fault_index = 2
+sc_options = gce.ShortCircuitOptions(bus_index=fault_index, 
+                                     fault_type=gce.FaultType.LG)
+
+sc = gce.ShortCircuitDriver(grid, options=sc_options, 
+                            pf_options=pf_options, 
+                            pf_results=pf.results)
+sc.run()
+
+print("Short circuit power: ", sc.results.SCpower[fault_index])
+```
+
+Output:
+
+```text
+Short circuit power:  (-216.99456568903457-680.3461484265483j)
+```
+
+### State estimation
+
+Now lets program the example from the state estimation reference book 
+_State Estimation in Electric Power Systems by A. Monticelli_.
+
+```python
+from GridCalEngine.api import *
+
+m_circuit = MultiCircuit()
+
+b1 = Bus('B1', is_slack=True)
+b2 = Bus('B2')
+b3 = Bus('B3')
+
+br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03, rate=100.0)
+br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05, rate=100.0)
+br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08, rate=100.0)
+
+# add measurements
+br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))
+br2.measurements.append(Measurement(1.173, 0.008, MeasurementType.Pflow))
+
+b2.measurements.append(Measurement(-0.501, 0.01, MeasurementType.Pinj))
+
+br1.measurements.append(Measurement(0.568, 0.008, MeasurementType.Qflow))
+br2.measurements.append(Measurement(0.663, 0.008, MeasurementType.Qflow))
+
+b2.measurements.append(Measurement(-0.286, 0.01, MeasurementType.Qinj))
+
+b1.measurements.append(Measurement(1.006, 0.004, MeasurementType.Vmag))
+b2.measurements.append(Measurement(0.968, 0.004, MeasurementType.Vmag))
+
+m_circuit.add_bus(b1)
+m_circuit.add_bus(b2)
+m_circuit.add_bus(b3)
+
+m_circuit.add_branch(br1)
+m_circuit.add_branch(br2)
+m_circuit.add_branch(br3)
+
+# Declare the simulation driver and run
+se = StateEstimation(circuit=m_circuit)
+se.run()
+
+print(se.results.get_bus_df())
+print(se.results.get_branch_df())
+```
+
+Output:
+
+```text
+          Vm        Va         P        Q
+B1  0.999629  0.000000  2.064016  1.22644
+B2  0.974156 -1.247547  0.000000  0.00000
+B3  0.943890 -2.745717  0.000000  0.00000
+
+             Pf         Qf   Pt   Qt    loading
+Br1   89.299199  55.882169  0.0  0.0  55.882169
+Br2  117.102446  66.761871  0.0  0.0  66.761871
+Br3   38.591163  22.775597  0.0  0.0  22.775597
 ```
 
 ## Contact

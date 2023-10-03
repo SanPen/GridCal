@@ -8,9 +8,9 @@ b1 = Bus('B1', is_slack=True)
 b2 = Bus('B2')
 b3 = Bus('B3')
 
-br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03)
-br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05)
-br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08)
+br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03, rate=100.0)
+br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05, rate=100.0)
+br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08, rate=100.0)
 
 # add measurements
 br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))
@@ -34,17 +34,13 @@ m_circuit.add_branch(br1)
 m_circuit.add_branch(br2)
 m_circuit.add_branch(br3)
 
-br = [br1, br2, br3]
-
+# Declare the simulation driver and run
 se = StateEstimation(circuit=m_circuit)
-
 se.run()
 
 print()
-print('V: ', se.results.voltage)
-print('Vm: ', np.abs(se.results.voltage))
-print('Va: ', np.angle(se.results.voltage))
-
+print(se.results.get_bus_df())
+print(se.results.get_branch_df())
 """
 The validated output is:
 

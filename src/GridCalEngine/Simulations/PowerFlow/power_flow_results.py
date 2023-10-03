@@ -355,6 +355,29 @@ class PowerFlowResults(ResultsTemplate):
         cost = np.sum(ld[idx] * branch_prices[idx])
         return cost
 
+    def get_bus_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the buses results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Vm': np.abs(self.voltage),
+                                  'Va': np.angle(self.voltage, deg=True),
+                                  'P': self.Sbus.real,
+                                  'Q': self.Sbus.imag},
+                            index=self.bus_names)
+
+    def get_branch_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the branches results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Pf': self.Sf.real,
+                                  'Qf': self.Sf.imag,
+                                  'Pt': self.St.real,
+                                  'Qt': self.St.imag,
+                                  'loading': self.loading.real * 100.0},
+                            index=self.branch_names)
+
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
 

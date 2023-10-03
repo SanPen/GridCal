@@ -46,7 +46,8 @@ def short_circuit_unbalance(bus_idx: int,
                             Y2: csc_matrix,
                             Vbus: CxVec,
                             Zf: CxVec,
-                            fault_type: FaultType) -> Tuple[CxVec, CxVec, CxVec]:
+                            fault_type: FaultType,
+                            baseMVA) -> Tuple[CxVec, CxVec, CxVec, CxVec]:
     """
     Executes the unbalanced short circuits (LG, LL, LLG types)
 
@@ -57,6 +58,7 @@ def short_circuit_unbalance(bus_idx: int,
     :param Vbus: pre-fault voltage (positive sequence)
     :param Zf: fault impedance
     :param fault_type: type of unbalanced fault
+    :param baseMVA: base MVA (100 MVA)
     :return: V0, V1, V2 for all buses
     """
 
@@ -101,4 +103,7 @@ def short_circuit_unbalance(bus_idx: int,
     V1_fin = Vbus - spsolve(Y1, I1_vec)
     V2_fin = - spsolve(Y2, I2_vec)
 
-    return V0_fin, V1_fin, V2_fin
+    SCC = np.zeros_like(Vbus)
+    SCC[bus_idx] = baseMVA * V1_fin[bus_idx] * V1_fin[bus_idx] / Zth1
+
+    return V0_fin, V1_fin, V2_fin, SCC

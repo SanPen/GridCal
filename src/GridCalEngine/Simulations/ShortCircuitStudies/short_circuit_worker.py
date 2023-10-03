@@ -79,7 +79,6 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index):
     Y_batt = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
 
-
     # Compute the short circuit
     V, SCpower = short_circuit_3p(bus_idx=bus_index,
                                   Ybus=Ybus_gen_batt,
@@ -88,11 +87,11 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index):
                                   baseMVA=calculation_inputs.Sbase)
 
     Sfb, Stb, If, It, Vbranch, \
-    loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                 V=V,
-                                                 branch_rates=calculation_inputs.rates,
-                                                 Yf=calculation_inputs.Yf,
-                                                 Yt=calculation_inputs.Yt)
+        loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                     V=V,
+                                                     branch_rates=calculation_inputs.rates,
+                                                     Yf=calculation_inputs.Yf,
+                                                     Yt=calculation_inputs.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
@@ -118,7 +117,7 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index):
     return results
 
 
-def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type):
+def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index, fault_type):
     """
     Run an unbalanced short circuit simulation for a single island
     @param calculation_inputs:
@@ -266,35 +265,36 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
     Vpf[pqpv] = polar_to_rect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
 
     # solve the fault
-    V0, V1, V2 = short_circuit_unbalance(bus_idx=bus_index,
-                                         Y0=adm0.Ybus,
-                                         Y1=adm1.Ybus,
-                                         Y2=adm2.Ybus,
-                                         Vbus=Vpf,
-                                         Zf=Zf,
-                                         fault_type=fault_type)
+    V0, V1, V2, SCC = short_circuit_unbalance(bus_idx=bus_index,
+                                              Y0=adm0.Ybus,
+                                              Y1=adm1.Ybus,
+                                              Y2=adm2.Ybus,
+                                              Vbus=Vpf,
+                                              Zf=Zf,
+                                              fault_type=fault_type,
+                                              baseMVA=calculation_inputs.Sbase)
 
     # process results in the sequences
     Sfb0, Stb0, If0, It0, Vbranch0, \
-    loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                   V=V0,
-                                                   branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=adm0.Yf,
-                                                   Yt=adm0.Yt)
+        loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V0,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=adm0.Yf,
+                                                       Yt=adm0.Yt)
 
     Sfb1, Stb1, If1, It1, Vbranch1, \
-    loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                   V=V1,
-                                                   branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=adm1.Yf,
-                                                   Yt=adm1.Yt)
+        loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V1,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=adm1.Yf,
+                                                       Yt=adm1.Yt)
 
     Sfb2, Stb2, If2, It2, Vbranch2, \
-    loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                   V=V2,
-                                                   branch_rates=calculation_inputs.branch_rates,
-                                                   Yf=adm2.Yf,
-                                                   Yt=adm2.Yt)
+        loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                       V=V2,
+                                                       branch_rates=calculation_inputs.branch_rates,
+                                                       Yf=adm2.Yf,
+                                                       Yt=adm2.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
@@ -305,6 +305,8 @@ def short_circuit_unbalanced(calculation_inputs, Vpf, Zf, bus_index, fault_type)
                                   hvdc_names=calculation_inputs.hvdc_names,
                                   bus_types=calculation_inputs.bus_types,
                                   area_names=None)
+
+    results.SCpower = SCC
 
     results.voltage0 = V0
     results.Sf0 = Sfb0  # in MVA already
