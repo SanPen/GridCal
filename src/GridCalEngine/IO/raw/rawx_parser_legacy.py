@@ -18,6 +18,8 @@
 from typing import Any, Dict, Tuple
 import json
 import numpy as np
+
+from GridCalEngine.Core import Zone, Area
 from GridCalEngine.basic_structures import Logger, CompressedJsonStruct
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -56,7 +58,7 @@ def get_circuit_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def parse_areas(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
+def parse_areas(circuit: MultiCircuit, block: CompressedJsonStruct) -> dict[str, Area | Any]:
     """
     Parse PSSe areas
     :param circuit: Multi-circuit
@@ -103,7 +105,7 @@ def get_areas_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def parse_zones(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
+def parse_zones(circuit: MultiCircuit, block: CompressedJsonStruct) -> dict[str, Zone | Any]:
     """
     Parse PSSe areas
     :param circuit: Multi-circuit

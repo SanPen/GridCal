@@ -32,7 +32,6 @@ from PySide6 import QtGui, QtWidgets, QtCore
 
 # Engine imports
 import GridCalEngine.Core as core
-import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCalEngine.basic_structures as bs
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
@@ -554,8 +553,8 @@ class BaseMainGui(QMainWindow):
         self.ui.areaToListView.setModel(mdl2)
 
         if n > 1:
-            self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.Checked)
-            self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.Checked)
+            self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.CheckState.Checked)
+            self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.CheckState.Checked)
 
     def fix_generators_active_based_on_the_power(self, ask_before=True):
         """

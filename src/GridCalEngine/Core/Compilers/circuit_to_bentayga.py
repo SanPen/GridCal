@@ -694,11 +694,9 @@ def bentayga_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
 def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
-                               n_tr=grid.get_transformers2w_number(),
                                n_hvdc=grid.get_hvdc_number(),
                                bus_names=res.names,
                                branch_names=res.names,
-                               transformer_names=[],
                                hvdc_names=res.hvdc_names,
                                bus_types=res.bus_types)
 

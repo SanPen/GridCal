@@ -361,7 +361,7 @@ class StudyResultsType(Enum):
     @staticmethod
     def argparse(s):
         try:
-            return ResultsType[s]
+            return StudyResultsType[s]
         except KeyError:
             return s
 

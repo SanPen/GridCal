@@ -45,5 +45,5 @@ simulation = ContingencyAnalysisDriver(grid=main_circuit,
 simulation.run()
 
 # print results
-df = simulation.results.mdl(ResultTypes.BranchActivePowerFrom).to_df()
-print(df)
+print("Flows:\n", simulation.results.mdl(ResultTypes.BranchActivePowerFrom).to_df())
+print("Report:\n", simulation.results.mdl(ResultTypes.ContingencyAnalysisReport).to_df())

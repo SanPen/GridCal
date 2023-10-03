@@ -483,7 +483,7 @@ class DiPole(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-    def get_topological_nodes(self) -> Tuple["TopologicalNode", "TopologicalNode"]:
+    def get_topological_nodes(self) -> tuple[None, None]:
         """
         Get the TopologyNodes of this branch
         :return: (TopologyNodes, TopologyNodes) or (None, None)
@@ -511,7 +511,7 @@ class DiPole(IdentifiedObject):
         b2 = t2.get_bus() if t2 is not None else None
         return b1, b2
 
-    def get_nodes(self) -> Tuple["TopologicalNode", "TopologicalNode"]:
+    def get_nodes(self) -> tuple[None, None]:
         """
         Get the TopologyNodes of this branch
         :return: two TopologyNodes or nothing
@@ -2051,14 +2051,15 @@ class ACLineSegment(DiPole):
             else:
                 return None
 
-    def get_pu_values(self, Sbase: float = 100.0):
+    def get_pu_values(self, Sbase: float = 100.0, logger: DataLogger = DataLogger):
         """
         Get the per-unit values of the equivalent PI model
         :param Sbase: Sbase in MVA
+        :param logger: DataLogger object
         :return: R, X, Gch, Bch
         """
         if self.BaseVoltage is not None:
-            Vnom = self.get_voltage()
+            Vnom = self.get_voltage(logger=logger)
 
             if Vnom is not None:
 

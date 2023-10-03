@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import GridCalEngine
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.substation.bus_bar_section import BusbarSection
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.substation.base_voltage import BaseVoltage

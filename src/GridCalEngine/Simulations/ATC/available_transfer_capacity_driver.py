@@ -27,6 +27,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class AvailableTransferMode(Enum):
@@ -340,11 +341,9 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                  available_results=[
                                                     ResultTypes.AvailableTransferCapacityReport
                                                     ],
-                                 data_variables=['report',
-                                                 'branch_names',
-                                                 'bus_names'],
                                  time_array=None,
-                                 clustering_results=clustering_results)
+                                 clustering_results=clustering_results,
+                                 study_results_type=StudyResultsType.AvailableTransferCapacity)
 
         self.branch_names = np.array(br_names, dtype=object)
         self.bus_names = bus_names

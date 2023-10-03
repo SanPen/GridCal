@@ -1130,8 +1130,8 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
                      bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
                      bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
-    opt = npa.LinearOpfOptions()
-    opt.solver = solver_dict[opf_opt.mip_solver]
+    opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver])
+    # opt.solver = solver_dict[opf_opt.mip_solver]
     opt.grouping = grouping_dict[opf_opt.grouping]
     opt.unit_commitment = False
     opt.compute_flows = opf_opt.zonal_grouping == ZonalGrouping.NoGrouping
@@ -1434,7 +1434,8 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
                                       F=res.F,
                                       T=res.T,
                                       F_hvdc=res.hvdc_F,
-                                      T_hvdc=res.hvdc_T)
+                                      T_hvdc=res.hvdc_T,
+                                      bus_area_indices=grid.get_bus_area_indices())
 
     results.Sbus = res.Scalc[0, :],
     results.voltage = res.voltage[0, :],

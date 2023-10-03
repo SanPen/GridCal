@@ -573,7 +573,7 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
     return obj
 
 
-def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger) -> dev.UPFC:
+def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger) -> None:
     """
     GEt equivalent object
     :param psse_bus_dict:

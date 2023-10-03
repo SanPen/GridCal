@@ -667,7 +667,7 @@ def classify_by_hour(t: pd.DatetimeIndex) -> List[List[int]]:
     return arr
 
 
-def classify_by_day(t: pd.DatetimeIndex) -> List[int]:
+def classify_by_day(t: pd.DatetimeIndex) -> list[list[Any]]:
     """
     Passes an array of TimeStamps to an array of arrays of indices
     classified by day of the year

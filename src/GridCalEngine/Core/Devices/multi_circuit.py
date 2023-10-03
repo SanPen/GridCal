@@ -18,19 +18,20 @@
 import os
 import sys
 import cmath
-import copy
 import warnings
+from enum import property
 
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Any, Callable
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat, ObjVec
+from GridCalEngine.Core import EditableDevice, Switch, UPFC, VSC, Winding, Transformer2W, DcLine, Line
+from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.basic_structures as bs
@@ -661,7 +662,7 @@ class MultiCircuit:
         """
         return np.array([e.name for e in self.buses])
 
-    def get_branches_wo_hvdc(self) -> List[dev.Branch]:
+    def get_branches_wo_hvdc(self) -> list[Switch | UPFC | VSC | Winding | Transformer2W | DcLine | Line]:
         """
         Return all the branch objects.
         :return: lines + transformers 2w + hvdc
@@ -1308,7 +1309,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def gat_all_elemnts_dict_by_type(self) -> Dict[str, Dict[str, dev.EditableDevice]]:
+    def gat_all_elemnts_dict_by_type(self) -> dict[Callable[[], Any], dict[str, EditableDevice] | Any]:
         """
         Get a dictionary of all elements by type
         :return:

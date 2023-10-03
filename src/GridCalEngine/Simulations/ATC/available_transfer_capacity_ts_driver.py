@@ -32,6 +32,7 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -55,14 +56,9 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             available_results=[
                 ResultTypes.AvailableTransferCapacityReport
             ],
-            data_variables=[
-                'reports',
-                'branch_names',
-                'bus_names',
-                'time_array'
-            ],
             time_array=time_array,
             clustering_results=clustering_results,
+            study_results_type=StudyResultsType.AvailableTransferCapacity
         )
 
         # self.time_array = time_array

@@ -691,6 +691,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = InputNumberDialogue(min_value=3,
                                  max_value=10,
+                                 default_value=3,
                                  is_int=True,
                                  title="stuff",
                                  text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",

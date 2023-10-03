@@ -116,7 +116,7 @@ class PyPIDownloadAggregator(object):
 
         self.downloads  # explicitly call, so we have first/last upload data
         fmt = locale.nl_langinfo(locale.D_T_FMT)
-        sep = lambda s: locale.format('%d', s, 3)
+        sep = lambda s: locale.format_string('%d', s, 3)
         val = lambda dt: dt and dt.strftime(fmt) or '--'
 
         params = (

@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from typing import Tuple, Any
 
 import chardet
 
 import numpy as np
 import pandas as pd
+
+from GridCalEngine.Core import MultiCircuit
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
@@ -363,7 +365,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
     return data_structures, logger
 
 
-def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
+def load_dpx(file_name, contraction_factor=1000) -> tuple[MultiCircuit | Any, Logger | Any]:
     """
     Read DPX file
     :param file_name: file name
