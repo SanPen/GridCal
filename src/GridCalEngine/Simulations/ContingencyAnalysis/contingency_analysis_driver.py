@@ -76,7 +76,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             return list()
 
-    def n_minus_k(self, t=None):
+    def n_minus_k(self, t=None) -> ContingencyAnalysisResults:
         """
         Run N-1 simulation in series
         :param t: time index, if None the snapshot is used
@@ -172,7 +172,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def n_minus_k_helm(self, t: Union[int, None] = None):
+    def n_minus_k_helm(self, t: Union[int, None] = None) -> ContingencyAnalysisResults:
         """
         Run N-1 simulation in series with HELM, non-linear solution
         :param t: time index, if None the snapshot is used
@@ -269,7 +269,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         return results
 
-    def n_minus_k_ptdf(self, t: Union[int, None] = None):
+    def n_minus_k_ptdf(self, t: Union[int, None] = None) -> ContingencyAnalysisResults:
         """
         Run N-1 simulation in series with HELM, non-linear solution
         :param t: time index, if None the snapshot is used

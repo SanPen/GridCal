@@ -280,6 +280,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param ax: Matplotlib axis
         :param selected_col_idx: list of selected column indices
         :param selected_rows: list of rows to plot
+        :param stacked: stack the data?
         """
 
-        self.table.plot(ax=ax, selected_col_idx=selected_col_idx, selected_rows=selected_rows, stacked=stacked)
+        self.table.plot(ax=ax,
+                        selected_col_idx=selected_col_idx,
+                        selected_rows=selected_rows,
+                        stacked=stacked)

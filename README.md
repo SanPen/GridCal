@@ -14,10 +14,9 @@ product of cutting-edge research.
 [![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
 
 
-GridCal started in 2015 out of frustration with existing options. 
-The goal was clear: create a solid programming library and a user-friendly interface. 
-This straightforward approach sparked various innovations — some driven by the necessity 
-of commercial use, and others fueled by curiosity and research.
+GridCal started in 2015 with a clear objective: create a solid programming library and a user-friendly interface. 
+This straightforward approach sparked many innovations — some driven by the necessity 
+for commercial use, and others fueled by curiosity and research.
 
 Whether you're a pro needing free tools, a researcher wanting a real-world tested platform, 
 a teacher sharing commercial-grade software insights, or a student diving into practical algorithms, 
@@ -28,6 +27,19 @@ for the future generations.
 
 GridCal is a software made in the Python programming language. 
 Therefore, it needs a python interpreter installed in your operative system. 
+
+### Standalone setup
+
+If you don't know what is this Python thing, we offer a windows installation:
+
+[Windows setup](https://www.advancedgridinsights.com/gridcal)
+
+This will install GridCal as a normal windows program and you need not to worry 
+about any of the previous instructions. Still, if you need some guidance, the 
+following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
+
+### Package installation
+
 We recommend to install the latest version of [Python](www.python.org) and then, 
 install GridCal with the following terminal command:
 
@@ -37,6 +49,8 @@ pip install GridCal
 
 You may need to use `pip3` if you are under Linux or MacOS, both of which 
 come with Python pre-installed already.
+
+
 
 ### Run th graphical user interface
 
@@ -63,15 +77,7 @@ This will install the `GridCalEngine` package that is a dependency of `GridCal`.
 
 Again, you may need to use `pip3` if you are under Linux or MacOS.
 
-### Standalone setup
 
-If you don't know what is this Python thing, we offer a windows installation:
-
-[Windows setup](https://www.advancedgridinsights.com/gridcal)
-
-This will install GridCal as a normal windows program and you need not to worry 
-about any of the previous instructions. Still, if you need some guidance, the 
-following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
 
 ## Features
@@ -551,8 +557,146 @@ print("Short circuit power: ", sc.results.SCpower[fault_index])
 Output:
 
 ```text
-Short circuit power:  (-216.99456568903457-680.3461484265483j)
+Short circuit power:  -217.00 MW - 680.35j MVAr
 ```
+
+Sequence voltage, currents and powers are also available.
+
+### Continuation power flow
+
+```python
+import os
+from matplotlib import pyplot as plt
+import GridCalEngine.api as gce
+plt.style.use('fivethirtyeight')
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+# open the grid file
+main_circuit = gce.FileOpen(fname).open()
+
+# we need to initialize with a power flow solution
+pf_options = gce.PowerFlowOptions()
+power_flow = gce.PowerFlowDriver(grid=main_circuit, options=pf_options)
+power_flow.run()
+
+# declare the CPF options
+vc_options = gce.ContinuationPowerFlowOptions(step=0.001,
+                                              approximation_order=gce.CpfParametrization.ArcLength,
+                                              adapt_step=True,
+                                              step_min=0.00001,
+                                              step_max=0.2,
+                                              error_tol=1e-3,
+                                              tol=1e-6,
+                                              max_it=20,
+                                              stop_at=gce.CpfStopAt.Full,
+                                              verbose=False)
+
+# We compose the target direction
+base_power = power_flow.results.Sbus / main_circuit.Sbase
+vc_inputs = gce.ContinuationPowerFlowInput(Sbase=base_power,
+                                           Vbase=power_flow.results.voltage,
+                                           Starget=base_power * 2)
+
+# declare the CPF driver and run
+vc = gce.ContinuationPowerFlowDriver(circuit=main_circuit,
+                                     options=vc_options,
+                                     inputs=vc_inputs,
+                                     pf_options=pf_options)
+vc.run()
+
+# plot the results
+fig = plt.figure(figsize=(18, 6))
+
+ax1 = fig.add_subplot(121)
+res = vc.results.mdl(gce.ResultTypes.BusActivePower)
+res.plot(ax=ax1)
+
+ax2 = fig.add_subplot(122)
+res = vc.results.mdl(gce.ResultTypes.BusVoltage)
+res.plot(ax=ax2)
+
+plt.tight_layout()
+```
+
+![cpf_south_island_new_zealand.png](pics%2Fcpf_south_island_new_zealand.png)
+
+### Contingency analysis
+
+GriCal has contingency simulations, and it features a quite flexible way of defining contingencies.
+Firs you define a contingency group, and then define individual events that are assigned to that contingency group.
+THe simulation then tries all the contingency groups and apply the events registered in each group:
+
+```python
+import os
+from GridCalEngine.api import *
+import GridCalEngine.basic_structures as bs
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
+
+main_circuit = FileOpen(fname).open()
+
+branches = main_circuit.get_branches()
+
+# manually generate the contingencies
+for i, br in enumerate(branches):
+    # add a contingency group
+    group = ContingencyGroup(name="contingency {}".format(i+1))
+    main_circuit.add_contingency_group(group)
+
+    # add the branch contingency to the groups, only groups are failed at once
+    con = Contingency(device_idtag=br.idtag, name=br.name, group=group)
+    main_circuit.add_contingency(con)
+
+# add a special contingency
+group = ContingencyGroup(name="Special contingency")
+main_circuit.add_contingency_group(group)
+main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, name=branches[3].name, group=group))
+main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, name=branches[5].name, group=group))
+
+pf_options = PowerFlowOptions(solver_type=SolverType.NR)
+
+# declare the contingency options
+options_ = ContingencyAnalysisOptions(distributed_slack=True,
+                                      correct_values=True,
+                                      use_provided_flows=False,
+                                      Pf=None,
+                                      pf_results=None,
+                                      engine=bs.ContingencyEngine.PowerFlow,
+                                      pf_options=pf_options  # if no power flow options are provided a linear power flow is used
+                                      )
+
+linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
+
+simulation = ContingencyAnalysisDriver(grid=main_circuit,
+                                       options=options_,
+                                       linear_multiple_contingencies=linear_multiple_contingencies)
+
+simulation.run()
+
+# print results
+df = simulation.results.mdl(ResultTypes.BranchActivePowerFrom).to_df()
+print("Contingency flows:\n", df)
+```
+
+Output:
+
+```text
+Contingency flows:
+                       Branch 0-1  Branch 0-3  Branch 0-4  Branch 1-2  Branch 2-3  Branch 3-4
+# contingency 1          0.000000  322.256814 -112.256814 -300.000000 -277.616985 -350.438026
+# contingency 2        314.174885    0.000000 -104.174887   11.387545   34.758624 -358.359122
+# contingency 3        180.382705   29.617295    0.000000 -120.547317  -97.293581 -460.040537
+# contingency 4        303.046401  157.540574 -250.586975    0.000000   23.490000 -214.130663
+# contingency 5        278.818887  170.710914 -239.529801  -23.378976    0.000000 -225.076976
+# contingency 6        323.104522  352.002620 -465.107139   20.157096   43.521763    0.000000
+# Special contingency  303.046401  372.060738 -465.107139    0.000000   23.490000    0.000000
+```
+
+This simulation can also be done for time series.
+
 
 ### State estimation
 
