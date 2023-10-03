@@ -653,8 +653,10 @@ for i, br in enumerate(branches):
 # add a special contingency
 group = ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, name=branches[3].name, group=group))
-main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, name=branches[5].name, group=group))
+main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, 
+                                         name=branches[3].name, group=group))
+main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, 
+                                         name=branches[5].name, group=group))
 
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
@@ -665,8 +667,9 @@ options_ = ContingencyAnalysisOptions(distributed_slack=True,
                                       Pf=None,
                                       pf_results=None,
                                       engine=bs.ContingencyEngine.PowerFlow,
-                                      pf_options=pf_options  # if no power flow options are provided a linear power flow is used
-                                      )
+                                      # if no power flow options are provided 
+                                      # a linear power flow is used
+                                      pf_options=pf_options)
 
 linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
 
