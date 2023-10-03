@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCalEngine.Core.Devices.Branches.branch import Branch, BranchTemplate
+from GridCalEngine.Core.Devices.Branches.branch import Branch, BranchTemplate, BranchType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine

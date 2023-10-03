@@ -24,7 +24,8 @@ class LinearAnalysisOptions:
     def __init__(self, distribute_slack=True, correct_values=True):
         """
         Power Transfer Distribution Factors' options
-        :param distribute_slack:
+        :param distribute_slack: Distribute the slack effect?
+        :param correct_values: correct out of bounds values?
         """
         self.distribute_slack = distribute_slack
         self.correct_values = correct_values

@@ -1,5 +1,5 @@
-from GridCal.Engine.IO import FileOpen
-from GridCal.Engine import *
+from GridCalEngine.IO import FileOpen
+from GridCalEngine.api import *
 
 fname = r'C:\Users\penversa\Git\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 

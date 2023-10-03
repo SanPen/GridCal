@@ -1,34 +1,30 @@
-from GridCal.Engine import *
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+import numpy as np
+import GridCalEngine.api as gce
 
-# fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+fname = '../Grids_and_profiles/grids/IEEE39_1W.gridcal'
+main_circuit = gce.FileOpen(fname).open()
 
-main_circuit = FileOpen(fname).open()
-
-# main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
-
-numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
-                                                  apply_temperature=False,
-                                                  branch_tolerance_mode=BranchImpedanceMode.Specified)
-
-problem = OpfDc(numerical_circuit=numerical_circuit_)
+# declare the snapshot opf
+opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
 
 print('Solving...')
-status = problem.solve()
+opf_driver.run()
 
-# print("Status:", status)
+print("Status:", opf_driver.results.converged)
+print('Angles\n', np.angle(opf_driver.results.voltage))
+print('Branch loading\n', opf_driver.results.loading)
+print('Gen power\n', opf_driver.results.generator_power)
+print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
 
-v = problem.get_voltage()
-print('Angles\n', np.angle(v))
 
-l = problem.get_loading()
-print('Branch loading\n', l)
+# declare the time series opf
+opf_ts_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
-g = problem.get_generator_power()
-print('Gen power\n', g)
+print('Solving...')
+opf_ts_driver.run()
 
-pr = problem.get_shadow_prices()
-print('Nodal prices \n', pr)
+print("Status:", opf_ts_driver.results.converged)
+print('Angles\n', np.angle(opf_ts_driver.results.voltage))
+print('Branch loading\n', opf_ts_driver.results.loading)
+print('Gen power\n', opf_ts_driver.results.generator_power)
+print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)

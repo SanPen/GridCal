@@ -1,4 +1,4 @@
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Illinois 200 Bus.gridcal'
 

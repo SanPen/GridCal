@@ -1,6 +1,6 @@
 import time
 import scipy.sparse as sp
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 solver_types = [SparseSolver.BLAS_LAPACK,
                 SparseSolver.KLU,

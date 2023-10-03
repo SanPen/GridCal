@@ -69,12 +69,21 @@ class FileOpen:
 
         self.cgmes_logger = DataLogger()
 
-    def open(self, text_func: Union[None, Callable] = None, progress_func: Union[None, Callable] = None):
+        if type(self.file_name) == str:
+            if not os.path.exists(self.file_name):
+                raise Exception("File not found :( \n{}".format(self.file_name))
+        elif type(self.file_name) == list:
+            for fname in self.file_name:
+                if not os.path.exists(fname):
+                    raise Exception("File not found :( \n{}".format(fname))
+
+    def open(self, text_func: Union[None, Callable] = None,
+             progress_func: Union[None, Callable] = None) -> Union[MultiCircuit, None]:
         """
         Load GridCal compatible file
         :param text_func: pointer to function that prints the names
         :param progress_func: pointer to function that prints the progress 0~100
-        :return: logger with information
+        :return: MultiCircuit
         """
         self.logger = Logger()
 
@@ -103,9 +112,11 @@ class FileOpen:
                         interpret_data_v1(self.circuit, data_dictionary, self.logger)
 
                     elif data_dictionary['version'] == 2.0:
+                        self.circuit = MultiCircuit()
                         interprete_excel_v2(self.circuit, data_dictionary)
 
                     elif data_dictionary['version'] == 3.0:
+                        self.circuit = MultiCircuit()
                         interpret_excel_v3(self.circuit, data_dictionary)
 
                     elif data_dictionary['version'] == 4.0:

@@ -124,6 +124,8 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         :param time_indices: array of time indices to simulate
         :param clustering_results: ClusteringResults object (optional)
         """
+        if not grid.has_time_series:
+            raise Exception(self.name + " can only run in grids with time series data :(")
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 

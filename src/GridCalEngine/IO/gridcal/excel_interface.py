@@ -20,6 +20,7 @@ import pandas as pd
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.IO.gridcal.pack_unpack import create_data_frames, get_objects_dictionary
 
 
@@ -724,10 +725,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                     elif conv is dev.BranchType:
                         # cbr = BranchTypeConverter(None)
                         setattr(obj_, attr, dev.BranchType(values[a]))
-                    elif conv in [dev.DeviceType.AreaDevice,
-                                  dev.DeviceType.SubstationDevice,
-                                  dev.DeviceType.ZoneDevice,
-                                  dev.DeviceType.CountryDevice]:
+                    elif conv in [DeviceType.AreaDevice,
+                                  DeviceType.SubstationDevice,
+                                  DeviceType.ZoneDevice,
+                                  DeviceType.CountryDevice]:
                         pass
                     else:
                         setattr(obj_, attr, conv(values[a]))

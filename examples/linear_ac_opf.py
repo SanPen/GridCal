@@ -1,6 +1,6 @@
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine import *
-from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
+from GridCalEngine.basic_structures import BranchImpedanceMode
+from GridCalEngine.api import *
+from GridCalEngine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
 fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'

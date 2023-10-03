@@ -1,4 +1,4 @@
-from GridCal.Engine import *
+from GridCalEngine.api import *
 fname = r'C:\Users\penversa\Git\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
 main_circuit = FileOpen(fname).open()

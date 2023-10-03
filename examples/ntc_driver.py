@@ -1,10 +1,10 @@
 import os
 import numpy as np
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Devices as dev
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
-from GridCal.Engine import FileOpen, PowerFlowOptions, OptimalNetTransferCapacityDriver, SolverType
+import GridCalEngine.basic_structures as bs
+import GridCalEngine.Devices as dev
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
+from GridCalEngine import FileOpen, PowerFlowOptions, OptimalNetTransferCapacityDriver, SolverType
 
 
 folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'

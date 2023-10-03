@@ -1,13 +1,13 @@
 import os
 import time
 import numpy as np
-from GridCal.Engine import FileOpen
-from GridCal.Engine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCal.Engine.Core.Compilers.circuit_to_data import get_branch_data
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.Core.admittance_matrices import compute_linear_admittances
-from GridCal.Engine.Core.Devices.multi_circuit import get_grouped_indices
-from GridCal.Engine.Core.topology import find_different_states
+from GridCalEngine import FileOpen
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Core.Compilers.circuit_to_data import get_branch_data
+from GridCalEngine.basic_structures import BranchImpedanceMode
+from GridCalEngine.Core.admittance_matrices import compute_linear_admittances
+from GridCalEngine.Core.Devices.multi_circuit import get_grouped_indices
+from GridCalEngine.Core.topology import find_different_states
 
 def nc_snapshot():
     tm0 = time.time()

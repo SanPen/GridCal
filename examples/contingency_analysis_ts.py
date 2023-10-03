@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-from GridCal.Engine import *
-import GridCal.Engine.basic_structures as bs
+from GridCalEngine.api import *
+import GridCalEngine.basic_structures as bs
 
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'

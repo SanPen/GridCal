@@ -36,25 +36,24 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(
             self,
             grid: MultiCircuit,
-            options: LinearAnalysisOptions,
-            time_indices: IntVec,
+            options: Union[LinearAnalysisOptions, None] = None,
+            time_indices: Union[IntVec, None] = None,
             clustering_results: Union[ClusteringResults, None] = None):
         """
         TimeSeries Analysis constructor
         :param grid: MultiCircuit instance
-        :param options: LinearAnalysisOptions instance
-        :param time_indices: array of time indices to simulate
+        :param options: LinearAnalysisOptions instance (optional)
+        :param time_indices: array of time indices to simulate (optional)
         :param clustering_results: ClusteringResults instance (optional)
         """
-
         TimeSeriesDriverTemplate.__init__(
             self,
             grid=grid,
-            time_indices=time_indices,
+            time_indices=grid.get_all_time_indices() if time_indices is None else time_indices,
             clustering_results=clustering_results,
         )
 
-        self.options: "LinearAnalysisOptions" = options
+        self.options: LinearAnalysisOptions = LinearAnalysisOptions() if options is None else options
 
         self.drivers: Dict[int, LinearAnalysis] = dict()
 

@@ -1,5 +1,5 @@
-from GridCal.Engine import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep
+from GridCalEngine import FileOpen
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep
 import pandas as pd
 import numpy as np
 

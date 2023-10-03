@@ -28,7 +28,7 @@ import GridCalEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import bentayga_pf
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_pf
 from GridCalEngine.Core.Compilers.circuit_to_pgm import pgm_pf
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import EngineType, IntVec
 
 
 class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -36,11 +36,11 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     name = tpe.value
 
     def __init__(self, grid: MultiCircuit,
-                 options: PowerFlowOptions,
-                 time_indices: np.ndarray,
+                 options: Union[PowerFlowOptions, None] = None,
+                 time_indices: Union[IntVec, None] = None,
                  opf_time_series_results=None,
                  clustering_results: Union[ClusteringResults, None] = None,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         PowerFlowTimeSeries constructor
         :param grid: MultiCircuit instance
@@ -50,16 +50,15 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         :param clustering_results: ClusteringResults instance (optional)
         :param engine: Calculation engine to use
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          time_indices=time_indices,
-                                          clustering_results=clustering_results,
-                                          engine=engine)
+        TimeSeriesDriverTemplate.__init__(
+            self,
+            grid=grid,
+            time_indices=grid.get_all_time_indices() if time_indices is None else time_indices,
+            clustering_results=clustering_results,
+            engine=engine
+        )
 
-        # reference the grid directly
-        # self.grid = grid
-
-        self.options = options
+        self.options = PowerFlowOptions() if options is None else options
 
         self.opf_time_series_results = opf_time_series_results
 
@@ -204,18 +203,18 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.tic()
 
-        if self.engine == bs.EngineType.GridCal:
+        if self.engine == EngineType.GridCal:
             self.results = self.run_single_thread(time_indices=self.time_indices)
 
-        elif self.engine == bs.EngineType.Bentayga:
+        elif self.engine == EngineType.Bentayga:
             self.progress_text.emit('Running Bentayga... ')
             self.results = self.run_bentayga()
 
-        elif self.engine == bs.EngineType.NewtonPA:
+        elif self.engine == EngineType.NewtonPA:
             self.progress_text.emit('Running Newton power analytics... ')
             self.results = self.run_newton_pa(time_indices=self.time_indices)
 
-        elif self.engine == bs.EngineType.PGM:
+        elif self.engine == EngineType.PGM:
             self.progress_text.emit('Running Power Grid Model... ')
             self.results = pgm_pf(self.grid, self.options, logger=self.logger, time_series=True)
             self.results.area_names = [a.name for a in self.grid.areas]

@@ -1,7 +1,7 @@
 import os
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Devices as dev
-from GridCal.Engine import *
+import GridCalEngine.basic_structures as bs
+import GridCalEngine.Devices as dev
+from GridCalEngine.api import *
 
 folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')

@@ -1,5 +1,5 @@
 import os
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 folder = ''
 f = os.path.join(folder, 'BASE N.zip')

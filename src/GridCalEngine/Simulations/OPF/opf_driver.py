@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import time
+from typing import Union
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import SolverType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
@@ -30,12 +31,12 @@ import GridCalEngine.basic_structures as bs
 
 
 class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
-    name = 'Optimal power flow time series'
+    name = 'Optimal power flow'
     tpe = SimulationTypes.OPF_run
 
     def __init__(self,
                  grid: MultiCircuit,
-                 options: OptimalPowerFlowOptions,
+                 options: Union[OptimalPowerFlowOptions, None] = None,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
         PowerFlowDriver class constructor
@@ -50,12 +51,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                           engine=engine)
 
         # Options to use
-        self.options = options
-
-        # power flow options
-        self.pf_options = options.power_flow_options
-
-        nt = len(self.time_indices) if self.time_indices is not None else 1
+        self.options = options if options else OptimalPowerFlowOptions()
 
         F, T = self.grid.get_branch_number_wo_hvdc_FT()
         F_hvdc, T_hvdc = self.grid.get_hvdc_FT()
@@ -74,6 +70,14 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             bus_area_indices=self.grid.get_bus_area_indices())
 
         self.all_solved = True
+
+    @property
+    def pf_options(self) -> PowerFlowOptions:
+        """
+        Get the PowerFlow options provides with the OpfOptions
+        :return: PowerFlowOptions
+        """
+        return self.options.power_flow_options
 
     def get_steps(self):
         """

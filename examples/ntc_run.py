@@ -1,15 +1,15 @@
 import os
 import numpy as np
-from GridCal.Engine import *
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Devices as dev
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-from GridCal.Engine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
-from GridCal.Engine import FileOpen, PowerFlowOptions
+from GridCalEngine.api import *
+import GridCalEngine.basic_structures as bs
+import GridCalEngine.Devices as dev
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
+from GridCalEngine import FileOpen, PowerFlowOptions
 import time
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.basic_structures import BranchImpedanceMode
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 
 
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'

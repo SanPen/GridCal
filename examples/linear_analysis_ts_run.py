@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'

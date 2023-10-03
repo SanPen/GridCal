@@ -24,7 +24,7 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_linear_matrices
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import EngineType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
@@ -34,8 +34,8 @@ class LinearAnalysisDriver(DriverTemplate):
     tpe = SimulationTypes.LinearAnalysis_run
 
     def __init__(self, grid: MultiCircuit,
-                 options: LinearAnalysisOptions,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 options: Union[LinearAnalysisOptions, None] = None,
+                 engine: EngineType = EngineType.GridCal):
         """
         Linear analysis driver constructor
         :param grid: MultiCircuit instance
@@ -45,9 +45,9 @@ class LinearAnalysisDriver(DriverTemplate):
         DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
-        self.options: LinearAnalysisOptions = options
+        self.options: LinearAnalysisOptions = LinearAnalysisOptions() if options is None else options
 
-        self.engine: bs.EngineType = engine
+        self.engine: EngineType = engine
 
         # Results
         self.results: Union[LinearAnalysisResults, None] = None
@@ -79,15 +79,15 @@ class LinearAnalysisDriver(DriverTemplate):
             return
 
         # Run Analysis
-        if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
-            self.engine = bs.EngineType.GridCal
+        if self.engine == EngineType.Bentayga and not BENTAYGA_AVAILABLE:
+            self.engine = EngineType.GridCal
             self.logger.add_warning('Failed, back to GridCal')
 
-        if self.engine == bs.EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
-            self.engine = bs.EngineType.GridCal
+        if self.engine == EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
+            self.engine = EngineType.GridCal
             self.logger.add_warning('Failed, back to GridCal')
 
-        if self.engine == bs.EngineType.GridCal:
+        if self.engine == EngineType.GridCal:
             nc = compile_numerical_circuit_at(circuit=self.grid)
             analysis = LinearAnalysis(
                 numerical_circuit=nc,
@@ -113,7 +113,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
             self.results.Sbus = analysis.numerical_circuit.Sbus.real
 
-        elif self.engine == bs.EngineType.Bentayga:
+        elif self.engine == EngineType.Bentayga:
 
             lin_mat = bentayga_linear_matrices(circuit=self.grid, distributed_slack=self.options.distribute_slack)
             self.results.PTDF = lin_mat.PTDF
@@ -122,7 +122,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.loading = self.results.Sf / (lin_mat.rates + 1e-20)
             self.results.Sbus = lin_mat.Pbus * self.grid.Sbase
 
-        elif self.engine == bs.EngineType.NewtonPA:
+        elif self.engine == EngineType.NewtonPA:
 
             lin_mat = newton_pa_linear_matrices(circuit=self.grid, distributed_slack=self.options.distribute_slack)
             self.results.PTDF = lin_mat.PTDF

@@ -1,15 +1,13 @@
-from GridCal.Engine import *
+import os
+import GridCalEngine.api as gce
 
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.gridcal')
 
-main_circuit = FileOpen(fname).open()
+main_circuit = gce.FileOpen(fname).open()
 
-drv = InputsAnalysisDriver(grid=main_circuit)
-
-mdl = drv.results.mdl(ResultTypes.AreaAnalysis)
-
+drv = gce.InputsAnalysisDriver(grid=main_circuit)
+mdl = drv.results.mdl(gce.ResultTypes.AreaAnalysis)
 df = mdl.to_df()
 
 print(df)

@@ -19,6 +19,8 @@ import os
 import sys
 import cmath
 import copy
+import warnings
+
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Union
@@ -309,6 +311,14 @@ class MultiCircuit:
         Area there time series?
         :return: True / False
         """
+        # sanity check
+        if len(self.buses) > 0:
+            if self.buses[0].active_prof is None:
+
+                if self.time_profile is not None:
+                    warnings.warn('The grid has a time signature but the objects do not!')
+                return False
+
         return self.time_profile is not None
 
     def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:

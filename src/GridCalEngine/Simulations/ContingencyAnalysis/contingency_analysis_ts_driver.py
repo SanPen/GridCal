@@ -139,7 +139,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         :param clustering_results: ClusteringResults instance (optional)
         :param engine: Calculation engine to use
         """
-
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
                                           time_indices=time_indices,

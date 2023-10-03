@@ -1,9 +1,9 @@
 import time
 import os
-from GridCal.Engine import *
-from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.api import *
+from GridCalEngine.basic_structures import BranchImpedanceMode
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'MOU_2022_5GW_v6h-B_pmode1.gridcal')

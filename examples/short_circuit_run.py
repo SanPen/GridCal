@@ -1,4 +1,4 @@
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/South Island of New Zealand.gridcal'
 

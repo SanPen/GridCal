@@ -41,29 +41,27 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     def __init__(self,
                  grid: MultiCircuit,
-                 options: OptimalPowerFlowOptions,
-                 time_indices: Union[bs.IntVec, None],
+                 options: Union[OptimalPowerFlowOptions, None] = None,
+                 time_indices: Union[bs.IntVec, None] = None,
                  clustering_results: Union[ClusteringResults, None] = None,
                  engine: bs.EngineType = bs.EngineType.GridCal):
         """
-        PowerFlowDriver class constructor
+        OptimalPowerFlowTimeSeriesDriver class constructor
         :param grid: MultiCircuit Object
-        :param options: OPF options
-        :param time_indices: array of time indices to simulate
-        :param engine: Calculation engine to use (if available)
+        :param options: OPF options (optional)
+        :param time_indices: array of time indices to simulate (optional)
+        :param engine: Calculation engine to use (if available) (optional)
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
-                                          time_indices=time_indices,
+                                          time_indices=time_indices if time_indices else grid.get_all_time_indices(),
                                           clustering_results=clustering_results,
                                           engine=engine)
 
         # Options to use
-        self.options = options
+        self.options = options if options else OptimalPowerFlowOptions()
 
-        # power flow options
-        self.pf_options = options.power_flow_options
-
+        # find the number of time steps
         nt = len(self.time_indices) if self.time_indices is not None else 1
 
         # OPF results
@@ -86,6 +84,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             clustering_results=clustering_results)
 
         self.all_solved = True
+
+    @property
+    def pf_options(self) -> PowerFlowOptions:
+        """
+        Get the PowerFlow options provides with the OpfOptions
+        :return: PowerFlowOptions
+        """
+        return self.options.power_flow_options
 
     def get_steps(self):
         """
