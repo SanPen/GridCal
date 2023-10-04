@@ -13,10 +13,6 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 class StamenTransportTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
-    TilesetName = 'Stamen Transport Tiles'
-    TilesetShortName = 'STMTR Tiles'
-    TilesetVersion = '1.0'
-
     def __init__(self, tiles_dir='stamen_transport_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
@@ -24,7 +20,10 @@ class StamenTransportTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(levels=list(range(16)),
+        super().__init__(TilesetName='Stamen Transport Tiles',
+                         TilesetShortName='STMTR Tiles',
+                         TilesetVersion='1.0',
+                         levels=list(range(16)),
                          tile_width=256,
                          tile_height=256,
                          servers=['http://a.tile2.opencyclemap.org',

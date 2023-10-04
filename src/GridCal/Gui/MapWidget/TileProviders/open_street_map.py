@@ -10,10 +10,6 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 class OsmTiles(Tiles):
     """An object to source server tiles for pySlipQt."""
 
-    TilesetName = 'OpenStreetMap Tiles'
-    TilesetShortName = 'OSM Tiles'
-    TilesetVersion = '1.0'
-
     def __init__(self, tiles_dir='open_street_map_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
@@ -21,7 +17,10 @@ class OsmTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(list(range(17)),
+        super().__init__(TilesetName='OpenStreetMap Tiles',
+                         TilesetShortName='OSM Tiles',
+                         TilesetVersion='1.0',
+                         levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,

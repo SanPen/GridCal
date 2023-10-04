@@ -10,10 +10,6 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 class CartoDbTiles(Tiles):
     """An object to source server tiles for pySlipQt."""
 
-    TilesetName = 'CartoDb Dark Matter'
-    TilesetShortName = 'CartoDb Dark Matter'
-    TilesetVersion = '1.0'
-
     def __init__(self, tiles_dir='open_street_map_tiles', http_proxy=None, tile_servers=None):
         """
         Override the base class for these tiles.
@@ -25,7 +21,10 @@ class CartoDbTiles(Tiles):
         :param tile_servers:
         """
 
-        super().__init__(levels=list(range(17)),
+        super().__init__(TilesetName='CartoDb Dark Matter',
+                         TilesetShortName='CartoDb Dark Matter',
+                         TilesetVersion='1.0',
+                         levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,

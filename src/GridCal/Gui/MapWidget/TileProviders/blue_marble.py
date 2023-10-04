@@ -12,10 +12,6 @@ class BlueMarbleTiles(tiles_net.Tiles):
     An object to source internet tiles for pySlip.
     """
 
-    TilesetName = 'BlueMarble Tiles'
-    TilesetShortName = 'BM Tiles'
-    TilesetVersion = '1.0'
-
     def __init__(self, tiles_dir='blue_marble_tiles', http_proxy=None):
         """
         Override the base class for these tiles.
@@ -26,7 +22,10 @@ class BlueMarbleTiles(tiles_net.Tiles):
         :param http_proxy:
         """
 
-        super().__init__(levels=list(range(10)),
+        super().__init__(TilesetName='BlueMarble Tiles',
+                         TilesetShortName='BM Tiles',
+                         TilesetVersion='1.0',
+                         levels=list(range(10)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,

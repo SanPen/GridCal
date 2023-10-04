@@ -879,9 +879,13 @@ class DiagramsMain(CompiledArraysMain):
                 # create the map widget
                 map_widget = GridMapWidget(parent=None,
                                            tile_src=tile_source,
-                                           start_level=5,
-                                           name='Map diagram')
-                map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+                                           start_level=diagram.start_level,
+                                           longitude=diagram.longitude,
+                                           latitude=diagram.latitude,
+                                           name=diagram.name,
+                                           diagram=diagram)
+
+                # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
                 self.diagram_widgets_list.append(map_widget)
 
             elif isinstance(diagram, dev.NodeBreakerDiagram):
@@ -920,8 +924,10 @@ class DiagramsMain(CompiledArraysMain):
         map_widget = GridMapWidget(parent=None,
                                    tile_src=tile_source,
                                    start_level=5,
+                                   longitude=-15.41,
+                                   latitude=40.11,
                                    name='Map diagram')
-        map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+        # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
 
         self.add_diagram(map_widget)
         self.set_diagrams_list_view()

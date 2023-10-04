@@ -25,7 +25,7 @@ Some semantics:
           (view may be smaller than map, or larger)
 """
 
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Callable
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QEvent
 from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
@@ -33,7 +33,6 @@ from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, 
 
 from GridCal.Gui.MapWidget.map_events import LevelEvent, PositionEvent, SelectEvent, BoxSelectEvent
 from GridCal.Gui.MapWidget.logger import log
-# from GridCal.Gui.MapWidget.Layers.map_layer import MapLayer
 from GridCal.Gui.MapWidget.Layers.point_layer import PointLayer, PointData
 from GridCal.Gui.MapWidget.Layers.polygon_layer import PolygonLayer, PolygonData
 from GridCal.Gui.MapWidget.Layers.polyline_layer import PolylineLayer, PolylineData
@@ -41,6 +40,7 @@ from GridCal.Gui.MapWidget.Layers.text_layer import TextLayer, TextData
 from GridCal.Gui.MapWidget.Layers.image_layer import ImageLayer, ImageData
 from GridCal.Gui.MapWidget.Layers.layer_types import LayerType
 from GridCal.Gui.MapWidget.Layers.place import Place
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 # version number of the widget
 __version__ = '0.5'
@@ -157,7 +157,13 @@ class MapWidget(QWidget):
     BoxSelectPenStyle = Qt.DashLine
     BoxSelectPenWidth = 2
 
-    def __init__(self, parent: QWidget, tile_src, start_level: int, **kwargs):
+    def __init__(self,
+                 parent: QWidget,
+                 tile_src: Tiles,
+                 start_level: int,
+                 zoom_callback: Callable[[float], None],
+                 position_callback: Callable[[float, float], None],
+                 **kwargs):
         """Initialize the pySlipQt widget.
 
         parent       the GUI parent widget
@@ -275,6 +281,10 @@ class MapWidget(QWidget):
 
         # do a "resize" after this function
         QTimer.singleShot(10, self.resizeEvent)
+
+        # callbacks
+        self.zoom_callback: Callable[[float], None] = zoom_callback
+        self.position_callback: Callable[[float, float], None] = position_callback
 
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
@@ -445,6 +455,8 @@ class MapWidget(QWidget):
                                             selection=None,
                                             relsel=None).emit_event()
 
+
+
             # turn off dragging, if we were
             self.start_drag_x = self.start_drag_y = None
 
@@ -454,6 +466,9 @@ class MapWidget(QWidget):
             # force PAINT event if required
             if delayed_paint:
                 self.update()
+
+            mouse_geo = self.view_to_geo(x, y)
+            self.position_callback(mouse_geo[0], mouse_geo[1])
 
         elif b == Qt.MidButton:
             self.mid_mbutton_down = False
@@ -545,8 +560,8 @@ class MapWidget(QWidget):
             self.update()  # force a repaint
 
         # emit the event for mouse position
-        # self.raise_event(MapWidget.EVT_PYSLIPQT_POSITION, mposn=mouse_geo, vposn=(x, y))
         PositionEvent(mposn=mouse_geo, vposn=(x, y)).emit_event()
+        # self.position_callback(mouse_geo[0], mouse_geo[1])
 
     def keyPressEvent(self, event: QKeyEvent):
         """Capture a key press."""
@@ -1773,6 +1788,8 @@ class MapWidget(QWidget):
 
             # raise the EVT_PYSLIPQT_LEVEL event
             LevelEvent(level=level).emit_event()
+
+        self.zoom_callback(level)
 
         return result
 
@@ -3691,7 +3708,9 @@ class MapWidget(QWidget):
         # redraw the display
         self.update()
 
-    def GotoLevelAndPosition(self, level: int, xgeo: float, ygeo: float):
+        self.position_callback(xgeo, ygeo)
+
+    def GotoLevelAndPosition(self, level: int, longitude: float, latitude: float):
         """Goto a map level and set view to centre on a position.
 
         level  the map level to use
@@ -3701,7 +3720,7 @@ class MapWidget(QWidget):
         """
 
         if self.GotoLevel(level):
-            self.GotoPosition(xgeo, ygeo)
+            self.GotoPosition(longitude, latitude)
 
     def ZoomToArea(self, xgeo: float, ygeo: float, size: int):
         """Set view to level and position to view an area.

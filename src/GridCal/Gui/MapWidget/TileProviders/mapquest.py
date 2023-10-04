@@ -8,12 +8,7 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
 class MapquestTiles(Tiles):
-
     """An object to source internet tiles for pySlip."""
-
-    TilesetName = 'MapQuest Tiles'
-    TilesetShortName = 'MQ Tiles'
-    TilesetVersion = '1.0'
 
     def __init__(self, tiles_dir='mapquest_tiles', http_proxy=None):
         """Override the base class for these tiles.
@@ -22,7 +17,10 @@ class MapquestTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(levels=list(range(17)),
+        super().__init__(TilesetName='MapQuest Tiles',
+                         TilesetShortName='MQ Tiles',
+                         TilesetVersion='1.0',
+                         levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,
                          servers=['http://otile1.mqcdn.com',

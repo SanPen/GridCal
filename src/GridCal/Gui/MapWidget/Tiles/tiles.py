@@ -45,6 +45,9 @@ class Tiles(BaseTiles):
     SecondsInADay = 60 * 60 * 24
 
     def __init__(self,
+                 TilesetName: str,
+                 TilesetShortName: str,
+                 TilesetVersion: str,
                  levels: List[int],
                  tile_width: int,
                  tile_height: int,
@@ -68,6 +71,9 @@ class Tiles(BaseTiles):
         :param http_proxy: proxy to use if required
         :param refetch_days: fetch new server tile if older than this in days (0 means don't ever update tiles)
         """
+        self.TilesetName = TilesetName
+        self.TilesetShortName = TilesetShortName
+        self.TilesetVersion = TilesetVersion
 
         # prepare the tile cache directory, if required
         # we have to do this *before* the base class initialization!

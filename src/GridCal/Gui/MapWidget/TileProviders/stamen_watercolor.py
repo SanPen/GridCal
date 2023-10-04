@@ -12,10 +12,6 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 class StamenWatercolorTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
-    TilesetName = 'Stamen Watercolor Tiles'
-    TilesetShortName = 'STMW Tiles'
-    TilesetVersion = '1.0'
-
     def __init__(self, tiles_dir='stamen_watercolor_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
@@ -23,7 +19,10 @@ class StamenWatercolorTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(levels=list(range(16)),
+        super().__init__(TilesetName='Stamen Watercolor Tiles',
+                         TilesetShortName='STMW Tiles',
+                         TilesetVersion='1.0',
+                         levels=list(range(16)),
                          tile_width=256,
                          tile_height=256,
                          servers=['http://c.tile.stamen.com', ],

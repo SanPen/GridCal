@@ -29,15 +29,33 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
 class GridMapWidget(MapWidget):
 
-    def __init__(self, parent: Union[QWidget, None], tile_src, start_level: int, name: str):
-        MapWidget.__init__(self, parent=parent, tile_src=tile_src, start_level=start_level)
+    def __init__(self,
+                 parent: Union[QWidget, None],
+                 tile_src: Tiles,
+                 start_level: int,
+                 longitude: float,
+                 latitude: float,
+                 name: str,
+                 diagram: Union[None, MapDiagram] = None):
+
+        MapWidget.__init__(self,
+                           parent=parent,
+                           tile_src=tile_src,
+                           start_level=start_level,
+                           zoom_callback=self.zoom_callback,
+                           position_callback=self.position_callback)
 
         # diagram to store the objects locations
-        self.diagram: MapDiagram = MapDiagram(name=name)
+        self.diagram: MapDiagram = MapDiagram(name=name,
+                                              tile_source=tile_src.TilesetName,
+                                              start_level=start_level,
+                                              longitude=longitude,
+                                              latitude=latitude) if diagram is None else diagram
 
         # add empty polylines layer
         self.polyline_layer_id = self.AddPolylineLayer(data=[],
@@ -47,6 +65,16 @@ class GridMapWidget(MapWidget):
                                                        selectable=True,
                                                        # levels at which to show the polylines
                                                        name='<polyline_layer>')
+
+        self.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
+
+    def set_diagram(self, diagram: MapDiagram):
+        """
+
+        :param diagram:
+        :return:
+        """
+        self.diagram = diagram
 
     @property
     def name(self):
@@ -72,6 +100,26 @@ class GridMapWidget(MapWidget):
         """
         self.setLayerData(self.polyline_layer_id, data)
         self.update()
+
+    def zoom_callback(self, zoom_level: int):
+        """
+
+        :param zoom_level:
+        :return:
+        """
+        # print('zoom', zoom_level)
+        self.diagram.start_level = zoom_level
+
+    def position_callback(self, longitude: float, latitude: float):
+        """
+
+        :param longitude:
+        :param latitude:
+        :return:
+        """
+        # print('Map lat:', latitude, 'lon:', longitude)
+        self.diagram.latitude = latitude
+        self.diagram.longitude = longitude
 
     def colour_results(self,
                        buses: List[Bus],

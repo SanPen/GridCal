@@ -29,7 +29,7 @@ class PointsGroup:
     Diagram
     """
 
-    def __init__(self, name=''):
+    def __init__(self, name: str = '') -> None:
         """
 
         :param name: Diagram name
@@ -76,7 +76,8 @@ class PointsGroup:
 
         return points
 
-    def parse_data(self, data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
+    def parse_data(self,
+                   data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
                    obj_dict: Dict[str, EditableDevice]):
         """
         Parse file data ito this class
@@ -176,10 +177,10 @@ class BaseDiagram:
             # search for the device idtag and return the location, if not found return None
             return group.query_point(device)
 
-    def get_properties_dict(self) -> Dict[str, Dict[str, Union[GraphicLocation, MapLocation]]]:
+    def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str,  Union[GraphicLocation, MapLocation]]]]:
         """
-
-        :return:
+        get the properties dictionary to save
+        :return: dictionary to serialize
         """
         data = {category: group.get_dict() for category, group in self.data.items()}
 
@@ -205,8 +206,7 @@ class BaseDiagram:
         for category, loc_dict in data['data'].items():
 
             points_group = PointsGroup(name=category)
-            points_group.parse_data(data=loc_dict,
-                                    obj_dict=obj_dict.get(category, dict()))
+            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()))
             self.data[category] = points_group
 
     def build_graph(self):
