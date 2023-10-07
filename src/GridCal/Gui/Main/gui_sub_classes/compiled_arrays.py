@@ -18,10 +18,10 @@ import numpy as np
 from PySide6 import QtCore
 from matplotlib import pyplot as plt
 
-import GridCalEngine.Core as core
 import GridCalEngine.basic_structures as bs
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class CompiledArraysMain(BaseMainGui):
@@ -61,7 +61,7 @@ class CompiledArraysMain(BaseMainGui):
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1 and len(self.circuit.buses) > 0:
-            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
@@ -123,7 +123,7 @@ class CompiledArraysMain(BaseMainGui):
             engine = self.get_preferred_engine()
 
             if engine == bs.EngineType.GridCal:
-                numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
+                numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
@@ -137,7 +137,7 @@ class CompiledArraysMain(BaseMainGui):
 
             else:
                 # fallback to gridcal
-                numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
+                numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
