@@ -16,10 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+import pandas as pd
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
 from GridCalEngine.enumerations import StudyResultsType
 
 
@@ -227,6 +228,53 @@ class OptimalPowerFlowResults(ResultsTemplate):
         for k, elm in enumerate(hvdc):
             self.hvdc_F[k] = bus_dict[elm.bus_from]
             self.hvdc_T[k] = bus_dict[elm.bus_to]
+
+    def get_bus_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the buses results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Va': np.angle(self.voltage, deg=True),
+                                  'P': self.Sbus.real,
+                                  'Shadow price': self.bus_shadow_prices},
+                            index=self.bus_names)
+
+    def get_branch_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the branches results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Pf': self.Sf.real,
+                                  'Pt': self.St.real,
+                                  'Tap angle': self.phase_shift,
+                                  'loading': self.loading.real * 100.0},
+                            index=self.branch_names)
+
+    def get_gen_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the generator results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'P': self.generator_power,
+                                  'P shedding': self.generator_shedding},
+                            index=self.generator_names)
+
+    def get_batt_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the battery results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'P': self.generator_power},
+                            index=self.battery_power)
+
+    def get_hvdc_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the battery results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'P': self.hvdc_Pf,
+                                  'Loading': self.hvdc_loading},
+                            index=self.hvdc_names)
 
     def mdl(self, result_type) -> "ResultsTable":
         """

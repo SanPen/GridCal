@@ -524,10 +524,85 @@ print('Gen power\n', opf_ts_driver.results.generator_power)
 print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)
 ```
 
+#### Run a linear optimization and verify with power flow
+
+Often ties, you want to dispatch the generation using a linear optimization, to then _veryfy_ the
+results using the power exact power flow. With GridCal, to do so is as easy as passing the results of the OPF into the
+PowerFlowDriver:
+
+```python
+import os
+import numpy as np
+import GridCalEngine.api as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+
+main_circuit = gce.open_file(fname)
+
+# declare the snapshot opf
+opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
+opf_driver.run()
+
+# create the power flow driver, with the OPF results
+pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+pf_driver = gce.PowerFlowDriver(grid=main_circuit, 
+                                options=pf_options, 
+                                opf_results=opf_driver.results)
+pf_driver.run()
+
+# Print results
+print('Converged:', pf_driver.results.converged, '\nError:', pf_driver.results.error)
+print(pf_driver.results.get_bus_df())
+print(pf_driver.results.get_branch_df())
+```
+
+Outout:
+```text
+OPF results:
+
+         Va    P  Shadow price
+Bus 1  0.00  0.0           0.0
+Bus 2 -2.22  0.0           0.0
+Bus 3 -1.98  0.0           0.0
+Bus 4 -2.12  0.0           0.0
+Bus 5 -2.21  0.0           0.0
+
+             Pf     Pt  Tap angle  loading
+Branch 1 -31.46  31.46        0.0   -44.94
+Branch 1  -1.84   1.84        0.0   -10.20
+Branch 1  -1.84   1.84        0.0    -9.18
+Branch 1   0.14  -0.14        0.0     1.37
+Branch 1 -48.30  48.30        0.0   -53.67
+Branch 1 -35.24  35.24        0.0   -58.73
+Branch 1  -4.62   4.62        0.0   -23.11
+
+Power flow results:
+Converged: True 
+Error: 3.13e-11
+
+         Vm    Va         P      Q
+Bus 1  1.00  0.00  1.17e+02  12.90
+Bus 2  0.97 -2.09 -4.00e+01 -20.00
+Bus 3  0.98 -1.96 -2.50e+01 -15.00
+Bus 4  1.00 -2.61  2.12e-09  32.83
+Bus 5  0.98 -2.22 -5.00e+01 -20.00
+
+             Pf     Qf     Pt     Qt  Loading
+Branch 1 -31.37  -2.77  31.88   1.93   -44.81
+Branch 2  -1.61  13.59   1.74 -16.24    -8.92
+Branch 3  -1.44 -20.83   1.61  19.24    -7.21
+Branch 4   0.46   5.59  -0.44  -7.46     4.62
+Branch 5 -49.02  -4.76  49.77   4.80   -54.47
+Branch 6 -34.95  -6.66  35.61   6.16   -58.25
+Branch 7  -4.60  -5.88   4.62   4.01   -23.02
+```
+
 ### Short circuit
 
 GridCal has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
-the South island of New Zealand grid example from refference book _Computer Analys of Power Systems by J.Arrillaga and C.P. Arnord_
+the South island of New Zealand grid example from refference book 
+_Computer Analys of Power Systems by J.Arrillaga and C.P. Arnold_
 
 ```python
 import os

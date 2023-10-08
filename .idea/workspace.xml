@@ -31,8 +31,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed synthax bugs">
+      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE25.gridcal" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/opf+pf verification example.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/compiled_arrays.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/gui_sub_classes/compiled_arrays.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -199,7 +205,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.opf+pf verification example">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -321,7 +327,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="linear_analysis_run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="opf+pf verification example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -334,7 +340,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/linear_analysis_run.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/opf+pf verification example.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -477,19 +483,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.opf+pf verification example" />
       <item itemvalue="Python.contingency_analysis_run" />
       <item itemvalue="Python.cpf_run" />
-      <item itemvalue="Python.linear_analysis_run" />
       <item itemvalue="Python.short_circuit_run" />
       <item itemvalue="Python.ExecuteGridCal" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.opf+pf verification example" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.contingency_analysis_run" />
         <item itemvalue="Python.cpf_run" />
         <item itemvalue="Python.short_circuit_run" />
-        <item itemvalue="Python.linear_analysis_run" />
       </list>
     </recent_temporary>
   </component>
@@ -1306,6 +1312,8 @@
       <workItem from="1696251163564" duration="7038000" />
       <workItem from="1696313982131" duration="25924000" />
       <workItem from="1696401271644" duration="10193000" />
+      <workItem from="1696670495938" duration="73000" />
+      <workItem from="1696753429946" duration="3805000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1650,7 +1658,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="526" />
+    <option name="localTasksCounter" value="527" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2133,11 +2141,6 @@
           <option name="timeStamp" value="1396" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py</url>
-          <line>126</line>
-          <option name="timeStamp" value="1410" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/short_circuit_run.py</url>
           <line>17</line>
           <option name="timeStamp" value="1412" />
@@ -2151,6 +2154,16 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
           <line>240</line>
           <option name="timeStamp" value="1416" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>129</line>
+          <option name="timeStamp" value="1417" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>63</line>
+          <option name="timeStamp" value="1418" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2296,6 +2309,7 @@
     <SUITE FILE_PATH="coverage/GridCal$branch_power_4.coverage" NAME="branch_power_4 Coverage Results" MODIFIED="1659531779008" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$solar_power_wizzard.coverage" NAME="solar_power_wizzard Coverage Results" MODIFIED="1689668693423" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/SolarPowerWizard" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file__2_.coverage" NAME="update_gui_file (2) Coverage Results" MODIFIED="1692362060427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
+    <SUITE FILE_PATH="coverage/GridCal$opf_pf_verification_example.coverage" NAME="opf+pf verification example Coverage Results" MODIFIED="1696757272826" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_py.coverage" NAME="Nosetests in test_api.py Coverage Results" MODIFIED="1598803532944" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$test_demo_5_node.coverage" NAME="test_demo_5_node Coverage Results" MODIFIED="1614631204068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_lynn_cartesian.coverage" NAME="jacobian_lynn_cartesian Coverage Results" MODIFIED="1652555190957" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian" />

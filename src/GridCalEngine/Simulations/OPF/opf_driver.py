@@ -48,7 +48,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                           grid=grid,
                                           time_indices=None,
                                           clustering_results=None,
-                                          engine=engine)
+                                          engine=engine,
+                                          check_time_series=False)
 
         # Options to use
         self.options = options if options else OptimalPowerFlowOptions()
@@ -67,7 +68,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             area_names=self.grid.get_area_names(),
             F=F, T=T, F_hvdc=F_hvdc, T_hvdc=T_hvdc,
-            bus_area_indices=self.grid.get_bus_area_indices())
+            bus_area_indices=self.grid.get_bus_area_indices()
+        )
 
         self.all_solved = True
 

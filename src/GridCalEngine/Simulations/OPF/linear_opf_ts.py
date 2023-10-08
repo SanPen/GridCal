@@ -20,7 +20,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Callable
 import ortools.linear_solver.pywraplp as ort
 
 from GridCalEngine.basic_structures import ZonalGrouping
@@ -779,11 +779,11 @@ def add_linear_branches_formulation(t: int,
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
                 if branch_data_t.R[m] != 0.0:
-                    bk = -1.0 / branch_data_t.R[m]
+                    bk = 1.0 / branch_data_t.R[m]
                 else:
                     bk = 1e-20
             else:
-                bk = -1.0 / branch_data_t.X[m]
+                bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
             if branch_data_t.control_mode[m] == TransformerControlType.Pt:
@@ -966,8 +966,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       buses_areas_2=None,
                       energy_0: Union[Vec, None] = None,
                       logger: Logger = Logger(),
-                      progress_text=None,
-                      progress_func=None) -> OpfVars:
+                      progress_text: Union[None, Callable[[str], None]] = None,
+                      progress_func: Union[None, Callable[[float], None]] = None) -> OpfVars:
     """
 
     :param grid: MultiCircuit instance

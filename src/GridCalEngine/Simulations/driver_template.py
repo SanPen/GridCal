@@ -117,14 +117,15 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             grid: MultiCircuit,
             time_indices: IntVec,
             clustering_results: Union["ClusteringResults", None] = None,
-            engine: bs.EngineType = bs.EngineType.GridCal):
+            engine: bs.EngineType = bs.EngineType.GridCal,
+            check_time_series: bool = True):
         """
         Time Series driver constructor
         :param grid: MultiCircuit instance
         :param time_indices: array of time indices to simulate
         :param clustering_results: ClusteringResults object (optional)
         """
-        if not grid.has_time_series:
+        if not grid.has_time_series and check_time_series:
             raise Exception(self.name + " can only run in grids with time series data :(")
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)
