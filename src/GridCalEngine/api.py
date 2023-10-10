@@ -23,15 +23,6 @@ from GridCalEngine.Core import *
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.enumerations import *
 
-from ortools.linear_solver import pywraplp
-from ortools.init import pywrapinit
-
-# pywrapinit.CppBridge.InitLogging('SuggestedFix.py')
-cpp_flags = pywrapinit.CppFlags()
-cpp_flags.logtostderr = True
-cpp_flags.log_prefix = False
-pywrapinit.CppBridge.SetFlags(cpp_flags)
-
 
 def open_file(filename: str) -> MultiCircuit:
     """

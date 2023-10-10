@@ -72,7 +72,6 @@ def get_contingency_flow_with_filter(
         injections: Union[None, Vec],
         threshold: float,
         m: int) -> ort.LinearExpr:
-
     """
     Get contingency flow
     :param multi_contingency: MultiContingency object
@@ -96,6 +95,7 @@ def get_contingency_flow_with_filter(
                 res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
 
     return res
+
 
 class BusVars:
     """
@@ -323,6 +323,7 @@ class BranchVars:
         :return:
         """
         self.contingency_flow_data.append((m, c, flow_var))
+
 
 class HvdcVars:
     """
@@ -589,26 +590,33 @@ def add_linear_battery_formulation(t: Union[int, None],
                     batt_vars.shutting_down[t, k] = prob.IntVar(0, 1, join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[t, k]
+                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
+                        t, k]
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] >= (
+                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
+                                t, k]),
                                  join("batt>=Pmin", [t, k], "_"))
-                        prob.Add(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k]),
+                        prob.Add(batt_vars.p[t, k] <= (
+                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
+                                t, k]),
                                  join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] - float(batt_data_t.active[k]),
+                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
+                                t, k] - float(batt_data_t.active[k]),
                                      join("binary_alg1_", [t, k], "_"))
                             prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg2_", [t, k], "_"))
                         else:
-                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
+                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
+                                t, k] - batt_vars.producing[t - 1, k],
                                      join("binary_alg3_", [t, k], "_"))
                             prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                      join("binary_alg4_", [t, k], "_"))
@@ -794,7 +802,8 @@ def add_linear_branches_formulation(t: int,
                                                            name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                flow_ctr = branch_vars.flows[t, m] == bk * (
+                            vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
@@ -812,11 +821,15 @@ def add_linear_branches_formulation(t: int,
                 branch_vars.flow_slacks_neg[t, m] = prob.NumVar(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
+                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
+                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[
+                                                            m] / Sbase
                 prob.Add(branch_vars.flow_constraints_ub[t, m], name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
+                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
+                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[
+                    m] / Sbase
                 prob.Add(branch_vars.flow_constraints_lb[t, m], name=join("br_flow_lower_lim_", [t, m]))
 
                 # add to the objective function
@@ -1011,10 +1024,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
 
-    solver: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
-    solver.SuppressOutput()
+    lp_model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
+    lp_model.SuppressOutput()
 
-    if solver is None:
+    if lp_model is None:
         print("{} is not present".format(solver_type.value))
         logger.add_error(msg="Solver is not present", value=solver_type.value)
         return mip_vars.get_values(grid.Sbase)
@@ -1044,16 +1057,16 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = solver.NumVar(nc.bus_data.angle_min[k],
-                                                              nc.bus_data.angle_max[k],
-                                                              join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[t_idx, k] = lp_model.NumVar(nc.bus_data.angle_min[k],
+                                                                nc.bus_data.angle_max[k],
+                                                                join("th_", [t_idx, k], "_"))
 
         # formulate loads ------------------------------------------------------------------------------------------
         f_obj += add_linear_load_formulation(t=t_idx,
                                              Sbase=nc.Sbase,
                                              load_data_t=nc.load_data,
                                              load_vars=mip_vars.load_vars,
-                                             prob=solver)
+                                             prob=lp_model)
 
         # formulate generation -------------------------------------------------------------------------------------
         f_obj += add_linear_generation_formulation(t=t_idx,
@@ -1061,7 +1074,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    time_array=grid.time_profile,
                                                    gen_data_t=nc.generator_data,
                                                    gen_vars=mip_vars.gen_vars,
-                                                   prob=solver,
+                                                   prob=lp_model,
                                                    unit_commitment=unit_Commitment,
                                                    ramp_constraints=ramp_constraints,
                                                    skip_generation_limits=skip_generation_limits)
@@ -1076,7 +1089,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                 time_array=grid.time_profile,
                                                 batt_data_t=nc.battery_data,
                                                 batt_vars=mip_vars.batt_vars,
-                                                prob=solver,
+                                                prob=lp_model,
                                                 unit_commitment=unit_Commitment,
                                                 ramp_constraints=ramp_constraints,
                                                 skip_generation_limits=skip_generation_limits,
@@ -1088,7 +1101,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                              hvdc_data_t=nc.hvdc_data,
                                              hvdc_vars=mip_vars.hvdc_vars,
                                              vars_bus=mip_vars.bus_vars,
-                                             prob=solver)
+                                             prob=lp_model)
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
             # formulate branches -----------------------------------------------------------------------------------
@@ -1097,7 +1110,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      branch_data_t=nc.branch_data,
                                                      branch_vars=mip_vars.branch_vars,
                                                      vars_bus=mip_vars.bus_vars,
-                                                     prob=solver,
+                                                     prob=lp_model,
                                                      consider_contingencies=consider_contingencies,
                                                      LODF=LODF,
                                                      lodf_threshold=lodf_threshold,
@@ -1116,22 +1129,22 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
-                                    prob=solver)
+                                    prob=lp_model)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        solver.Add(solver.Sum(mip_vars.gen_vars.p[t_idx, :]) + solver.Sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                   mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-                   name="satisfy_demand_at_={0}".format(t_idx))
+        lp_model.Add(lp_model.Sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.Sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                     mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
+                     name="satisfy_demand_at_={0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)
 
     # set the objective function
-    solver.Minimize(f_obj)
+    lp_model.Minimize(f_obj)
 
     # solve
     if progress_text is not None:
@@ -1140,25 +1153,38 @@ def run_linear_opf_ts(grid: MultiCircuit,
     if progress_func is not None:
         progress_func(0)
 
-    # model_str = solver.ExportModelAsLpFormat(False)
-    # with open("lynn5_busopf.lp", "w") as f:
-    #     f.write(model_str)
+    model_str = lp_model.ExportModelAsLpFormat(False)
+    lp_file_name = grid.name + ".lp"
+    with open(lp_file_name, "w") as f:
+        f.write(model_str)
+    print('LP model saved as:', lp_file_name)
 
-    status = solver.Solve()
+    model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
+    lp_file_name = grid.name + ".mps"
+    with open(lp_file_name, "w") as f:
+        f.write(model_str)
+    print('MPS model saved as:', lp_file_name)
+
+    status = lp_model.Solve()
 
     # gather the results
     if status == ort.Solver.OPTIMAL:
         print('Solution:')
-        print('Objective value =', solver.Objective().Value())
+        print('Objective value =', lp_model.Objective().Value())
         mip_vars.acceptable_solution = True
     else:
         print('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution = False
-        model_str = solver.ExportModelAsLpFormat(False)
-        with open("lp_debug.lp", "w") as f:
+        model_str = lp_model.ExportModelAsLpFormat(False)
+        lp_file_name = grid.name + "_debug.lp"
+        with open(lp_file_name, "w") as f:
             f.write(model_str)
+        print("Debug LP model saved as:", lp_file_name)
 
     # extract values from the LP Vars
+    is_mip = [var.Integer() for var in lp_model.variables()]
+    print("Is Mip:", is_mip)
+
     vars_v = mip_vars.get_values(grid.Sbase)
 
     return vars_v

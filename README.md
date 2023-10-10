@@ -568,7 +568,7 @@ Bus 3 -1.98  0.0           0.0
 Bus 4 -2.12  0.0           0.0
 Bus 5 -2.21  0.0           0.0
 
-             Pf     Pt  Tap angle  loading
+             Pf     Pt  Tap angle  Loading
 Branch 1 -31.46  31.46        0.0   -44.94
 Branch 1  -1.84   1.84        0.0   -10.20
 Branch 1  -1.84   1.84        0.0    -9.18
