@@ -19,7 +19,6 @@ import os
 import sys
 import cmath
 import warnings
-from enum import property
 
 import numpy as np
 import pandas as pd
