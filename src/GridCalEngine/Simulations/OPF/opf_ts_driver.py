@@ -54,7 +54,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
-                                          time_indices=time_indices if time_indices else grid.get_all_time_indices(),
+                                          time_indices=time_indices
+                                          if time_indices is not None else grid.get_all_time_indices(),
                                           clustering_results=clustering_results,
                                           engine=engine)
 
