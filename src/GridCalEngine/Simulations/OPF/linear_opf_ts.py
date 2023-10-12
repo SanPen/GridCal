@@ -981,7 +981,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       energy_0: Union[Vec, None] = None,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
-                      progress_func: Union[None, Callable[[float], None]] = None) -> OpfVars:
+                      progress_func: Union[None, Callable[[float], None]] = None,
+                      export_model: bool = False) -> OpfVars:
     """
 
     :param grid: MultiCircuit instance
@@ -1000,7 +1001,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param logger: logger instance
     :param progress_text:
     :param progress_func:
-    :return:
+    :param export_model: Export the model into LP and MPS?
+    :return: OpfVars
     """
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
     areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
@@ -1154,17 +1156,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
     if progress_func is not None:
         progress_func(0)
 
-    model_str = lp_model.ExportModelAsLpFormat(False)
-    lp_file_name = grid.name + ".lp"
-    with open(lp_file_name, "w") as f:
-        f.write(model_str)
-    print('LP model saved as:', lp_file_name)
+    if export_model:
+        model_str = lp_model.ExportModelAsLpFormat(False)
+        lp_file_name = grid.name + ".lp"
+        with open(lp_file_name, "w") as f:
+            f.write(model_str)
+        print('LP model saved as:', lp_file_name)
 
-    model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
-    lp_file_name = grid.name + ".mps"
-    with open(lp_file_name, "w") as f:
-        f.write(model_str)
-    print('MPS model saved as:', lp_file_name)
+        model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
+        lp_file_name = grid.name + ".mps"
+        with open(lp_file_name, "w") as f:
+            f.write(model_str)
+        print('MPS model saved as:', lp_file_name)
 
     status = lp_model.Solve()
 

@@ -20,6 +20,7 @@ from typing import List
 from GridCalEngine.basic_structures import TimeGrouping, MIPSolvers, ZonalGrouping
 from GridCalEngine.basic_structures import SolverType
 
+
 ########################################################################################################################
 # Optimal Power flow classes
 ########################################################################################################################
@@ -44,7 +45,8 @@ class OptimalPowerFlowOptions:
                  area_to_bus_idx: List = None,
                  areas_from: List = None,
                  areas_to: List = None,
-                 unit_commitment=False):
+                 unit_commitment=False,
+                 export_model=False):
         """
         Optimal power flow options
         :param verbose:
@@ -57,12 +59,15 @@ class OptimalPowerFlowOptions:
         :param bus_types:
         :param consider_contingencies:
         :param skip_generation_limits:
-        :param tolerance:
         :param LODF:
         :param lodf_tolerance:
         :param maximize_flows:
         :param area_from_bus_idx:
         :param area_to_bus_idx:
+        :param areas_from:
+        :param areas_to:
+        :param unit_commitment:
+        :param export_model:
         """
         self.verbose = verbose
 
@@ -103,3 +108,5 @@ class OptimalPowerFlowOptions:
         self.max_va = 6.28
 
         self.max_vm = 1.0
+
+        self.export_model: bool = export_model

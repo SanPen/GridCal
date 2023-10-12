@@ -127,7 +127,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          buses_areas_2=self.options.area_to_bus_idx,
                                          logger=self.logger,
                                          progress_text=self.progress_text.emit,
-                                         progress_func=self.progress_signal.emit)
+                                         progress_func=self.progress_signal.emit,
+                                         export_model=self.options.export_model)
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
@@ -201,10 +202,10 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          buses_areas_1=self.options.area_from_bus_idx,
                                          buses_areas_2=self.options.area_to_bus_idx,
                                          energy_0=energy_0,
-                                         logger=self.logger)
+                                         logger=self.logger,
+                                         export_model=self.options.export_model)
 
-            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(
-                1j * opf_vars.bus_vars.theta)
+            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
             self.results.battery_power[time_indices, :] = opf_vars.batt_vars.p
