@@ -115,3 +115,12 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
 
         """
         pass
+
+    def plot_profiles(self):
+        """
+        Plot the time series profiles
+        @return:
+        """
+        # get the index of this object
+        i = self.diagramScene.circuit.get_hvdc().index(self.api_object)
+        self.diagramScene.plot_hvdc_branch(i, self.api_object)

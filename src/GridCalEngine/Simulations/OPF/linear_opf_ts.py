@@ -868,6 +868,7 @@ def add_linear_hvdc_formulation(t: int,
 
         fr = hvdc_data_t.F[m]
         to = hvdc_data_t.T[m]
+        hvdc_vars.rates[t, m] = hvdc_data_t.rate[m]
 
         if hvdc_data_t.active[m]:
 

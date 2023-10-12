@@ -979,7 +979,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
             if opf_results is not None:
-                data.Pset[i] = -opf_results.hvdc_Pf[t_idx, i]
+                data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
             else:
                 data.Pset[i] = elm.Pset_prof[t_idx]
 
@@ -999,8 +999,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
-                data.Pset[i] = -opf_results.hvdc_Pf[i]
-                data.Pt[i] = opf_results.hvdc_Pf[i]
+                data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
                 data.Pset[i] = elm.Pset
 

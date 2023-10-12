@@ -88,13 +88,11 @@ class MultiCircuit:
 
     """
 
-    def __init__(
-            self,
-            name: str = '',
-            Sbase: float = 100,
-            fbase: float = 50.0,
-            idtag: Union[str, None] = None,
-    ):
+    def __init__(self,
+                 name: str = '',
+                 Sbase: float = 100,
+                 fbase: float = 50.0,
+                 idtag: Union[str, None] = None):
         """
         class constructor
         :param name: name of the circuit
@@ -1905,7 +1903,7 @@ class MultiCircuit:
         self.switch_devices.append(obj)
 
     def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-                                    dev.UPFC, dev.Winding, dev.Switch]) -> None:
+    dev.UPFC, dev.Winding, dev.Switch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
