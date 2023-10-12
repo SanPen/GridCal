@@ -807,8 +807,8 @@ def add_linear_branches_formulation(t: int,
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
-                vars_bus.branch_injections[fr] = -bk * branch_vars.tap_angles[t, m]
-                vars_bus.branch_injections[to] = bk * branch_vars.tap_angles[t, m]
+                vars_bus.branch_injections[t, fr] = -bk * branch_vars.tap_angles[t, m]
+                vars_bus.branch_injections[t, to] = bk * branch_vars.tap_angles[t, m]
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
@@ -879,21 +879,21 @@ def add_linear_hvdc_formulation(t: int,
 
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
-                prob.Add(hvdc_vars.flows[m, t] == P0 + hvdc_data_t.angle_droop[m] * (
-                        vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                prob.Add(hvdc_vars.flows[t, m] == P0 +
+                         hvdc_data_t.angle_droop[m] * (vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
                          name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
-                vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
-                vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
+                vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
+                vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
 
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
 
                     # add the injections matching the flow
-                    vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
 
                 else:
 
@@ -907,8 +907,8 @@ def add_linear_hvdc_formulation(t: int,
                     hvdc_vars.flows[t, m].SetBounds(P0, P0)  # make the flow equal to P0
 
                     # add the injections matching the flow
-                    vars_bus.branch_injections[fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.branch_injections[to] += hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
             else:
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
