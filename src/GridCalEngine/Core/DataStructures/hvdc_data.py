@@ -19,7 +19,7 @@ from typing import Tuple
 import scipy.sparse as sp
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import HvdcControlType
-from GridCalEngine.basic_structures import Vec, IntVec
+from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
 
 
 class HvdcData:
@@ -36,37 +36,37 @@ class HvdcData:
         self.nbus: int = nbus
         self.nelm: int = nelm
 
-        self.names: np.ndarray = np.zeros(nelm, dtype=object)
-        self.idtag: np.ndarray = np.zeros(nelm, dtype=object)
+        self.names: StrVec = np.zeros(nelm, dtype=object)
+        self.idtag: StrVec = np.zeros(nelm, dtype=object)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.dispatchable: np.ndarray = np.zeros(nelm, dtype=int)
-        self.F: np.ndarray = np.zeros(nelm, dtype=int)
-        self.T: np.ndarray = np.zeros(nelm, dtype=int)
+        self.active: BoolVec = np.zeros(nelm, dtype=bool)
+        self.dispatchable: IntVec = np.zeros(nelm, dtype=int)
+        self.F: IntVec = np.zeros(nelm, dtype=int)
+        self.T: IntVec = np.zeros(nelm, dtype=int)
 
-        self.rate: np.ndarray = np.zeros(nelm, dtype=float)
-        self.contingency_rate: np.ndarray = np.zeros(nelm, dtype=float)
+        self.rate: Vec = np.zeros(nelm, dtype=float)
+        self.contingency_rate: Vec = np.zeros(nelm, dtype=float)
 
-        self.r: np.ndarray = np.zeros(nelm, dtype=float)
+        self.r: Vec = np.zeros(nelm, dtype=float)
 
-        self.Pset: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Pt: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Pset: Vec = np.zeros(nelm, dtype=float)
+        self.Pt: Vec = np.zeros(nelm, dtype=float)
 
         # voltage p.u. set points
-        self.Vset_f: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Vset_t: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Vset_f: Vec = np.zeros(nelm, dtype=float)
+        self.Vset_t: Vec = np.zeros(nelm, dtype=float)
 
         # nominal bus voltages at the from and to ends
-        self.Vnf: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Vnt: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Vnf: Vec = np.zeros(nelm, dtype=float)
+        self.Vnt: Vec = np.zeros(nelm, dtype=float)
 
-        self.angle_droop: np.ndarray = np.zeros(nelm, dtype=float)
+        self.angle_droop: Vec = np.zeros(nelm, dtype=float)
         self.control_mode: np.ndarray = np.zeros(nelm, dtype=object)
 
-        self.Qmin_f: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Qmax_f: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Qmin_t: np.ndarray = np.zeros(nelm, dtype=float)
-        self.Qmax_t: np.ndarray = np.zeros(nelm, dtype=float)
+        self.Qmin_f: Vec = np.zeros(nelm, dtype=float)
+        self.Qmax_f: Vec = np.zeros(nelm, dtype=float)
+        self.Qmin_t: Vec = np.zeros(nelm, dtype=float)
+        self.Qmax_t: Vec = np.zeros(nelm, dtype=float)
 
         self.C_hvdc_bus_f: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
                                                          dtype=int)  # this ons is just for splitting islands
@@ -130,7 +130,7 @@ class HvdcData:
         """
         return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
 
-    def get_island(self, bus_idx: np.ndarray):
+    def get_island(self, bus_idx: IntVec):
         """
         Get HVDC indices of the island given by the bus indices
         :param bus_idx: list of bus indices

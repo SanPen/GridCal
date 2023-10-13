@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
 
 class BusData:
@@ -29,21 +29,21 @@ class BusData:
         :param nbus: number of buses
         """
         self.nbus: int = nbus
-        self.idtag: np.ndarray = np.empty(nbus, dtype=object)
-        self.names: np.ndarray = np.empty(nbus, dtype=object)
-        self.active: np.ndarray = np.ones(nbus, dtype=int)
-        self.Vbus: np.ndarray = np.ones(nbus, dtype=complex)
-        self.Vmin: np.ndarray = np.ones(nbus, dtype=float)
-        self.Vmax: np.ndarray = np.ones(nbus, dtype=float)
-        self.Vnom: np.ndarray = np.ones(nbus, dtype=float)
-        self.angle_min: np.ndarray = np.full(nbus, fill_value=-3.14, dtype=float)
-        self.angle_max: np.ndarray = np.full(nbus, fill_value=3.14, dtype=float)
-        self.bus_types: np.ndarray = np.empty(nbus, dtype=int)
-        self.installed_power: np.ndarray = np.zeros(nbus, dtype=float)
-        self.is_dc: np.ndarray = np.empty(nbus, dtype=bool)
-        self.areas: np.ndarray = np.empty(nbus, dtype=int)
+        self.idtag: StrVec = np.empty(nbus, dtype=object)
+        self.names: StrVec = np.empty(nbus, dtype=object)
+        self.active: IntVec = np.ones(nbus, dtype=int)
+        self.Vbus: CxVec = np.ones(nbus, dtype=complex)
+        self.Vmin: Vec = np.ones(nbus, dtype=float)
+        self.Vmax: Vec = np.ones(nbus, dtype=float)
+        self.Vnom: Vec = np.ones(nbus, dtype=float)
+        self.angle_min: Vec = np.full(nbus, fill_value=-3.14, dtype=float)
+        self.angle_max: Vec = np.full(nbus, fill_value=3.14, dtype=float)
+        self.bus_types: IntVec = np.empty(nbus, dtype=int)
+        self.installed_power: Vec = np.zeros(nbus, dtype=float)
+        self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
+        self.areas: IntVec = np.empty(nbus, dtype=int)
 
-        self.original_idx = np.zeros(nbus, dtype=int)
+        self.original_idx: IntVec = np.zeros(nbus, dtype=int)
 
     def slice(self, elm_idx: IntVec) -> "BusData":
         """

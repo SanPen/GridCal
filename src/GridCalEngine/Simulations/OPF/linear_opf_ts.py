@@ -33,7 +33,7 @@ from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
-from GridCalEngine.Utils.MIP.ortools import LpExp, LpVar, LpModel, get_lp_var_value, lpDot, save_lp, save_mps
+from GridCalEngine.Utils.MIP.ortools import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
 
@@ -428,16 +428,16 @@ def add_linear_generation_formulation(t: Union[int, None],
         if gen_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
-            gen_vars.p[t, k] = prob.NumVar(-1e20, 1e20, join("gen_p_", [t, k], "_"))
+            gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
 
             if gen_data_t.dispatchable[k]:
 
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    gen_vars.starting_up[t, k] = prob.IntVar(0, 1, join("gen_starting_up_", [t, k], "_"))
-                    gen_vars.producing[t, k] = prob.IntVar(0, 1, join("gen_producing_", [t, k], "_"))
-                    gen_vars.shutting_down[t, k] = prob.IntVar(0, 1, join("gen_shutting_down_", [t, k], "_"))
+                    gen_vars.starting_up[t, k] = prob.make_int(0, 1, join("gen_starting_up_", [t, k], "_"))
+                    gen_vars.producing[t, k] = prob.make_int(0, 1, join("gen_producing_", [t, k], "_"))
+                    gen_vars.shutting_down[t, k] = prob.make_int(0, 1, join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
                     f_obj += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
@@ -447,27 +447,34 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(gen_vars.p[t, k] >= (
-                                gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
-                                 join("gen>=Pmin", [t, k], "_"))
-                        prob.Add(gen_vars.p[t, k] <= (
-                                gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
-                                 join("gen<=Pmax", [t, k], "_"))
+                        prob.add_cst(
+                            cst=gen_vars.p[t, k] >= (
+                                    gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[
+                                t, k]),
+                            name=join("gen>=Pmin", [t, k], "_"))
+                        prob.add_cst(
+                            cst=gen_vars.p[t, k] <= (
+                                    gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[
+                                t, k]),
+                            name=join("gen<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
-                                     gen_vars.producing[t, k] - float(gen_data_t.active[k]),
-                                     join("binary_alg1_", [t, k], "_"))
-                            prob.Add(gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
-                                     join("binary_alg2_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] == gen_vars.producing[
+                                    t, k] - float(gen_data_t.active[k]),
+                                name=join("binary_alg1_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
+                                name=join("binary_alg2_", [t, k], "_"))
                         else:
-                            prob.Add(
-                                gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
-                                gen_vars.producing[t, k] - gen_vars.producing[t - 1, k],
-                                join("binary_alg3_", [t, k], "_"))
-                            prob.Add(gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
-                                     join("binary_alg4_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
+                                    gen_vars.producing[t, k] - gen_vars.producing[t - 1, k],
+                                name=join("binary_alg3_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
+                                name=join("binary_alg4_", [t, k], "_"))
                 else:
                     # No unit commitment
 
@@ -486,8 +493,10 @@ def add_linear_generation_formulation(t: Union[int, None],
                             dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
 
                             # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
-                            prob.Add(-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k])
-                            prob.Add(gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt)
+                            prob.add_cst(
+                                cst=-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k])
+                            prob.add_cst(
+                                cst=gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt)
             else:
 
                 # it is NOT dispatchable
@@ -499,19 +508,21 @@ def add_linear_generation_formulation(t: Union[int, None],
                 # the generator is not dispatchable at time step
                 if p > 0:
 
-                    gen_vars.shedding[t, k] = prob.NumVar(0, p, join("gen_shedding_", [t, k], "_"))
+                    gen_vars.shedding[t, k] = prob.add_var(0, p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.Add(gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
-                             join("gen==PG-PGslack", [t, k], "_"))
+                    prob.add_cst(
+                        cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
+                        name=join("gen==PG-PGslack", [t, k], "_"))
 
                     f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 elif p < 0:
                     # the negative sign is because P is already negative here, to make it positive
-                    gen_vars.shedding[t, k] = prob.NumVar(0, -p, join("gen_shedding_", [t, k], "_"))
+                    gen_vars.shedding[t, k] = prob.add_var(0, -p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.Add(gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
-                             join("gen==PG+PGslack", [t, k], "_"))
+                    prob.add_cst(
+                        cst=gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
+                        name=join("gen==PG+PGslack", [t, k], "_"))
 
                     f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
@@ -560,16 +571,16 @@ def add_linear_battery_formulation(t: Union[int, None],
         if batt_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
-            batt_vars.p[t, k] = prob.NumVar(0, 1e20, join("batt_p_", [t, k], "_"))
+            batt_vars.p[t, k] = prob.add_var(0, 1e20, join("batt_p_", [t, k], "_"))
 
             if batt_data_t.dispatchable[k]:
 
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    batt_vars.starting_up[t, k] = prob.IntVar(0, 1, join("bat_starting_up_", [t, k], "_"))
-                    batt_vars.producing[t, k] = prob.IntVar(0, 1, join("bat_producing_", [t, k], "_"))
-                    batt_vars.shutting_down[t, k] = prob.IntVar(0, 1, join("bat_shutting_down_", [t, k], "_"))
+                    batt_vars.starting_up[t, k] = prob.make_int(0, 1, join("bat_starting_up_", [t, k], "_"))
+                    batt_vars.producing[t, k] = prob.make_int(0, 1, join("bat_producing_", [t, k], "_"))
+                    batt_vars.shutting_down[t, k] = prob.make_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
                     f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
@@ -580,28 +591,34 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        prob.Add(batt_vars.p[t, k] >= (
-                                batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
-                            t, k]),
-                                 join("batt>=Pmin", [t, k], "_"))
-                        prob.Add(batt_vars.p[t, k] <= (
-                                batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
-                            t, k]),
-                                 join("batt<=Pmax", [t, k], "_"))
+                        prob.add_cst(
+                            cst=batt_vars.p[t, k] >= (
+                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
+                                t, k]),
+                            name=join("batt>=Pmin", [t, k], "_"))
+                        prob.add_cst(
+                            cst=batt_vars.p[t, k] <= (
+                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
+                                t, k]),
+                            name=join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                t, k] - float(batt_data_t.active[k]),
-                                     join("binary_alg1_", [t, k], "_"))
-                            prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                     join("binary_alg2_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
+                                    t, k] - float(batt_data_t.active[k]),
+                                name=join("binary_alg1_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
+                                name=join("binary_alg2_", [t, k], "_"))
                         else:
-                            prob.Add(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                t, k] - batt_vars.producing[t - 1, k],
-                                     join("binary_alg3_", [t, k], "_"))
-                            prob.Add(batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                     join("binary_alg4_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
+                                    t, k] - batt_vars.producing[t - 1, k],
+                                name=join("binary_alg3_", [t, k], "_"))
+                            prob.add_cst(
+                                cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
+                                name=join("binary_alg4_", [t, k], "_"))
                 else:
                     # No unit commitment
 
@@ -624,19 +641,21 @@ def add_linear_battery_formulation(t: Union[int, None],
                                 batt_data_t.ramp_down[k] < batt_data_t.pmax[k]:
                             # if the ramp is actually sufficiently restrictive...
                             # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
-                            prob.Add(
-                                -batt_data_t.ramp_down[k] / Sbase * dt <= batt_vars.p[t, k] - batt_vars.p[t - 1, k])
-                            prob.Add(
-                                batt_vars.p[t, k] - batt_vars.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
+                            prob.add_cst(
+                                cst=-batt_data_t.ramp_down[k] / Sbase * dt <= batt_vars.p[t, k] - batt_vars.p[t - 1, k])
+                            prob.add_cst(
+                                cst=batt_vars.p[t, k] - batt_vars.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
 
                 # set the energy  value Et = E(t - 1) + dt * Pb / eff
-                batt_vars.e[t, k] = prob.NumVar(batt_data_t.e_min[k] / Sbase, batt_data_t.e_max[k] / Sbase,
-                                                join("batt_e_", [t, k], "_"))
+                batt_vars.e[t, k] = prob.add_var(batt_data_t.e_min[k] / Sbase,
+                                                 batt_data_t.e_max[k] / Sbase,
+                                                 join("batt_e_", [t, k], "_"))
 
                 if t > 0:
                     # energy decreases / increases with power · dt
-                    prob.Add(
-                        batt_vars.e[t, k] == batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k])
+                    prob.add_cst(
+                        cst=batt_vars.e[t, k] == batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[
+                            t, k])
                 else:
                     # set the initial energy value
                     batt_vars.e[t, k] = energy_0[k] / Sbase
@@ -653,19 +672,23 @@ def add_linear_battery_formulation(t: Union[int, None],
                 # the generator is not dispatchable at time step
                 if p > 0:
 
-                    batt_vars.shedding[t, k] = prob.NumVar(0, p, join("bat_shedding_", [t, k], "_"))
+                    batt_vars.shedding[t, k] = prob.add_var(0, p, join("bat_shedding_", [t, k], "_"))
 
-                    prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase - batt_vars.shedding[t, k],
-                             join("batt==PB-PBslack", [t, k], "_"))
+                    prob.add_cst(
+                        cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase - batt_vars.shedding[t, k],
+                        name=join("batt==PB-PBslack", [t, k], "_"))
 
                     f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
 
                 elif p < 0:
                     # the negative sign is because P is already negative here
-                    batt_vars.shedding[t, k] = prob.NumVar(0, -p, join("bat_shedding_", [t, k], "_"))
+                    batt_vars.shedding[t, k] = prob.add_var(0,
+                                                            -p,
+                                                            join("bat_shedding_", [t, k], "_"))
 
-                    prob.Add(batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
-                             join("batt==PB+PBslack", [t, k], "_"))
+                    prob.add_cst(
+                        cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
+                        name=join("batt==PB+PBslack", [t, k], "_"))
 
                     f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
 
@@ -709,8 +732,8 @@ def add_linear_load_formulation(t: Union[int, None],
             if load_vars.p[t, k] > 0.0:
 
                 # assign load shedding variable
-                load_vars.shedding[t, k] = prob.NumVar(lb=0, ub=load_vars.p[t, k],
-                                                       name=join("load_shedding_", [t, k], "_"))
+                load_vars.shedding[t, k] = prob.add_var(lb=0, ub=load_vars.p[t, k],
+                                                        name=join("load_shedding_", [t, k], "_"))
 
                 # minimize the load shedding
                 f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
@@ -764,7 +787,7 @@ def add_linear_branches_formulation(t: int,
         if branch_data_t.active[m]:
 
             # declare the flow LPVar
-            branch_vars.flows[t, m] = prob.NumVar(lb=-inf, ub=inf, name=join("flow_", [t, m], "_"))
+            branch_vars.flows[t, m] = prob.add_var(lb=-inf, ub=inf, name=join("flow_", [t, m], "_"))
 
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
@@ -779,14 +802,14 @@ def add_linear_branches_formulation(t: int,
             if branch_data_t.control_mode[m] == TransformerControlType.Pt:
 
                 # add angle
-                branch_vars.tap_angles[t, m] = prob.NumVar(lb=branch_data_t.tap_angle_min[m],
-                                                           ub=branch_data_t.tap_angle_max[m],
-                                                           name=join("tap_ang_", [t, m], "_"))
+                branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
+                                                            ub=branch_data_t.tap_angle_max[m],
+                                                            name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 flow_ctr = branch_vars.flows[t, m] == bk * (
                         vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
-                prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
+                prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
                 vars_bus.branch_injections[t, fr] = -bk * branch_vars.tap_angles[t, m]
@@ -795,24 +818,28 @@ def add_linear_branches_formulation(t: int,
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to])
-                prob.Add(flow_ctr, name=join("Branch_flow_set_", [t, m], "_"))
+                prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_", [t, m], "_"))
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m]:
-                branch_vars.flow_slacks_pos[t, m] = prob.NumVar(0, inf, name=join("flow_slack_pos_", [t, m], "_"))
-                branch_vars.flow_slacks_neg[t, m] = prob.NumVar(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
+                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf, name=join("flow_slack_pos_", [t, m], "_"))
+                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
                 branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
                                                         branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[
                                                             m] / Sbase
-                prob.Add(branch_vars.flow_constraints_ub[t, m], name=join("br_flow_upper_lim_", [t, m]))
+                prob.add_cst(
+                    cst=branch_vars.flow_constraints_ub[t, m],
+                    name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
                 branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
                                                         branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[
                     m] / Sbase
-                prob.Add(branch_vars.flow_constraints_lb[t, m], name=join("br_flow_lower_lim_", [t, m]))
+                prob.add_cst(
+                    cst=branch_vars.flow_constraints_lb[t, m],
+                    name=join("br_flow_lower_lim_", [t, m]))
 
                 # add to the objective function
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
@@ -855,16 +882,16 @@ def add_linear_hvdc_formulation(t: int,
         if hvdc_data_t.active[m]:
 
             # declare the flow var
-            hvdc_vars.flows[t, m] = prob.NumVar(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
-                                                name=join("hvdc_flow_", [t, m], "_"))
+            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
+                                                 name=join("hvdc_flow_", [t, m], "_"))
 
             if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
 
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
-                prob.Add(hvdc_vars.flows[t, m] == P0 +
-                         hvdc_data_t.angle_droop[m] * (vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
-                         name=join("hvdc_flow_cst_", [t, m], "_"))
+                prob.add_cst(cst=hvdc_vars.flows[t, m] == P0 + hvdc_data_t.angle_droop[m] * (
+                        vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                             name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
                 vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
@@ -931,18 +958,20 @@ def add_linear_node_balance(t_idx: int,
 
     P_esp = bus_vars.branch_injections[t_idx, :]
     P_esp += lpDot(generator_data.C_bus_elm.tocsc(),
-                      gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+                   gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
     P_esp += lpDot(battery_data.C_bus_elm.tocsc(),
-                      batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+                   batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
     P_esp += lpDot(load_data.C_bus_elm.tocsc(),
-                      load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+                   load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
     # calculate the linear nodal inyection
     P_calc = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.Add(P_calc[k] == P_esp[k], name=join("kirchoff_", [t_idx, k], "_"))
+        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+            cst=P_calc[k] == P_esp[k],
+            name=join("kirchoff_", [t_idx, k], "_"))
 
     for i in vd:
         bus_vars.theta[t_idx, i].SetBounds(0, 0)
@@ -1009,13 +1038,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
 
-    lp_model: LpModel = LpModel.CreateSolver(solver_type.value)
-    lp_model.SuppressOutput()
-
-    if lp_model is None:
-        print("{} is not present".format(solver_type.value))
-        logger.add_error(msg="Solver is not present", value=solver_type.value)
-        return mip_vars.get_values(grid.Sbase)
+    lp_model: LpModel = LpModel(solver_type)
 
     # objective function
     f_obj = 0.0
@@ -1042,9 +1065,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = lp_model.NumVar(nc.bus_data.angle_min[k],
-                                                                nc.bus_data.angle_max[k],
-                                                                join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
+                                                                 ub=nc.bus_data.angle_max[k],
+                                                                 name=join("th_", [t_idx, k], "_"))
 
         # formulate loads ------------------------------------------------------------------------------------------
         f_obj += add_linear_load_formulation(t=t_idx,
@@ -1121,15 +1144,15 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        lp_model.Add(lp_model.Sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.Sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                     mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-                     name="satisfy_demand_at_={0}".format(t_idx))
+        lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                         mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
+                         name="satisfy_demand_at_={0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)
 
     # set the objective function
-    lp_model.Minimize(f_obj)
+    lp_model.minimize(f_obj)
 
     # solve
     if progress_text is not None:
@@ -1139,32 +1162,22 @@ def run_linear_opf_ts(grid: MultiCircuit,
         progress_func(0)
 
     if export_model_fname is not None:
-        if export_model_fname.endswith('lp'):
-            save_lp(lp_model=lp_model, fname=export_model_fname)
-            print('LP model saved as:', export_model_fname)
-        elif export_model_fname.endswith('mps'):
-            save_mps(lp_model=lp_model, fname=export_model_fname)
-            print('MPS model saved as:', export_model_fname)
+        lp_model.save_model(file_name=export_model_fname)
+        print('LP model saved as:', export_model_fname)
 
-    status = lp_model.Solve()
+    status = lp_model.solve()
 
     # gather the results
     if status == LpModel.OPTIMAL:
         print('Solution:')
-        print('Objective value =', lp_model.Objective().Value())
+        print('Objective value =', lp_model.fobj_value())
         mip_vars.acceptable_solution = True
     else:
         print('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution = False
-        model_str = lp_model.ExportModelAsLpFormat(False)
         lp_file_name = grid.name + "_debug.lp"
-        with open(lp_file_name, "w") as f:
-            f.write(model_str)
+        lp_model.save_model(file_name=lp_file_name)
         print("Debug LP model saved as:", lp_file_name)
-
-    # extract values from the LP Vars
-    is_mip = [var.Integer() for var in lp_model.variables()]
-    print("Is Mip:", is_mip)
 
     vars_v = mip_vars.get_values(grid.Sbase)
 

@@ -28,7 +28,8 @@ from scipy.sparse import csc_matrix
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.pywraplp import LinearExpr as LpExp  # imported elsewhere do not delete
 from ortools.linear_solver.pywraplp import Variable as LpVar  # imported elsewhere do not delete
-from ortools.linear_solver.pywraplp import Solver as LpModel  # imported elsewhere do not delete
+# from ortools.linear_solver.pywraplp import Solver as LpModel  # imported elsewhere do not delete
+from GridCalEngine.basic_structures import MIPSolvers
 
 
 def get_lp_var_value(x: Union[float, ort.Variable]) -> float:
@@ -153,22 +154,7 @@ def extract(arr, make_abs=False):  # override this method to call ORTools instea
     return val
 
 
-def save_lp(solver: ort.Solver, file_name="ntc_opf_problem.lp"):
-    """
-    Save problem in LP format
-    :param solver: Solver instance
-    :param file_name: name of the file (.lp or .mps supported)
-    """
-    # save the problem in LP format to debug
-    if file_name.lower().endswith('.lp'):
-        lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
-    elif file_name.lower().endswith('.mps'):
-        lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
-    else:
-        raise Exception('Unsupported file format')
-    file2write = open(file_name, 'w')
-    file2write.write(lp_content)
-    file2write.close()
+
 
 
 def lpAddRestrictions(problem: ort.Solver, arr, name):
@@ -437,25 +423,98 @@ def get_or_tools_available_solvers() -> List[str]:
     return res
 
 
-def save_lp(lp_model: ort.Solver, fname: str):
+class LpModel:
     """
-
-    :param lp_model:
-    :param fname:
-    :return:
+    LPModel implementation for ORTOOLS
     """
-    model_str = lp_model.ExportModelAsLpFormat(False)
-    with open(fname, "w") as f:
-        f.write(model_str)
+    OPTIMAL = ort.Solver.OPTIMAL
 
+    def __init__(self, solver_type: MIPSolvers):
 
-def save_mps(lp_model: ort.Solver, fname: str):
-    """
+        self.model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
 
-    :param lp_model:
-    :param fname:
-    :return:
-    """
-    model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
-    with open(fname, "w") as f:
-        f.write(model_str)
+        if self.model is None:
+            raise Exception("{} is not present".format(solver_type.value))
+
+        self.model.SuppressOutput()
+
+    def save_model(self, file_name="ntc_opf_problem.lp"):
+        """
+        Save problem in LP format
+        :param file_name: name of the file (.lp or .mps supported)
+        """
+        # save the problem in LP format to debug
+        if file_name.lower().endswith('.lp'):
+            lp_content = self.model.ExportModelAsLpFormat(obfuscated=False)
+        elif file_name.lower().endswith('.mps'):
+            lp_content = self.model.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+        else:
+            raise Exception('Unsupported file format')
+
+        with open(file_name, "w") as f:
+            f.write(lp_content)
+
+    def make_int(self, lb: int, ub: int, name: str = "") -> LpVar:
+        """
+        Make integer LP var
+        :param lb: lower bound
+        :param ub: upper bound
+        :param name: name (optional)
+        :return: LpVar
+        """
+        return self.model.IntVar(lb=lb, ub=ub, name=name)
+
+    def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
+        """
+        Make floating point LP var
+        :param lb: lower bound
+        :param ub: upper bound
+        :param name: name (optional)
+        :return: LpVar
+        """
+        return self.model.NumVar(lb=lb, ub=ub, name=name)
+
+    def add_cst(self, cst, name: str = "") -> LpExp:
+        """
+        Add constraint to the model
+        :param cst: constraint object (or general expression)
+        :param name: name of the constraint (optional)
+        :return: Constraint object
+        """
+        return self.model.Add(constraint=cst, name=name)
+
+    def sum(self, cst) -> LpExp:
+        """
+        Add sum of the constraints to the model
+        :param cst: constraint object (or general expression)
+        :return: Constraint object
+        """
+        return self.model.Sum(cst)
+
+    def minimize(self, obj_function):
+        """
+        Set the objective function with minimization sense
+        :param obj_function: expression to minimize
+        """
+        self.model.Minimize(expr=obj_function)
+
+    def solve(self) -> int:
+        """
+        Solve the model
+        :return:
+        """
+        return self.model.Solve()
+
+    def fobj_value(self) -> float:
+        """
+        Get the objective function value
+        :return:
+        """
+        return self.model.Objective().Value()
+
+    def is_mip(self):
+        """
+        Is this odel a MIP?
+        :return:
+        """
+        return [var.Integer() for var in self.model.variables()]

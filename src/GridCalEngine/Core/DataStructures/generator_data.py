@@ -17,7 +17,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Core.topology as tp
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
 
 class GeneratorData:
@@ -34,45 +34,43 @@ class GeneratorData:
         self.nelm: int = nelm
         self.nbus: int = nbus
 
-        self.names: np.ndarray = np.empty(nelm, dtype=object)
-        self.idtag: np.ndarray = np.empty(nelm, dtype=object)
+        self.names: StrVec = np.empty(nelm, dtype=object)
+        self.idtag: StrVec = np.empty(nelm, dtype=object)
 
-        self.controllable: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.installed_p: np.ndarray = np.zeros(nelm, dtype=float)
+        self.controllable: BoolVec = np.zeros(nelm, dtype=bool)
+        self.installed_p: Vec = np.zeros(nelm, dtype=float)
 
-        self.active: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.p: np.ndarray = np.zeros(nelm, dtype=float)
-        self.pf: np.ndarray = np.zeros(nelm, dtype=float)
-        self.v: np.ndarray = np.zeros(nelm, dtype=float)
+        self.active: BoolVec = np.zeros(nelm, dtype=bool)
+        self.p: Vec = np.zeros(nelm, dtype=float)
+        self.pf: Vec = np.zeros(nelm, dtype=float)
+        self.v: Vec = np.zeros(nelm, dtype=float)
 
-        self.qmin: np.ndarray = np.zeros(nelm, dtype=float)
-        self.qmax: np.ndarray = np.zeros(nelm, dtype=float)
+        self.qmin: Vec = np.zeros(nelm, dtype=float)
+        self.qmax: Vec = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         # r0, r1, r2, x0, x1, x2
-        self.r0: np.ndarray = np.zeros(nelm, dtype=float)
-        self.r1: np.ndarray = np.zeros(nelm, dtype=float)
-        self.r2: np.ndarray = np.zeros(nelm, dtype=float)
+        self.r0: Vec = np.zeros(nelm, dtype=float)
+        self.r1: Vec = np.zeros(nelm, dtype=float)
+        self.r2: Vec = np.zeros(nelm, dtype=float)
 
-        self.x0: np.ndarray = np.zeros(nelm, dtype=float)
-        self.x1: np.ndarray = np.zeros(nelm, dtype=float)
-        self.x2: np.ndarray = np.zeros(nelm, dtype=float)
+        self.x0: Vec = np.zeros(nelm, dtype=float)
+        self.x1: Vec = np.zeros(nelm, dtype=float)
+        self.x2: Vec = np.zeros(nelm, dtype=float)
 
-        self.dispatchable: np.ndarray = np.zeros(nelm, dtype=bool)
-        self.pmax: np.ndarray = np.zeros(nelm, dtype=float)
-        self.pmin: np.ndarray = np.zeros(nelm, dtype=float)
+        self.dispatchable: BoolVec = np.zeros(nelm, dtype=bool)
+        self.pmax: Vec = np.zeros(nelm, dtype=float)
+        self.pmin: Vec = np.zeros(nelm, dtype=float)
 
-        self.cost_1: np.ndarray = np.zeros(nelm, dtype=float)
-        self.cost_0: np.ndarray = np.zeros(nelm, dtype=float)
-        self.startup_cost: np.ndarray = np.zeros(nelm, dtype=float)
-        self.availability: np.ndarray = np.zeros(nelm, dtype=float)
-        self.ramp_up: np.ndarray = np.zeros(nelm, dtype=float)
-        self.ramp_down: np.ndarray = np.zeros(nelm, dtype=float)
-        self.min_time_up: np.ndarray = np.zeros(nelm, dtype=float)
-        self.min_time_down: np.ndarray = np.zeros(nelm, dtype=float)
-
-        self.is_on: np.ndarray = np.zeros(nelm, dtype=float)
+        self.cost_1: Vec = np.zeros(nelm, dtype=float)
+        self.cost_0: Vec = np.zeros(nelm, dtype=float)
+        self.startup_cost: Vec = np.zeros(nelm, dtype=float)
+        self.availability: Vec = np.zeros(nelm, dtype=float)
+        self.ramp_up: Vec = np.zeros(nelm, dtype=float)
+        self.ramp_down: Vec = np.zeros(nelm, dtype=float)
+        self.min_time_up: Vec = np.zeros(nelm, dtype=float)
+        self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
@@ -123,8 +121,6 @@ class GeneratorData:
         data.min_time_up = self.min_time_up[elm_idx]
         data.min_time_down = self.min_time_down[elm_idx]
 
-        data.is_on = self.is_on[elm_idx]
-
         data.original_idx = elm_idx
 
         return data
@@ -173,8 +169,6 @@ class GeneratorData:
         data.ramp_down = self.ramp_down.copy()
         data.min_time_up = self.min_time_up.copy()
         data.min_time_down = self.min_time_down.copy()
-
-        data.is_on = self.is_on.copy()
 
         data.original_idx = self.original_idx
 
