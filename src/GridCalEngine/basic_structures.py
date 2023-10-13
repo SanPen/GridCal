@@ -35,6 +35,7 @@ Mat = npt.NDArray[npt.Shape['*, *'], npt.Double]
 CxMat = npt.NDArray[npt.Shape['*, *'], npt.Complex]
 IntMat = npt.NDArray[npt.Shape['*, *'], npt.Int]
 StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
+ObjMat = npt.NDArray[npt.Shape['*, *'], npt.Object]
 CscMat = csc_matrix
 CsrMat = csr_matrix
 

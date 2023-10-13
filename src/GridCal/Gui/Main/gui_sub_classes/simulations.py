@@ -37,7 +37,7 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
-from GridCalEngine.Utils.MIP.ortools import get_available_mip_solvers
+from GridCalEngine.Utils.MIP.selected_solver import get_available_mip_solvers
 from GridCalEngine.enumerations import DeviceType
 
 

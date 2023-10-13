@@ -33,7 +33,7 @@ from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
-from GridCalEngine.Utils.MIP.ortools import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot)
+from GridCalEngine.Utils.MIP.selected_solver import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot, set_var_bounds)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
 
@@ -482,8 +482,9 @@ def add_linear_generation_formulation(t: Union[int, None],
                     f_obj += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                     if not skip_generation_limits:
-                        gen_vars.p[t, k].SetLb(gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase)
-                        gen_vars.p[t, k].SetUb(gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=gen_vars.p[t, k],
+                                       lb=gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase,
+                                       ub=gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
 
                 # add the ramp constraints
                 if ramp_constraints and t is not None:
@@ -914,7 +915,8 @@ def add_linear_hvdc_formulation(t: int,
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
 
-                    hvdc_vars.flows[t, m].SetBounds(P0, P0)  # make the flow equal to P0
+                    # make the flow equal to P0
+                    set_var_bounds(var=hvdc_vars.flows[t, m], ub=P0, lb=P0)
 
                     # add the injections matching the flow
                     vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
@@ -923,7 +925,7 @@ def add_linear_hvdc_formulation(t: int,
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
             # not active, therefore the flow is exactly zero
-            hvdc_vars.flows[t, m].SetBounds(0, 0)
+            set_var_bounds(var=hvdc_vars.flows[t, m], ub=0.0, lb=0.0)
 
     return f_obj
 
@@ -974,7 +976,7 @@ def add_linear_node_balance(t_idx: int,
             name=join("kirchoff_", [t_idx, k], "_"))
 
     for i in vd:
-        bus_vars.theta[t_idx, i].SetBounds(0, 0)
+        set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
@@ -1146,7 +1148,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         # production equals demand ---------------------------------------------------------------------------------
         lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
                          mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-                         name="satisfy_demand_at_={0}".format(t_idx))
+                         name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)

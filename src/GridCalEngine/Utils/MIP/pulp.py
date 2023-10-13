@@ -23,10 +23,11 @@ other solver interface easily
 
 from typing import List, Union
 import numpy as np
+import pulp
 from scipy.sparse import csc_matrix
-import ortools.linear_solver.pywraplp as ort
-from ortools.linear_solver.pywraplp import LinearExpr as LpExp
-from ortools.linear_solver.pywraplp import Variable as LpVar
+
+from pulp import LpConstraint as LpExp
+from pulp import LpVariable as LpVar
 from GridCalEngine.basic_structures import MIPSolvers, ObjVec, ObjMat
 
 
@@ -36,12 +37,12 @@ def get_lp_var_value(x: Union[float, LpVar]) -> float:
     :param x: soe object (it may be a LP var or a number)
     :return: result or previous numeric value
     """
-    if isinstance(x, ort.Variable):
-        return x.solution_value()
-    elif isinstance(x, ort.SumArray):
-        return x.solution_value()
-    elif isinstance(x, ort.Constraint):
-        return x.dual_value()
+    if isinstance(x, pulp.LpVariable):
+        return x.value()
+    elif isinstance(x, pulp.LpAffineExpression):
+        return x.value()
+    elif isinstance(x, pulp.LpConstraint):
+        return x.pi
     else:
         return x
 
@@ -98,13 +99,36 @@ def get_available_mip_solvers() -> List[str]:
     Get a list of candidate solvers
     :return:
     """
-    candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
-    res = list()
-    for c in candidates:
-        solver = ort.Solver.CreateSolver(c)
-        if solver is not None:
-            res.append(c)
-    return res
+    solvers = pulp.listSolvers(onlyAvailable=True)
+
+    # elif self.solver_type == MIPSolvers.CBC:
+    # solver = 'PULP_CBC_CMD'
+    #
+    # elif self.solver_type == MIPSolvers.HIGHS:
+    # raise Exception("HiGHS is not supported by PuLP")
+    # elif self.solver_type == MIPSolvers.SCIP:
+    # solver = 'SCIP_CMD'
+    # elif self.solver_type == MIPSolvers.CPLEX:
+    # solver = 'CPLEX_CMD'
+    # elif self.solver_type == MIPSolvers.GUROBI:
+    # solver = 'GUROBI'
+    # elif self.solver_type == MIPSolvers.XPRESS:
+    # solver = 'XPRESS'
+
+    solvers2 = list()
+    for slv in solvers:
+        if slv == 'PULP_CBC_CMD':
+            solvers2.append(MIPSolvers.CBC.value)
+        elif slv == 'SCIP_CMD':
+            solvers2.append(MIPSolvers.SCIP.value)
+        elif slv == 'CPLEX_CMD':
+            solvers2.append(MIPSolvers.CPLEX.value)
+        elif slv == 'GUROBI':
+            solvers2.append(MIPSolvers.GUROBI.value)
+        elif slv == 'XPRESS':
+            solvers2.append(MIPSolvers.XPRESS.value)
+
+    return solvers2
 
 
 def set_var_bounds(var: LpVar, lb: float, ub: float):
@@ -114,24 +138,24 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
     :param lb: lower bound value
     :param ub: upper bound value
     """
-    var.SetLb(lb)
-    var.SetUb(ub)
+    var.upBound = ub
+    var.lowBound = lb
 
 
 class LpModel:
     """
     LPModel implementation for ORTOOLS
     """
-    OPTIMAL = ort.Solver.OPTIMAL
+    OPTIMAL = pulp.LpStatusOptimal
 
     def __init__(self, solver_type: MIPSolvers):
 
-        self.model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
+        self.solver_type: MIPSolvers = solver_type
+
+        self.model = pulp.LpProblem("myProblem", pulp.LpMinimize)
 
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
-
-        self.model.SuppressOutput()
 
     def save_model(self, file_name="ntc_opf_problem.lp"):
         """
@@ -140,9 +164,9 @@ class LpModel:
         """
         # save the problem in LP format to debug
         if file_name.lower().endswith('.lp'):
-            lp_content = self.model.ExportModelAsLpFormat(obfuscated=False)
+            lp_content = self.model.writeLP(filename=file_name)
         elif file_name.lower().endswith('.mps'):
-            lp_content = self.model.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+            lp_content = self.model.writeMPS(filename=file_name)
         else:
             raise Exception('Unsupported file format')
 
@@ -157,7 +181,9 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.IntVar(lb=lb, ub=ub, name=name)
+        var = pulp.LpVariable(name=name, lowBound=lb, upBound=ub, cat=pulp.LpInteger)
+        self.model.addVariable(var)
+        return var
 
     def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
         """
@@ -167,16 +193,18 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.NumVar(lb=lb, ub=ub, name=name)
+        var = pulp.LpVariable(name=name, lowBound=lb, upBound=ub, cat=pulp.LpContinuous)
+        self.model.addVariable(var)
+        return var
 
-    def add_cst(self, cst, name: str = "") -> LpExp:
+    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> LpExp:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
-        return self.model.Add(constraint=cst, name=name)
+        return self.model.addConstraint(constraint=cst, name=name)
 
     def sum(self, cst) -> LpExp:
         """
@@ -184,32 +212,53 @@ class LpModel:
         :param cst: constraint object (or general expression)
         :return: Constraint object
         """
-        return self.model.Sum(cst)
+        return pulp.lpSum(cst)
 
     def minimize(self, obj_function):
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
-        self.model.Minimize(expr=obj_function)
+        self.model.setObjective(obj=obj_function)
 
     def solve(self) -> int:
         """
         Solve the model
         :return:
         """
-        return self.model.Solve()
+
+        # 'GLPK_CMD', 'PYGLPK', 'CPLEX_CMD', 'CPLEX_PY', 'CPLEX_DLL', 'GUROBI', 'GUROBI_CMD',
+        # 'MOSEK', 'XPRESS', 'PULP_CBC_CMD', 'COIN_CMD', 'COINMP_DLL', 'CHOCO_CMD', 'MIPCL_CMD', 'SCIP_CMD'
+
+        if self.solver_type == MIPSolvers.GLOP:
+            raise Exception("GLOP is not supported by PuLP")
+        elif self.solver_type == MIPSolvers.CBC:
+            solver = 'PULP_CBC_CMD'
+        elif self.solver_type == MIPSolvers.HIGHS:
+            raise Exception("HiGHS is not supported by PuLP")
+        elif self.solver_type == MIPSolvers.SCIP:
+            solver = 'SCIP_CMD'
+        elif self.solver_type == MIPSolvers.CPLEX:
+            solver = 'CPLEX_CMD'
+        elif self.solver_type == MIPSolvers.GUROBI:
+            solver = 'GUROBI'
+        elif self.solver_type == MIPSolvers.XPRESS:
+            solver = 'XPRESS'
+        else:
+            raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
+
+        return self.model.solve(solver=pulp.getSolver(solver))
 
     def fobj_value(self) -> float:
         """
         Get the objective function value
         :return:
         """
-        return self.model.Objective().Value()
+        return self.model.objective.value()
 
     def is_mip(self):
         """
         Is this odel a MIP?
         :return:
         """
-        return [var.Integer() for var in self.model.variables()]
+        return self.model.isMIP()
