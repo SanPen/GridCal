@@ -41,7 +41,6 @@ from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 
 
-
 class DiagramsMain(CompiledArraysMain):
     """
     Diagrams Main
@@ -149,7 +148,9 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
         # sliders
-        self.ui.simulation_results_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
+        self.ui.simulation_results_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
+        # self.ui.simulation_results_step_slider.sliderMoved.connect(self.diagrams_time_slider_change)
+        self.ui.simulation_results_step_slider.valueChanged.connect(self.update_time_slider_texts)
 
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
@@ -1052,7 +1053,20 @@ class DiagramsMain(CompiledArraysMain):
 
     def diagrams_time_slider_change(self) -> None:
         """
-        On change of the schematic slider...
+        After releasing the time slider, do something
+        """
+        idx = self.ui.simulation_results_step_slider.value()
+
+        if len(self.schematic_list_steps):
+            if idx > -1:
+                self.colour_diagrams()
+        else:
+            self.ui.schematic_step_label.setText("No steps")
+
+    def update_time_slider_texts(self):
+        """
+        Update the slider text label as it is moved
+        :return:
         """
         idx = self.ui.simulation_results_step_slider.value()
 
@@ -1061,7 +1075,6 @@ class DiagramsMain(CompiledArraysMain):
                 self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
         else:
             self.ui.schematic_step_label.setText("No steps")
-
     def export_diagram(self):
         """
         Save the schematic
