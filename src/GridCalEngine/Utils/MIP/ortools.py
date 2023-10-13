@@ -16,14 +16,35 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-This file includes extensions to the ORTools library
+This module abstracts the synthax of ORTOOLS out
+so that in the future it can be exchanged with some
+other solver interface easily
 """
 
-from typing import List
+from typing import List, Union
 import numpy as np
-from ortools.linear_solver import pywraplp
 from itertools import product
 from scipy.sparse import csc_matrix
+import ortools.linear_solver.pywraplp as ort
+from ortools.linear_solver.pywraplp import LinearExpr as LpExp  # imported elsewhere do not delete
+from ortools.linear_solver.pywraplp import Variable as LpVar  # imported elsewhere do not delete
+from ortools.linear_solver.pywraplp import Solver as LpModel  # imported elsewhere do not delete
+
+
+def get_lp_var_value(x: Union[float, ort.Variable]) -> float:
+    """
+    Get the value of a variable stored in a numpy array of objects
+    :param x: soe object (it may be a LP var or a number)
+    :return: result or previous numeric value
+    """
+    if isinstance(x, ort.Variable):
+        return x.solution_value()
+    elif isinstance(x, ort.SumArray):
+        return x.solution_value()
+    elif isinstance(x, ort.Constraint):
+        return x.dual_value()
+    else:
+        return x
 
 
 def lpDot(mat, arr):
@@ -132,7 +153,7 @@ def extract(arr, make_abs=False):  # override this method to call ORTools instea
     return val
 
 
-def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
+def save_lp(solver: ort.Solver, file_name="ntc_opf_problem.lp"):
     """
     Save problem in LP format
     :param solver: Solver instance
@@ -150,7 +171,7 @@ def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
     file2write.close()
 
 
-def lpAddRestrictions(problem: pywraplp.Solver, arr, name):
+def lpAddRestrictions(problem: ort.Solver, arr, name):
     """
     Add vector or matrix of restrictions to the problem
     :param problem: instance of LpProblem
@@ -169,7 +190,7 @@ def lpAddRestrictions(problem: pywraplp.Solver, arr, name):
             problem.Add(arr[i, j], name + '_' + str(i + 1) + '_' + str(j))
 
 
-def lpAddRestrictions2(problem: pywraplp.Solver, lhs, rhs, name, op='='):
+def lpAddRestrictions2(problem: ort.Solver, lhs, rhs, name, op='='):
     """
     Add vector or matrix of restrictions to the problem
     :param problem: instance of LpProblem
@@ -179,7 +200,7 @@ def lpAddRestrictions2(problem: pywraplp.Solver, lhs, rhs, name, op='='):
     :param op: type of restriction (=, <=, >=)
     """
 
-    assert(lhs.shape == rhs.shape)
+    assert (lhs.shape == rhs.shape)
 
     arr = np.empty(lhs.shape, dtype=object)
 
@@ -212,7 +233,7 @@ def lpAddRestrictions2(problem: pywraplp.Solver, lhs, rhs, name, op='='):
     return arr
 
 
-def lpAddRestrictions3(problem: pywraplp.Solver, lhs, var, rhs, name):
+def lpAddRestrictions3(problem: ort.Solver, lhs, var, rhs, name):
     """
     Add vector or matrix of restrictions to the problem
     so that lhs <= var <= rhs
@@ -264,40 +285,46 @@ def lpMakeVars(name, shape, lower=None, upper=None):
         if lower is None and upper is not None:
 
             for i in range(shape):
-                var[i] = pywraplp.Variable(name + '_' + str(i),
-                                           lowBound=None,
-                                           upBound=upper[i])
+                var[i] = ort.Variable(name + '_' + str(i),
+                                      lowBound=None, upBound=upper[i])
 
         elif lower is not None and upper is None:
 
             if type(lower) == int:
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower, upBound=None)
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower, upBound=None)
             else:
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower[i], upBound=None)
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower[i], upBound=None)
 
         elif lower is None and upper is None:
             for i in range(shape):
-                var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=None, upBound=None)
+                var[i] = ort.Variable(name + '_' + str(i),
+                                      lowBound=None, upBound=None)
 
         else:
 
             if type(lower) in (float, int) and type(upper) in (float, int):
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower, upBound=upper)
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower, upBound=upper)
 
             elif type(lower) not in (float, int) and type(upper) in (float, int):
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower[i], upBound=upper)
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower[i], upBound=upper)
 
             elif type(lower) in (float, int) and type(upper) not in (float, int):
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower, upBound=upper[i])
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower, upBound=upper[i])
 
             elif type(lower) not in (float, int) and type(upper) not in (float, int):
                 for i in range(shape):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower[i], upBound=upper[i])
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower[i], upBound=upper[i])
 
 
             else:
@@ -309,17 +336,20 @@ def lpMakeVars(name, shape, lower=None, upper=None):
             if lower is None and upper is not None:
 
                 for i in range(shape[0]):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=None, upBound=upper[i])
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=None, upBound=upper[i])
 
             elif lower is not None and upper is None:
 
                 for i in range(shape[0]):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower[i], upBound=None)
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower[i], upBound=None)
 
             else:
 
                 for i in range(shape[0]):
-                    var[i] = pywraplp.Variable(name + '_' + str(i), lowBound=lower[i], upBound=upper[i])
+                    var[i] = ort.Variable(name + '_' + str(i),
+                                          lowBound=lower[i], upBound=upper[i])
 
         elif len(shape) == 2:
 
@@ -327,41 +357,50 @@ def lpMakeVars(name, shape, lower=None, upper=None):
 
                 if type(upper) in [float, int]:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=upper)
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=None, upBound=upper)
                 else:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=None, upBound=upper[i])
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=None, upBound=upper[i])
 
             elif lower is not None and upper is None:
 
                 if type(lower) in [float, int]:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower, upBound=None)
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower, upBound=None)
                 else:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=None)
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower[i], upBound=None)
 
             else:
 
                 if type(lower) in [float, int] and type(upper) in [float, int]:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower, upBound=upper)
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower, upBound=upper)
 
                 elif len(lower.shape) == 2 and len(lower.shape) == 2:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i, j], upBound=upper[i, j])
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower[i, j], upBound=upper[i, j])
 
                 elif len(lower.shape) == 1 and len(lower.shape) == 2:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=upper[i, j])
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower[i], upBound=upper[i, j])
 
                 elif len(lower.shape) == 2 and len(lower.shape) == 1:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i, j], upBound=upper[i])
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower[i, j], upBound=upper[i])
 
                 elif len(lower.shape) == 1 and len(lower.shape) == 1:
                     for i, j in product(range(shape[0]), range(shape[1])):
-                        var[i, j] = pywraplp.Variable(name + '_' + str(i) + '_' + str(j), lowBound=lower[i], upBound=upper[i])
+                        var[i, j] = ort.Variable(name + '_' + str(i) + '_' + str(j),
+                                                 lowBound=lower[i], upBound=upper[i])
         else:
             pass
 
@@ -392,7 +431,31 @@ def get_or_tools_available_solvers() -> List[str]:
     candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
     res = list()
     for c in candidates:
-        solver = pywraplp.Solver.CreateSolver(c)
+        solver = ort.Solver.CreateSolver(c)
         if solver is not None:
             res.append(c)
     return res
+
+
+def save_lp(lp_model: ort.Solver, fname: str):
+    """
+
+    :param lp_model:
+    :param fname:
+    :return:
+    """
+    model_str = lp_model.ExportModelAsLpFormat(False)
+    with open(fname, "w") as f:
+        f.write(model_str)
+
+
+def save_mps(lp_model: ort.Solver, fname: str):
+    """
+
+    :param lp_model:
+    :param fname:
+    :return:
+    """
+    model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
+    with open(fname, "w") as f:
+        f.write(model_str)

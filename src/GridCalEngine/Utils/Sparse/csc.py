@@ -15,13 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from collections.abc import Iterable
 import scipy.sparse.sparsetools as sptools
 from scipy.sparse import csc_matrix
 
-from GridCalEngine.Sparse.utils import dense_to_str
-
-import GridCalEngine.Sparse.csc_numba as csc_numba
+import GridCalEngine.Utils.Sparse.csc_numba as csc_numba
 
 
 class CscMat(csc_matrix):
@@ -279,9 +276,9 @@ def pack_4_by_4(A11: CscMat, A12: CscMat, A21: CscMat, A22: CscMat):
     """
 
     m, n, Pi, Pp, Px = csc_numba.csc_stack_4_by_4_ff(A11.shape[0], A11.shape[1], A11.indices, A11.indptr, A11.data,
-                                           A12.shape[0], A12.shape[1], A12.indices, A12.indptr, A12.data,
-                                           A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data,
-                                           A22.shape[0], A22.shape[1], A22.indices, A22.indptr, A22.data)
+                                                     A12.shape[0], A12.shape[1], A12.indices, A12.indptr, A12.data,
+                                                     A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data,
+                                                     A22.shape[0], A22.shape[1], A22.indices, A22.indptr, A22.data)
     return CscMat((Px, Pi, Pp), shape=(m, n))
 
 
@@ -292,10 +289,10 @@ def sp_transpose(mat: csc_matrix):
     :return: CSC transposed matrix
     """
     Cm, Cn, Cp, Ci, Cx = csc_numba.csc_transpose(m=mat.shape[0],
-                                       n=mat.shape[1],
-                                       Ap=mat.indptr,
-                                       Ai=mat.indices,
-                                       Ax=mat.data)
+                                                 n=mat.shape[1],
+                                                 Ap=mat.indptr,
+                                                 Ai=mat.indices,
+                                                 Ax=mat.data)
     return csc_matrix((Cx, Ci, Cp), shape=(Cm, Cn))
 
 
@@ -307,10 +304,10 @@ def sp_slice_cols(mat: csc_matrix, cols: np.ndarray):
     :return: New sliced matrix
     """
     new_indices, new_col_ptr, new_val, nrows, ncols = csc_numba.sp_submat_c_numba(nrows=mat.shape[0],
-                                                                        ptrs=mat.indptr,
-                                                                        indices=mat.indices,
-                                                                        values=mat.data,
-                                                                        cols=cols)
+                                                                                  ptrs=mat.indptr,
+                                                                                  indices=mat.indices,
+                                                                                  values=mat.data,
+                                                                                  cols=cols)
     return csc_matrix((new_val, new_indices, new_col_ptr), shape=(nrows, ncols))
 
 
@@ -347,8 +344,8 @@ def sp_slice(mat: csc_matrix, rows, cols):
     # return sp_transpose(sp_slice_cols(mat2, rows))
 
     new_val, new_row_ind, new_col_ptr, n_rows, n_cols, nnz = csc_numba.csc_sub_matrix(Am=mat.shape[0], Annz=mat.nnz,
-                                                                            Ap=mat.indptr, Ai=mat.indices, Ax=mat.data,
-                                                                            rows=rows, cols=cols)
+                                                                                      Ap=mat.indptr, Ai=mat.indices, Ax=mat.data,
+                                                                                      rows=rows, cols=cols)
     new_val = np.resize(new_val, nnz)
     new_row_ind = np.resize(new_row_ind, nnz)
 
@@ -394,20 +391,20 @@ def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
 
     if row_major:
         data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_row_major(mats_data,
-                                                                        mats_indptr,
-                                                                        mats_indices,
-                                                                        mats_cols,
-                                                                        mats_rows,
-                                                                        m_rows,
-                                                                        m_cols)
+                                                                                  mats_indptr,
+                                                                                  mats_indices,
+                                                                                  mats_cols,
+                                                                                  mats_rows,
+                                                                                  m_rows,
+                                                                                  m_cols)
     else:
         data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_col_major(mats_data,
-                                                                        mats_indptr,
-                                                                        mats_indices,
-                                                                        mats_cols,
-                                                                        mats_rows,
-                                                                        m_rows,
-                                                                        m_cols)
+                                                                                  mats_indptr,
+                                                                                  mats_indices,
+                                                                                  mats_cols,
+                                                                                  mats_rows,
+                                                                                  m_rows,
+                                                                                  m_cols)
 
     return csc_matrix((data, indices, indptr), shape=(nrows, ncols))
 

@@ -21,7 +21,6 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import List, Union, Tuple, Callable
-import ortools.linear_solver.pywraplp as ort
 
 from GridCalEngine.basic_structures import ZonalGrouping
 from GridCalEngine.basic_structures import MIPSolvers
@@ -34,7 +33,7 @@ from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
-import GridCalEngine.ThirdParty.ortools.ortools_extra as pl
+from GridCalEngine.Utils.MIP.ortools import LpExp, LpVar, LpModel, get_lp_var_value, lpDot, save_lp, save_mps
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
 
@@ -50,28 +49,11 @@ def join(init: str, vals: List[int], sep="_"):
     return init + sep.join([str(x) for x in vals])
 
 
-def get_lp_var_value(x: Union[float, ort.Variable]) -> float:
-    """
-    Get the value of a variable stored in a numpy array of objects
-    :param x: soe object (it may be a LP var or a number)
-    :return: result or previous numeric value
-    """
-    if isinstance(x, ort.Variable):
-        return x.solution_value()
-    elif isinstance(x, ort.SumArray):
-        return x.solution_value()
-    elif isinstance(x, ort.Constraint):
-        return x.dual_value()
-    else:
-        return x
-
-
-def get_contingency_flow_with_filter(
-        multi_contingency: LinearMultiContingency,
-        base_flow: Vec,
-        injections: Union[None, Vec],
-        threshold: float,
-        m: int) -> ort.LinearExpr:
+def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
+                                     base_flow: Vec,
+                                     injections: Union[None, Vec],
+                                     threshold: float,
+                                     m: int) -> LpExp:
     """
     Get contingency flow
     :param multi_contingency: MultiContingency object
@@ -277,7 +259,7 @@ class BranchVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-        self.contingency_flow_data: List[Tuple[int, int, ort.Variable]] = list()
+        self.contingency_flow_data: List[Tuple[int, int, LpVar]] = list()
 
     def get_values(self, Sbase: float) -> "BranchVars":
         """
@@ -314,7 +296,7 @@ class BranchVars:
 
         return data
 
-    def add_contingency_flow(self, m: int, c: int, flow_var: ort.Variable):
+    def add_contingency_flow(self, m: int, c: int, flow_var: LpVar):
         """
 
         :param m:
@@ -423,7 +405,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       time_array: DateVec,
                                       gen_data_t: GeneratorData,
                                       gen_vars: GenerationVars,
-                                      prob: ort.Solver,
+                                      prob: LpModel,
                                       unit_commitment: bool,
                                       ramp_constraints: bool,
                                       skip_generation_limits: bool):
@@ -553,7 +535,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                                    time_array: DateVec,
                                    batt_data_t: BatteryData,
                                    batt_vars: BatteryVars,
-                                   prob: ort.Solver,
+                                   prob: LpModel,
                                    unit_commitment: bool,
                                    ramp_constraints: bool,
                                    skip_generation_limits: bool,
@@ -599,12 +581,12 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.Add(batt_vars.p[t, k] >= (
-                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                                batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
+                            t, k]),
                                  join("batt>=Pmin", [t, k], "_"))
                         prob.Add(batt_vars.p[t, k] <= (
-                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                                batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
+                            t, k]),
                                  join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
@@ -706,7 +688,7 @@ def add_linear_load_formulation(t: Union[int, None],
                                 Sbase: float,
                                 load_data_t: LoadData,
                                 load_vars: LoadVars,
-                                prob: ort.Solver):
+                                prob: LpModel):
     """
     Add MIP generation formulation
     :param t: time step, if None we assume single time step
@@ -748,7 +730,7 @@ def add_linear_branches_formulation(t: int,
                                     branch_data_t: BranchData,
                                     branch_vars: BranchVars,
                                     vars_bus: BusVars,
-                                    prob: ort.Solver,
+                                    prob: LpModel,
                                     consider_contingencies: bool,
                                     LODF: Union[Mat, None],
                                     lodf_threshold: float,
@@ -803,7 +785,7 @@ def add_linear_branches_formulation(t: int,
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 flow_ctr = branch_vars.flows[t, m] == bk * (
-                            vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                        vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
                 prob.Add(flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
@@ -852,7 +834,7 @@ def add_linear_hvdc_formulation(t: int,
                                 hvdc_data_t: HvdcData,
                                 hvdc_vars: HvdcVars,
                                 vars_bus: BusVars,
-                                prob: ort.Solver):
+                                prob: LpModel):
     """
 
     :param t:
@@ -930,7 +912,7 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
-                            prob: ort.Solver):
+                            prob: LpModel):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
@@ -943,20 +925,20 @@ def add_linear_node_balance(t_idx: int,
     :param gen_vars: GenerationVars
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
-    :param prob: ort.Solver
+    :param prob: LpModel
     """
     B = Bbus.tocsc()
 
     P_esp = bus_vars.branch_injections[t_idx, :]
-    P_esp += pl.lpDot(generator_data.C_bus_elm.tocsc(),
+    P_esp += lpDot(generator_data.C_bus_elm.tocsc(),
                       gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += pl.lpDot(battery_data.C_bus_elm.tocsc(),
+    P_esp += lpDot(battery_data.C_bus_elm.tocsc(),
                       batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += pl.lpDot(load_data.C_bus_elm.tocsc(),
+    P_esp += lpDot(load_data.C_bus_elm.tocsc(),
                       load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
     # calculate the linear nodal inyection
-    P_calc = pl.lpDot(B, bus_vars.theta[t_idx, :])
+    P_calc = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
@@ -982,7 +964,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
                       progress_func: Union[None, Callable[[float], None]] = None,
-                      export_model: bool = False) -> OpfVars:
+                      export_model_fname: Union[None, str] = None) -> OpfVars:
     """
 
     :param grid: MultiCircuit instance
@@ -1001,7 +983,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param logger: logger instance
     :param progress_text:
     :param progress_func:
-    :param export_model: Export the model into LP and MPS?
+    :param export_model_fname: Export the model into LP and MPS?
     :return: OpfVars
     """
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
@@ -1027,7 +1009,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
 
-    lp_model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
+    lp_model: LpModel = LpModel.CreateSolver(solver_type.value)
     lp_model.SuppressOutput()
 
     if lp_model is None:
@@ -1156,23 +1138,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
     if progress_func is not None:
         progress_func(0)
 
-    if export_model:
-        model_str = lp_model.ExportModelAsLpFormat(False)
-        lp_file_name = grid.name + ".lp"
-        with open(lp_file_name, "w") as f:
-            f.write(model_str)
-        print('LP model saved as:', lp_file_name)
-
-        model_str = lp_model.ExportModelAsMpsFormat(fixed_format=False, obfuscated=False)
-        lp_file_name = grid.name + ".mps"
-        with open(lp_file_name, "w") as f:
-            f.write(model_str)
-        print('MPS model saved as:', lp_file_name)
+    if export_model_fname is not None:
+        if export_model_fname.endswith('lp'):
+            save_lp(lp_model=lp_model, fname=export_model_fname)
+            print('LP model saved as:', export_model_fname)
+        elif export_model_fname.endswith('mps'):
+            save_mps(lp_model=lp_model, fname=export_model_fname)
+            print('MPS model saved as:', export_model_fname)
 
     status = lp_model.Solve()
 
     # gather the results
-    if status == ort.Solver.OPTIMAL:
+    if status == LpModel.OPTIMAL:
         print('Solution:')
         print('Objective value =', lp_model.Objective().Value())
         mip_vars.acceptable_solution = True

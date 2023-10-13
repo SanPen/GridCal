@@ -15,20 +15,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List
-
+from typing import List, Union
 from GridCalEngine.basic_structures import TimeGrouping, MIPSolvers, ZonalGrouping
 from GridCalEngine.basic_structures import SolverType
 
 
-########################################################################################################################
-# Optimal Power flow classes
-########################################################################################################################
-
-
 class OptimalPowerFlowOptions:
+    """
+    OptimalPowerFlowOptions
+    """
 
-    def __init__(self, verbose=False,
+    def __init__(self,
+                 verbose=False,
                  solver: SolverType = SolverType.DC_OPF,
                  time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
@@ -46,7 +44,7 @@ class OptimalPowerFlowOptions:
                  areas_from: List = None,
                  areas_to: List = None,
                  unit_commitment=False,
-                 export_model=False):
+                 export_model_fname: Union[None, str] = None):
         """
         Optimal power flow options
         :param verbose:
@@ -67,7 +65,7 @@ class OptimalPowerFlowOptions:
         :param areas_from:
         :param areas_to:
         :param unit_commitment:
-        :param export_model:
+        :param export_model_fname:
         """
         self.verbose = verbose
 
@@ -109,4 +107,4 @@ class OptimalPowerFlowOptions:
 
         self.max_vm = 1.0
 
-        self.export_model: bool = export_model
+        self.export_model_fname: Union[None, str] = export_model_fname

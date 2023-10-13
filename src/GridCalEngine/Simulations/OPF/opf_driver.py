@@ -114,7 +114,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          buses_areas_2=self.options.area_to_bus_idx,
                                          energy_0=None,
                                          logger=self.logger,
-                                         export_model=self.options.export_model)
+                                         export_model_fname=self.options.export_model_fname)
 
             self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]

@@ -15,9 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from GridCalEngine.Sparse.csc import *
 from scipy.sparse import csc_matrix
-
+from GridCalEngine.Utils.Sparse import sp_slice, sp_slice_rows
 
 def test3():
 

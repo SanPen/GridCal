@@ -17,7 +17,7 @@
 from time import time
 from scipy.sparse import csc_matrix, random, hstack, vstack
 
-from GridCalEngine.Sparse.csc import csc_stack_2d_ff
+from GridCalEngine.Utils.Sparse import csc_stack_2d_ff
 
 
 def test_stack_4():

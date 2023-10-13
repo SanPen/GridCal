@@ -15,4 +15,4 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Sparse.csc import CscMat, pack_4_by_4
+from GridCalEngine.Utils.Sparse.csc import CscMat, pack_4_by_4, csc_stack_2d_ff, sp_slice, sp_slice_rows
