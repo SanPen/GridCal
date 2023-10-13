@@ -216,6 +216,7 @@ class BaseMainGui(QMainWindow):
         self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
+        self.ui.actionReport_a_bug.triggered.connect(self.report_a_bug)
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
@@ -614,6 +615,13 @@ class BaseMainGui(QMainWindow):
         Open the online documentation in a web browser
         """
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
+
+    @staticmethod
+    def report_a_bug():
+        """
+        Open the online github issues in a web browser
+        """
+        webbrowser.open('https://github.com/SanPen/GridCal/issues', new=2)
 
     def clear_text_output(self) -> None:
         """

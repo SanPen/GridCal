@@ -8185,7 +8185,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1426</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8231,6 +8231,7 @@ QProgressBar::chunk{
      <string>Help</string>
     </property>
     <addaction name="actionOnline_documentation"/>
+    <addaction name="actionReport_a_bug"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuActions">
@@ -9333,6 +9334,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Remove selected diagram</string>
+   </property>
+  </action>
+  <action name="actionReport_a_bug">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/bug.svg</normaloff>:/Icons/icons/bug.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Report a bug / feature</string>
    </property>
   </action>
  </widget>

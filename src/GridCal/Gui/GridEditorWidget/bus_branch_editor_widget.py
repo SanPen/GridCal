@@ -39,7 +39,7 @@ from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Core.Devices.Injections.generator import Generator
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
@@ -1951,7 +1951,7 @@ class BusBranchEditorWidget(QSplitter):
 
     def colour_results(self,
                        buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Warning, UPFC, VSC]],
+                       branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
