@@ -8778,7 +8778,7 @@ QProgressBar::chunk{
     <string>Set OPF results to power flow (non destructive)</string>
    </property>
    <property name="toolTip">
-    <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
+    <string>Set the OPF results into the power flow or time series simulations (non destructive)</string>
    </property>
   </action>
   <action name="actionTry_to_fix_buses_location">
@@ -9342,7 +9342,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/bug.svg</normaloff>:/Icons/icons/bug.svg</iconset>
    </property>
    <property name="text">
-    <string>Report a bug / feature</string>
+    <string>Report a bug or feature</string>
    </property>
   </action>
  </widget>

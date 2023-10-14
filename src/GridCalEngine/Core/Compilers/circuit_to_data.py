@@ -20,7 +20,7 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import BusMode, BranchImpedanceMode, CxVec, ExternalGridMode
-from GridCalEngine.enumerations import ConverterControlType, TransformerControlType
+from GridCalEngine.enumerations import ConverterControlType, TransformerControlType, HvdcControlType
 import GridCalEngine.Core.DataStructures as ds
 
 
@@ -979,8 +979,11 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
             if opf_results is not None:
+                # if we are taking the valñues from the OPF, do not allow the free mode
+                data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
             else:
+                data.control_mode[i] = elm.control_mode
                 data.Pset[i] = elm.Pset_prof[t_idx]
 
             data.Vset_f[i] = elm.Vset_f_prof[t_idx]
@@ -999,8 +1002,11 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
+                # if we are taking the valñues from the OPF, do not allow the free mode
+                data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
+                data.control_mode[i] = elm.control_mode
                 data.Pset[i] = elm.Pset
 
             data.Vset_f[i] = elm.Vset_f
@@ -1010,8 +1016,6 @@ def get_hvdc_data(circuit: MultiCircuit,
             if elm.active:
                 bus_types[f] = BusMode.PV.value
                 bus_types[t] = BusMode.PV.value
-
-        data.control_mode[i] = elm.control_mode
 
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom

@@ -137,7 +137,7 @@ class HvdcLine(ParentBranch):
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0,  active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
-                 contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset,
+                 contingency_factor=1.0, control_mode: HvdcControlType = HvdcControlType.type_1_Pset,
                  dispatchable=True, angle_droop=0, angle_droop_prof=np.ones(0), contingency_factor_prof=None,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
