@@ -20,7 +20,7 @@ import numpy as np
 import time
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.NTC.ntc_opf import OpfNTC, get_inter_areas_branches
+from GridCalEngine.Simulations.NTC.ntc_opf import get_inter_areas_branches, run_linear_ntc_opf_ts
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -251,81 +251,111 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
             self.progress_text.emit('Formulating NTC OPF...')
 
-            # Define the problem
-            problem = OpfNTC(
-                numerical_circuit=numerical_circuit,
-                area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx,
-                alpha=alpha,
-                alpha_n1=alpha_n1,
-                LODF=linear.LODF,
-                LODF_NX=linear.LODF_NX,
-                PTDF=linear.PTDF,
-                solver_type=self.options.mip_solver,
-                generation_formulation=self.options.generation_formulation,
-                monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
-                monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
-                branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
-                skip_generation_limits=self.options.skip_generation_limits,
-                dispatch_all_areas=self.options.dispatch_all_areas,
-                tolerance=self.options.tolerance,
-                weight_power_shift=self.options.weight_power_shift,
-                weight_generation_cost=self.options.weight_generation_cost,
-                consider_contingencies=self.options.consider_contingencies,
-                consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
-                consider_gen_contingencies=self.options.consider_gen_contingencies,
-                generation_contingency_threshold=self.options.generation_contingency_threshold,
-                match_gen_load=self.options.match_gen_load,
-                ntc_load_rule=self.options.ntc_load_rule,
-                transfer_method=self.options.transfer_method,
-                logger=self.logger)
+            # # Define the problem
+            # problem = OpfNTC(
+            #     numerical_circuit=numerical_circuit,
+            #     area_from_bus_idx=self.options.area_from_bus_idx,
+            #     area_to_bus_idx=self.options.area_to_bus_idx,
+            #     alpha=alpha,
+            #     alpha_n1=alpha_n1,
+            #     LODF=linear.LODF,
+            #     LODF_NX=linear.LODF_NX,
+            #     PTDF=linear.PTDF,
+            #     solver_type=self.options.mip_solver,
+            #     generation_formulation=self.options.generation_formulation,
+            #     monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+            #     monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
+            #     branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
+            #     skip_generation_limits=self.options.skip_generation_limits,
+            #     dispatch_all_areas=self.options.dispatch_all_areas,
+            #     tolerance=self.options.tolerance,
+            #     weight_power_shift=self.options.weight_power_shift,
+            #     weight_generation_cost=self.options.weight_generation_cost,
+            #     consider_contingencies=self.options.consider_contingencies,
+            #     consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
+            #     consider_gen_contingencies=self.options.consider_gen_contingencies,
+            #     generation_contingency_threshold=self.options.generation_contingency_threshold,
+            #     match_gen_load=self.options.match_gen_load,
+            #     ntc_load_rule=self.options.ntc_load_rule,
+            #     transfer_method=self.options.transfer_method,
+            #     logger=self.logger)
+            #
+            # # Solve
+            # self.progress_text.emit('Solving NTC OPF...')
+            # problem.formulate()
+            # solved = problem.solve(
+            #     time_limit_ms=self.options.time_limit_ms)
+            #
+            # err = problem.error()
+            #
+            # if not solved:
+            #
+            #     if problem.status == pywraplp.Solver.FEASIBLE:
+            #         self.logger.add_error(
+            #             'Feasible solution, not optimal',
+            #             'NTC OPF',
+            #             str(err),
+            #             self.options.tolerance)
+            #
+            #     if problem.status == pywraplp.Solver.INFEASIBLE:
+            #         self.logger.add_error(
+            #             'Unfeasible solution',
+            #             'NTC OPF',
+            #             str(err),
+            #             self.options.tolerance)
+            #
+            #     if problem.status == pywraplp.Solver.UNBOUNDED:
+            #         self.logger.add_error(
+            #             'Proved unbounded',
+            #             'NTC OPF',
+            #             str(err),
+            #             self.options.tolerance)
+            #
+            #     if problem.status == pywraplp.Solver.ABNORMAL:
+            #         self.logger.add_error(
+            #             'Abnormal solution, some error happens',
+            #             'NTC OPF',
+            #             str(err),
+            #             self.options.tolerance)
+            #
+            #     if problem.status == pywraplp.Solver.NOT_SOLVED:
+            #         self.logger.add_error(
+            #             'Not solved, maybe timeout occurs',
+            #             'NTC OPF',
+            #             str(err),
+            #             self.options.tolerance)
 
-            # Solve
-            self.progress_text.emit('Solving NTC OPF...')
-            problem.formulate()
-            solved = problem.solve(
-                time_limit_ms=self.options.time_limit_ms)
+            # self.logger += problem.logger
 
-            err = problem.error()
+            opf_vars = run_linear_ntc_opf_ts(grid=self.grid,
+                                             time_indices=self.time_indices,
+                                             solver_type=self.options.mip_solver,
+                                             zonal_grouping=self.options.zonal_grouping,
+                                             skip_generation_limits=self.options.skip_generation_limits,
+                                             consider_contingencies=self.options.consider_contingencies,
+                                             lodf_threshold=self.options.lodf_tolerance,
+                                             maximize_inter_area_flow=self.options.maximize_flows,
+                                             buses_areas_1=self.options.area_from_bus_idx,
+                                             buses_areas_2=self.options.area_to_bus_idx,
+                                             logger=self.logger,
+                                             progress_text=self.progress_text.emit,
+                                             progress_func=self.progress_signal.emit,
+                                             export_model_fname=self.options.export_model_fname)
 
-            if not solved:
-
-                if problem.status == pywraplp.Solver.FEASIBLE:
-                    self.logger.add_error(
-                        'Feasible solution, not optimal',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-                if problem.status == pywraplp.Solver.INFEASIBLE:
-                    self.logger.add_error(
-                        'Unfeasible solution',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-                if problem.status == pywraplp.Solver.UNBOUNDED:
-                    self.logger.add_error(
-                        'Proved unbounded',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-                if problem.status == pywraplp.Solver.ABNORMAL:
-                    self.logger.add_error(
-                        'Abnormal solution, some error happens',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-                if problem.status == pywraplp.Solver.NOT_SOLVED:
-                    self.logger.add_error(
-                        'Not solved, maybe timeout occurs',
-                        'NTC OPF',
-                        str(err),
-                        self.options.tolerance)
-
-            self.logger += problem.logger
+            self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+            self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
+            self.results.load_shedding = opf_vars.load_vars.shedding
+            self.results.battery_power = opf_vars.batt_vars.p
+            self.results.battery_energy = opf_vars.batt_vars.e
+            self.results.generator_power = opf_vars.gen_vars.p
+            self.results.Sf = opf_vars.branch_vars.flows
+            self.results.St = -opf_vars.branch_vars.flows
+            self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.loading = opf_vars.branch_vars.loading
+            self.results.phase_shift = opf_vars.branch_vars.tap_angles
+            # self.results.Sbus = problem.get_power_injections()
+            self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
+            self.results.hvdc_loading = opf_vars.hvdc_vars.loading
 
             idx_w = np.argmax(np.abs(alpha_n1), axis=1)
             alpha_w = np.take_along_axis(alpha_n1, np.expand_dims(idx_w, axis=1), axis=1)

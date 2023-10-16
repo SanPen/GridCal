@@ -33,20 +33,10 @@ from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
-from GridCalEngine.Utils.MIP.selected_solver import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot, set_var_bounds)
+from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot,
+                                                        set_var_bounds, join)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
-
-
-def join(init: str, vals: List[int], sep="_"):
-    """
-    Generate naming string
-    :param init: initial string
-    :param vals: concatenation of indices
-    :param sep: separator
-    :return: naming string
-    """
-    return init + sep.join([str(x) for x in vals])
 
 
 def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
@@ -259,7 +249,7 @@ class BranchVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-        self.contingency_flow_data: List[Tuple[int, int, LpVar]] = list()
+        self.contingency_flow_data: List[Tuple[int, int, Union[float, LpVar]]] = list()
 
     def get_values(self, Sbase: float) -> "BranchVars":
         """
@@ -435,9 +425,9 @@ def add_linear_generation_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    gen_vars.starting_up[t, k] = prob.make_int(0, 1, join("gen_starting_up_", [t, k], "_"))
-                    gen_vars.producing[t, k] = prob.make_int(0, 1, join("gen_producing_", [t, k], "_"))
-                    gen_vars.shutting_down[t, k] = prob.make_int(0, 1, join("gen_shutting_down_", [t, k], "_"))
+                    gen_vars.starting_up[t, k] = prob.add_int(0, 1, join("gen_starting_up_", [t, k], "_"))
+                    gen_vars.producing[t, k] = prob.add_int(0, 1, join("gen_producing_", [t, k], "_"))
+                    gen_vars.shutting_down[t, k] = prob.add_int(0, 1, join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
                     f_obj += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
@@ -449,20 +439,18 @@ def add_linear_generation_formulation(t: Union[int, None],
                     if not skip_generation_limits:
                         prob.add_cst(
                             cst=gen_vars.p[t, k] >= (
-                                    gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[
-                                t, k]),
+                                    gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen>=Pmin", [t, k], "_"))
                         prob.add_cst(
                             cst=gen_vars.p[t, k] <= (
-                                    gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[
-                                t, k]),
+                                    gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
                             prob.add_cst(
-                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] == gen_vars.producing[
-                                    t, k] - float(gen_data_t.active[k]),
+                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
+                                    gen_vars.producing[t, k] - float(gen_data_t.active[k]),
                                 name=join("binary_alg1_", [t, k], "_"))
                             prob.add_cst(
                                 cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
@@ -579,9 +567,9 @@ def add_linear_battery_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    batt_vars.starting_up[t, k] = prob.make_int(0, 1, join("bat_starting_up_", [t, k], "_"))
-                    batt_vars.producing[t, k] = prob.make_int(0, 1, join("bat_producing_", [t, k], "_"))
-                    batt_vars.shutting_down[t, k] = prob.make_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
+                    batt_vars.starting_up[t, k] = prob.add_int(0, 1, join("bat_starting_up_", [t, k], "_"))
+                    batt_vars.producing[t, k] = prob.add_int(0, 1, join("bat_producing_", [t, k], "_"))
+                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
                     f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
@@ -606,16 +594,16 @@ def add_linear_battery_formulation(t: Union[int, None],
                     if t is not None:
                         if t == 0:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                    t, k] - float(batt_data_t.active[k]),
+                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                    batt_vars.producing[t, k] - float(batt_data_t.active[k]),
                                 name=join("binary_alg1_", [t, k], "_"))
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                 name=join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] == batt_vars.producing[
-                                    t, k] - batt_vars.producing[t - 1, k],
+                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                    batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
                                 name=join("binary_alg3_", [t, k], "_"))
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
@@ -647,16 +635,16 @@ def add_linear_battery_formulation(t: Union[int, None],
                             prob.add_cst(
                                 cst=batt_vars.p[t, k] - batt_vars.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
 
-                # set the energy  value Et = E(t - 1) + dt * Pb / eff
+                # # # set the energy  value Et = E(t - 1) + dt * Pb / eff
                 batt_vars.e[t, k] = prob.add_var(batt_data_t.e_min[k] / Sbase,
                                                  batt_data_t.e_max[k] / Sbase,
                                                  join("batt_e_", [t, k], "_"))
 
                 if t > 0:
                     # energy decreases / increases with power · dt
-                    prob.add_cst(
-                        cst=batt_vars.e[t, k] == batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[
-                            t, k])
+                    prob.add_cst(cst=batt_vars.e[t, k] ==
+                                     batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k],
+                                 name=join("batt_energy_", [t, k], "_"))
                 else:
                     # set the initial energy value
                     batt_vars.e[t, k] = energy_0[k] / Sbase
@@ -733,7 +721,8 @@ def add_linear_load_formulation(t: Union[int, None],
             if load_vars.p[t, k] > 0.0:
 
                 # assign load shedding variable
-                load_vars.shedding[t, k] = prob.add_var(lb=0, ub=load_vars.p[t, k],
+                load_vars.shedding[t, k] = prob.add_var(lb=0,
+                                                        ub=load_vars.p[t, k],
                                                         name=join("load_shedding_", [t, k], "_"))
 
                 # minimize the load shedding
@@ -788,7 +777,9 @@ def add_linear_branches_formulation(t: int,
         if branch_data_t.active[m]:
 
             # declare the flow LPVar
-            branch_vars.flows[t, m] = prob.add_var(lb=-inf, ub=inf, name=join("flow_", [t, m], "_"))
+            branch_vars.flows[t, m] = prob.add_var(lb=-inf,
+                                                   ub=inf,
+                                                   name=join("flow_", [t, m], "_"))
 
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
@@ -823,24 +814,23 @@ def add_linear_branches_formulation(t: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m]:
-                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf, name=join("flow_slack_pos_", [t, m], "_"))
-                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf, name=join("flow_slack_neg_", [t, m], "_"))
+                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
+                                                                 name=join("flow_slack_pos_", [t, m], "_"))
+                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
+                                                                 name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
                 branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[
-                                                            m] / Sbase
+                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_ub[t, m],
                     name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
                 branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[
-                    m] / Sbase
-                prob.add_cst(
-                    cst=branch_vars.flow_constraints_lb[t, m],
-                    name=join("br_flow_lower_lim_", [t, m]))
+                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
+                prob.add_cst(cst=branch_vars.flow_constraints_lb[t, m],
+                             name=join("br_flow_lower_lim_", [t, m]))
 
                 # add to the objective function
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
@@ -890,8 +880,8 @@ def add_linear_hvdc_formulation(t: int,
 
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
-                prob.add_cst(cst=hvdc_vars.flows[t, m] == P0 + hvdc_data_t.angle_droop[m] * (
-                        vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                prob.add_cst(cst=hvdc_vars.flows[t, m] ==
+                                 P0 + hvdc_data_t.angle_droop[m] * (vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
                              name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
@@ -997,7 +987,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       progress_func: Union[None, Callable[[float], None]] = None,
                       export_model_fname: Union[None, str] = None) -> OpfVars:
     """
-
+    Run linear optimal power flow
     :param grid: MultiCircuit instance
     :param time_indices: Time indices (in the general scheme)
     :param solver_type: MIP solver to use
@@ -1146,9 +1136,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                         mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-                         name="satisfy_demand_at_{0}".format(t_idx))
+        lp_model.add_cst(
+            cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
+            name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)

@@ -22,12 +22,10 @@ other solver interface easily
 """
 
 from typing import List, Union
-import numpy as np
-from scipy.sparse import csc_matrix
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.pywraplp import LinearExpr as LpExp
 from ortools.linear_solver.pywraplp import Variable as LpVar
-from GridCalEngine.basic_structures import MIPSolvers, ObjVec, ObjMat
+from GridCalEngine.basic_structures import MIPSolvers
 
 
 def get_lp_var_value(x: Union[float, LpVar]) -> float:
@@ -45,52 +43,6 @@ def get_lp_var_value(x: Union[float, LpVar]) -> float:
     else:
         return x
 
-
-def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
-    """
-    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
-    :param mat: CSC sparse matrix (A)
-    :param arr: dense vector or matrix of object type (b)
-    :return: vector or matrix result of the product
-    """
-    n_rows, n_cols = mat.shape
-
-    # check dimensional compatibility
-    assert (n_cols == arr.shape[0])
-
-    # check that the sparse matrix is indeed of CSC format
-    if mat.format != 'csc':
-        raise Exception("lpDot: Sparse matrix must be in CSC format")
-
-    if arr.ndim == 1:
-        """
-        Uni-dimensional sparse matrix - vector product
-        """
-        res = np.zeros(n_rows, dtype=arr.dtype)
-        for i in range(n_cols):
-            for ii in range(mat.indptr[i], mat.indptr[i + 1]):
-                j = mat.indices[ii]  # row index
-                res[j] += mat.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
-
-        return res
-
-    elif arr.ndim == 2:
-        """
-        Multi-dimensional sparse matrix - matrix product
-        """
-        cols_vec = arr.shape[1]
-        res = np.zeros((n_rows, cols_vec), dtype=arr.dtype)
-
-        for k in range(cols_vec):  # for each column of the matrix "vec", do the matrix vector product
-            for i in range(n_cols):
-                for ii in range(mat.indptr[i], mat.indptr[i + 1]):
-                    j = mat.indices[ii]  # row index
-                    res[j, k] += mat.data[ii] * arr[i, k]  # C.data[ii] is equivalent to C[i, j]
-
-        return res
-
-    else:
-        raise Exception("lpDot: Unsupported number of dimensions")
 
 
 def get_available_mip_solvers() -> List[str]:
@@ -123,6 +75,7 @@ class LpModel:
     LPModel implementation for ORTOOLS
     """
     OPTIMAL = ort.Solver.OPTIMAL
+    INFINITY = 1e20
 
     def __init__(self, solver_type: MIPSolvers):
 
@@ -149,7 +102,7 @@ class LpModel:
         with open(file_name, "w") as f:
             f.write(lp_content)
 
-    def make_int(self, lb: int, ub: int, name: str = "") -> LpVar:
+    def add_int(self, lb: int, ub: int, name: str = "") -> LpVar:
         """
         Make integer LP var
         :param lb: lower bound
