@@ -185,7 +185,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.ContingencyAnalysisReport:
             data = self.report.get_data()
             y_label = ''
-            title = result_type.value
+            title = result_type.value[0]
             labels = self.report.get_headers()
             index = self.report.get_index()
 

@@ -26,13 +26,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="removed ntcFeseabilityCheck">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Union types fixed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/others/dpx_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/others/dpx_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/psse_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/devices/psse_object.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,13 +101,13 @@
     "WebServerToolWindowFactoryState": "false",
     "last_opened_file_path": "C:/ReposGit/github/sanpen/GridCal5",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+    "settings.editor.selected.configurable": "reference.idesettings.debugger.python"
   }
 }]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
-    <option name="myPyQtBackend" value="pyside2" />
+    <option name="myPyQtBackend" value="pyside6" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -966,13 +961,6 @@
       <workItem from="1662067830182" duration="1211000" />
       <workItem from="1662359262233" duration="956000" />
     </task>
-    <task id="LOCAL-00301" summary="Fixed serious bug where the compiler was not considering the load active profiles">
-      <created>1653569314433</created>
-      <option name="number" value="00301" />
-      <option name="presentableId" value="LOCAL-00301" />
-      <option name="project" value="LOCAL" />
-      <updated>1653569314433</updated>
-    </task>
     <task id="LOCAL-00302" summary="added newton pa compatibility">
       <created>1653913923717</created>
       <option name="number" value="00302" />
@@ -1309,7 +1297,14 @@
       <option name="project" value="LOCAL" />
       <updated>1675071155913</updated>
     </task>
-    <option name="localTasksCounter" value="350" />
+    <task id="LOCAL-00350" summary="Union types fixed">
+      <created>1697446931261</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
+      <option name="project" value="LOCAL" />
+      <updated>1697446931261</updated>
+    </task>
+    <option name="localTasksCounter" value="351" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1343,7 +1338,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Worked on new expressions" />
     <MESSAGE value="added negative and zero sequence magnitudes to the branches" />
     <MESSAGE value="Added DPI support" />
     <MESSAGE value="Added sequence components to the generator and battery&#10;Modelled the south island of new zealand as per arrillaga's book" />
@@ -1368,7 +1362,8 @@
     <MESSAGE value="Added losses % to the power flow time series&#10;Minor refactors of the GUI" />
     <MESSAGE value="csc sparse branch derivatives" />
     <MESSAGE value="removed ntcFeseabilityCheck" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed ntcFeseabilityCheck" />
+    <MESSAGE value="Union types fixed" />
+    <option name="LAST_COMMIT_MESSAGE" value="Union types fixed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1654,9 +1649,15 @@
           <option name="timeStamp" value="1174" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>300</line>
-          <option name="timeStamp" value="1179" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/results_table.py</url>
+          <line>394</line>
+          <option name="timeStamp" value="1181" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="isinstance(title, tuple)" language="Python" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/results_table.py</url>
+          <line>75</line>
+          <option name="timeStamp" value="1182" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

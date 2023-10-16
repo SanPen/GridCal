@@ -510,19 +510,19 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
             labels = self.hvdc_names
             data = self.hvdc_losses
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerFrom:
             labels = self.hvdc_names
             data = self.hvdc_Pf
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerTo:
             labels = self.hvdc_names
             data = self.hvdc_Pt
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.InterAreaExchange:
             labels = self.get_ordered_area_names()
