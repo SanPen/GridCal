@@ -54,19 +54,22 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.header[p_int]
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.header[section]
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -90,7 +93,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.setWindowTitle('Tower builder')
 
         # GUI objects
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.layout = QtWidgets.QVBoxLayout(self)
         self.wires_tableView = QtWidgets.QTableView()
         self.add_wire_pushButton = QtWidgets.QPushButton()

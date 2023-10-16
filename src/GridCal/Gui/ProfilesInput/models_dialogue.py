@@ -80,7 +80,7 @@ class GridsModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return len(self._headers_)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -88,40 +88,47 @@ class GridsModel(QtCore.QAbstractTableModel):
         :return:
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self._values_[index.row()].get_at(index.column()))
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self._headers_[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                return p_int
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self._headers_[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
+                return section
         return None
 
-    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
 
         :param index:
         :return:
         """
-        return QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
+        return (QtCore.Qt.ItemFlag.ItemIsDropEnabled |
+                QtCore.Qt.ItemFlag.ItemIsEnabled |
+                QtCore.Qt.ItemFlag.ItemIsEditable |
+                QtCore.Qt.ItemFlag.ItemIsSelectable |
+                QtCore.Qt.ItemFlag.ItemIsDragEnabled)
 
-    def supportedDropActions(self) -> bool:
+    def supportedDropActions(self):
         """
 
         :return:
         """
-        return QtCore.Qt.MoveAction | QtCore.Qt.CopyAction
+        return QtCore.Qt.DropAction.MoveAction | QtCore.Qt.DropAction.CopyAction
 
     def dropEvent(self, event):
         """
@@ -129,8 +136,8 @@ class GridsModel(QtCore.QAbstractTableModel):
         :param event:
         """
         if (event.source() is not self or
-                (event.dropAction() != QtCore.Qt.MoveAction and
-                 self.dragDropMode() != QtWidgets.QAbstractItemView.InternalMove)):
+                (event.dropAction() != QtCore.Qt.DropAction.MoveAction and
+                 self.dragDropMode() != QtWidgets.QAbstractItemView.DragDropMode.InternalMove)):
             super().dropEvent(event)
         selection = self.selectedIndexes()
         from_index = selection[0].row() if selection else -1
@@ -146,7 +153,7 @@ class GridsModel(QtCore.QAbstractTableModel):
             to_index = header.visualIndex(to_index)
             header.moveSection(from_index, to_index)
             event.accept()
-            event.setDropAction(QtCore.Qt.IgnoreAction)
+            event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
         super().dropEvent(event)
 
 

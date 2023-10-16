@@ -40,7 +40,7 @@ class Ui_AboutDialog(object):
         self.mainLabel = QLabel(self.tab)
         self.mainLabel.setObjectName(u"mainLabel")
         self.mainLabel.setLayoutDirection(Qt.LeftToRight)
-        self.mainLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.mainLabel.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop)
         self.mainLabel.setWordWrap(True)
         self.mainLabel.setOpenExternalLinks(True)
         self.mainLabel.setTextInteractionFlags(Qt.TextBrowserInteraction)

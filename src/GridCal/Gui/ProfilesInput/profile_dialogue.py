@@ -107,19 +107,23 @@ class Associations(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return len(self.__headers)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self.__values[index.row()].get_at(index.column()))
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.__headers[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                return p_int
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.__headers[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
+                return section
         return None
 
 
