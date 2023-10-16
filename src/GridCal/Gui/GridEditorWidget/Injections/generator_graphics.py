@@ -74,7 +74,11 @@ class GeneratorQCurveEditorTableModel(QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self,
+                   section: int,
+                   orientation: Qt.Orientation,
+                   role=Qt.ItemDataRole.DisplayRole):
+
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self._headers[section]
         return super(GeneratorQCurveEditorTableModel, self).headerData(section, orientation, role)

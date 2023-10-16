@@ -503,25 +503,28 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.data_c[index.row(), index.column()] = value
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
-                return self.cols_c[p_int]
+                return self.cols_c[section]
             elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.index_c is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index_c[p_int])
+                        return str(self.index_c[section])
         return None
 
     def copy_to_column(self, row, col):
@@ -921,10 +924,13 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 return True
         return False
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the headers to display
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
@@ -936,28 +942,28 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 if orientation == QtCore.Qt.Orientation.Horizontal:
                     return 'Value'
                 elif orientation == QtCore.Qt.Orientation.Vertical:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                    if self.units[section] != '':
+                        return self.attributes[section] + ' [' + self.units[section] + ']'
                     else:
-                        return self.attributes[p_int]
+                        return self.attributes[section]
             else:
                 # Normal
                 if orientation == QtCore.Qt.Orientation.Horizontal:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                    if self.units[section] != '':
+                        return self.attributes[section] + ' [' + self.units[section] + ']'
                     else:
-                        return self.attributes[p_int]
+                        return self.attributes[section]
                 elif orientation == QtCore.Qt.Orientation.Vertical:
-                    return str(p_int) + ':' + str(self.objects[p_int])
+                    return str(section) + ':' + str(self.objects[section])
 
         # add a tooltip
         if role == QtCore.Qt.ItemDataRole.ToolTipRole:
-            if p_int < self.c:
-                if self.units[p_int] != "":
-                    unit = '\nUnits: ' + self.units[p_int]
+            if section < self.c:
+                if self.units[section] != "":
+                    unit = '\nUnits: ' + self.units[section]
                 else:
                     unit = ''
-                return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+                return self.attributes[section] + unit + ' \n' + self.tips[section]
             else:
                 # somehow the index is out of range
                 return ""
@@ -1335,10 +1341,13 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
                 return True
         return False
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the headers to display
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
@@ -1350,28 +1359,28 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
                 if orientation == QtCore.Qt.Orientation.Horizontal:
                     return 'Value'
                 elif orientation == QtCore.Qt.Orientation.Vertical:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
+                    if self.units[section] != '':
+                        return self.attributes[section]  # + ' [' + self.units[p_int] + ']'
                     else:
-                        return self.attributes[p_int]
+                        return self.attributes[section]
             else:
                 # Normal
                 if orientation == QtCore.Qt.Orientation.Horizontal:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
+                    if self.units[section] != '':
+                        return self.attributes[section]  # + ' [' + self.units[p_int] + ']'
                     else:
-                        return self.attributes[p_int]
+                        return self.attributes[section]
                 elif orientation == QtCore.Qt.Orientation.Vertical:
-                    return str(p_int)  # + ':' + str(self.objects[p_int])
+                    return str(section)  # + ':' + str(self.objects[p_int])
 
         # add a tooltip
         if role == QtCore.Qt.ItemDataRole.ToolTipRole:
-            if p_int < self.c:
-                if self.units[p_int] != "":
-                    unit = '\nUnits: ' + self.units[p_int]
+            if section < self.c:
+                if self.units[section] != "":
+                    unit = '\nUnits: ' + self.units[section]
                 else:
                     unit = ''
-                return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+                return self.attributes[section] + unit + ' \n' + self.tips[section]
             else:
                 # somehow the index is out of range
                 return ""
@@ -1589,22 +1598,25 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         return True
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the headers to display
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
-                return str(self.elements[p_int].name)
+                return str(self.elements[section].name)
             elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.circuit.time_profile is None:
-                    return str(p_int)
+                    return str(section)
                 else:
-                    return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d-%m-%Y %H:%M')
+                    return pd.to_datetime(self.circuit.time_profile[section]).strftime('%d-%m-%Y %H:%M')
 
         return None
 

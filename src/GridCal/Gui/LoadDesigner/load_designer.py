@@ -34,28 +34,32 @@ class LoadPointsModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self._data[index.row(), index.column()])
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
-            elif orientation == QtCore.Qt.Vertical:
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self._cols[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self._index is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self._index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self._index[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self._index[p_int])
+                        return str(self._index[section])
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
