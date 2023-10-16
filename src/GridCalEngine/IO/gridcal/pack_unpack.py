@@ -295,7 +295,10 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
     # time profile -----------------------------------------------------------------------------------------------------
     if 'time' in data.keys():
         time_df = data['time']
-        circuit.time_profile = pd.to_datetime(time_df.values[:, 0], dayfirst=True, format='mixed')
+        try:
+            circuit.time_profile = pd.to_datetime(time_df.values[:, 0], dayfirst=True, format='mixed')
+        except ValueError as err:
+            circuit.time_profile = pd.to_datetime(time_df.values[:, 0], dayfirst=True)
     else:
         circuit.time_profile = None
 

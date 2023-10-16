@@ -1,6 +1,6 @@
 import gc
 import os.path
-from typing import List
+from typing import List, Union
 import webbrowser
 import darkdetect
 import pandas as pd
@@ -47,7 +47,7 @@ class RosetaExplorerGUI(QMainWindow):
 
     """
 
-    def __init__(self, parent=None, db_handler: DbHandler | None = None):
+    def __init__(self, parent=None, db_handler: Union[DbHandler, None] = None):
         """
 
         @param parent:
@@ -75,7 +75,7 @@ class RosetaExplorerGUI(QMainWindow):
 
         self.tree_navigation_windows: List[TreeModelViewerGUI] = list()
 
-        self.circuit: CgmesCircuit | PsseCircuit | None = None
+        self.circuit: Union[CgmesCircuit, PsseCircuit, None] = None
 
         self.logger: DataLogger = DataLogger()
 
@@ -279,7 +279,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
         self.properties_proxy_model.setFilterRegExp(self.ui.filterLineEdit.text())
 
-    def set_grid_model(self, circuit: CgmesCircuit | PsseCircuit):
+    def set_grid_model(self, circuit: Union[CgmesCircuit, PsseCircuit]):
         """
         Set a grid Model
         :param circuit: circuit model passed
@@ -424,8 +424,8 @@ class RosetaExplorerGUI(QMainWindow):
         else:
             warning_msg("There is not model :/")
 
-    def new_rosetta_explorer(self, model: PsseCircuit | CgmesCircuit | None = None,
-                             logger: DataLogger | None = None):
+    def new_rosetta_explorer(self, model: Union[PsseCircuit, CgmesCircuit, None] = None,
+                             logger: Union[DataLogger, None] = None):
         """
         New roseta window
         :param model: (optional) the model to load

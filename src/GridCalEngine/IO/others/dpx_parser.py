@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple, Any
+from typing import Tuple, Any, Union
 
 import chardet
 
@@ -365,7 +365,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
     return data_structures, logger
 
 
-def load_dpx(file_name, contraction_factor=1000) -> tuple[MultiCircuit | Any, Logger | Any]:
+def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, Any], Union[Logger, Any]]:
     """
     Read DPX file
     :param file_name: file name

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import hashlib
 import uuid as uuidlib
-from typing import List, Dict
+from typing import List, Dict, Union
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
 
@@ -133,7 +133,7 @@ class RawObject:
         return ", ".join(lst)
 
     @staticmethod
-    def format_raw_line(props: List[str | int | float]) -> str:
+    def format_raw_line(props: List[Union[str, int, float]]) -> str:
         """
         Format a list of values
         :param props: list of values
