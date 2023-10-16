@@ -47,9 +47,9 @@ class FileOpenThread(QThread):
 
         self.logger = Logger()
 
-        self.circuit: MultiCircuit | None = None
+        self.circuit: Union[MultiCircuit, None] = None
 
-        self.cgmes_circuit: CgmesCircuit | None = None
+        self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
         self.cgmes_logger: DataLogger = DataLogger()
 

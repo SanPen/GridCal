@@ -425,9 +425,12 @@ def add_linear_generation_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    gen_vars.starting_up[t, k] = prob.add_int(0, 1, join("gen_starting_up_", [t, k], "_"))
-                    gen_vars.producing[t, k] = prob.add_int(0, 1, join("gen_producing_", [t, k], "_"))
-                    gen_vars.shutting_down[t, k] = prob.add_int(0, 1, join("gen_shutting_down_", [t, k], "_"))
+                    gen_vars.starting_up[t, k] = prob.add_int(0, 1,
+                                                              join("gen_starting_up_", [t, k], "_"))
+                    gen_vars.producing[t, k] = prob.add_int(0, 1,
+                                                            join("gen_producing_", [t, k], "_"))
+                    gen_vars.shutting_down[t, k] = prob.add_int(0, 1,
+                                                                join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
                     f_obj += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
@@ -820,15 +823,18 @@ def add_linear_branches_formulation(t: int,
                                                                  name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
-                prob.add_cst(
-                    cst=branch_vars.flow_constraints_ub[t, m],
-                    name=join("br_flow_upper_lim_", [t, m]))
+                branch_vars.flow_constraints_ub[t, m] = (branch_vars.flows[t, m] +
+                                                         branch_vars.flow_slacks_pos[t, m] -
+                                                         branch_vars.flow_slacks_neg[t, m]
+                                                         <= branch_data_t.rates[m] / Sbase)
+                prob.add_cst(cst=branch_vars.flow_constraints_ub[t, m],
+                             name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
+                branch_vars.flow_constraints_lb[t, m] = (branch_vars.flows[t, m] +
+                                                         branch_vars.flow_slacks_pos[t, m] -
+                                                         branch_vars.flow_slacks_neg[t, m]
+                                                         >= -branch_data_t.rates[m] / Sbase)
                 prob.add_cst(cst=branch_vars.flow_constraints_lb[t, m],
                              name=join("br_flow_lower_lim_", [t, m]))
 
@@ -936,6 +942,7 @@ def add_linear_node_balance(t_idx: int,
     Add the kirchoff nodal equality
     :param t_idx: time step
     :param Bbus: susceptance matrix (complete)
+    :param vd: List of slack node indices
     :param bus_data: BusData
     :param generator_data: GeneratorData
     :param battery_data: BatteryData
@@ -1136,10 +1143,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        lp_model.add_cst(
-            cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) + lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
-            name="satisfy_demand_at_{0}".format(t_idx))
+        lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
+                             lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                             mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
+                         name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)

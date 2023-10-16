@@ -81,7 +81,7 @@ class WiresTable(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.editable[index.column()]:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         else:
             return QtCore.Qt.ItemIsEnabled
 

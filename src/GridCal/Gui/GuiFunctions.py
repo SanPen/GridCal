@@ -26,7 +26,7 @@ from collections import defaultdict
 from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
-from GridCalEngine.basic_structures import IntVec, Vec, Mat
+from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
 import GridCal
@@ -160,7 +160,7 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         :param index:
         """
         editor.blockSignals(True)
-        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
         try:
             idx = self.object_names.index(val)
             editor.setCurrentIndex(idx)
@@ -221,7 +221,7 @@ class TextDelegate(QtWidgets.QItemDelegate):
         :param index:
         """
         editor.blockSignals(True)
-        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
         editor.setText(val)
         editor.blockSignals(False)
 
@@ -281,7 +281,7 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         :param index:
         """
         editor.blockSignals(True)
-        val = float(index.model().data(index, role=QtCore.Qt.DisplayRole))
+        val = float(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
         editor.setValue(val)
         editor.blockSignals(False)
 
@@ -356,7 +356,7 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
         :return:
         """
         editor.blockSignals(True)
-        val = complex(index.model().data(index, role=QtCore.Qt.DisplayRole))
+        val = complex(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
         editor.children()[1].setValue(val.real)
         editor.children()[2].setValue(val.imag)
         editor.blockSignals(False)
@@ -400,7 +400,7 @@ class ColorPickerDelegate(QtWidgets.QItemDelegate):
 
     def setEditorData(self, editor: QtWidgets.QColorDialog, index):
         editor.blockSignals(True)
-        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
         color = QtGui.QColor.fromString(val)
         editor.setCurrentColor(color)
         editor.blockSignals(False)
@@ -414,7 +414,6 @@ class ColorPickerDelegate(QtWidgets.QItemDelegate):
         :return:
         """
         model.setData(index, editor.currentColor().name())
-
 
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -449,9 +448,9 @@ class PandasModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.editable and index.column() > self.editable_min_idx:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -469,14 +468,14 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
         :param role:
         :return:
         """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             val = self.data_c[index.row(), index.column()]
             if isinstance(val, str):
@@ -493,7 +492,7 @@ class PandasModel(QtCore.QAbstractTableModel):
                     return '0'
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -512,10 +511,10 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self.cols_c[p_int]
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.index_c is None:
                     return p_int
                 else:
@@ -787,9 +786,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -865,9 +864,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :return:
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return str(self.data_with_type(index))
-            elif role == QtCore.Qt.BackgroundRole:
+            elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
                 if 'color' in self.attributes[index.column()]:
                     return QtGui.QColor(str(self.data_with_type(index)))
 
@@ -930,29 +929,29 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             if self.transposed:
                 # for the properties in the schematic view
-                if orientation == QtCore.Qt.Horizontal:
+                if orientation == QtCore.Qt.Orientation.Horizontal:
                     return 'Value'
-                elif orientation == QtCore.Qt.Vertical:
+                elif orientation == QtCore.Qt.Orientation.Vertical:
                     if self.units[p_int] != '':
                         return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
                     else:
                         return self.attributes[p_int]
             else:
                 # Normal
-                if orientation == QtCore.Qt.Horizontal:
+                if orientation == QtCore.Qt.Orientation.Horizontal:
                     if self.units[p_int] != '':
                         return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
                     else:
                         return self.attributes[p_int]
-                elif orientation == QtCore.Qt.Vertical:
+                elif orientation == QtCore.Qt.Orientation.Vertical:
                     return str(p_int) + ':' + str(self.objects[p_int])
 
         # add a tooltip
-        if role == QtCore.Qt.ToolTipRole:
+        if role == QtCore.Qt.ItemDataRole.ToolTipRole:
             if p_int < self.c:
                 if self.units[p_int] != "":
                     unit = '\nUnits: ' + self.units[p_int]
@@ -1001,8 +1000,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             for i in range(nrows):
                 data[i, j] = self.data_raw(r=i, c=j)
 
-        columns = [self.headerData(i, orientation=QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole) for i in range(ncols)]
-        index = [self.headerData(i, orientation=QtCore.Qt.Vertical, role=QtCore.Qt.DisplayRole) for i in range(nrows)]
+        columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
+                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(ncols)]
+
+        index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
+                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(nrows)]
 
         return index, columns, data
 
@@ -1030,20 +1032,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             cb.setText(txt)
 
 
-# class BranchObjectModel(ObjectsModel):
-#
-#     def __init__(self, objects, editable_headers, parent=None, editable=False,
-#                  non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=defaultdict()):
-#
-#         # type templates catalogue
-#         self.catalogue_dict = catalogue_dict
-#
-#         super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
-#                                                 editable=editable, non_editable_attributes=non_editable_attributes,
-#                                                 transposed=transposed, check_unique=check_unique)
-
-
 class ObjectHistory:
+    """
+    ObjectHistory
+    """
 
     def __init__(self, max_undo_states=100):
         """
@@ -1223,9 +1215,9 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -1294,7 +1286,7 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
             return str(self.data_with_type(index))
 
         return None
@@ -1351,29 +1343,29 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             if self.transposed:
                 # for the properties in the schematic view
-                if orientation == QtCore.Qt.Horizontal:
+                if orientation == QtCore.Qt.Orientation.Horizontal:
                     return 'Value'
-                elif orientation == QtCore.Qt.Vertical:
+                elif orientation == QtCore.Qt.Orientation.Vertical:
                     if self.units[p_int] != '':
                         return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
                     else:
                         return self.attributes[p_int]
             else:
                 # Normal
-                if orientation == QtCore.Qt.Horizontal:
+                if orientation == QtCore.Qt.Orientation.Horizontal:
                     if self.units[p_int] != '':
                         return self.attributes[p_int]  # + ' [' + self.units[p_int] + ']'
                     else:
                         return self.attributes[p_int]
-                elif orientation == QtCore.Qt.Vertical:
+                elif orientation == QtCore.Qt.Orientation.Vertical:
                     return str(p_int)  # + ':' + str(self.objects[p_int])
 
         # add a tooltip
-        if role == QtCore.Qt.ToolTipRole:
+        if role == QtCore.Qt.ItemDataRole.ToolTipRole:
             if p_int < self.c:
                 if self.units[p_int] != "":
                     unit = '\nUnits: ' + self.units[p_int]
@@ -1422,8 +1414,11 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
             for i in range(nrows):
                 data[i, j] = self.data_raw(r=i, c=j)
 
-        columns = [self.headerData(i, orientation=QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole) for i in range(ncols)]
-        index = [self.headerData(i, orientation=QtCore.Qt.Vertical, role=QtCore.Qt.DisplayRole) for i in range(nrows)]
+        columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
+                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(ncols)]
+
+        index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
+                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(nrows)]
 
         return index, columns, data
 
@@ -1539,9 +1534,9 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
 
         if self.editable and index.column() not in self.non_editable_indices:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -1559,7 +1554,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the data to display
         :param index:
@@ -1567,14 +1562,14 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
                 array = getattr(self.elements[index.column()], profile_property)
                 return str(array[index.row()])
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1602,10 +1597,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
                 return str(self.elements[p_int].name)
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.circuit.time_profile is None:
                     return str(p_int)
                 else:
@@ -1751,44 +1746,6 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             self.update()
 
 
-class EnumModel(QtCore.QAbstractListModel):
-
-    def __init__(self, list_of_enums):
-        """
-        Enumeration model
-        :param list_of_enums: list of enumeration values to show
-        """
-        QtCore.QAbstractListModel.__init__(self)
-        self.items = list_of_enums
-
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self.items)
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return self.items[index.row()].value[0]
-        return None
-
-
-class MeasurementsModel(QtCore.QAbstractListModel):
-
-    def __init__(self, circuit):
-        """
-        Enumeration model
-        :param circuit: MultiCircuit instance
-        """
-        QtCore.QAbstractListModel.__init__(self)
-        self.circuit = circuit
-
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self.items)
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return self.items[index.row()].value[0]
-        return None
-
-
 class DiagramsModel(QtCore.QAbstractListModel):
     """
     Model for the diagrams
@@ -1807,6 +1764,9 @@ class DiagramsModel(QtCore.QAbstractListModel):
         self.bus_branch_editor_icon = QtGui.QIcon()
         self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
 
+        self.bus_branch_vecinity_icon = QtGui.QIcon()
+        self.bus_branch_vecinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
+
         self.map_editor_icon = QtGui.QIcon()
         self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
 
@@ -1816,7 +1776,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
         :param index:
         :return:
         """
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         """
@@ -1826,7 +1786,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
         """
         return len(self.items)
 
-    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -1837,14 +1797,16 @@ class DiagramsModel(QtCore.QAbstractListModel):
 
             diagram = self.items[index.row()]
 
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return diagram.name
-            elif role == QtCore.Qt.DecorationRole:
+            elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
                 if isinstance(diagram, GridCal.Gui.GridEditorWidget.BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
                 elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
                     return self.map_editor_icon
+                elif isinstance(diagram, GridCal.Gui.BusViewer.bus_viewer_dialogue.BusViewerWidget):
+                    return self.bus_branch_vecinity_icon
 
         return None
 
@@ -1881,11 +1843,10 @@ def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=
                 item.setEditable(False)
                 item.setCheckable(True)
                 if check_value:
-                    item.setCheckState(QtCore.Qt.Checked)
+                    item.setCheckState(QtCore.Qt.CheckState.Checked)
                 list_model.appendRow(item)
 
     return list_model
-
 
 
 def get_logger_tree_model(logger: DataLogger):
@@ -1973,7 +1934,7 @@ def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False, check_
                 item.setEditable(False)
                 item.setCheckable(True)
                 if check_value:
-                    item.setCheckState(QtCore.Qt.Checked)
+                    item.setCheckState(QtCore.Qt.CheckState.Checked)
                 list_model.appendRow(item)
 
     return list_model
@@ -1988,7 +1949,7 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
     idx = list()
     for row in range(mdl.rowCount()):
         item = mdl.item(row)
-        if item.checkState() == QtCore.Qt.Checked:
+        if item.checkState() == QtCore.Qt.CheckState.Checked:
             idx.append(row)
 
     return np.array(idx)
