@@ -423,10 +423,15 @@ class EditableDevice:
         """
         tpe = type(self)
 
-        new_obj = tpe(name=self.name,
-                      idtag=self.idtag,
-                      device_type=self.device_type,
-                      code=self.code)
+        try:
+            new_obj = tpe(name=self.name,
+                          idtag=self.idtag,
+                          code=self.code,
+                          device_type=self.device_type)
+        except TypeError:
+            new_obj = tpe(name=self.name,
+                          idtag=self.idtag,
+                          code=self.code)
 
         for prop_name, value in self.__dict__.items():
             setattr(new_obj, prop_name, value)
