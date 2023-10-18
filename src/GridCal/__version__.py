@@ -16,7 +16,7 @@ import datetime
 _current_year_ = datetime.datetime.now().year
 
 # do not forget to keep a three-number version!!!
-__GridCal_VERSION__ = "5.0.0a21"
+__GridCal_VERSION__ = "5.0.0a22"
 
 url = 'https://github.com/SanPen/GridCal'
 
