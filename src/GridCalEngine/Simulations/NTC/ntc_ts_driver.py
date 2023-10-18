@@ -29,9 +29,9 @@ from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering import kmeans_sampling
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import AvailableTransferMode
 
 try:
     from ortools.linear_solver import pywraplp

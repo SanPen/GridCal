@@ -27,14 +27,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import StudyResultsType
-
-
-class AvailableTransferMode(Enum):
-    Generation = 0
-    InstalledPower = 1
-    Load = 2
-    GenerationAndLoad = 3
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode
 
 
 @nb.njit()

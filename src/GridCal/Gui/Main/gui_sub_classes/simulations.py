@@ -38,7 +38,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, AvailableTransferMode
 
 
 class SimulationsMain(TimeEventsMain):

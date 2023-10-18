@@ -369,3 +369,26 @@ class StudyResultsType(Enum):
     def list(cls):
         return list(map(lambda c: c.value, cls))
 
+
+class AvailableTransferMode(Enum):
+    Generation = "Generation"
+    InstalledPower = "InstalledPower"
+    Load = "Load"
+    GenerationAndLoad = "GenerationAndLoad"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return AvailableTransferMode[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))

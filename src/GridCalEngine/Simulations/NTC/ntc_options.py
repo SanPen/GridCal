@@ -19,7 +19,7 @@
 
 from GridCalEngine.basic_structures import TimeGrouping, MIPSolvers
 from GridCalEngine.Simulations.NTC.ntc_opf import GenerationNtcFormulation
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+from GridCalEngine.enumerations import AvailableTransferMode
 
 
 class OptimalNetTransferCapacityOptions:
