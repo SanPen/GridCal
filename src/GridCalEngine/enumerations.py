@@ -371,6 +371,10 @@ class StudyResultsType(Enum):
 
 
 class AvailableTransferMode(Enum):
+    """
+    AvailableTransferMode
+    """
+
     Generation = "Generation"
     InstalledPower = "InstalledPower"
     Load = "Load"
