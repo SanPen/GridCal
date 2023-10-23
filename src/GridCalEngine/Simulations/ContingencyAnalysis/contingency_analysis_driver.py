@@ -54,7 +54,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # Options to use
         self.options = options
 
-        self.linear_multiple_contingencies = linear_multiple_contingencies
+        self.linear_multiple_contingencies: Union[LinearMultiContingencies, None] = linear_multiple_contingencies
 
         # N-K results
         self.results = ContingencyAnalysisResults(

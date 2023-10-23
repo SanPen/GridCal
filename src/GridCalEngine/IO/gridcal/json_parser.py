@@ -23,23 +23,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 import GridCalEngine.Core.Devices as dev
-
-
-@nb.njit()
-def compress_array_numba(value, base):
-    """
-
-    :param value:
-    :param base:
-    :return:
-    """
-    data = list()
-    indptr = list()
-    for i, x in enumerate(value):
-        if x != base:
-            data.append(x)
-            indptr.append(i)
-    return data, indptr
+from GridCalEngine.Core.Devices.profile import compress_array_numba
 
 
 def get_most_frequent(arr):
