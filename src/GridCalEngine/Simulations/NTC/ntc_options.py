@@ -17,7 +17,7 @@
 
 
 
-from GridCalEngine.basic_structures import TimeGrouping, MIPSolvers
+from GridCalEngine.basic_structures import TimeGrouping, ZonalGrouping, MIPSolvers
 from GridCalEngine.Simulations.NTC.ntc_opf import GenerationNtcFormulation
 from GridCalEngine.enumerations import AvailableTransferMode
 
@@ -28,7 +28,8 @@ class OptimalNetTransferCapacityOptions:
                  area_from_bus_idx,
                  area_to_bus_idx,
                  verbose=False,
-                 grouping: TimeGrouping = TimeGrouping.NoGrouping,
+                 time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
+                 zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
                  monitor_only_sensitive_branches=True,
@@ -60,7 +61,7 @@ class OptimalNetTransferCapacityOptions:
         :param area_from_bus_idx:
         :param area_to_bus_idx:
         :param verbose:
-        :param grouping:
+        :param time_grouping:
         :param mip_solver:
         :param generation_formulation:
         :param monitor_only_sensitive_branches:
@@ -82,7 +83,8 @@ class OptimalNetTransferCapacityOptions:
         """
         self.verbose = verbose
 
-        self.grouping = grouping
+        self.time_grouping = time_grouping
+        self.zonal_grouping = zonal_grouping
 
         self.mip_solver = mip_solver
 

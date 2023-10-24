@@ -123,7 +123,6 @@ class BusNtcVars:
         :param n_elm: Number of branches
         """
         self.theta = np.zeros((nt, n_elm), dtype=object)
-        self.branch_injections = np.zeros((nt, n_elm), dtype=object)
         self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
 
@@ -132,15 +131,8 @@ class BusNtcVars:
         self.load_shedding = np.zeros((nt, n_elm), dtype=object)
 
         # nodal gen
-        self.gen_p = np.zeros((nt, n_elm), dtype=float)
-        self.gen_shedding = np.zeros((nt, n_elm), dtype=object)
-        self.gen_producing = np.zeros((nt, n_elm), dtype=object)
-        self.gen_starting_up = np.zeros((nt, n_elm), dtype=object)
-        self.gen_shutting_down = np.zeros((nt, n_elm), dtype=object)
-        self.gen_delta = np.zeros((nt, n_elm), dtype=object)
-
-        # power shift
-        self.power_shift = np.zeros((nt, 1), dtype=object)
+        self.inj_p = np.zeros((nt, n_elm), dtype=float)
+        self.inj_delta = np.zeros((nt, n_elm), dtype=object)
 
 
     def get_values(self, Sbase: float) -> "BusNtcVars":
@@ -156,34 +148,22 @@ class BusNtcVars:
 
         for t in range(nt):
 
-            data.power_shift[t] = get_lp_var_value(self.power_shift[t])
-
             for i in range(n_elm):
                 data.theta[t, i] = get_lp_var_value(self.theta[t, i])
-                data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
 
                 data.load_shedding[t, i] = get_lp_var_value(self.load_shedding[t, i]) * Sbase
 
-                data.gen_p[t, i] = get_lp_var_value(self.gen_p[t, i]) * Sbase
-                data.gen_shedding[t, i] = get_lp_var_value(self.gen_shedding[t, i]) * Sbase
-                data.gen_producing[t, i] = get_lp_var_value(self.gen_producing[t, i])
-                data.gen_starting_up[t, i] = get_lp_var_value(self.gen_starting_up[t, i])
-                data.gen_shutting_down[t, i] = get_lp_var_value(self.gen_shutting_down[t, i])
-                data.gen_delta[t, i] = get_lp_var_value(self.gen_delta[t, i])
+                data.inj_p[t, i] = get_lp_var_value(self.inj_p[t, i]) * Sbase
+                data.inj_delta[t, i] = get_lp_var_value(self.inj_delta[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
-        data.branch_injections = data.branch_injections.astype(float, copy=False)
 
         data.load_shedding = data.load_shedding.astype(float, copy=False)
 
-        data.gen_p = data.gen_p.astype(float, copy=False)
-        data.gen_shedding = data.gen_shedding.astype(float, copy=False)
-        data.gen_producing = data.gen_producing.astype(int, copy=False)
-        data.gen_starting_up = data.gen_starting_up.astype(int, copy=False)
-        data.gen_shutting_down = data.gen_shutting_down.astype(int, copy=False)
-        data.gen_delta = data.gen_delta.astype(float, copy=False)
+        data.inj_p = data.inj_p.astype(float, copy=False)
+        data.inj_delta = data.inj_delta.astype(float, copy=False)
 
         data.power_shift = data.power_shift.astype(float, copy=False)
 
@@ -219,7 +199,7 @@ class LoadNtcVars:
             for i in range(n_elm):
                 data.shedding[t, i] = get_lp_var_value(self.shedding[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
 
         return data
@@ -260,7 +240,7 @@ class GenerationNtcVars:
                 data.shutting_down[t, i] = get_lp_var_value(self.shutting_down[t, i])
                 data.delta[t, i] = get_lp_var_value(self.delta[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
         data.producing = data.producing.astype(int, copy=False)
@@ -302,7 +282,7 @@ class BatteryNtcVars(GenerationNtcVars):
                 data.starting_up[t, i] = get_lp_var_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = get_lp_var_value(self.shutting_down[t, i])
 
-            # format the arrays aproprietly
+            # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
@@ -360,7 +340,7 @@ class BranchNtcVars:
             val = get_lp_var_value(var)
             self.contingency_flow_data[i] = (m, c, val)
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
@@ -411,7 +391,7 @@ class HvdcNtcVars:
             for i in range(n_elm):
                 data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
 
         data.loading = data.flows / (data.rates + 1e-20)
@@ -424,7 +404,7 @@ class NtcVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, model:LpModel):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, model: LpModel):
         """
         Constructor
         :param nt: number of time steps
@@ -443,6 +423,7 @@ class NtcVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.model = model
 
         self.acceptable_solution = False
 
@@ -453,18 +434,26 @@ class NtcVars:
         self.branch_vars = BranchNtcVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
 
+        # power shift
+        self.power_shift = np.zeros((nt, 1), dtype=object)
+
     def get_values(self, Sbase: float) -> "NtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: OpfVars instance
         """
+
+        nt = self.nt
+
         data = NtcVars(nt=self.nt,
                        nbus=self.nbus,
                        ng=self.ng,
                        nb=self.nb,
                        nl=self.nl,
                        nbr=self.nbr,
-                       n_hvdc=self.n_hvdc)
+                       n_hvdc=self.n_hvdc,
+                       model=self.model)
+
         data.bus_vars = self.bus_vars.get_values(Sbase)
         data.load_vars = self.load_vars.get_values(Sbase)
         data.gen_vars = self.gen_vars.get_values(Sbase)
@@ -472,76 +461,136 @@ class NtcVars:
         data.branch_vars = self.branch_vars.get_values(Sbase)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase)
 
+        # todo: check if acceptable_solution must to be an array, one solution per hour
         data.acceptable_solution = self.acceptable_solution
+
+        for t in range(nt):
+            data.power_shift[t] = get_lp_var_value(self.power_shift[t])
+
+        # format the arrays appropriately
+        data.power_shift = data.power_shift.astype(float, copy=False)
+
         return data
 
+def get_reference_per_bus(bus_data_t: BusData,
+                          gen_data_t: GeneratorData,
+                          load_data_t: LoadData,
+                          transfer_method: AvailableTransferMode,
+                          skip_generation_limits: bool,
+                          inf_value: float,
+                          Sbase: float):
+
+    """
+
+    :param bus_data_t: BusData structure
+    :param gen_data_t: GenData structure
+    :param load_data_t: LoadData structure
+    :param transfer_method: Exchange transfer method
+    :param skip_generation_limits: Skip generation limits?
+    :param inf_value: infinity value. Ex 1e-20
+    :param Sbase: base power (100 MVA)
+    :return:
+    """
+
+    # get values per bus
+    gen_per_bus = gen_data_t.get_injections_per_bus() / Sbase
+    load_per_bus = load_data_t.get_injections_per_bus() / Sbase
+    pinst_per_bus = gen_data_t.get_installed_power_per_bus() / Sbase
+
+    # Evaluate transfer method
+    if transfer_method == AvailableTransferMode.InstalledPower:
+        p_ref = pinst_per_bus
+
+        if skip_generation_limits:
+            p_min = np.full(bus_data_t.nbus, -inf_value)
+            p_max = np.full(bus_data_t.nbus, inf_value)
+
+        else:
+            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
+            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+
+        dispachable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
 
 
-def get_nodal_proportions(load_per_bus: Vec,
-                          gen_per_bus: Vec,
-                          pinst_per_bus: Vec,
-                          pmin_per_bus: Vec,
-                          pmax_per_bus: Vec,
-                          dispachable_bus: Vec,
+    elif transfer_method == AvailableTransferMode.Generation:
+        p_ref = gen_per_bus
+
+        if skip_generation_limits:
+            p_min = np.full(bus_data_t.nbus, -inf_value)
+            p_max = np.full(bus_data_t.nbus, inf_value)
+
+        else:
+            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
+            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+
+        dispachable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+
+
+    elif transfer_method == AvailableTransferMode.Load:
+        p_ref = load_per_bus
+        p_min = -inf_value
+        p_max = inf_value
+
+        #todo check
+        dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+
+
+    elif transfer_method == AvailableTransferMode.GenerationAndLoad:
+        p_ref = gen_per_bus - load_per_bus
+        if skip_generation_limits:
+            p_min = np.full(bus_data_t.nbus, -inf_value)
+            p_max = np.full(bus_data_t.nbus, inf_value)
+        else:
+            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
+            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+
+        #todo check
+        dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+
+
+    else:
+        raise Exception('Undefined available transfer mode')
+
+    return p_ref * dispachable_bus, p_max, p_min
+
+def get_nodal_proportions(nbus: int,
+                          p_ref: Vec,
+                          p_max: Vec,
+                          p_min: Vec,
                           bus_a1: IntVec,
                           bus_a2: IntVec,
-                          transfer_method: AvailableTransferMode,
                           logger: Logger):
 
     """
     Get generation proportions by transfer method with sign consideration.
-    :param gen_data: GeneratorData structure
-    :param load_per_bus: Load injection per bus
-    :param gen_per_bus: Generator injection per bus
-    :param bus_a1: bus indices for area from
-    :param bus_a2: bus indices for area to.
-    :param transfer_method: Transfer method considered to compute proportions
+    :param nbus: number of buses
+    :param bus_a1: bus indices within area 1
+    :param bus_a2: bus indices within area 2
     :param logger: logger instance
-    :return: proportions, sense
+    :return: proportions, sense, p_max, p_min
     """
 
-    # generator area mask
-    isin_a1 = np.isin(range(len(gen_per_bus)), bus_a1, assume_unique=True)
-    isin_a2 = np.isin(range(len(gen_per_bus)), bus_a2, assume_unique=True)
+    # bus area mask
+    isin_a1 = np.isin(range(nbus), bus_a1, assume_unique=True)
+    isin_a2 = np.isin(range(nbus), bus_a2, assume_unique=True)
 
-    # Evaluate transfer method
-    if transfer_method == AvailableTransferMode.InstalledPower:
-        Pref = pinst_per_bus
-        Pref_a1 = Pref * isin_a1 * dispachable_bus * (Pref <= pmax_per_bus)
-        Pref_a2 = Pref * isin_a2 * dispachable_bus * (Pref >= pmin_per_bus)
-
-    elif transfer_method == AvailableTransferMode.Generation:
-        Pref = gen_per_bus
-        Pref_a1 = Pref * isin_a1 * dispachable_bus * (Pref <= pmax_per_bus)
-        Pref_a2 = Pref * isin_a2 * dispachable_bus * (Pref >= pmin_per_bus)
-
-    elif transfer_method == AvailableTransferMode.Load:
-        Pref = load_per_bus
-        Pref_a1 = Pref * isin_a1 * dispachable_bus
-        Pref_a2 = Pref * isin_a2 * dispachable_bus
-
-    elif transfer_method == AvailableTransferMode.GenerationAndLoad:
-        Pref = gen_per_bus - load_per_bus
-        Pref_a1 = Pref * isin_a1 * dispachable_bus
-        Pref_a2 = Pref * isin_a2 * dispachable_bus
-
-    else:
-        raise Exception('Undefined available transfer mode')
+    p_ref_a1 = p_ref * isin_a1 * (p_ref <= p_max)
+    p_ref_a2 = p_ref * isin_a2 * (p_ref >= p_min)
 
     # get proportions of contribution by sense (gen or pump) and area
     # the idea is both techs contributes to achieve the power shift goal in the same proportion
     # that in base situation
 
     # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
-    gen_pos_a1 = np.where(Pref_a1 < 0, 0, Pref_a1)
-    gen_neg_a1 = np.where(Pref_a1 > 0, 0, Pref_a1)
-    gen_pos_a2 = np.where(Pref_a2 < 0, 0, Pref_a2)
-    gen_neg_a2 = np.where(Pref_a2 > 0, 0, Pref_a2)
+    gen_pos_a1 = np.where(p_ref_a1 < 0, 0, p_ref_a1)
+    gen_neg_a1 = np.where(p_ref_a1 > 0, 0, p_ref_a1)
+    gen_pos_a2 = np.where(p_ref_a2 < 0, 0, p_ref_a2)
+    gen_neg_a2 = np.where(p_ref_a2 > 0, 0, p_ref_a2)
 
-    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pref_a1))
-    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pref_a1))
-    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pref_a2))
-    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pref_a2))
+    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(p_ref_a1))
+    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(p_ref_a1))
+    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(p_ref_a2))
+    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(p_ref_a2))
 
     # get proportion by production (ammount of power contributed by generator to his sensed area).
 
@@ -587,78 +636,88 @@ def get_nodal_proportions(load_per_bus: Vec,
     # apply power shift sense based on area (increase a1, decrease a2)
     sense = (1 * isin_a1) + (-1 * isin_a2)
 
-    return proportions, sense
+    return proportions, sense, p_max, p_min
 
 
-def add_linear_generation_formulation(t: Union[int, None],
+def add_linear_injections_formulation(t: Union[int, None],
                                       Sbase: float,
-                                      time_array: DateVec,
                                       gen_data_t: GeneratorData,
                                       load_data_t: LoadData,
                                       bus_data_t: BusData,
-                                      # gen_per_bus: Vec,
-                                      # load_per_bus: Vec,
+                                      p_bus_t: Vec,
                                       bus_a1: IntVec,
                                       bus_a2: IntVec,
                                       transfer_method: AvailableTransferMode,
-                                      bus_vars: BusNtcVars,
+                                      skip_generation_limits: bool,
+                                      ntc_vars: NtcVars,
                                       prob: LpModel,
                                       logger: Logger):
     """
-    Add MIP generation formulation
+    Add MIP injections formulation
     :param t: time step
     :param Sbase: base power (100 MVA)
-    :param time_array: complete time array
     :param gen_data_t: GeneratorData structure
-    :param prob: ORTools problem
+    :param load_data_t: LoadData structure
+    :param bus_data_t: BusData structure
+    :param p_bus_t: Real power injections per bus (p.u.)
+    :param bus_a1: bus indices within area "from"
+    :param bus_a2: bus indices within area "to"
+    :param transfer_method: Exchange transfer method
+    :param skip_generation_limits: Skip generation limits?
+    :param ntc_vars: MIP variables structure
+    :param prob: MIP problem
+    :param logger: logger instance
     :return objective function
     """
 
-    bus_vars.power_shift[t] = prob.add_var(
-                lb=-prob.INFINITY,
-                ub=prob.INFINITY,
-                name=join("power_shift_", [t], "_"))
+    ntc_vars.power_shift[t] = prob.add_var(
+        lb=-prob.INFINITY,
+        ub=prob.INFINITY,
+        name=join("power_shift_", [t], "_"))
 
-    bus_pgen_t = gen_data_t.get_injections_per_bus()
-    bus_pload_t = load_data_t.get_injections_per_bus()
-    bus_pmin_t = gen_data_t.C_bus_elm * gen_data_t.pmin
-    bus_pmax_t = gen_data_t.C_bus_elm * gen_data_t.pmax
-    bus_pinst_t = gen_data_t.get_installed_power_per_bus()
-    bus_dispatchable_t = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+    p_ref, p_max, p_min = get_reference_per_bus(
+        bus_data_t=bus_data_t,
+        gen_data_t=gen_data_t,
+        load_data_t=load_data_t,
+        transfer_method=transfer_method,
+        skip_generation_limits=skip_generation_limits,
+        inf_value=prob.INFINITY,
+        Sbase=Sbase)
 
-    proportions, sense = get_nodal_proportions(
-        gen_per_bus=bus_pgen_t,
-        load_per_bus=bus_pload_t,
-        pinst_per_bus=bus_pinst_t,
-        pmin_per_bus=bus_pmin_t,
-        pmax_per_bus=bus_pmax_t,
-        dispachable_bus=bus_dispatchable_t,
+    proportions, sense, bus_pmax_t, bus_pmin_t = get_nodal_proportions(
+        nbus=bus_data_t.nbus,
+        p_ref=p_ref,
+        p_max=p_max,
+        p_min=p_min,
         bus_a1=bus_a1,
         bus_a2=bus_a2,
-        transfer_method=transfer_method,
         logger=logger)
 
     f_obj = 0.0
 
     for k in range(bus_data_t.nbus):
 
-        if bus_data_t.active[k]:
+        if bus_data_t.active[k] and proportions[k] != 0:
 
-            # declare active power var (limits will be applied later)
-            bus_vars.gen_p[t, k] = prob.add_var(
-                lb=bus_pmin_t[k],
-                ub=bus_pmax_t[k],
-                name=join("gen_p_", [t, k], "_"))
-
-            bus_vars.gen_delta[t, k] = prob.add_var(
+            # declare bus delta injections
+            ntc_vars.bus_vars.inj_delta[t, k] = prob.add_var(
                 lb=-prob.INFINITY,
                 ub=prob.INFINITY,
-                name=join("delta_p_", [t, k], "_"))
+                name=join("delta_p", [t, k], "_"))
 
             prob.add_cst(
-                cst=bus_vars.gen_delta[t, k] == bus_vars.power_shift[t] * proportions[k] * sense[k],
-                name='bus_{0}_assignment'.format(bus_data_t.names[k])
-            )
+                cst=ntc_vars.bus_vars.inj_delta[t, k] == ntc_vars.power_shift[t] * proportions[k] * sense[k],
+                name='bus_{0}_assignment'.format(bus_data_t.names[k]))
+
+            # declare bus injections
+            ntc_vars.bus_vars.inj_p[t, k] = prob.add_var(
+                lb=bus_pmin_t[k],
+                ub=bus_pmax_t[k],
+                name=join("inj_p", [t, k], "_"))
+
+            prob.add_cst(
+                cst=ntc_vars.bus_vars.inj_p[t, k] == p_bus_t[k] + ntc_vars.bus_vars.inj_delta[t, k],
+                name=join("bus_balance", [t, k], "_"))
 
     return f_obj
 
@@ -688,6 +747,7 @@ def add_linear_battery_formulation(t: Union[int, None],
     :return objective function
     """
     f_obj = 0.0
+
     for k in range(batt_data_t.nelm):
 
         if batt_data_t.active[k]:
@@ -860,6 +920,8 @@ def add_linear_load_formulation(t: Union[int, None],
 
                 # minimize the load shedding
                 f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
+
+
             else:
                 # the load is negative, won't shed?
                 load_vars.shedding[t, k] = 0.0
@@ -937,8 +999,8 @@ def add_linear_branches_formulation(t: int,
                 prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
-                vars_bus.branch_injections[t, fr] = -bk * branch_vars.tap_angles[t, m]
-                vars_bus.branch_injections[t, to] = bk * branch_vars.tap_angles[t, m]
+                vars_bus.inj_p[t, fr] = -bk * branch_vars.tap_angles[t, m]
+                vars_bus.inj_p[t, to] = bk * branch_vars.tap_angles[t, m]
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
@@ -996,7 +1058,9 @@ def add_linear_hvdc_formulation(t: int,
     :param prob:
     :return:
     """
+
     f_obj = 0.0
+
     for m in range(hvdc_data_t.nelm):
 
         fr = hvdc_data_t.F[m]
@@ -1006,35 +1070,40 @@ def add_linear_hvdc_formulation(t: int,
         if hvdc_data_t.active[m]:
 
             # declare the flow var
-            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
-                                                 name=join("hvdc_flow_", [t, m], "_"))
+            hvdc_vars.flows[t, m] = prob.add_var(
+                lb=-hvdc_data_t.rate[m] / Sbase,
+                ub=hvdc_data_t.rate[m] / Sbase,
+                name=join("hvdc_flow_", [t, m], "_"))
 
             if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
 
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
-                prob.add_cst(cst=hvdc_vars.flows[t, m] ==
-                                 P0 + hvdc_data_t.angle_droop[m] * (vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
-                             name=join("hvdc_flow_cst_", [t, m], "_"))
+                prob.add_cst(
+                    cst=hvdc_vars.flows[t, m] == P0 + hvdc_data_t.angle_droop[m] * (
+                                vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                    name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
-                vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
-                vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
+                vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
+                vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
 
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
 
                     # add the injections matching the flow
-                    vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
+                    vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
 
                 else:
 
                     if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
                         P0 = hvdc_data_t.rate[m] / Sbase
+
                     elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
                         P0 = -hvdc_data_t.rate[m] / Sbase
+
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
 
@@ -1042,8 +1111,8 @@ def add_linear_hvdc_formulation(t: int,
                     set_var_bounds(var=hvdc_vars.flows[t, m], ub=P0, lb=P0)
 
                     # add the injections matching the flow
-                    vars_bus.branch_injections[t, fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.branch_injections[t, to] += hvdc_vars.flows[t, m]
+                    vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
             else:
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
@@ -1057,37 +1126,19 @@ def add_linear_node_balance(t_idx: int,
                             Bbus,
                             vd: IntVec,
                             bus_data: BusData,
-                            generator_data: GeneratorData,
-                            battery_data: BatteryData,
-                            load_data: LoadData,
                             bus_vars: BusNtcVars,
-                            gen_vars: GenerationNtcVars,
-                            batt_vars: BatteryNtcVars,
-                            load_vars: LoadNtcVars,
                             prob: LpModel):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
     :param Bbus: susceptance matrix (complete)
     :param bus_data: BusData
-    :param generator_data: GeneratorData
-    :param battery_data: BatteryData
-    :param load_data: LoadData
     :param bus_vars: BusVars
-    :param gen_vars: GenerationVars
-    :param batt_vars: BatteryVars
-    :param load_vars: LoadVars
     :param prob: LpModel
     """
     B = Bbus.tocsc()
 
-    P_esp = bus_vars.branch_injections[t_idx, :]
-    P_esp += lpDot(generator_data.C_bus_elm.tocsc(),
-                   gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += lpDot(battery_data.C_bus_elm.tocsc(),
-                   batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += lpDot(load_data.C_bus_elm.tocsc(),
-                   load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    P_esp = bus_vars.inj_p[t_idx, :]
 
     # calculate the linear nodal inyection
     P_calc = lpDot(B, bus_vars.theta[t_idx, :])
@@ -1109,13 +1160,10 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                           skip_generation_limits: bool = False,
                           consider_contingencies: bool = False,
-                          unit_Commitment: bool = False,
-                          ramp_constraints: bool = False,
                           lodf_threshold: float = 0.001,
-                          maximize_inter_area_flow: bool = False,
-                          buses_areas_1=None,
-                          buses_areas_2=None,
-                          energy_0: Union[Vec, None] = None,
+                          buses_areas_1: IntVec = None,
+                          buses_areas_2: IntVec = None,
+                          transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                           logger: Logger = Logger(),
                           progress_text: Union[None, Callable[[str], None]] = None,
                           progress_func: Union[None, Callable[[float], None]] = None,
@@ -1134,6 +1182,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param maximize_inter_area_flow:
     :param buses_areas_1:
     :param buses_areas_2:
+    :param transfer_method:
     :param energy_0:
     :param logger: logger instance
     :param progress_text:
@@ -1161,10 +1210,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
 
-    # declare structures of LP vars
-    mip_vars = NtcVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
 
     lp_model: LpModel = LpModel(solver_type)
+
+    # declare structures of LP vars
+    mip_vars = NtcVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc, model=lp_model)
 
     # objective function
     f_obj = 0.0
@@ -1182,58 +1232,39 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
         if consider_contingencies:
             # if we want to include contingencies, we'll need the LODF at this time step
-            ls = LinearAnalysis(numerical_circuit=nc,
-                                distributed_slack=False,
-                                correct_values=True)
+            ls = LinearAnalysis(
+                numerical_circuit=nc,
+                distributed_slack=False,
+                correct_values=True)
+
             ls.run()
             LODF = ls.LODF
+
         else:
             LODF = None
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
-                                                                 ub=nc.bus_data.angle_max[k],
-                                                                 name=join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(
+                lb=nc.bus_data.angle_min[k],
+                ub=nc.bus_data.angle_max[k],
+                name=join("th_", [t_idx, k], "_"))
 
-        # formulate loads ------------------------------------------------------------------------------------------
-        f_obj += add_linear_load_formulation(
+        # formulate injections -------------------------------------------------------------------------------------
+        f_obj += add_linear_injections_formulation(
             t=t_idx,
             Sbase=nc.Sbase,
-            load_data_t=nc.load_data,
-            load_vars=mip_vars.load_vars,
-            prob=lp_model)
-
-        # formulate generation -------------------------------------------------------------------------------------
-        f_obj += add_linear_generation_formulation(
-            t=t_idx,
-            Sbase=nc.Sbase,
-            time_array=grid.time_profile,
             gen_data_t=nc.generator_data,
-            load_data_t=nc.generator_data,
-            # gen_vars=mip_vars.gen_vars,
-            prob=lp_model,
-            # unit_commitment=unit_Commitment,
-            # ramp_constraints=ramp_constraints,
-            # skip_generation_limits=skip_generation_limits
-        )
-
-        # formulate batteries --------------------------------------------------------------------------------------
-        if t_idx == 0 and energy_0 is None:
-            # declare the initial energy of the batteries
-            energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
-
-        f_obj += add_linear_battery_formulation(
-            t=t_idx,
-            Sbase=nc.Sbase,
-            time_array=grid.time_profile,
-            batt_data_t=nc.battery_data,
-            batt_vars=mip_vars.batt_vars,
-            prob=lp_model,
-            unit_commitment=unit_Commitment,
-            ramp_constraints=ramp_constraints,
+            load_data_t=nc.load_data,
+            bus_data_t=nc.bus_data,
+            p_bus_t=nc.Pbus,
+            bus_a1=buses_areas_1,
+            bus_a2=buses_areas_2,
+            transfer_method=transfer_method,
             skip_generation_limits=skip_generation_limits,
-            energy_0=energy_0)
+            ntc_vars=mip_vars,
+            prob=lp_model,
+            logger=logger)
 
         # formulate hvdc -------------------------------------------------------------------------------------------
         f_obj += add_linear_hvdc_formulation(
@@ -1259,29 +1290,23 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 inf=1e20)
 
             # formulate nodes ---------------------------------------------------------------------------------------
-
-            add_linear_node_balance(t_idx=t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
-                                    bus_data=nc.bus_data,
-                                    generator_data=nc.generator_data,
-                                    battery_data=nc.battery_data,
-                                    load_data=nc.load_data,
-                                    bus_vars=mip_vars.bus_vars,
-                                    gen_vars=mip_vars.gen_vars,
-                                    batt_vars=mip_vars.batt_vars,
-                                    load_vars=mip_vars.load_vars,
-                                    prob=lp_model)
+            add_linear_node_balance(
+                t_idx=t_idx,
+                Bbus=nc.Bbus,
+                vd=nc.vd,
+                bus_data=nc.bus_data,
+                bus_vars=mip_vars.bus_vars,
+                prob=lp_model)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                             lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                             mip_vars.load_vars.p[t_idx, :].sum() -
-                             mip_vars.load_vars.shedding[t_idx].sum(),
+        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
+                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                              mip_vars.load_vars.p[t_idx, :].sum() -
+                              mip_vars.load_vars.shedding[t_idx].sum()),
                          name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:
