@@ -738,7 +738,7 @@ class NumericalCircuit:
         return self.Vbus_
 
     @property
-    def Sbus(self):
+    def Sbus(self) -> CxVec:
         """
         Returns the power Injections in per-unit
         :return: array of power Injections (p.u.)
@@ -748,6 +748,14 @@ class NumericalCircuit:
             self.Sbus_ = self.get_injections(normalize=True)
 
         return self.Sbus_
+
+    @property
+    def Pbus(self) -> Vec:
+        """
+        Return real power injections in per-unit
+        :return: array of real power (p.u.)
+        """
+        return self.Sbus.real
 
     @property
     def Ibus(self):
