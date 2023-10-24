@@ -3754,6 +3754,20 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_17.addWidget(self.fbase_doubleSpinBox)
 
+        self.label_35 = QLabel(self.frame_25)
+        self.label_35.setObjectName(u"label_35")
+        self.label_35.setFont(font3)
+
+        self.verticalLayout_17.addWidget(self.label_35)
+
+        self.defaultBusVoltageSpinBox = QDoubleSpinBox(self.frame_25)
+        self.defaultBusVoltageSpinBox.setObjectName(u"defaultBusVoltageSpinBox")
+        self.defaultBusVoltageSpinBox.setDecimals(1)
+        self.defaultBusVoltageSpinBox.setMaximum(999999999.000000000000000)
+        self.defaultBusVoltageSpinBox.setValue(10.000000000000000)
+
+        self.verticalLayout_17.addWidget(self.defaultBusVoltageSpinBox)
+
         self.line_19 = QFrame(self.frame_25)
         self.line_19.setObjectName(u"line_19")
         palette47 = QPalette()
@@ -4880,6 +4894,11 @@ class Ui_mainWindow(object):
         self.fbase_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"System frequency.", None))
 #endif // QT_CONFIG(tooltip)
         self.fbase_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" Hz", None))
+        self.label_35.setText(QCoreApplication.translate("mainWindow", u"Default bus voltage", None))
+#if QT_CONFIG(tooltip)
+        self.defaultBusVoltageSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This is the voltage that drag&drop buses have", None))
+#endif // QT_CONFIG(tooltip)
+        self.defaultBusVoltageSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
         self.label_31.setText(QCoreApplication.translate("mainWindow", u"Engine", None))
 #if QT_CONFIG(tooltip)
         self.engineComboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Engine to be used when available", None))

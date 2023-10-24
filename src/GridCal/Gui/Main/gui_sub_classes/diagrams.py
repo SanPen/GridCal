@@ -154,6 +154,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
+        self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
 
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
@@ -406,7 +407,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
-            results: sim.ContinuationPowerFlowResults = self.session.get_results(sim.SimulationTypes.ContinuationPowerFlow_run)
+            results: sim.ContinuationPowerFlowResults = self.session.get_results(
+                sim.SimulationTypes.ContinuationPowerFlow_run)
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
@@ -519,7 +521,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
-            results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.OPFTimeSeries_run)
+            results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.OPFTimeSeries_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -573,7 +576,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
-            results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_TS_run)
+            results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.LinearAnalysis_TS_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -597,7 +601,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
-            results: sim.ContingencyAnalysisResults = self.session.get_results(sim.SimulationTypes.ContingencyAnalysis_run)
+            results: sim.ContingencyAnalysisResults = self.session.get_results(
+                sim.SimulationTypes.ContingencyAnalysis_run)
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -621,7 +626,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
-            results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
+            results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.ContingencyAnalysisTS_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -777,7 +783,9 @@ class DiagramsMain(CompiledArraysMain):
                                               prog_func=None,
                                               text_func=None,
                                               name='All bus branches')
-        diagram_widget = BusBranchEditorWidget(circuit=self.circuit, diagram=diagram)
+        diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
+                                               diagram=diagram,
+                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
         self.add_diagram(diagram_widget)
@@ -794,7 +802,9 @@ class DiagramsMain(CompiledArraysMain):
 
             if isinstance(diagram_widget, BusBranchEditorWidget):
                 diagram = diagram_widget.get_selection_diagram()
-                self.add_diagram(BusBranchEditorWidget(self.circuit, diagram=diagram))
+                self.add_diagram(BusBranchEditorWidget(self.circuit,
+                                                       diagram=diagram,
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()))
                 self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -853,7 +863,8 @@ class DiagramsMain(CompiledArraysMain):
                         diagram = BusViewerWidget(circuit=self.circuit,
                                                   root_bus=root_bus,
                                                   name=root_bus.name + ' vecinity',
-                                                  view_toolbar=False)
+                                                  view_toolbar=False,
+                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
                         self.add_diagram(diagram)
                         self.set_diagrams_list_view()
 
@@ -868,7 +879,9 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.circuit.diagrams:
 
             if isinstance(diagram, dev.BusBranchDiagram):
-                diagram_widget = BusBranchEditorWidget(self.circuit, diagram=diagram)
+                diagram_widget = BusBranchEditorWidget(self.circuit,
+                                                       diagram=diagram,
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)
@@ -910,7 +923,8 @@ class DiagramsMain(CompiledArraysMain):
             diagram = BusViewerWidget(circuit=self.circuit,
                                       root_bus=root_bus,
                                       name=root_bus.name + ' vecinity',
-                                      view_toolbar=False)
+                                      view_toolbar=False,
+                                      default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
             self.add_diagram(diagram)
             self.set_diagrams_list_view()
 
@@ -1075,6 +1089,7 @@ class DiagramsMain(CompiledArraysMain):
                 self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
         else:
             self.ui.schematic_step_label.setText("No steps")
+
     def export_diagram(self):
         """
         Save the schematic
@@ -1359,3 +1374,20 @@ class DiagramsMain(CompiledArraysMain):
         else:
             error_msg('Unrecognized option' + str(prop))
             return
+
+    def default_voltage_change(self):
+        """
+        When the default voltage changes, update all the diagrams
+        """
+        val = self.ui.defaultBusVoltageSpinBox.value()
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+                diagram.default_bus_voltage = val
+
+            elif isinstance(diagram, BusViewerWidget):
+                diagram.default_bus_voltage = val
+
+            elif isinstance(diagram, GridMapWidget):
+                pass

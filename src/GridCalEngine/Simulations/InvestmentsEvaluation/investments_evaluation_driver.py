@@ -94,6 +94,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         total_losses = np.sum(res.losses.real)
         overload_score = res.get_oveload_score(branch_prices=self.nc.branch_data.overload_cost)
         voltage_score = 0.0
+
         f = total_losses + overload_score + voltage_score
 
         # store the results

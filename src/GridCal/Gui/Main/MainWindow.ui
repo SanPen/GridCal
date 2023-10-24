@@ -8020,6 +8020,37 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
+               <widget class="QLabel" name="label_35">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Default bus voltage</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="defaultBusVoltageSpinBox">
+                <property name="toolTip">
+                 <string>This is the voltage that drag&amp;drop buses have</string>
+                </property>
+                <property name="suffix">
+                 <string> kV</string>
+                </property>
+                <property name="decimals">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <double>999999999.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>10.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="Line" name="line_19">
                 <property name="palette">
                  <palette>
