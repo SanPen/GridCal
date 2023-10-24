@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -1956,13 +1956,6 @@ class Ui_mainWindow(object):
         self.frame_67.setFrameShadow(QFrame.Raised)
         self.gridLayout_24 = QGridLayout(self.frame_67)
         self.gridLayout_24.setObjectName(u"gridLayout_24")
-        self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
-        self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
-        self.ntcOpfTolSpinBox.setMinimum(-99)
-        self.ntcOpfTolSpinBox.setValue(-3)
-
-        self.gridLayout_24.addWidget(self.ntcOpfTolSpinBox, 5, 1, 1, 1)
-
         self.trmSpinBox = QSpinBox(self.frame_67)
         self.trmSpinBox.setObjectName(u"trmSpinBox")
         self.trmSpinBox.setMaximum(1500)
@@ -1993,11 +1986,6 @@ class Ui_mainWindow(object):
         self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
 
         self.gridLayout_24.addWidget(self.ntcDispatchAllAreasCheckBox, 3, 0, 1, 1)
-
-        self.label_101 = QLabel(self.frame_67)
-        self.label_101.setObjectName(u"label_101")
-
-        self.gridLayout_24.addWidget(self.label_101, 5, 0, 1, 1)
 
         self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
@@ -2083,6 +2071,35 @@ class Ui_mainWindow(object):
         self.frame_4.setLineWidth(1)
         self.gridLayout_5 = QGridLayout(self.frame_4)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.contingencyPowerTripLabel = QLabel(self.frame_4)
+        self.contingencyPowerTripLabel.setObjectName(u"contingencyPowerTripLabel")
+
+        self.gridLayout_5.addWidget(self.contingencyPowerTripLabel, 4, 0, 1, 1)
+
+        self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_4)
+        self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
+        self.considerContingenciesNtcOpfCheckBox.setChecked(True)
+
+        self.gridLayout_5.addWidget(self.considerContingenciesNtcOpfCheckBox, 1, 0, 1, 1)
+
+        self.considerContingenciesGeneratorOpfCheckBox = QCheckBox(self.frame_4)
+        self.considerContingenciesGeneratorOpfCheckBox.setObjectName(u"considerContingenciesGeneratorOpfCheckBox")
+        self.considerContingenciesGeneratorOpfCheckBox.setChecked(True)
+
+        self.gridLayout_5.addWidget(self.considerContingenciesGeneratorOpfCheckBox, 3, 0, 1, 1)
+
+        self.label_105 = QLabel(self.frame_4)
+        self.label_105.setObjectName(u"label_105")
+        self.label_105.setFont(font4)
+
+        self.gridLayout_5.addWidget(self.label_105, 0, 0, 1, 1)
+
+        self.considerContingenciesHvdcOpfCheckBox = QCheckBox(self.frame_4)
+        self.considerContingenciesHvdcOpfCheckBox.setObjectName(u"considerContingenciesHvdcOpfCheckBox")
+        self.considerContingenciesHvdcOpfCheckBox.setChecked(True)
+
+        self.gridLayout_5.addWidget(self.considerContingenciesHvdcOpfCheckBox, 2, 0, 1, 1)
+
         self.contingencyGenerationThresholdDoubleSpinBox = QDoubleSpinBox(self.frame_4)
         self.contingencyGenerationThresholdDoubleSpinBox.setObjectName(u"contingencyGenerationThresholdDoubleSpinBox")
         self.contingencyGenerationThresholdDoubleSpinBox.setDecimals(0)
@@ -2092,34 +2109,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.contingencyGenerationThresholdDoubleSpinBox, 4, 1, 1, 1)
 
-        self.considerContingenciesGeneratorOpfCheckBox = QCheckBox(self.frame_4)
-        self.considerContingenciesGeneratorOpfCheckBox.setObjectName(u"considerContingenciesGeneratorOpfCheckBox")
-        self.considerContingenciesGeneratorOpfCheckBox.setChecked(True)
+        self.label_101 = QLabel(self.frame_4)
+        self.label_101.setObjectName(u"label_101")
 
-        self.gridLayout_5.addWidget(self.considerContingenciesGeneratorOpfCheckBox, 3, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.label_101, 5, 0, 1, 1)
 
-        self.contingencyPowerTripLabel = QLabel(self.frame_4)
-        self.contingencyPowerTripLabel.setObjectName(u"contingencyPowerTripLabel")
+        self.ntcLODFToleranceSpinBox = QSpinBox(self.frame_4)
+        self.ntcLODFToleranceSpinBox.setObjectName(u"ntcLODFToleranceSpinBox")
+        self.ntcLODFToleranceSpinBox.setMinimum(-99)
+        self.ntcLODFToleranceSpinBox.setValue(-2)
 
-        self.gridLayout_5.addWidget(self.contingencyPowerTripLabel, 4, 0, 1, 1)
-
-        self.label_105 = QLabel(self.frame_4)
-        self.label_105.setObjectName(u"label_105")
-        self.label_105.setFont(font4)
-
-        self.gridLayout_5.addWidget(self.label_105, 0, 0, 1, 1)
-
-        self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_4)
-        self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
-        self.considerContingenciesNtcOpfCheckBox.setChecked(True)
-
-        self.gridLayout_5.addWidget(self.considerContingenciesNtcOpfCheckBox, 1, 0, 1, 1)
-
-        self.considerContingenciesHvdcOpfCheckBox = QCheckBox(self.frame_4)
-        self.considerContingenciesHvdcOpfCheckBox.setObjectName(u"considerContingenciesHvdcOpfCheckBox")
-        self.considerContingenciesHvdcOpfCheckBox.setChecked(True)
-
-        self.gridLayout_5.addWidget(self.considerContingenciesHvdcOpfCheckBox, 2, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.ntcLODFToleranceSpinBox, 5, 1, 1, 1)
 
 
         self.gridLayout_15.addWidget(self.frame_4, 5, 0, 2, 3)
@@ -4631,11 +4631,6 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.ntcOpfTolSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
-#endif // QT_CONFIG(tooltip)
-        self.ntcOpfTolSpinBox.setSuffix("")
-        self.ntcOpfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.trmSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
 #if QT_CONFIG(tooltip)
         self.label_231.setToolTip(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
@@ -4647,10 +4642,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.skipNtcGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
         self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
-#if QT_CONFIG(tooltip)
-        self.label_101.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This tolerance determines the maximum value of a slack variable that produces an error</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_101.setText(QCoreApplication.translate("mainWindow", u"Slack variables' tolerance", None))
 #if QT_CONFIG(tooltip)
         self.proportionalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified as a linear combination of it's current dispatch", None))
 #endif // QT_CONFIG(tooltip)
@@ -4681,18 +4672,27 @@ class Ui_mainWindow(object):
         self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
 #endif // QT_CONFIG(tooltip)
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"NTC optimization", None))
-#if QT_CONFIG(tooltip)
-        self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
-#endif // QT_CONFIG(tooltip)
-        self.contingencyGenerationThresholdDoubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
-        self.considerContingenciesGeneratorOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider generator contingencies", None))
         self.contingencyPowerTripLabel.setText(QCoreApplication.translate("mainWindow", u"Generation power contingency", None))
-        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
 #if QT_CONFIG(tooltip)
         self.considerContingenciesNtcOpfCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If activated, the N-1 contingencies are considered", None))
 #endif // QT_CONFIG(tooltip)
         self.considerContingenciesNtcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider branch contingencies", None))
+        self.considerContingenciesGeneratorOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider generator contingencies", None))
+        self.label_105.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
         self.considerContingenciesHvdcOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider hvdc contingencies", None))
+#if QT_CONFIG(tooltip)
+        self.contingencyGenerationThresholdDoubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Generation power to trip as contingency", None))
+#endif // QT_CONFIG(tooltip)
+        self.contingencyGenerationThresholdDoubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+#if QT_CONFIG(tooltip)
+        self.label_101.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This tolerance determines the maximum value of a slack variable that produces an error</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_101.setText(QCoreApplication.translate("mainWindow", u"LODF tolerance", None))
+#if QT_CONFIG(tooltip)
+        self.ntcLODFToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"This value determines if the convergence is reached", None))
+#endif // QT_CONFIG(tooltip)
+        self.ntcLODFToleranceSpinBox.setSuffix("")
+        self.ntcLODFToleranceSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.label_102.setText(QCoreApplication.translate("mainWindow", u"Objective function weights", None))
         self.label_26.setText(QCoreApplication.translate("mainWindow", u"Power shift", None))
         self.weightPowerShiftSpinBox.setSuffix("")

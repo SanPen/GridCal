@@ -146,7 +146,7 @@ class ConfigurationMain(ResultsMain):
                 "dispatch_all_areas": self.ui.ntcDispatchAllAreasCheckBox,
                 "check_feasibility": self.ui.ntcFeasibilityCheckCheckBox,
 
-                "slack_variables_tolerance": self.ui.ntcOpfTolSpinBox,
+                "ntc_lodf_tolerance": self.ui.ntcLODFToleranceSpinBox,
                 "transmission_reliability_margin": self.ui.trmSpinBox,
 
                 "branch_exchange_sensitivity": self.ui.ntcAlphaSpinBox,

@@ -2021,7 +2021,7 @@ class SimulationsMain(TimeEventsMain):
                 branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+                lodf_tolerance = 10.0 ** self.ui.ntcLODFToleranceSpinBox.value()
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
 
@@ -2052,7 +2052,7 @@ class SimulationsMain(TimeEventsMain):
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,
-                    tolerance=tolerance,
+                    lodf_tolerance=lodf_tolerance,
                     sensitivity_dT=dT,
                     transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
@@ -2157,7 +2157,7 @@ class SimulationsMain(TimeEventsMain):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+                lodf_tolerance = 10.0 ** self.ui.ntcLODFToleranceSpinBox.value()
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
 
@@ -2188,7 +2188,7 @@ class SimulationsMain(TimeEventsMain):
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     dispatch_all_areas=dispatch_all_areas,
-                    tolerance=tolerance,
+                    lodf_tolerance=lodf_tolerance,
                     sensitivity_dT=dT,
                     transfer_method=mode,
                     perform_previous_checks=perform_previous_checks,
