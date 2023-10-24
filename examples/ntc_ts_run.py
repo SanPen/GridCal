@@ -65,7 +65,7 @@ options = OptimalNetTransferCapacityOptions(
     consider_hvdc_contingencies=True,
     generation_contingency_threshold=1000,
     dispatch_all_areas=False,
-    tolerance=1e-2,
+    lodf_tolerance=1e-2,
     sensitivity_dT=100.0,
     # transfer_mode=AvailableTransferMode.InstalledPower,
     # todo: checkear si queremos el ptdf por potencia generada

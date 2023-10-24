@@ -561,9 +561,9 @@ def get_branch_data(circuit: MultiCircuit,
             data.R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[i] *= (1 - elm.tolerance / 100.0)
+            data.R[i] *= (1 - elm.lodf_tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[i] *= (1 + elm.tolerance / 100.0)
+            data.R[i] *= (1 + elm.lodf_tolerance / 100.0)
 
         data.X[i] = elm.X
         data.B[i] = elm.B
@@ -622,9 +622,9 @@ def get_branch_data(circuit: MultiCircuit,
             data.R[ii] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[ii] *= (1 - elm.tolerance / 100.0)
+            data.R[ii] *= (1 - elm.lodf_tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[ii] *= (1 + elm.tolerance / 100.0)
+            data.R[ii] *= (1 + elm.lodf_tolerance / 100.0)
 
         ii += 1
 

@@ -38,7 +38,7 @@ class OptimalNetTransferCapacityOptions:
                  skip_generation_limits=True,
                  perform_previous_checks=False,
                  dispatch_all_areas=False,
-                 tolerance=1e-2,
+                 lodf_tolerance=1e-2,
                  sensitivity_dT=100.0,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
@@ -69,7 +69,7 @@ class OptimalNetTransferCapacityOptions:
         :param skip_generation_limits:
         :param consider_contingencies:
         :param consider_nx_contingencies:
-        :param tolerance:
+        :param lodf_tolerance:
         :param sensitivity_dT:
         :param weight_power_shift:
         :param weight_generation_cost:
@@ -103,7 +103,7 @@ class OptimalNetTransferCapacityOptions:
 
         self.dispatch_all_areas = dispatch_all_areas
 
-        self.tolerance = tolerance
+        self.lodf_tolerance = lodf_tolerance
 
         self.sensitivity_dT = sensitivity_dT
 

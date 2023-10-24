@@ -3409,25 +3409,6 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_24">
-                  <item row="5" column="1">
-                   <widget class="QSpinBox" name="ntcOpfTolSpinBox">
-                    <property name="toolTip">
-                     <string>This value determines if the convergence is reached</string>
-                    </property>
-                    <property name="suffix">
-                     <string/>
-                    </property>
-                    <property name="prefix">
-                     <string>1e</string>
-                    </property>
-                    <property name="minimum">
-                     <number>-99</number>
-                    </property>
-                    <property name="value">
-                     <number>-3</number>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="6" column="1">
                    <widget class="QSpinBox" name="trmSpinBox">
                     <property name="suffix">
@@ -3484,16 +3465,6 @@ p, li { white-space: pre-wrap; }
                    <widget class="QCheckBox" name="ntcDispatchAllAreasCheckBox">
                     <property name="text">
                      <string>Dispatch all areas</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_101">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tolerance determines the maximum value of a slack variable that produces an error&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Slack variables' tolerance</string>
                     </property>
                    </widget>
                   </item>
@@ -3694,6 +3665,58 @@ p, li { white-space: pre-wrap; }
                   <number>1</number>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_5">
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="contingencyPowerTripLabel">
+                    <property name="text">
+                     <string>Generation power contingency</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesNtcOpfCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the N-1 contingencies are considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Consider branch contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesGeneratorOpfCheckBox">
+                    <property name="text">
+                     <string>Consider generator contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_105">
+                    <property name="font">
+                     <font>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesHvdcOpfCheckBox">
+                    <property name="text">
+                     <string>Consider hvdc contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="4" column="1">
                    <widget class="QDoubleSpinBox" name="contingencyGenerationThresholdDoubleSpinBox">
                     <property name="toolTip">
@@ -3716,55 +3739,32 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="0">
-                   <widget class="QCheckBox" name="considerContingenciesGeneratorOpfCheckBox">
-                    <property name="text">
-                     <string>Consider generator contingencies</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="contingencyPowerTripLabel">
-                    <property name="text">
-                     <string>Generation power contingency</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_105">
-                    <property name="font">
-                     <font>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Contingencies</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QCheckBox" name="considerContingenciesNtcOpfCheckBox">
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_101">
                     <property name="toolTip">
-                     <string>If activated, the N-1 contingencies are considered</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tolerance determines the maximum value of a slack variable that produces an error&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
-                     <string>Consider branch contingencies</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                     <string>LODF tolerance</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
-                   <widget class="QCheckBox" name="considerContingenciesHvdcOpfCheckBox">
-                    <property name="text">
-                     <string>Consider hvdc contingencies</string>
+                  <item row="5" column="1">
+                   <widget class="QSpinBox" name="ntcLODFToleranceSpinBox">
+                    <property name="toolTip">
+                     <string>This value determines if the convergence is reached</string>
                     </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                    <property name="value">
+                     <number>-2</number>
                     </property>
                    </widget>
                   </item>
