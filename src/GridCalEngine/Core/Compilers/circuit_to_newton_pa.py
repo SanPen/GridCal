@@ -1132,7 +1132,7 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
 
     opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver])
     # opt.solver = solver_dict[opf_opt.mip_solver]
-    opt.grouping = grouping_dict[opf_opt.grouping]
+    opt.time_grouping = grouping_dict[opf_opt.time_grouping]
     opt.unit_commitment = False
     opt.compute_flows = opf_opt.zonal_grouping == ZonalGrouping.NoGrouping
     opt.check_with_power_flow = False
