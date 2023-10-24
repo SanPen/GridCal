@@ -418,11 +418,13 @@ class LinearMultiContingencies:
                 ptdf_factors = np.zeros((lodf.shape[0], 0))
 
             # append values
-            self.multi_contingencies.append(LinearMultiContingency(branch_indices=branch_contingency_indices,
-                                                                   bus_indices=bus_contingency_indices,
-                                                                   lodf_factors=lodf_factors,
-                                                                   ptdf_factors=ptdf_factors,
-                                                                   injections_factor=injections_factors))
+            self.multi_contingencies.append(
+                LinearMultiContingency(
+                    branch_indices=branch_contingency_indices,
+                    bus_indices=bus_contingency_indices,
+                    lodf_factors=lodf_factors,
+                    ptdf_factors=ptdf_factors,
+                    injections_factor=injections_factors))
 
 
 class LinearAnalysis:
