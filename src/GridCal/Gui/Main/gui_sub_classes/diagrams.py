@@ -1255,11 +1255,21 @@ class DiagramsMain(CompiledArraysMain):
         Get the selected investment devices
         :return:
         """
-        lst: List[dev.EditableDevice] = list()
-        for k, elm in enumerate(self.circuit.get_investment_devices()):
-            if elm.graphic_obj is not None:
-                if elm.graphic_obj.isSelected():
-                    lst.append(elm)
+        # lst: List[dev.EditableDevice] = list()
+        # for k, elm in enumerate(self.circuit.get_investment_devices()):
+        #     if elm.graphic_obj is not None:
+        #         if elm.graphic_obj.isSelected():
+        #             lst.append(elm)
+
+        diagram = self.get_selected_diagram_widget()
+
+        if isinstance(diagram, BusBranchEditorWidget):
+            lst = diagram.get_selection_api_objects()
+        elif isinstance(diagram, BusViewerWidget):
+            lst = diagram.get_selection_api_objects()
+        else:
+            lst = list()
+
         return lst
 
     def add_selected_to_contingency(self):
@@ -1306,6 +1316,8 @@ class DiagramsMain(CompiledArraysMain):
             selected = self.get_selected_investment_devices()
 
             if len(selected) > 0:
+
+                # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]
                 self.investment_checks_diag = CheckListDialogue(objects_list=names, title="Add investment")
                 self.investment_checks_diag.setModal(True)
@@ -1313,11 +1325,13 @@ class DiagramsMain(CompiledArraysMain):
 
                 if self.investment_checks_diag.is_accepted:
 
+                    # create a new investments group
                     group = dev.InvestmentsGroup(idtag=None,
                                                  name="Investment " + str(len(self.circuit.contingency_groups)),
                                                  category="single" if len(selected) == 1 else "multiple")
                     self.circuit.add_investments_group(group)
 
+                    # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
                         con = dev.Investment(device_idtag=elm.idtag,

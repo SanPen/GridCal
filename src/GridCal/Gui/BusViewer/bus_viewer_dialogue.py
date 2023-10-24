@@ -136,9 +136,20 @@ class BusViewerWidget(QMainWindow):
                                           buses=buses)
 
     def colour_results(self, **kwargs):
-
+        """
+        Colour the results
+        :param kwargs:
+        :return:
+        """
         if self.grid_editor is not None:
             self.grid_editor.colour_results(**kwargs)
+
+    def get_selection_api_objects(self):
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return self.grid_editor.get_selection_api_objects()
 
     def new_editor(self):
         """

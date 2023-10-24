@@ -2283,6 +2283,13 @@ class BusBranchEditorWidget(QSplitter):
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
+    def get_selection_api_objects(self) -> List[EditableDevice]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return [e.api_object for e in self.diagramScene.selectedItems()]
+
     def get_selection_diagram(self) -> BusBranchDiagram:
         """
         Get a BusBranchDiagram of the current selection
