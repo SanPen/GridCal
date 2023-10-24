@@ -54,32 +54,39 @@ class OptimalNetTransferCapacityOptions:
                  n1_consideration=True,
                  loading_threshold_to_report=0.98,
                  transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
-                 reversed_sort_loading=True,
-                 ):
+                 reversed_sort_loading=True):
         """
 
         :param area_from_bus_idx:
         :param area_to_bus_idx:
         :param verbose:
         :param time_grouping:
+        :param zonal_grouping:
         :param mip_solver:
         :param generation_formulation:
         :param monitor_only_sensitive_branches:
+        :param monitor_only_ntc_rule_branches:
         :param branch_sensitivity_threshold:
         :param skip_generation_limits:
-        :param consider_contingencies:
-        :param consider_nx_contingencies:
+        :param perform_previous_checks:
+        :param dispatch_all_areas:
         :param lodf_tolerance:
         :param sensitivity_dT:
         :param weight_power_shift:
         :param weight_generation_cost:
         :param time_limit_ms:
+        :param consider_contingencies:
+        :param consider_hvdc_contingencies:
+        :param consider_gen_contingencies:
+        :param consider_nx_contingencies:
         :param generation_contingency_threshold:
+        :param match_gen_load:
         :param trm:
         :param ntc_load_rule:
         :param n1_consideration:
+        :param loading_threshold_to_report:
         :param transfer_method:
-        :param reverse_sorted_loading:
+        :param reversed_sort_loading:
         """
         self.verbose = verbose
 

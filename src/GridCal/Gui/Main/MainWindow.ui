@@ -3742,7 +3742,7 @@ p, li { white-space: pre-wrap; }
                   <item row="5" column="0">
                    <widget class="QLabel" name="label_101">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tolerance determines the maximum value of a slack variable that produces an error&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tolerance determines the threshold below which LODF values are ignored&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>LODF tolerance</string>

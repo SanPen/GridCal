@@ -4685,7 +4685,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.contingencyGenerationThresholdDoubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
 #if QT_CONFIG(tooltip)
-        self.label_101.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This tolerance determines the maximum value of a slack variable that produces an error</p></body></html>", None))
+        self.label_101.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>This tolerance determines the threshold below which LODF values are ignored</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_101.setText(QCoreApplication.translate("mainWindow", u"LODF tolerance", None))
 #if QT_CONFIG(tooltip)

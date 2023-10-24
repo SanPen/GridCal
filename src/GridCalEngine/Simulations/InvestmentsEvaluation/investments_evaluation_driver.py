@@ -17,7 +17,7 @@
 import numpy as np
 import hyperopt
 import functools
-from typing import List, Dict
+from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
@@ -51,16 +51,20 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.pf_options: PowerFlowOptions = pf_options
 
+        # results object
         self.results = InvestmentsEvaluationResults(investment_groups_names=grid.get_investment_groups_names(),
                                                     max_eval=0)
 
         self.__eval_index = 0
 
+        # dictionary of investment groups
         self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
 
+        # dimensions
         self.dim = len(self.grid.investments_groups)
 
-        self.nc: NumericalCircuit = None
+        # numerical circuit
+        self.nc: Union[NumericalCircuit, None] = None
 
     def get_steps(self):
         """
@@ -72,8 +76,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
     def objective_function(self, combination: IntVec):
         """
         Function to evaluate a combination of investments
-        :param combination:
-        :param nc: NumericalCircuit
+        :param combination: vector of investments (yes/no)
         :return: objective function value
         """
 

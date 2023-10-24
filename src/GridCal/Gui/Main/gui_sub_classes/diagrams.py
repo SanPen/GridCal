@@ -680,7 +680,7 @@ class DiagramsMain(CompiledArraysMain):
             raise Exception('Not implemented :(')
 
         else:
-            print('<' + current_study + '> Not implemented :(')
+            print('grid_colour_function: <' + current_study + '> Not implemented :(')
 
     def colour_diagrams(self) -> None:
         """

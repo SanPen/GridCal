@@ -121,7 +121,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                        "Losses (MW)",
                        "Overload cost (€)",
                        "Voltage deviations cost (€)",
-                       "Objective function"] + self.investment_groups_names
+                       "Objective function"] + list(self.investment_groups_names)
             data = np.c_[self._capex,
                          self._opex,
                          self._losses,
