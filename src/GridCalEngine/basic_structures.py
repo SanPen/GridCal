@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Any, Dict, Tuple
+from typing import List, Any, Dict, Tuple, Union
 from enum import Enum
 import pandas as pd
 import numpy as np
@@ -24,6 +24,8 @@ import nptyping as npt
 from scipy.sparse import csc_matrix, csr_matrix
 
 IntList = List[int]
+Numeric = Union[int, float, bool, complex]
+NumericVec = npt.NDArray[npt.Shape['*'], npt.Double]
 DateVec = npt.NDArray[npt.Shape['*'], npt.Datetime64]
 IntVec = npt.NDArray[npt.Shape['*'], npt.Int]
 BoolVec = npt.NDArray[npt.Shape['*'], npt.Bool]

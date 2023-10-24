@@ -257,6 +257,10 @@ class DeviceType(Enum):
 
     GeneratorQCurve = 'Generator Q curve'
 
+    HydroMachine = 'Hydro machine'
+    HydroPath = 'Hydro path'
+    HydroReservoir = 'Hydro reservoir'
+
     def __str__(self):
         return self.value
 
@@ -371,6 +375,10 @@ class StudyResultsType(Enum):
 
 
 class AvailableTransferMode(Enum):
+    """
+    AvailableTransferMode
+    """
+
     Generation = "Generation"
     InstalledPower = "InstalledPower"
     Load = "Load"

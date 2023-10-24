@@ -86,10 +86,10 @@ class SimulationsMain(TimeEventsMain):
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
-        self.transfer_modes_dict['Area generation'] = sim.AvailableTransferMode.Generation
-        self.transfer_modes_dict['Area installed power'] = sim.AvailableTransferMode.InstalledPower
-        self.transfer_modes_dict['Area load'] = sim.AvailableTransferMode.Load
-        self.transfer_modes_dict['Area nodes'] = sim.AvailableTransferMode.GenerationAndLoad
+        self.transfer_modes_dict['Area generation'] = AvailableTransferMode.Generation
+        self.transfer_modes_dict['Area installed power'] = AvailableTransferMode.InstalledPower
+        self.transfer_modes_dict['Area load'] = AvailableTransferMode.Load
+        self.transfer_modes_dict['Area nodes'] = AvailableTransferMode.GenerationAndLoad
         lst = list(self.transfer_modes_dict.keys())
         self.ui.transferMethodComboBox.setModel(gf.get_list_model(lst))
         self.ui.transferMethodComboBox.setCurrentIndex(1)
