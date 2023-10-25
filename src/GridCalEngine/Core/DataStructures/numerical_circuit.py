@@ -267,12 +267,15 @@ class NumericalCircuit:
         self.any_control: bool = False
         self.iPfsh: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Pf flow with theta sh
         self.iQfma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Qf with ma
-        self.iBeqz: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqz: IntVec = np.zeros(0,
+                                      dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
         self.iBeqv: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vf with Beq
         self.iVtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vt with ma
         self.iQtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
+        self.iPfdp: IntVec = np.zeros(0,
+                                      dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0,
+                                         dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
         self.iVscL: IntVec = np.zeros(0, dtype=int)  # indices of the converters
         self.VfBeqbus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vf is controlled by Beq
         self.Vtmabus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vt is controlled by ma
@@ -641,6 +644,21 @@ class NumericalCircuit:
 
         return nc
 
+    def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
+    ds.GeneratorData, ds.BatteryData,
+    ds.BranchData, ds.HvdcData]]:
+        """
+        Get a list of the structures inside the NumericalCircuit
+        :return:
+        """
+        return [self.bus_data,
+                self.generator_data,
+                self.battery_data,
+                self.load_data,
+                self.shunt_data,
+                self.branch_data,
+                self.hvdc_data]
+
     def get_structs_idtag_dict(self) -> Dict[str, Tuple[ALL_STRUCTS, int]]:
         """
         Get a dictionary to map idtags to the structure they belong and the index
@@ -648,13 +666,7 @@ class NumericalCircuit:
         """
         structs_dict = dict()
 
-        for struct_elm in [self.bus_data,
-                           self.generator_data,
-                           self.battery_data,
-                           self.load_data,
-                           self.shunt_data,
-                           self.branch_data,
-                           self.hvdc_data]:
+        for struct_elm in self.get_structures_list():
 
             for i, idtag in enumerate(struct_elm.idtag):
                 structs_dict[idtag] = (struct_elm, i)
@@ -1386,7 +1398,6 @@ class NumericalCircuit:
             bus_active=self.bus_data.active
         )
 
-
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
@@ -1843,17 +1854,15 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     time_series = t_idx is not None
 
     # declare the numerical circuit
-    nc = NumericalCircuit(
-        nbus=0,
-        nbr=0,
-        nhvdc=0,
-        nload=0,
-        ngen=0,
-        nbatt=0,
-        nshunt=0,
-        sbase=circuit.Sbase,
-        t_idx=t_idx,
-    )
+    nc = NumericalCircuit(nbus=0,
+                          nbr=0,
+                          nhvdc=0,
+                          nload=0,
+                          ngen=0,
+                          nbatt=0,
+                          nshunt=0,
+                          sbase=circuit.Sbase,
+                          t_idx=t_idx)
 
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
@@ -1861,80 +1870,66 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     if areas_dict is None:
         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
 
-    nc.bus_data = gc_compiler2.get_bus_data(
-        circuit=circuit,
-        t_idx=t_idx,
-        time_series=time_series,
-        areas_dict=areas_dict,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.bus_data = gc_compiler2.get_bus_data(circuit=circuit,
+                                            t_idx=t_idx,
+                                            time_series=time_series,
+                                            areas_dict=areas_dict,
+                                            use_stored_guess=use_stored_guess)
 
-    nc.generator_data = gc_compiler2.get_generator_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        bus_data=nc.bus_data,
-        t_idx=t_idx,
-        time_series=time_series,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
+                                                        bus_dict=bus_dict,
+                                                        bus_data=nc.bus_data,
+                                                        t_idx=t_idx,
+                                                        time_series=time_series,
+                                                        Vbus=nc.bus_data.Vbus,
+                                                        logger=logger,
+                                                        opf_results=opf_results,
+                                                        use_stored_guess=use_stored_guess)
 
-    nc.battery_data = gc_compiler2.get_battery_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        bus_data=nc.bus_data,
-        t_idx=t_idx,
-        time_series=time_series,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
+                                                    bus_dict=bus_dict,
+                                                    bus_data=nc.bus_data,
+                                                    t_idx=t_idx,
+                                                    time_series=time_series,
+                                                    Vbus=nc.bus_data.Vbus,
+                                                    logger=logger,
+                                                    opf_results=opf_results,
+                                                    use_stored_guess=use_stored_guess)
 
-    nc.shunt_data = gc_compiler2.get_shunt_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        t_idx=t_idx,
-        time_series=time_series,
-        Vbus=nc.bus_data.Vbus,
-        logger=logger,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
+                                                bus_dict=bus_dict,
+                                                t_idx=t_idx,
+                                                time_series=time_series,
+                                                Vbus=nc.bus_data.Vbus,
+                                                logger=logger,
+                                                use_stored_guess=use_stored_guess)
 
-    nc.load_data = gc_compiler2.get_load_data(
-        circuit=circuit,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        bus_data=nc.bus_data,
-        logger=logger,
-        t_idx=t_idx,
-        time_series=time_series,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.load_data = gc_compiler2.get_load_data(circuit=circuit,
+                                              bus_dict=bus_dict,
+                                              Vbus=nc.bus_data.Vbus,
+                                              bus_data=nc.bus_data,
+                                              logger=logger,
+                                              t_idx=t_idx,
+                                              time_series=time_series,
+                                              opf_results=opf_results,
+                                              use_stored_guess=use_stored_guess)
 
-    nc.branch_data = gc_compiler2.get_branch_data(
-        circuit=circuit,
-        t_idx=t_idx,
-        time_series=time_series,
-        bus_dict=bus_dict,
-        Vbus=nc.bus_data.Vbus,
-        apply_temperature=apply_temperature,
-        branch_tolerance_mode=branch_tolerance_mode,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-    )
+    nc.branch_data = gc_compiler2.get_branch_data(circuit=circuit,
+                                                  t_idx=t_idx,
+                                                  time_series=time_series,
+                                                  bus_dict=bus_dict,
+                                                  Vbus=nc.bus_data.Vbus,
+                                                  apply_temperature=apply_temperature,
+                                                  branch_tolerance_mode=branch_tolerance_mode,
+                                                  opf_results=opf_results,
+                                                  use_stored_guess=use_stored_guess)
 
-    nc.hvdc_data = gc_compiler2.get_hvdc_data(
-        circuit=circuit,
-        t_idx=t_idx,
-        time_series=time_series,
-        bus_dict=bus_dict,
-        bus_types=nc.bus_data.bus_types,
-        opf_results=opf_results
-    )
+    nc.hvdc_data = gc_compiler2.get_hvdc_data(circuit=circuit,
+                                              t_idx=t_idx,
+                                              time_series=time_series,
+                                              bus_dict=bus_dict,
+                                              bus_types=nc.bus_data.bus_types,
+                                              opf_results=opf_results)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)
 
