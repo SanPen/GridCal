@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_AboutDialog(object):
     def setupUi(self, AboutDialog):
         if not AboutDialog.objectName():
             AboutDialog.setObjectName(u"AboutDialog")
-        AboutDialog.resize(462, 367)
+        AboutDialog.resize(662, 367)
         icon = QIcon()
         icon.addFile(u":/Icons/icons/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
         AboutDialog.setWindowIcon(icon)
@@ -40,7 +40,7 @@ class Ui_AboutDialog(object):
         self.mainLabel = QLabel(self.tab)
         self.mainLabel.setObjectName(u"mainLabel")
         self.mainLabel.setLayoutDirection(Qt.LeftToRight)
-        self.mainLabel.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop)
+        self.mainLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
         self.mainLabel.setWordWrap(True)
         self.mainLabel.setOpenExternalLinks(True)
         self.mainLabel.setTextInteractionFlags(Qt.TextBrowserInteraction)

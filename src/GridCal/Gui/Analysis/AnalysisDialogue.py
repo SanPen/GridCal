@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys
-from typing import List
+from typing import List, Union
 
 from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
@@ -29,15 +29,12 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
 
     """
-    def __init__(self, parent=None, circuit: MultiCircuit = None):
+    def __init__(self, circuit: MultiCircuit = None):
         """
-        Constructor
-        Args:
-            parent:
-            object_types:
-            circuit:
+
+        :param circuit: MultiCircuit
         """
-        QtWidgets.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid analysis')
@@ -80,7 +77,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         """
         self.log = GridErrorLog()
 
-        print('Analyzing...')
         # declare logs
         self.fixable_errors = grid_analysis(
             circuit=self.circuit,
@@ -135,7 +131,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     from PySide6 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
-    window = GridAnalysisGUI()
+    window = GridAnalysisGUI(circuit=None)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())

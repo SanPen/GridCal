@@ -19,7 +19,6 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 import qdarktheme
 from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
@@ -35,7 +34,7 @@ from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
+from GridCal.Gui.Main.gui_sub_classes.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
