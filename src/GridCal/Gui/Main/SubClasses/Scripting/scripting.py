@@ -19,8 +19,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import datetime as dtelib
 from PySide6.QtGui import QFont, QFontMetrics
-from GridCal.Gui.Main.gui_sub_classes.base_gui import BaseMainGui
-from GridCal.Gui.Main.gui_sub_classes.Scripting.python_highlighter import PythonHighlighter
+from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
+from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 
 try:
@@ -206,7 +206,12 @@ class ScriptingMain(BaseMainGui):
         Run the source code
         :return:
         """
-        self.console.execute_command(self.ui.sourceCodeTextEdit.toPlainText())
+        code = self.ui.sourceCodeTextEdit.toPlainText()
+
+        if code[-1] != '\n':
+            code += "\n"
+
+        self.console.execute_command(code)
 
     def save_source_code(self):
         """

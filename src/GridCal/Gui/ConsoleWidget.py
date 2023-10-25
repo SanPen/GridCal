@@ -18,6 +18,7 @@
 from typing import Dict
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
+from PySide6.QtGui import QFont
 
 
 class ConsoleWidget(RichJupyterWidget):
@@ -46,6 +47,10 @@ class ConsoleWidget(RichJupyterWidget):
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
 
+        # Set the font for the console
+        font = QFont("Consolas", 10, QFont.Normal)  # Adjust family, size, and weight as needed
+        self.setFont(font)
+
         def stop():
             """
             
@@ -56,6 +61,36 @@ class ConsoleWidget(RichJupyterWidget):
             # guisupport.get_app_qt().exit()
 
         self.exit_requested.connect(stop)
+
+    def set_dark_theme(self):
+        """
+        Set the dark theme
+        """
+
+        self.setStyleSheet("""
+                            QWidget {
+                                    font-family: Consolas;
+                                    font-size: 10pt;
+                                    font-weight: normal;
+                            }
+                            background-color: #222;
+                            color: #fff;
+                            """)
+
+    def set_light_theme(self):
+        """
+        Set the light theme
+        """
+
+        self.setStyleSheet("""
+                            QWidget {
+                                    font-family: Consolas;
+                                    font-size: 10pt;
+                                    font-weight: normal;
+                            }
+                            background-color: #fff; /* White background */
+                            color: #333; /* Dark text color */
+                            """)
 
     def push_vars(self, variableDict: Dict[str, object]) -> None:
         """
@@ -82,4 +117,4 @@ class ConsoleWidget(RichJupyterWidget):
         """
         Execute a command in the frame of the console widget
         """
-        self._execute(command, False)
+        self.execute(source=command, hidden=False, interactive=True)

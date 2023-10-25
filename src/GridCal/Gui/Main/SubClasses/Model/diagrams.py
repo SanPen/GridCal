@@ -34,7 +34,7 @@ from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.Model.compiled_arrays import CompiledArraysMain
+from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
@@ -1047,6 +1047,9 @@ class DiagramsMain(CompiledArraysMain):
                     diagram.set_dark_mode()
 
             self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_dark_theme()
         else:
             qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
 
@@ -1056,6 +1059,9 @@ class DiagramsMain(CompiledArraysMain):
                     diagram.set_light_mode()
 
             self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_light_theme()
 
     def plot_style_change(self):
         """

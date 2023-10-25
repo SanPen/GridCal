@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 
 import GridCalEngine.basic_structures as bs
 import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.Main.gui_sub_classes.Scripting.scripting import ScriptingMain
+from GridCal.Gui.Main.SubClasses.Scripting.scripting import ScriptingMain
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 

@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
-from GridCal.Gui.Main.gui_sub_classes.simulations import SimulationsMain
+from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.Session.session import ResultsModel
 
 

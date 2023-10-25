@@ -21,7 +21,7 @@ from typing import Dict, Union
 from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.Main.gui_sub_classes.Results.results import ResultsMain
+from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 
 
 class ConfigurationMain(ResultsMain):

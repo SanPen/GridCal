@@ -23,7 +23,7 @@ import GridCal.Gui.GuiFunctions as gf
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.Model.objects import ObjectsTableMain
+from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 

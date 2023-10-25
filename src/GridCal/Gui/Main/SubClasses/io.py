@@ -34,7 +34,7 @@ from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
-from GridCal.Gui.Main.gui_sub_classes.Settings.configuration import ConfigurationMain
+from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
 
 class IoMain(ConfigurationMain):
