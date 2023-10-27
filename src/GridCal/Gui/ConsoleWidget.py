@@ -69,9 +69,9 @@ class ConsoleWidget(RichJupyterWidget):
 
         self.setStyleSheet("""
                             QWidget {
-                                    font-family: Consolas;
-                                    font-size: 10pt;
-                                    font-weight: normal;
+                                font-family: Consolas;
+                                font-size: 10pt;
+                                font-weight: normal;
                             }
                             background-color: #222;
                             color: #fff;
@@ -84,9 +84,9 @@ class ConsoleWidget(RichJupyterWidget):
 
         self.setStyleSheet("""
                             QWidget {
-                                    font-family: Consolas;
-                                    font-size: 10pt;
-                                    font-weight: normal;
+                                font-family: Consolas;
+                                font-size: 10pt;
+                                font-weight: normal;
                             }
                             background-color: #fff; /* White background */
                             color: #333; /* Dark text color */

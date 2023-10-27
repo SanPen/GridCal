@@ -30,7 +30,9 @@ from GridCalEngine.enumerations import StudyResultsType
 
 
 class NumericPowerFlowResults:
-
+    """
+    NumericPowerFlowResults, used to return values from the numerical methods
+    """
     def __init__(self,
                  V: CxVec,
                  converged: bool,
@@ -185,6 +187,8 @@ class PowerFlowResults(ResultsTemplate):
         self.hvdc_Pt: Vec = np.zeros(n_hvdc)
         self.hvdc_loading: Vec = np.zeros(n_hvdc)
 
+        self.island_number = 0
+
         self.plot_bars_limit: int = 100
         self.convergence_reports = list()
 
@@ -218,6 +222,8 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_Pt', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
+
+        self.register(name='island_number', tpe=int)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """
