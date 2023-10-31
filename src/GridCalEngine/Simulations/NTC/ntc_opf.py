@@ -39,7 +39,7 @@ from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, BoolVec, St
 from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot,
                                                         set_var_bounds, join)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, AvailableTransferMode
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 
 
 def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings):
@@ -642,7 +642,7 @@ def add_linear_branches_formulation(t: int,
                                     vars_bus: BusNtcVars,
                                     prob: LpModel,
                                     consider_contingencies: bool,
-                                    LODF: Union[Mat, None],
+                                    linear_multicontingencies: Union[LinearMultiContingencies, None],
                                     lodf_threshold: float,
                                     inf=1e20):
     """
@@ -654,14 +654,14 @@ def add_linear_branches_formulation(t: int,
     :param vars_bus: BusVars
     :param prob: OR problem
     :param consider_contingencies:
-    :param LODF: LODF matrix
+    :param linear_multicontingencies: Linear Multicontingencies object
     :param lodf_threshold: LODF threshold to cut-off
     :param inf: number considered infinte
     :return objective function
     """
     f_obj = 0.0
     if consider_contingencies:
-        assert LODF is not None
+        assert linear_multicontingencies is not None
 
     # for each branch
     for m in range(branch_data_t.nelm):
@@ -752,10 +752,10 @@ def add_linear_branches_formulation(t: int,
                 if consider_contingencies:
 
                     for c in range(branch_data_t.nelm):
+                        pass
+                        # TODO : create how to implement multicontingencies.get_flows() in LP variables
+                        # if abs(LODF[m, c]) > lodf_threshold:
 
-                        if abs(LODF[m, c]) > lodf_threshold:
-                            # TODO : think about the contingencies integration here
-                            pass
 
     return f_obj
 
@@ -954,10 +954,13 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 correct_values=True)
 
             ls.run()
-            LODF = ls.LODF
-
+            mctg = LinearMultiContingencies(grid=grid)
+            mctg.update(
+                lodf=ls.LODF,
+                ptdf=ls.PTDF,
+            )
         else:
-            LODF = None
+            mctg = None
 
         # todo: borrar
         # compute monitorization logic  ----------------------------------------------------------------------------
@@ -1015,7 +1018,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 vars_bus=mip_vars.bus_vars,
                 prob=lp_model,
                 consider_contingencies=consider_contingencies,
-                LODF=LODF,
+                linear_multicontingencies=mctg,
                 lodf_threshold=lodf_threshold,
                 inf=1e20)
 

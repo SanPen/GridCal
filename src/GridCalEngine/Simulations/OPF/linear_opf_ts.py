@@ -58,8 +58,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
 
     if len(multi_contingency.branch_indices):
         for i, c in enumerate(multi_contingency.branch_indices):
-            if abs(multi_contingency.lodf_factors[m, i]) >= threshold:
-                res += multi_contingency.lodf_factors[m, i] * base_flow[c]
+            if abs(multi_contingency.mlodf_factors[m, i]) >= threshold:
+                res += multi_contingency.mlodf_factors[m, i] * base_flow[c]
 
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):

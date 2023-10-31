@@ -222,6 +222,49 @@ def make_lodf(Cf: sp.csc_matrix,
     return LODF
 
 
+# @nb.njit(cache=True)
+def make_mlodf(circuit, lodf):
+
+    lodf_nx_list = list()
+
+    # Create dictionaries to speed up the access
+    cg_dict = {cg.idtag: cg for cg in circuit.contingency_groups}
+    idx_dict = {e.idtag: i for i, e in enumerate(circuit.get_branches())}
+
+    # Initialize c_idx list for each contingency groups
+    for cg in circuit.contingency_groups:
+        cg.c_idx = list()
+
+    # Loop for contingencies to fill group c_idx
+    for c in circuit.contingencies:
+        cg_dict[c.group.idtag].c_idx.append(idx_dict[c.device_idtag])
+
+    for cg in circuit.contingency_groups:
+
+        # Sort unique c_idx
+        cg.c_idx = list(sorted(set(cg.c_idx), reverse=False))
+
+        # Compute LODF vector
+        L = lodf[:, cg.c_idx]  # Take the columns of the LODF associated with the contingencies
+
+        # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
+        M = np.ones((len(cg.c_idx), len(cg.c_idx)))
+        for i in range(len(cg.c_idx)):
+            for j in range(len(cg.c_idx)):
+                if not (i == j):
+                    M[i, j] = -lodf[cg.c_idx[i], cg.c_idx[j]]
+
+        # Compute LODF_NX
+        lodf_nx = np.matmul(L, np.linalg.inv(M))
+
+        # store tuple (c_idx, lodf_nx)
+        lodf_nx_list.append(
+            (cg.c_idx, lodf_nx)
+        )
+
+    return lodf_nx_list
+
+
 @nb.njit(cache=True)
 def make_otdf(ptdf: Mat,
               lodf: Mat,
@@ -281,14 +324,14 @@ class LinearMultiContingency:
     def __init__(self,
                  branch_indices: IntVec,
                  bus_indices: IntVec,
-                 lodf_factors: Mat,
+                 mlodf_factors: Mat,
                  ptdf_factors: Mat,
                  injections_factor: Vec):
         """
         Linear multi contingency object
         :param branch_indices: contingency branch indices.
         :param bus_indices: contingency bus indices.
-        :param lodf_factors: LODF factors applicable (all_branches, contingency branches).
+        :param mlodf_factors: LODF factors applicable (all_branches, contingency branches).
         :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
         :param injections_factor: Injection contingency factors (len(bus indices))
         """
@@ -297,7 +340,7 @@ class LinearMultiContingency:
 
         self.branch_indices: IntVec = branch_indices
         self.bus_indices: IntVec = bus_indices
-        self.lodf_factors: Mat = lodf_factors
+        self.mlodf_factors: Mat = mlodf_factors
         self.ptdf_factors: Mat = ptdf_factors
         self.injections_factor: Vec = injections_factor
 
@@ -322,11 +365,16 @@ class LinearMultiContingency:
         else:
             injections = np.zeros(self.ptdf_factors.shape[1])
 
-        return make_contingency_flows(base_flow=base_flow,
-                                      lodf_factors=self.lodf_factors,
-                                      ptdf_factors=self.ptdf_factors,
-                                      injections=injections,
-                                      threshold=threshold)
+        # return make_contingency_flows(base_flow=base_flow,
+        #                               lodf_factors=self.lodf_factors,
+        #                               ptdf_factors=self.ptdf_factors,
+        #                               injections=injections,
+        #                               threshold=threshold)
+
+        flow = base_flow.copy()
+        flow += self.mlodf_factors @ base_flow[self.branch_indices]
+        flow += self.ptdf_factors @ injections[self.bus_indices]
+        return flow
 
 
 class LinearMultiContingencies:
@@ -404,14 +452,14 @@ class LinearMultiContingencies:
                             M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
 
                 # Compute LODF for the multiple failure
-                lodf_factors = lodf[:, branch_contingency_indices] @ np.linalg.inv(M)
+                mlodf_factors = lodf[:, branch_contingency_indices] @ np.linalg.inv(M)
 
             elif len(branch_contingency_indices) == 1:
                 # append values
-                lodf_factors = lodf[:, branch_contingency_indices]
+                mlodf_factors = lodf[:, branch_contingency_indices]
 
             else:
-                lodf_factors = np.zeros((lodf.shape[0], 0))
+                mlodf_factors = np.zeros((lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
                 ptdf_factors = ptdf[:, bus_contingency_indices]
@@ -423,7 +471,7 @@ class LinearMultiContingencies:
                 LinearMultiContingency(
                     branch_indices=branch_contingency_indices,
                     bus_indices=bus_contingency_indices,
-                    lodf_factors=lodf_factors,
+                    mlodf_factors=mlodf_factors,
                     ptdf_factors=ptdf_factors,
                     injections_factor=injections_factors
                 )
