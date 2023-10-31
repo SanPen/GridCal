@@ -27,7 +27,6 @@ class SparseSolver(Enum):
     """
     Sparse solvers to use
     """
-    BLAS_LAPACK = 'Blas/Lapack'
     ILU = 'ILU'
     KLU = 'KLU'
     SuperLU = 'SuperLU'
@@ -56,7 +55,7 @@ except ImportError:
 
 try:
     from scipy.sparse.linalg import spsolve as scipy_spsolve, splu, spilu, gmres
-    available_sparse_solvers.append(SparseSolver.BLAS_LAPACK)
+    available_sparse_solvers.append(SparseSolver.UMFPACK)  # default linsolve solver
     available_sparse_solvers.append(SparseSolver.ILU)
     available_sparse_solvers.append(SparseSolver.SuperLU)
     available_sparse_solvers.append(SparseSolver.GMRES)
@@ -68,18 +67,10 @@ except ImportError:
 try:
     from pypardiso import spsolve as pardiso_spsolve
 
-    available_sparse_solvers.append(SparseSolver.Pardiso)
+    available_sparse_solvers.append(SparseSolver.Pardiso)  # pypardiso
 except ImportError:
     pass
     # print(SparseSolver.Pardiso.value + ' failed')
-
-try:
-    from scikits.umfpack import spsolve_umfpack
-
-    available_sparse_solvers.append(SparseSolver.UMFPACK)
-except ImportError:
-    pass
-    # print(SparseSolver.UMFPACK.value + ' failed')
 
 
 preferred_type = SparseSolver.SuperLU
@@ -99,7 +90,7 @@ def get_sparse_type(solver_type: SparseSolver = preferred_type):
     :param solver_type:
     :return: sparse matrix type
     """
-    if solver_type in [SparseSolver.BLAS_LAPACK, SparseSolver.Pardiso, SparseSolver.GMRES]:
+    if solver_type in [SparseSolver.Pardiso, SparseSolver.GMRES]:
         return csr_matrix
 
     elif solver_type in [SparseSolver.KLU, SparseSolver.SuperLU, SparseSolver.ILU, SparseSolver.UMFPACK]:
@@ -154,16 +145,6 @@ def gmres_linsolve(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
     return x
 
 
-def umfpack_linsolve(A: csc_matrix, b: Union[Vec, Mat]) -> Union[Vec, Mat]:
-    """
-
-    :param A:
-    :param b:
-    :return:
-    """
-    return spsolve_umfpack(A, b)
-
-
 def get_linear_solver(solver_type: SparseSolver = preferred_type) -> Callable[[csc_matrix, Union[Vec, Mat]], Union[Vec, Mat]]:
     """
     Privide the chosen linear solver_type function pointer to
@@ -171,7 +152,7 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type) -> Callable[[c
     :param solver_type: SparseSolver option
     :return: function pointer f(A, b)
     """
-    if solver_type == SparseSolver.BLAS_LAPACK:
+    if solver_type == SparseSolver.UMFPACK:
         return scipy_spsolve
 
     elif solver_type == SparseSolver.KLU:
@@ -188,9 +169,6 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type) -> Callable[[c
 
     elif solver_type == SparseSolver.GMRES:
         return gmres_linsolve
-
-    elif solver_type == SparseSolver.UMFPACK:
-        return umfpack_linsolve
 
     else:
         raise Exception('Unrecognized LU solver')

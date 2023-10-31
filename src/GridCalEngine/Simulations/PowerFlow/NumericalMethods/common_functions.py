@@ -189,18 +189,20 @@ def compute_acdc_fx(Vm: Vec,
                     F: IntVec,
                     pvpq: IntVec,
                     pq: IntVec,
-                    iPfsh: IntVec,
-                    iQfma: IntVec,
-                    iBeqz: IntVec,
-                    iQtma: IntVec,
-                    iPfdp: IntVec,
-                    VfBeqbus: IntVec,
-                    Vtmabus: IntVec) -> Vec:
+                    k_pf_tau: IntVec,
+                    k_qf_m: IntVec,
+                    k_zero_beq: IntVec,
+                    k_qt_m: IntVec,
+                    k_pf_dp: IntVec,
+                    i_vf_beq: IntVec,
+                    i_vt_m: IntVec) -> Vec:
     """
-    Compute the increments vector
+    Compute the FUBM increments vector
     :param Vm: Voltages module array
     :param Sbus: Array of specified bus power
     :param Scalc: Array of computed bus power
+    :param Sf: Array of calculated branch flows seen at the "from" bus
+    :param St: Array of calculated branch flows seen at the "to" bus
     :param Pfset: Array of Pf set values per branch
     :param Qfset: Array of Qf set values per branch
     :param Qtset: Array of Qt set values per branch
@@ -209,67 +211,65 @@ def compute_acdc_fx(Vm: Vec,
     :param F: Array of from bus indices of the Branches
     :param pvpq: Array of pv|pq bus indices
     :param pq: Array of pq indices
-    :param iPfsh:
-    :param iQfma:
-    :param iBeqz:
-    :param iQtma:
-    :param iPfdp:
-    :param VfBeqbus:
-    :param Vtmabus:
+    :param k_pf_tau: indices of the branches controlling Pf with tau (the tap angle)
+    :param k_qf_m: indices of the branches controlling Qf with m (the tap module)
+    :param k_zero_beq: indices of the branches making Qf=0 with Beq
+    :param k_qt_m: indices of the branches controlling Qt with m (the tap module)
+    :param k_pf_dp: indices of the branches controlling Pf with the droop equation
+    :param i_vf_beq: indices of the "from" buses of the branches controlling Vf with Beq
+    :param i_vt_m: indices of the "to" buses of the branches controlling Vt with m (the tap module)
     :return: mismatch vector, also known as fx or delta f
     """
     # mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    n = len(pvpq) + len(pq) + len(VfBeqbus) + len(Vtmabus) + len(iPfsh) + len(iQfma) + len(iBeqz) + len(iQtma) + len(
-        iPfdp)
+    n = len(pvpq) + len(pq) + len(i_vf_beq) + len(i_vt_m) + len(k_pf_tau) + len(k_qf_m) + len(k_zero_beq) + len(k_qt_m) + len(
+        k_pf_dp)
 
     fx = np.empty(n)
 
     k = 0
     for i in pvpq:
         # F1(x0) Power balance mismatch - Va
-        # fx[k] = mis[i].real
         fx[k] = Scalc[i].real - Sbus[i].real
         k += 1
 
     for i in pq:
-        # F2(x0) Power balance mismatch - Vm
-        # fx[k] = mis[i].imag
+        # F2a(x0) Power balance mismatch - Vm
         fx[k] = Scalc[i].imag - Sbus[i].imag
         k += 1
 
-    for i in VfBeqbus:
-        # F6(x0) Vf control mismatch
+    for i in i_vf_beq:
+        # F2b(x0) Vf control mismatch
         fx[k] = Scalc[i].imag - Sbus[i].imag
         k += 1
 
-    for i in Vtmabus:
-        # F7(x0) Vt control mismatch
+    for i in i_vt_m:
+        # F2c(x0) Vt control mismatch
         fx[k] = Scalc[i].imag - Sbus[i].imag
         k += 1
 
-    for i in iPfsh:
-        # F3(x0) Pf control mismatch
-        fx[k] = Sf[i].real - Pfset[i]
-        k += 1
-
-    for i in iQfma:
-        # F4(x0) Qf control mismatch
+    for i in k_qf_m:
+        # F3a(x0) Qf control mismatch
         fx[k] = Sf[i].imag - Qfset[i]
         k += 1
 
-    for i in iBeqz:
-        # F5(x0) Qf control mismatch
+    for i in k_zero_beq:
+        # F3b(x0) Qf control mismatch
         fx[k] = Sf[i].imag - 0
         k += 1
 
-    for i in iQtma:
-        # F8(x0) Qt control mismatch
+    for i in k_qt_m:
+        # F4(x0) Qt control mismatch
         fx[k] = St[i].imag - Qtset[i]
         k += 1
 
-    for i in iPfdp:
-        # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
+    for i in k_pf_tau:
+        # F5(x0) Pf control mismatch
+        fx[k] = Sf[i].real - Pfset[i]
+        k += 1
+
+    for i in k_pf_dp:
+        # F6(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
         fx[k] = -Sf[i].real + Pfset[i] + Kdp[i] * (Vm[F[i]] - Vmfset[i])
         k += 1
 

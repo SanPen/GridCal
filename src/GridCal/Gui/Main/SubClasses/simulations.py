@@ -35,7 +35,7 @@ from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABL
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.time_events import TimeEventsMain
+from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.enumerations import DeviceType, AvailableTransferMode

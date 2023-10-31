@@ -19,7 +19,6 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 import qdarktheme
 from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
@@ -35,7 +34,7 @@ from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
-from GridCal.Gui.Main.gui_sub_classes.compiled_arrays import CompiledArraysMain
+from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
@@ -154,6 +153,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
+        self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
 
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
@@ -406,7 +406,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
-            results: sim.ContinuationPowerFlowResults = self.session.get_results(sim.SimulationTypes.ContinuationPowerFlow_run)
+            results: sim.ContinuationPowerFlowResults = self.session.get_results(
+                sim.SimulationTypes.ContinuationPowerFlow_run)
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
@@ -519,7 +520,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
-            results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.OPFTimeSeries_run)
+            results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.OPFTimeSeries_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -573,7 +575,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
-            results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_TS_run)
+            results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.LinearAnalysis_TS_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -597,7 +600,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
-            results: sim.ContingencyAnalysisResults = self.session.get_results(sim.SimulationTypes.ContingencyAnalysis_run)
+            results: sim.ContingencyAnalysisResults = self.session.get_results(
+                sim.SimulationTypes.ContingencyAnalysis_run)
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -621,7 +625,8 @@ class DiagramsMain(CompiledArraysMain):
                                  cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
-            results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
+            results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
+                sim.SimulationTypes.ContingencyAnalysisTS_run)
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -680,7 +685,7 @@ class DiagramsMain(CompiledArraysMain):
             raise Exception('Not implemented :(')
 
         else:
-            print('<' + current_study + '> Not implemented :(')
+            print('grid_colour_function: <' + current_study + '> Not implemented :(')
 
     def colour_diagrams(self) -> None:
         """
@@ -777,7 +782,9 @@ class DiagramsMain(CompiledArraysMain):
                                               prog_func=None,
                                               text_func=None,
                                               name='All bus branches')
-        diagram_widget = BusBranchEditorWidget(circuit=self.circuit, diagram=diagram)
+        diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
+                                               diagram=diagram,
+                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
         self.add_diagram(diagram_widget)
@@ -794,7 +801,9 @@ class DiagramsMain(CompiledArraysMain):
 
             if isinstance(diagram_widget, BusBranchEditorWidget):
                 diagram = diagram_widget.get_selection_diagram()
-                self.add_diagram(BusBranchEditorWidget(self.circuit, diagram=diagram))
+                self.add_diagram(BusBranchEditorWidget(self.circuit,
+                                                       diagram=diagram,
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()))
                 self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -853,7 +862,8 @@ class DiagramsMain(CompiledArraysMain):
                         diagram = BusViewerWidget(circuit=self.circuit,
                                                   root_bus=root_bus,
                                                   name=root_bus.name + ' vecinity',
-                                                  view_toolbar=False)
+                                                  view_toolbar=False,
+                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
                         self.add_diagram(diagram)
                         self.set_diagrams_list_view()
 
@@ -868,7 +878,9 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.circuit.diagrams:
 
             if isinstance(diagram, dev.BusBranchDiagram):
-                diagram_widget = BusBranchEditorWidget(self.circuit, diagram=diagram)
+                diagram_widget = BusBranchEditorWidget(self.circuit,
+                                                       diagram=diagram,
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)
@@ -910,7 +922,8 @@ class DiagramsMain(CompiledArraysMain):
             diagram = BusViewerWidget(circuit=self.circuit,
                                       root_bus=root_bus,
                                       name=root_bus.name + ' vecinity',
-                                      view_toolbar=False)
+                                      view_toolbar=False,
+                                      default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
             self.add_diagram(diagram)
             self.set_diagrams_list_view()
 
@@ -1034,6 +1047,9 @@ class DiagramsMain(CompiledArraysMain):
                     diagram.set_dark_mode()
 
             self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_dark_theme()
         else:
             qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
 
@@ -1043,6 +1059,9 @@ class DiagramsMain(CompiledArraysMain):
                     diagram.set_light_mode()
 
             self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_light_theme()
 
     def plot_style_change(self):
         """
@@ -1075,6 +1094,7 @@ class DiagramsMain(CompiledArraysMain):
                 self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
         else:
             self.ui.schematic_step_label.setText("No steps")
+
     def export_diagram(self):
         """
         Save the schematic
@@ -1240,11 +1260,21 @@ class DiagramsMain(CompiledArraysMain):
         Get the selected investment devices
         :return:
         """
-        lst: List[dev.EditableDevice] = list()
-        for k, elm in enumerate(self.circuit.get_investment_devices()):
-            if elm.graphic_obj is not None:
-                if elm.graphic_obj.isSelected():
-                    lst.append(elm)
+        # lst: List[dev.EditableDevice] = list()
+        # for k, elm in enumerate(self.circuit.get_investment_devices()):
+        #     if elm.graphic_obj is not None:
+        #         if elm.graphic_obj.isSelected():
+        #             lst.append(elm)
+
+        diagram = self.get_selected_diagram_widget()
+
+        if isinstance(diagram, BusBranchEditorWidget):
+            lst = diagram.get_selection_api_objects()
+        elif isinstance(diagram, BusViewerWidget):
+            lst = diagram.get_selection_api_objects()
+        else:
+            lst = list()
+
         return lst
 
     def add_selected_to_contingency(self):
@@ -1291,6 +1321,8 @@ class DiagramsMain(CompiledArraysMain):
             selected = self.get_selected_investment_devices()
 
             if len(selected) > 0:
+
+                # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]
                 self.investment_checks_diag = CheckListDialogue(objects_list=names, title="Add investment")
                 self.investment_checks_diag.setModal(True)
@@ -1298,11 +1330,13 @@ class DiagramsMain(CompiledArraysMain):
 
                 if self.investment_checks_diag.is_accepted:
 
+                    # create a new investments group
                     group = dev.InvestmentsGroup(idtag=None,
                                                  name="Investment " + str(len(self.circuit.contingency_groups)),
                                                  category="single" if len(selected) == 1 else "multiple")
                     self.circuit.add_investments_group(group)
 
+                    # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
                         con = dev.Investment(device_idtag=elm.idtag,
@@ -1359,3 +1393,20 @@ class DiagramsMain(CompiledArraysMain):
         else:
             error_msg('Unrecognized option' + str(prop))
             return
+
+    def default_voltage_change(self):
+        """
+        When the default voltage changes, update all the diagrams
+        """
+        val = self.ui.defaultBusVoltageSpinBox.value()
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+                diagram.default_bus_voltage = val
+
+            elif isinstance(diagram, BusViewerWidget):
+                diagram.default_bus_voltage = val
+
+            elif isinstance(diagram, GridMapWidget):
+                pass

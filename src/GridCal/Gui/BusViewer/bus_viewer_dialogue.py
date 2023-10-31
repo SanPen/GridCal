@@ -28,7 +28,8 @@ from GridCalEngine.Core.Devices.Substation import Bus
 
 class BusViewerWidget(QMainWindow):
 
-    def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, name='', parent=None, view_toolbar=True):
+    def __init__(self, circuit: MultiCircuit, root_bus: dev.Bus, name='', parent=None, view_toolbar=True,
+                 default_bus_voltage: float = 10.0):
         """
 
         :param circuit:
@@ -40,6 +41,8 @@ class BusViewerWidget(QMainWindow):
         self.ui.setupUi(self)
 
         self.name = name
+
+        self.default_bus_voltage = default_bus_voltage
 
         self.root_bus = root_bus
         self.bus_id = self.root_bus.name + ' ' + self.root_bus.code
@@ -53,7 +56,9 @@ class BusViewerWidget(QMainWindow):
         self.bus_idx = list()
 
         # create grid editor o
-        self.grid_editor = BusBranchEditorWidget(self.circuit, diagram=None)
+        self.grid_editor = BusBranchEditorWidget(circuit=self.circuit,
+                                                 diagram=None,
+                                                 default_bus_voltage=self.default_bus_voltage)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):
@@ -131,15 +136,28 @@ class BusViewerWidget(QMainWindow):
                                           buses=buses)
 
     def colour_results(self, **kwargs):
-
+        """
+        Colour the results
+        :param kwargs:
+        :return:
+        """
         if self.grid_editor is not None:
             self.grid_editor.colour_results(**kwargs)
+
+    def get_selection_api_objects(self):
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return self.grid_editor.get_selection_api_objects()
 
     def new_editor(self):
         """
         Create new editor
         """
-        self.grid_editor = BusBranchEditorWidget(self.circuit, diagram=None)
+        self.grid_editor = BusBranchEditorWidget(circuit=self.circuit,
+                                                 diagram=None,
+                                                 default_bus_voltage=self.default_bus_voltage)
 
         # delete all widgets
         for i in reversed(range(self.ui.editorLayout.count())):

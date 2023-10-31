@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Any, Dict, Tuple, Union
+from typing import List, Any, Dict, Union
 from enum import Enum
 import pandas as pd
 import numpy as np

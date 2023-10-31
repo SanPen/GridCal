@@ -21,7 +21,7 @@ from typing import Dict, Union
 from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.Main.gui_sub_classes.results import ResultsMain
+from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 
 
 class ConfigurationMain(ResultsMain):
@@ -60,17 +60,18 @@ class ConfigurationMain(ResultsMain):
         and apply the incomming setting automatically as well
         :return: Dict[name, Dict[name, QtWidget]
         """
-        return {"graphics": {
-            "dark_mode": self.ui.dark_mode_checkBox,
-            "palette": self.ui.palette_comboBox,
-            "min_node_size": self.ui.min_node_size_spinBox,
-            "max_node_size": self.ui.max_node_size_spinBox,
-            "min_branch_size": self.ui.min_branch_size_spinBox,
-            "max_branch_size": self.ui.max_branch_size_spinBox,
-            "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
-            "map_tile_provider": self.ui.tile_provider_comboBox,
-            "plotting_style": self.ui.plt_style_comboBox
-        },
+        return {
+            "graphics": {
+                "dark_mode": self.ui.dark_mode_checkBox,
+                "palette": self.ui.palette_comboBox,
+                "min_node_size": self.ui.min_node_size_spinBox,
+                "max_node_size": self.ui.max_node_size_spinBox,
+                "min_branch_size": self.ui.min_branch_size_spinBox,
+                "max_branch_size": self.ui.max_branch_size_spinBox,
+                "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
+                "map_tile_provider": self.ui.tile_provider_comboBox,
+                "plotting_style": self.ui.plt_style_comboBox
+            },
             "machine_learning": {
                 "clustering": {
                     "cluster_number": self.ui.cluster_number_spinBox,
@@ -164,6 +165,7 @@ class ConfigurationMain(ResultsMain):
             "general": {
                 "base_power": self.ui.sbase_doubleSpinBox,
                 "frequency": self.ui.fbase_doubleSpinBox,
+                "default_bus_voltage": self.ui.defaultBusVoltageSpinBox,
                 "engine": self.ui.engineComboBox
             },
             "contingencies": {
@@ -265,5 +267,3 @@ class ConfigurationMain(ResultsMain):
                 data = json.load(f)
                 self.apply_gui_config(data=data)
                 self.change_theme_mode()
-
-

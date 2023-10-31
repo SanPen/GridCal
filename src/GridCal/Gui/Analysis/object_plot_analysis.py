@@ -215,7 +215,8 @@ class FixableTransformerVtaps:
                                               maximum_difference=self.maximum_difference)
 
 
-def grid_analysis(circuit: MultiCircuit, imbalance_threshold=0.02,
+def grid_analysis(circuit: MultiCircuit,
+                  imbalance_threshold=0.02,
                   v_low=0.95,
                   v_high=1.05,
                   tap_min=0.95,

@@ -40,6 +40,8 @@ def get_bus_data(circuit: MultiCircuit,
     """
     bus_data = ds.BusData(nbus=len(circuit.buses))
 
+    substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
+
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -58,6 +60,9 @@ def get_bus_data(circuit: MultiCircuit,
         else:
             # bus.determine_bus_type().value
             bus_data.bus_types[i] = 1  # PQ by default, later it is modified by generators and batteries
+
+        if bus.substation is not None:
+            bus_data.substations[i] = substation_dict[bus.substation]
 
         bus_data.areas[i] = areas_dict.get(bus.area, 0)
 
@@ -561,9 +566,9 @@ def get_branch_data(circuit: MultiCircuit,
             data.R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[i] *= (1 - elm.lodf_tolerance / 100.0)
+            data.R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[i] *= (1 + elm.lodf_tolerance / 100.0)
+            data.R[i] *= (1 + elm.tolerance / 100.0)
 
         data.X[i] = elm.X
         data.B[i] = elm.B
@@ -622,9 +627,9 @@ def get_branch_data(circuit: MultiCircuit,
             data.R[ii] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[ii] *= (1 - elm.lodf_tolerance / 100.0)
+            data.R[ii] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[ii] *= (1 + elm.lodf_tolerance / 100.0)
+            data.R[ii] *= (1 + elm.tolerance / 100.0)
 
         ii += 1
 

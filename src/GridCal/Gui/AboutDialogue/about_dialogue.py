@@ -33,7 +33,7 @@ class AboutDialogueGuiGUI(QtWidgets.QDialog):
             self.upgrade_cmd = get_upgrade_command(latest_version)
             command = ' '.join(self.upgrade_cmd)
             self.ui.updateLabel.setText('\n\nTerminal command to update:\n\n' + command)
-            self.ui.updateButton.setVisible(False)
+            self.ui.updateButton.setVisible(True)
 
         elif version_code == -1:
             addendum = '\nThis version is newer than the version available in the repositories (' + latest_version + ')'
@@ -85,7 +85,9 @@ class AboutDialogueGuiGUI(QtWidgets.QDialog):
         Upgrade GridCal
         :return:
         """
-        list_files = subprocess.run(self.upgrade_cmd, stdout=subprocess.PIPE, text=True,
+        list_files = subprocess.run(self.upgrade_cmd,
+                                    stdout=subprocess.PIPE,
+                                    text=True,
                                     input="Hello from the other side")  # upgrade_cmd is a list already
         if list_files.returncode != 0:
             self.msg("The exit code was: %d" % list_files.returncode)

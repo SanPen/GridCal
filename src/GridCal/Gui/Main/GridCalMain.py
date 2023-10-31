@@ -21,7 +21,7 @@ import qdarktheme
 from PySide6 import QtWidgets
 
 from GridCal.Gui.Main.MainWindow import QApplication
-from GridCal.Gui.Main.gui_sub_classes.io import IoMain
+from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'

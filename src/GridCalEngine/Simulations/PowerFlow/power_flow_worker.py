@@ -197,7 +197,7 @@ def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.Conve
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
-                                           Vbus=V0,
+                                           V0=V0,
                                            S0=S0,
                                            I0=I0,
                                            Y0=Y0,
@@ -584,14 +584,13 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = nc.split_into_islands(
-        ignore_single_node_islands=options.ignore_single_node_islands,
-    )
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    results.island_number = len(islands)
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
     control_iter = 0
-    max_control_iter = 10
+    max_control_iter = 1  # only one Pmode3 iteration...
     oscillations_number = 0
     hvdc_error_threshold = 0.01
 
@@ -713,8 +712,8 @@ def multi_island_pf(multi_circuit: MultiCircuit,
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
     :param options: PowerFlowOptions instance
-    :param t: time step, if None, the snapshot is compiled
     :param opf_results: OPF results, to be used if not None
+    :param t: time step, if None, the snapshot is compiled
     :param logger: list of events to add to
     :param bus_dict: Dus object to index dictionary
     :param areas_dict: Area to area index dictionary

@@ -546,7 +546,8 @@ class EditorGraphicsView(QGraphicsView):
                           area=self.diagram_scene.circuit.areas[0],
                           zone=self.diagram_scene.circuit.zones[0],
                           substation=self.diagram_scene.circuit.substations[0],
-                          country=self.diagram_scene.circuit.countries[0])
+                          country=self.diagram_scene.circuit.countries[0],
+                          vnom=self.editor.default_bus_voltage)
 
                 graphic_obj = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
                 obj.graphic_obj = graphic_obj
@@ -639,12 +640,17 @@ class BusBranchEditorWidget(QSplitter):
     GridEditorWidget
     """
 
-    def __init__(self, circuit: MultiCircuit, diagram: Union[BusBranchDiagram, None]):
+    def __init__(self,
+                 circuit: MultiCircuit,
+                 diagram: Union[BusBranchDiagram, None],
+                 default_bus_voltage: float = 10.0):
         """
-        Creates the Diagram Editor
-        Args:
-            circuit: Circuit that is handling
+        Creates the Diagram Editor (BusBranchEditorWidget)
+        :param circuit: Circuit that is handling
+        :param diagram: BusBranchDiagram to use (optional)
+        :param default_bus_voltage: Default bus voltages (kV)
         """
+
         QSplitter.__init__(self)
 
         # store a reference to the multi circuit instance
@@ -652,6 +658,9 @@ class BusBranchEditorWidget(QSplitter):
 
         # diagram to store the objects locations
         self.diagram: BusBranchDiagram = diagram
+
+        # default_bus_voltage (kV)
+        self.default_bus_voltage = default_bus_voltage
 
         # nodes distance "explosion" factor
         self.expand_factor = 1.1
@@ -2274,6 +2283,13 @@ class BusBranchEditorWidget(QSplitter):
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
+    def get_selection_api_objects(self) -> List[EditableDevice]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return [e.api_object for e in self.diagramScene.selectedItems()]
+
     def get_selection_diagram(self) -> BusBranchDiagram:
         """
         Get a BusBranchDiagram of the current selection
@@ -2474,7 +2490,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     window = BusBranchEditorWidget(circuit=MultiCircuit(),
-                                   diagram=BusBranchDiagram())
+                                   diagram=BusBranchDiagram(),
+                                   default_bus_voltage=10.0)
 
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
