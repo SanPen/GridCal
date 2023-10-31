@@ -177,6 +177,17 @@ class BaseDiagram:
             # search for the device idtag and return the location, if not found return None
             return group.query_point(device)
 
+    def query_by_type(self, device_type: DeviceType) -> Union[PointsGroup, None]:
+        """
+        Query diagram by device type
+        :param device_type: DeviceType
+        :return: PointsGroup
+        """
+        # check if the category exists ...
+        group = self.data.get(device_type.value, None)
+
+        return group
+
     def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str,  Union[GraphicLocation, MapLocation]]]]:
         """
         get the properties dictionary to save

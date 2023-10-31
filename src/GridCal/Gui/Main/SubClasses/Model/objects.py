@@ -470,13 +470,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             pass
 
-    def clear_big_bus_markers(self):
-        """
-        clear all the buses' "big marker"
-        """
-        for bus in self.circuit.buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.delete_big_marker()
 
     def highlight_selection_buses(self):
         """
@@ -589,12 +582,15 @@ class ObjectsTableMain(DiagramsMain):
                     mx = max(values)
 
                     if mx != 0:
+
+                        colors = [None] * len(values)
+                        for i, value in enumerate(values):
+                            r, g, b, a = cmap(value / mx)
+                            colors[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+
                         # color based on the value
-                        for bus, value in zip(buses, values):
-                            if bus.graphic_obj is not None:
-                                r, g, b, a = cmap(value / mx)
-                                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                                bus.graphic_obj.add_big_marker(color=color)
+                        self.set_big_bus_marker_colours(buses=buses, colors=colors)
+
                     else:
                         info_msg('The maximum value is 0, so the coloring cannot be applied',
                                  'Highlight based on property')

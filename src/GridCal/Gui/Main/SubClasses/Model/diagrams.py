@@ -26,6 +26,7 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
+from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
@@ -1137,17 +1138,58 @@ class DiagramsMain(CompiledArraysMain):
 
                 self.redraw_current_diagram()
 
-    @staticmethod
-    def set_big_bus_marker(buses, color: QtGui.QColor):
+    def set_big_bus_marker(self, buses: List[dev.Bus], color: QtGui.QColor):
         """
         Set a big marker at the selected buses
         :param buses: list of Bus objects
         :param color: colour to use
         """
-        for bus in buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.add_big_marker(color=color)
-                bus.graphic_obj.setSelected(True)
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                for bus in buses:
+
+                    graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                    if graphic_obj is not None:
+                        graphic_obj.add_big_marker(color=color)
+                        graphic_obj.setSelected(True)
+
+    def set_big_bus_marker_colours(self, buses: List[dev.Bus], colors: List[QtGui.QColor] ):
+        """
+        Set a big marker at the selected buses with the matching colours
+        :param buses: list of Bus objects
+        :param colors: list of colour to use
+        """
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                for bus, color in zip(buses, colors):
+
+                    graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                    if graphic_obj is not None:
+                        graphic_obj.add_big_marker(color=color)
+                        graphic_obj.setSelected(True)
+    def clear_big_bus_markers(self):
+        """
+        Set a big marker at the selected buses
+        """
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                buses_diagram_group = diagram.diagram.query_by_type(DeviceType.BusDevice)
+
+                if buses_diagram_group is not None:
+                    for idtag, geo in buses_diagram_group.locations.items():
+                        if geo.graphic_object is not None:
+                            geo.graphic_object.delete_big_marker()
 
     def delete_selected_from_the_schematic(self):
         """
