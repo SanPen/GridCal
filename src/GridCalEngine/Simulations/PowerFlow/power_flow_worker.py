@@ -197,7 +197,7 @@ def solve(circuit: NumericalCircuit, options: PowerFlowOptions, report: bs.Conve
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
-                                           Vbus=V0,
+                                           V0=V0,
                                            S0=S0,
                                            I0=I0,
                                            Y0=Y0,

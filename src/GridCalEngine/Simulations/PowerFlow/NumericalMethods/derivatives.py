@@ -18,10 +18,12 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from scipy.sparse import lil_matrix, diags, csc_matrix
+from scipy.sparse import lil_matrix, diags, csc_matrix, csr_matrix
+from typing import Tuple
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 
-def dSbus_dV(Ybus, V):
+def dSbus_dV(Ybus: csc_matrix, V: CxVec) -> Tuple[csc_matrix, csc_matrix]:
     """
     Derivatives of the power Injections w.r.t the voltage
     :param Ybus: Admittance matrix
@@ -40,7 +42,7 @@ def dSbus_dV(Ybus, V):
 
 
 @nb.njit(cache=True)
-def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
+def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, E: CxVec) -> Tuple[CxVec, CxVec]:
     """
     Compute the power injection derivatives w.r.t the voltage module and angle
     :param Yx: data of Ybus in CSC format
@@ -111,7 +113,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
 
 
 @nb.jit(nopython=True, cache=True)
-def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E):  # pragma: no cover
+def dSbus_dV_numba_sparse_csr(Yx: CxVec, Yp: IntVec, Yj: IntVec, V: CxVec, E: CxVec) -> Tuple[CxVec, CxVec]:  # pragma: no cover
     """
     partial derivatives of power injection w.r.t. voltage.
     :param Yx: Ybus data in CSC format
@@ -166,7 +168,7 @@ def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E):  # pragma: no cover
     return dS_dVm, dS_dVa
 
 
-def dSbus_dV_csc(Ybus, V, E):
+def dSbus_dV_csc(Ybus: csc_matrix, V: CxVec, E: CxVec) -> Tuple[csc_matrix, csc_matrix]:
     """
     Call the numba sparse constructor of the derivatives
     :param Ybus: Ybus in CSC format
@@ -178,16 +180,15 @@ def dSbus_dV_csc(Ybus, V, E):
     dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # generate sparse CSC matrices with computed data and return them
-    return sp.csc_matrix((dS_dVa, Ybus.indices, Ybus.indptr)), \
-           sp.csc_matrix((dS_dVm, Ybus.indices, Ybus.indptr))
+    return (sp.csc_matrix((dS_dVa, Ybus.indices, Ybus.indptr)),
+            sp.csc_matrix((dS_dVm, Ybus.indices, Ybus.indptr)))
 
 
-def dSbus_dV_csr(Ybus, V):
+def dSbus_dV_csr(Ybus: csc_matrix, V: CxVec) -> Tuple[csr_matrix, csr_matrix]:
     """
     Calls functions to calculate dS/dV depending on whether Ybus is sparse or not
     :param Ybus: Ybus in CSC
     :param V: Voltages vector
-    :param I: Currents vector
     :return: dS_dVm, dS_dVa in CSR format
     """
 
@@ -197,11 +198,13 @@ def dSbus_dV_csr(Ybus, V):
     dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V))
 
     # generate sparse CSR matrices with computed data and return them
-    return sp.csr_matrix((dS_dVm, Ybus.indices, Ybus.indptr)), \
-           sp.csr_matrix((dS_dVa, Ybus.indices, Ybus.indptr))
+    return (sp.csr_matrix((dS_dVm, Ybus.indices, Ybus.indptr)),
+            sp.csr_matrix((dS_dVa, Ybus.indices, Ybus.indptr)))
 
 
-def dSbr_dV_matpower(Yf, Yt, V, F, T, Cf, Ct):
+def dSbr_dV_matpower(Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
+                     F: IntVec, T: IntVec,
+                     Cf: csc_matrix, Ct: csc_matrix) -> Tuple[csc_matrix, csc_matrix, csc_matrix, csc_matrix]:
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the Branches with the "from" buses
@@ -244,7 +247,11 @@ def dSbr_dV_matpower(Yf, Yt, V, F, T, Cf, Ct):
     return dSf_dVa.tocsc(), dSf_dVm.tocsc(), dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-def dSf_dV_matpower(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
+def dSf_dV_matpower(Yf: csc_matrix, V: CxVec, F: IntVec,
+                    Cf: csc_matrix, Vc: CxVec,
+                    diagVc: csc_matrix,
+                    diagE: csc_matrix,
+                    diagV: csc_matrix) -> Tuple[csc_matrix, csc_matrix]:
     """
     Derivatives of the branch power "from" w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the Branches with the "from" buses
@@ -517,9 +524,9 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
 
 
 @nb.njit(cache=True)
-def derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V):
+def derivatives_tau_csc_numba(iPxsh, F: IntVec, T: IntVec, Ys: CxVec, k2, tap, V):
     """
-    This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
@@ -528,7 +535,7 @@ def derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V):
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
     :param k2: Array of "k2" parameters
-    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param V: Array of complex voltages
     :return:
         - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -615,7 +622,7 @@ def derivatives_sh_csc_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
 
     dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
     dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
-    dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V)
+    dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = derivatives_tau_csc_numba(iPxsh, F, T, Ys, k2, tap, V)
 
     dSbus_dsh = sp.csc_matrix((dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr), shape=(nb, ndev))
     dSf_dsh = sp.csc_matrix((dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr), shape=(nl, ndev))

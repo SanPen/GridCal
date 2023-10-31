@@ -29,26 +29,38 @@ from GridCalEngine.basic_structures import ReactivePowerControlMode
 import GridCalEngine.Simulations.sparse_solve as gcsp
 
 
-def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
-               tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
-               verbose=False, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
+def NR_LS_ACDC(nc: NumericalCircuit,
+               V0: CxVec,
+               S0: CxVec,
+               I0: CxVec,
+               Y0: CxVec,
+               tolerance=1e-6,
+               max_iter=4,
+               mu_0=1.0,
+               acceleration_parameter=0.05,
+               verbose=False,
+               control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
-    :param nc: SnapshotData instance
+    :param nc: NumericalCircuit
+    :param V0: Initial voltage solution
+    :param S0: Power injections
+    :param I0: Current injections
+    :param Y0: Admittance injections
     :param tolerance: maximum error allowed
     :param max_iter: maximum number of iterations
-    :param mu_0:
-    :param acceleration_parameter:
-    :param verbose:
-    :param control_q:
-    :return:
+    :param mu_0: Initial solution multiplier
+    :param acceleration_parameter: Acceleration parameter (rate to decrease mu)
+    :param verbose: Verbose?
+    :param control_q: Reactive power control mode
+    :return: NumericPowerFlowResults
     """
     start = time.time()
 
     # initialize the variables
     nb = nc.nbus
     nl = nc.nbr
-    V = Vbus
+    V = V0
 
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -57,7 +69,7 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
 
     Vmfset = nc.branch_data.vf_set
     m = nc.branch_data.tap_module.copy()
-    theta = nc.branch_data.tap_angle.copy()
+    tau = nc.branch_data.tap_angle.copy()
     Beq = nc.branch_data.Beq.copy()
     Gsw = nc.branch_data.G0sw
     Pfset = nc.branch_data.Pfset / nc.Sbase
@@ -105,13 +117,13 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
     # -------------------------------------------------------------------------
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                       C_bus_shunt=nc.shunt_data.C_bus_elm,
+                                       C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
                                        shunt_admittance=nc.shunt_data.admittance,
                                        shunt_active=nc.shunt_data.active,
                                        ys=Ys,
                                        B=Bc,
                                        Sbase=nc.Sbase,
-                                       tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                       tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
                                        virtual_tap_from=nc.branch_data.virtual_tap_f,
                                        virtual_tap_to=nc.branch_data.virtual_tap_t)
 
@@ -143,13 +155,13 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                          F=F,
                          pvpq=pvpq,
                          pq=pq,
-                         iPfsh=nc.iPfsh,
-                         iQfma=nc.iQfma,
-                         iBeqz=nc.iBeqz,
-                         iQtma=nc.iQtma,
-                         iPfdp=nc.iPfdp,
-                         VfBeqbus=nc.VfBeqbus,
-                         Vtmabus=nc.Vtmabus)
+                         k_pf_tau=nc.iPfsh,
+                         k_qf_m=nc.iQfma,
+                         k_zero_beq=nc.iBeqz,
+                         k_qt_m=nc.iQtma,
+                         k_pf_dp=nc.iPfdp,
+                         i_vf_beq=nc.VfBeqbus,
+                         i_vt_m=nc.Vtmabus)
 
     norm_f = np.max(np.abs(fx))
 
@@ -169,13 +181,13 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
         if not np.isnan(dx).any():  # check if the solution worked
 
             # split the solution
-            dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
+            dVa, dVm, dBeq_vf, dma_Vt, dtheta_Pf, dma_Qf, dBeq_zero, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
 
             # set the restoration values
             prev_Vm = Vm.copy()
             prev_Va = Va.copy()
             prev_m = m.copy()
-            prev_theta = theta.copy()
+            prev_tau = tau.copy()
             prev_Beq = Beq.copy()
             prev_Scalc = Scalc.copy()
 
@@ -190,32 +202,33 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                     Va = prev_Va.copy()
                     Vm = prev_Vm.copy()
                     m = prev_m.copy()
-                    theta = prev_theta.copy()
+                    tau = prev_tau.copy()
                     Beq = prev_Beq.copy()
 
                 # assign the new values
                 Va[pvpq] += dVa * mu
                 Vm[pq] += dVm * mu
-                theta[nc.iPfsh] += dtheta_Pf * mu
-                theta[nc.iPfdp] += dtheta_Pd * mu
+                Beq[nc.iBeqz] += dBeq_zero * mu
+                Beq[nc.iBeqv] += dBeq_vf * mu
                 m[nc.iQfma] += dma_Qf * mu
                 m[nc.iQtma] += dma_Qt * mu
                 m[nc.iVtma] += dma_Vt * mu
-                Beq[nc.iBeqz] += dBeq_z * mu
-                Beq[nc.iBeqv] += dBeq_v * mu
+                tau[nc.iPfsh] += dtheta_Pf * mu
+                tau[nc.iPfdp] += dtheta_Pd * mu
+
                 V = Vm * np.exp(1j * Va)
 
                 Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
                 # compute admittances
                 Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                                   C_bus_shunt=nc.shunt_data.C_bus_elm,
+                                                   C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
                                                    shunt_admittance=nc.shunt_data.admittance,
                                                    shunt_active=nc.shunt_data.active,
                                                    ys=Ys,
                                                    B=Bc,
                                                    Sbase=nc.Sbase,
-                                                   tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                                   tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
                                                    virtual_tap_from=nc.branch_data.virtual_tap_f,
                                                    virtual_tap_to=nc.branch_data.virtual_tap_t)
 
@@ -247,13 +260,13 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                                      F=F,
                                      pvpq=pvpq,
                                      pq=pq,
-                                     iPfsh=nc.iPfsh,
-                                     iQfma=nc.iQfma,
-                                     iBeqz=nc.iBeqz,
-                                     iQtma=nc.iQtma,
-                                     iPfdp=nc.iPfdp,
-                                     VfBeqbus=nc.VfBeqbus,
-                                     Vtmabus=nc.Vtmabus)
+                                     k_pf_tau=nc.iPfsh,
+                                     k_qf_m=nc.iQfma,
+                                     k_zero_beq=nc.iBeqz,
+                                     k_qt_m=nc.iQtma,
+                                     k_pf_dp=nc.iPfdp,
+                                     i_vf_beq=nc.VfBeqbus,
+                                     i_vt_m=nc.Vtmabus)
 
                 norm_f_new = np.max(np.abs(fx))
                 cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
@@ -266,7 +279,7 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                 Va = prev_Va.copy()
                 Vm = prev_Vm.copy()
                 m = prev_m.copy()
-                theta = prev_theta.copy()
+                tau = prev_tau.copy()
                 Beq = prev_Beq.copy()
                 V = Vm * np.exp(1j * Va)
                 end = time.time()
@@ -274,10 +287,11 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
 
                 # set the state for the next solver_type
                 nc.branch_data.tap_module = m
-                nc.branch_data.tap_angle = theta
+                nc.branch_data.tap_angle = tau
                 nc.branch_data.Beq = Beq
 
-                return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
+                return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc,
+                                               m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
             else:
                 # the iteration was ok, check the controls if the error is small enough
                 if norm_f < 1e-2:
@@ -290,10 +304,10 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                             m[idx] = nc.branch_data.tap_module_max[idx]
 
                         # correct theta (tap angles)
-                        if theta[idx] < nc.branch_data.tap_angle_min[idx]:
-                            theta[idx] = nc.branch_data.tap_angle_min[idx]
-                        elif theta[idx] > nc.branch_data.tap_angle_max[idx]:
-                            theta[idx] = nc.branch_data.tap_angle_max[idx]
+                        if tau[idx] < nc.branch_data.tap_angle_min[idx]:
+                            tau[idx] = nc.branch_data.tap_angle_min[idx]
+                        elif tau[idx] > nc.branch_data.tap_angle_max[idx]:
+                            tau[idx] = nc.branch_data.tap_angle_max[idx]
 
                     # review reactive power limits
                     # it is only worth checking Q limits with a low error
@@ -339,13 +353,13 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                                                  F=F,
                                                  pvpq=pvpq,
                                                  pq=pq,
-                                                 iPfsh=nc.iPfsh,
-                                                 iQfma=nc.iQfma,
-                                                 iBeqz=nc.iBeqz,
-                                                 iQtma=nc.iQtma,
-                                                 iPfdp=nc.iPfdp,
-                                                 VfBeqbus=nc.VfBeqbus,
-                                                 Vtmabus=nc.Vtmabus)
+                                                 k_pf_tau=nc.iPfsh,
+                                                 k_qf_m=nc.iQfma,
+                                                 k_zero_beq=nc.iBeqz,
+                                                 k_qt_m=nc.iQtma,
+                                                 k_pf_dp=nc.iPfdp,
+                                                 i_vf_beq=nc.VfBeqbus,
+                                                 i_vt_m=nc.Vtmabus)
                             norm_f_new = np.max(np.abs(fx))
 
                             # if verbose > 0:
@@ -360,7 +374,7 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
                 print('dx:', dx)
                 print('Va:', Va)
                 print('Vm:', Vm)
-                print('theta:', theta)
+                print('theta:', tau)
                 print('ma:', m)
                 print('Beq:', Beq)
                 print('norm_f:', norm_f)
@@ -374,5 +388,6 @@ def NR_LS_ACDC(nc: NumericalCircuit, Vbus, S0, I0, Y0,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc,
+                                   m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
 

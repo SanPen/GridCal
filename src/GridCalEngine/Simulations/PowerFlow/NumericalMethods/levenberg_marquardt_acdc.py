@@ -143,13 +143,13 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                 F=F,
                                 pvpq=pvpq,
                                 pq=pq,
-                                iPfsh=nc.iPfsh,
-                                iQfma=nc.iQfma,
-                                iBeqz=nc.iBeqz,
-                                iQtma=nc.iQtma,
-                                iPfdp=nc.iPfdp,
-                                VfBeqbus=nc.VfBeqbus,
-                                Vtmabus=nc.Vtmabus)
+                                k_pf_tau=nc.iPfsh,
+                                k_qf_m=nc.iQfma,
+                                k_zero_beq=nc.iBeqz,
+                                k_qt_m=nc.iQtma,
+                                k_pf_dp=nc.iPfdp,
+                                i_vf_beq=nc.VfBeqbus,
+                                i_vt_m=nc.Vtmabus)
 
         norm_f = np.max(np.abs(dz))
 
@@ -275,13 +275,13 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                     F=F,
                                     pvpq=pvpq,
                                     pq=pq,
-                                    iPfsh=nc.iPfsh,
-                                    iQfma=nc.iQfma,
-                                    iBeqz=nc.iBeqz,
-                                    iQtma=nc.iQtma,
-                                    iPfdp=nc.iPfdp,
-                                    VfBeqbus=nc.VfBeqbus,
-                                    Vtmabus=nc.Vtmabus)
+                                    k_pf_tau=nc.iPfsh,
+                                    k_qf_m=nc.iQfma,
+                                    k_zero_beq=nc.iBeqz,
+                                    k_qt_m=nc.iQtma,
+                                    k_pf_dp=nc.iPfdp,
+                                    i_vf_beq=nc.VfBeqbus,
+                                    i_vt_m=nc.Vtmabus)
 
             norm_f = np.max(np.abs(dz))
             converged = norm_f < tolerance
