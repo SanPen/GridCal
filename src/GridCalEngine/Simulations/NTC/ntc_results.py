@@ -23,6 +23,29 @@ from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
 from GridCalEngine.enumerations import StudyResultsType, TransformerControlType
 
 
+def add_shifter_data(y, columns, controlled_shifters, phase_shift):
+    """
+    Add shifter data into y, columns from report
+    :param y: report data matrix
+    :param columns: report column names
+    :param controlled_shifters: Tuple (idx, name) for each controlled shifter
+    :param phase_shift: Branches phase shift
+    :return:
+    """
+
+    idx, names = controlled_shifters
+
+    columns.extend(names)
+
+    if y.shape[0] == 0:
+        # empty data, return
+        return y, columns
+
+    y_ = np.array([phase_shift[idx]] * y.shape[0])
+    y = np.concatenate([y, y_], axis=1)
+    return y, columns
+
+
 def add_exchange_sensitivities(y, columns, alpha, mc_idx=None, alpha_n1=None, report_contigency_alpha=False,
                                decimals=5, str_separator='; '):
     """
@@ -222,7 +245,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  Sbus=None,
                  voltage=None,
                  battery_power=None,
-                 controlled_generation_power=None,
                  Sf=None,
                  loading=None,
                  losses=None,
@@ -255,10 +277,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  structural_ntc=None,
                  sbase=None,
                  monitor=None,
-                 monitor_loading=None,
-                 monitor_by_sensitivity=None,
-                 monitor_by_unrealistic_ntc=None,
-                 monitor_by_zero_exchange=None,
+                 monitor_type=None,
                  loading_threshold=0.0,
                  reversed_sort_loading=True):
 
@@ -350,10 +369,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.alpha_w = alpha_w
 
         self.monitor = monitor
-        self.monitor_loading = monitor_loading
-        self.monitor_by_sensitivity = monitor_by_sensitivity
-        self.monitor_by_unrealistic_ntc = monitor_by_unrealistic_ntc
-        self.monitor_by_zero_exchange = monitor_by_zero_exchange
+        self.monitor_type = monitor_type
 
         self.contingency_branch_flows_list = contingency_branch_flows_list
         self.contingency_branch_indices_list = contingency_branch_indices_list  # [(t, m, c), ...]
@@ -484,10 +500,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         y = np.array([
             self.monitor,  # Monitor result
-            self.monitor_loading,  # Monitor loading by user
-            self.monitor_by_sensitivity,  # Monitor by sensibility
-            self.monitor_by_unrealistic_ntc,  # Monitor by unrealistic ntc
-            self.monitor_by_zero_exchange,  # Monitor by zero exchange load
+            np.isin(self.monitor_type, ['excluded by model']),  # Monitor loading by user
+            np.isin(self.monitor_type, ['excluded by sensitivity']),  # Monitor by sensibility
+            np.isin(self.monitor_type, ['excluded by unrealistic ntc']),  # Monitor by unrealistic ntc
+            np.isin(self.monitor_type, ['excluded by zero exchange']),  # Monitor by zero exchange load
             self.rates,  # Rates
             self.contingency_rates,  # Contingency rates
         ], dtype=object).T
@@ -555,46 +571,46 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_names=self.branch_names,
         )
 
-        # Add exchange sensitivities
-        y, columns = add_exchange_sensitivities(
-            y=y,
-            columns=columns,
-            alpha=self.alpha,
-            report_contigency_alpha=False,
-        )
-
-        # Add TTC, TRM and NTC
-        y, columns = add_ntc_data(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add interarea Branches data
-        y, columns = add_inter_area_branches_data(
-            y=y,
-            columns=columns,
-            inter_area_branches=self.inter_area_branches,
-            Sf=self.Sf,
-            names=self.branch_names,
-        )
-
-        # Add hvdc Branches data
-        y, columns = add_hvdc_data(
-            y=y,
-            columns=columns,
-            hvdc_Pf=self.hvdc_Pf,
-            hvdc_names=self.hvdc_names,
-        )
-
-        # Add controlled shifter data
-        y, columns = self.add_shifter_data(
-            y=y,
-            columns=columns,
-            controlled_shifters=self.get_controlled_shifters_as_pt(),
-            phase_shift=self.phase_shift,
-        )
+        # # Add exchange sensitivities
+        # y, columns = add_exchange_sensitivities(
+        #     y=y,
+        #     columns=columns,
+        #     alpha=self.alpha,
+        #     report_contigency_alpha=False,
+        # )
+        #
+        # # Add TTC, TRM and NTC
+        # y, columns = add_ntc_data(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add interarea Branches data
+        # y, columns = add_inter_area_branches_data(
+        #     y=y,
+        #     columns=columns,
+        #     inter_area_branches=self.inter_area_branches,
+        #     Sf=self.Sf,
+        #     names=self.branch_names,
+        # )
+        #
+        # # Add hvdc Branches data
+        # y, columns = add_hvdc_data(
+        #     y=y,
+        #     columns=columns,
+        #     hvdc_Pf=self.hvdc_Pf,
+        #     hvdc_names=self.hvdc_names,
+        # )
+        #
+        # # Add controlled shifter data
+        # y, columns = self.add_shifter_data(
+        #     y=y,
+        #     columns=columns,
+        #     controlled_shifters=self.get_controlled_shifters_as_pt(),
+        #     phase_shift=self.phase_shift,
+        # )
 
         # filter results if required
         if loading_threshold != 0.0:
@@ -617,7 +633,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.reports[title] = ResultsTable(
             data=y,
             index=labels,
-            columns=columns,
+            columns=np.array(columns),
             title=title,
             ylabel='',
             xlabel='',
@@ -645,63 +661,63 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensitivities
-        y, columns = add_exchange_sensitivities(
-            y=y,
-            columns=columns,
-            mc_idx=self.contingency_branch_indices_list,
-            alpha=self.alpha,
-            alpha_n1=self.contingency_branch_alpha_list,
-            report_contigency_alpha=False,
-        )
-
-        # Add TTC, TRM and NTC
-        y, columns = add_ntc_data(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add MACZT (margin available for cross-zonal trade) data
-        y, columns = add_maczt(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add min ntc to be considered as critical element
-        y, columns = add_min_ntc(
-            y=y,
-            columns=columns,
-            ntc_load_rule=self.ntc_load_rule,
-        )
-
-        # Add interarea Branches data
-        y, columns = add_inter_area_branches_data(
-            y=y,
-            columns=columns,
-            inter_area_branches=self.inter_area_branches,
-            Sf=self.Sf,
-            names=self.branch_names,
-        )
-
-        # Add hvdc Branches data
-        y, columns = add_hvdc_data(
-            y=y,
-            columns=columns,
-            hvdc_Pf=self.hvdc_Pf,
-            hvdc_names=self.hvdc_names,
-        )
-
-        # Add controlled shifter data
-        y, columns = self.add_shifter_data(
-            y=y,
-            columns=columns,
-            controlled_shifters=self.get_controlled_shifters_as_pt(),
-            phase_shift=self.phase_shift,
-        )
+        # # Add exchange sensitivities
+        # y, columns = add_exchange_sensitivities(
+        #     y=y,
+        #     columns=columns,
+        #     mc_idx=self.contingency_branch_indices_list,
+        #     alpha=self.alpha,
+        #     alpha_n1=self.contingency_branch_alpha_list,
+        #     report_contigency_alpha=False,
+        # )
+        #
+        # # Add TTC, TRM and NTC
+        # y, columns = add_ntc_data(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add MACZT (margin available for cross-zonal trade) data
+        # y, columns = add_maczt(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add min ntc to be considered as critical element
+        # y, columns = add_min_ntc(
+        #     y=y,
+        #     columns=columns,
+        #     ntc_load_rule=self.ntc_load_rule,
+        # )
+        #
+        # # Add interarea Branches data
+        # y, columns = add_inter_area_branches_data(
+        #     y=y,
+        #     columns=columns,
+        #     inter_area_branches=self.inter_area_branches,
+        #     Sf=self.Sf,
+        #     names=self.branch_names,
+        # )
+        #
+        # # Add hvdc Branches data
+        # y, columns = add_hvdc_data(
+        #     y=y,
+        #     columns=columns,
+        #     hvdc_Pf=self.hvdc_Pf,
+        #     hvdc_names=self.hvdc_names,
+        # )
+        #
+        # # Add controlled shifter data
+        # y, columns = self.add_shifter_data(
+        #     y=y,
+        #     columns=columns,
+        #     controlled_shifters=self.get_controlled_shifters_as_pt(),
+        #     phase_shift=self.phase_shift,
+        # )
 
         c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
@@ -753,63 +769,63 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensitivities
-        y, columns = add_exchange_sensitivities(
-            y=y,
-            columns=columns,
-            mc_idx=self.contingency_generation_indices_list,
-            alpha=self.alpha,
-            alpha_n1=self.contingency_generation_alpha_list,
-            report_contigency_alpha=False,
-        )
-
-        # Add TTC, TRM and NTC
-        y, columns = add_ntc_data(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add MACZT (margin available for cross-zonal trade) data
-        y, columns = add_maczt(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add min ntc to be considered as critical element
-        y, columns = add_min_ntc(
-            y=y,
-            columns=columns,
-            ntc_load_rule=self.ntc_load_rule,
-        )
-
-        # Add interarea Branches data
-        y, columns = add_inter_area_branches_data(
-            y=y,
-            columns=columns,
-            inter_area_branches=self.inter_area_branches,
-            Sf=self.Sf,
-            names=self.branch_names,
-        )
-
-        # Add hvdc Branches data
-        y, columns = add_hvdc_data(
-            y=y,
-            columns=columns,
-            hvdc_Pf=self.hvdc_Pf,
-            hvdc_names=self.hvdc_names,
-        )
-
-        # Add controlled shifter data
-        y, columns = self.add_shifter_data(
-            y=y,
-            columns=columns,
-            controlled_shifters=self.get_controlled_shifters_as_pt(),
-            phase_shift=self.phase_shift,
-        )
+        # # Add exchange sensitivities
+        # y, columns = add_exchange_sensitivities(
+        #     y=y,
+        #     columns=columns,
+        #     mc_idx=self.contingency_generation_indices_list,
+        #     alpha=self.alpha,
+        #     alpha_n1=self.contingency_generation_alpha_list,
+        #     report_contigency_alpha=False,
+        # )
+        #
+        # # Add TTC, TRM and NTC
+        # y, columns = add_ntc_data(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add MACZT (margin available for cross-zonal trade) data
+        # y, columns = add_maczt(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add min ntc to be considered as critical element
+        # y, columns = add_min_ntc(
+        #     y=y,
+        #     columns=columns,
+        #     ntc_load_rule=self.ntc_load_rule,
+        # )
+        #
+        # # Add interarea Branches data
+        # y, columns = add_inter_area_branches_data(
+        #     y=y,
+        #     columns=columns,
+        #     inter_area_branches=self.inter_area_branches,
+        #     Sf=self.Sf,
+        #     names=self.branch_names,
+        # )
+        #
+        # # Add hvdc Branches data
+        # y, columns = add_hvdc_data(
+        #     y=y,
+        #     columns=columns,
+        #     hvdc_Pf=self.hvdc_Pf,
+        #     hvdc_names=self.hvdc_names,
+        # )
+        #
+        # # Add controlled shifter data
+        # y, columns = self.add_shifter_data(
+        #     y=y,
+        #     columns=columns,
+        #     controlled_shifters=self.get_controlled_shifters_as_pt(),
+        #     phase_shift=self.phase_shift,
+        # )
 
         c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
@@ -862,63 +878,63 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # Add exchange sensitivities
-        y, columns = add_exchange_sensitivities(
-            y=y,
-            columns=columns,
-            mc_idx=self.contingency_hvdc_indices_list,
-            alpha=self.alpha,
-            alpha_n1=self.contingency_hvdc_alpha_list,
-            report_contigency_alpha=False,
-        )
-
-        # Add TTC, TRM and NTC
-        y, columns = add_ntc_data(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add MACZT (margin available for cross-zonal trade) data
-        y, columns = add_maczt(
-            y=y,
-            columns=columns,
-            ttc=self.get_exchange_power(),
-            trm=self.trm,
-        )
-
-        # Add min ntc to be considered as critical element
-        y, columns = add_min_ntc(
-            y=y,
-            columns=columns,
-            ntc_load_rule=self.ntc_load_rule,
-        )
-
-        # Add interarea Branches data
-        y, columns = add_inter_area_branches_data(
-            y=y,
-            columns=columns,
-            inter_area_branches=self.inter_area_branches,
-            Sf=self.Sf,
-            names=self.branch_names,
-        )
-
-        # Add hvdc Branches data
-        y, columns = add_hvdc_data(
-            y=y,
-            columns=columns,
-            hvdc_Pf=self.hvdc_Pf,
-            hvdc_names=self.hvdc_names,
-        )
-
-        # Add controlled shifter data
-        y, columns = self.add_shifter_data(
-            y=y,
-            columns=columns,
-            controlled_shifters=self.get_controlled_shifters_as_pt(),
-            phase_shift=self.phase_shift,
-        )
+        # # Add exchange sensitivities
+        # y, columns = add_exchange_sensitivities(
+        #     y=y,
+        #     columns=columns,
+        #     mc_idx=self.contingency_hvdc_indices_list,
+        #     alpha=self.alpha,
+        #     alpha_n1=self.contingency_hvdc_alpha_list,
+        #     report_contigency_alpha=False,
+        # )
+        #
+        # # Add TTC, TRM and NTC
+        # y, columns = add_ntc_data(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add MACZT (margin available for cross-zonal trade) data
+        # y, columns = add_maczt(
+        #     y=y,
+        #     columns=columns,
+        #     ttc=self.get_exchange_power(),
+        #     trm=self.trm,
+        # )
+        #
+        # # Add min ntc to be considered as critical element
+        # y, columns = add_min_ntc(
+        #     y=y,
+        #     columns=columns,
+        #     ntc_load_rule=self.ntc_load_rule,
+        # )
+        #
+        # # Add interarea Branches data
+        # y, columns = add_inter_area_branches_data(
+        #     y=y,
+        #     columns=columns,
+        #     inter_area_branches=self.inter_area_branches,
+        #     Sf=self.Sf,
+        #     names=self.branch_names,
+        # )
+        #
+        # # Add hvdc Branches data
+        # y, columns = add_hvdc_data(
+        #     y=y,
+        #     columns=columns,
+        #     hvdc_Pf=self.hvdc_Pf,
+        #     hvdc_names=self.hvdc_names,
+        # )
+        #
+        # # Add controlled shifter data
+        # y, columns = self.add_shifter_data(
+        #     y=y,
+        #     columns=columns,
+        #     controlled_shifters=self.get_controlled_shifters_as_pt(),
+        #     phase_shift=self.phase_shift,
+        # )
 
         c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
@@ -972,7 +988,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.reports[title] = ResultsTable(
             data=y,
             index=labels,
-            columns=['Exchange'],
+            columns=np.array(['Exchange']),
             title=title,
             ylabel='(MW)',
             xlabel='',
@@ -1008,27 +1024,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return shifter_idx, shifter_names
 
-    def add_shifter_data(self, y, columns, controlled_shifters, phase_shift):
-        """
-        Add shifter data into y, columns from report
-        :param y: report data matrix
-        :param columns: report column names
-        :param controlled_shifters: Tuple (idx, name) for each controlled shifter
-        :param phase_shift: Branches phase shift
-        :return:
-        """
-
-        idx, names = controlled_shifters
-
-        columns.extend(names)
-
-        if y.shape[0] == 0:
-            # empty data, return
-            return y, columns
-
-        y_ = np.array([phase_shift[idx]] * y.shape[0])
-        y = np.concatenate([y, y_], axis=1)
-        return y, columns
 
     def make_report(self, path_out=None):
         """
@@ -1401,8 +1396,7 @@ def apply_sort(y, labels, col, reverse=False):
 
 def get_contingency_flow_table(
         mc_idx, flow, contingency_flow, monitor_names, contingency_names,
-        rates, contingency_rates, str_separator='; ', decimals=2,
-):
+        rates, contingency_rates, str_separator='; ', decimals=2):
     """
     Get flow report
     :param mc_idx: Idx tuple (monitor, contingency) for contingency flows

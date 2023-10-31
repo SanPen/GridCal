@@ -35,30 +35,11 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
+from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, BoolVec, StrVec, DateVec, CxMat
 from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot,
                                                         set_var_bounds, join)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, AvailableTransferMode
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
-
-def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
-    """
-    Get the Branches that join two areas
-    :param nbr: Number of Branches
-    :param F: Array of From node indices
-    :param T: Array of To node indices
-    :param buses_areas_1: Area from
-    :param buses_areas_2: Area to
-    :return: List of (branch index, flow sense w.r.t the area exchange)
-    """
-
-    lst: List[Tuple[int, float]] = list()
-    for k in range(nbr):
-        if F[k] in buses_areas_1 and T[k] in buses_areas_2:
-            lst.append((k, 1.0))
-        elif F[k] in buses_areas_2 and T[k] in buses_areas_1:
-            lst.append((k, -1.0))
-    return lst
 
 
 def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings):
@@ -85,392 +66,85 @@ def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hv
     return sum_ratings
 
 
-def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
+def formulate_monitorization_logic(
+        monitor_only_sensitive_branches: bool, monitor_only_ntc_load_rule_branches: bool,
+        monitor_loading: BoolVec, alpha: Vec, alpha_n1: Vec, branch_sensitivity_threshold: float,
+        base_flows: Vec, structural_ntc: float, ntc_load_rule: float, rates: Vec) -> Tuple[BoolVec, StrVec, Vec, Vec]:
     """
-    Get the generators that belong to the Area 1, Area 2 and the rest of areas
-    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
-    :param buses_in_a1: List of bus indices of the area 1
-    :param buses_in_a2: List of bus indices of the area 2
-    :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out) each of the lists contains (bus index, generator index) tuples
-    """
-    assert isinstance(Cgen, csc_matrix)
-
-    gens_in_a1 = list()
-    gens_in_a2 = list()
-    gens_out = list()
-    for j in range(Cgen.shape[1]):  # for each bus
-        for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
-            i = Cgen.indices[ii]
-            if i in buses_in_a1:
-                gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
-            elif i in buses_in_a2:
-                gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
-            else:
-                gens_out.append((i, j))  # i: bus idx, j: gen idx
-
-    return gens_in_a1, gens_in_a2, gens_out
-
-
-class BusNtcVars:
-    """
-    Struct to store the bus related vars
+    Function to formulate branch monitor status due the given logic
+    :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.
+    :param monitor_only_ntc_load_rule_branches: boolean to apply ntc load rule to the monitorization logic.
+    :param monitor_loading: Array of branch monitor loading status given by user(True/False)
+    :param alpha: Array of branch sensitivity to the exchange in n condition
+    :param alpha_n1: Array of branch sensitivity to the exchange in n-1 condition
+    :param branch_sensitivity_threshold: branch sensitivity to the exchange threshold
+    :param base_flows: branch base flows
+    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
+    :param ntc_load_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
+    :param rates: array of branch rates
+    return:
+        - monitor: Array of final monitor status per branch after applying the logic
+        - monitor_loading: monitor status per branch set by user interface
+        - monitor_by_sensitivity: monitor status per branch due exchange sensibility
+        - monitor_by_unrealistic_ntc: monitor status per branch due unrealistic minimum ntc
+        - monitor_by_zero_exchange: monitor status per branch due zero exchange loading
+        - branch_ntc_load_rule: branch minimum ntc to be considered as limiting element
+        - branch_zero_exchange_load: branch load for zero exchange situation.
     """
 
-    def __init__(self, nt: int, n_elm: int):
-        """
-        BusVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of branches
-        """
-        self.theta = np.zeros((nt, n_elm), dtype=object)
-        self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
-        self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
+    # NTC min for considering as limiting element by CEP rule
+    branch_ntc_load_rule_n = ntc_load_rule * rates / (alpha + 1e-20)
+    branch_ntc_load_rule_n1 = ntc_load_rule * rates / (alpha_n1 + 1e-20)
+
+    # Branch load without exchange
+    branch_zero_exchange_load_n = base_flows * (1 - alpha) / rates
+    branch_zero_exchange_load_n1 = base_flows * (1 - alpha_n1) / rates
+
+    # Exclude branches with not enough sensibility to exchange
+    if monitor_only_sensitive_branches:
+        monitor_by_sensitivity_n = alpha > branch_sensitivity_threshold
+        monitor_by_sensitivity_n1 = alpha_n1 > branch_sensitivity_threshold
+    else:
+        monitor_by_sensitivity_n = np.ones(len(base_flows), dtype=bool)
+        monitor_by_sensitivity_n1 = np.ones(len(base_flows), dtype=bool)
+
+    # N 'and' N-1 criteria
+    branch_zero_exchange_load = branch_zero_exchange_load_n * branch_zero_exchange_load_n1
+    branch_ntc_load_rule = branch_ntc_load_rule_n * branch_ntc_load_rule_n1
+    monitor_by_sensitivity = monitor_by_sensitivity_n * monitor_by_sensitivity_n1
+
+    # Avoid unrealistic ntc && Exclude branches with 'interchange zero' flows over CEP rule limit
+    if monitor_only_ntc_load_rule_branches:
+        monitor_by_unrealistic_ntc = branch_ntc_load_rule <= structural_ntc
+        monitor_by_zero_exchange = branch_zero_exchange_load >= (1 - ntc_load_rule)
+    else:
+        monitor_by_unrealistic_ntc = np.ones(len(base_flows), dtype=bool)
+        monitor_by_zero_exchange = np.ones(len(base_flows), dtype=bool)
+
+    monitor_loading = np.array(monitor_loading, dtype=bool)
+
+    monitor = monitor_loading * \
+              monitor_by_sensitivity * \
+              monitor_by_unrealistic_ntc * \
+              monitor_by_zero_exchange
+
+    monitor_type = np.zeros(len(base_flows), dtype=object)
+
+    for i, (a, b, c, d) in enumerate(zip(monitor_loading, monitor_by_sensitivity, monitor_by_unrealistic_ntc, monitor_by_zero_exchange)):
+        res = []
+        if not a:
+            res.append('excluded by model')
+        if not b:
+            res.append('excluded by sensitivity')
+        if not c:
+            res.append('excluded by unrealistic ntc')
+        if not d:
+            res.append('excluded by zero exchange')
+
+        monitor_type[i] = ';'.join(res)
+
+    return monitor, monitor_type, branch_ntc_load_rule, branch_zero_exchange_load
 
-        # nodal load
-        self.load_p = np.zeros((nt, n_elm), dtype=float)
-        self.load_shedding = np.zeros((nt, n_elm), dtype=object)
-
-        # nodal gen
-        self.inj_p = np.zeros((nt, n_elm), dtype=float)
-        self.inj_delta = np.zeros((nt, n_elm), dtype=object)
-
-
-    def get_values(self, Sbase: float) -> "BusNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: BusVars
-        """
-        nt, n_elm = self.theta.shape
-        data = BusNtcVars(nt=nt, n_elm=n_elm)
-
-        data.shadow_prices = self.shadow_prices
-        data.load_p = self.load_p * Sbase
-
-        for t in range(nt):
-
-            for i in range(n_elm):
-                data.theta[t, i] = get_lp_var_value(self.theta[t, i])
-                data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
-
-                data.load_shedding[t, i] = get_lp_var_value(self.load_shedding[t, i]) * Sbase
-
-                data.inj_p[t, i] = get_lp_var_value(self.inj_p[t, i]) * Sbase
-                data.inj_delta[t, i] = get_lp_var_value(self.inj_delta[t, i])
-
-        # format the arrays appropriately
-        data.theta = data.theta.astype(float, copy=False)
-
-        data.load_shedding = data.load_shedding.astype(float, copy=False)
-
-        data.inj_p = data.inj_p.astype(float, copy=False)
-        data.inj_delta = data.inj_delta.astype(float, copy=False)
-
-        data.power_shift = data.power_shift.astype(float, copy=False)
-
-        return data
-
-
-class LoadNtcVars:
-    """
-    Struct to store the load related vars
-    """
-
-    def __init__(self, nt: int, n_elm: int):
-        """
-        LoadVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of branches
-        """
-        self.shedding = np.zeros((nt, n_elm), dtype=object)
-
-        self.p = np.zeros((nt, n_elm), dtype=float)  # to be filled (no vars)
-
-    def get_values(self, Sbase: float) -> "LoadNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: LoadVars
-        """
-        nt, n_elm = self.shedding.shape
-        data = LoadNtcVars(nt=nt, n_elm=n_elm)
-
-        data.p = self.p * Sbase  # this is data already, so make a refference copy
-
-        for t in range(nt):
-            for i in range(n_elm):
-                data.shedding[t, i] = get_lp_var_value(self.shedding[t, i]) * Sbase
-
-        # format the arrays appropriately
-        data.shedding = data.shedding.astype(float, copy=False)
-
-        return data
-
-
-class GenerationNtcVars:
-    """
-    Struct to store the generation vars
-    """
-
-    def __init__(self, nt: int, n_elm: int):
-        """
-        GenerationVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of generators
-        """
-        self.p = np.zeros((nt, n_elm), dtype=object)
-        self.shedding = np.zeros((nt, n_elm), dtype=object)
-        self.producing = np.zeros((nt, n_elm), dtype=object)
-        self.starting_up = np.zeros((nt, n_elm), dtype=object)
-        self.shutting_down = np.zeros((nt, n_elm), dtype=object)
-        self.delta = np.zeros((nt, n_elm), dtype=object)
-
-    def get_values(self, Sbase: float) -> "GenerationNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: GenerationVars
-        """
-        nt, n_elm = self.p.shape
-        data = GenerationNtcVars(nt=nt, n_elm=n_elm)
-
-        for t in range(nt):
-            for i in range(n_elm):
-                data.p[t, i] = get_lp_var_value(self.p[t, i]) * Sbase
-                data.shedding[t, i] = get_lp_var_value(self.shedding[t, i]) * Sbase
-                data.producing[t, i] = get_lp_var_value(self.producing[t, i])
-                data.starting_up[t, i] = get_lp_var_value(self.starting_up[t, i])
-                data.shutting_down[t, i] = get_lp_var_value(self.shutting_down[t, i])
-                data.delta[t, i] = get_lp_var_value(self.delta[t, i])
-
-        # format the arrays appropriately
-        data.p = data.p.astype(float, copy=False)
-        data.shedding = data.shedding.astype(float, copy=False)
-        data.producing = data.producing.astype(int, copy=False)
-        data.starting_up = data.starting_up.astype(int, copy=False)
-        data.shutting_down = data.shutting_down.astype(int, copy=False)
-        data.delta = data.delta.astype(float, copy=False)
-
-        return data
-
-
-class BatteryNtcVars(GenerationNtcVars):
-    """
-    struct extending the generation vars to handle the battery vars
-    """
-
-    def __init__(self, nt: int, n_elm: int):
-        """
-        BatteryVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of branches
-        """
-        GenerationNtcVars.__init__(self, nt=nt, n_elm=n_elm)
-        self.e = np.zeros((nt, n_elm), dtype=object)
-
-    def get_values(self, Sbase: float) -> "BatteryNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: GenerationVars
-        """
-        nt, n_elm = self.p.shape
-        data = BatteryNtcVars(nt=nt, n_elm=n_elm)
-
-        for t in range(nt):
-            for i in range(n_elm):
-                data.p[t, i] = get_lp_var_value(self.p[t, i]) * Sbase
-                data.e[t, i] = get_lp_var_value(self.e[t, i]) * Sbase
-                data.shedding[t, i] = get_lp_var_value(self.shedding[t, i]) * Sbase
-                data.producing[t, i] = get_lp_var_value(self.producing[t, i])
-                data.starting_up[t, i] = get_lp_var_value(self.starting_up[t, i])
-                data.shutting_down[t, i] = get_lp_var_value(self.shutting_down[t, i])
-
-            # format the arrays appropriately
-            data.p = data.p.astype(float, copy=False)
-            data.e = data.e.astype(float, copy=False)
-            data.shedding = data.shedding.astype(float, copy=False)
-            data.producing = data.producing.astype(int, copy=False)
-            data.starting_up = data.starting_up.astype(int, copy=False)
-            data.shutting_down = data.shutting_down.astype(int, copy=False)
-
-        return data
-
-
-class BranchNtcVars:
-    """
-    Struct to store the branch related vars
-    """
-
-    def __init__(self, nt: int, n_elm: int):
-        """
-        BranchVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of branches
-        """
-        self.flows = np.zeros((nt, n_elm), dtype=object)
-        self.flow_slacks_pos = np.zeros((nt, n_elm), dtype=object)
-        self.flow_slacks_neg = np.zeros((nt, n_elm), dtype=object)
-        self.tap_angles = np.zeros((nt, n_elm), dtype=object)
-        self.flow_constraints_ub = np.zeros((nt, n_elm), dtype=object)
-        self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
-
-        self.rates = np.zeros((nt, n_elm), dtype=float)
-        self.loading = np.zeros((nt, n_elm), dtype=float)
-
-        self.contingency_flow_data: List[Tuple[int, int, Union[float, LpVar]]] = list()
-
-    def get_values(self, Sbase: float) -> "BranchNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: BranchVars
-        """
-        nt, n_elm = self.flows.shape
-        data = BranchNtcVars(nt=nt, n_elm=n_elm)
-
-        data.rates = self.rates
-
-        for t in range(nt):
-            for i in range(n_elm):
-                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
-                data.flow_slacks_pos[t, i] = get_lp_var_value(self.flow_slacks_pos[t, i]) * Sbase
-                data.flow_slacks_neg[t, i] = get_lp_var_value(self.flow_slacks_neg[t, i]) * Sbase
-                data.tap_angles[t, i] = get_lp_var_value(self.tap_angles[t, i])
-                data.flow_constraints_ub[t, i] = get_lp_var_value(self.flow_constraints_ub[t, i])
-                data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
-
-        for i in range(len(self.contingency_flow_data)):
-            m, c, var = self.contingency_flow_data[i]
-            val = get_lp_var_value(var)
-            self.contingency_flow_data[i] = (m, c, val)
-
-        # format the arrays appropriately
-        data.flows = data.flows.astype(float, copy=False)
-        data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
-        data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
-        data.tap_angles = data.tap_angles.astype(float, copy=False)
-
-        # compute loading
-        data.loading = data.flows / (data.rates + 1e-20)
-
-        return data
-
-    def add_contingency_flow(self, m: int, c: int, flow_var: LpVar):
-        """
-
-        :param m:
-        :param c:
-        :param flow_var:
-        :return:
-        """
-        self.contingency_flow_data.append((m, c, flow_var))
-
-
-class HvdcNtcVars:
-    """
-    Struct to store the generation vars
-    """
-
-    def __init__(self, nt: int, n_elm: int):
-        """
-        GenerationVars structure
-        :param nt: Number of time steps
-        :param n_elm: Number of branches
-        """
-        self.flows = np.zeros((nt, n_elm), dtype=object)
-
-        self.rates = np.zeros((nt, n_elm), dtype=float)
-        self.loading = np.zeros((nt, n_elm), dtype=float)
-
-    def get_values(self, Sbase: float) -> "HvdcNtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: HvdcVars
-        """
-        nt, n_elm = self.flows.shape
-        data = HvdcNtcVars(nt=nt, n_elm=n_elm)
-        data.rates = self.rates
-
-        for t in range(nt):
-            for i in range(n_elm):
-                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
-
-        # format the arrays appropriately
-        data.flows = data.flows.astype(float, copy=False)
-
-        data.loading = data.flows / (data.rates + 1e-20)
-
-        return data
-
-
-class NtcVars:
-    """
-    Structure to host the opf variables
-    """
-
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, model: LpModel):
-        """
-        Constructor
-        :param nt: number of time steps
-        :param nbus: number of nodes
-        :param ng: number of generators
-        :param nb: number of batteries
-        :param nl: number of loads
-        :param nbr: number of branches
-        :param n_hvdc: number of HVDC
-        :param model: LpModel instance
-        """
-        self.nt = nt
-        self.nbus = nbus
-        self.ng = ng
-        self.nb = nb
-        self.nl = nl
-        self.nbr = nbr
-        self.n_hvdc = n_hvdc
-        self.model = model
-
-        self.acceptable_solution = False
-
-        self.bus_vars = BusNtcVars(nt=nt, n_elm=nbus)
-        self.load_vars = LoadNtcVars(nt=nt, n_elm=nl)
-        self.gen_vars = GenerationNtcVars(nt=nt, n_elm=ng)
-        self.batt_vars = BatteryNtcVars(nt=nt, n_elm=nb)
-        self.branch_vars = BranchNtcVars(nt=nt, n_elm=nbr)
-        self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
-
-        # power shift
-        self.power_shift = np.zeros((nt, 1), dtype=object)
-
-    def get_values(self, Sbase: float) -> "NtcVars":
-        """
-        Return an instance of this class where the arrays content are not LP vars but their value
-        :return: OpfVars instance
-        """
-
-        nt = self.nt
-
-        data = NtcVars(nt=self.nt,
-                       nbus=self.nbus,
-                       ng=self.ng,
-                       nb=self.nb,
-                       nl=self.nl,
-                       nbr=self.nbr,
-                       n_hvdc=self.n_hvdc,
-                       model=self.model)
-
-        data.bus_vars = self.bus_vars.get_values(Sbase)
-        data.load_vars = self.load_vars.get_values(Sbase)
-        data.gen_vars = self.gen_vars.get_values(Sbase)
-        data.batt_vars = self.batt_vars.get_values(Sbase)
-        data.branch_vars = self.branch_vars.get_values(Sbase)
-        data.hvdc_vars = self.hvdc_vars.get_values(Sbase)
-
-        # todo: check if acceptable_solution must to be an array, one solution per hour
-        data.acceptable_solution = self.acceptable_solution
-
-        for t in range(nt):
-            data.power_shift[t] = get_lp_var_value(self.power_shift[t])
-
-        # format the arrays appropriately
-        data.power_shift = data.power_shift.astype(float, copy=False)
-
-        return data
 
 def get_reference_per_bus(bus_data_t: BusData,
                           gen_data_t: GeneratorData,
@@ -639,6 +313,245 @@ def get_nodal_proportions(nbus: int,
     return proportions, sense, p_max, p_min
 
 
+class BusNtcVars:
+    """
+    Struct to store the bus related vars
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        BusVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.theta = np.zeros((nt, n_elm), dtype=object)
+        self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
+        self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
+
+        # nodal load
+        self.load_p = np.zeros((nt, n_elm), dtype=float)
+        self.load_shedding = np.zeros((nt, n_elm), dtype=object)
+
+        # nodal gen
+        self.inj_p = np.zeros((nt, n_elm), dtype=float)
+        self.inj_delta = np.zeros((nt, n_elm), dtype=object)
+
+
+    def get_values(self, Sbase: float) -> "BusNtcVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: BusVars
+        """
+        nt, n_elm = self.theta.shape
+        data = BusNtcVars(nt=nt, n_elm=n_elm)
+
+        data.shadow_prices = self.shadow_prices
+        data.load_p = self.load_p * Sbase
+
+        for t in range(nt):
+
+            for i in range(n_elm):
+                data.theta[t, i] = get_lp_var_value(self.theta[t, i])
+                data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
+
+                data.load_shedding[t, i] = get_lp_var_value(self.load_shedding[t, i]) * Sbase
+
+                data.inj_p[t, i] = get_lp_var_value(self.inj_p[t, i]) * Sbase
+                data.inj_delta[t, i] = get_lp_var_value(self.inj_delta[t, i])
+
+        # format the arrays appropriately
+        data.theta = data.theta.astype(float, copy=False)
+
+        data.load_shedding = data.load_shedding.astype(float, copy=False)
+
+        data.inj_p = data.inj_p.astype(float, copy=False)
+        data.inj_delta = data.inj_delta.astype(float, copy=False)
+
+        data.power_shift = data.power_shift.astype(float, copy=False)
+
+        return data
+
+
+class BranchNtcVars:
+    """
+    Struct to store the branch related vars
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        BranchVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.flows = np.zeros((nt, n_elm), dtype=object)
+        self.flow_slacks_pos = np.zeros((nt, n_elm), dtype=object)
+        self.flow_slacks_neg = np.zeros((nt, n_elm), dtype=object)
+        self.tap_angles = np.zeros((nt, n_elm), dtype=object)
+        self.flow_constraints_ub = np.zeros((nt, n_elm), dtype=object)
+        self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
+
+        self.rates = np.zeros((nt, n_elm), dtype=float)
+        self.loading = np.zeros((nt, n_elm), dtype=float)
+
+        self.monitor = np.zeros((nt, n_elm), dtype=bool)
+        self.monitor_type = np.zeros((nt, n_elm), dtype=object)
+
+        self.contingency_flow_data: List[Tuple[int, int, Union[float, LpVar]]] = list()
+
+    def get_values(self, Sbase: float) -> "BranchNtcVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: BranchVars
+        """
+        nt, n_elm = self.flows.shape
+        data = BranchNtcVars(nt=nt, n_elm=n_elm)
+
+        data.rates = self.rates
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
+                data.flow_slacks_pos[t, i] = get_lp_var_value(self.flow_slacks_pos[t, i]) * Sbase
+                data.flow_slacks_neg[t, i] = get_lp_var_value(self.flow_slacks_neg[t, i]) * Sbase
+                data.tap_angles[t, i] = get_lp_var_value(self.tap_angles[t, i])
+                data.flow_constraints_ub[t, i] = get_lp_var_value(self.flow_constraints_ub[t, i])
+                data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
+
+        for i in range(len(self.contingency_flow_data)):
+            m, c, var = self.contingency_flow_data[i]
+            val = get_lp_var_value(var)
+            self.contingency_flow_data[i] = (m, c, val)
+
+        # format the arrays appropriately
+        data.flows = data.flows.astype(float, copy=False)
+        data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
+        data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
+        data.tap_angles = data.tap_angles.astype(float, copy=False)
+
+        # compute loading
+        data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+    def add_contingency_flow(self, m: int, c: int, flow_var: LpVar):
+        """
+
+        :param m:
+        :param c:
+        :param flow_var:
+        :return:
+        """
+        self.contingency_flow_data.append((m, c, flow_var))
+
+
+class HvdcNtcVars:
+    """
+    Struct to store the generation vars
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        GenerationVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of branches
+        """
+        self.flows = np.zeros((nt, n_elm), dtype=object)
+
+        self.rates = np.zeros((nt, n_elm), dtype=float)
+        self.loading = np.zeros((nt, n_elm), dtype=float)
+
+    def get_values(self, Sbase: float) -> "HvdcNtcVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: HvdcVars
+        """
+        nt, n_elm = self.flows.shape
+        data = HvdcNtcVars(nt=nt, n_elm=n_elm)
+        data.rates = self.rates
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
+
+        # format the arrays appropriately
+        data.flows = data.flows.astype(float, copy=False)
+
+        data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+
+class NtcVars:
+    """
+    Structure to host the opf variables
+    """
+
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, model: LpModel):
+        """
+        Constructor
+        :param nt: number of time steps
+        :param nbus: number of nodes
+        :param ng: number of generators
+        :param nb: number of batteries
+        :param nl: number of loads
+        :param nbr: number of branches
+        :param n_hvdc: number of HVDC
+        :param model: LpModel instance
+        """
+        self.nt = nt
+        self.nbus = nbus
+        self.ng = ng
+        self.nb = nb
+        self.nl = nl
+        self.nbr = nbr
+        self.n_hvdc = n_hvdc
+        self.model = model
+
+        self.acceptable_solution = False
+
+        self.bus_vars = BusNtcVars(nt=nt, n_elm=nbus)
+        self.branch_vars = BranchNtcVars(nt=nt, n_elm=nbr)
+        self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
+
+        # power shift
+        self.power_shift = np.zeros((nt, 1), dtype=object)
+
+    def get_values(self, Sbase: float) -> "NtcVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: OpfVars instance
+        """
+
+        nt = self.nt
+
+        data = NtcVars(nt=self.nt,
+                       nbus=self.nbus,
+                       ng=self.ng,
+                       nb=self.nb,
+                       nl=self.nl,
+                       nbr=self.nbr,
+                       n_hvdc=self.n_hvdc,
+                       model=self.model)
+
+        data.bus_vars = self.bus_vars.get_values(Sbase)
+        data.branch_vars = self.branch_vars.get_values(Sbase)
+        data.hvdc_vars = self.hvdc_vars.get_values(Sbase)
+
+        # todo: check if acceptable_solution must to be an array, one solution per hour
+        data.acceptable_solution = self.acceptable_solution
+
+        for t in range(nt):
+            data.power_shift[t] = get_lp_var_value(self.power_shift[t])
+
+        # format the arrays appropriately
+        data.power_shift = data.power_shift.astype(float, copy=False)
+
+        return data
+
+    def get_voltages(self) -> CxMat:
+        return np.ones((self.nt, self.nbus)) * np.exp(1j * self.bus_vars.theta)
+
+
 def add_linear_injections_formulation(t: Union[int, None],
                                       Sbase: float,
                                       gen_data_t: GeneratorData,
@@ -722,217 +635,6 @@ def add_linear_injections_formulation(t: Union[int, None],
     return f_obj
 
 
-def add_linear_battery_formulation(t: Union[int, None],
-                                   Sbase: float,
-                                   time_array: DateVec,
-                                   batt_data_t: BatteryData,
-                                   batt_vars: BatteryNtcVars,
-                                   prob: LpModel,
-                                   unit_commitment: bool,
-                                   ramp_constraints: bool,
-                                   skip_generation_limits: bool,
-                                   energy_0: Vec):
-    """
-    Add MIP generation formulation
-    :param t: time step, if None we assume single time step
-    :param Sbase: base power (100 MVA)
-    :param time_array: complete time array
-    :param batt_data_t: BatteryData structure
-    :param batt_vars: BatteryVars structure
-    :param prob: ORTools problem
-    :param unit_commitment: formulate unit commitment?
-    :param ramp_constraints: formulate ramp constraints?
-    :param skip_generation_limits: skip the generation limits?
-    :param energy_0: initial value of the energy stored
-    :return objective function
-    """
-    f_obj = 0.0
-
-    for k in range(batt_data_t.nelm):
-
-        if batt_data_t.active[k]:
-
-            # declare active power var (limits will be applied later)
-            batt_vars.p[t, k] = prob.add_var(0, 1e20, join("batt_p_", [t, k], "_"))
-
-            if batt_data_t.dispatchable[k]:
-
-                if unit_commitment:
-
-                    # declare unit commitment vars
-                    batt_vars.starting_up[t, k] = prob.add_int(0, 1, join("bat_starting_up_", [t, k], "_"))
-                    batt_vars.producing[t, k] = prob.add_int(0, 1, join("bat_producing_", [t, k], "_"))
-                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
-
-                    # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
-                        t, k]
-
-                    # start-up cost
-                    f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
-
-                    # power boundaries of the generator
-                    if not skip_generation_limits:
-                        prob.add_cst(
-                            cst=batt_vars.p[t, k] >= (
-                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
-                                t, k]),
-                            name=join("batt>=Pmin", [t, k], "_"))
-                        prob.add_cst(
-                            cst=batt_vars.p[t, k] <= (
-                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
-                                t, k]),
-                            name=join("batt<=Pmax", [t, k], "_"))
-
-                    if t is not None:
-                        if t == 0:
-                            prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - float(batt_data_t.active[k]),
-                                name=join("binary_alg1_", [t, k], "_"))
-                            prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg2_", [t, k], "_"))
-                        else:
-                            prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
-                                name=join("binary_alg3_", [t, k], "_"))
-                            prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg4_", [t, k], "_"))
-                else:
-                    # No unit commitment
-
-                    # Operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
-
-                    # power boundaries of the generator
-                    if not skip_generation_limits:
-                        batt_vars.p[t, k].SetLb(batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase)
-                        batt_vars.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
-
-                # compute the time increment in hours
-                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
-
-                if ramp_constraints and t is not None:
-                    if t > 0:
-
-                        # add the ramp constraints
-                        if batt_data_t.ramp_up[k] < batt_data_t.pmax[k] and \
-                                batt_data_t.ramp_down[k] < batt_data_t.pmax[k]:
-                            # if the ramp is actually sufficiently restrictive...
-                            # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
-                            prob.add_cst(
-                                cst=-batt_data_t.ramp_down[k] / Sbase * dt <= batt_vars.p[t, k] - batt_vars.p[t - 1, k])
-                            prob.add_cst(
-                                cst=batt_vars.p[t, k] - batt_vars.p[t - 1, k] <= batt_data_t.ramp_up[k] / Sbase * dt)
-
-                # # # set the energy  value Et = E(t - 1) + dt * Pb / eff
-                batt_vars.e[t, k] = prob.add_var(batt_data_t.e_min[k] / Sbase,
-                                                 batt_data_t.e_max[k] / Sbase,
-                                                 join("batt_e_", [t, k], "_"))
-
-                if t > 0:
-                    # energy decreases / increases with power · dt
-                    prob.add_cst(cst=batt_vars.e[t, k] ==
-                                     batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k],
-                                 name=join("batt_energy_", [t, k], "_"))
-                else:
-                    # set the initial energy value
-                    batt_vars.e[t, k] = energy_0[k] / Sbase
-
-            else:
-
-                # it is NOT dispatchable
-
-                # Operational cost (linear...)
-                f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
-
-                p = batt_data_t.p[k] / Sbase
-
-                # the generator is not dispatchable at time step
-                if p > 0:
-
-                    batt_vars.shedding[t, k] = prob.add_var(0, p, join("bat_shedding_", [t, k], "_"))
-
-                    prob.add_cst(
-                        cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase - batt_vars.shedding[t, k],
-                        name=join("batt==PB-PBslack", [t, k], "_"))
-
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
-
-                elif p < 0:
-                    # the negative sign is because P is already negative here
-                    batt_vars.shedding[t, k] = prob.add_var(0,
-                                                            -p,
-                                                            join("bat_shedding_", [t, k], "_"))
-
-                    prob.add_cst(
-                        cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
-                        name=join("batt==PB+PBslack", [t, k], "_"))
-
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.shedding[t, k]
-
-                else:
-                    # the generation value is exactly zero, pass
-                    pass
-
-                batt_vars.producing[t, k] = 1
-                batt_vars.shutting_down[t, k] = 0
-                batt_vars.starting_up[t, k] = 0
-
-        else:
-            # the generator is not available at time step
-            batt_vars.p[t, k] = 0.0
-
-    return f_obj
-
-
-def add_linear_load_formulation(t: Union[int, None],
-                                Sbase: float,
-                                load_data_t: LoadData,
-                                load_vars: LoadNtcVars,
-                                prob: LpModel):
-    """
-    Add MIP generation formulation
-    :param t: time step, if None we assume single time step
-    :param Sbase: base power (100 MVA)
-    :param load_data_t: BatteryData structure
-    :param load_vars: BatteryVars structure
-    :param prob: ORTools problem
-    :return objective function
-    """
-    f_obj = 0.0
-    for k in range(load_data_t.nelm):
-
-        if load_data_t.active[k]:
-
-            # store the load
-            load_vars.p[t, k] = load_data_t.S[k].real / Sbase
-
-            if load_vars.p[t, k] > 0.0:
-
-                # assign load shedding variable
-                load_vars.shedding[t, k] = prob.add_var(lb=0,
-                                                        ub=load_vars.p[t, k],
-                                                        name=join("load_shedding_", [t, k], "_"))
-
-                # minimize the load shedding
-                f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
-
-
-            else:
-                # the load is negative, won't shed?
-                load_vars.shedding[t, k] = 0.0
-
-        else:
-            # the load is not available at time step
-            load_vars.shedding[t, k] = 0.0
-
-    return f_obj
-
-
 def add_linear_branches_formulation(t: int,
                                     Sbase: float,
                                     branch_data_t: BranchData,
@@ -972,9 +674,10 @@ def add_linear_branches_formulation(t: int,
         if branch_data_t.active[m]:
 
             # declare the flow LPVar
-            branch_vars.flows[t, m] = prob.add_var(lb=-inf,
-                                                   ub=inf,
-                                                   name=join("flow_", [t, m], "_"))
+            branch_vars.flows[t, m] = prob.add_var(
+                lb=-inf,
+                ub=inf,
+                name=join("flow_", [t, m], "_"))
 
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
@@ -989,14 +692,17 @@ def add_linear_branches_formulation(t: int,
             if branch_data_t.control_mode[m] == TransformerControlType.Pt:
 
                 # add angle
-                branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
-                                                            ub=branch_data_t.tap_angle_max[m],
-                                                            name=join("tap_ang_", [t, m], "_"))
+                branch_vars.tap_angles[t, m] = prob.add_var(
+                    lb=branch_data_t.tap_angle_min[m],
+                    ub=branch_data_t.tap_angle_max[m],
+                    name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                flow_ctr = branch_vars.flows[t, m] == bk * (
-                        vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
-                prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
+                prob.add_cst(
+                    cst=branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] -
+                                                         vars_bus.theta[t, to] +
+                                                         branch_vars.tap_angles[t, m]),
+                    name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
                 vars_bus.inj_p[t, fr] = -bk * branch_vars.tap_angles[t, m]
@@ -1004,28 +710,40 @@ def add_linear_branches_formulation(t: int,
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to])
-                prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_", [t, m], "_"))
+                prob.add_cst(
+                    cst=branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] -
+                                                         vars_bus.theta[t, to]),
+                    name=join("Branch_flow_set_", [t, m], "_"))
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m]:
-                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
-                                                                 name=join("flow_slack_pos_", [t, m], "_"))
-                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
-                                                                 name=join("flow_slack_neg_", [t, m], "_"))
+                branch_vars.flow_slacks_pos[t, m] = prob.add_var(
+                    lb=0,
+                    ub=inf,
+                    name=join("flow_slack_pos_", [t, m], "_"))
+
+                branch_vars.flow_slacks_neg[t, m] = prob.add_var(
+                    lb=0,
+                    ub=inf,
+                    name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] <= branch_data_t.rates[m] / Sbase
+                branch_vars.flow_constraints_ub[t, m] = branch_vars.flows[t, m] + \
+                                                        branch_vars.flow_slacks_pos[t, m] - \
+                                                        branch_vars.flow_slacks_neg[t, m] \
+                                                        <= branch_data_t.rates[m] / Sbase
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_ub[t, m],
                     name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + branch_vars.flow_slacks_pos[t, m] - \
-                                                        branch_vars.flow_slacks_neg[t, m] >= -branch_data_t.rates[m] / Sbase
-                prob.add_cst(cst=branch_vars.flow_constraints_lb[t, m],
-                             name=join("br_flow_lower_lim_", [t, m]))
+                branch_vars.flow_constraints_lb[t, m] = branch_vars.flows[t, m] + \
+                                                        branch_vars.flow_slacks_pos[t, m] - \
+                                                        branch_vars.flow_slacks_neg[t, m] \
+                                                        >= -branch_data_t.rates[m] / Sbase
+                prob.add_cst(
+                    cst=branch_vars.flow_constraints_lb[t, m],
+                    name=join("br_flow_lower_lim_", [t, m]))
 
                 # add to the objective function
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
@@ -1080,8 +798,8 @@ def add_linear_hvdc_formulation(t: int,
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
                 prob.add_cst(
-                    cst=hvdc_vars.flows[t, m] == P0 + hvdc_data_t.angle_droop[m] * (
-                                vars_bus.theta[t, fr] - vars_bus.theta[t, to]),
+                    cst=hvdc_vars.flows[t, m] == P0 + hvdc_data_t.angle_droop[m] * (vars_bus.theta[t, fr] -
+                                                                                    vars_bus.theta[t, to]),
                     name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
@@ -1164,6 +882,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           buses_areas_1: IntVec = None,
                           buses_areas_2: IntVec = None,
                           transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
+                          monitor_only_sensitive_branches: bool = True,
+                          monitor_only_ntc_load_rule_branches: bool = False,
                           logger: Logger = Logger(),
                           progress_text: Union[None, Callable[[str], None]] = None,
                           progress_func: Union[None, Callable[[float], None]] = None,
@@ -1176,14 +896,10 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param zonal_grouping: Zonal grouping?
     :param skip_generation_limits: Skip the generation limits?
     :param consider_contingencies: Consider the contingencies?
-    :param unit_Commitment: Formulate unit commitment?
-    :param ramp_constraints: Formulate ramp constraints?
     :param lodf_threshold:
-    :param maximize_inter_area_flow:
     :param buses_areas_1:
     :param buses_areas_2:
     :param transfer_method:
-    :param energy_0:
     :param logger: logger instance
     :param progress_text:
     :param progress_func:
@@ -1242,6 +958,20 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
         else:
             LODF = None
+
+        # todo: borrar
+        # compute monitorization logic  ----------------------------------------------------------------------------
+        # monitor, monitor_type, branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
+        #     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+        #     monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
+        #     monitor_loading=nc.branch_data.monitor_loading,
+        #     alpha=,
+        #     alpha_n1=,
+        #     branch_sensitivity_threshold=,
+        #     base_flows=,
+        #     structural_ntc=,
+        #     ntc_load_rule=,
+        #     rates=)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
@@ -1302,6 +1032,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             # this is the copper plate approach
             pass
 
+        # todo: delete this??
         # production equals demand ---------------------------------------------------------------------------------
         lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
                               lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=

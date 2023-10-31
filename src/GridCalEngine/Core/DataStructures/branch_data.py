@@ -20,6 +20,7 @@ import scipy.sparse as sp
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
+from typing import List, Tuple
 
 
 def get_bus_indices(C_branch_bus: sp.csc_matrix):
@@ -332,6 +333,22 @@ class BranchData:
         :return:
         """
         return np.where(self.contingency_enabled == 1)[0]
+
+    def get_inter_areas(self, buses_areas_1, buses_areas_2):
+        """
+        Get the Branches that join two areas
+        :param buses_areas_1: Area from
+        :param buses_areas_2: Area to
+        :return: List of (branch index, flow sense w.r.t the area exchange)
+        """
+
+        lst: List[Tuple[int, float]] = list()
+        for k in range(self.nbr):
+            if self.F[k] in buses_areas_1 and self.T[k] in buses_areas_2:
+                lst.append((k, 1.0))
+            elif self.F[k] in buses_areas_2 and self.T[k] in buses_areas_1:
+                lst.append((k, -1.0))
+        return lst
 
     def to_df(self) -> pd.DataFrame:
         """

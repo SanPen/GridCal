@@ -34,7 +34,6 @@ from GridCalEngine.basic_structures import SolverType
 from GridCalEngine.basic_structures import Logger
 
 
-
 class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
@@ -102,6 +101,15 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             apply_temperature=self.pf_options.apply_temperature_correction,
             branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
+        # get the inter-area branches and their sign
+        inter_area_branches = numerical_circuit.branch_data.get_inter_areas(
+            buses_areas_1=self.options.area_from_bus_idx,
+            buses_areas_2=self.options.area_to_bus_idx)
+
+        inter_area_hvdc = numerical_circuit.hvdc_data.get_inter_areas(
+            buses_areas_1=self.options.area_from_bus_idx,
+            buses_areas_2=self.options.area_to_bus_idx)
+
         self.progress_text.emit('Running linear analysis...')
 
         # declare the linear analysis
@@ -131,7 +139,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         opf_vars = run_linear_ntc_opf_ts(
             grid=self.grid,
-            time_indices=[None],
+            time_indices=None,
             solver_type=self.options.mip_solver,
             zonal_grouping=self.options.zonal_grouping,
             skip_generation_limits=self.options.skip_generation_limits,
@@ -143,22 +151,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             logger=self.logger,
             progress_text=self.progress_text.emit,
             progress_func=self.progress_signal.emit,
-            export_model_fname=self.options.export_model_fname)
-
-        self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
-        self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
-        self.results.load_shedding = opf_vars.load_vars.shedding
-        self.results.battery_power = opf_vars.batt_vars.p
-        self.results.battery_energy = opf_vars.batt_vars.e
-        self.results.generator_power = opf_vars.gen_vars.p
-        self.results.Sf = opf_vars.branch_vars.flows
-        self.results.St = -opf_vars.branch_vars.flows
-        self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
-        self.results.loading = opf_vars.branch_vars.loading
-        self.results.phase_shift = opf_vars.branch_vars.tap_angles
-        # self.results.Sbus = problem.get_power_injections()
-        self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
-        self.results.hvdc_loading = opf_vars.hvdc_vars.loading
+            export_model_fname=None)
 
         idx_w = np.argmax(np.abs(alpha_n1), axis=1)
         alpha_w = np.take_along_axis(alpha_n1, np.expand_dims(idx_w, axis=1), axis=1)
@@ -175,29 +168,26 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             ntc_load_rule=self.options.ntc_load_rule,
             branch_control_modes=numerical_circuit.branch_data.control_mode,
             hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
-            Sbus=problem.get_power_injections(),
-            voltage=problem.get_voltage(),
+            Sbus=opf_vars.bus_vars.inj_p[0, :],
+            voltage=opf_vars.get_voltages()[0, :],
             battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-            controlled_generation_power=problem.get_generator_power(),
-            Sf=problem.get_branch_power_from(),
-            loading=problem.get_loading(),
-            solved=bool(solved),
+            # controlled_generation_power=problem.get_generator_power(),
+            Sf=opf_vars.branch_vars.flows[0, :],
+            loading=opf_vars.branch_vars.loading[0, :],
+            solved=bool(opf_vars.acceptable_solution),
             bus_types=numerical_circuit.bus_types,
-            hvdc_flow=problem.get_hvdc_flow(),
-            hvdc_loading=problem.get_hvdc_loading(),
-            phase_shift=problem.get_phase_angles(),
-            generation_delta=problem.get_generator_delta(),
-            hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
-            inter_area_branches=problem.inter_area_branches,
-            inter_area_hvdc=problem.inter_area_hvdc,
+            hvdc_flow=opf_vars.hvdc_vars.flows[0, :],
+            hvdc_loading=opf_vars.hvdc_vars.loading[0, :],
+            phase_shift=opf_vars.branch_vars.tap_angles[0, :],
+            # generation_delta=problem.get_generator_delta(),
+            # hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdc=inter_area_hvdc,
             alpha=alpha,
             alpha_n1=alpha_n1,
             alpha_w=alpha_w,
-            monitor=problem.monitor,
-            monitor_loading=problem.monitor_loading,
-            monitor_by_sensitivity=problem.monitor_by_sensitivity,
-            monitor_by_unrealistic_ntc=problem.monitor_by_unrealistic_ntc,
-            monitor_by_zero_exchange=problem.monitor_by_zero_exchange,
+            monitor=opf_vars.branch_vars.monitor,
+            monitor_type=opf_vars.branch_vars.monitor_type,
             contingency_branch_flows_list=problem.get_contingency_flows_list(),
             contingency_branch_indices_list=problem.contingency_indices_list,
             contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
@@ -217,6 +207,22 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             loading_threshold=self.options.loading_threshold_to_report,
             reversed_sort_loading=self.options.reversed_sort_loading,
         )
+
+
+        self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
+        self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
+        self.results.load_shedding = opf_vars.load_vars.shedding
+        self.results.battery_power = opf_vars.batt_vars.p[0, :]
+        self.results.battery_energy = opf_vars.batt_vars.e[0, :]
+        self.results.generator_power = opf_vars.gen_vars.p[0, :]
+        self.results.Sf = opf_vars.branch_vars.flows[0, :]
+        self.results.St = -opf_vars.branch_vars.flows[0, :]
+        self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[0, :]
+        self.results.loading = opf_vars.branch_vars.loading[0, :]
+        self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
+        # self.results.Sbus = problem.get_power_injections()
+        self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
+        self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
         self.progress_text.emit('Creating reports...')
         self.results.create_all_reports(

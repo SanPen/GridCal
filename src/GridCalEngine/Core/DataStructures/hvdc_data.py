@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import Tuple
+from typing import List, Tuple
 import scipy.sparse as sp
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import HvdcControlType
@@ -243,6 +243,22 @@ class HvdcData:
 
         # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
         return Pbus, Losses, Pf, Pt, loading, nfree
+
+    def get_inter_areas(self, buses_areas_1, buses_areas_2):
+        """
+        Get the hvdcs that join two areas
+        :param buses_areas_1: Area from
+        :param buses_areas_2: Area to
+        :return: List of (branch index, flow sense w.r.t the area exchange)
+        """
+
+        lst: List[Tuple[int, float]] = list()
+        for k in range(self.nbr):
+            if self.F[k] in buses_areas_1 and self.T[k] in buses_areas_2:
+                lst.append((k, 1.0))
+            elif self.F[k] in buses_areas_2 and self.T[k] in buses_areas_1:
+                lst.append((k, -1.0))
+        return lst
 
     def __len__(self) -> int:
         """
