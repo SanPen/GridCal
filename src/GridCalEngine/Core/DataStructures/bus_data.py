@@ -42,6 +42,7 @@ class BusData:
         self.installed_power: Vec = np.zeros(nbus, dtype=float)
         self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
         self.areas: IntVec = np.empty(nbus, dtype=int)
+        self.substations: IntVec = np.empty(nbus, dtype=int)
 
         self.original_idx: IntVec = np.zeros(nbus, dtype=int)
 
@@ -69,6 +70,7 @@ class BusData:
         data.installed_power = self.installed_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
         data.areas = self.areas[elm_idx]
+        data.substations = self.substations[elm_idx]
 
         data.original_idx = elm_idx
 
@@ -97,6 +99,7 @@ class BusData:
         data.installed_power = self.installed_power.copy()
         data.is_dc = self.is_dc.copy()
         data.areas = self.areas.copy()
+        data.substations = self.substations.copy()
 
         data.original_idx = self.original_idx.copy()
 

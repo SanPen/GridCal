@@ -16,6 +16,26 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+# import time
+# import numpy as np
+# import scipy.sparse as sp
+# import pypardiso as pp
+#
+# np.random.seed(0)
+# n = 4000
+# repetitions = 50
+#
+# start = time.time()
+# for r in range(repetitions):
+#     A = sp.csr_matrix(sp.rand(n, n, 0.01)) + sp.diags(np.random.rand(n) * 10.0, shape=(n, n))
+#     b = np.random.rand(n)
+#     print(r)
+#     x = pp.spsolve(A, b)
+# end = time.time()
+# dt = end - start
+#
+# print('pardiso', '  total', dt, 's, average:', dt / repetitions, 's')
+
 
 import os
 import time

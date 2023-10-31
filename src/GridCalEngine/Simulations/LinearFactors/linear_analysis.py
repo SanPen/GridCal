@@ -44,98 +44,44 @@ def make_contingency_flows(base_flow: Vec,
     :param threshold: PTDF and LODF threshold
     :return: contingency flows (number of branches)
     """
-    nm = lodf_factors.shape[0]
-    nc = lodf_factors.shape[1]
-    ni = ptdf_factors.shape[1]
-    flow_n1 = np.zeros(nm)
+    branch_number = lodf_factors.shape[0]
+    branch_contingency_number = lodf_factors.shape[1]
+    injection_number = ptdf_factors.shape[1]
+    flow_n1 = np.zeros(branch_number)
 
-    if nm < 100:
-        for m in range(nm):
-            for c in range(nc):
+    if branch_number < 100:
+        for m in range(branch_number):
+
+            # copy the base flow
+            flow_n1[m] = base_flow[m]
+
+            # add the branch contingency influences
+            for c in range(branch_contingency_number):
                 if abs(lodf_factors[m, c]) > threshold:
-                    flow_n1[m] = base_flow[m] + lodf_factors[m, c] * base_flow[c]
+                    flow_n1[m] += lodf_factors[m, c] * base_flow[c]
 
-        for m in range(nm):
-            for c in range(ni):
+            # add the injection influences
+            for c in range(injection_number):
                 if abs(ptdf_factors[m, c]) > threshold:
-                    flow_n1[m] = base_flow[m] + ptdf_factors[m, c] * injections[c]
+                    flow_n1[m] += ptdf_factors[m, c] * injections[c]
     else:
-        for m in nb.prange(nm):
-            for c in range(nc):
-                if abs(lodf_factors[m, c]) > threshold:
-                    flow_n1[m] = base_flow[m] + lodf_factors[m, c] * base_flow[c]
 
-        for m in nb.prange(nm):
-            for c in range(ni):
+        # parallel version
+
+        for m in nb.prange(branch_number):
+
+            # copy the base flow
+            flow_n1[m] = base_flow[m]
+
+            for c in range(branch_contingency_number):
+                if abs(lodf_factors[m, c]) > threshold:
+                    flow_n1[m] += lodf_factors[m, c] * base_flow[c]
+
+            for c in range(injection_number):
                 if abs(ptdf_factors[m, c]) > threshold:
-                    flow_n1[m] = base_flow[m] + ptdf_factors[m, c] * injections[c]
+                    flow_n1[m] += ptdf_factors[m, c] * injections[c]
 
     return flow_n1
-
-
-class LinearMultiContingency:
-    """
-    LinearMultiContingency
-    """
-
-    def __init__(
-            self,
-            branch_indices: IntVec,
-            bus_indices: IntVec,
-            lodf_factors: Mat,
-            ptdf_factors: Mat,
-            injections_factor: Vec):
-        """
-        Linear multi contingency object
-        :param branch_indices: contingency branch indices.
-        :param bus_indices: contingency bus indices.
-        :param lodf_factors: LODF factors applicable (all_branches, contingency branches).
-        :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
-        :param injections_factor: Injection contingency factors (len(bus indices))
-        """
-
-        assert len(bus_indices) == len(injections_factor)
-
-        self.branch_indices: IntVec = branch_indices
-        self.bus_indices: IntVec = bus_indices
-        self.lodf_factors: Mat = lodf_factors
-        self.ptdf_factors: Mat = ptdf_factors
-        self.injections_factor: Vec = injections_factor
-
-    def has_injection_contingencies(self) -> bool:
-        """
-        Check if this multi-contingency has bus injection modifications
-        :return: true / false
-        """
-        return len(self.bus_indices) > 0
-
-    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
-        """
-        Get contingency flows
-        :param base_flow: Base branch flows (nbranch)
-        :param injections: Bus injections increments (nbus)
-        :return: New flows (nbranch)
-        """
-        # res = base_flow.copy()
-        #
-        # if len(self.branch_indices):
-        #     res += self.lodf_factors @ base_flow[self.branch_indices]
-        #
-        # if len(self.bus_indices):
-        #     res += self.ptdf_factors @ (self.injections_factor * injections[self.bus_indices])
-        #
-        # return res
-
-        if len(self.bus_indices):
-            injections = self.injections_factor * injections[self.bus_indices]
-        else:
-            injections = np.zeros(self.ptdf_factors.shape[1])
-
-        return make_contingency_flows(base_flow=base_flow,
-                                      lodf_factors=self.lodf_factors,
-                                      ptdf_factors=self.ptdf_factors,
-                                      injections=injections,
-                                      threshold=threshold)
 
 
 def compute_acptdf(Ybus: sp.csc_matrix,
@@ -328,6 +274,62 @@ def make_transfer_limits(ptdf: Mat,
     return tmc
 
 
+class LinearMultiContingency:
+    """
+    LinearMultiContingency
+    """
+
+    def __init__(self,
+                 branch_indices: IntVec,
+                 bus_indices: IntVec,
+                 lodf_factors: Mat,
+                 ptdf_factors: Mat,
+                 injections_factor: Vec):
+        """
+        Linear multi contingency object
+        :param branch_indices: contingency branch indices.
+        :param bus_indices: contingency bus indices.
+        :param lodf_factors: LODF factors applicable (all_branches, contingency branches).
+        :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
+        :param injections_factor: Injection contingency factors (len(bus indices))
+        """
+
+        assert len(bus_indices) == len(injections_factor)
+
+        self.branch_indices: IntVec = branch_indices
+        self.bus_indices: IntVec = bus_indices
+        self.lodf_factors: Mat = lodf_factors
+        self.ptdf_factors: Mat = ptdf_factors
+        self.injections_factor: Vec = injections_factor
+
+    def has_injection_contingencies(self) -> bool:
+        """
+        Check if this multi-contingency has bus injection modifications
+        :return: true / false
+        """
+        return len(self.bus_indices) > 0
+
+    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
+        """
+        Get contingency flows
+        :param base_flow: Base branch flows (nbranch)
+        :param injections: Bus injections increments (nbus)
+        :param threshold: PTDF and LODF threshold to consider a value
+        :return: New flows (nbranch)
+        """
+
+        if len(self.bus_indices):
+            injections = self.injections_factor * injections[self.bus_indices]
+        else:
+            injections = np.zeros(self.ptdf_factors.shape[1])
+
+        return make_contingency_flows(base_flow=base_flow,
+                                      lodf_factors=self.lodf_factors,
+                                      ptdf_factors=self.ptdf_factors,
+                                      injections=injections,
+                                      threshold=threshold)
+
+
 class LinearMultiContingencies:
     """
     LinearMultiContingencies
@@ -424,7 +426,9 @@ class LinearMultiContingencies:
                     bus_indices=bus_contingency_indices,
                     lodf_factors=lodf_factors,
                     ptdf_factors=ptdf_factors,
-                    injections_factor=injections_factors))
+                    injections_factor=injections_factors
+                )
+            )
 
 
 class LinearAnalysis:
