@@ -17,9 +17,9 @@
 
 import numpy as np
 import numba as nb
+from typing import Tuple
 import scipy.sparse as sp
 from scipy.sparse import lil_matrix, diags, csc_matrix, csr_matrix
-from typing import Tuple
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 

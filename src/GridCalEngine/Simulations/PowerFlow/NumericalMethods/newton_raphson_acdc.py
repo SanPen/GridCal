@@ -25,7 +25,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses, compute_power
-from GridCalEngine.basic_structures import ReactivePowerControlMode
+from GridCalEngine.basic_structures import ReactivePowerControlMode, CxVec
 import GridCalEngine.Simulations.sparse_solve as gcsp
 
 

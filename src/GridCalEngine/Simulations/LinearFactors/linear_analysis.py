@@ -21,7 +21,6 @@ import scipy.sparse as sp
 from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
 
-import GridCalEngine.Core.Devices as dev
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
