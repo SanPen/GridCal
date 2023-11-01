@@ -531,7 +531,6 @@ class EditorGraphicsView(QGraphicsView):
         """
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
-            graphic_obj = None
             bus_data = toQBytesArray('Bus')
             tr3w_data = toQBytesArray('3W-Transformer')
 
@@ -549,29 +548,36 @@ class EditorGraphicsView(QGraphicsView):
                           country=self.diagram_scene.circuit.countries[0],
                           vnom=self.editor.default_bus_voltage)
 
-                graphic_obj = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
-                obj.graphic_obj = graphic_obj
+                graphic_object = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_bus(obj)
 
                 # add to the diagram list
-                self.editor.update_diagram_element(device=obj, x=x0, y=y0,
-                                                   w=graphic_obj.w, h=graphic_obj.h, r=0,
-                                                   graphic_object=graphic_obj)
+                self.editor.update_diagram_element(device=obj,
+                                                   x=x0,
+                                                   y=y0,
+                                                   w=graphic_object.w,
+                                                   h=graphic_object.h,
+                                                   r=0,
+                                                   graphic_object=graphic_object)
 
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
                 obj = Transformer3W(name=name)
-                graphic_obj = self.add_transformer_3w(elm=obj, x=x0, y=y0)
-                obj.graphic_obj = graphic_obj
+                graphic_object = self.add_transformer_3w(elm=obj, x=x0, y=y0)
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_transformer3w(obj)
 
                 # add to the diagram list
-                self.editor.update_diagram_element(device=obj, x=x0, y=y0, w=graphic_obj.w, h=graphic_obj.h, r=0,
-                                                   graphic_object=graphic_obj)
+                self.editor.update_diagram_element(device=obj,
+                                                   x=x0,
+                                                   y=y0,
+                                                   w=graphic_object.w,
+                                                   h=graphic_object.h,
+                                                   r=0,
+                                                   graphic_object=graphic_object)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -617,9 +623,10 @@ class EditorGraphicsView(QGraphicsView):
         :return: BusGraphicItem
         """
 
-        graphic_obj = BusGraphicItem(scene=self.scene(), editor=self.editor, bus=bus, x=x, y=y, h=h, w=w)
-        self.diagram_scene.addItem(graphic_obj)
-        return graphic_obj
+        graphic_object = BusGraphicItem(scene=self.scene(), editor=self.editor,
+                                        bus=bus, x=x, y=y, h=h, w=w)
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
 
     def add_transformer_3w(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
         """
@@ -629,10 +636,10 @@ class EditorGraphicsView(QGraphicsView):
         :param y: y coordinate
         :return: Transformer3WGraphicItem
         """
-        graphic_obj = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=elm)
-        graphic_obj.setPos(QPoint(x, y))
-        self.diagram_scene.addItem(graphic_obj)
-        return graphic_obj
+        graphic_object = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=elm)
+        graphic_object.setPos(QPoint(x, y))
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -724,7 +731,7 @@ class BusBranchEditorWidget(QSplitter):
         splitter2.setStretchFactor(0, 1)
         splitter2.setStretchFactor(1, 5)
 
-        self.started_branch = None
+        self.started_branch: Union[LineGraphicItem, None] = None
 
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
@@ -759,63 +766,65 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     # add the graphic object to the diagram view
-                    graphic_obj = self.editor_graphics_view.add_bus(bus=location.api_object,
-                                                                    x=location.x,
-                                                                    y=location.y,
-                                                                    h=location.h,
-                                                                    w=location.w)
+                    graphic_object = self.editor_graphics_view.add_bus(bus=location.api_object,
+                                                                       x=location.x,
+                                                                       y=location.y,
+                                                                       h=location.h,
+                                                                       w=location.w)
 
                     # add circuit pointer to the bus graphic element
-                    graphic_obj.scene.circuit = self.circuit  # add pointer to the circuit
+                    graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
 
                     # create the bus children
-                    graphic_obj.create_children_widgets()
+                    graphic_object.create_children_widgets()
 
-                    graphic_obj.change_size(h=location.h,
-                                            w=location.w)
+                    graphic_object.change_size(h=location.h,
+                                               w=location.w)
 
                     # add buses refference for later
-                    bus_dict[idtag] = graphic_obj
-                    # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                    points_group.locations[idtag].graphic_object = graphic_obj
+                    bus_dict[idtag] = graphic_object
+                    points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.Transformer3WDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     elm: Transformer3W = location.api_object
 
-                    graphic_obj = self.editor_graphics_view.add_transformer_3w(elm=elm,
-                                                                               x=location.x,
-                                                                               y=location.y)
+                    graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm,
+                                                                                  x=location.x,
+                                                                                  y=location.y)
+
+                    bus_1_graphic_data = self.diagram.query_point(elm.bus1)
+                    bus_2_graphic_data = self.diagram.query_point(elm.bus2)
+                    bus_3_graphic_data = self.diagram.query_point(elm.bus3)
 
                     # add circuit pointer to the bus graphic element
-                    graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                    graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
-                    conn1 = WindingGraphicItem(fromPort=graphic_obj.terminals[0],
-                                               toPort=elm.bus1.graphic_obj.terminal,
-                                               diagramScene=self.diagramScene)
+                    conn1 = WindingGraphicItem(fromPort=graphic_object.terminals[0],
+                                               toPort=bus_1_graphic_data.graphic_object.terminal,
+                                               editor=self)
 
-                    graphic_obj.set_connection(i=0, bus=elm.bus1, conn=conn1)
+                    graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
-                    conn2 = WindingGraphicItem(fromPort=graphic_obj.terminals[1],
-                                               toPort=elm.bus2.graphic_obj.terminal,
-                                               diagramScene=self.diagramScene)
-                    graphic_obj.set_connection(i=1, bus=elm.bus2, conn=conn2)
+                    conn2 = WindingGraphicItem(fromPort=graphic_object.terminals[1],
+                                               toPort=bus_2_graphic_data.graphic_object.terminal,
+                                               editor=self)
+                    graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
-                    conn3 = WindingGraphicItem(fromPort=graphic_obj.terminals[2],
-                                               toPort=elm.bus3.graphic_obj.terminal,
-                                               diagramScene=self.diagramScene)
-                    graphic_obj.set_connection(i=2, bus=elm.bus3, conn=conn3)
+                    conn3 = WindingGraphicItem(fromPort=graphic_object.terminals[2],
+                                               toPort=bus_3_graphic_data.graphic_object.terminal,
+                                               editor=self)
+                    graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
-                    graphic_obj.set_position(x=location.x,
-                                             y=location.y)
+                    graphic_object.set_position(x=location.x,
+                                                y=location.y)
 
-                    graphic_obj.change_size(h=location.h,
-                                            w=location.w)
+                    graphic_object.change_size(h=location.h,
+                                               w=location.w)
 
-                    graphic_obj.update_conn()
-                    # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                    points_group.locations[idtag].graphic_object = graphic_obj
+                    graphic_object.update_conn()
+                    points_group.locations[idtag].graphic_object = graphic_object
 
             else:
                 # pass for now...
@@ -835,17 +844,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = LineGraphicItem(fromPort=terminal_from,
-                                                      toPort=terminal_to,
-                                                      diagramScene=self.diagramScene,
-                                                      api_object=branch)
+                        graphic_object = LineGraphicItem(fromPort=terminal_from,
+                                                         toPort=terminal_to,
+                                                         editor=self,
+                                                         api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.DCLineDevice.value:
 
@@ -858,17 +866,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = DcLineGraphicItem(fromPort=terminal_from,
-                                                        toPort=terminal_to,
-                                                        diagramScene=self.diagramScene,
-                                                        api_object=branch)
+                        graphic_object = DcLineGraphicItem(fromPort=terminal_from,
+                                                           toPort=terminal_to,
+                                                           editor=self,
+                                                           api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.HVDCLineDevice.value:
 
@@ -881,17 +888,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = HvdcGraphicItem(fromPort=terminal_from,
-                                                      toPort=terminal_to,
-                                                      diagramScene=self.diagramScene,
-                                                      api_object=branch)
+                        graphic_object = HvdcGraphicItem(fromPort=terminal_from,
+                                                         toPort=terminal_to,
+                                                         editor=self,
+                                                         api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.VscDevice.value:
 
@@ -904,17 +910,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = VscGraphicItem(fromPort=terminal_from,
-                                                     toPort=terminal_to,
-                                                     diagramScene=self.diagramScene,
-                                                     api_object=branch)
+                        graphic_object = VscGraphicItem(fromPort=terminal_from,
+                                                        toPort=terminal_to,
+                                                        editor=self,
+                                                        api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.UpfcDevice.value:
 
@@ -927,17 +932,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = UpfcGraphicItem(fromPort=terminal_from,
-                                                      toPort=terminal_to,
-                                                      diagramScene=self.diagramScene,
-                                                      api_object=branch)
+                        graphic_object = UpfcGraphicItem(fromPort=terminal_from,
+                                                         toPort=terminal_to,
+                                                         editor=self,
+                                                         api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.Transformer2WDevice.value:
 
@@ -950,17 +954,16 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_from = bus_f_graphic_obj.terminal
                         terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_obj = TransformerGraphicItem(fromPort=terminal_from,
-                                                             toPort=terminal_to,
-                                                             diagramScene=self.diagramScene,
-                                                             api_object=branch)
+                        graphic_object = TransformerGraphicItem(fromPort=terminal_from,
+                                                                toPort=terminal_to,
+                                                                editor=self,
+                                                                api_object=branch)
 
-                        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-                        terminal_from.hosting_connections.append(graphic_obj)
-                        terminal_to.hosting_connections.append(graphic_obj)
-                        graphic_obj.redraw()
-                        # location.graphic_object = graphic_obj  # locations is a deep copy (WTF!!!?)
-                        points_group.locations[idtag].graphic_object = graphic_obj
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
 
         # last pass: arange children
         for category, points_group in self.diagram.data.items():
@@ -1028,7 +1031,6 @@ class BusBranchEditorWidget(QSplitter):
             bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
 
             for bus_idtag, point in points_group.locations.items():
-
                 if point.graphic_object.isSelected():
                     idx, bus = bus_dict[bus_idtag]
                     lst.append((idx, bus, point.graphic_object))
@@ -1040,8 +1042,8 @@ class BusBranchEditorWidget(QSplitter):
         @param port:
         @return:
         """
-        self.started_branch = LineGraphicItem(fromPort=port, toPort=None, diagramScene=self.diagramScene)
-        self.started_branch.bus_from = port.parent
+        self.started_branch = LineGraphicItem(fromPort=port, toPort=None, editor=self)
+        # self.started_branch.bus_from = port.parent
         port.setZValue(0)
         port.process_callbacks(port.parent.pos() + port.pos())
 
@@ -1074,79 +1076,82 @@ class BusBranchEditorWidget(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         self.started_branch.bus_to = item.parent
 
-                        if isinstance(self.started_branch.bus_from.api_object, Bus) and \
-                                isinstance(self.started_branch.bus_to.api_object, Bus):
+                        if self.started_branch.fully_connected():
 
-                            if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
+                            if self.started_branch.should_be_a_converter():
                                 # different DC status -> VSC
 
                                 name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
-                                obj = VSC(bus_from=self.started_branch.bus_from.api_object,
-                                          bus_to=self.started_branch.bus_to.api_object,
+                                obj = VSC(bus_from=self.started_branch.get_bus_from(),
+                                          bus_to=self.started_branch.get_bus_to(),
                                           name=name)
 
-                                graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                             toPort=self.started_branch.toPort,
-                                                             diagramScene=self.diagramScene,
-                                                             api_object=obj)
-                                self.update_diagram_element(device=obj, graphic_object=graphic_obj)
+                                graphic_object = VscGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                toPort=self.started_branch.toPort,
+                                                                editor=self,
+                                                                api_object=obj)
 
-                            elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
+                                self.update_diagram_element(device=obj,
+                                                            graphic_object=graphic_object)
+
+                            elif self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
                                 name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
-                                obj = DcLine(bus_from=self.started_branch.bus_from.api_object,
-                                             bus_to=self.started_branch.bus_to.api_object,
+                                obj = DcLine(bus_from=self.started_branch.get_bus_from(),
+                                             bus_to=self.started_branch.get_bus_to(),
                                              name=name)
 
-                                graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                toPort=self.started_branch.toPort,
-                                                                diagramScene=self.diagramScene,
-                                                                api_object=obj)
-                                self.update_diagram_element(device=obj, graphic_object=graphic_obj)
+                                graphic_object = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                   toPort=self.started_branch.toPort,
+                                                                   editor=self,
+                                                                   api_object=obj)
+
+                                self.update_diagram_element(device=obj,
+                                                            graphic_object=graphic_object)
+
+                            elif self.started_branch.should_be_a_transformer():
+                                name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+                                obj = Transformer2W(bus_from=self.started_branch.get_bus_from(),
+                                                    bus_to=self.started_branch.get_bus_to(),
+                                                    name=name)
+
+                                graphic_object = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                        toPort=self.started_branch.toPort,
+                                                                        editor=self,
+                                                                        api_object=obj)
+
+                                self.update_diagram_element(device=obj,
+                                                            graphic_object=graphic_object)
 
                             else:
-                                # Same DC status -> line / trafo
-                                v1 = self.started_branch.bus_from.api_object.Vnom
-                                v2 = self.started_branch.bus_to.api_object.Vnom
+                                name = 'Line ' + str(len(self.circuit.lines) + 1)
+                                obj = Line(bus_from=self.started_branch.get_bus_from(),
+                                           bus_to=self.started_branch.get_bus_to(),
+                                           name=name)
 
-                                if abs(v1 - v2) > 1.0:
-                                    name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
-                                    obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
-                                                        bus_to=self.started_branch.bus_to.api_object,
-                                                        name=name)
+                                graphic_object = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                 toPort=self.started_branch.toPort,
+                                                                 editor=self,
+                                                                 api_object=obj)
 
-                                    graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                         toPort=self.started_branch.toPort,
-                                                                         diagramScene=self.diagramScene,
-                                                                         api_object=obj)
-                                    self.update_diagram_element(device=obj, graphic_object=graphic_obj)
-
-                                else:
-                                    name = 'Line ' + str(len(self.circuit.lines) + 1)
-                                    obj = Line(bus_from=self.started_branch.bus_from.api_object,
-                                               bus_to=self.started_branch.bus_to.api_object,
-                                               name=name)
-
-                                    graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                  toPort=self.started_branch.toPort,
-                                                                  diagramScene=self.diagramScene,
-                                                                  api_object=obj)
-                                    self.update_diagram_element(device=obj, graphic_object=graphic_obj)
+                                self.update_diagram_element(device=obj,
+                                                            graphic_object=graphic_object)
 
                             # add the new object to the circuit
                             self.circuit.add_branch(obj)
 
                             # update the connection placement
-                            graphic_obj.fromPort.update()
-                            graphic_obj.toPort.update()
+                            graphic_object.fromPort.update()
+                            graphic_object.toPort.update()
 
                             # set the connection placement
-                            graphic_obj.setZValue(-1)
+                            graphic_object.setZValue(-1)
 
-                        elif isinstance(self.started_branch.bus_from.api_object, Transformer3W):
+                        elif isinstance(self.started_branch.get_from_graphic_object().api_object, Transformer3W):
 
-                            obj = self.started_branch.bus_from.api_object
+                            graphic_object = self.started_branch.get_from_graphic_object()
+                            # obj = graphic_object.api_object
 
                             if isinstance(self.started_branch.bus_to.api_object, Bus):
                                 # if the bus "from" is the TR3W, the "to" is the bus
@@ -1154,43 +1159,45 @@ class BusBranchEditorWidget(QSplitter):
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
-                                                                       self.started_branch.toPort)
+                            i = graphic_object.get_connection_winding(fromPort=self.started_branch.fromPort,
+                                                                      toPort=self.started_branch.toPort)
 
-                            if obj.graphic_obj.connection_lines[i] is None:
+                            if graphic_object.connection_lines[i] is None:
                                 conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
                                                           toPort=self.started_branch.toPort,
-                                                          diagramScene=self.diagramScene)
+                                                          editor=self)
 
-                                obj.graphic_obj.set_connection(i, bus, conn)
+                                graphic_object.set_connection(i, bus, conn)
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
-                                obj.graphic_obj.update_conn()
-                                self.update_diagram_element(device=obj, graphic_object=obj.graphic_obj)
+                                graphic_object.update_conn()
+                                self.update_diagram_element(device=graphic_object.api_object,
+                                                            graphic_object=graphic_object)
 
-                        elif isinstance(self.started_branch.bus_to.api_object, Transformer3W):
+                        elif isinstance(self.started_branch.get_to_graphic_object(), Transformer3W):
 
-                            obj = self.started_branch.bus_to.api_object
+                            graphic_object = self.started_branch.get_to_graphic_object()
 
-                            if isinstance(self.started_branch.bus_from.api_object, Bus):
+                            if isinstance(self.started_branch.is_from_port_a_bus(), Bus):
                                 # if the bus "to" is the TR3W, the "from" is the bus
-                                bus = self.started_branch.bus_from.api_object
+                                bus = self.started_branch.get_from_graphic_object()
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = obj.graphic_obj.get_connection_winding(self.started_branch.fromPort,
-                                                                       self.started_branch.toPort)
+                            i = graphic_object.get_connection_winding(fromPort=self.started_branch.fromPort,
+                                                                      toPort=self.started_branch.toPort)
 
-                            if obj.graphic_obj.connection_lines[i] is None:
+                            if graphic_object.connection_lines[i] is None:
                                 conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
                                                           toPort=self.started_branch.toPort,
-                                                          diagramScene=self.diagramScene)
+                                                          editor=self)
 
-                                obj.graphic_obj.set_connection(i, bus, conn)
+                                graphic_object.set_connection(i, bus, conn)
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
-                                obj.graphic_obj.update_conn()
-                                self.update_diagram_element(device=obj, graphic_object=obj.graphic_obj)
+                                graphic_object.update_conn()
+                                self.update_diagram_element(device=graphic_object.api_object,
+                                                            graphic_object=graphic_object)
 
                         else:
                             print('unknown connection')
@@ -1389,47 +1396,47 @@ class BusBranchEditorWidget(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def add_line(self, branch: Line):
-        """
-        Add branch to the schematic
-        :param branch: Branch object
-        """
-        terminal_from = branch.bus_from.graphic_obj.terminal
-        terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-        terminal_from.hosting_connections.append(graphic_obj)
-        terminal_to.hosting_connections.append(graphic_obj)
-        graphic_obj.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+    # def add_line(self, branch: Line):
+    #     """
+    #     Add branch to the schematic
+    #     :param branch: Branch object
+    #     """
+    #     terminal_from = branch.bus_from.graphic_obj.terminal
+    #     terminal_to = branch.bus_to.graphic_obj.terminal
+    #     graphic_obj = LineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
+    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+    #     terminal_from.hosting_connections.append(graphic_obj)
+    #     terminal_to.hosting_connections.append(graphic_obj)
+    #     graphic_obj.redraw()
+    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
-    def add_dc_line(self, branch: DcLine):
-        """
-        Add branch to the schematic
-        :param branch: Branch object
-        """
-        terminal_from = branch.bus_from.graphic_obj.terminal
-        terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
-        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
-        terminal_from.hosting_connections.append(graphic_obj)
-        terminal_to.hosting_connections.append(graphic_obj)
-        graphic_obj.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+    # def add_dc_line(self, branch: DcLine):
+    #     """
+    #     Add branch to the schematic
+    #     :param branch: Branch object
+    #     """
+    #     terminal_from = branch.bus_from.graphic_obj.terminal
+    #     terminal_to = branch.bus_to.graphic_obj.terminal
+    #     graphic_obj = DcLineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
+    #     graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
+    #     terminal_from.hosting_connections.append(graphic_obj)
+    #     terminal_to.hosting_connections.append(graphic_obj)
+    #     graphic_obj.redraw()
+    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
-    def add_transformer(self, branch: Transformer2W):
-        """
-        Add branch to the schematic
-        :param branch: Branch object
-        """
-        terminal_from = branch.bus_from.graphic_obj.terminal
-        terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, api_object=branch)
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-        terminal_from.hosting_connections.append(graphic_obj)
-        terminal_to.hosting_connections.append(graphic_obj)
-        graphic_obj.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+    # def add_transformer(self, branch: Transformer2W):
+    #     """
+    #     Add branch to the schematic
+    #     :param branch: Branch object
+    #     """
+    #     terminal_from = branch.bus_from.graphic_obj.terminal
+    #     terminal_to = branch.bus_to.graphic_obj.terminal
+    #     graphic_obj = TransformerGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
+    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+    #     terminal_from.hosting_connections.append(graphic_obj)
+    #     terminal_to.hosting_connections.append(graphic_obj)
+    #     graphic_obj.redraw()
+    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
     def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
         """
@@ -1441,16 +1448,16 @@ class BusBranchEditorWidget(QSplitter):
         y = int(bus.y * explode_factor)
 
         # add the graphic object to the diagram view
-        graphic_obj = self.editor_graphics_view.add_bus(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
+        graphic_object = self.editor_graphics_view.add_bus(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
         # add circuit pointer to the bus graphic element
-        graphic_obj.scene.circuit = self.circuit  # add pointer to the circuit
+        graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
 
         # create the bus children
-        graphic_obj.create_children_widgets()
+        graphic_object.create_children_widgets()
 
         # arrange the children
-        graphic_obj.arrange_children()
+        graphic_object.arrange_children()
 
         self.update_diagram_element(device=bus,
                                     x=x,
@@ -1458,30 +1465,33 @@ class BusBranchEditorWidget(QSplitter):
                                     w=bus.w,
                                     h=bus.h,
                                     r=0,
-                                    graphic_object=graphic_obj)
+                                    graphic_object=graphic_object)
 
-        return graphic_obj
+        return graphic_object
 
     def add_api_line(self, branch: Line):
         """
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
 
-            graphic_obj = LineGraphicItem(fromPort=terminal_from,
-                                          toPort=terminal_to,
-                                          diagramScene=self.diagramScene,
-                                          api_object=branch)
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-            terminal_from.hosting_connections.append(graphic_obj)
-            terminal_to.hosting_connections.append(graphic_obj)
-            graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-            return graphic_obj
+            graphic_object = LineGraphicItem(fromPort=terminal_from,
+                                             toPort=terminal_to,
+                                             editor=self,
+                                             api_object=branch)
+
+            graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_object)
+            terminal_to.hosting_connections.append(graphic_object)
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
         else:
             return None
 
@@ -1490,21 +1500,24 @@ class BusBranchEditorWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
 
-            graphic_obj = DcLineGraphicItem(fromPort=terminal_from,
-                                            toPort=terminal_to,
-                                            diagramScene=self.diagramScene,
-                                            api_object=branch)
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
-            graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
-            terminal_from.hosting_connections.append(graphic_obj)
-            terminal_to.hosting_connections.append(graphic_obj)
-            graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-            return graphic_obj
+            graphic_object = DcLineGraphicItem(fromPort=terminal_from,
+                                               toPort=terminal_to,
+                                               editor=self,
+                                               api_object=branch)
+
+            graphic_object.diagramScene.grid = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_object)
+            terminal_to.hosting_connections.append(graphic_object)
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
         else:
             return None
 
@@ -1513,22 +1526,26 @@ class BusBranchEditorWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
 
-            graphic_obj = HvdcGraphicItem(fromPort=terminal_from,
-                                          toPort=terminal_to,
-                                          diagramScene=self.diagramScene,
-                                          api_object=branch)
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
-            graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
-            terminal_from.hosting_connections.append(graphic_obj)
-            terminal_to.hosting_connections.append(graphic_obj)
-            graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-            return graphic_obj
+            graphic_object = HvdcGraphicItem(fromPort=terminal_from,
+                                             toPort=terminal_to,
+                                             editor=self,
+                                             api_object=branch)
+
+            graphic_object.diagramScene.grid = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_object)
+            terminal_to.hosting_connections.append(graphic_object)
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
         else:
+            print("Buranch buses were not found in the diagram :(")
             return None
 
     def add_api_vsc(self, branch: VSC):
@@ -1536,13 +1553,16 @@ class BusBranchEditorWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
             graphic_obj = VscGraphicItem(fromPort=terminal_from,
                                          toPort=terminal_to,
-                                         diagramScene=self.diagramScene,
+                                         editor=self,
                                          api_object=branch)
 
             graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
@@ -1559,13 +1579,16 @@ class BusBranchEditorWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
             graphic_obj = UpfcGraphicItem(fromPort=terminal_from,
                                           toPort=terminal_to,
-                                          diagramScene=self.diagramScene,
+                                          editor=self,
                                           api_object=branch)
 
             graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
@@ -1582,13 +1605,16 @@ class BusBranchEditorWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
-        if branch.bus_from.graphic_obj and branch.bus_to.graphic_obj:
-            terminal_from = branch.bus_from.graphic_obj.terminal
-            terminal_to = branch.bus_to.graphic_obj.terminal
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
 
             graphic_obj = TransformerGraphicItem(fromPort=terminal_from,
                                                  toPort=terminal_to,
-                                                 diagramScene=self.diagramScene,
+                                                 editor=self,
                                                  api_object=branch)
 
             graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
@@ -1600,34 +1626,37 @@ class BusBranchEditorWidget(QSplitter):
         else:
             return None
 
-    def add_api_transformer_3w(self, elm: Transformer3W, explode_factor=1.0):
+    def add_api_transformer_3w(self, elm: Transformer3W):
         """
         add API branch to the Scene
         :param elm: Branch instance
-        :param explode_factor: explode factor
         """
 
-        graphic_obj = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
+        graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
+
+        bus1_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus1).graphic_object
+        bus2_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus2).graphic_object
+        bus3_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus3).graphic_object
 
         # add circuit pointer to the bus graphic element
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
-        conn1 = WindingGraphicItem(fromPort=graphic_obj.terminals[0],
-                                   toPort=elm.bus1.graphic_obj.terminal,
-                                   diagramScene=self.diagramScene)
-        graphic_obj.set_connection(i=0, bus=elm.bus1, conn=conn1)
+        conn1 = WindingGraphicItem(fromPort=graphic_object.terminals[0],
+                                   toPort=bus1_graphics.terminal,
+                                   editor=self)
+        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
-        conn2 = WindingGraphicItem(fromPort=graphic_obj.terminals[1],
-                                   toPort=elm.bus2.graphic_obj.terminal,
-                                   diagramScene=self.diagramScene)
-        graphic_obj.set_connection(i=1, bus=elm.bus2, conn=conn2)
+        conn2 = WindingGraphicItem(fromPort=graphic_object.terminals[1],
+                                   toPort=bus2_graphics.terminal,
+                                   editor=self)
+        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
-        conn3 = WindingGraphicItem(fromPort=graphic_obj.terminals[2],
-                                   toPort=elm.bus3.graphic_obj.terminal,
-                                   diagramScene=self.diagramScene)
-        graphic_obj.set_connection(i=2, bus=elm.bus3, conn=conn3)
+        conn3 = WindingGraphicItem(fromPort=graphic_object.terminals[2],
+                                   toPort=bus3_graphics.terminal,
+                                   editor=self)
+        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
-        graphic_obj.update_conn()
+        graphic_object.update_conn()
 
         self.update_diagram_element(device=elm.idtag,
                                     x=elm.x,
@@ -1635,14 +1664,15 @@ class BusBranchEditorWidget(QSplitter):
                                     w=80,
                                     h=80,
                                     r=0,
-                                    graphic_object=graphic_obj)
+                                    graphic_object=graphic_object)
 
-        return graphic_obj
+        return graphic_object
 
     def convert_line_to_hvdc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
         :param line: Line instance
+        :param line_graphic: LineGraphicItem
         :return: Nothing
         """
         hvdc = self.circuit.convert_line_to_hvdc(line)
@@ -1731,8 +1761,13 @@ class BusBranchEditorWidget(QSplitter):
         """
         battery = self.circuit.convert_generator_to_battery(gen)
 
+        bus_graphic_object: BusGraphicItem = self.diagram.query_point(gen.bus).graphic_object
+
         # add device to the schematic
-        battery.graphic_obj = gen.bus.graphic_obj.add_battery(battery)
+        if bus_graphic_object is not None:
+            bus_graphic_object.add_battery(battery)
+        else:
+            raise Exception("Bus graphics not found! this is likely a bug")
 
         # delete from the schematic
         graphic_object.remove(ask=False)
@@ -1776,7 +1811,7 @@ class BusBranchEditorWidget(QSplitter):
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
-                bus.graphic_obj = self.add_api_bus(bus, explode_factor)
+                self.add_api_bus(bus, explode_factor)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1788,7 +1823,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_line(branch)
+            self.add_api_line(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1800,7 +1835,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_dc_line(branch)
+            self.add_api_dc_line(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1812,7 +1847,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_transformer(branch)
+            self.add_api_transformer(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1824,7 +1859,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            elm.graphic_obj = self.add_api_transformer_3w(elm, explode_factor)
+            self.add_api_transformer_3w(elm)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1836,7 +1871,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_hvdc(branch)
+            self.add_api_hvdc(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1848,7 +1883,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_vsc(branch)
+            self.add_api_vsc(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -1860,7 +1895,7 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            branch.graphic_obj = self.add_api_upfc(branch)
+            self.add_api_upfc(branch)
 
     def align_schematic(self, buses: List[Bus] = ()):
         """
@@ -1928,17 +1963,10 @@ class BusBranchEditorWidget(QSplitter):
         Change the colour according to the system theme
         :return:
         """
-        for elm in self.circuit.buses:
-            if elm.graphic_obj is not None:
-                elm.graphic_obj.recolour_mode()
 
-        for elm in self.circuit.get_branches():
-            if elm.graphic_obj is not None:
-                elm.graphic_obj.recolour_mode()
-
-        for elm in self.circuit.transformers3w:
-            if elm.graphic_obj is not None:
-                elm.graphic_obj.recolour_mode()
+        for key, group in self.diagram.data.items():
+            for idtag, location in group.locations:
+                location.graphic_object.recolour_mode()
 
     def set_dark_mode(self) -> None:
         """
@@ -2230,7 +2258,7 @@ class BusBranchEditorWidget(QSplitter):
                             if use_flow_based_width:
                                 w = int(np.floor(
                                     min_branch_width + hvdc_sending_power_norm[i] * (
-                                                max_branch_width - min_branch_width)))
+                                            max_branch_width - min_branch_width)))
                             else:
                                 w = graphic_object.pen_width
 

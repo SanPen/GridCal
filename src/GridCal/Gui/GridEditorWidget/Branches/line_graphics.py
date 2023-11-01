@@ -18,7 +18,7 @@
 from typing import Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsScene
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
@@ -36,21 +36,21 @@ class LineGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 diagramScene,
+                 editor,
                  width=5,
                  api_object: Line = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 

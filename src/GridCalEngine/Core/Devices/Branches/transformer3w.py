@@ -117,14 +117,14 @@ class Transformer3W(EditableDevice):
         """
         return (self.bus1 is not None) and (self.bus2 is not None) and (self.bus3 is not None)
 
-    @property
-    def graphic_obj(self):
-        return self._graphic_obj
-
-    @graphic_obj.setter
-    def graphic_obj(self, obj):
-        self._graphic_obj = obj
-        self.bus0.graphic_obj = obj
+    # @property
+    # def graphic_obj(self):
+    #     return self._graphic_obj
+    #
+    # @graphic_obj.setter
+    # def graphic_obj(self, obj):
+    #     self._graphic_obj = obj
+    #     self.bus0.graphic_obj = obj
 
     @property
     def bus1(self):

@@ -2392,14 +2392,18 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
+            bus_colours = [QtGui.QColor] * len(self.circuit.buses)
+            tool_tips = [""] * len(self.circuit.buses)
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:
                     bus = self.circuit.buses[i]
                     if bus.active:
-                        if bus.graphic_obj is not None:
-                            r, g, b, a = colours[c]
-                            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                            bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
+                        r, g, b, a = colours[c]
+                        bus_colours[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                        tool_tips[i] = 'Group ' + str(c)
+
+            self.set_big_bus_marker_colours(buses=self.circuit.buses, colors=bus_colours, tool_tips=tool_tips)
+
 
     def run_inputs_analysis(self):
         """

@@ -129,7 +129,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.connection_lines.append(None)
 
         # set the graphical objects appropriately
-        self.api_object.winding1.graphic_obj = self.winding_circles[0]
+        # self.api_object.winding1.graphic_obj = self.winding_circles[0]
 
         self.big_marker = None
 
@@ -292,7 +292,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.V1 = bus.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            self.api_object.winding1.graphic_obj = conn
+            # self.api_object.winding1.graphic_obj = conn
             conn.api_object = self.api_object.winding1
 
         elif i == 1:
@@ -300,7 +300,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.V2 = bus.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            self.api_object.winding2.graphic_obj = conn
+            # self.api_object.winding2.graphic_obj = conn
             conn.api_object = self.api_object.winding2
 
         elif i == 2:
@@ -308,12 +308,10 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.V3 = bus.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            self.api_object.winding3.graphic_obj = conn
+            # self.api_object.winding3.graphic_obj = conn
             conn.api_object = self.api_object.winding3
 
         # update the connection placement
-        # from_port.update()
-        # to_port.update()
         self.update_conn()
         self.mousePressEvent(None)
 

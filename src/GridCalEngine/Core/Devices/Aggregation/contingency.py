@@ -66,8 +66,6 @@ class Contingency(EditableDevice):
     @name.setter
     def name(self, val: str):
         self._name = val
-        if self.graphic_obj is not None:
-            self.graphic_obj.set_label(self._name)
 
     @property
     def prop(self) -> str:

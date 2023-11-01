@@ -767,7 +767,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_bus_branch_diagram(self) -> None:
+    def add_bus_branch_diagram_now(self, name='All bus branches') -> BusBranchEditorWidget:
         """
         Add ageneral bus-branch diagram
         """
@@ -782,7 +782,8 @@ class DiagramsMain(CompiledArraysMain):
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=None,
-                                              name='All bus branches')
+                                              name=name)
+
         diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
                                                diagram=diagram,
                                                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
@@ -791,6 +792,14 @@ class DiagramsMain(CompiledArraysMain):
         self.add_diagram(diagram_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram_widget)
+
+        return diagram_widget
+
+    def add_bus_branch_diagram(self) -> None:
+        """
+        Add ageneral bus-branch diagram
+        """
+        self.add_bus_branch_diagram_now(name='All bus branches')
 
     def add_selection_bus_branch_diagram(self):
         """
@@ -1157,24 +1166,37 @@ class DiagramsMain(CompiledArraysMain):
                         graphic_obj.add_big_marker(color=color)
                         graphic_obj.setSelected(True)
 
-    def set_big_bus_marker_colours(self, buses: List[dev.Bus], colors: List[QtGui.QColor] ):
+    def set_big_bus_marker_colours(self,
+                                   buses: List[dev.Bus],
+                                   colors: List[QtGui.QColor],
+                                   tool_tips: Union[None, List[str]]):
         """
         Set a big marker at the selected buses with the matching colours
         :param buses: list of Bus objects
         :param colors: list of colour to use
+        :param tool_tips: list of tool tips (optional)
         """
 
         for diagram in self.diagram_widgets_list:
 
             if isinstance(diagram, BusBranchEditorWidget):
 
-                for bus, color in zip(buses, colors):
+                if tool_tips:
+                    for bus, color, tool_tip in zip(buses, colors, tool_tips):
 
-                    graphic_obj = diagram.diagram.query_point(bus).graphic_object
+                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
 
-                    if graphic_obj is not None:
-                        graphic_obj.add_big_marker(color=color)
-                        graphic_obj.setSelected(True)
+                        if graphic_obj is not None:
+                            graphic_obj.add_big_marker(color=color, tool_tip_text=tool_tip)
+                            graphic_obj.setSelected(True)
+                else:
+                    for bus, color in zip(buses, colors):
+
+                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                        if graphic_obj is not None:
+                            graphic_obj.add_big_marker(color=color)
+                            graphic_obj.setSelected(True)
     def clear_big_bus_markers(self):
         """
         Set a big marker at the selected buses

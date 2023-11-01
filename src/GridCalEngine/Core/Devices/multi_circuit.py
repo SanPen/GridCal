@@ -1791,14 +1791,10 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
-                    if branch_list[i].graphic_obj is not None:
-                        branch_list[i].graphic_obj.remove(ask=ask)
-                    else:
-                        self.delete_branch(branch_list[i])
+                    self.delete_branch(branch_list[i])
 
         # remove the bus itself
         if obj in self.buses:
-            print('Deleted', obj.name)
             self.buses.remove(obj)
 
     def add_line(self, obj: dev.Line, logger: Union[bs.Logger, DataLogger] = bs.Logger()):
@@ -1977,6 +1973,13 @@ class MultiCircuit:
         :param obj: Transformer2W instance
         """
         self.transformers2w.remove(obj)
+
+    def delete_switch(self, obj: dev.Transformer2W):
+        """
+        Delete transformer
+        :param obj: Transformer2W instance
+        """
+        self.switch_devices.remove(obj)
 
     def delete_winding(self, obj: dev.Winding):
         """

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.switch import Switch
@@ -27,21 +27,21 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 diagramScene,
+                 editor,
                  width=5,
                  api_object: Switch = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -115,6 +115,6 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
             ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_winding(self.api_object)
+            self.editor.circuit.delete_branch(self.api_object)
             self.diagramScene.removeItem(self)
 
