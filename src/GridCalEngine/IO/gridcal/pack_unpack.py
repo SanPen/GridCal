@@ -142,7 +142,6 @@ def create_data_frames(circuit: MultiCircuit):
         for elm in circuit.buses:
             elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
-            elm.retrieve_graphic_position()
 
     ########################################################################################################
     # declare objects to iterate  name: [sample object, list of objects, headers]

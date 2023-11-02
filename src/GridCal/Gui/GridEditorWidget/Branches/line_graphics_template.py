@@ -34,6 +34,7 @@ from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 import GridCal
 
+
 class ArrowHead(QGraphicsPolygonItem):
     """
     This is the arrow object

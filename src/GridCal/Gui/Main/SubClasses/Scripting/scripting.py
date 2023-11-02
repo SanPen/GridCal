@@ -16,12 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
+from typing import Union
 from matplotlib import pyplot as plt
 import datetime as dtelib
 from PySide6.QtGui import QFont, QFontMetrics
 from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
+from GridCal.Gui.messages import error_msg
 
 try:
     from GridCal.Gui.ConsoleWidget import ConsoleWidget
@@ -46,6 +48,13 @@ class ScriptingMain(BaseMainGui):
         # create main window
         BaseMainGui.__init__(self, parent)
 
+        # Console
+        self.console: Union[ConsoleWidget, None] = None
+        try:
+            self.create_console()
+        except TypeError:
+            error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
+
         # Source code text ---------------------------------------------------------------------------------------------
         # Set the font for your widget
         font = QFont("Consolas", 10)  # Replace "Consolas" with your preferred monospaced font
@@ -57,6 +66,9 @@ class ScriptingMain(BaseMainGui):
         self.ui.sourceCodeTextEdit.setTabStopDistance(tab_stop_width)
 
         self.ui.sourceCodeTextEdit.highlighter = PythonHighlighter(self.ui.sourceCodeTextEdit.document())
+
+        # actions ------------------------------------------------------------------------------------------------------
+        self.ui.actionReset_console.triggered.connect(self.create_console)
 
         # buttonclicks -------------------------------------------------------------------------------------------------
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)

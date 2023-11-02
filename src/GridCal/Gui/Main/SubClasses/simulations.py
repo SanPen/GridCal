@@ -2371,9 +2371,7 @@ class SimulationsMain(TimeEventsMain):
 
         else:
             # delete the markers
-            for bus in self.circuit.buses:
-                if bus.graphic_obj is not None:
-                    bus.graphic_obj.delete_big_marker()
+            self.clear_big_bus_markers()
 
     def post_run_find_node_groups(self):
         """
@@ -2481,17 +2479,19 @@ class SimulationsMain(TimeEventsMain):
                         cmap = LinearSegmentedColormap.from_list('vcolors', seq)
 
                         self.buses_for_storage = list()
-
+                        colors = list()
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
-                            self.buses_for_storage.append(bus)
 
                             # add a marker to the bus if there are no batteries in it
-                            if bus.graphic_obj.big_marker is None and len(bus.batteries) == 0:
+                            if len(bus.batteries) == 0:
+                                self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                                bus.graphic_obj.add_big_marker(color=color)
+                                colors.append(color)
+
+                        self.set_big_bus_marker_colours(buses=self.buses_for_storage, colors=colors, tool_tips=None)
                     else:
 
                         info_msg('No problems were detected, therefore no storage is suggested',
@@ -2504,14 +2504,7 @@ class SimulationsMain(TimeEventsMain):
             else:
 
                 # delete the red dots
-                if self.buses_for_storage is not None:
-
-                    for bus in self.buses_for_storage:
-                        # add a marker to the bus...
-                        if bus.graphic_obj.big_marker is not None:
-                            bus.graphic_obj.delete_big_marker()
-                else:
-                    pass
+                self.clear_big_bus_markers()
         else:
             pass
 

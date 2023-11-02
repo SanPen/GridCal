@@ -43,8 +43,8 @@ from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue, StartEndSelectionDialogue
-from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
+from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
@@ -55,8 +55,6 @@ from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.templates import get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue, get_sequence_lines_catalogue
-
-
 
 from matplotlib import pyplot as plt
 
@@ -187,13 +185,6 @@ class BaseMainGui(QMainWindow):
         self.ui.engineComboBox.setCurrentIndex(0)
         self.engine_dict = {x.value: x for x in engine_lst}
 
-        # Console
-        self.console: Union[ConsoleWidget, None] = None
-        try:
-            self.create_console()
-        except TypeError:
-            error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
-
         # dark mode detection
         is_dark = darkdetect.theme() == "Dark"
         self.ui.dark_mode_checkBox.setChecked(is_dark)
@@ -201,8 +192,6 @@ class BaseMainGui(QMainWindow):
         self.calculation_inputs_to_display = None
 
         # ----------------------------------------------------------------------------------------------------------
-
-        self.ui.actionReset_console.triggered.connect(self.create_console)
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
         self.ui.actionAbout.triggered.connect(self.about_box)
         self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
@@ -211,7 +200,6 @@ class BaseMainGui(QMainWindow):
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
         self.ui.actionReport_a_bug.triggered.connect(self.report_a_bug)
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
-        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
         self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
@@ -333,8 +321,6 @@ class BaseMainGui(QMainWindow):
         """
         self.stuff_running_now.clear()
 
-
-
     def get_all_objects_in_memory(self):
         """
         Get a list of the objects in memory
@@ -452,8 +438,6 @@ class BaseMainGui(QMainWindow):
         """
         val = self.ui.engineComboBox.currentText()
         return self.engine_dict[val]
-
-
 
     def about_box(self):
         """
@@ -574,81 +558,6 @@ class BaseMainGui(QMainWindow):
 
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
 
-    def delete_shit(self, min_island=1):
-        """
-        Delete small islands, disconnected stuff and other garbage
-        """
-        numerical_circuit_ = compile_numerical_circuit_at(circuit=self.circuit, )
-        islands = numerical_circuit_.split_into_islands()
-        logger = bs.Logger()
-        buses_to_delete = list()
-        buses_to_delete_idx = list()
-        for island in islands:
-            if island.nbus <= min_island:
-                for r in island.original_bus_idx:
-                    buses_to_delete.append(self.circuit.buses[r])
-                    buses_to_delete_idx.append(r)
-
-        for r, bus in enumerate(self.circuit.buses):
-            if not bus.active and not np.any(bus.active_prof):
-                if r not in buses_to_delete_idx:
-                    buses_to_delete.append(bus)
-                    buses_to_delete_idx.append(r)
-
-        for elm in buses_to_delete:
-            if elm.graphic_obj is not None:
-                # this is a more complete function than the circuit one because it removes the
-                # graphical items too, and for loads and generators it deletes them properly
-                print('Deleted ', elm.device_type.value, elm.name)
-                logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
-                elm.graphic_obj.remove(ask=False)
-
-        # search other elements to delete
-        for dev_lst in [self.circuit.lines,
-                        self.circuit.dc_lines,
-                        self.circuit.vsc_devices,
-                        self.circuit.hvdc_lines,
-                        self.circuit.transformers2w,
-                        self.circuit.get_generators(),
-                        self.circuit.get_loads(),
-                        self.circuit.get_shunts(),
-                        self.circuit.get_batteries(),
-                        self.circuit.get_static_generators(),
-                        ]:
-            for elm in dev_lst:
-                if not elm.active and not np.any(elm.active_prof):
-                    if elm.graphic_obj is not None:
-                        # this is a more complete function than the circuit one because it removes the
-                        # graphical items too, and for loads and generators it deletes them properly
-                        print('Deleted ', elm.device_type.value, elm.name)
-                        logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
-                        elm.graphic_obj.remove(ask=False)
-
-        return logger
-
-    def correct_branch_monitoring(self, max_loading=1.0):
-        """
-        The NTC optimization and other algorithms will not work if we have overloaded Branches in DC monitored
-        We can try to not monitor those to try to get it working
-        """
-        res = self.session.power_flow
-
-        if res is None:
-            self.console_msg('No power flow results.\n')
-        else:
-            branches = self.circuit.get_branches_wo_hvdc()
-            for elm, loading in zip(branches, res.loading):
-                if loading >= max_loading:
-                    elm.monitor_loading = False
-                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
-
-    def snapshot_balance(self):
-        """
-        Snapshot balance report
-        """
-        df = self.circuit.snapshot_balance()
-        self.console_msg('\n' + str(df))
-
     def add_default_catalogue(self) -> None:
         """
         Add default catalogue to circuit
@@ -683,25 +592,6 @@ class BaseMainGui(QMainWindow):
         numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
-
-
-
-    def delete_inconsistencies(self):
-        """
-        Call delete shit
-        :return:
-        """
-        ok = yes_no_question(
-            "This action removes all disconnected devices with no active profile and remove all small islands",
-            "Delete inconsistencies")
-
-        if ok:
-            logger = self.delete_shit()
-
-            if len(logger) > 0:
-                dlg = LogsDialogue("Delete inconsistencies", logger)
-                dlg.setModal(True)
-                dlg.exec_()
 
     def initialize_contingencies(self):
         """

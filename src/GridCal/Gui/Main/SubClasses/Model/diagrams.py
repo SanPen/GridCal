@@ -281,9 +281,14 @@ class DiagramsMain(CompiledArraysMain):
         """
         Adapt the width of all the nodes to their names
         """
-        for bus in self.circuit.buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.adapt()
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                for bus in self.circuit.buses:
+
+                    diagram.diagram.query_point(bus).graphic_object.adapt()
 
     def zoom_in(self):
         """
@@ -1169,7 +1174,7 @@ class DiagramsMain(CompiledArraysMain):
     def set_big_bus_marker_colours(self,
                                    buses: List[dev.Bus],
                                    colors: List[QtGui.QColor],
-                                   tool_tips: Union[None, List[str]]):
+                                   tool_tips: Union[None, List[str]] = None):
         """
         Set a big marker at the selected buses with the matching colours
         :param buses: list of Bus objects
@@ -1244,14 +1249,13 @@ class DiagramsMain(CompiledArraysMain):
         """
         Try to fix the location of the buses
         """
-
-        selected_buses = self.get_selected_buses()
-        if len(selected_buses) > 0:
-            self.circuit.try_to_fix_buses_location(buses_selection=selected_buses)
-            for k, bus, graphic_obj in selected_buses:
-                graphic_obj.set_position(x=bus.x, y=bus.y)
-        else:
-            info_msg('Choose some elements from the schematic', 'Fix buses locations')
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, BusBranchEditorWidget):
+            selected_buses = diagram_widget.get_selected_buses()
+            if len(selected_buses) > 0:
+                diagram_widget.try_to_fix_buses_location(buses_selection=selected_buses)
+            else:
+                info_msg('Choose some elements from the schematic', 'Fix buses locations')
 
     def colour_next_simulation_step(self):
         """
@@ -1474,3 +1478,21 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram, GridMapWidget):
                 pass
+
+    def delete_from_all_diagrams(self, elements: List[dev.EditableDevice]):
+        """
+        Delete elements from all editors
+        :param elements: list of devices to delete from the graphics editors
+        :return:
+        """
+        for diagram_widget in self.diagram_widgets_list:
+            if isinstance(diagram_widget, BusBranchEditorWidget):
+                diagram_widget.delete_diagram_elements(elements)
+
+            elif isinstance(diagram_widget, BusViewerWidget):
+                diagram_widget.grid_editor.delete_diagram_elements(elements)
+
+            elif isinstance(diagram_widget, GridMapWidget):
+                pass
+                # diagram_widget.delete_diagram_elements(elements)
+

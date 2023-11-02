@@ -286,11 +286,3 @@ class Transformer3W(EditableDevice):
         self._rate31 = val
         self.compute_delta_to_star()
 
-    def retrieve_graphic_position(self):
-        """
-        Get the position set by the graphic object into this object's variables
-        :return: Nothing
-        """
-        if self.graphic_obj is not None:
-            self.x = int(self.graphic_obj.pos().x())
-            self.y = int(self.graphic_obj.pos().y())

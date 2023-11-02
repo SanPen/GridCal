@@ -215,7 +215,6 @@ class EditableDevice:
 
         return data
 
-
     @property
     def graphic_obj(self):
         """

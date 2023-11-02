@@ -433,9 +433,7 @@ class IoMain(ConfigurationMain):
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
-                    for bus in buses:
-                        if bus.graphic_obj is not None:
-                            bus.graphic_obj.setSelected(True)
+                            diagram_widget.set_selected_buses(buses=buses)
 
     def save_file_as(self):
         """

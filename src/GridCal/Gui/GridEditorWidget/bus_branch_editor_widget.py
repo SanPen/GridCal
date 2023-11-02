@@ -22,12 +22,13 @@ from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 import networkx as nx
 
-from PySide6.QtCore import Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray, \
-    QDataStream, QModelIndex
-from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen, \
-    QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent
-from PySide6.QtWidgets import QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, \
-    QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent
+from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
+                            QDataStream, QModelIndex)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent)
+from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
+                               QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
+                               QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -1016,7 +1017,31 @@ class BusBranchEditorWidget(QSplitter):
         Delete device from the diagram registry
         :param device: EditableDevice
         """
-        self.diagram.delete_device(device=device)
+        graphic_object: QGraphicsItem = self.diagram.delete_device(device=device)
+
+        if graphic_object is not None:
+            try:
+                self.diagramScene.removeItem(graphic_object)
+            except:
+                pass
+
+    def delete_diagram_elements(self, elements: List[EditableDevice]):
+        """
+        Delete device from the diagram registry
+        :param elements:
+        :return:
+        """
+        for elm in elements:
+            self.delete_diagram_element(elm)
+
+    def set_selected_buses(self, buses: List[Bus]):
+        """
+        Select the buses
+        :param buses: list of Buses
+        """
+        for bus in buses:
+            graphic_object: BusGraphicItem = self.diagram.query_point(bus).graphic_object
+            graphic_object.setSelected(True)
 
     def get_selected_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
         """
@@ -1159,8 +1184,8 @@ class BusBranchEditorWidget(QSplitter):
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = graphic_object.get_connection_winding(fromPort=self.started_branch.fromPort,
-                                                                      toPort=self.started_branch.toPort)
+                            i = graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
+                                                                      to_port=self.started_branch.toPort)
 
                             if graphic_object.connection_lines[i] is None:
                                 conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
@@ -1184,8 +1209,8 @@ class BusBranchEditorWidget(QSplitter):
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = graphic_object.get_connection_winding(fromPort=self.started_branch.fromPort,
-                                                                      toPort=self.started_branch.toPort)
+                            i = graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
+                                                                      to_port=self.started_branch.toPort)
 
                             if graphic_object.connection_lines[i] is None:
                                 conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
@@ -2371,6 +2396,88 @@ class BusBranchEditorWidget(QSplitter):
 
         return diagram
 
+    def try_to_fix_buses_location(self, buses_selection):
+        """
+        Try to fix the location of the null-location buses
+        :param buses_selection: list of tuples index, bus object
+        :return: indices of the corrected buses
+        """
+        delta = 1e20
+
+        while delta > 10:
+
+            A = self.circuit.get_adjacent_matrix()
+
+            for k, bus in buses_selection:
+
+                idx = list(self.circuit.get_adjacent_buses(A, k))
+
+                # remove the elements already in the selection
+                for i in range(len(idx) - 1, 0, -1):
+                    if k == idx[i]:
+                        idx.pop(i)
+
+
+
+                x_arr = list()
+                y_arr = list()
+                for i in idx:
+                    loc_i = self.diagram.query_point(self.circuit.buses[i])
+                    x_arr.append(loc_i.x)
+                    y_arr.append(loc_i.y)
+
+                x_m = np.mean(x_arr)
+                y_m = np.mean(y_arr)
+
+                delta_i = np.sqrt((bus.X - x_m) ** 2 + (bus.y - y_m) ** 2)
+
+                if delta_i < delta:
+                    delta = delta_i
+
+                loc = self.diagram.query_point(bus)
+                self.update_diagram_element(device=bus,
+                                            x=x_m,
+                                            y=y_m,
+                                            w=loc.w,
+                                            h=loc.h,
+                                            r=loc.r,
+                                            graphic_object=loc.graphic_object)
+
+    def get_boundaries(self):
+        """
+        Get the graphic representation boundaries
+        :return: min_x, max_x, min_y, max_y
+        """
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # shrink selection only
+        for bus in self.buses:
+            x = bus.x
+            y = bus.y
+            max_x = max(max_x, x)
+            min_x = min(min_x, x)
+            max_y = max(max_y, y)
+            min_y = min(min_y, y)
+
+        return min_x, max_x, min_y, max_y
+
+    def average_separation(self):
+        """
+        Average separation of the buses
+        :return: average separation
+        """
+        separation = 0.0
+        branch_lists = self.get_branch_lists()
+        n = 0
+        for branch_lst in branch_lists:
+            for branch in branch_lst:
+                s = np.sqrt((branch.bus_from.x - branch.bus_to.x) ** 2 + (branch.bus_from.y - branch.bus_to.y) ** 2)
+                separation += s
+                n += 1
+        return separation / n
 
 def generate_bus_branch_diagram(buses: List[Bus],
                                 lines: List[Line],
@@ -2512,6 +2619,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
         diagram.set_point(device=branch, location=GraphicLocation())
 
     return diagram
+
+
 
 
 if __name__ == "__main__":
