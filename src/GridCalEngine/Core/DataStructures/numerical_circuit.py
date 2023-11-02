@@ -339,7 +339,57 @@ class NumericalCircuit:
         # Dict[idtag] -> (structure, index)
         self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
 
-    def get_injections(self, normalize=True):
+    def reset_calculations(self):
+        """
+        This resets the lazy evaluation of the calculations like Ybus, Sbus, etc...
+        If you want to use the NumericalCircuit as structure to modify stuff,
+        this should be called after all modifications prior to the usage in any
+        calculation
+        """
+        self.Cf_: Union[sp.csc_matrix, None] = None
+        self.Ct_: Union[sp.csc_matrix, None] = None
+        self.A_: Union[sp.csc_matrix, None] = None
+
+        self.Vbus_: CxVec = None
+        self.Sbus_: CxVec = None
+        self.Ibus_: CxVec = None
+        self.YloadBus_: CxVec = None
+        self.Yshunt_from_devices_: CxVec = None
+
+        self.Qmax_bus_: Vec = None
+        self.Qmin_bus_: Vec = None
+        self.Bmax_bus_: Vec = None
+        self.Bmin_bus_: Vec = None
+
+        self.Admittances = None
+
+        # Admittance for HELM / AC linear
+        self.Yseries_: Union[sp.csc_matrix, None] = None
+        self.Yshunt_: Union[sp.csc_matrix, None] = None
+
+        # Admittances for Fast-Decoupled
+        self.B1_: Union[sp.csc_matrix, None] = None
+        self.B2_: Union[sp.csc_matrix, None] = None
+
+        # Admittances for Linear
+        self.Bbus_: Union[sp.csc_matrix, None] = None
+        self.Bf_: Union[sp.csc_matrix, None] = None
+        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Bpqpv_: Union[sp.csc_matrix, None] = None
+        self.Bref_: Union[sp.csc_matrix, None] = None
+
+        self.pq_: IntVec = None
+        self.pv_: IntVec = None
+        self.vd_: IntVec = None
+        self.pqpv_: IntVec = None
+        self.ac_: IntVec = None
+        self.dc_: IntVec = None
+
+        # dictionary relating idtags to structures and indices
+        # Dict[idtag] -> (structure, index)
+        self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
+
+    def get_injections(self, normalize=True) -> CxVec:
         """
         Compute the power
         :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise
