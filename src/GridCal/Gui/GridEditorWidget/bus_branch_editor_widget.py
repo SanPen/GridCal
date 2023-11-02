@@ -1101,7 +1101,7 @@ class BusBranchEditorWidget(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         self.started_branch.bus_to = item.parent
 
-                        if self.started_branch.fully_connected():
+                        if self.started_branch.connected_between_buses():
 
                             if self.started_branch.should_be_a_converter():
                                 # different DC status -> VSC
@@ -1173,56 +1173,56 @@ class BusBranchEditorWidget(QSplitter):
                             # set the connection placement
                             graphic_object.setZValue(-1)
 
-                        elif isinstance(self.started_branch.get_from_graphic_object().api_object, Transformer3W):
+                        elif self.started_branch.conneted_between_tr3_and_bus():
 
-                            graphic_object = self.started_branch.get_from_graphic_object()
+                            tr3_graphic_object = self.started_branch.get_from_graphic_object()
                             # obj = graphic_object.api_object
 
-                            if isinstance(self.started_branch.bus_to.api_object, Bus):
+                            if self.started_branch.is_to_port_a_bus():
                                 # if the bus "from" is the TR3W, the "to" is the bus
-                                bus = self.started_branch.bus_to.api_object
+                                bus = self.started_branch.get_bus_to()
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
-                                                                      to_port=self.started_branch.toPort)
+                            i = tr3_graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
+                                                                          to_port=self.started_branch.toPort)
 
-                            if graphic_object.connection_lines[i] is None:
-                                conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
-                                                          toPort=self.started_branch.toPort,
-                                                          editor=self)
+                            if tr3_graphic_object.connection_lines[i] is None:
+                                winding_graphics = WindingGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                      toPort=self.started_branch.toPort,
+                                                                      editor=self)
 
-                                graphic_object.set_connection(i, bus, conn)
+                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
-                                graphic_object.update_conn()
-                                self.update_diagram_element(device=graphic_object.api_object,
-                                                            graphic_object=graphic_object)
+                                tr3_graphic_object.update_conn()
+                                self.update_diagram_element(device=winding_graphics.api_object,
+                                                            graphic_object=winding_graphics)
 
-                        elif isinstance(self.started_branch.get_to_graphic_object(), Transformer3W):
+                        elif self.started_branch.connected_between_bus_and_tr3():
 
-                            graphic_object = self.started_branch.get_to_graphic_object()
+                            tr3_graphic_object = self.started_branch.get_to_graphic_object()
 
-                            if isinstance(self.started_branch.is_from_port_a_bus(), Bus):
+                            if self.started_branch.is_from_port_a_bus():
                                 # if the bus "to" is the TR3W, the "from" is the bus
-                                bus = self.started_branch.get_from_graphic_object()
+                                bus = self.started_branch.get_bus_from()
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
-                                                                      to_port=self.started_branch.toPort)
+                            i = tr3_graphic_object.get_connection_winding(from_port=self.started_branch.fromPort,
+                                                                          to_port=self.started_branch.toPort)
 
-                            if graphic_object.connection_lines[i] is None:
-                                conn = WindingGraphicItem(fromPort=self.started_branch.fromPort,
-                                                          toPort=self.started_branch.toPort,
-                                                          editor=self)
+                            if tr3_graphic_object.connection_lines[i] is None:
+                                winding_graphics = WindingGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                      toPort=self.started_branch.toPort,
+                                                                      editor=self)
 
-                                graphic_object.set_connection(i, bus, conn)
+                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
-                                graphic_object.update_conn()
-                                self.update_diagram_element(device=graphic_object.api_object,
-                                                            graphic_object=graphic_object)
+                                tr3_graphic_object.update_conn()
+                                self.update_diagram_element(device=winding_graphics.api_object,
+                                                            graphic_object=winding_graphics)
 
                         else:
                             print('unknown connection')
@@ -1657,31 +1657,31 @@ class BusBranchEditorWidget(QSplitter):
         :param elm: Branch instance
         """
 
-        graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
+        tr3_graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
 
         bus1_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus1).graphic_object
         bus2_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus2).graphic_object
         bus3_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus3).graphic_object
 
         # add circuit pointer to the bus graphic element
-        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        tr3_graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
-        conn1 = WindingGraphicItem(fromPort=graphic_object.terminals[0],
+        conn1 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[0],
                                    toPort=bus1_graphics.terminal,
                                    editor=self)
-        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+        tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
-        conn2 = WindingGraphicItem(fromPort=graphic_object.terminals[1],
+        conn2 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[1],
                                    toPort=bus2_graphics.terminal,
                                    editor=self)
-        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+        tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
-        conn3 = WindingGraphicItem(fromPort=graphic_object.terminals[2],
+        conn3 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[2],
                                    toPort=bus3_graphics.terminal,
                                    editor=self)
-        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+        tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
-        graphic_object.update_conn()
+        tr3_graphic_object.update_conn()
 
         self.update_diagram_element(device=elm.idtag,
                                     x=elm.x,
@@ -1689,9 +1689,13 @@ class BusBranchEditorWidget(QSplitter):
                                     w=80,
                                     h=80,
                                     r=0,
-                                    graphic_object=graphic_object)
+                                    graphic_object=tr3_graphic_object)
 
-        return graphic_object
+        self.update_diagram_element(device=conn1.api_object, graphic_object=conn1)
+        self.update_diagram_element(device=conn2.api_object, graphic_object=conn2)
+        self.update_diagram_element(device=conn3.api_object, graphic_object=conn3)
+
+        return tr3_graphic_object
 
     def convert_line_to_hvdc(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2417,8 +2421,6 @@ class BusBranchEditorWidget(QSplitter):
                     if k == idx[i]:
                         idx.pop(i)
 
-
-
                 x_arr = list()
                 y_arr = list()
                 for i in idx:
@@ -2478,6 +2480,7 @@ class BusBranchEditorWidget(QSplitter):
                 separation += s
                 n += 1
         return separation / n
+
 
 def generate_bus_branch_diagram(buses: List[Bus],
                                 lines: List[Line],
@@ -2619,8 +2622,6 @@ def generate_bus_branch_diagram(buses: List[Bus],
         diagram.set_point(device=branch, location=GraphicLocation())
 
     return diagram
-
-
 
 
 if __name__ == "__main__":

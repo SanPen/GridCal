@@ -4478,7 +4478,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.busViewerButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.addToCurrentDiagramButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add bus vecinity viewer of the selected items", None))
+        self.addToCurrentDiagramButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add selection to the current diagram", None))
 #endif // QT_CONFIG(tooltip)
         self.addToCurrentDiagramButton.setText("")
 #if QT_CONFIG(tooltip)

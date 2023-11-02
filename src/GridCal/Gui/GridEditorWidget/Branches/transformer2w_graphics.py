@@ -152,20 +152,6 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                 # change state
                 self.enable_disable_toggle()
 
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this transformer?', 'Remove transformer')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.circuit.delete_branch(self.api_object)
-            self.diagramScene.removeItem(self)
-
     def edit(self):
         """
         Open the appropriate editor dialogue

@@ -117,18 +117,3 @@ class VscGraphicItem(LineGraphicTemplateItem):
         """
 
         pass
-
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this VSC?', 'Remove VSC')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.circuit.delete_branch(self.api_object)
-            self.diagramScene.removeItem(self)
-

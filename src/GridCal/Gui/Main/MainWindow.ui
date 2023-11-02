@@ -602,7 +602,7 @@ p, li { white-space: pre-wrap; }
                    <item>
                     <widget class="QPushButton" name="addToCurrentDiagramButton">
                      <property name="toolTip">
-                      <string>Add bus vecinity viewer of the selected items</string>
+                      <string>Add selection to the current diagram</string>
                      </property>
                      <property name="text">
                       <string/>

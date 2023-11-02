@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QGraphicsScene
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.winding import Winding
@@ -27,7 +27,8 @@ from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGra
 
 class WindingGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem,
+    def __init__(self,
+                 fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=5,
@@ -46,6 +47,9 @@ class WindingGraphicItem(LineGraphicTemplateItem):
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)
+
+        self.parent_tr3_graphics_item = None
+        self.winding_number = 0
 
     def contextMenuEvent(self, event):
         """
@@ -106,11 +110,15 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Do you want to remove this winding?', 'Remove winding')
+            dtype = self.api_object.device_type.value
+            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+                                 'Remove branch')
         else:
             ok = True
 
         if ok:
             self.editor.circuit.delete_branch(self.api_object)
-            self.diagramScene.removeItem(self)
+            self.editor.delete_diagram_element(self.api_object)
 
+            # unregister the winding
+            self.parent_tr3_graphics_item.remove_winding(self.winding_number)

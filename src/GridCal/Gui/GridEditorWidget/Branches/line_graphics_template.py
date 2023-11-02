@@ -481,6 +481,22 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         self.diagramScene.removeItem(self)
 
+    def remove(self, ask=True):
+        """
+        Remove this object in the diagram and the API
+        @return:
+        """
+        if ask:
+            dtype = self.api_object.device_type.value
+            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+                                 'Remove branch')
+        else:
+            ok = True
+
+        if ok:
+            self.editor.circuit.delete_branch(self.api_object)
+            self.editor.delete_diagram_element(self.api_object)
+
     def enable_disable_toggle(self):
         """
 
@@ -805,15 +821,38 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         else:
             return False
 
+    def is_from_port_a_tr3(self) -> bool:
+
+        if self.fromPort:
+            return isinstance(self.fromPort.parent,
+                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_tr3(self) -> bool:
+
+        if self.toPort:
+            return isinstance(self.toPort.parent,
+                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+        else:
+            return False
+
     def get_bus_from(self):
         return self.get_from_graphic_object().api_object
 
     def get_bus_to(self):
         return self.get_to_graphic_object().api_object
 
-    def fully_connected(self):
+    def connected_between_buses(self):
 
         return self.is_from_port_a_bus() and self.is_to_port_a_bus()
+    def connected_between_bus_and_tr3(self):
+
+        return self.is_from_port_a_bus() and self.is_to_port_a_tr3()
+
+    def conneted_between_tr3_and_bus(self):
+
+        return self.is_from_port_a_tr3() and self.is_to_port_a_bus()
 
     def should_be_a_converter(self):
 

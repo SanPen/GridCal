@@ -65,8 +65,8 @@ class DcLineEditor(QDialog):
         Ybase = 1 / Zbase
 
         R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        B = self.branch.B * Ybase
+        # X = self.branch.X * Zbase
+        # B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
 
@@ -145,22 +145,20 @@ class DcLineEditor(QDialog):
         self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
         self.layout.addWidget(self.r_spinner)
 
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
+        # self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
+        # self.layout.addWidget(self.x_spinner)
 
         # self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
         # self.layout.addWidget(self.g_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
+        # self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
+        # self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.accept_btn)
 
         self.setLayout(self.layout)
 
         self.setWindowTitle('Line editor')
-
-
 
     def accept_click(self):
         """
@@ -320,20 +318,6 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
             elif self.api_object.device_type is DeviceType.SwitchDevice:
                 # change state
                 self.enable_disable_toggle()
-
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this line?', 'Remove line')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.circuit.delete_dc_line(self.api_object)
-            self.diagramScene.removeItem(self)
 
     def edit(self):
         """
