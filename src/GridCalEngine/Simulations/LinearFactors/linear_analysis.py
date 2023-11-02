@@ -26,6 +26,7 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
+from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 
 
 @nb.njit()
@@ -83,69 +84,6 @@ def make_contingency_flows(base_flow: Vec,
     return flow_n1
 
 
-@nb.njit(cache=True)
-def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]:
-    """
-    Extract the sparse matrix from a dense matrix where abs values are below a threshold
-    :param mat: dense matrix
-    :param threshold: threshold
-    :return: data, indices, indptr
-    """
-    n_row, n_col = mat.shape
-
-    data = np.empty(n_row * n_col)
-    indptr = np.empty(n_col + 1)
-    indices = np.empty(n_row * n_col)
-    k = 0
-    for j in range(n_col):
-
-        indptr[j] = k
-
-        for i in range(n_row):
-
-            if abs(mat[i, j] > threshold):
-                data[k] = mat[i, j]
-                indices[k] = i
-                k += 1
-
-    indptr[n_col] = k
-    if k < (n_col * n_row):
-        data = data[:k]
-        indices = indices[:k]
-
-    return data, indices, indptr
-
-
-def dense_to_csc(mat: Mat, threshold: float) -> sp.csc_matrix:
-    """
-    Extract the sparse matrix from a dense matrix where abs values are below a threshold
-    :param mat: dense matrix
-    :param threshold: threshold
-    :return: CSC sparse matrix
-    """
-    # n_row, n_col = mat.shape
-    #
-    # data = np.empty(n_row * n_col)
-    # indptr = np.empty(n_col + 1)
-    # indices = np.empty(n_row * n_col)
-    # k = 0
-    # for j in range(n_col):
-    #
-    #     indptr[j] = k
-    #
-    #     for i in range(n_row):
-    #
-    #         if abs(mat[i, j] > threshold):
-    #             data[k] = mat[i, j]
-    #             indices[k] = i
-    #             k += 1
-    #
-    # indptr[n_col] = k
-    # data = data[:k]
-    # indices = indices[:k]
-    data, indices, indptr = dense_to_csc_numba(mat, threshold)
-
-    return sp.csc_matrix((data, indices, indptr), shape=mat.shape)
 
 
 def compute_acptdf(Ybus: sp.csc_matrix,

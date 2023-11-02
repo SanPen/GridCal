@@ -15,10 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+import numba as nb
 import scipy.sparse.sparsetools as sptools
 from scipy.sparse import csc_matrix
 
 import GridCalEngine.Utils.Sparse.csc_numba as csc_numba
+from GridCalEngine.basic_structures import Mat
 
 
 class CscMat(csc_matrix):
@@ -390,19 +392,19 @@ def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
         mats_rows.append(x.shape[0])
 
     if row_major:
-        data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_row_major(mats_data,
-                                                                                  mats_indptr,
-                                                                                  mats_indices,
-                                                                                  mats_cols,
-                                                                                  mats_rows,
+        data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_row_major(nb.typed.List(mats_data),
+                                                                                  nb.typed.List(mats_indptr),
+                                                                                  nb.typed.List(mats_indices),
+                                                                                  nb.typed.List(mats_cols),
+                                                                                  nb.typed.List(mats_rows),
                                                                                   m_rows,
                                                                                   m_cols)
     else:
-        data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_col_major(mats_data,
-                                                                                  mats_indptr,
-                                                                                  mats_indices,
-                                                                                  mats_cols,
-                                                                                  mats_rows,
+        data, indices, indptr, nrows, ncols = csc_numba.csc_stack_2d_ff_col_major(nb.typed.List(mats_data),
+                                                                                  nb.typed.List(mats_indptr),
+                                                                                  nb.typed.List(mats_indices),
+                                                                                  nb.typed.List(mats_cols),
+                                                                                  nb.typed.List(mats_rows),
                                                                                   m_rows,
                                                                                   m_cols)
 
@@ -480,3 +482,35 @@ def csc_stack_2d_ff_old(mats, m_rows=1, m_cols=1):
 
     # return nrows, ncols, indices, indptr, data
     return csc_matrix((data, indices, indptr), shape=(nrows, ncols))
+
+
+def dense_to_csc(mat: Mat, threshold: float) -> csc_matrix:
+    """
+    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    :param mat: dense matrix
+    :param threshold: threshold
+    :return: CSC sparse matrix
+    """
+    # n_row, n_col = mat.shape
+    #
+    # data = np.empty(n_row * n_col)
+    # indptr = np.empty(n_col + 1)
+    # indices = np.empty(n_row * n_col)
+    # k = 0
+    # for j in range(n_col):
+    #
+    #     indptr[j] = k
+    #
+    #     for i in range(n_row):
+    #
+    #         if abs(mat[i, j] > threshold):
+    #             data[k] = mat[i, j]
+    #             indices[k] = i
+    #             k += 1
+    #
+    # indptr[n_col] = k
+    # data = data[:k]
+    # indices = indices[:k]
+    data, indices, indptr = csc_numba.dense_to_csc_numba(mat, threshold)
+
+    return csc_matrix((data, indices, indptr), shape=mat.shape)
