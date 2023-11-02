@@ -329,18 +329,21 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.bus1 = None
             self.api_object.V1 = 0
             self.connection_lines[0] = None
+            self.api_object.winding1 = None
             self.terminals[0].setZValue(-1)
 
         elif i == 1:
             self.api_object.bus2 = None
             self.api_object.V2 = 0
             self.connection_lines[1] = None
+            self.api_object.winding2 = None
             self.terminals[1].setZValue(-1)
 
         elif i == 2:
             self.api_object.bus3 = None
             self.api_object.V3 = 0
             self.connection_lines[2] = None
+            self.api_object.winding3 = None
             self.terminals[2].setZValue(-1)
         else:
             raise Exception('Unsupported winding index {}'.format(i))

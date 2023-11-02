@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Tuple
 from scipy.sparse.linalg import spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
@@ -81,6 +81,71 @@ def make_contingency_flows(base_flow: Vec,
                     flow_n1[m] += ptdf_factors[m, c] * injections[c]
 
     return flow_n1
+
+
+@nb.njit(cache=True)
+def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]:
+    """
+    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    :param mat: dense matrix
+    :param threshold: threshold
+    :return: data, indices, indptr
+    """
+    n_row, n_col = mat.shape
+
+    data = np.empty(n_row * n_col)
+    indptr = np.empty(n_col + 1)
+    indices = np.empty(n_row * n_col)
+    k = 0
+    for j in range(n_col):
+
+        indptr[j] = k
+
+        for i in range(n_row):
+
+            if abs(mat[i, j] > threshold):
+                data[k] = mat[i, j]
+                indices[k] = i
+                k += 1
+
+    indptr[n_col] = k
+    if k < (n_col * n_row):
+        data = data[:k]
+        indices = indices[:k]
+
+    return data, indices, indptr
+
+
+def dense_to_csc(mat: Mat, threshold: float) -> sp.csc_matrix:
+    """
+    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    :param mat: dense matrix
+    :param threshold: threshold
+    :return: CSC sparse matrix
+    """
+    # n_row, n_col = mat.shape
+    #
+    # data = np.empty(n_row * n_col)
+    # indptr = np.empty(n_col + 1)
+    # indices = np.empty(n_row * n_col)
+    # k = 0
+    # for j in range(n_col):
+    #
+    #     indptr[j] = k
+    #
+    #     for i in range(n_row):
+    #
+    #         if abs(mat[i, j] > threshold):
+    #             data[k] = mat[i, j]
+    #             indices[k] = i
+    #             k += 1
+    #
+    # indptr[n_col] = k
+    # data = data[:k]
+    # indices = indices[:k]
+    data, indices, indptr = dense_to_csc_numba(mat, threshold)
+
+    return sp.csc_matrix((data, indices, indptr), shape=mat.shape)
 
 
 def compute_acptdf(Ybus: sp.csc_matrix,
@@ -316,6 +381,24 @@ def make_transfer_limits(ptdf: Mat,
     return tmc
 
 
+@nb.njit(cache=True)
+def create_M_numba(lodf: Mat, branch_contingency_indices) -> Mat:
+    """
+
+    :param lodf:
+    :param branch_contingency_indices:
+    :return:
+    """
+    M = np.empty((len(branch_contingency_indices), len(branch_contingency_indices)))
+    for i in range(len(branch_contingency_indices)):
+        for j in range(len(branch_contingency_indices)):
+            if i == j:
+                M[i, j] = 1.0
+            else:
+                M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
+    return M
+
+
 class LinearMultiContingency:
     """
     LinearMultiContingency
@@ -397,11 +480,12 @@ class LinearMultiContingencies:
 
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    def update(self, lodf: Mat, ptdf: Mat) -> None:
+    def update(self, lodf: Mat, ptdf: Mat, threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)
         :param ptdf: original PTDF matrix (nbr, nbus)
+        :param threshold: threshold to discard values
         :return: None
         """
 
@@ -444,27 +528,26 @@ class LinearMultiContingencies:
             injections_factors = np.array(injections_factors)
 
             if len(branch_contingency_indices) > 1:
+
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = np.ones((len(branch_contingency_indices), len(branch_contingency_indices)))
-                for i in range(len(branch_contingency_indices)):
-                    for j in range(len(branch_contingency_indices)):
-                        if not (i == j):
-                            M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
+                M = create_M_numba(lodf=lodf, branch_contingency_indices=branch_contingency_indices)
 
                 # Compute LODF for the multiple failure
-                mlodf_factors = lodf[:, branch_contingency_indices] @ np.linalg.inv(M)
+                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices] @ np.linalg.inv(M),
+                                             threshold=threshold)
 
             elif len(branch_contingency_indices) == 1:
                 # append values
-                mlodf_factors = lodf[:, branch_contingency_indices]
+                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices],
+                                             threshold=threshold)
 
             else:
-                mlodf_factors = np.zeros((lodf.shape[0], 0))
+                mlodf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
                 ptdf_factors = ptdf[:, bus_contingency_indices]
             else:
-                ptdf_factors = np.zeros((lodf.shape[0], 0))
+                ptdf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(
