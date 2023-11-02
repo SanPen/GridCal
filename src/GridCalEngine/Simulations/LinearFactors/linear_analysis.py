@@ -31,8 +31,8 @@ from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 
 @nb.njit()
 def make_contingency_flows(base_flow: Vec,
-                           lodf_factors: Mat,
-                           ptdf_factors: Mat,
+                           lodf_factors: sp.csc_matrix,
+                           ptdf_factors: sp.csc_matrix,
                            injections: Vec,
                            threshold):
     """
@@ -345,24 +345,24 @@ class LinearMultiContingency:
     def __init__(self,
                  branch_indices: IntVec,
                  bus_indices: IntVec,
-                 mlodf_factors: Mat,
-                 ptdf_factors: Mat,
+                 mlodf_factors: sp.csc_matrix,
+                 ptdf_factors: sp.csc_matrix,
                  injections_factor: Vec):
         """
         Linear multi contingency object
         :param branch_indices: contingency branch indices.
         :param bus_indices: contingency bus indices.
-        :param mlodf_factors: LODF factors applicable (all_branches, contingency branches).
+        :param mlodf_factors: MLODF factors applicable (all_branches, contingency branches).
         :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
-        :param injections_factor: Injection contingency factors (len(bus indices))
+        :param injections_factor: Injection contingency factors, i.e percentage to decrease an injection (len(bus indices))
         """
 
         assert len(bus_indices) == len(injections_factor)
 
         self.branch_indices: IntVec = branch_indices
         self.bus_indices: IntVec = bus_indices
-        self.mlodf_factors: Mat = mlodf_factors
-        self.ptdf_factors: Mat = ptdf_factors
+        self.mlodf_factors: sp.csc_matrix = mlodf_factors
+        self.ptdf_factors: sp.csc_matrix = ptdf_factors
         self.injections_factor: Vec = injections_factor
 
     def has_injection_contingencies(self) -> bool:
@@ -372,12 +372,11 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
+    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec]):
         """
         Get contingency flows
         :param base_flow: Base branch flows (nbranch)
         :param injections: Bus injections increments (nbus)
-        :param threshold: PTDF and LODF threshold to consider a value
         :return: New flows (nbranch)
         """
 

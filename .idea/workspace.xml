@@ -26,14 +26,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Upgraded the creation of the contingency structures">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/1354 Pegase.xlsx" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Tested dense_to_csc">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_matrix_slicing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_matrix_stacking.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_sparse.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,11 +125,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="C:\Git\Github\GridCal\src\research\derivatives_and_jacobian" />
       <recent name="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
       <recent name="$PROJECT_DIR$/Grids_and_profiles/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
-      <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
@@ -1249,7 +1244,7 @@
       <workItem from="1662359262233" duration="956000" />
       <workItem from="1698829696357" duration="9620000" />
       <workItem from="1698913871767" duration="18784000" />
-      <workItem from="1698953701354" duration="1533000" />
+      <workItem from="1698953701354" duration="2344000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1594,7 +1589,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="365" />
+    <option name="localTasksCounter" value="366" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1628,7 +1623,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed issue with no-slack islands" />
     <MESSAGE value="Minor refactor of the newer get admmitance functions in generatorDate and BatteryData" />
     <MESSAGE value="Made the short circuit vastly more efficient by avoiding Y inversions" />
     <MESSAGE value="slight refactor" />
@@ -1653,7 +1647,8 @@
     <MESSAGE value="apparently fixed the tr3 graphics' issues" />
     <MESSAGE value="Added reset_calculations in the NumericalCircuit" />
     <MESSAGE value="Upgraded the creation of the contingency structures" />
-    <option name="LAST_COMMIT_MESSAGE" value="Upgraded the creation of the contingency structures" />
+    <MESSAGE value="Tested dense_to_csc" />
+    <option name="LAST_COMMIT_MESSAGE" value="Tested dense_to_csc" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
