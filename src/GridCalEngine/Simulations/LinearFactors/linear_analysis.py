@@ -385,20 +385,15 @@ class LinearMultiContingency:
         :return: New flows (nbranch)
         """
 
-        if len(self.bus_indices):
-            injections = self.injections_factor * injections[self.bus_indices]
-        else:
-            injections = np.zeros(self.ptdf_factors.shape[1])
-
-        # return make_contingency_flows(base_flow=base_flow,
-        #                               lodf_factors=self.lodf_factors,
-        #                               ptdf_factors=self.ptdf_factors,
-        #                               injections=injections,
-        #                               threshold=threshold)
-
         flow = base_flow.copy()
-        flow += self.mlodf_factors @ base_flow[self.branch_indices]
-        flow += self.ptdf_factors @ injections[self.bus_indices]
+
+        if len(self.branch_indices):
+            flow += self.mlodf_factors @ base_flow[self.branch_indices]
+
+        if len(self.bus_indices):
+            injection_delta = self.injections_factor * injections[self.bus_indices]
+            flow += self.ptdf_factors @ injection_delta[self.bus_indices]
+
         return flow
 
     def get_lp_contingency_flows(self,
@@ -407,19 +402,19 @@ class LinearMultiContingency:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
-        :param injections: Bus injections increments (nbus)
+        :param injections: Bus injections (nbus)
         :return: New flows (nbranch)
         """
 
-        if len(self.bus_indices):
-            injections = self.injections_factor * injections[self.bus_indices]
-        else:
-            injections = np.zeros(self.ptdf_factors.shape[1])
+        flow = base_flow.copy()
 
-        flow = (base_flow
-                + lpDot(self.mlodf_factors, base_flow[self.branch_indices])
-                + lpDot(self.ptdf_factors, injections[self.bus_indices])
-                )
+        if len(self.branch_indices):
+            flow += lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+
+        if len(self.bus_indices):
+            injection_delta = self.injections_factor * injections[self.bus_indices]
+            flow += lpDot(self.ptdf_factors, injection_delta[self.bus_indices])
+
         return flow
 
 
@@ -494,9 +489,10 @@ class LinearMultiContingencies:
 
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
                 M = create_M_numba(lodf=lodf, branch_contingency_indices=branch_contingency_indices)
+                L = lodf[:, branch_contingency_indices]
 
                 # Compute LODF for the multiple failure
-                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices] @ np.linalg.inv(M),
+                mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
                                              threshold=threshold)
 
             elif len(branch_contingency_indices) == 1:
@@ -508,7 +504,8 @@ class LinearMultiContingencies:
                 mlodf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
-                ptdf_factors = ptdf[:, bus_contingency_indices]
+                ptdf_factors = dense_to_csc(mat=ptdf[:, bus_contingency_indices],
+                                            threshold=threshold)
             else:
                 ptdf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 

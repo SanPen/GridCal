@@ -16,25 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from scipy.sparse import csc_matrix
 
-from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, BoolVec, StrVec, DateVec, CxMat
-
-def dense_to_csc_sparse(dense_matrix: Mat, threshold: float) -> csc_matrix:
-    # Find non-zero elements and their indices
-    non_zero_values = np.where(np.abs(dense_matrix) > threshold)
-    non_zero_values = dense_matrix[non_zero_values]
-    row_indices, col_indices = non_zero_values.nonzero()
-
-    # Create values, row indices, and column pointers arrays for CSC format
-    values = non_zero_values
-    row_ind = row_indices
-    col_ptr = np.concatenate(([0], np.cumsum(np.bincount(col_indices))))
-
-    # Create CSC sparse matrix
-    sparse_matrix = csc_matrix((values, row_ind, col_ptr), shape=dense_matrix.shape)
-
-    return sparse_matrix
 
 def slice_to_range(sl: slice, n):
     """

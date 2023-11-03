@@ -395,7 +395,8 @@ class BranchNtcVars:
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
         self.monitor_type = np.zeros((nt, n_elm), dtype=object)
 
-        self.contingency_flow_data: List[Tuple[int, int, Union[float, LpVar]]] = list()
+        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp]]] = list()
+
 
     def get_values(self, Sbase: float) -> "BranchNtcVars":
         """
@@ -417,9 +418,9 @@ class BranchNtcVars:
                 data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
 
         for i in range(len(self.contingency_flow_data)):
-            m, c, var = self.contingency_flow_data[i]
+            t, m, c, var = self.contingency_flow_data[i]
             val = get_lp_var_value(var)
-            self.contingency_flow_data[i] = (m, c, val)
+            self.contingency_flow_data[i] = (t, m, c, val)
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
@@ -432,15 +433,16 @@ class BranchNtcVars:
 
         return data
 
-    def add_contingency_flow(self, m: int, c: int, flow_var: LpVar):
+    def add_contingency_flow(self, t: int, m: int, c: int, flow_var: Union[float, LpVar, LpExp]):
         """
-
-        :param m:
-        :param c:
-        :param flow_var:
+        Add contingency flow
+        :param t: time index
+        :param m: monitored index
+        :param c: contingency group index
+        :param flow_var: flow var
         :return:
         """
-        self.contingency_flow_data.append((m, c, flow_var))
+        self.contingency_flow_data.append((t, m, c, flow_var))
 
 
 class HvdcNtcVars:
@@ -783,24 +785,28 @@ def add_linear_branches_formulation(t: int,
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
 
-                if consider_contingencies:
-                    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+    if consider_contingencies:
+        for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
 
-                        c1 = True
-                        if len(contingency.branch_indices) == 1:
-                            if contingency.branch_indices[0] == m:
-                                c1 = False
+            contingency_flows = contingency.get_lp_contingency_flows(
+                base_flow=branch_vars.flows[t, :],
+                injections=vars_bus.inj_p[t, :])
 
-                        contingency.get_contingency_flows(
-                            base_flows=None,
-                            injections=None,
-                            threshold=None)
-                        c3 = np.abs(alpha[m]) > alpha_threshold
-                        c4 = any(np.abs(alpha_n1[m, c]) > branch_sensitivity_threshold)
-                        pass
-                        # TODO : create how to implement multicontingencies.get_flows() in LP variables
-                        # if abs(LODF[m, c]) > lodf_threshold:
+            for m, contingency_flow in enumerate(contingency_flows):
+                keep = False
 
+                if isinstance(contingency_flow, LpExp):
+                    branch_vars.add_contingency_flow(t=t, m=m, c=c, flow_var=contingency_flow)
+
+                    # add upper rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow <= branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_upper_lim_", [t, m, c]))
+
+                    # add lower rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow >= -branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_lower_lim_", [t, m, c]))
 
     return f_obj
 
@@ -1007,20 +1013,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         else:
             mctg = None
 
-        # todo: borrar
-        # compute monitorization logic  ----------------------------------------------------------------------------
-        # monitor, monitor_type, branch_ntc_load_rule, branch_zero_exchange_load = formulate_monitorization_logic(
-        #     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-        #     monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
-        #     monitor_loading=nc.branch_data.monitor_loading,
-        #     alpha=,
-        #     alpha_n1=,
-        #     branch_sensitivity_threshold=,
-        #     base_flows=,
-        #     structural_ntc=,
-        #     ntc_load_rule=,
-        #     rates=)
-
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
             mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(
@@ -1067,6 +1059,9 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 lodf_threshold=lodf_threshold,
                 monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                 monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
+                alpha=,
+                alpha_n1=,
+                alpha_threshold=,
                 inf=1e20)
 
             # formulate nodes ---------------------------------------------------------------------------------------

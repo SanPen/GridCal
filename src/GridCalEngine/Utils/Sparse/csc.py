@@ -491,26 +491,7 @@ def dense_to_csc(mat: Mat, threshold: float) -> csc_matrix:
     :param threshold: threshold
     :return: CSC sparse matrix
     """
-    # n_row, n_col = mat.shape
-    #
-    # data = np.empty(n_row * n_col)
-    # indptr = np.empty(n_col + 1)
-    # indices = np.empty(n_row * n_col)
-    # k = 0
-    # for j in range(n_col):
-    #
-    #     indptr[j] = k
-    #
-    #     for i in range(n_row):
-    #
-    #         if abs(mat[i, j] > threshold):
-    #             data[k] = mat[i, j]
-    #             indices[k] = i
-    #             k += 1
-    #
-    # indptr[n_col] = k
-    # data = data[:k]
-    # indices = indices[:k]
+
     data, indices, indptr = csc_numba.dense_to_csc_numba(mat, threshold)
 
     return csc_matrix((data, indices, indptr), shape=mat.shape)

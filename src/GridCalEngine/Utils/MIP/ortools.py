@@ -28,7 +28,7 @@ from ortools.linear_solver.pywraplp import Variable as LpVar
 from GridCalEngine.basic_structures import MIPSolvers
 
 
-def get_lp_var_value(x: Union[float, LpVar]) -> float:
+def get_lp_var_value(x: Union[float, LpVar, LpExp]) -> float:
     """
     Get the value of a variable stored in a numpy array of objects
     :param x: soe object (it may be a LP var or a number)
@@ -40,6 +40,8 @@ def get_lp_var_value(x: Union[float, LpVar]) -> float:
         return x.solution_value()
     elif isinstance(x, ort.Constraint):
         return x.dual_value()
+    elif isinstance(x, ort.LinearExpr):
+        return x.solution_value()
     else:
         return x
 
