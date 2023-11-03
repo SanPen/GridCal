@@ -309,7 +309,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 flows_t: Vec = linear_analysis.get_flows(P)
 
             # compute the branch exchange sensitivity (alpha)
-            alpha, alpha_n1 = compute_alpha(
+            alpha, _ = compute_alpha(
                 ptdf=linear_analysis.PTDF,
                 P0=P,  # no problem that there are in p.u., are only used for the sensitivity
                 Pinstalled=nc.bus_installed_power,
@@ -317,7 +317,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 Pload=nc.load_data.get_injections_per_bus().real,
                 idx1=self.options.bus_idx_from,
                 idx2=self.options.bus_idx_to,
-                dT=self.options.dT,
                 mode=self.options.mode.value
             )
 

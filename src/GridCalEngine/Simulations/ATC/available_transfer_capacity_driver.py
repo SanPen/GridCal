@@ -136,17 +136,17 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
 
     # compute the sensitivity
     alpha = dflow / dT
-    alpha_n1 = np.zeros((len(alpha), len(alpha)))
+    # alpha_n1 = np.zeros((len(alpha), len(alpha)))
+    #
+    # if lodf is not None:
+    #     for m in range(len(alpha)):
+    #         for c in range(len(alpha)):
+    #             if m != c:
+    #                 dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+    #                 alpha_c = dflow_n1 / dT
+    #                 alpha_n1[m, c] = alpha_c
 
-    if lodf is not None:
-        for m in range(len(alpha)):
-            for c in range(len(alpha)):
-                if m != c:
-                    dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
-                    alpha_c = dflow_n1 / dT
-                    alpha_n1[m, c] = alpha_c
-
-    return alpha, alpha_n1
+    return alpha
 
 #
 # @nb.njit()
@@ -584,7 +584,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         )
 
         # compute the branch exchange sensitivity (alpha)
-        alpha, alpha_n1 = compute_alpha(
+        alpha, _ = compute_alpha(
             ptdf=linear.PTDF,
             P0=nc.Sbus.real,
             Pinstalled=nc.bus_installed_power,
@@ -592,7 +592,6 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             Pload=nc.load_data.get_injections_per_bus().real,
             idx1=idx1b,
             idx2=idx2b,
-            dT=self.options.dT,
             mode=int(self.options.mode.value))
 
         # get flow

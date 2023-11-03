@@ -26,13 +26,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="ntc (working)">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="ntc new implementation (to check)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_driver.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_pruebas.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ntc_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_run_2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_ts_driver.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/ntc_ts_run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/branch_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ATC/available_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ATC/available_transfer_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ATC/available_transfer_capacity_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_ts_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -990,13 +997,6 @@
       <workItem from="1662067830182" duration="1211000" />
       <workItem from="1662359262233" duration="956000" />
     </task>
-    <task id="LOCAL-00312" summary="implemented sparse profiles in the json v3 export">
-      <created>1656757347766</created>
-      <option name="number" value="00312" />
-      <option name="presentableId" value="LOCAL-00312" />
-      <option name="project" value="LOCAL" />
-      <updated>1656757347774</updated>
-    </task>
     <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
       <created>1656759710081</created>
       <option name="number" value="00313" />
@@ -1333,7 +1333,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698997781837</updated>
     </task>
-    <option name="localTasksCounter" value="361" />
+    <task id="LOCAL-00361" summary="ntc new implementation (to check)">
+      <created>1699001996164</created>
+      <option name="number" value="00361" />
+      <option name="presentableId" value="LOCAL-00361" />
+      <option name="project" value="LOCAL" />
+      <updated>1699001996165</updated>
+    </task>
+    <option name="localTasksCounter" value="362" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1367,7 +1374,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="completely refactored the ShortCircuitResults object to properly represent the sequence results" />
     <MESSAGE value="Added icons to the results tree view" />
     <MESSAGE value="major refactor in the short circuit study" />
     <MESSAGE value="Set the SC loading values to display in %" />
@@ -1392,7 +1398,8 @@
     <MESSAGE value="ntc refactoring II" />
     <MESSAGE value="ntc creating linear multicontingencies implementation" />
     <MESSAGE value="ntc (working)" />
-    <option name="LAST_COMMIT_MESSAGE" value="ntc (working)" />
+    <MESSAGE value="ntc new implementation (to check)" />
+    <option name="LAST_COMMIT_MESSAGE" value="ntc new implementation (to check)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1687,6 +1694,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/results_table.py</url>
           <line>75</line>
           <option name="timeStamp" value="1182" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
+          <line>783</line>
+          <option name="timeStamp" value="1184" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

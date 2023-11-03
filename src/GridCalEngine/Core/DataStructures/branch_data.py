@@ -343,7 +343,7 @@ class BranchData:
         """
 
         lst: List[Tuple[int, float]] = list()
-        for k in range(self.nbr):
+        for k in range(self.nelm):
             if self.F[k] in buses_areas_1 and self.T[k] in buses_areas_2:
                 lst.append((k, 1.0))
             elif self.F[k] in buses_areas_2 and self.T[k] in buses_areas_1:

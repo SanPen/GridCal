@@ -38,7 +38,7 @@ from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, g
                                                         set_var_bounds, join)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, AvailableTransferMode
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
-
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 
 
 
@@ -149,16 +149,16 @@ def formulate_monitorization_logic(
     return monitor, monitor_type, branch_ntc_load_rule, branch_zero_exchange_load
 
 
-def get_reference_per_bus(bus_data_t: BusData,
-                          gen_data_t: GeneratorData,
-                          load_data_t: LoadData,
-                          transfer_method: AvailableTransferMode,
-                          skip_generation_limits: bool,
-                          inf_value: float,
-                          Sbase: float):
+def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
+                                       gen_data_t: GeneratorData,
+                                       load_data_t: LoadData,
+                                       transfer_method: AvailableTransferMode,
+                                       skip_generation_limits: bool,
+                                       inf_value: float,
+                                       Sbase: float) -> Tuple[Vec, Vec, Vec]:
 
     """
-
+    Get nodal power, nodal pmax and nodal pmin according to the transfer_method.
     :param bus_data_t: BusData structure
     :param gen_data_t: GenData structure
     :param load_data_t: LoadData structure
@@ -166,7 +166,7 @@ def get_reference_per_bus(bus_data_t: BusData,
     :param skip_generation_limits: Skip generation limits?
     :param inf_value: infinity value. Ex 1e-20
     :param Sbase: base power (100 MVA)
-    :return:
+    :return: nodal power (p.u.), pmax (p.u.), pmin(p.u.)
     """
 
     # get values per bus
@@ -221,96 +221,77 @@ def get_reference_per_bus(bus_data_t: BusData,
         #todo check
         dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
 
-
     else:
         raise Exception('Undefined available transfer mode')
 
     return p_ref * dispachable_bus, p_max, p_min
 
-def get_nodal_proportions(nbus: int,
-                          p_ref: Vec,
-                          p_max: Vec,
-                          p_min: Vec,
-                          bus_a1: IntVec,
-                          bus_a2: IntVec,
-                          logger: Logger):
-
-    """
-    Get generation proportions by transfer method with sign consideration.
-    :param nbus: number of buses
-    :param bus_a1: bus indices within area 1
-    :param bus_a2: bus indices within area 2
-    :param logger: logger instance
-    :return: proportions, sense, p_max, p_min
-    """
+def get_sensed_proportions(power: Vec,
+                           idx: IntVec,
+                           logger: Logger) -> Vec:
+    nelem = len(power)
 
     # bus area mask
-    isin_a1 = np.isin(range(nbus), bus_a1, assume_unique=True)
-    isin_a2 = np.isin(range(nbus), bus_a2, assume_unique=True)
+    isin_ = np.isin(range(nelem), idx, assume_unique=True)
 
-    p_ref_a1 = p_ref * isin_a1 * (p_ref <= p_max)
-    p_ref_a2 = p_ref * isin_a2 * (p_ref >= p_min)
+    p_ref = power * isin_
 
     # get proportions of contribution by sense (gen or pump) and area
     # the idea is both techs contributes to achieve the power shift goal in the same proportion
     # that in base situation
 
     # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
-    gen_pos_a1 = np.where(p_ref_a1 < 0, 0, p_ref_a1)
-    gen_neg_a1 = np.where(p_ref_a1 > 0, 0, p_ref_a1)
-    gen_pos_a2 = np.where(p_ref_a2 < 0, 0, p_ref_a2)
-    gen_neg_a2 = np.where(p_ref_a2 > 0, 0, p_ref_a2)
+    gen_pos = np.where(p_ref < 0, 0, p_ref)
+    gen_neg = np.where(p_ref > 0, 0, p_ref)
 
-    prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(p_ref_a1))
-    prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(p_ref_a1))
-    prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(p_ref_a2))
-    prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(p_ref_a2))
+    prop_up = np.sum(gen_pos) / np.sum(np.abs(p_ref))
+    prop_dw = np.sum(gen_neg) / np.sum(np.abs(p_ref))
 
     # get proportion by production (ammount of power contributed by generator to his sensed area).
-
-    if np.sum(np.abs(gen_pos_a1)) != 0:
-        prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1))
+    if np.sum(np.abs(gen_pos)) != 0:
+        prop_up_gen = gen_pos / np.sum(np.abs(gen_pos))
     else:
-        prop_up_gen_a1 = np.zeros_like(gen_pos_a1)
+        prop_up_gen = np.zeros_like(gen_pos)
 
-    if np.sum(np.abs(gen_neg_a1)) != 0:
-        prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1))
+    if np.sum(np.abs(gen_neg)) != 0:
+        prop_dw_gen = gen_neg / np.sum(np.abs(gen_neg))
     else:
-        prop_dw_gen_a1 = np.zeros_like(gen_neg_a1)
-
-    if np.sum(np.abs(gen_pos_a2)) != 0:
-        prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2))
-    else:
-        prop_up_gen_a2 = np.zeros_like(gen_pos_a2)
-
-    if np.sum(np.abs(gen_neg_a2)) != 0:
-        prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2))
-    else:
-        prop_dw_gen_a2 = np.zeros_like(gen_neg_a2)
+        prop_dw_gen = np.zeros_like(gen_neg)
 
     # delta proportion by generator (considering both proportions: sense and production)
-    prop_gen_delta_up_a1 = prop_up_gen_a1 * prop_up_a1
-    prop_gen_delta_dw_a1 = prop_dw_gen_a1 * prop_dw_a1
-    prop_gen_delta_up_a2 = prop_up_gen_a2 * prop_up_a2
-    prop_gen_delta_dw_a2 = prop_dw_gen_a2 * prop_dw_a2
+    prop_gen_delta_up = prop_up_gen * prop_up
+    prop_gen_delta_dw = prop_dw_gen * prop_dw
 
     # Join generator proportions into one vector
-    # Notice they will not added: just joining like 'or' logical operation
-    proportions_a1 = prop_gen_delta_up_a1 + prop_gen_delta_dw_a1
-    proportions_a2 = prop_gen_delta_up_a2 + prop_gen_delta_dw_a2
-    proportions = proportions_a1 + proportions_a2
+    # Notice this is not a summatory, it's just joining like 'or' logical operation
+    proportions = prop_gen_delta_up + prop_gen_delta_dw
 
     # some checks
-    if not np.isclose(np.sum(proportions_a1), 1, rtol=1e-6):
+    if not np.isclose(np.sum(proportions), 1, rtol=1e-6):
         logger.add_warning('Issue computing proportions to scale delta generation in area 1.')
 
-    if not np.isclose(np.sum(proportions_a2), 1, rtol=1e-6):
-        logger.add_warning('Issue computing proportions to scale delta generation in area 2')
+    return proportions
 
-    # apply power shift sense based on area (increase a1, decrease a2)
-    sense = (1 * isin_a1) + (-1 * isin_a2)
 
-    return proportions, sense, p_max, p_min
+def get_exchange_proportions(power: Vec,
+                             bus_a1: IntVec,
+                             bus_a2: IntVec,
+                             logger: Logger):
+
+    """
+    Get generation proportions by transfer method with sign consideration.
+    :param power: Vec. Power reference
+    :param bus_a1: bus indices within area 1
+    :param bus_a2: bus indices within area 2
+    :param logger: logger instance
+    :return: proportions, sense, p_max, p_min
+    """
+    nelem = len(power)
+    proportions_a1 = get_sensed_proportions(power=power, idx=bus_a1, logger=logger)
+    proportions_a2 = get_sensed_proportions(power=power, idx=bus_a2, logger=logger)
+    proportions = proportions_a1 - proportions_a2
+
+    return proportions
 
 
 class BusNtcVars:
@@ -589,7 +570,7 @@ def add_linear_injections_formulation(t: Union[int, None],
         ub=prob.INFINITY,
         name=join("power_shift_", [t], "_"))
 
-    p_ref, p_max, p_min = get_reference_per_bus(
+    bus_pref_t, bus_pmax_t, bus_pmin_t = get_transfer_power_scaling_per_bus(
         bus_data_t=bus_data_t,
         gen_data_t=gen_data_t,
         load_data_t=load_data_t,
@@ -598,11 +579,8 @@ def add_linear_injections_formulation(t: Union[int, None],
         inf_value=prob.INFINITY,
         Sbase=Sbase)
 
-    proportions, sense, bus_pmax_t, bus_pmin_t = get_nodal_proportions(
-        nbus=bus_data_t.nbus,
-        p_ref=p_ref,
-        p_max=p_max,
-        p_min=p_min,
+    proportions = get_exchange_proportions(
+        power=bus_pref_t,
         bus_a1=bus_a1,
         bus_a2=bus_a2,
         logger=logger)
@@ -620,7 +598,7 @@ def add_linear_injections_formulation(t: Union[int, None],
                 name=join("delta_p", [t, k], "_"))
 
             prob.add_cst(
-                cst=ntc_vars.bus_vars.inj_delta[t, k] == ntc_vars.power_shift[t] * proportions[k] * sense[k],
+                cst=ntc_vars.bus_vars.inj_delta[t, k] == ntc_vars.power_shift[t] * proportions[k],
                 name='bus_{0}_assignment'.format(bus_data_t.names[k]))
 
             # declare bus injections
@@ -650,7 +628,6 @@ def add_linear_branches_formulation(t: int,
                                     monitor_only_ntc_load_rule_branches: bool,
                                     alpha: Vec,
                                     alpha_n1: Vec,
-                                    base_flows: Vec,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
                                     inf=1e20):
@@ -724,34 +701,33 @@ def add_linear_branches_formulation(t: int,
                                                          vars_bus.theta[t, to]),
                     name=join("Branch_flow_set_", [t, m], "_"))
 
-            # Compute monitorization logic: Avoid unrealistic ntc && Exclude branches with 'interchange zero' flows over CEP rule limit
+            # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N condition
             if monitor_only_ntc_load_rule_branches:
-                branch_ntc_load_rule_n = ntc_load_rule * branch_data_t.rates / (alpha + 1e-20) <= structural_ntc
-                branch_ntc_load_rule_n1 = ntc_load_rule * branch_data_t.rates / (alpha_n1 + 1e-20) <= structural_ntc
-                branch_ntc_load_rule = branch_ntc_load_rule_n * branch_ntc_load_rule_n1
-                branch_zero_exchange_load_n = base_flows * (1 - alpha) / branch_data_t.rates >= (1 - ntc_load_rule)
-                branch_zero_exchange_load_n1 = base_flows * (1 - alpha_n1) / branch_data_t.rates >= (1 - ntc_load_rule)
-                branch_zero_exchange_load = branch_zero_exchange_load_n * branch_zero_exchange_load_n1
+                """
+                Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, 
+                y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural 
+                significa que la linea no puede limitar el intercambio
+                Ejemplo:
+                    ntc_load_rule = 0.7
+                    rate = 1700
+                    alpha = 0.05
+                    structural_rate = 5200
+                    0.7 * 1700 --> 1190 mw para el intercambio
+                    1190 / 0.05 --> 23.800 MW en la frontera en N
+                    23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                   """
+                monitor_by_load_rule_n = ntc_load_rule * branch_data_t.rates[m] / (alpha[m] + 1e-20) <= structural_ntc
             else:
-                branch_ntc_load_rule = np.ones(len(base_flows), dtype=bool)
-                branch_zero_exchange_load = np.ones(len(base_flows), dtype=bool)
+                monitor_by_load_rule_n = True
 
-            # Compute monitorization logic: Exclude branches with not enough sensibility to exchange
+            # Monitoring logic: Exclude branches with not enough sensibility to exchange in N condition
             if monitor_only_sensitive_branches:
-                monitor_by_sensitivity_n = alpha > alpha_threshold
-                monitor_by_sensitivity_n1 = alpha_n1 > alpha_threshold
-                monitor_by_sensitivity = monitor_by_sensitivity_n * monitor_by_sensitivity_n1
+                monitor_by_sensitivity_n = alpha[m] > alpha_threshold
             else:
-                monitor_by_sensitivity = np.ones(len(base_flows), dtype=bool)
-
-            # Compute monitorization logic
-            c1 = branch_data_t.monitor_loading[m]  # user interface monitor checkbox
-            c2 = monitor_by_sensitivity[m]  # alpha monitor
-            c3 = branch_ntc_load_rule[m]
-            c4 = branch_zero_exchange_load[m]
+                monitor_by_sensitivity_n = True
 
             # add the flow constraint if monitored
-            if c1 and c2 and c3 and c4:
+            if branch_data_t.monitor_loading[m] and monitor_by_sensitivity_n and monitor_by_load_rule_n:
                 branch_vars.flow_slacks_pos[t, m] = prob.add_var(
                     lb=0,
                     ub=inf,
@@ -763,19 +739,19 @@ def add_linear_branches_formulation(t: int,
                     name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = (branch_vars.flows[t, m] +
+                branch_vars.flow_constraints_ub[t, m] = ((branch_vars.flows[t, m] +
                                                          branch_vars.flow_slacks_pos[t, m] -
-                                                         branch_vars.flow_slacks_neg[t, m]) \
-                                                        <= branch_data_t.rates[m] / Sbase
+                                                         branch_vars.flow_slacks_neg[t, m])
+                                                         <= branch_data_t.rates[m] / Sbase)
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_ub[t, m],
                     name=join("br_flow_upper_lim_", [t, m]))
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = (branch_vars.flows[t, m] +
+                branch_vars.flow_constraints_lb[t, m] = ((branch_vars.flows[t, m] +
                                                          branch_vars.flow_slacks_pos[t, m] -
-                                                         branch_vars.flow_slacks_neg[t, m]) \
-                                                         >= -branch_data_t.rates[m] / Sbase
+                                                         branch_vars.flow_slacks_neg[t, m])
+                                                         >= -branch_data_t.rates[m] / Sbase)
 
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_lb[t, m],
@@ -793,20 +769,46 @@ def add_linear_branches_formulation(t: int,
                 injections=vars_bus.inj_p[t, :])
 
             for m, contingency_flow in enumerate(contingency_flows):
-                keep = False
-
                 if isinstance(contingency_flow, LpExp):
-                    branch_vars.add_contingency_flow(t=t, m=m, c=c, flow_var=contingency_flow)
 
-                    # add upper rate constraint
-                    prob.add_cst(
-                        cst=contingency_flow <= branch_data_t.rates[m] / Sbase,
-                        name=join("br_cst_flow_upper_lim_", [t, m, c]))
+                    # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
+                    if monitor_only_ntc_load_rule_branches:
+                        """
+                        Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, 
+                        y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural 
+                        significa que la linea no puede limitar el intercambio
+                        Ejemplo:
+                            ntc_load_rule = 0.7
+                            rate = 1700
+                            alpha_n1 = 0.05
+                            structural_rate = 5200
+                            0.7 * 1700 --> 1190 mw para el intercambio
+                            1190 / 0.05 --> 23.800 MW en la frontera en N
+                            23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                           """
+                        monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (
+                                    alpha_n1[m, c] + 1e-20) <= structural_ntc
+                    else:
+                        monitor_by_load_rule_n1 = True
 
-                    # add lower rate constraint
-                    prob.add_cst(
-                        cst=contingency_flow >= -branch_data_t.rates[m] / Sbase,
-                        name=join("br_cst_flow_lower_lim_", [t, m, c]))
+                    # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                    if monitor_only_sensitive_branches:
+                        monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
+                    else:
+                        monitor_by_sensitivity_n1 = True
+
+                    if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
+                        branch_vars.add_contingency_flow(t=t, m=m, c=c, flow_var=contingency_flow)
+
+                        # add upper rate constraint
+                        prob.add_cst(
+                            cst=contingency_flow <= branch_data_t.rates[m] / Sbase,
+                            name=join("br_cst_flow_upper_lim_", [t, m, c]))
+
+                        # add lower rate constraint
+                        prob.add_cst(
+                            cst=contingency_flow >= -branch_data_t.rates[m] / Sbase,
+                            name=join("br_cst_flow_lower_lim_", [t, m, c]))
 
     return f_obj
 
@@ -929,6 +931,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                           skip_generation_limits: bool = False,
                           consider_contingencies: bool = False,
+                          alpha_threshold: float = 0.001,
                           lodf_threshold: float = 0.001,
                           buses_areas_1: IntVec = None,
                           buses_areas_2: IntVec = None,
@@ -1008,10 +1011,28 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             mctg = LinearMultiContingencies(grid=grid)
             mctg.update(
                 lodf=ls.LODF,
-                ptdf=ls.PTDF,
-            )
+                ptdf=ls.PTDF)
+
+            # compute exchange sensitivities
+            if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
+                alpha, alpha_n1 = compute_alpha(
+                    ptdf=ls.PTDF,
+                    lodf=ls.LODF if consider_contingencies else None,
+                    P0=nc.Sbus.real,
+                    Pinstalled=nc.bus_installed_power,
+                    Pgen=nc.generator_data.get_injections_per_bus()[:, 0].real,
+                    Pload=nc.load_data.get_injections_per_bus()[:, 0].real,
+                    idx1=buses_areas_1,
+                    idx2=buses_areas_2,
+                    mode=transfer_method)
+            else:
+                alpha = None
+                alpha_n1 = None
+
         else:
             mctg = None
+            alpha = None
+            alpha_n1 = None
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
@@ -1059,9 +1080,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 lodf_threshold=lodf_threshold,
                 monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                 monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
-                alpha=,
-                alpha_n1=,
-                alpha_threshold=,
+                alpha=alpha,
+                alpha_n1=alpha_n1,
+                alpha_threshold=alpha_threshold,
+                structural_ntc=nc.branch_data.get_inter_areas(buses_areas_1=buses_areas_1, buses_areas_2=buses_areas_2),
+                ntc_load_rule=None,
                 inf=1e20)
 
             # formulate nodes ---------------------------------------------------------------------------------------
@@ -1076,14 +1099,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
-
-        # todo: delete this??
-        # production equals demand ---------------------------------------------------------------------------------
-        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                              mip_vars.load_vars.p[t_idx, :].sum() -
-                              mip_vars.load_vars.shedding[t_idx].sum()),
-                         name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:
             progress_func((t_idx + 1) / nt * 100.0)

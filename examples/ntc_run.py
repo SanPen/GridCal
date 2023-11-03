@@ -1,11 +1,6 @@
 import os
-import numpy as np
 from GridCalEngine.api import *
-import GridCalEngine.basic_structures as bs
-import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
-from GridCalEngine import FileOpen, PowerFlowOptions
 import time
 from GridCalEngine.basic_structures import BranchImpedanceMode
 from GridCalEngine.IO.file_handler import FileOpen
@@ -51,7 +46,7 @@ linear.run()
 print(f'linear analysis computed in {time.time() - tm0:.2f} scs.')
 
 tm0 = time.time()
-alpha, alpha_n1 = compute_alpha(
+alpha = compute_alpha(
     ptdf=linear.PTDF,
     lodf=linear.LODF,
     P0=numerical_circuit_.Sbus.real,
