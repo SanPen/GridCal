@@ -20,7 +20,7 @@ import numba as nb
 import scipy.sparse as sp
 from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
-
+from GridCalEngine.Utils.Sparse.utils import dense_to_csc_sparse
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -376,6 +376,32 @@ class LinearMultiContingency:
         flow += self.ptdf_factors @ injections[self.bus_indices]
         return flow
 
+    def get_contingency_flows_lp(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
+        """
+        Get contingency flows
+        :param base_flow: Base branch flows (nbranch)
+        :param injections: Bus injections increments (nbus)
+        :param threshold: PTDF and LODF threshold to consider a value
+        :return: New flows (nbranch)
+        """
+
+        # todo: ver como hacer esto para base_flows e injections como vectores de LP
+
+        if len(self.bus_indices):
+            injections = self.injections_factor * injections[self.bus_indices]
+        else:
+            injections = np.zeros(self.ptdf_factors.shape[1])
+
+        # return make_contingency_flows(base_flow=base_flow,
+        #                               lodf_factors=self.lodf_factors,
+        #                               ptdf_factors=self.ptdf_factors,
+        #                               injections=injections,
+        #                               threshold=threshold)
+
+        flow = base_flow.copy()
+        flow += self.mlodf_factors @ base_flow[self.branch_indices]
+        flow += self.ptdf_factors @ injections[self.bus_indices]
+        return flow
 
 class LinearMultiContingencies:
     """
@@ -397,14 +423,17 @@ class LinearMultiContingencies:
 
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    def update(self, lodf: Mat, ptdf: Mat) -> None:
+    def update(self, lodf: Mat, ptdf: Mat, lodf_threshold: float) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)
         :param ptdf: original PTDF matrix (nbr, nbus)
+        :param lodf_threshold: lodf threshold
         :return: None
         """
 
+        # todo: ver como pasar la matriz lodf a una sparce para almacenar solo los que cumplan con el threshold
+        #  pensar hacer lo mismo con el ptdf
         self.multi_contingencies = list()
 
         # for each contingency group
