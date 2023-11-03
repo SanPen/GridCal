@@ -226,10 +226,6 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
                 print('Assigning', bus.name, 'to', selected.name)
                 selected.merge(bus)
 
-                # merge the graphics
-                if selected.graphic_obj is not None and bus.graphic_obj is not None:
-                    selected.graphic_obj.merge(bus.graphic_obj)
-
                 # remember the buses that keep the devices
                 buses_merged.append(selected)
 

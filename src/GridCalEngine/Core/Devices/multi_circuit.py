@@ -1202,22 +1202,22 @@ class MultiCircuit:
         element_type = obj.device_type
 
         if element_type == DeviceType.LoadDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.loads.remove(obj)
 
         elif element_type == DeviceType.StaticGeneratorDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.static_generators.remove(obj)
 
         elif element_type == DeviceType.GeneratorDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.generators.remove(obj)
 
         elif element_type == DeviceType.BatteryDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.batteries.remove(obj)
 
         elif element_type == DeviceType.ShuntDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.shunts.remove(obj)
 
         elif element_type == DeviceType.ExternalGridDevice:
-            raise Exception(element_type.value + ' cannot be deleted by index')
+            obj.bus.external_grids.remove(obj)
 
         elif element_type == DeviceType.LineDevice:
             return self.delete_line(obj)
@@ -1791,14 +1791,10 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
-                    if branch_list[i].graphic_obj is not None:
-                        branch_list[i].graphic_obj.remove(ask=ask)
-                    else:
-                        self.delete_branch(branch_list[i])
+                    self.delete_branch(branch_list[i])
 
         # remove the bus itself
         if obj in self.buses:
-            print('Deleted', obj.name)
             self.buses.remove(obj)
 
     def add_line(self, obj: dev.Line, logger: Union[bs.Logger, DataLogger] = bs.Logger()):
@@ -1978,6 +1974,13 @@ class MultiCircuit:
         """
         self.transformers2w.remove(obj)
 
+    def delete_switch(self, obj: dev.Transformer2W):
+        """
+        Delete transformer
+        :param obj: Transformer2W instance
+        """
+        self.switch_devices.remove(obj)
+
     def delete_winding(self, obj: dev.Winding):
         """
         Delete winding
@@ -1988,20 +1991,20 @@ class MultiCircuit:
             if obj == tr3.winding1:
                 tr3.bus1 = None
                 # tr3.winding1 = None
-                if tr3.graphic_obj is not None:
-                    tr3.graphic_obj.connection_lines[0] = None
+                # if tr3.graphic_obj is not None:
+                #     tr3.graphic_obj.connection_lines[0] = None
 
             elif obj == tr3.winding2:
                 tr3.bus2 = None
                 # tr3.winding2 = None
-                if tr3.graphic_obj is not None:
-                    tr3.graphic_obj.connection_lines[1] = None
+                # if tr3.graphic_obj is not None:
+                #     tr3.graphic_obj.connection_lines[1] = None
 
             if obj == tr3.winding3:
                 tr3.bus3 = None
                 # tr3.winding3 = None
-                if tr3.graphic_obj is not None:
-                    tr3.graphic_obj.connection_lines[2] = None
+                # if tr3.graphic_obj is not None:
+                #     tr3.graphic_obj.connection_lines[2] = None
 
         # self.windings.remove(obj)
 
@@ -2883,45 +2886,6 @@ class MultiCircuit:
         """
         return A.indices[A.indptr[bus_idx]:A.indptr[bus_idx + 1]]
 
-    def try_to_fix_buses_location(self, buses_selection):
-        """
-        Try to fix the location of the null-location buses
-        :param buses_selection: list of tuples index, bus object
-        :return: indices of the corrected buses
-        """
-        delta = 1e20
-
-        while delta > 10:
-
-            A = self.get_adjacent_matrix()
-
-            for k, bus in buses_selection:
-
-                idx = list(self.get_adjacent_buses(A, k))
-
-                # remove the elements already in the selection
-                for i in range(len(idx) - 1, 0, -1):
-                    if k == idx[i]:
-                        idx.pop(i)
-
-                x_arr = list()
-                y_arr = list()
-                for i in idx:
-                    x_arr.append(self.buses[i].graphic_obj.X())
-                    y_arr.append(self.buses[i].graphic_obj.y())
-
-                x_m = np.mean(x_arr)
-                y_m = np.mean(y_arr)
-
-                delta_i = np.sqrt((bus.X - x_m) ** 2 + (bus.y - y_m) ** 2)
-
-                if delta_i < delta:
-                    delta = delta_i
-
-                bus.X = x_m.copy()
-                bus.y = y_m.copy()
-                bus.graphic_obj.set_position(x=bus.X, y=bus.y)
-
     def get_center_location(self):
         """
         Get the mean coordinates of the system (lat, lon)
@@ -2930,43 +2894,6 @@ class MultiCircuit:
 
         return coord.mean(axis=0).tolist()
 
-    def get_boundaries(self):
-        """
-        Get the graphic representation boundaries
-        :return: min_x, max_x, min_y, max_y
-        """
-        min_x = sys.maxsize
-        min_y = sys.maxsize
-        max_x = -sys.maxsize
-        max_y = -sys.maxsize
-
-        # shrink selection only
-        for bus in self.buses:
-            bus.retrieve_graphic_position()
-            x = bus.x
-            y = bus.y
-            max_x = max(max_x, x)
-            min_x = min(min_x, x)
-            max_y = max(max_y, y)
-            min_y = min(min_y, y)
-
-        return min_x, max_x, min_y, max_y
-
-    def average_separation(self):
-        """
-        Average separation of the buses
-        :return: average separation
-        """
-        separation = 0.0
-        branch_lists = self.get_branch_lists()
-        n = 0
-        for branch_lst in branch_lists:
-            for branch in branch_lst:
-                s = np.sqrt((branch.bus_from.x - branch.bus_to.x) ** 2 + (branch.bus_from.y - branch.bus_to.y) ** 2)
-                separation += s
-                n += 1
-        return separation / n
-
     def add_circuit(self, circuit: "MultiCircuit", angle):
         """
         Add a circuit to this circuit
@@ -2974,30 +2901,6 @@ class MultiCircuit:
         :param angle: angle in degrees
         :return: Nothing
         """
-
-        min_x, max_x, min_y, max_y = self.get_boundaries()
-
-        sep1 = self.average_separation()
-
-        # compute the average point
-        xm = (max_x + min_x) / 2
-        ym = (max_y + min_y) / 2
-
-        # compute the radius
-        r = np.sqrt((max_x - xm) ** 2 + (max_y - ym) ** 2)
-        a = np.deg2rad(angle)
-
-        # compute the zero point at which to insert the circuit
-        x0 = xm + r * np.cos(a)
-        y0 = xm + r * np.sin(a)
-
-        # modify the coordinates of the new circuit
-        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries()
-        sep2 = self.average_separation()
-        factor = sep2 / sep1
-        for bus in circuit.buses:
-            bus.x = x0 + (bus.x - min_x2) * factor
-            bus.y = y0 + (bus.y - min_y2) * factor
 
         # add profiles if required
         if self.time_profile is not None:

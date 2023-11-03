@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
@@ -30,20 +30,20 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
     TransformerGraphicItem
     """
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5,
                  api_object: Transformer2W = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -152,27 +152,13 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                 # change state
                 self.enable_disable_toggle()
 
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this transformer?', 'Remove transformer')
-        else:
-            ok = True
-
-        if ok:
-            self.diagramScene.circuit.delete_branch(self.api_object)
-            self.diagramScene.removeItem(self)
-
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
-        templates = self.diagramScene.circuit.transformer_types
+        Sbase = self.editor.circuit.Sbase
+        templates = self.editor.circuit.transformer_types
         current_template = self.api_object.template
         dlg = TransformerEditor(self.api_object, Sbase,
                                 modify_on_accept=True,
@@ -186,24 +172,24 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
+        Sbase = self.editor.circuit.Sbase
 
         if self.api_object.template is not None:
             # automatically pick the template
             if isinstance(self.api_object.template, TransformerType):
-                self.diagramScene.circuit.add_transformer_type(self.api_object.template)
+                self.editor.circuit.add_transformer_type(self.api_object.template)
             else:
                 # raise dialogue to set the template
                 dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
                 if dlg.exec_():
                     tpe = dlg.get_template()
-                    self.diagramScene.circuit.add_transformer_type(tpe)
+                    self.editor.circuit.add_transformer_type(tpe)
         else:
             # raise dialogue to set the template
             dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
             if dlg.exec_():
                 tpe = dlg.get_template()
-                self.diagramScene.circuit.add_transformer_type(tpe)
+                self.editor.circuit.add_transformer_type(tpe)
 
     def add_to_catalogue(self):
         """
@@ -216,7 +202,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
 
         if ok:
             Pfe, Pcu, Vsc, I0 = reverse_transformer_short_circuit_study(transformer_obj=self.api_object,
-                                                                        Sbase=self.diagramScene.circuit.Sbase)
+                                                                        Sbase=self.editor.circuit.Sbase)
 
             tpe = TransformerType(hv_nominal_voltage=self.api_object.HV,
                                   lv_nominal_voltage=self.api_object.LV,
@@ -229,7 +215,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                                   gx_hv1=0.5,
                                   name='type from ' + self.api_object.name)
 
-            self.diagramScene.circuit.add_transformer_type(tpe)
+            self.editor.circuit.add_transformer_type(tpe)
 
     def flip_connections(self):
         """

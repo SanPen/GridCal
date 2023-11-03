@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import numpy as np
 from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 from GridCalEngine.enumerations import DeviceType
@@ -26,7 +28,8 @@ from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-
+from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 
 class ObjectsTableMain(DiagramsMain):
     """
@@ -63,6 +66,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         # list click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -242,10 +246,11 @@ class ObjectsTableMain(DiagramsMain):
         """
         On click, display the objects properties
         """
-        if self.ui.dataStructuresTreeView.selectedIndexes()[
-            0].parent().row() > -1:  # if the clicked element has a valid parent
 
-            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
+            # if the clicked element has a valid parent...
+
+            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
 
@@ -309,7 +314,7 @@ class ObjectsTableMain(DiagramsMain):
         Add default objects objects
         """
         model = self.ui.dataStructureTableView.model()
-        elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         if model is not None:
 
@@ -422,7 +427,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         model = self.ui.dataStructureTableView.model()
         sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
-        elm_type = sel_item.data(role=QtCore.Qt.DisplayRole)
+        elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         if model is not None:
 
@@ -470,13 +475,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             pass
 
-    def clear_big_bus_markers(self):
-        """
-        clear all the buses' "big marker"
-        """
-        for bus in self.circuit.buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.delete_big_marker()
 
     def highlight_selection_buses(self):
         """
@@ -589,12 +587,15 @@ class ObjectsTableMain(DiagramsMain):
                     mx = max(values)
 
                     if mx != 0:
+
+                        colors = [None] * len(values)
+                        for i, value in enumerate(values):
+                            r, g, b, a = cmap(value / mx)
+                            colors[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+
                         # color based on the value
-                        for bus, value in zip(buses, values):
-                            if bus.graphic_obj is not None:
-                                r, g, b, a = cmap(value / mx)
-                                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                                bus.graphic_obj.add_big_marker(color=color)
+                        self.set_big_bus_marker_colours(buses=buses, colors=colors, tool_tips=None)
+
                     else:
                         info_msg('The maximum value is 0, so the coloring cannot be applied',
                                  'Highlight based on property')
@@ -611,7 +612,7 @@ class ObjectsTableMain(DiagramsMain):
         :return:
         """
         if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
-            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
             plt.show()
@@ -783,3 +784,90 @@ class ObjectsTableMain(DiagramsMain):
         else:
             # nothing to search
             pass
+
+    def correct_branch_monitoring(self, max_loading=1.0):
+        """
+        The NTC optimization and other algorithms will not work if we have overloaded Branches in DC monitored
+        We can try to not monitor those to try to get it working
+        """
+        res = self.session.power_flow
+
+        if res is None:
+            self.console_msg('No power flow results.\n')
+        else:
+            branches = self.circuit.get_branches_wo_hvdc()
+            for elm, loading in zip(branches, res.loading):
+                if loading >= max_loading:
+                    elm.monitor_loading = False
+                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
+
+    def snapshot_balance(self):
+        """
+        Snapshot balance report
+        """
+        df = self.circuit.snapshot_balance()
+        self.console_msg('\n' + str(df))
+
+    def delete_inconsistencies(self):
+        """
+        Call delete shit
+        :return:
+        """
+        ok = yes_no_question(
+            "This action removes all disconnected devices with no active profile and remove all small islands",
+            "Delete inconsistencies")
+
+        if ok:
+            logger = self.delete_shit()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue("Delete inconsistencies", logger)
+                dlg.setModal(True)
+                dlg.exec_()
+
+    def delete_shit(self, min_island=1):
+        """
+        Delete small islands, disconnected stuff and other garbage
+        """
+        numerical_circuit_ = compile_numerical_circuit_at(circuit=self.circuit, )
+        islands = numerical_circuit_.split_into_islands()
+        logger = bs.Logger()
+        buses_to_delete = list()
+        buses_to_delete_idx = list()
+        for island in islands:
+            if island.nbus <= min_island:
+                for r in island.original_bus_idx:
+                    buses_to_delete.append(self.circuit.buses[r])
+                    buses_to_delete_idx.append(r)
+
+        for r, bus in enumerate(self.circuit.buses):
+            if not bus.active and not np.any(bus.active_prof):
+                if r not in buses_to_delete_idx:
+                    buses_to_delete.append(bus)
+                    buses_to_delete_idx.append(r)
+
+        # delete the grphics from all diagrams
+        self.delete_from_all_diagrams(elements=buses_to_delete)
+
+        for elm in buses_to_delete:
+            logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
+
+        # search other elements to delete
+        for dev_lst in [self.circuit.lines,
+                        self.circuit.dc_lines,
+                        self.circuit.vsc_devices,
+                        self.circuit.hvdc_lines,
+                        self.circuit.transformers2w,
+                        self.circuit.get_generators(),
+                        self.circuit.get_loads(),
+                        self.circuit.get_shunts(),
+                        self.circuit.get_batteries(),
+                        self.circuit.get_static_generators()]:
+
+            for elm in dev_lst:
+                if not elm.active and not np.any(elm.active_prof):
+                    self.delete_from_all_diagrams(elements=[elm])
+                    print('Deleted ', elm.device_type.value, elm.name)
+                    logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
+
+        return logger

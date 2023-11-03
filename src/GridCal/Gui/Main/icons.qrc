@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/schematicadd_to.svg</file>
     <file>icons/bug.svg</file>
     <file>icons/add_substation.svg</file>
     <file>icons/map (add).svg</file>

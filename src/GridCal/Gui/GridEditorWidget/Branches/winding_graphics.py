@@ -27,25 +27,29 @@ from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGra
 
 class WindingGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem,
+    def __init__(self,
+                 fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 diagramScene,
+                 editor,
                  width=5,
                  api_object: Winding = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
+
+        self.parent_tr3_graphics_item = None
+        self.winding_number = 0
 
     def contextMenuEvent(self, event):
         """
@@ -106,11 +110,15 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Do you want to remove this winding?', 'Remove winding')
+            dtype = self.api_object.device_type.value
+            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+                                 'Remove branch')
         else:
             ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_winding(self.api_object)
-            self.diagramScene.removeItem(self)
+            self.editor.circuit.delete_branch(self.api_object)
+            self.editor.delete_diagram_element(self.api_object)
 
+            # unregister the winding
+            self.parent_tr3_graphics_item.remove_winding(self.winding_number)

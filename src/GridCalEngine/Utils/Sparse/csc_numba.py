@@ -20,7 +20,8 @@ import numpy as np
 import numba as nb
 from numba.typed import List
 import math
-
+from typing import Tuple
+from GridCalEngine.basic_structures import Mat, Vec, IntVec
 
 # @nb.njit("i4[:](i8)")
 @nb.njit(cache=True)
@@ -1067,3 +1068,36 @@ def csc_stack_2d_ff_col_major(mats_data, mats_indptr, mats_indices, mats_cols, m
             offset_col += n
 
     return data, indices, indptr, nrows, ncols
+
+
+@nb.njit(cache=True)
+def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]:
+    """
+    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    :param mat: dense matrix
+    :param threshold: threshold
+    :return: data, indices, indptr
+    """
+    n_row, n_col = mat.shape
+
+    data = np.empty(n_row * n_col)
+    indptr = np.empty(n_col + 1)
+    indices = np.empty(n_row * n_col)
+    k = 0
+    for j in range(n_col):
+
+        indptr[j] = k
+
+        for i in range(n_row):
+
+            if abs(mat[i, j]) > threshold:
+                data[k] = mat[i, j]
+                indices[k] = i
+                k += 1
+
+    indptr[n_col] = k
+    if k < (n_col * n_row):
+        data = data[:k]
+        indices = indices[:k]
+
+    return data, indices, indptr

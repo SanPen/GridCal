@@ -26,6 +26,7 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
+from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
@@ -280,9 +281,14 @@ class DiagramsMain(CompiledArraysMain):
         """
         Adapt the width of all the nodes to their names
         """
-        for bus in self.circuit.buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.adapt()
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                for bus in self.circuit.buses:
+
+                    diagram.diagram.query_point(bus).graphic_object.adapt()
 
     def zoom_in(self):
         """
@@ -766,7 +772,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_bus_branch_diagram(self) -> None:
+    def add_bus_branch_diagram_now(self, name='All bus branches') -> BusBranchEditorWidget:
         """
         Add ageneral bus-branch diagram
         """
@@ -781,7 +787,8 @@ class DiagramsMain(CompiledArraysMain):
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=None,
-                                              name='All bus branches')
+                                              name=name)
+
         diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
                                                diagram=diagram,
                                                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
@@ -790,6 +797,14 @@ class DiagramsMain(CompiledArraysMain):
         self.add_diagram(diagram_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram_widget)
+
+        return diagram_widget
+
+    def add_bus_branch_diagram(self) -> None:
+        """
+        Add ageneral bus-branch diagram
+        """
+        self.add_bus_branch_diagram_now(name='All bus branches')
 
     def add_selection_bus_branch_diagram(self):
         """
@@ -1137,17 +1152,71 @@ class DiagramsMain(CompiledArraysMain):
 
                 self.redraw_current_diagram()
 
-    @staticmethod
-    def set_big_bus_marker(buses, color: QtGui.QColor):
+    def set_big_bus_marker(self, buses: List[dev.Bus], color: QtGui.QColor):
         """
         Set a big marker at the selected buses
         :param buses: list of Bus objects
         :param color: colour to use
         """
-        for bus in buses:
-            if bus.graphic_obj is not None:
-                bus.graphic_obj.add_big_marker(color=color)
-                bus.graphic_obj.setSelected(True)
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                for bus in buses:
+
+                    graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                    if graphic_obj is not None:
+                        graphic_obj.add_big_marker(color=color)
+                        graphic_obj.setSelected(True)
+
+    def set_big_bus_marker_colours(self,
+                                   buses: List[dev.Bus],
+                                   colors: List[QtGui.QColor],
+                                   tool_tips: Union[None, List[str]] = None):
+        """
+        Set a big marker at the selected buses with the matching colours
+        :param buses: list of Bus objects
+        :param colors: list of colour to use
+        :param tool_tips: list of tool tips (optional)
+        """
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                if tool_tips:
+                    for bus, color, tool_tip in zip(buses, colors, tool_tips):
+
+                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                        if graphic_obj is not None:
+                            graphic_obj.add_big_marker(color=color, tool_tip_text=tool_tip)
+                            graphic_obj.setSelected(True)
+                else:
+                    for bus, color in zip(buses, colors):
+
+                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
+
+                        if graphic_obj is not None:
+                            graphic_obj.add_big_marker(color=color)
+                            graphic_obj.setSelected(True)
+    def clear_big_bus_markers(self):
+        """
+        Set a big marker at the selected buses
+        """
+
+        for diagram in self.diagram_widgets_list:
+
+            if isinstance(diagram, BusBranchEditorWidget):
+
+                buses_diagram_group = diagram.diagram.query_by_type(DeviceType.BusDevice)
+
+                if buses_diagram_group is not None:
+                    for idtag, geo in buses_diagram_group.locations.items():
+                        if geo.graphic_object is not None:
+                            geo.graphic_object.delete_big_marker()
 
     def delete_selected_from_the_schematic(self):
         """
@@ -1180,14 +1249,13 @@ class DiagramsMain(CompiledArraysMain):
         """
         Try to fix the location of the buses
         """
-
-        selected_buses = self.get_selected_buses()
-        if len(selected_buses) > 0:
-            self.circuit.try_to_fix_buses_location(buses_selection=selected_buses)
-            for k, bus, graphic_obj in selected_buses:
-                graphic_obj.set_position(x=bus.x, y=bus.y)
-        else:
-            info_msg('Choose some elements from the schematic', 'Fix buses locations')
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, BusBranchEditorWidget):
+            selected_buses = diagram_widget.get_selected_buses()
+            if len(selected_buses) > 0:
+                diagram_widget.try_to_fix_buses_location(buses_selection=selected_buses)
+            else:
+                info_msg('Choose some elements from the schematic', 'Fix buses locations')
 
     def colour_next_simulation_step(self):
         """
@@ -1410,3 +1478,21 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram, GridMapWidget):
                 pass
+
+    def delete_from_all_diagrams(self, elements: List[dev.EditableDevice]):
+        """
+        Delete elements from all editors
+        :param elements: list of devices to delete from the graphics editors
+        :return:
+        """
+        for diagram_widget in self.diagram_widgets_list:
+            if isinstance(diagram_widget, BusBranchEditorWidget):
+                diagram_widget.delete_diagram_elements(elements)
+
+            elif isinstance(diagram_widget, BusViewerWidget):
+                diagram_widget.grid_editor.delete_diagram_elements(elements)
+
+            elif isinstance(diagram_widget, GridMapWidget):
+                pass
+                # diagram_widget.delete_diagram_elements(elements)
+

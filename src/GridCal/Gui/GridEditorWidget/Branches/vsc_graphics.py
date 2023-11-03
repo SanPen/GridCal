@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
@@ -28,20 +28,20 @@ class VscGraphicItem(LineGraphicTemplateItem):
     Graphics item for the VSC converter
     """
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5,
                  api_object: VSC = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -117,18 +117,3 @@ class VscGraphicItem(LineGraphicTemplateItem):
         """
 
         pass
-
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this VSC?', 'Remove VSC')
-        else:
-            ok = True
-
-        if ok:
-            self.diagramScene.circuit.delete_vsc_converter(self.api_object)
-            self.diagramScene.removeItem(self)
-

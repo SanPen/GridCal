@@ -129,7 +129,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.connection_lines.append(None)
 
         # set the graphical objects appropriately
-        self.api_object.winding1.graphic_obj = self.winding_circles[0]
+        # self.api_object.winding1.graphic_obj = self.winding_circles[0]
 
         self.big_marker = None
 
@@ -292,30 +292,61 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.V1 = bus.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            self.api_object.winding1.graphic_obj = conn
             conn.api_object = self.api_object.winding1
+            conn.winding_number = 0
 
         elif i == 1:
             self.api_object.bus2 = bus
             self.api_object.V2 = bus.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            self.api_object.winding2.graphic_obj = conn
             conn.api_object = self.api_object.winding2
+            conn.winding_number = 1
 
         elif i == 2:
             self.api_object.bus3 = bus
             self.api_object.V3 = bus.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            self.api_object.winding3.graphic_obj = conn
             conn.api_object = self.api_object.winding3
+            conn.winding_number = 2
+        else:
+            raise Exception('Unsupported winding index {}'.format(i))
+
+        # set the reverse lookup
+        conn.parent_tr3_graphics_item = self
 
         # update the connection placement
-        # from_port.update()
-        # to_port.update()
         self.update_conn()
         self.mousePressEvent(None)
+
+    def remove_winding(self, i: int):
+        """
+        Remove winding by index
+        :param i: winding index [0, 1, 2]
+        """
+        if i == 0:
+            self.api_object.bus1 = None
+            self.api_object.V1 = 0
+            self.connection_lines[0] = None
+            self.api_object.winding1 = None
+            self.terminals[0].setZValue(-1)
+
+        elif i == 1:
+            self.api_object.bus2 = None
+            self.api_object.V2 = 0
+            self.connection_lines[1] = None
+            self.api_object.winding2 = None
+            self.terminals[1].setZValue(-1)
+
+        elif i == 2:
+            self.api_object.bus3 = None
+            self.api_object.V3 = 0
+            self.connection_lines[2] = None
+            self.api_object.winding3 = None
+            self.terminals[2].setZValue(-1)
+        else:
+            raise Exception('Unsupported winding index {}'.format(i))
 
     def arrange_children(self) -> None:
         """

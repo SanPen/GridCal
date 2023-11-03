@@ -117,14 +117,14 @@ class Transformer3W(EditableDevice):
         """
         return (self.bus1 is not None) and (self.bus2 is not None) and (self.bus3 is not None)
 
-    @property
-    def graphic_obj(self):
-        return self._graphic_obj
-
-    @graphic_obj.setter
-    def graphic_obj(self, obj):
-        self._graphic_obj = obj
-        self.bus0.graphic_obj = obj
+    # @property
+    # def graphic_obj(self):
+    #     return self._graphic_obj
+    #
+    # @graphic_obj.setter
+    # def graphic_obj(self, obj):
+    #     self._graphic_obj = obj
+    #     self.bus0.graphic_obj = obj
 
     @property
     def bus1(self):
@@ -286,11 +286,3 @@ class Transformer3W(EditableDevice):
         self._rate31 = val
         self.compute_delta_to_star()
 
-    def retrieve_graphic_position(self):
-        """
-        Get the position set by the graphic object into this object's variables
-        :return: Nothing
-        """
-        if self.graphic_obj is not None:
-            self.x = int(self.graphic_obj.pos().x())
-            self.y = int(self.graphic_obj.pos().y())

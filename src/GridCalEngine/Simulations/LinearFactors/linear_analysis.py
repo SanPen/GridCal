@@ -20,18 +20,20 @@ import numba as nb
 import scipy.sparse as sp
 from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
-from GridCalEngine.Utils.Sparse.utils import dense_to_csc_sparse
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
+
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
+from GridCalEngine.Utils.Sparse.csc import dense_to_csc
+from GridCalEngine.Utils.MIP.selected_interface import lpDot
 
 
 @nb.njit()
 def make_contingency_flows(base_flow: Vec,
-                           lodf_factors: Mat,
-                           ptdf_factors: Mat,
+                           lodf_factors: sp.csc_matrix,
+                           ptdf_factors: sp.csc_matrix,
                            injections: Vec,
                            threshold):
     """
@@ -83,14 +85,14 @@ def make_contingency_flows(base_flow: Vec,
     return flow_n1
 
 
-def compute_acptdf(Ybus: sp.csc_matrix,
-                   Yf: sp.csc_matrix,
-                   F: IntVec,
-                   T: IntVec,
-                   V: CxVec,
-                   pq: IntVec,
-                   pv: IntVec,
-                   distribute_slack: bool = False) -> Mat:
+def make_acptdf(Ybus: sp.csc_matrix,
+                Yf: sp.csc_matrix,
+                F: IntVec,
+                T: IntVec,
+                V: CxVec,
+                pq: IntVec,
+                pv: IntVec,
+                distribute_slack: bool = False) -> Mat:
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
@@ -224,7 +226,13 @@ def make_lodf(Cf: sp.csc_matrix,
 
 # @nb.njit(cache=True)
 def make_mlodf(circuit, lodf):
-
+    """
+    Function to build an MLODF matrix.
+    Deprecated, use LinearMultiContingency instead
+    :param circuit:
+    :param lodf:
+    :return:
+    """
     lodf_nx_list = list()
 
     # Create dictionaries to speed up the access
@@ -316,6 +324,24 @@ def make_transfer_limits(ptdf: Mat,
     return tmc
 
 
+@nb.njit(cache=True)
+def create_M_numba(lodf: Mat, branch_contingency_indices) -> Mat:
+    """
+
+    :param lodf:
+    :param branch_contingency_indices:
+    :return:
+    """
+    M = np.empty((len(branch_contingency_indices), len(branch_contingency_indices)))
+    for i in range(len(branch_contingency_indices)):
+        for j in range(len(branch_contingency_indices)):
+            if i == j:
+                M[i, j] = 1.0
+            else:
+                M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
+    return M
+
+
 class LinearMultiContingency:
     """
     LinearMultiContingency
@@ -324,24 +350,24 @@ class LinearMultiContingency:
     def __init__(self,
                  branch_indices: IntVec,
                  bus_indices: IntVec,
-                 mlodf_factors: Mat,
-                 ptdf_factors: Mat,
+                 mlodf_factors: sp.csc_matrix,
+                 ptdf_factors: sp.csc_matrix,
                  injections_factor: Vec):
         """
         Linear multi contingency object
         :param branch_indices: contingency branch indices.
         :param bus_indices: contingency bus indices.
-        :param mlodf_factors: LODF factors applicable (all_branches, contingency branches).
+        :param mlodf_factors: MLODF factors applicable (all_branches, contingency branches).
         :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
-        :param injections_factor: Injection contingency factors (len(bus indices))
+        :param injections_factor: Injection contingency factors, i.e percentage to decrease an injection (len(bus indices))
         """
 
         assert len(bus_indices) == len(injections_factor)
 
         self.branch_indices: IntVec = branch_indices
         self.bus_indices: IntVec = bus_indices
-        self.mlodf_factors: Mat = mlodf_factors
-        self.ptdf_factors: Mat = ptdf_factors
+        self.mlodf_factors: sp.csc_matrix = mlodf_factors
+        self.ptdf_factors: sp.csc_matrix = ptdf_factors
         self.injections_factor: Vec = injections_factor
 
     def has_injection_contingencies(self) -> bool:
@@ -351,12 +377,11 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
+    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec]):
         """
         Get contingency flows
         :param base_flow: Base branch flows (nbranch)
         :param injections: Bus injections increments (nbus)
-        :param threshold: PTDF and LODF threshold to consider a value
         :return: New flows (nbranch)
         """
 
@@ -376,32 +401,27 @@ class LinearMultiContingency:
         flow += self.ptdf_factors @ injections[self.bus_indices]
         return flow
 
-    def get_contingency_flows_lp(self, base_flow: Vec, injections: Union[None, Vec], threshold: float = 1e-5):
+    def get_lp_contingency_flows(self,
+                                 base_flow: ObjVec,
+                                 injections: Union[None, ObjVec]) -> ObjVec:
         """
-        Get contingency flows
+        Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
         :param injections: Bus injections increments (nbus)
-        :param threshold: PTDF and LODF threshold to consider a value
         :return: New flows (nbranch)
         """
-
-        # todo: ver como hacer esto para base_flows e injections como vectores de LP
 
         if len(self.bus_indices):
             injections = self.injections_factor * injections[self.bus_indices]
         else:
             injections = np.zeros(self.ptdf_factors.shape[1])
 
-        # return make_contingency_flows(base_flow=base_flow,
-        #                               lodf_factors=self.lodf_factors,
-        #                               ptdf_factors=self.ptdf_factors,
-        #                               injections=injections,
-        #                               threshold=threshold)
-
-        flow = base_flow.copy()
-        flow += self.mlodf_factors @ base_flow[self.branch_indices]
-        flow += self.ptdf_factors @ injections[self.bus_indices]
+        flow = (base_flow
+                + lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+                + lpDot(self.ptdf_factors, injections[self.bus_indices])
+                )
         return flow
+
 
 class LinearMultiContingencies:
     """
@@ -423,17 +443,15 @@ class LinearMultiContingencies:
 
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    def update(self, lodf: Mat, ptdf: Mat, lodf_threshold: float) -> None:
+    def update(self, lodf: Mat, ptdf: Mat, threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)
         :param ptdf: original PTDF matrix (nbr, nbus)
-        :param lodf_threshold: lodf threshold
+        :param threshold: threshold to discard values
         :return: None
         """
 
-        # todo: ver como pasar la matriz lodf a una sparce para almacenar solo los que cumplan con el threshold
-        #  pensar hacer lo mismo con el ptdf
         self.multi_contingencies = list()
 
         # for each contingency group
@@ -473,27 +491,26 @@ class LinearMultiContingencies:
             injections_factors = np.array(injections_factors)
 
             if len(branch_contingency_indices) > 1:
+
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = np.ones((len(branch_contingency_indices), len(branch_contingency_indices)))
-                for i in range(len(branch_contingency_indices)):
-                    for j in range(len(branch_contingency_indices)):
-                        if not (i == j):
-                            M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
+                M = create_M_numba(lodf=lodf, branch_contingency_indices=branch_contingency_indices)
 
                 # Compute LODF for the multiple failure
-                mlodf_factors = lodf[:, branch_contingency_indices] @ np.linalg.inv(M)
+                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices] @ np.linalg.inv(M),
+                                             threshold=threshold)
 
             elif len(branch_contingency_indices) == 1:
                 # append values
-                mlodf_factors = lodf[:, branch_contingency_indices]
+                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices],
+                                             threshold=threshold)
 
             else:
-                mlodf_factors = np.zeros((lodf.shape[0], 0))
+                mlodf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
                 ptdf_factors = ptdf[:, bus_contingency_indices]
             else:
-                ptdf_factors = np.zeros((lodf.shape[0], 0))
+                ptdf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(

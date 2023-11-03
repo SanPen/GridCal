@@ -295,7 +295,7 @@ def add_btg_line(
         btg_circuit: "btg.Circuit",
         bus_dict,
         time_series: bool = False,
-        ntime:int = 1,
+        ntime: int = 1,
 ):
     """
 
@@ -336,7 +336,7 @@ def get_transformer_data(
         btg_circuit: "btg.Circuit",
         bus_dict,
         time_series: bool = False,
-        ntime: int=1
+        ntime: int = 1
 ):
     """
 
@@ -382,7 +382,7 @@ def get_vsc_data(
         btg_circuit: "btg.Circuit",
         bus_dict,
         time_series: bool = False,
-        ntime:int = 1
+        ntime: int = 1
 ):
     """
 
@@ -432,13 +432,11 @@ def get_vsc_data(
         btg_circuit.add_vsc(vsc)
 
 
-def get_dc_line_data(
-        circuit: MultiCircuit,
-        btg_circuit: "btg.Circuit",
-        bus_dict,
-        time_series: bool = False,
-        ntime: int = 1
-):
+def get_dc_line_data(circuit: MultiCircuit,
+                     btg_circuit: "btg.Circuit",
+                     bus_dict,
+                     time_series: bool = False,
+                     ntime: int = 1):
     """
 
     :param circuit: GridCal circuit
@@ -556,7 +554,6 @@ class FakeAdmittances:
 
 
 def get_snapshots_from_bentayga(circuit: MultiCircuit):
-
     from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 
     btgCircuit = to_bentayga(circuit, time_series=False)
@@ -566,7 +563,6 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
     data_lst = list()
 
     for btg_data in btg_data_lst:
-
         data = NumericalCircuit(nbus=0,
                                 nhvdc=0,
                                 nload=0,
@@ -735,15 +731,14 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
 
     return results
 
-def debug_bentayga_circuit_at(btg_circuit: "btg.Circuit", t: int = None):
 
+def debug_bentayga_circuit_at(btg_circuit: "btg.Circuit", t: int = None):
     if t is None:
         t = 0
 
     data = btg.compile_at(btg_circuit, t=t)
 
     for i in range(len(data)):
-
         print('_' * 200)
         print('Island', i)
         print('_' * 200)

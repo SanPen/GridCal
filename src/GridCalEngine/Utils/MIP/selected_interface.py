@@ -18,13 +18,14 @@
 """
 Uncomment the appropriate inteface imports to use: Pulp or OrTools
 """
-from typing import List, Union
+from typing import List, Union, Tuple
 import numpy as np
 from scipy.sparse import csc_matrix
-from GridCalEngine.basic_structures import ObjVec, ObjMat
+from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
 from GridCalEngine.Utils.MIP.ortools import (LpExp, LpVar, LpModel, get_lp_var_value,
                                              get_available_mip_solvers, set_var_bounds)
+
 
 # from GridCalEngine.Utils.MIP.pulp import (LpExp, LpVar, LpModel, get_lp_var_value,
 #                                           get_available_mip_solvers, set_var_bounds)
@@ -86,4 +87,6 @@ def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
 
     else:
         raise Exception("lpDot: Unsupported number of dimensions")
+
+
 

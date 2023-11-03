@@ -700,9 +700,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_load(bus=self.api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+        return _grph
 
     def add_shunt(self, api_obj=None):
         """
@@ -713,9 +713,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_shunt(bus=self.api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+        return _grph
 
     def add_generator(self, api_obj=None):
         """
@@ -726,9 +726,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_generator(bus=self.api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+        return _grph
 
     def add_static_generator(self, api_obj=None):
         """
@@ -740,9 +740,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_static_generator(bus=self.api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+
+        return _grph
 
     def add_battery(self, api_obj=None):
         """
@@ -754,9 +755,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_battery(bus=self.api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+
+        return _grph
 
     def add_external_grid(self, api_obj=None):
         """
@@ -768,6 +770,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.scene.circuit.add_external_grid(bus=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
-        api_obj.graphic_obj = _grph
         self.shunt_children.append(_grph)
         self.arrange_children()
+
+        return _grph

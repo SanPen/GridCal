@@ -29,7 +29,7 @@ from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABL
 from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
@@ -403,30 +403,37 @@ class IoMain(ConfigurationMain):
                     self.post_open_file()
                 else:
                     # add the circuit
-                    buses = self.circuit.add_circuit(self.open_file_thread_object.circuit, angle=0)
+                    new_circuit = self.open_file_thread_object.circuit
+                    buses = self.circuit.add_circuit(new_circuit, angle=0)
+
+                    dlg = CustomQuestionDialogue(title="Add new grid",
+                                                 question="Do you want to add the loaded grid to a new diagram?",
+                                                 answer1="Add to new diagram",
+                                                 answer2="Add to current diagram")
+                    dlg.exec_()
+
+                    if dlg.accepted_answer == 1:
+                        diagram_widget = self.add_bus_branch_diagram_now(name=new_circuit.name)
+                    elif dlg.accepted_answer == 2:
+                        diagram_widget = self.get_selected_diagram_widget()
+                    else:
+                        return
 
                     # add to schematic
-                    # TODO: think about how to add the new schematic
-                    # diagram_widget = self.get_selected_diagram_widget()
-                    # if diagram_widget is not None:
-                    #     if isinstance(diagram_widget, GridEditorWidget):
-                    #         diagram_widget.diagramView.align_schematic()
-                    #         # diagram.add_circuit_to_schematic(self.open_file_thread_object.circuit, explode_factor=1.0)
-                    #         grid = self.open_file_thread_object.circuit
-                    #         diagram_widget.add_elements_to_schematic(buses=grid.buses,
-                    #                                           lines=grid.lines,
-                    #                                           dc_lines=grid.dc_lines,
-                    #                                           transformers2w=grid.transformers2w,
-                    #                                           transformers3w=grid.transformers3w,
-                    #                                           hvdc_lines=grid.hvdc_lines,
-                    #                                           vsc_devices=grid.vsc_devices,
-                    #                                           upfc_devices=grid.upfc_devices,
-                    #                                           explode_factor=1.0,
-                    #                                           prog_func=None,
-                    #                                           text_func=None)
-                    for bus in buses:
-                        if bus.graphic_obj is not None:
-                            bus.graphic_obj.setSelected(True)
+                    if diagram_widget is not None:
+                        if isinstance(diagram_widget, BusBranchEditorWidget):
+                            diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                     lines=new_circuit.lines,
+                                                                     dc_lines=new_circuit.dc_lines,
+                                                                     transformers2w=new_circuit.transformers2w,
+                                                                     transformers3w=new_circuit.transformers3w,
+                                                                     hvdc_lines=new_circuit.hvdc_lines,
+                                                                     vsc_devices=new_circuit.vsc_devices,
+                                                                     upfc_devices=new_circuit.upfc_devices,
+                                                                     explode_factor=1.0,
+                                                                     prog_func=None,
+                                                                     text_func=None)
+                            diagram_widget.set_selected_buses(buses=buses)
 
     def save_file_as(self):
         """

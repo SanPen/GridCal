@@ -253,8 +253,6 @@ class Bus(EditableDevice):
     @name.setter
     def name(self, val: str):
         self._name = val
-        if self.graphic_obj is not None:
-            self.graphic_obj.set_label(self._name)
 
     def delete_children(self):
         """
@@ -618,16 +616,6 @@ class Bus(EditableDevice):
 
         for elm in self.shunts:
             elm.set_profile_values(t)
-
-    def retrieve_graphic_position(self):
-        """
-        Get the position set by the graphic object into this object's variables
-        :return: Nothing
-        """
-        if self.graphic_obj is not None:
-            self.x = int(self.graphic_obj.pos().x())
-            self.y = int(self.graphic_obj.pos().y())
-            self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
     def delete_profiles(self):
         """

@@ -19,9 +19,10 @@ import numpy as np
 from typing import Union
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Branches.line import Line
@@ -31,6 +32,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
+import GridCal
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -350,14 +352,14 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 diagramScene,
+                 editor,
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, None] = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object: 
         """
@@ -388,7 +390,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pos2 = None
         self.fromPort: Union[TerminalItem, None] = None
         self.toPort: Union[TerminalItem, None] = None
-        self.diagramScene = diagramScene
+        self.editor: GridCal.Gui.GridEditorWidget.bus_branch_editor_widget.BusBranchEditorWidget = editor
+        self.diagramScene: QGraphicsScene = self.editor.diagramScene
 
         if fromPort:
             self.setFromPort(fromPort)
@@ -477,6 +480,22 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         @return:
         """
         self.diagramScene.removeItem(self)
+
+    def remove(self, ask=True):
+        """
+        Remove this object in the diagram and the API
+        @return:
+        """
+        if ask:
+            dtype = self.api_object.device_type.value
+            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+                                 'Remove branch')
+        else:
+            ok = True
+
+        if ok:
+            self.editor.circuit.delete_branch(self.api_object)
+            self.editor.delete_diagram_element(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -671,15 +690,18 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         Reduce this branch
         """
-        ok = yes_no_question('Do you want to reduce this VSC?', 'Remove VSC')
+        # TODO: Fix this
+
+        ok = yes_no_question('Do you want to reduce this branch {}?'.format(self.api_object.name),
+                             'Remove branch')
 
         if ok:
             # get the index of the branch
-            br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+            br_idx = self.editor.circuit.get_branches().index(self.api_object)
 
             # call the reduction routine
             removed_branch, removed_bus, \
-                updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
+                updated_bus, updated_branches = reduce_grid_brute(self.editor.circuit, br_idx)
 
             # remove the reduced branch
             removed_branch.graphic_obj.remove_symbol()
@@ -765,3 +787,90 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             warning_msg("you have to select the origin and destination buses!",
                         title='Change bus')
 
+    def get_from_graphic_object(self):
+        """
+
+        :return:
+        """
+        if self.fromPort:
+            return self.fromPort.parent
+        else:
+            return None
+
+    def get_to_graphic_object(self):
+        """
+
+        :return:
+        """
+        if self.toPort:
+            return self.toPort.parent
+        else:
+            return None
+
+    def is_from_port_a_bus(self) -> bool:
+
+        if self.fromPort:
+            return isinstance(self.fromPort.parent, BusGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_bus(self) -> bool:
+
+        if self.toPort:
+            return isinstance(self.toPort.parent, BusGraphicItem)
+        else:
+            return False
+
+    def is_from_port_a_tr3(self) -> bool:
+
+        if self.fromPort:
+            return isinstance(self.fromPort.parent,
+                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_tr3(self) -> bool:
+
+        if self.toPort:
+            return isinstance(self.toPort.parent,
+                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+        else:
+            return False
+
+    def get_bus_from(self):
+        return self.get_from_graphic_object().api_object
+
+    def get_bus_to(self):
+        return self.get_to_graphic_object().api_object
+
+    def connected_between_buses(self):
+
+        return self.is_from_port_a_bus() and self.is_to_port_a_bus()
+    def connected_between_bus_and_tr3(self):
+
+        return self.is_from_port_a_bus() and self.is_to_port_a_tr3()
+
+    def conneted_between_tr3_and_bus(self):
+
+        return self.is_from_port_a_tr3() and self.is_to_port_a_bus()
+
+    def should_be_a_converter(self):
+
+        return self.fromPort.parent.api_object.is_dc != self.toPort.parent.api_object.is_dc
+
+    def should_be_a_dc_line(self):
+
+        return self.fromPort.parent.api_object.is_dc and self.toPort.parent.api_object.is_dc
+
+    def should_be_a_transformer(self, branch_connection_voltage_tolerance=0.1):
+
+        bus_from = self.fromPort.parent.api_object
+        bus_to = self.toPort.parent.api_object
+
+        V1 = min(bus_to.Vnom, bus_from.Vnom)
+        V2 = max(bus_to.Vnom, bus_from.Vnom)
+        if V2 > 0:
+            per = V1 / V2
+            return per < (1.0 - branch_connection_voltage_tolerance)
+        else:
+            return V1 != V2

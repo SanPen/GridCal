@@ -48,7 +48,7 @@ class PointsGroup:
         """
         self.locations[device.idtag] = location
 
-    def delete_device(self, device: EditableDevice):
+    def delete_device(self, device: EditableDevice) -> Union[object, None]:
         """
         Delete location
         :param device:
@@ -57,7 +57,11 @@ class PointsGroup:
         loc = self.query_point(device)
 
         if loc:
+            graphic_object = loc.graphic_object
             del self.locations[device.idtag]
+            return graphic_object
+        else:
+            return None
 
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
         """
@@ -146,7 +150,7 @@ class BaseDiagram:
             # the category does exists, add point
             d.set_point(device, location)  # the category, exists, just add
 
-    def delete_device(self, device: EditableDevice):
+    def delete_device(self, device: EditableDevice) -> Union[object, None]:
         """
 
         :param device:
@@ -157,10 +161,10 @@ class BaseDiagram:
 
         if d:
             # the category does exist, delete from it
-            d.delete_device(device=device)
+            return d.delete_device(device=device)
         else:
             # not found so we're ok
-            pass
+            return None
 
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
         """
@@ -176,6 +180,17 @@ class BaseDiagram:
         else:
             # search for the device idtag and return the location, if not found return None
             return group.query_point(device)
+
+    def query_by_type(self, device_type: DeviceType) -> Union[PointsGroup, None]:
+        """
+        Query diagram by device type
+        :param device_type: DeviceType
+        :return: PointsGroup
+        """
+        # check if the category exists ...
+        group = self.data.get(device_type.value, None)
+
+        return group
 
     def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str,  Union[GraphicLocation, MapLocation]]]]:
         """

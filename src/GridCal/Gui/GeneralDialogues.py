@@ -15,14 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
-from enum import Enum
 import pandas as pd
 from typing import List
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCalEngine.basic_structures import Logger
-from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model, get_checked_indices
+from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
 
 
 class NewProfilesStructureDialogue(QtWidgets.QDialog):
@@ -36,7 +35,7 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
         # self.resize(200, 71)
         # self.setMinimumSize(QtCore.QSize(200, 71))
         # self.setMaximumSize(QtCore.QSize(200, 71))
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         # icon = QtGui.QIcon()
         # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         # self.setWindowIcon(icon)
@@ -170,7 +169,7 @@ class MTreeExpandHook(QtCore.QObject):
                 # NOTE mouse left click
                 event.type() == QtCore.QEvent.Type.MouseButtonPress
                 # NOTE keyboard shift press
-                and event.modifiers() & QtCore.Qt.ShiftModifier
+                and event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
         ):
             # NOTE get mouse local position
             pos = self.tree.mapFromGlobal(QtGui.QCursor.pos())
@@ -190,7 +189,7 @@ class LogsDialogue(QtWidgets.QDialog):
     def __init__(self, name, logger: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.logger = logger
@@ -222,7 +221,7 @@ class LogsDialogue(QtWidgets.QDialog):
 
         self.btn_frame = QtWidgets.QFrame()
         self.btn_layout = QtWidgets.QHBoxLayout(self.btn_frame)
-        self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Expanding)
+        self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Expanding)
         self.btn_layout.addWidget(self.save_btn)
         self.btn_layout.addWidget(self.copy_btn)
         self.btn_layout.addSpacerItem(self.btn_spacer)
@@ -289,7 +288,7 @@ class ElementsDialogue(QtWidgets.QDialog):
     def __init__(self, name, elements: list()):
         super(ElementsDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # build elements list
@@ -344,7 +343,7 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
     def __init__(self):
         super(TimeReIndexDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.accepted = False
@@ -405,7 +404,7 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
     def __init__(self):
         super(CorrectInconsistenciesDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.is_accepted = False
@@ -485,7 +484,7 @@ class CheckListDialogue(QtWidgets.QDialog):
     def __init__(self, objects_list: List[str], title='Select objects'):
         QtWidgets.QDialog.__init__(self)
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.is_accepted: bool = False
@@ -547,7 +546,7 @@ class InputNumberDialogue(QtWidgets.QDialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.is_accepted: bool = False
@@ -610,7 +609,7 @@ class StartEndSelectionDialogue(QtWidgets.QDialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.is_accepted: bool = False
@@ -684,17 +683,64 @@ class StartEndSelectionDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class CustomQuestionDialogue(QtWidgets.QDialog):
+    """
+    Custom question dialogue
+    """
+
+    def __init__(self, title: str, question: str, answer1: str, answer2: str):
+        super().__init__()
+
+        self.setWindowTitle(title)
+
+        layout = QtWidgets.QVBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
+
+        label = QtWidgets.QLabel(question)
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        button_layout.addSpacerItem(QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Expanding))
+
+        button_1 = QtWidgets.QPushButton(answer1)
+        button_1.clicked.connect(self.b1_clicked)
+        button_layout.addWidget(button_1)
+
+        button_2 = QtWidgets.QPushButton(answer2)
+        button_2.clicked.connect(self.b2_clicked)
+        button_layout.addWidget(button_2)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+        self.accepted_answer = 0
+
+    def b1_clicked(self):
+        self.accepted_answer = 1
+        self.accept()
+
+    def b2_clicked(self):
+        self.accepted_answer = 2
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
-    window = InputNumberDialogue(min_value=3,
-                                 max_value=10,
-                                 default_value=3,
-                                 is_int=True,
-                                 title="stuff",
-                                 text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
-                                 suffix=' cosas')
+    # window = InputNumberDialogue(min_value=3,
+    #                              max_value=10,
+    #                              default_value=3,
+    #                              is_int=True,
+    #                              title="stuff",
+    #                              text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
+    #                              suffix=' cosas')
+
+    window = CustomQuestionDialogue(title="My question",
+                                    question="What do you want " * 10,
+                                    answer1="Go home",
+                                    answer2="stay here")
+
     window.show()
     sys.exit(app.exec_())

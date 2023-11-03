@@ -18,7 +18,7 @@ import numpy as np
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog
+from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
@@ -65,8 +65,8 @@ class DcLineEditor(QDialog):
         Ybase = 1 / Zbase
 
         R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        B = self.branch.B * Ybase
+        # X = self.branch.X * Zbase
+        # B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
 
@@ -145,22 +145,20 @@ class DcLineEditor(QDialog):
         self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
         self.layout.addWidget(self.r_spinner)
 
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
+        # self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
+        # self.layout.addWidget(self.x_spinner)
 
         # self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
         # self.layout.addWidget(self.g_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
+        # self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
+        # self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.accept_btn)
 
         self.setLayout(self.layout)
 
         self.setWindowTitle('Line editor')
-
-
 
     def accept_click(self):
         """
@@ -226,19 +224,19 @@ class DcLineEditor(QDialog):
 
 class DcLineGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, api_object: DcLine = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5, api_object: DcLine = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -321,27 +319,13 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
                 # change state
                 self.enable_disable_toggle()
 
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this line?', 'Remove line')
-        else:
-            ok = True
-
-        if ok:
-            self.diagramScene.circuit.delete_dc_line(self.api_object)
-            self.diagramScene.removeItem(self)
-
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
-        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types
+        Sbase = self.editor.circuit.Sbase
+        templates = self.editor.circuit.underground_cable_types + self.editor.circuit.overhead_line_types
         current_template = self.api_object.template
         dlg = DcLineEditor(self.api_object, Sbase, templates, current_template)
         if dlg.exec_():
@@ -352,7 +336,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
+        Sbase = self.editor.circuit.Sbase
 
         dlg = DcLineEditor(self.api_object, Sbase)
         if dlg.exec_():

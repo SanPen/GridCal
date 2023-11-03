@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
@@ -25,20 +25,20 @@ from GridCal.Gui.messages import yes_no_question
 
 class HvdcGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5,
                  api_object: HvdcLine = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -57,8 +57,8 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
-            pe2 = menu.addAction('Convert to Multi-terminal')
-            pe2.triggered.connect(self.convert_to_multi_terminal)
+            # pe2 = menu.addAction('Convert to Multi-terminal')
+            # pe2.triggered.connect(self.convert_to_multi_terminal)
 
             rabf = menu.addAction('Change bus')
             move_bus_icon = QIcon()
@@ -96,20 +96,6 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         else:
             pass
 
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this HVDC line?', 'Remove HVDC line')
-        else:
-            ok = True
-
-        if ok:
-            self.diagramScene.circuit.delete_hvdc_line(self.api_object)
-            self.diagramScene.removeItem(self)
-
     def convert_to_multi_terminal(self):
         """
 
@@ -122,5 +108,5 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.diagramScene.circuit.get_hvdc().index(self.api_object)
-        self.diagramScene.plot_hvdc_branch(i, self.api_object)
+        i = self.editor.circuit.get_hvdc().index(self.api_object)
+        self.editor.plot_hvdc_branch(i, self.api_object)

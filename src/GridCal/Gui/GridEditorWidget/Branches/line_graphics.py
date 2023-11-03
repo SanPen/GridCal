@@ -18,7 +18,7 @@
 from typing import Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsScene
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
@@ -36,21 +36,21 @@ class LineGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 diagramScene,
+                 editor,
                  width=5,
                  api_object: Line = None):
         """
 
         :param fromPort:
         :param toPort:
-        :param diagramScene:
+        :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self,
                                          fromPort=fromPort,
                                          toPort=toPort,
-                                         diagramScene=diagramScene,
+                                         editor=editor,
                                          width=width,
                                          api_object=api_object)
 
@@ -208,20 +208,6 @@ class LineGraphicItem(LineGraphicTemplateItem):
         else:
             pass
 
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Do you want to remove this line?', 'Remove line')
-        else:
-            ok = True
-
-        if ok:
-            self.diagramScene.circuit.delete_line(self.api_object)
-            self.diagramScene.removeItem(self)
-
     def enable_disable_toggle(self):
         """
 
@@ -233,13 +219,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def plot_profiles(self):
         """
@@ -247,21 +233,21 @@ class LineGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.diagramScene.circuit.get_branches().index(self.api_object)
-        self.diagramScene.plot_branch(i, self.api_object)
+        i = self.editor.circuit.get_branches().index(self.api_object)
+        self.editor.plot_branch(i, self.api_object)
 
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
+        Sbase = self.editor.circuit.Sbase
         Vnom = self.api_object.get_max_bus_nominal_voltage()
         templates = list()
 
-        for lst in [self.diagramScene.circuit.sequence_line_types,
-                    self.diagramScene.circuit.underground_cable_types,
-                    self.diagramScene.circuit.overhead_line_types]:
+        for lst in [self.editor.circuit.sequence_line_types,
+                    self.editor.circuit.underground_cable_types,
+                    self.editor.circuit.overhead_line_types]:
             for temp in lst:
                 if Vnom == temp.Vnom:
                     templates.append(temp)
@@ -276,7 +262,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.diagramScene.circuit.Sbase
+        Sbase = self.editor.circuit.Sbase
 
         dlg = LineEditor(self.api_object, Sbase)
         if dlg.exec_():
@@ -304,7 +290,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
                                    X0=self.api_object.X0 / self.api_object.length,
                                    B0=self.api_object.B0 / self.api_object.length)
 
-            self.diagramScene.circuit.add_sequence_line(tpe)
+            self.editor.circuit.add_sequence_line(tpe)
 
     def split_line(self):
         """
@@ -335,9 +321,9 @@ class LineGraphicItem(LineGraphicTemplateItem):
                 # br2.bus_to.graphic_obj.arrange_children()
 
                 # add to gridcal
-                self.diagramScene.circuit.add_bus(middle_bus)
-                self.diagramScene.circuit.add_line(br1)
-                self.diagramScene.circuit.add_line(br2)
+                self.editor.circuit.add_bus(middle_bus)
+                self.editor.circuit.add_line(br1)
+                self.editor.circuit.add_line(br2)
 
                 # remove this line
                 self.remove(ask=False)
