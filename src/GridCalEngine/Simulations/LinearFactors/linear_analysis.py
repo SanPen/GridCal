@@ -18,15 +18,16 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List
 from scipy.sparse.linalg import spsolve
 
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
+from GridCalEngine.Utils.MIP.selected_interface import lpDot
 
 
 @nb.njit()
@@ -84,16 +85,14 @@ def make_contingency_flows(base_flow: Vec,
     return flow_n1
 
 
-
-
-def compute_acptdf(Ybus: sp.csc_matrix,
-                   Yf: sp.csc_matrix,
-                   F: IntVec,
-                   T: IntVec,
-                   V: CxVec,
-                   pq: IntVec,
-                   pv: IntVec,
-                   distribute_slack: bool = False) -> Mat:
+def make_acptdf(Ybus: sp.csc_matrix,
+                Yf: sp.csc_matrix,
+                F: IntVec,
+                T: IntVec,
+                V: CxVec,
+                pq: IntVec,
+                pv: IntVec,
+                distribute_slack: bool = False) -> Mat:
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
@@ -227,7 +226,13 @@ def make_lodf(Cf: sp.csc_matrix,
 
 # @nb.njit(cache=True)
 def make_mlodf(circuit, lodf):
-
+    """
+    Function to build an MLODF matrix.
+    Deprecated, use LinearMultiContingency instead
+    :param circuit:
+    :param lodf:
+    :return:
+    """
     lodf_nx_list = list()
 
     # Create dictionaries to speed up the access
@@ -394,6 +399,27 @@ class LinearMultiContingency:
         flow = base_flow.copy()
         flow += self.mlodf_factors @ base_flow[self.branch_indices]
         flow += self.ptdf_factors @ injections[self.bus_indices]
+        return flow
+
+    def get_lp_contingency_flows(self,
+                                 base_flow: ObjVec,
+                                 injections: Union[None, ObjVec]) -> ObjVec:
+        """
+        Get contingency flows using the LP interface equations
+        :param base_flow: Base branch flows (nbranch)
+        :param injections: Bus injections increments (nbus)
+        :return: New flows (nbranch)
+        """
+
+        if len(self.bus_indices):
+            injections = self.injections_factor * injections[self.bus_indices]
+        else:
+            injections = np.zeros(self.ptdf_factors.shape[1])
+
+        flow = (base_flow
+                + lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+                + lpDot(self.ptdf_factors, injections[self.bus_indices])
+                )
         return flow
 
 
