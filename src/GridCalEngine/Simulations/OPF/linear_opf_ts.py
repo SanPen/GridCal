@@ -32,11 +32,12 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, DateVec
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec
 from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot,
                                                         set_var_bounds, join)
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency, \
+    LinearMultiContingencies
 
 
 def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
@@ -81,6 +82,7 @@ class BusVars:
         :param n_elm: Number of branches
         """
         self.theta = np.zeros((nt, n_elm), dtype=object)
+        self.Pcalc = np.zeros((nt, n_elm), dtype=object)
         self.branch_injections = np.zeros((nt, n_elm), dtype=object)
         self.kirchhoff = np.zeros((nt, n_elm), dtype=object)
         self.shadow_prices = np.zeros((nt, n_elm), dtype=float)
@@ -98,11 +100,13 @@ class BusVars:
         for t in range(nt):
             for i in range(n_elm):
                 data.theta[t, i] = get_lp_var_value(self.theta[t, i])
+                data.Pcalc[t, i] = get_lp_var_value(self.Pcalc[t, i])
                 data.branch_injections[t, i] = get_lp_var_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
 
         # format the arrays aproprietly
         data.theta = data.theta.astype(float, copy=False)
+        data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.branch_injections = data.branch_injections.astype(float, copy=False)
 
         return data
@@ -249,7 +253,8 @@ class BranchVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-        self.contingency_flow_data: List[Tuple[int, int, Union[float, LpVar]]] = list()
+        # t, m, c, contingency, negative_slack, positive_slack
+        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
 
     def get_values(self, Sbase: float) -> "BranchVars":
         """
@@ -271,9 +276,11 @@ class BranchVars:
                 data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
 
         for i in range(len(self.contingency_flow_data)):
-            m, c, var = self.contingency_flow_data[i]
-            val = get_lp_var_value(var)
-            self.contingency_flow_data[i] = (m, c, val)
+            t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
+            self.contingency_flow_data[i] = (t, m, c,
+                                             get_lp_var_value(var),
+                                             get_lp_var_value(neg_slack),
+                                             get_lp_var_value(pos_slack))
 
         # format the arrays aproprietly
         data.flows = data.flows.astype(float, copy=False)
@@ -286,15 +293,20 @@ class BranchVars:
 
         return data
 
-    def add_contingency_flow(self, m: int, c: int, flow_var: LpVar):
+    def add_contingency_flow(self, t: int, m: int, c: int,
+                             flow_var: Union[float, LpVar, LpExp],
+                             neg_slack: LpVar,
+                             pos_slack: LpVar):
         """
-
-        :param m:
-        :param c:
-        :param flow_var:
-        :return:
+        Add contingency flow
+        :param t: time index
+        :param m: monitored index
+        :param c: contingency group index
+        :param flow_var: flow var
+        :param neg_slack: negative flow slack variable
+        :param pos_slack: positive flow slack variable
         """
-        self.contingency_flow_data.append((m, c, flow_var))
+        self.contingency_flow_data.append((t, m, c, flow_var, neg_slack, pos_slack))
 
 
 class HvdcVars:
@@ -454,18 +466,22 @@ def add_linear_generation_formulation(t: Union[int, None],
                             prob.add_cst(
                                 cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
                                     gen_vars.producing[t, k] - float(gen_data_t.active[k]),
-                                name=join("binary_alg1_", [t, k], "_"))
+                                name=join("binary_alg1_", [t, k], "_")
+                            )
                             prob.add_cst(
                                 cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg2_", [t, k], "_"))
+                                name=join("binary_alg2_", [t, k], "_")
+                            )
                         else:
                             prob.add_cst(
                                 cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
                                     gen_vars.producing[t, k] - gen_vars.producing[t - 1, k],
-                                name=join("binary_alg3_", [t, k], "_"))
+                                name=join("binary_alg3_", [t, k], "_")
+                            )
                             prob.add_cst(
                                 cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg4_", [t, k], "_"))
+                                name=join("binary_alg4_", [t, k], "_")
+                            )
                 else:
                     # No unit commitment
 
@@ -745,11 +761,8 @@ def add_linear_branches_formulation(t: int,
                                     Sbase: float,
                                     branch_data_t: BranchData,
                                     branch_vars: BranchVars,
-                                    vars_bus: BusVars,
+                                    bus_vars: BusVars,
                                     prob: LpModel,
-                                    consider_contingencies: bool,
-                                    LODF: Union[Mat, None],
-                                    lodf_threshold: float,
                                     inf=1e20):
     """
     Formulate the branches
@@ -757,17 +770,12 @@ def add_linear_branches_formulation(t: int,
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
-    :param vars_bus: BusVars
+    :param bus_vars: BusVars
     :param prob: OR problem
-    :param consider_contingencies:
-    :param LODF: LODF matrix
-    :param lodf_threshold: LODF threshold to cut-off
     :param inf: number considered infinte
     :return objective function
     """
     f_obj = 0.0
-    if consider_contingencies:
-        assert LODF is not None
 
     # for each branch
     for m in range(branch_data_t.nelm):
@@ -803,16 +811,16 @@ def add_linear_branches_formulation(t: int,
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 flow_ctr = branch_vars.flows[t, m] == bk * (
-                        vars_bus.theta[t, fr] - vars_bus.theta[t, to] + branch_vars.tap_angles[t, m])
+                        bus_vars.theta[t, fr] - bus_vars.theta[t, to] + branch_vars.tap_angles[t, m])
                 prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_with_ps_", [t, m], "_"))
 
                 # power injected and subtracted due to the phase shift
-                vars_bus.branch_injections[t, fr] = -bk * branch_vars.tap_angles[t, m]
-                vars_bus.branch_injections[t, to] = bk * branch_vars.tap_angles[t, m]
+                bus_vars.branch_injections[t, fr] = -bk * branch_vars.tap_angles[t, m]
+                bus_vars.branch_injections[t, to] = bk * branch_vars.tap_angles[t, m]
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
-                flow_ctr = branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] - vars_bus.theta[t, to])
+                flow_ctr = branch_vars.flows[t, m] == bk * (bus_vars.theta[t, fr] - bus_vars.theta[t, to])
                 prob.add_cst(cst=flow_ctr, name=join("Branch_flow_set_", [t, m], "_"))
 
             # add the flow constraint if monitored
@@ -842,13 +850,61 @@ def add_linear_branches_formulation(t: int,
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
 
-                if consider_contingencies:
+    return f_obj
 
-                    for c in range(branch_data_t.nelm):
 
-                        if abs(LODF[m, c]) > lodf_threshold:
-                            # TODO : think about the contingencies integration here
-                            pass
+def add_linear_branches_contingencies_formulation(t_idx: int,
+                                                  Sbase: float,
+                                                  branch_data_t: BranchData,
+                                                  branch_vars: BranchVars,
+                                                  bus_vars: BusVars,
+                                                  prob: LpModel,
+                                                  linear_multicontingencies: LinearMultiContingencies):
+    """
+    Formulate the branches
+    :param t_idx: time index
+    :param Sbase: base power (100 MVA)
+    :param branch_data_t: BranchData
+    :param branch_vars: BranchVars
+    :param bus_vars: BusVars
+    :param prob: OR problem
+    :param linear_multicontingencies: LinearMultiContingencies
+    :return objective function
+    """
+    f_obj = 0.0
+    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+
+        # compute the contingency flow (Lp exprssion)
+        contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
+                                                                 injections=bus_vars.Pcalc[t_idx, :])
+
+        for m, contingency_flow in enumerate(contingency_flows):
+
+            if isinstance(contingency_flow, LpExp):  # if the contingency is not 0
+
+                # declare slack variables
+                pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
+
+                # register the contingency data to evaluate the result at the end
+                branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                 flow_var=contingency_flow,
+                                                 neg_slack=neg_slack,
+                                                 pos_slack=pos_slack)
+
+                # add upper rate constraint
+                prob.add_cst(
+                    cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.rates[m] / Sbase,
+                    name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                )
+
+                # add lower rate constraint
+                prob.add_cst(
+                    cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.rates[m] / Sbase,
+                    name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                )
+
+                f_obj += pos_slack + neg_slack
 
     return f_obj
 
@@ -964,12 +1020,12 @@ def add_linear_node_balance(t_idx: int,
                    load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
     # calculate the linear nodal inyection
-    P_calc = lpDot(B, bus_vars.theta[t_idx, :])
+    bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
         bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=P_calc[k] == P_esp[k],
+            cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
             name=join("kirchoff_", [t_idx, k], "_"))
 
     for i in vd:
@@ -1037,6 +1093,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
 
+    # create the MIP problem object
     lp_model: LpModel = LpModel(solver_type)
 
     # objective function
@@ -1045,22 +1102,12 @@ def run_linear_opf_ts(grid: MultiCircuit,
     for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
         # compile the circuit at the master time index ------------------------------------------------------------
-        # note: There are very little chances of simplifying this step and experience shows it is not
-        #        worth the effort, so compile every time step
+        # note: There are very little chances of simplifying this step and experience shows
+        #       it is not worth the effort, so compile every time step
         nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
                                                             t_idx=t,  # yes, this is not a bug
                                                             bus_dict=bus_dict,
                                                             areas_dict=areas_dict)
-
-        if consider_contingencies:
-            # if we want to include contingencies, we'll need the LODF at this time step
-            ls = LinearAnalysis(numerical_circuit=nc,
-                                distributed_slack=False,
-                                correct_values=True)
-            ls.run()
-            LODF = ls.LODF
-        else:
-            LODF = None
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
@@ -1111,20 +1158,19 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                              prob=lp_model)
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
+
+            # if no zonal grouping, all the grid is considered...
+
             # formulate branches -----------------------------------------------------------------------------------
             f_obj += add_linear_branches_formulation(t=t_idx,
                                                      Sbase=nc.Sbase,
                                                      branch_data_t=nc.branch_data,
                                                      branch_vars=mip_vars.branch_vars,
-                                                     vars_bus=mip_vars.bus_vars,
+                                                     bus_vars=mip_vars.bus_vars,
                                                      prob=lp_model,
-                                                     consider_contingencies=consider_contingencies,
-                                                     LODF=LODF,
-                                                     lodf_threshold=lodf_threshold,
                                                      inf=1e20)
 
             # formulate nodes ---------------------------------------------------------------------------------------
-
             add_linear_node_balance(t_idx=t_idx,
                                     Bbus=nc.Bbus,
                                     vd=nc.vd,
@@ -1138,14 +1184,36 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     load_vars=mip_vars.load_vars,
                                     prob=lp_model)
 
+            # add branch contingencies ------------------------------------------------------------------------------
+            if consider_contingencies:
+                # The contingencies formulation uses the total nodal injection stored in bus_vars,
+                # hence this step goes before the add_linear_node_balance function
+
+                # compute the PTDF and LODF
+                ls = LinearAnalysis(numerical_circuit=nc, distributed_slack=False, correct_values=True)
+                ls.run()
+
+                # Compute the more generalistic contingency structures
+                mctg = LinearMultiContingencies(grid=grid)
+                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+
+                # formulate the contingencies
+                f_obj += add_linear_branches_contingencies_formulation(t_idx=t_idx,
+                                                                       Sbase=nc.Sbase,
+                                                                       branch_data_t=nc.branch_data,
+                                                                       branch_vars=mip_vars.branch_vars,
+                                                                       bus_vars=mip_vars.bus_vars,
+                                                                       prob=lp_model,
+                                                                       linear_multicontingencies=mctg)
+
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand ---------------------------------------------------------------------------------
-        lp_model.add_cst(cst=lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                             lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                             mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum(),
+        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
+                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
+                              mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum()),
                          name="satisfy_demand_at_{0}".format(t_idx))
 
         if progress_func is not None:

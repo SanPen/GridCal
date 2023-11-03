@@ -115,7 +115,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             trm=self.options.trm,
             ntc_load_rule=self.options.ntc_load_rule,
-            Sbus=opf_vars.bus_vars.inj_p[0, :],
+            Sbus=opf_vars.bus_vars.Pcalc[0, :],
             voltage=opf_vars.get_voltages()[0, :],
             Sf=opf_vars.branch_vars.flows[0, :],
             loading=opf_vars.branch_vars.loading[0, :],

@@ -41,7 +41,6 @@ from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalys
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 
 
-
 def get_structural_ntc(inter_area_branches, inter_area_hvdcs, branch_ratings, hvdc_ratings):
     '''
 
@@ -156,7 +155,6 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
                                        skip_generation_limits: bool,
                                        inf_value: float,
                                        Sbase: float) -> Tuple[Vec, Vec, Vec]:
-
     """
     Get nodal power, nodal pmax and nodal pmin according to the transfer_method.
     :param bus_data_t: BusData structure
@@ -206,7 +204,7 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
         p_min = -inf_value
         p_max = inf_value
 
-        #todo check
+        # todo check
         dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.GenerationAndLoad:
@@ -218,13 +216,14 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
             p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
 
-        #todo check
+        # todo check
         dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
 
     else:
         raise Exception('Undefined available transfer mode')
 
     return p_ref * dispachable_bus, p_max, p_min
+
 
 def get_sensed_proportions(power: Vec,
                            idx: IntVec,
@@ -277,7 +276,6 @@ def get_exchange_proportions(power: Vec,
                              bus_a1: IntVec,
                              bus_a2: IntVec,
                              logger: Logger):
-
     """
     Get generation proportions by transfer method with sign consideration.
     :param power: Vec. Power reference
@@ -314,7 +312,7 @@ class BusNtcVars:
         self.load_shedding = np.zeros((nt, n_elm), dtype=object)
 
         # nodal gen
-        self.inj_p = np.zeros((nt, n_elm), dtype=float)
+        self.Pcalc = np.zeros((nt, n_elm), dtype=float)
         self.inj_delta = np.zeros((nt, n_elm), dtype=object)
 
     def get_values(self, Sbase: float) -> "BusNtcVars":
@@ -336,7 +334,7 @@ class BusNtcVars:
 
                 data.load_shedding[t, i] = get_lp_var_value(self.load_shedding[t, i]) * Sbase
 
-                data.inj_p[t, i] = get_lp_var_value(self.inj_p[t, i]) * Sbase
+                data.Pcalc[t, i] = get_lp_var_value(self.Pcalc[t, i]) * Sbase
                 data.inj_delta[t, i] = get_lp_var_value(self.inj_delta[t, i])
 
         # format the arrays appropriately
@@ -344,7 +342,7 @@ class BusNtcVars:
 
         data.load_shedding = data.load_shedding.astype(float, copy=False)
 
-        data.inj_p = data.inj_p.astype(float, copy=False)
+        data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.inj_delta = data.inj_delta.astype(float, copy=False)
 
         data.power_shift = data.power_shift.astype(float, copy=False)
@@ -376,8 +374,8 @@ class BranchNtcVars:
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
         self.monitor_type = np.zeros((nt, n_elm), dtype=object)
 
-        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp]]] = list()
-
+        # t, m, c, contingency, negative_slack, positive_slack
+        self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
 
     def get_values(self, Sbase: float) -> "BranchNtcVars":
         """
@@ -399,9 +397,11 @@ class BranchNtcVars:
                 data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
 
         for i in range(len(self.contingency_flow_data)):
-            t, m, c, var = self.contingency_flow_data[i]
-            val = get_lp_var_value(var)
-            self.contingency_flow_data[i] = (t, m, c, val)
+            t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
+            self.contingency_flow_data[i] = (t, m, c,
+                                             get_lp_var_value(var),
+                                             get_lp_var_value(neg_slack),
+                                             get_lp_var_value(pos_slack))
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
@@ -414,16 +414,20 @@ class BranchNtcVars:
 
         return data
 
-    def add_contingency_flow(self, t: int, m: int, c: int, flow_var: Union[float, LpVar, LpExp]):
+    def add_contingency_flow(self, t: int, m: int, c: int,
+                             flow_var: Union[float, LpVar, LpExp],
+                             neg_slack: LpVar,
+                             pos_slack: LpVar):
         """
         Add contingency flow
         :param t: time index
         :param m: monitored index
         :param c: contingency group index
         :param flow_var: flow var
-        :return:
+        :param neg_slack: negative flow slack variable
+        :param pos_slack: positive flow slack variable
         """
-        self.contingency_flow_data.append((t, m, c, flow_var))
+        self.contingency_flow_data.append((t, m, c, flow_var, neg_slack, pos_slack))
 
 
 class HvdcNtcVars:
@@ -590,7 +594,6 @@ def add_linear_injections_formulation(t: Union[int, None],
     for k in range(bus_data_t.nbus):
 
         if bus_data_t.active[k] and proportions[k] != 0:
-
             # declare bus delta injections
             ntc_vars.bus_vars.inj_delta[t, k] = prob.add_var(
                 lb=-prob.INFINITY,
@@ -602,52 +605,49 @@ def add_linear_injections_formulation(t: Union[int, None],
                 name='bus_{0}_assignment'.format(bus_data_t.names[k]))
 
             # declare bus injections
-            ntc_vars.bus_vars.inj_p[t, k] = prob.add_var(
+            ntc_vars.bus_vars.Pcalc[t, k] = prob.add_var(
                 lb=bus_pmin_t[k],
                 ub=bus_pmax_t[k],
                 name=join("inj_p", [t, k], "_"))
 
             prob.add_cst(
-                cst=ntc_vars.bus_vars.inj_p[t, k] == p_bus_t[k] + ntc_vars.bus_vars.inj_delta[t, k],
+                cst=ntc_vars.bus_vars.Pcalc[t, k] == p_bus_t[k] + ntc_vars.bus_vars.inj_delta[t, k],
                 name=join("bus_balance", [t, k], "_"))
 
     return f_obj
 
 
-def add_linear_branches_formulation(t: int,
+def add_linear_branches_formulation(t_idx: int,
                                     Sbase: float,
                                     branch_data_t: BranchData,
                                     branch_vars: BranchNtcVars,
-                                    vars_bus: BusNtcVars,
+                                    bus_vars: BusNtcVars,
                                     prob: LpModel,
-                                    consider_contingencies: bool,
-                                    linear_multicontingencies: Union[LinearMultiContingencies, None],
-                                    lodf_threshold: float,
-                                    alpha_threshold: float,
                                     monitor_only_sensitive_branches: bool,
                                     monitor_only_ntc_load_rule_branches: bool,
                                     alpha: Vec,
-                                    alpha_n1: Vec,
+                                    alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
                                     inf=1e20):
     """
     Formulate the branches
-    :param t: time index
+    :param t_idx: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
-    :param vars_bus: BusVars
+    :param bus_vars: BusVars
     :param prob: OR problem
-    :param consider_contingencies:
-    :param linear_multicontingencies: Linear Multicontingencies object
-    :param lodf_threshold: LODF threshold to cut-off
+    :param monitor_only_ntc_load_rule_branches:
+    :param monitor_only_sensitive_branches:
+    :param structural_ntc
+    :param ntc_load_rule
+    :param alpha_threshold
+    :param alpha
     :param inf: number considered infinte
     :return objective function
     """
     f_obj = 0.0
-    if consider_contingencies:
-        assert linear_multicontingencies is not None
 
     # for each branch
     for m in range(branch_data_t.nelm):
@@ -655,15 +655,15 @@ def add_linear_branches_formulation(t: int,
         to = branch_data_t.T[m]
 
         # copy rates
-        branch_vars.rates[t, m] = branch_data_t.rates[m]
+        branch_vars.rates[t_idx, m] = branch_data_t.rates[m]
 
         if branch_data_t.active[m]:
 
             # declare the flow LPVar
-            branch_vars.flows[t, m] = prob.add_var(
+            branch_vars.flows[t_idx, m] = prob.add_var(
                 lb=-inf,
                 ub=inf,
-                name=join("flow_", [t, m], "_"))
+                name=join("flow_", [t_idx, m], "_"))
 
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
@@ -678,28 +678,28 @@ def add_linear_branches_formulation(t: int,
             if branch_data_t.control_mode[m] == TransformerControlType.Pt:
 
                 # add angle
-                branch_vars.tap_angles[t, m] = prob.add_var(
+                branch_vars.tap_angles[t_idx, m] = prob.add_var(
                     lb=branch_data_t.tap_angle_min[m],
                     ub=branch_data_t.tap_angle_max[m],
-                    name=join("tap_ang_", [t, m], "_"))
+                    name=join("tap_ang_", [t_idx, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 prob.add_cst(
-                    cst=branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] -
-                                                         vars_bus.theta[t, to] +
-                                                         branch_vars.tap_angles[t, m]),
-                    name=join("Branch_flow_set_with_ps_", [t, m], "_"))
+                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
+                                                             bus_vars.theta[t_idx, to] +
+                                                             branch_vars.tap_angles[t_idx, m]),
+                    name=join("Branch_flow_set_with_ps_", [t_idx, m], "_"))
 
                 # power injected and subtracted due to the phase shift
-                vars_bus.inj_p[t, fr] = -bk * branch_vars.tap_angles[t, m]
-                vars_bus.inj_p[t, to] = bk * branch_vars.tap_angles[t, m]
+                bus_vars.Pcalc[t_idx, fr] = -bk * branch_vars.tap_angles[t_idx, m]
+                bus_vars.Pcalc[t_idx, to] = bk * branch_vars.tap_angles[t_idx, m]
 
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 prob.add_cst(
-                    cst=branch_vars.flows[t, m] == bk * (vars_bus.theta[t, fr] -
-                                                         vars_bus.theta[t, to]),
-                    name=join("Branch_flow_set_", [t, m], "_"))
+                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
+                                                             bus_vars.theta[t_idx, to]),
+                    name=join("Branch_flow_set_", [t_idx, m], "_"))
 
             # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N condition
             if monitor_only_ntc_load_rule_branches:
@@ -728,87 +728,129 @@ def add_linear_branches_formulation(t: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m] and monitor_by_sensitivity_n and monitor_by_load_rule_n:
-                branch_vars.flow_slacks_pos[t, m] = prob.add_var(
+                branch_vars.flow_slacks_pos[t_idx, m] = prob.add_var(
                     lb=0,
                     ub=inf,
-                    name=join("flow_slack_pos_", [t, m], "_"))
+                    name=join("flow_slack_pos_", [t_idx, m], "_"))
 
-                branch_vars.flow_slacks_neg[t, m] = prob.add_var(
+                branch_vars.flow_slacks_neg[t_idx, m] = prob.add_var(
                     lb=0,
                     ub=inf,
-                    name=join("flow_slack_neg_", [t, m], "_"))
+                    name=join("flow_slack_neg_", [t_idx, m], "_"))
 
                 # add upper rate constraint
-                branch_vars.flow_constraints_ub[t, m] = ((branch_vars.flows[t, m] +
-                                                         branch_vars.flow_slacks_pos[t, m] -
-                                                         branch_vars.flow_slacks_neg[t, m])
-                                                         <= branch_data_t.rates[m] / Sbase)
+                branch_vars.flow_constraints_ub[t_idx, m] = ((branch_vars.flows[t_idx, m] +
+                                                              branch_vars.flow_slacks_pos[t_idx, m] -
+                                                              branch_vars.flow_slacks_neg[t_idx, m])
+                                                             <= branch_data_t.rates[m] / Sbase)
                 prob.add_cst(
-                    cst=branch_vars.flow_constraints_ub[t, m],
-                    name=join("br_flow_upper_lim_", [t, m]))
+                    cst=branch_vars.flow_constraints_ub[t_idx, m],
+                    name=join("br_flow_upper_lim_", [t_idx, m]))
 
                 # add lower rate constraint
-                branch_vars.flow_constraints_lb[t, m] = ((branch_vars.flows[t, m] +
-                                                         branch_vars.flow_slacks_pos[t, m] -
-                                                         branch_vars.flow_slacks_neg[t, m])
-                                                         >= -branch_data_t.rates[m] / Sbase)
+                branch_vars.flow_constraints_lb[t_idx, m] = ((branch_vars.flows[t_idx, m] +
+                                                              branch_vars.flow_slacks_pos[t_idx, m] -
+                                                              branch_vars.flow_slacks_neg[t_idx, m])
+                                                             >= -branch_data_t.rates[m] / Sbase)
 
                 prob.add_cst(
-                    cst=branch_vars.flow_constraints_lb[t, m],
-                    name=join("br_flow_lower_lim_", [t, m]))
+                    cst=branch_vars.flow_constraints_lb[t_idx, m],
+                    name=join("br_flow_lower_lim_", [t_idx, m]))
 
                 # add to the objective function
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
+                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t_idx, m]
+                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t_idx, m]
 
-    if consider_contingencies:
-        for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
+    return f_obj
 
-            contingency_flows = contingency.get_lp_contingency_flows(
-                base_flow=branch_vars.flows[t, :],
-                injections=vars_bus.inj_p[t, :])
 
-            for m, contingency_flow in enumerate(contingency_flows):
-                if isinstance(contingency_flow, LpExp):
+def add_linear_branches_contingencies_formulation(t_idx: int,
+                                                  Sbase: float,
+                                                  branch_data_t: BranchData,
+                                                  branch_vars: BranchNtcVars,
+                                                  bus_vars: BusNtcVars,
+                                                  prob: LpModel,
+                                                  linear_multicontingencies: LinearMultiContingencies,
+                                                  monitor_only_ntc_load_rule_branches: bool,
+                                                  monitor_only_sensitive_branches: bool,
+                                                  structural_ntc: float,
+                                                  ntc_load_rule: float,
+                                                  alpha_threshold: float):
+    """
+    Formulate the branches
+    :param t_idx: time index
+    :param Sbase: base power (100 MVA)
+    :param branch_data_t: BranchData
+    :param branch_vars: BranchVars
+    :param bus_vars: BusVars
+    :param prob: OR problem
+    :param linear_multicontingencies: LinearMultiContingencies
+    :param monitor_only_ntc_load_rule_branches:
+    :param monitor_only_sensitive_branches:
+    :param structural_ntc
+    :param ntc_load_rule
+    :param alpha_threshold
+    :return objective function
+    """
+    f_obj = 0.0
+    for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
 
-                    # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                    if monitor_only_ntc_load_rule_branches:
-                        """
-                        Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, 
-                        y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural 
-                        significa que la linea no puede limitar el intercambio
-                        Ejemplo:
-                            ntc_load_rule = 0.7
-                            rate = 1700
-                            alpha_n1 = 0.05
-                            structural_rate = 5200
-                            0.7 * 1700 --> 1190 mw para el intercambio
-                            1190 / 0.05 --> 23.800 MW en la frontera en N
-                            23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                           """
-                        monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (
-                                    alpha_n1[m, c] + 1e-20) <= structural_ntc
-                    else:
-                        monitor_by_load_rule_n1 = True
+        contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
+                                                                 injections=bus_vars.Pcalc[t_idx, :])
 
-                    # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                    if monitor_only_sensitive_branches:
-                        monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
-                    else:
-                        monitor_by_sensitivity_n1 = True
+        for m, contingency_flow in enumerate(contingency_flows):
+            if isinstance(contingency_flow, LpExp):
 
-                    if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
-                        branch_vars.add_contingency_flow(t=t, m=m, c=c, flow_var=contingency_flow)
+                # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
+                if monitor_only_ntc_load_rule_branches:
+                    """
+                    Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, 
+                    y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural 
+                    significa que la linea no puede limitar el intercambio
+                    Ejemplo:
+                        ntc_load_rule = 0.7
+                        rate = 1700
+                        alpha_n1 = 0.05
+                        structural_rate = 5200
+                        0.7 * 1700 --> 1190 mw para el intercambio
+                        1190 / 0.05 --> 23.800 MW en la frontera en N
+                        23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                       """
+                    monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (
+                                alpha_n1[m, c] + 1e-20) <= structural_ntc
+                else:
+                    monitor_by_load_rule_n1 = True
 
-                        # add upper rate constraint
-                        prob.add_cst(
-                            cst=contingency_flow <= branch_data_t.rates[m] / Sbase,
-                            name=join("br_cst_flow_upper_lim_", [t, m, c]))
+                # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                if monitor_only_sensitive_branches:
+                    monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
+                else:
+                    monitor_by_sensitivity_n1 = True
 
-                        # add lower rate constraint
-                        prob.add_cst(
-                            cst=contingency_flow >= -branch_data_t.rates[m] / Sbase,
-                            name=join("br_cst_flow_lower_lim_", [t, m, c]))
+                if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
+                    # declare slack variables
+                    pos_slack = prob.add_var(0, 1e20, join("br_cst_flow_pos_sl_", [t_idx, m, c]))
+                    neg_slack = prob.add_var(0, 1e20, join("br_cst_flow_neg_sl_", [t_idx, m, c]))
+
+                    # register the contingency data to evaluate the result at the end
+                    branch_vars.add_contingency_flow(t=t_idx, m=m, c=c,
+                                                     flow_var=contingency_flow,
+                                                     neg_slack=neg_slack,
+                                                     pos_slack=pos_slack)
+
+                    # add upper rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
+                    )
+
+                    # add lower rate constraint
+                    prob.add_cst(
+                        cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.rates[m] / Sbase,
+                        name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
+                    )
+
+                    f_obj += pos_slack + neg_slack
 
     return f_obj
 
@@ -856,16 +898,16 @@ def add_linear_hvdc_formulation(t: int,
                     name=join("hvdc_flow_cst_", [t, m], "_"))
 
                 # add the injections matching the flow
-                vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
-                vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
+                vars_bus.Pcalc[t, fr] -= hvdc_vars.flows[t, m]
+                vars_bus.Pcalc[t, to] += hvdc_vars.flows[t, m]
 
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
 
                     # add the injections matching the flow
-                    vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
+                    vars_bus.Pcalc[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.Pcalc[t, to] += hvdc_vars.flows[t, m]
 
                 else:
 
@@ -882,8 +924,8 @@ def add_linear_hvdc_formulation(t: int,
                     set_var_bounds(var=hvdc_vars.flows[t, m], ub=P0, lb=P0)
 
                     # add the injections matching the flow
-                    vars_bus.inj_p[t, fr] -= hvdc_vars.flows[t, m]
-                    vars_bus.inj_p[t, to] += hvdc_vars.flows[t, m]
+                    vars_bus.Pcalc[t, fr] -= hvdc_vars.flows[t, m]
+                    vars_bus.Pcalc[t, to] += hvdc_vars.flows[t, m]
             else:
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
@@ -909,14 +951,13 @@ def add_linear_node_balance(t_idx: int,
     """
     B = Bbus.tocsc()
 
-    P_esp = bus_vars.inj_p[t_idx, :]
+    P_esp = bus_vars.Pcalc[t_idx, :]
 
     # calculate the linear nodal inyection
     P_calc = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-
         bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
             cst=P_calc[k] == P_esp[k],
             name=join("kirchoff_", [t_idx, k], "_"))
@@ -980,7 +1021,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
 
-
     lp_model: LpModel = LpModel(solver_type)
 
     # declare structures of LP vars
@@ -994,45 +1034,10 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         # compile the circuit at the master time index ------------------------------------------------------------
         # note: There are very little chances of simplifying this step and experience shows it is not
         #        worth the effort, so compile every time step
-        nc: NumericalCircuit = compile_numerical_circuit_at(
-            circuit=grid,
-            t_idx=t,  # yes, this is not a bug
-            bus_dict=bus_dict,
-            areas_dict=areas_dict)
-
-        if consider_contingencies:
-            # if we want to include contingencies, we'll need the LODF at this time step
-            ls = LinearAnalysis(
-                numerical_circuit=nc,
-                distributed_slack=False,
-                correct_values=True)
-
-            ls.run()
-            mctg = LinearMultiContingencies(grid=grid)
-            mctg.update(
-                lodf=ls.LODF,
-                ptdf=ls.PTDF)
-
-            # compute exchange sensitivities
-            if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
-                alpha, alpha_n1 = compute_alpha(
-                    ptdf=ls.PTDF,
-                    lodf=ls.LODF if consider_contingencies else None,
-                    P0=nc.Sbus.real,
-                    Pinstalled=nc.bus_installed_power,
-                    Pgen=nc.generator_data.get_injections_per_bus()[:, 0].real,
-                    Pload=nc.load_data.get_injections_per_bus()[:, 0].real,
-                    idx1=buses_areas_1,
-                    idx2=buses_areas_2,
-                    mode=transfer_method)
-            else:
-                alpha = None
-                alpha_n1 = None
-
-        else:
-            mctg = None
-            alpha = None
-            alpha_n1 = None
+        nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
+                                                            t_idx=t,  # yes, this is not a bug
+                                                            bus_dict=bus_dict,
+                                                            areas_dict=areas_dict)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
@@ -1067,34 +1072,85 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             prob=lp_model)
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
+
+            structural_ntc = nc.branch_data.get_inter_areas(buses_areas_1=buses_areas_1, buses_areas_2=buses_areas_2)
+
+            # declare the linear analysis
+            ls = LinearAnalysis(numerical_circuit=nc, distributed_slack=False, correct_values=True)
+
+            # compute exchange sensitivities
+            if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
+
+                # TODO, these conditions are confusing and maybe conflicting with the consider_contingencies option
+
+                # compute the PTDF and LODF
+                ls.run()
+
+                alpha = compute_alpha(ptdf=ls.PTDF,
+                                      lodf=ls.LODF,
+                                      P0=nc.Sbus.real,
+                                      Pinstalled=nc.bus_installed_power,
+                                      Pgen=nc.generator_data.get_injections_per_bus()[:, 0].real,
+                                      Pload=nc.load_data.get_injections_per_bus()[:, 0].real,
+                                      idx1=buses_areas_1,
+                                      idx2=buses_areas_2,
+                                      mode=transfer_method)
+            else:
+                alpha = None
+
             # formulate branches -----------------------------------------------------------------------------------
             f_obj += add_linear_branches_formulation(
-                t=t_idx,
+                t_idx=t_idx,
                 Sbase=nc.Sbase,
                 branch_data_t=nc.branch_data,
                 branch_vars=mip_vars.branch_vars,
-                vars_bus=mip_vars.bus_vars,
+                bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
-                consider_contingencies=consider_contingencies,
-                linear_multicontingencies=mctg,
-                lodf_threshold=lodf_threshold,
                 monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                 monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
                 alpha=alpha,
-                alpha_n1=alpha_n1,
                 alpha_threshold=alpha_threshold,
-                structural_ntc=nc.branch_data.get_inter_areas(buses_areas_1=buses_areas_1, buses_areas_2=buses_areas_2),
+                structural_ntc=structural_ntc,
                 ntc_load_rule=None,
-                inf=1e20)
+                inf=1e20
+            )
 
             # formulate nodes ---------------------------------------------------------------------------------------
-            add_linear_node_balance(
-                t_idx=t_idx,
-                Bbus=nc.Bbus,
-                vd=nc.vd,
-                bus_data=nc.bus_data,
-                bus_vars=mip_vars.bus_vars,
-                prob=lp_model)
+            add_linear_node_balance(t_idx=t_idx,
+                                    Bbus=nc.Bbus,
+                                    vd=nc.vd,
+                                    bus_data=nc.bus_data,
+                                    bus_vars=mip_vars.bus_vars,
+                                    prob=lp_model)
+
+            # formulate contingencies --------------------------------------------------------------------------------
+
+            if consider_contingencies:
+                # if we want to include contingencies, we'll need the LODF at this time step
+                if ls.PTDF is None:
+                    ls.run()
+
+                # Compute the more generalistic contingency structures
+                mctg = LinearMultiContingencies(grid=grid)
+                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+
+                # formulate the contingencies
+                f_obj += add_linear_branches_contingencies_formulation(
+                    t_idx=t_idx,
+                    Sbase=nc.Sbase,
+                    branch_data_t=nc.branch_data,
+                    branch_vars=mip_vars.branch_vars,
+                    bus_vars=mip_vars.bus_vars,
+                    prob=lp_model,
+                    linear_multicontingencies=mctg,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
+                    alpha_threshold=alpha_threshold,
+                    structural_ntc=structural_ntc,
+                    ntc_load_rule=None,
+                )
+
+
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach

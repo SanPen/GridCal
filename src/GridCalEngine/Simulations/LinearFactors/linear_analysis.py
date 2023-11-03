@@ -377,7 +377,7 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Union[None, Vec]):
+    def get_contingency_flows(self, base_flow: Vec, injections: Vec):
         """
         Get contingency flows
         :param base_flow: Base branch flows (nbranch)
@@ -398,7 +398,7 @@ class LinearMultiContingency:
 
     def get_lp_contingency_flows(self,
                                  base_flow: ObjVec,
-                                 injections: Union[None, ObjVec]) -> ObjVec:
+                                 injections: ObjVec) -> ObjVec:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
@@ -436,6 +436,7 @@ class LinearMultiContingencies:
         self.__branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
         self.__generator_dict = {g.idtag: g for g in grid.get_contingency_devices()}
 
+        # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
     def update(self, lodf: Mat, ptdf: Mat, threshold: float = 0.0001) -> None:
