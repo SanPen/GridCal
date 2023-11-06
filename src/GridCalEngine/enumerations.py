@@ -257,9 +257,10 @@ class DeviceType(Enum):
 
     GeneratorQCurve = 'Generator Q curve'
 
-    HydroMachine = 'Hydro machine'
-    HydroPath = 'Hydro path'
-    HydroReservoir = 'Hydro reservoir'
+    FluidTurbine = 'Fluid Turbine'
+    FluidPump = 'Fluid Pump'
+    FluidPath = 'Fluid path'
+    FluidNode = 'Fluid node'
 
     def __str__(self):
         return self.value

@@ -15,21 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.basic_structures import Vec
-
-
-class HydroPath(EditableDevice):
-
-    def __init__(self,
-                 name: str,
-                 idtag: Union[str, None],
-                 code: str):
-
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                device_type=DeviceType.HydroPath)
+from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.Core.Devices.Fluid.fluid_turbine import FluidTurbine
+from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump

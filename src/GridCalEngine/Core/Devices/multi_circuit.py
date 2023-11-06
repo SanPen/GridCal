@@ -228,6 +228,12 @@ class MultiCircuit:
 
         self.generators_emissions: List[dev.GeneratorEmission] = list()
 
+        # fluids
+        self.fluid_nodes: List[dev.FluidNode] = list()
+        self.fluid_paths: List[dev.FluidPath] = list()
+        self.fluid_turbines: List[dev.FluidTurbine] = list()
+        self.fluid_pumps: List[dev.FluidPump] = list()
+
         # objects with profiles
         self.objects_with_profiles = {
             "Substation": [
@@ -254,6 +260,12 @@ class MultiCircuit:
                 dev.HvdcLine(None, None),
                 dev.VSC(None, None),
                 dev.UPFC(None, None),
+            ],
+            "Fluid": [
+                dev.FluidNode(),
+                dev.FluidPath(),
+                dev.FluidTurbine(),
+                dev.FluidPump(),
             ],
             "Groups": [
                 dev.ContingencyGroup(),
@@ -434,7 +446,7 @@ class MultiCircuit:
         List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC],
         List[dev.HvdcLine]]]:
         """
-        GEt list of the branch lists
+        Get list of the branch lists
         :return:
         """
         lst = self.get_branch_lists_wo_hvdc()
@@ -1188,6 +1200,18 @@ class MultiCircuit:
 
         elif element_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
+
+        elif element_type == DeviceType.FluidNode:
+            return self.fluid_nodes
+
+        elif element_type == DeviceType.FluidPath:
+            return self.fluid_paths
+
+        elif element_type == DeviceType.FluidTurbine:
+            return self.fluid_turbines
+
+        elif element_type == DeviceType.FluidPump:
+            return self.fluid_pumps
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1974,7 +1998,7 @@ class MultiCircuit:
         """
         self.transformers2w.remove(obj)
 
-    def delete_switch(self, obj: dev.Transformer2W):
+    def delete_switch(self, obj: dev.Switch):
         """
         Delete transformer
         :param obj: Transformer2W instance
@@ -2579,6 +2603,75 @@ class MultiCircuit:
         """
         # todo: delete dependencies
         self.generators_emissions.remove(obj)
+
+    def add_fluid_node(self, obj: dev.FluidNode):
+        """
+        Add fluid node
+        :param obj: FluidNode
+        """
+        self.fluid_nodes.append(obj)
+
+    def delete_fluid_node(self, obj: dev.FluidNode):
+        """
+        Delete fluid node
+        :param obj: FluidNode
+        """
+        # delete dependencies
+        for elm in reversed(self.fluid_turbines):
+            if elm.plant == obj:
+                self.delete_fluid_turbine(elm)
+
+        for elm in reversed(self.fluid_pumps):
+            if elm.reservoir == obj:
+                self.delete_fluid_pump(elm)
+
+        for fluid_path in reversed(self.fluid_paths):
+            if fluid_path.source == obj or fluid_path.target == obj:
+                self.delete_fluid_path(fluid_path)
+
+        self.fluid_nodes.remove(obj)
+
+    def add_fluid_path(self, obj: dev.FluidPath):
+        """
+        Add fluid path
+        :param obj:FluidPath
+        """
+        self.fluid_paths.append(obj)
+
+    def delete_fluid_path(self, obj: dev.FluidPath):
+        """
+        Delete fuid path
+        :param obj: FluidPath
+        """
+        self.fluid_paths.remove(obj)
+
+    def add_fluid_turbine(self, obj: dev.FluidTurbine):
+        """
+        Add fluid turbine
+        :param obj:FluidTurbine
+        """
+        self.fluid_turbines.append(obj)
+
+    def delete_fluid_turbine(self, obj: dev.FluidTurbine):
+        """
+        Delete fuid turbine
+        :param obj: FluidTurbine
+        """
+        self.fluid_turbines.remove(obj)
+
+    def add_fluid_pump(self, obj: dev.FluidPump):
+        """
+        Add fluid pump
+        :param obj:FluidPump
+        """
+        self.fluid_pumps.append(obj)
+
+    def delete_fluid_pump(self, obj: dev.FluidPump):
+        """
+        Delete fuid pump
+        :param obj: FluidPump
+        """
+        self.fluid_pumps.remove(obj)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """

@@ -202,6 +202,20 @@ class ObjectsTableMain(DiagramsMain):
             dictionary_of_lists = {DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
 
+        elif elm_type == DeviceType.FluidNode:
+            elm = dev.FluidNode()
+
+        elif elm_type == DeviceType.FluidPath:
+            elm = dev.FluidPath()
+
+        elif elm_type == DeviceType.FluidTurbine:
+            elm = dev.FluidTurbine()
+            dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
+
+        elif elm_type == DeviceType.FluidPump:
+            elm = dev.FluidPump()
+            dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
+
         else:
             raise Exception('elm_type not understood: ' + elm_type.value)
 

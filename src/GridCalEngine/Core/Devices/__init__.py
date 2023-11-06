@@ -24,3 +24,4 @@ from GridCalEngine.Core.Devices.Injections import *
 from GridCalEngine.Core.Devices.Substation import *
 from GridCalEngine.Core.Devices.Associations import *
 from GridCalEngine.Core.Devices.Diagrams import *
+from GridCalEngine.Core.Devices.Fluid import *

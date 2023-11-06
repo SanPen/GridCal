@@ -24,7 +24,7 @@ import GridCalEngine.Core.Devices as dev
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
-def get_objects_dictionary():
+def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
     """
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
@@ -48,7 +48,7 @@ def get_objects_dictionary():
 
                     'bus': dev.Bus(),
 
-                    DeviceType.ConnectivityNodeDevice.value.lower(): dev.ConnectivityNode(),
+                    'connectivity_nodes': dev.ConnectivityNode(),
 
                     'load': dev.Load(),
 
@@ -101,6 +101,11 @@ def get_objects_dictionary():
                     'generator_fuel': dev.GeneratorFuel(),
 
                     'generator_emission': dev.GeneratorEmission(),
+
+                    'fluid_node': dev.FluidNode(),
+                    'fluid_path': dev.FluidPath(),
+                    'fluid_turbine': dev.FluidTurbine(),
+                    'fluid_pump': dev.FluidPump(),
 
                     }
 
@@ -532,7 +537,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.FuelDevice,
                                                  DeviceType.EmissionGasDevice,
                                                  DeviceType.GeneratorDevice,
-                                                 DeviceType.ConnectivityNodeDevice]:
+                                                 DeviceType.ConnectivityNodeDevice,
+                                                 DeviceType.FluidNode]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -760,6 +766,17 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.GeneratorEmissionAssociation:
                 circuit.generators_emissions = devices
 
+            elif template_elm.device_type == DeviceType.FluidNode:
+                circuit.fluid_nodes = devices
+
+            elif template_elm.device_type == DeviceType.FluidPath:
+                circuit.fluid_paths = devices
+
+            elif template_elm.device_type == DeviceType.FluidTurbine:
+                circuit.fluid_turbines = devices
+
+            elif template_elm.device_type == DeviceType.FluidPump:
+                circuit.fluid_pumps = devices
         else:
             # the file does not contain information for the data type (not a problem...)
             pass

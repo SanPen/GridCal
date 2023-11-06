@@ -82,7 +82,7 @@ class ScriptingMain(IoMain):
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)
         self.ui.saveSourceCodeButton.clicked.connect(self.save_source_code)
 
-        # clicked
+        # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
 
     def create_console(self) -> None:

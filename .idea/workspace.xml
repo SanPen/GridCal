@@ -26,14 +26,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Formulated the contingencies at the OPF level, improved the same for the NTC-OPF">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added fluid devices">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_pump.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_turbine.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/compiled_arrays.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/compiled_arrays.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/README.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Scripting/scripting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Scripting/scripting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro/HydroMachine.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro/HydroPath.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_path.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro/HydroReservoir.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,22 +113,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Core/Devices/Fluid",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -130,11 +136,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="C:\Git\Github\GridCal\src\research\derivatives_and_jacobian" />
       <recent name="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
-      <recent name="$PROJECT_DIR$/Grids_and_profiles/grids" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
@@ -1252,7 +1258,7 @@
       <workItem from="1698913871767" duration="18784000" />
       <workItem from="1698953701354" duration="2358000" />
       <workItem from="1698996592752" duration="11711000" />
-      <workItem from="1699271674571" duration="3912000" />
+      <workItem from="1699271674571" duration="12076000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1597,7 +1603,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="369" />
+    <option name="localTasksCounter" value="370" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1631,8 +1637,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Modified the text of some results' naming" />
-    <MESSAGE value="Fixed short circuit indexing bug in islands" />
     <MESSAGE value="Merged devel with devel_REE (successfully)" />
     <MESSAGE value="updated version" />
     <MESSAGE value="Updated the version file" />
@@ -1656,7 +1660,9 @@
     <MESSAGE value="Improved types" />
     <MESSAGE value="added get_lp_contingency_flows" />
     <MESSAGE value="Formulated the contingencies at the OPF level, improved the same for the NTC-OPF" />
-    <option name="LAST_COMMIT_MESSAGE" value="Formulated the contingencies at the OPF level, improved the same for the NTC-OPF" />
+    <MESSAGE value="Finalized the scripting save and open" />
+    <MESSAGE value="Added fluid devices" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added fluid devices" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1989,8 +1995,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Scripting/scripting.py</url>
-          <line>243</line>
-          <option name="timeStamp" value="1200" />
+          <line>248</line>
+          <option name="timeStamp" value="1201" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2194,7 +2200,7 @@
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1696580506087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1699278990270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1699285815145" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
