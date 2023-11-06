@@ -14,15 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 import numpy as np
 import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
 import datetime as dtelib
 from PySide6.QtGui import QFont, QFontMetrics
-from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
+from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
+from GridCal.Gui.GuiFunctions import CustomFileSystemModel
 from GridCal.Gui.messages import error_msg
 
 try:
@@ -34,7 +36,7 @@ except ModuleNotFoundError:
     qt_console_available = False
 
 
-class ScriptingMain(BaseMainGui):
+class ScriptingMain(IoMain):
     """
     Diagrams Main
     """
@@ -46,7 +48,7 @@ class ScriptingMain(BaseMainGui):
         """
 
         # create main window
-        BaseMainGui.__init__(self, parent)
+        IoMain.__init__(self, parent)
 
         # Console
         self.console: Union[ConsoleWidget, None] = None
@@ -67,12 +69,21 @@ class ScriptingMain(BaseMainGui):
 
         self.ui.sourceCodeTextEdit.highlighter = PythonHighlighter(self.ui.sourceCodeTextEdit.document())
 
+        # tree view
+        root_path = self.scripts_path()
+        self.python_fs_model = CustomFileSystemModel(root_path=self.scripts_path(), ext_filter=['*.py'])
+        self.ui.sourceCodeTreeView.setModel(self.python_fs_model)
+        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(root_path))
+
         # actions ------------------------------------------------------------------------------------------------------
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
         # buttonclicks -------------------------------------------------------------------------------------------------
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)
         self.ui.saveSourceCodeButton.clicked.connect(self.save_source_code)
+
+        # clicked
+        self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
 
     def create_console(self) -> None:
         """
@@ -225,9 +236,31 @@ class ScriptingMain(BaseMainGui):
 
         self.console.execute_command(code)
 
+    def source_code_tree_clicked(self, index):
+        """
+
+        :return:
+        """
+        pth = self.python_fs_model.filePath(index)
+
+        if os.path.exists(pth):
+            with open(pth, 'r') as f:
+                txt = "\n".join(line.rstrip() for line in f)
+                self.ui.sourceCodeTextEdit.setPlainText(txt)
+        else:
+            error_msg(pth + ' does not exists', 'Open script')
+
     def save_source_code(self):
         """
 
         :return:
         """
-        print("Not implemented yet")
+        name = self.ui.sourceCodeNameLineEdit.text().strip()
+
+        if name != '':
+            fname = name + '.py'
+            pth = os.path.join(self.scripts_path(), fname)
+            with open(pth, 'w') as f:
+                f.write(self.ui.sourceCodeTextEdit.toPlainText())
+        else:
+            error_msg("Please enter a name for the script", title="Save script")

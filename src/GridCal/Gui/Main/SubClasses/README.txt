@@ -6,7 +6,6 @@ simplify the massive original class.
 The subclasses inheritance order is:
 
 BaseMainGui
-ScriptingMain
 CompiledArraysMain
 DiagramsMain
 ObjectsTableMain
@@ -15,4 +14,5 @@ SimulationsMain
 ResultsMain
 ConfigurationMain
 IoMain
+ScriptingMain
 MainGUI

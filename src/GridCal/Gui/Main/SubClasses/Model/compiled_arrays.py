@@ -20,11 +20,11 @@ from matplotlib import pyplot as plt
 
 import GridCalEngine.basic_structures as bs
 import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.Main.SubClasses.Scripting.scripting import ScriptingMain
+from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
-class CompiledArraysMain(ScriptingMain):
+class CompiledArraysMain(BaseMainGui):
     """
     Diagrams Main
     """
@@ -36,7 +36,7 @@ class CompiledArraysMain(ScriptingMain):
         """
 
         # create main window
-        ScriptingMain.__init__(self, parent)
+        BaseMainGui.__init__(self, parent)
 
         # array modes
         self.ui.arrayModeComboBox.addItem('real')

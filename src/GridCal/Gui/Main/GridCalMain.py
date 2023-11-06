@@ -21,7 +21,7 @@ import qdarktheme
 from PySide6 import QtWidgets
 
 from GridCal.Gui.Main.MainWindow import QApplication
-from GridCal.Gui.Main.SubClasses.io import IoMain
+from GridCal.Gui.Main.SubClasses.Scripting.scripting import ScriptingMain
 from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
@@ -35,7 +35,7 @@ This class is the handler of the main gui of GridCal.
 # Main Window
 ########################################################################################################################
 
-class MainGUI(IoMain):
+class MainGUI(ScriptingMain):
     """
     MainGUI
     """
@@ -46,7 +46,7 @@ class MainGUI(IoMain):
         """
 
         # create main window
-        IoMain.__init__(self, parent=None)
+        ScriptingMain.__init__(self, parent=None)
 
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)

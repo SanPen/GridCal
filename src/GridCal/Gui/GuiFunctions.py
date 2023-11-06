@@ -1861,6 +1861,14 @@ def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=
     return list_model
 
 
+class CustomFileSystemModel(QtWidgets.QFileSystemModel):
+    def __init__(self, root_path: str, ext_filter: List[str] = ['*.py']):
+        super(CustomFileSystemModel, self).__init__()
+
+        self.setNameFilters(ext_filter)
+        self.setRootPath(root_path)
+
+
 def get_logger_tree_model(logger: DataLogger):
     """
     Fill logger tree

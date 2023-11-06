@@ -53,6 +53,19 @@ class ConfigurationMain(ResultsMain):
         """
         return os.path.exists(self.config_file_path())
 
+    @staticmethod
+    def scripts_path() -> str:
+        """
+        get the config file path
+        :return: config file path
+        """
+        pth = os.path.join(get_create_gridcal_folder(), 'scripts')
+
+        if not os.path.exists(pth):
+            os.makedirs(pth)
+
+        return pth
+
     def get_config_structure(self) -> Dict[str, Dict[str, any]]:
         """
         Get the settings configuration dictionary
