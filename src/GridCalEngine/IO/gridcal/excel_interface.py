@@ -259,6 +259,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
     # common function
     def set_object_attributes(obj_, attr_list, values):
+
         for a, attr in enumerate(attr_list):
 
             # Hack to change the enabled by active...
@@ -275,6 +276,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 elif conv is dev.BranchType:
                     # cbr = BranchTypeConverter(None)
                     setattr(obj_, attr, dev.BranchType(values[a]))
+                elif isinstance(conv, DeviceType):
+                    pass
                 else:
                     setattr(obj_, attr, conv(values[a]))
             else:
