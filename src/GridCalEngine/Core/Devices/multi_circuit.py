@@ -1327,6 +1327,18 @@ class MultiCircuit:
         elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.delete_generator_emission(obj)
 
+        elif element_type == DeviceType.FluidNode:
+            return self.delete_fluid_node(obj)
+
+        elif element_type == DeviceType.FluidTurbine:
+            return self.delete_fluid_turbine(obj)
+
+        elif element_type == DeviceType.FluidPump:
+            return self.delete_fluid_pump(obj)
+
+        elif element_type == DeviceType.FluidPath:
+            return self.delete_fluid_path(obj)
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -1355,7 +1367,12 @@ class MultiCircuit:
                     DeviceType.VscDevice,
                     DeviceType.HVDCLineDevice,
                     DeviceType.SwitchDevice,
-                    DeviceType.WindingDevice, ]:
+                    DeviceType.WindingDevice,
+
+                    DeviceType.FluidNode,
+                    DeviceType.FluidPath,
+                    DeviceType.FluidTurbine,
+                    DeviceType.FluidPump]:
             data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
 
         return data
