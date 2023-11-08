@@ -133,8 +133,10 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 iter_ = max_it + 1  # exit condition
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V, converged, norm_f, Scalc,
-                                               None, None, None, None, None, None, iter_, elapsed)
+                return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                               Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                               Ybus=None, Yf=None, Yt=None,
+                                               iterations=iter_, elapsed=elapsed)
 
             # assign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -208,5 +210,8 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
-
+    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)

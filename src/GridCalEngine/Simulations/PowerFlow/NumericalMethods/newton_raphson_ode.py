@@ -183,4 +183,8 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    # return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)

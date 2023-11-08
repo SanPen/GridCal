@@ -391,4 +391,8 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
 
     elapsed = time.time() - start_time
 
-    return NumericPowerFlowResults(V, converged, err, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    # return NumericPowerFlowResults(V, converged, err, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=err,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)

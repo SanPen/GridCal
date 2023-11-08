@@ -187,11 +187,14 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
         if error_registry is not None:
             error_registry.append(norm_f)
 
-        if norm_f < tol:
-            converged = 1
+        converged = norm_f < tol
 
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)
 

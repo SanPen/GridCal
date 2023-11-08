@@ -108,7 +108,8 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V=voltage, converged=converged,
+    return NumericPowerFlowResults(V=voltage,
+                                   converged=converged,
                                    norm_f=normF,
                                    Scalc=Scalc,
                                    ma=None,

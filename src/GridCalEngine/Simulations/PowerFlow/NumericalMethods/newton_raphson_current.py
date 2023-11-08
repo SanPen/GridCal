@@ -108,8 +108,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_par
     F = np.r_[dI[pvpq].real, dI[pq].imag]
     normF = np.linalg.norm(F, np.Inf)  # check tolerance
 
-    if normF < tol:
-        converged = 1
+    converged = normF < tol
 
     # do Newton iterations
     while not converged and iter_ < max_it:
@@ -176,13 +175,15 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_par
         # check for convergence
         normF = normFnew
 
-        if normF < tol:
-            converged = 1
+        converged = normF < tol
 
     end = time.time()
     elapsed = end - start
 
     Scalc = V * np.conj(Icalc)
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
-
+    # return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)

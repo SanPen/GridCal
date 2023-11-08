@@ -101,8 +101,12 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             if np.isnan(dx).any():
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V0, converged, norm_f, S0,
-                                               None, None, None, None, None, None, iteration, elapsed)
+                # return NumericPowerFlowResults(V0, converged, norm_f, S0,
+                #                                None, None, None, None, None, None, iteration, elapsed)
+                return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
+                                               Scalc=S0, ma=None, theta=None, Beq=None,
+                                               Ybus=None, Yf=None, Yt=None,
+                                               iterations=iteration, elapsed=elapsed)
 
             if verbose:
                 logger.add_debug('NR Iteration {0}'.format(iteration) + '-' * 200)
@@ -176,9 +180,13 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc,
-                                               None, None, None, None, None, None,
-                                               iteration, elapsed)
+                # return NumericPowerFlowResults(V, converged, norm_f_new, Scalc,
+                #                                None, None, None, None, None, None,
+                #                                iteration, elapsed)
+                return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                               Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                               Ybus=None, Yf=None, Yt=None,
+                                               iterations=iteration, elapsed=elapsed)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error
@@ -219,5 +227,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iteration, elapsed)
-
+    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iteration, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iteration, elapsed=elapsed)

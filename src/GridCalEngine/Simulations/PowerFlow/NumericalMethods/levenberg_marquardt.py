@@ -123,7 +123,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 lbmda = 1e-3 * H2.diagonal().max()
 
             # compute system matrix A = H^T·H - lambda·I
-            A = H2 + lbmda * Idn
+            A = (H2 + lbmda * Idn).tocsc()
 
             # right-hand side
             # H^t·dz
@@ -227,5 +227,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=iter_, elapsed=elapsed)
 

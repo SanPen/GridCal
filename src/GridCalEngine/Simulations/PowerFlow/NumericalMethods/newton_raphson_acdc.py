@@ -290,8 +290,12 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 nc.branch_data.tap_angle = tau
                 nc.branch_data.Beq = Beq
 
-                return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc,
-                                               m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
+                # return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc,
+                #                                m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
+                return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                               Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
+                                               Ybus=Ybus, Yf=Yf, Yt=Yt,
+                                               iterations=iterations, elapsed=elapsed)
             else:
                 # the iteration was ok, check the controls if the error is small enough
                 if norm_f < 1e-2:
@@ -388,6 +392,9 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc,
-                                   m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
-
+    # return NumericPowerFlowResults(V, converged, norm_f, Scalc,
+    #                                m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
+    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+                                   Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
+                                   Ybus=Ybus, Yf=Yf, Yt=Yt,
+                                   iterations=iterations, elapsed=elapsed)

@@ -87,7 +87,11 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0: CxVec, I0: CxVec, V0: CxVec, theta: Vec,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
+    # return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
+    return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=1, elapsed=elapsed)
 
 
 def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
@@ -146,8 +150,12 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
             # check for convergence
             end = time.time()
             elapsed = end - start
-            return NumericPowerFlowResults(V, False, norm_f, Scalc,
-                                           None, None, None, None, None, None, 1, elapsed)
+            # return NumericPowerFlowResults(V, False, norm_f, Scalc,
+            #                                None, None, None, None, None, None, 1, elapsed)
+            return NumericPowerFlowResults(V=V, converged=False, norm_f=norm_f,
+                                           Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                           Ybus=None, Yf=None, Yt=None,
+                                           iterations=1, elapsed=elapsed)
 
         # compose the results vector
         V = V0.copy()
@@ -174,6 +182,10 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, True, norm_f, Scalc,
-                                   None, None, None, None, None, None, 1, elapsed)
+    # return NumericPowerFlowResults(V, True, norm_f, Scalc,
+    #                                None, None, None, None, None, None, 1, elapsed)
+    return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
+                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Ybus=None, Yf=None, Yt=None,
+                                   iterations=1, elapsed=elapsed)
 
