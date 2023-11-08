@@ -247,6 +247,9 @@ class ScriptingMain(IoMain):
             with open(pth, 'r') as f:
                 txt = "\n".join(line.rstrip() for line in f)
                 self.ui.sourceCodeTextEdit.setPlainText(txt)
+
+            name = os.path.basename(pth)
+            self.ui.sourceCodeNameLineEdit.setText(name.replace('.py', ''))
         else:
             error_msg(pth + ' does not exists', 'Open script')
 

@@ -153,7 +153,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                             text_prog=self.progress_text.emit,
                                             prog_func=self.progress_signal.emit)
 
-            self.results.generator_power[self.time_indices, :] = Pg
+            self.results.generator_power[self.time_indices, :] = Pg  # already in MW
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))

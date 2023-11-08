@@ -32,9 +32,9 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 class Transformer2W(ParentBranch):
 
     def __init__(self,
-                 name='Branch', idtag=None, code='',
                  bus_from: Bus = None,
                  bus_to: Bus = None,
+                 name='Branch', idtag=None, code='',
                  HV=None, LV=None,
                  nominal_power=0.001,
                  copper_losses=0.0,

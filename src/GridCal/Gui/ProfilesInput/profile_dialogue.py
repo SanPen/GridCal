@@ -17,6 +17,7 @@
 import os
 import string
 import sys
+from typing import Union
 from random import randint
 from enum import Enum
 from difflib import SequenceMatcher
@@ -175,6 +176,9 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
 
 
 class ProfileInputGUI(QtWidgets.QDialog):
+    """
+    ProfileInputGUI
+    """
 
     def __init__(self, parent=None, list_of_objects=None, magnitudes=['']):
         """
@@ -183,8 +187,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
             parent:
             list_of_objects: List of objects to which set a profile to
             magnitudes: Property of the objects to which set the pandas DataFrame
-            list_of_objects: list ob object to modify
-            use_native_dialogues: use the native file selection dialogues?
         """
         QtWidgets.QDialog.__init__(self, parent)
         if list_of_objects is None:
@@ -259,6 +261,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         self.profile_names = list()
 
+        self.excel_dialogue: Union[ExcelDialog, None] = None
+
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
@@ -305,11 +309,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # declare the allowed file types
         files_types = "Formats (*.xlsx *.xls *.csv)"
-        # call dialog to select the file
-        # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
 
         if len(filename) > 0:
@@ -319,19 +320,31 @@ class ProfileInputGUI(QtWidgets.QDialog):
             # Depending on the extension load the file
             if file_extension == '.csv':
                 try:
-                    self.original_data_frame = pd.read_csv(filename, index_col=0)
+                    self.original_data_frame = pd.read_csv(filename,
+                                                           index_col=0,
+                                                           # dtype=float,  # do not use if dates are expected
+                                                           dayfirst=True)
+                except ValueError as e:
+                    self.msg(text=str(e), title="Error loading CSV file")
+                    return
+
                 except UnicodeDecodeError:
                     try:
-                        self.original_data_frame = pd.read_csv(filename, index_col=0, encoding='windows-1252')
+                        self.original_data_frame = pd.read_csv(filename,
+                                                               index_col=0,
+                                                               encoding='windows-1252',
+                                                               # dtype=float,  # do not use if dates are expected
+                                                               dayfirst=True)
                     except Exception as e:
                         self.msg(str(e))
+                        return
 
             elif file_extension in ['.xlsx', '.xls']:
 
                 # select the sheet from the file
-                window = ExcelDialog(self, filename)
-                window.exec_()
-                sheet_index = window.excel_sheet
+                self.excel_dialogue = ExcelDialog(self, filename)
+                self.excel_dialogue.exec()
+                sheet_index = self.excel_dialogue.excel_sheet
 
                 if sheet_index is not None:
 
@@ -340,18 +353,22 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 else:
                     return
 
+            else:
+                self.msg(text="Could not open:\n" + filename, title="File open")
+                return
+
             # try to format the data
             try:
                 self.original_data_frame = self.original_data_frame.astype(float)
-            except:
+            except Exception as e:
 
                 # run the diagnostic
                 for i in range(self.original_data_frame.shape[0]):
                     for j in range(self.original_data_frame.shape[1]):
                         try:
                             a = float(self.original_data_frame.values[i, j])
-                        except:
-                            print('not a float value (', i, j, '):', self.original_data_frame.values[i, j])
+                        except Exception as e2:
+                            print(str(e2) + ': not a float value (', i, j, '):{}'.format(self.original_data_frame.values[i, j]))
 
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return

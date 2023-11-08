@@ -252,14 +252,14 @@ class MultiCircuit:
                 dev.Shunt(),
             ],
             "Branches": [
-                dev.Line(None, None),
-                dev.DcLine(None, None),
-                dev.Transformer2W(None, None),
-                dev.Winding(None, None),
+                dev.Line(),
+                dev.DcLine(),
+                dev.Transformer2W(),
+                dev.Winding(),
                 dev.Transformer3W(),
-                dev.HvdcLine(None, None),
-                dev.VSC(None, None),
-                dev.UPFC(None, None),
+                dev.HvdcLine(),
+                dev.VSC(),
+                dev.UPFC(),
             ],
             "Fluid": [
                 dev.FluidNode(),
@@ -352,10 +352,10 @@ class MultiCircuit:
             d[key] = [o.device_type.value for o in elm_list]
         return d
 
-    def get_zones(self):
+    def get_zones(self) -> List[dev.Zone]:
         """
-
-        :return: 
+        Get list of zones
+        :return: List[dev.Zone]
         """
         return self.zones
 
@@ -369,14 +369,14 @@ class MultiCircuit:
     def get_areas(self) -> List[dev.Area]:
         """
         Get list of areas
-        :return:
+        :return: List[dev.Area]
         """
         return self.areas
 
     def get_area_names(self) -> StrVec:
         """
         Get array of area names
-        :return:
+        :return: StrVec
         """
         return np.array([a.name for a in self.areas])
 
@@ -434,7 +434,7 @@ class MultiCircuit:
     def get_branch_names_wo_hvdc(self) -> StrVec:
         """
         Get all branch names without HVDC devices
-        :return: list of names
+        :return: StrVec
         """
         names = list()
         for lst in self.get_branch_lists_wo_hvdc():
@@ -465,17 +465,17 @@ class MultiCircuit:
             m += len(branch_list)
         return m
 
-    def get_branch_names(self) -> List[str]:
+    def get_branch_names(self) -> StrVec:
         """
-        Get all branch names
-        :return:
+        Get array of all branch names
+        :return: StrVec
         """
 
         names = list()
         for lst in self.get_branch_lists():
             for elm in lst:
                 names.append(elm.name)
-        return names
+        return np.array(names)
 
     def get_branch_number_wo_hvdc(self) -> int:
         """

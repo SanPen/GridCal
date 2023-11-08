@@ -85,26 +85,38 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
     nt = len(time_indices)
     ng = grid.get_generators_number()
     nl = grid.get_calculation_loads_number()
-    Sbase = grid.Sbase
 
-    Pg = np.zeros((nt, ng))
-
-    Pl = np.zeros((nt, nl))
-    Pavail = np.zeros(ng)
+    Pg = np.zeros((nt, ng))  # dispatched generation (to be filled)
+    dispatchable_indices = list()  # generator indices that are available for beign dispatched
+    Pg_sta = np.zeros((nt, ng))  # non dispatchable Pg
+    Pl = np.zeros((nt, nl))  # load (non dispatchable)
+    P_avail = np.zeros((nt, ng))  # generation available power
 
     # gather generation info
     for i, gen in enumerate(grid.get_generators()):
-        Pavail[i] = gen.Pmax / Sbase * gen.active_prof[time_indices]
+
+        Pg[:, i] = gen.P_prof[time_indices] * gen.active_prof[time_indices]  # copy at first ...
+
+        if gen.enabled_dispatch:
+            P_avail[:, i] = gen.Pmax * gen.active_prof[time_indices]
+            dispatchable_indices.append(i)
+        else:
+            Pg_sta[:, i] = Pg[:, i].copy()
 
     # gather load info
     for i, load in enumerate(grid.get_loads()):
-        Pl[:, i] = load.P_prof[time_indices] / Sbase * load.active_prof[time_indices]
+        Pl[:, i] = load.P_prof[time_indices] * load.active_prof[time_indices]
 
+    # for every time step...
     for t_idx, t in enumerate(time_indices):
-        # generator share:
-        generation_share_at_t = Pavail / Pavail.sum()
+        # generator share that is available
+        generation_share_at_t = P_avail[t_idx, :] / P_avail[t_idx, :].sum()
 
-        Pg[t_idx, :] = Pl[t_idx, :].sum() * generation_share_at_t
+        # total power that is needed at the time step, scaled to the generation available
+        required_power = (Pl[t_idx, :].sum() - Pg_sta[t_idx, :].sum()) * generation_share_at_t
+
+        # set the values
+        Pg[t_idx, dispatchable_indices] = required_power[dispatchable_indices]
 
         if prog_func is not None:
             prog_func((t_idx + 1) / nt * 100.0)

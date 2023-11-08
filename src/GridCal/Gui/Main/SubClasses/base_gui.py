@@ -136,7 +136,7 @@ class BaseMainGui(QMainWindow):
 
         self.session: SimulationSession = SimulationSession(name='GUI session')
 
-        self.file_name = ''
+        self._file_name = ''
 
         self.project_directory = os.path.expanduser("~")
 
@@ -228,6 +228,23 @@ class BaseMainGui(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    @property
+    def file_name(self) -> str:
+        """
+        Get the current file name
+        :return: str
+        """
+        return self._file_name
+
+    @file_name.setter
+    def file_name(self, val: str):
+        """
+        Set the current file name
+        :param val: file name
+        """
+        self._file_name = val
+        self.ui.file_information_label.setText(self._file_name)
 
     @staticmethod
     def collect_memory() -> None:
