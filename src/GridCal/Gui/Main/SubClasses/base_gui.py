@@ -54,9 +54,8 @@ from GridCal.Gui.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.templates import get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue, get_sequence_lines_catalogue
-
-from matplotlib import pyplot as plt
+from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
+                               get_sequence_lines_catalogue)
 
 
 def terminate_thread(thread):
@@ -599,10 +598,12 @@ class BaseMainGui(QMainWindow):
         :return:
         """
         self.contingency_planner_dialogue = ContingencyPlannerGUI(parent=self, grid=self.circuit)
-        # self.contingency_planner_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-        self.contingency_planner_dialogue.exec_()
+        self.contingency_planner_dialogue.exec()
 
         # gather results
         if self.contingency_planner_dialogue.generated_results:
-            self.circuit.contingency_groups = self.contingency_planner_dialogue.contingency_groups
-            self.circuit.contingencies = self.contingency_planner_dialogue.contingencies
+            if len(self.contingency_planner_dialogue.contingency_groups):
+                self.circuit.contingency_groups += self.contingency_planner_dialogue.contingency_groups
+                self.circuit.contingencies += self.contingency_planner_dialogue.contingencies
+            else:
+                info_msg(text="No contingencies were generated :/", title="Contingency planner")

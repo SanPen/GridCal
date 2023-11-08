@@ -98,10 +98,12 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
         self.contingencies, self.contingency_groups = generate_automatic_contingency_plan(
             grid=self.circuit,
             k=self.ui.contingencyNspinBox.value(),
+            consider_branches=self.ui.addBranchesToContingencyCheckBox.isChecked(),
             filter_branches_by_voltage=self.ui.filterContingencyBranchesByVoltageCheckBox.isChecked(),
             vmin=self.ui.filterContingencyBranchesByVoltageMinSpinBox.value(),
             vmax=self.ui.filterContingencyBranchesByVoltageMaxSpinBox.value(),
             branch_types=branch_types,
+            consider_injections=self.ui.addInjectionsToContingencyCheckBox.isChecked(),
             filter_injections_by_power=self.ui.contingencyFilterInjectionsByPowerCheckBox.isChecked(),
             contingency_perc=self.ui.contingencyInjectionPowerReductionSpinBox.value(),
             pmin=self.ui.contingencyFilterInjectionsByPowerMinSpinBox.value(),

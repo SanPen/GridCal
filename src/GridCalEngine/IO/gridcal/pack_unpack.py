@@ -48,7 +48,7 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
 
                     'bus': dev.Bus(),
 
-                    'connectivity_nodes': dev.ConnectivityNode(),
+                    'connectivity node': dev.ConnectivityNode(),
 
                     'load': dev.Load(),
 

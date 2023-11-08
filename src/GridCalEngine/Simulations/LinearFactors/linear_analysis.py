@@ -502,13 +502,13 @@ class LinearMultiContingencies:
                                              threshold=threshold)
 
             else:
-                mlodf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
+                mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
                 ptdf_factors = dense_to_csc(mat=ptdf[:, bus_contingency_indices],
                                             threshold=threshold)
             else:
-                ptdf_factors = sp.csc_matrix((), shape=(lodf.shape[0], 0))
+                ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(

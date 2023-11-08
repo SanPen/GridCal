@@ -231,7 +231,7 @@ class DeviceType(Enum):
 
     GenericArea = 'Generic Area'
     SubstationDevice = 'Substation'
-    ConnectivityNodeDevice = 'ConnectivityNode'
+    ConnectivityNodeDevice = 'Connectivity Node'
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'

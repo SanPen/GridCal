@@ -1703,17 +1703,6 @@ class SimulationsMain(TimeEventsMain):
                     areas_from = None
                     areas_to = None
 
-                # try to acquire the linear results
-                linear_results = self.session.linear_power_flow
-                if linear_results is not None:
-                    LODF = linear_results.LODF
-                else:
-                    LODF = None
-                    if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
-                        warning_msg("To consider contingencies, the LODF matrix is required.\n"
-                                    "Run a linear simulation first", "OPF time series")
-                        return
-
                 options = sim.OptimalPowerFlowOptions(solver=solver,
                                                       time_grouping=time_grouping,
                                                       zonal_grouping=zonal_grouping,
@@ -1721,7 +1710,6 @@ class SimulationsMain(TimeEventsMain):
                                                       power_flow_options=pf_options,
                                                       consider_contingencies=consider_contingencies,
                                                       skip_generation_limits=skip_generation_limits,
-                                                      LODF=LODF,
                                                       lodf_tolerance=lodf_tolerance,
                                                       maximize_flows=maximize_flows,
                                                       area_from_bus_idx=idx_from,
@@ -1827,17 +1815,6 @@ class SimulationsMain(TimeEventsMain):
                         areas_from = None
                         areas_to = None
 
-                    # try to acquire the linear results
-                    linear_results = self.session.linear_power_flow
-                    if linear_results is not None:
-                        LODF = linear_results.LODF
-                    else:
-                        LODF = None
-                        if consider_contingencies and self.get_preferred_engine() == bs.EngineType.GridCal:
-                            warning_msg("To consider contingencies, the LODF matrix is required.\n"
-                                        "Run a linear simulation first", "OPF time series")
-                            return
-
                     options = sim.OptimalPowerFlowOptions(solver=solver,
                                                           time_grouping=time_grouping,
                                                           zonal_grouping=zonal_grouping,
@@ -1845,7 +1822,6 @@ class SimulationsMain(TimeEventsMain):
                                                           power_flow_options=pf_options,
                                                           consider_contingencies=consider_contingencies,
                                                           skip_generation_limits=skip_generation_limits,
-                                                          LODF=LODF,
                                                           lodf_tolerance=lodf_tolerance,
                                                           maximize_flows=maximize_flows,
                                                           area_from_bus_idx=idx_from,

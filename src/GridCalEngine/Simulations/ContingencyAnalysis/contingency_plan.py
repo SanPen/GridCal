@@ -23,6 +23,7 @@ from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency, Cont
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 import GridCalEngine.Core.Devices as dev
 
+
 def enumerate_states_n_k(m: int, k: int = 1):
     """
     Enumerates the states to produce the so called N-k failures
@@ -50,8 +51,7 @@ def enumerate_states_n_k(m: int, k: int = 1):
 
 def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types):
     """
-
-    :param plan:
+    generate N-1 contingencies on branches
     :param branches:
     :param vmin:
     :param vmax:
@@ -69,7 +69,6 @@ def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
         filter_ok_i = (vmin <= vi <= vmax) if filter_branches_by_voltage else True
 
         if filter_ok_i and b.device_type in branch_types:
-
             group = ContingencyGroup(
                 name=b.name,
                 category='single',
@@ -120,7 +119,6 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                     filter_ok_j = (vmin <= vj <= vmax) if filter_branches_by_voltage else True
 
                     if filter_ok_j and branch_j.device_type in branch_types:
-
                         group = ContingencyGroup(
                             name=branch_i.name + " " + branch_j.name,
                             category='double',
@@ -172,7 +170,6 @@ def add_generator_contingencies(
     for i, gen in enumerate(generators):
 
         if (pmin <= gen.Snom <= pmax) or not filter_injections_by_power:
-
             group = ContingencyGroup(
                 name=gen.name,
                 category='generator',
@@ -191,12 +188,16 @@ def add_generator_contingencies(
 
     return contingencies, groups
 
+
 def generate_automatic_contingency_plan(
-        grid: MultiCircuit, k: int,
+        grid: MultiCircuit,
+        k: int,
+        consider_branches: bool,
         filter_branches_by_voltage: bool = False,
         vmin: float = 0,
         vmax: float = 1000,
         branch_types: List[DeviceType] = list(),
+        consider_injections: bool = False,
         filter_injections_by_power: bool = False,
         contingency_perc=100.0,
         pmin=0,
@@ -206,10 +207,12 @@ def generate_automatic_contingency_plan(
 
     :param grid: MultiCircuit instance
     :param k: index (1 for N-1, 2 for N-2, other values of k will fail)
+    :param consider_branches: consider branches?
     :param filter_branches_by_voltage:
     :param vmin:
     :param vmax:
     :param branch_types: List of allowed branch types
+    :param consider_injections: Consider injections?
     :param filter_injections_by_power:
     :param contingency_perc:
     :param pmin:
@@ -219,33 +222,50 @@ def generate_automatic_contingency_plan(
     """
 
     assert (k in [1, 2])
+    contingencies = list()
+    groups = list()
 
-    branches = grid.get_branches_wo_hvdc()
+    # add branch contingencies
+    if consider_branches:
+        branches = grid.get_branches_wo_hvdc()
 
-    if k == 1:
-        contingencies, groups = add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types)
+        if k == 1:
+            contingencies1, groups1 = add_n1_contingencies(branches=branches,
+                                                           vmin=vmin,
+                                                           vmax=vmax,
+                                                           filter_branches_by_voltage=filter_branches_by_voltage,
+                                                           branch_types=branch_types)
 
-    elif k == 2:
-        contingencies, groups = add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types)
+            contingencies += contingencies1
+            groups += groups1
 
-        contingencies2, groups2 = add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types)
+        elif k == 2:
+            contingencies, groups = add_n1_contingencies(branches=branches,
+                                                         vmin=vmin,
+                                                         vmax=vmax,
+                                                         filter_branches_by_voltage=filter_branches_by_voltage,
+                                                         branch_types=branch_types)
 
-        contingencies += contingencies2
-        groups += groups2
+            contingencies2, groups2 = add_n2_contingencies(branches=branches,
+                                                           vmin=vmin,
+                                                           vmax=vmax,
+                                                           filter_branches_by_voltage=filter_branches_by_voltage,
+                                                           branch_types=branch_types)
 
-    else:
-        contingencies = list()
-        groups = list()
+            contingencies += contingencies2
+            groups += groups2
 
-    contingencies_gen, groups_gen = add_generator_contingencies(
-        generators=grid.get_generators(),
-        pmin=pmin,
-        pmax=pmax,
-        contingency_perc=contingency_perc,
-        filter_injections_by_power=filter_injections_by_power,
-    )
+    # add injection contingencies
+    if consider_injections:
+        contingencies_gen, groups_gen = add_generator_contingencies(
+            generators=grid.get_generators(),
+            pmin=pmin,
+            pmax=pmax,
+            contingency_perc=contingency_perc,
+            filter_injections_by_power=filter_injections_by_power,
+        )
 
-    contingencies += contingencies_gen
-    groups += groups_gen
+        contingencies += contingencies_gen
+        groups += groups_gen
 
     return contingencies, groups
