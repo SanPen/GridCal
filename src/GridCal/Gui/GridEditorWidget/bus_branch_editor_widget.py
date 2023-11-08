@@ -2431,7 +2431,7 @@ class BusBranchEditorWidget(QSplitter):
                 x_m = np.mean(x_arr)
                 y_m = np.mean(y_arr)
 
-                delta_i = np.sqrt((bus.X - x_m) ** 2 + (bus.y - y_m) ** 2)
+                delta_i = np.sqrt((bus.x - x_m) ** 2 + (bus.y - y_m) ** 2)
 
                 if delta_i < delta:
                     delta = delta_i
@@ -2523,6 +2523,12 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
+
+            # correct possible nonsense
+            if np.isnan(bus.y):
+                bus.y = 0.0
+            if np.isnan(bus.x):
+                bus.x = 0.0
 
             x = int(bus.x * explode_factor)
             y = int(bus.y * explode_factor)

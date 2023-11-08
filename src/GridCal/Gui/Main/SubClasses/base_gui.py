@@ -199,7 +199,9 @@ class BaseMainGui(QMainWindow):
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
         self.ui.actionReport_a_bug.triggered.connect(self.report_a_bug)
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
-        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(
+            self.fix_generators_active_based_on_the_power
+        )
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
         self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
 

@@ -161,7 +161,7 @@ class MapWidget(QWidget):
                  parent: QWidget,
                  tile_src: Tiles,
                  start_level: int,
-                 zoom_callback: Callable[[float], None],
+                 zoom_callback: Callable[[int], None],
                  position_callback: Callable[[float, float], None],
                  **kwargs):
         """Initialize the pySlipQt widget.
@@ -283,7 +283,7 @@ class MapWidget(QWidget):
         QTimer.singleShot(10, self.resizeEvent)
 
         # callbacks
-        self.zoom_callback: Callable[[float], None] = zoom_callback
+        self.zoom_callback: Callable[[int], None] = zoom_callback
         self.position_callback: Callable[[float, float], None] = position_callback
 
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
@@ -3720,9 +3720,9 @@ class MapWidget(QWidget):
         """
 
         if self.GotoLevel(level):
-            self.GotoPosition(longitude, latitude)
+            self.GotoPosition(xgeo=longitude, ygeo=latitude)
 
-    def ZoomToArea(self, xgeo: float, ygeo: float, size: int):
+    def ZoomToArea(self, longitude: float, latitude: float, size: int):
         """Set view to level and position to view an area.
 
         geo   a tuple (xgeo,ygeo) to centre view on
@@ -3748,7 +3748,7 @@ class MapWidget(QWidget):
             if awidth >= view_deg_width / 2 or aheight >= view_deg_height / 2:
                 break
 
-        self.GotoLevelAndPosition(level, xgeo, ygeo)
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
     def ChangeTileSet(self, tile_src):
         """Change the source of tiles.

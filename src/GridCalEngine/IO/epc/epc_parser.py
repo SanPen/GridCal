@@ -538,11 +538,12 @@ class PowerWorldParser:
 
         # fix stupid line partition
         txt = txt.replace('/\n', '')
+        txt_lowercase = txt.lower()
 
         expected_sections = ['title',
                              'comments',
                              'solution parameters',
-                             'Substation data',
+                             'substation data',
                              'bus data',
                              'branch data',
                              'transformer data',
@@ -570,7 +571,7 @@ class PowerWorldParser:
         # find which of the expected sections are actually in the file
         present_sections = list()
         for a in expected_sections:
-            if a in txt:
+            if a in txt_lowercase:
                 present_sections.append(a)
 
         # split the text file into the found sections
@@ -578,7 +579,7 @@ class PowerWorldParser:
         for i in range(len(present_sections)-1):
             a = present_sections[i]
             b = present_sections[i + 1]
-            if a in txt and b in txt:
+            if a in txt_lowercase and b in txt_lowercase:
                 raw_txt = find_between(txt, a, b)
                 lines = raw_txt.split('\n')
 
@@ -610,8 +611,8 @@ class PowerWorldParser:
 
         data_dict = self.read_and_split()
 
-        if 'Substation data' in data_dict.keys():
-            substations_dict = parse_substations(data_dict['Substation data']['data'])
+        if 'substation data' in data_dict.keys():
+            substations_dict = parse_substations(data_dict['substation data']['data'])
             grid.substations = list(substations_dict.values())
         else:
             substations_dict = None

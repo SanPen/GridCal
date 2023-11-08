@@ -3182,7 +3182,9 @@ class MultiCircuit:
             return logger
 
         transformer = pyproj.Transformer.from_crs(4326, 25830, always_xy=True)
-        x, y = transformer.transform(lat, lon)
+
+        # the longitude is more reated to x, the latitude is more related to y
+        x, y = transformer.transform(xx=lon, yy=lat)
         x *= factor
         y *= factor
 
@@ -3195,9 +3197,9 @@ class MultiCircuit:
 
         # assign the values
         for i, bus in enumerate(self.buses):
-            if destructive or (bus.X == 0.0 and bus.y == 0.0):
-                bus.X = x[i]
-                bus.y = -y[i]
+            if destructive or (bus.x == 0.0 and bus.y == 0.0):
+                bus.x = x[i]
+                bus.y = y[i]
 
         return logger
 
@@ -3214,7 +3216,7 @@ class MultiCircuit:
         x = np.zeros(n)
         y = np.zeros(n)
         for i, bus in enumerate(self.buses):
-            x[i] = bus.X * factor + offset_x
+            x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
         logger = bs.Logger()
@@ -3233,7 +3235,7 @@ class MultiCircuit:
 
         # assign the values
         for i, bus in enumerate(self.buses):
-            if destructive or (bus.X == 0.0 and bus.y == 0.0):
+            if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
 

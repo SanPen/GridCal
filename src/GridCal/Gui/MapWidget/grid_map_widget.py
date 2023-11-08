@@ -101,7 +101,7 @@ class GridMapWidget(MapWidget):
         self.setLayerData(self.polyline_layer_id, data)
         self.update()
 
-    def zoom_callback(self, zoom_level: int):
+    def zoom_callback(self, zoom_level: int) -> None:
         """
 
         :param zoom_level:
@@ -110,7 +110,7 @@ class GridMapWidget(MapWidget):
         # print('zoom', zoom_level)
         self.diagram.start_level = zoom_level
 
-    def position_callback(self, longitude: float, latitude: float):
+    def position_callback(self, longitude: float, latitude: float) -> None:
         """
 
         :param longitude:
