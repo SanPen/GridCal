@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
 import numpy as np
 from typing import Union, List
 
@@ -32,7 +31,7 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -253,7 +252,12 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         """
         Run thread
         """
-        start = time.time()
+        self.tic()
+
+        mode_2_int = {AvailableTransferMode.Generation: 0,
+                      AvailableTransferMode.InstalledPower: 1,
+                      AvailableTransferMode.Load: 2,
+                      AvailableTransferMode.GenerationAndLoad: 3}
 
         self.progress_signal.emit(0)
 
@@ -309,16 +313,14 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 flows_t: Vec = linear_analysis.get_flows(P)
 
             # compute the branch exchange sensitivity (alpha)
-            alpha, _ = compute_alpha(
-                ptdf=linear_analysis.PTDF,
-                P0=P,  # no problem that there are in p.u., are only used for the sensitivity
-                Pinstalled=nc.bus_installed_power,
-                Pgen=nc.generator_data.get_injections_per_bus().real,
-                Pload=nc.load_data.get_injections_per_bus().real,
-                idx1=self.options.bus_idx_from,
-                idx2=self.options.bus_idx_to,
-                mode=self.options.mode.value
-            )
+            alpha = compute_alpha(ptdf=linear_analysis.PTDF,
+                                  P0=P,  # no problem that there are in p.u., are only used for the sensitivity
+                                  Pinstalled=nc.bus_installed_power,
+                                  Pgen=nc.generator_data.get_injections_per_bus().real,
+                                  Pload=nc.load_data.get_injections_per_bus().real,
+                                  idx1=self.options.bus_idx_from,
+                                  idx2=self.options.bus_idx_to,
+                                  mode=mode_2_int[self.options.mode])
 
             # base exchange
             base_exchange = (self.options.inter_area_branch_sense * flows_t[self.options.inter_area_branch_idx]).sum()
@@ -365,8 +367,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.progress_text.emit('Building the report...')
         self.results.make_report()
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
 
     def cancel(self):
         self.__cancel__ = True

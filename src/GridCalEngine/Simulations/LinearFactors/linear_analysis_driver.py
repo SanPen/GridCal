@@ -35,7 +35,8 @@ class LinearAnalysisDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit,
                  options: Union[LinearAnalysisOptions, None] = None,
-                 engine: EngineType = EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal,
+                 opf_results: Union["OptimalPowerFlowResults", None] = None):
         """
         Linear analysis driver constructor
         :param grid: MultiCircuit instance
@@ -49,6 +50,8 @@ class LinearAnalysisDriver(DriverTemplate):
 
         self.engine: EngineType = engine
 
+        self.opf_results = opf_results
+
         # Results
         self.results: Union[LinearAnalysisResults, None] = None
 
@@ -58,7 +61,7 @@ class LinearAnalysisDriver(DriverTemplate):
         """
         Run thread
         """
-        start = time.time()
+        self.tic()
         self.progress_text.emit('Analyzing')
         self.progress_signal.emit(0)
 
@@ -88,11 +91,18 @@ class LinearAnalysisDriver(DriverTemplate):
             self.logger.add_warning('Failed, back to GridCal')
 
         if self.engine == EngineType.GridCal:
-            nc = compile_numerical_circuit_at(circuit=self.grid)
+
+            nc = compile_numerical_circuit_at(
+                circuit=self.grid,
+                t_idx=None,
+                opf_results=self.opf_results
+            )
+
             analysis = LinearAnalysis(
                 numerical_circuit=nc,
                 distributed_slack=self.options.distribute_slack,
-                correct_values=self.options.correct_values)
+                correct_values=self.options.correct_values
+            )
 
             analysis.run()
             self.logger += analysis.logger
@@ -132,8 +142,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.Sf = np.dot(lin_mat.PTDF, self.results.Sbus)
             self.results.loading = self.results.Sf / (rates + 1e-20)
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
 
     def get_steps(self):
         """

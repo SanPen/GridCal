@@ -87,6 +87,7 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
     return P + dP
 
+
 @nb.njit()
 def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0, lodf=None):
     """
@@ -147,6 +148,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
     #                 alpha_n1[m, c] = alpha_c
 
     return alpha
+
 
 #
 # @nb.njit()
@@ -302,21 +304,21 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
                     ntc = final_atc + base_exchange
 
                     # refine the ATC to the most restrictive value every time
-                    results.append((time_idx,           # 0
-                                    m,                  # 1
-                                    c,                  # 2
-                                    alpha[m],           # 3
-                                    beta,               # 4
-                                    lodf[m, c],         # 5
-                                    atc_n,              # 6
-                                    atc_mc,             # 7
-                                    final_atc,          # 8
-                                    ntc,                # 9
-                                    flows[m],           # 10
-                                    contingency_flow,   # 11
+                    results.append((time_idx,  # 0
+                                    m,  # 1
+                                    c,  # 2
+                                    alpha[m],  # 3
+                                    beta,  # 4
+                                    lodf[m, c],  # 5
+                                    atc_n,  # 6
+                                    atc_mc,  # 7
+                                    final_atc,  # 8
+                                    ntc,  # 9
+                                    flows[m],  # 10
+                                    contingency_flow,  # 11
                                     flows[m] / (rates[m] + 1e-9) * 100.0,  # 12
                                     contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,  # 13
-                                    base_exchange))    # 14
+                                    base_exchange))  # 14
 
     return results
 
@@ -332,8 +334,8 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='ATC Results',
                                  available_results=[
-                                                    ResultTypes.AvailableTransferCapacityReport
-                                                    ],
+                                     ResultTypes.AvailableTransferCapacityReport
+                                 ],
                                  time_array=None,
                                  clustering_results=clustering_results,
                                  study_results_type=StudyResultsType.AvailableTransferCapacity)
@@ -517,7 +519,6 @@ class AvailableTransferCapacityOptions:
 
 
 class AvailableTransferCapacityDriver(DriverTemplate):
-
     tpe = SimulationTypes.NetTransferCapacity_run
     name = tpe.value
 
@@ -544,7 +545,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         """
         Run thread
         """
-        start = time.time()
+        self.tic()
         self.progress_text.emit('Analyzing')
         self.progress_signal.emit(0)
 
@@ -578,15 +579,26 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         )
 
         # compute the branch exchange sensitivity (alpha)
-        alpha, _ = compute_alpha(
-            ptdf=linear.PTDF,
-            P0=nc.Sbus.real,
-            Pinstalled=nc.bus_installed_power,
-            Pgen=nc.generator_data.get_injections_per_bus().real,
-            Pload=nc.load_data.get_injections_per_bus().real,
-            idx1=idx1b,
-            idx2=idx2b,
-            mode=int(self.options.mode.value))
+
+        """
+        0: shift generation based on the current generated power
+         1: shift generation based on the installed power
+         2: shift load
+         3 (or else): shift udasing generation and load
+        """
+        mode_2_int = {AvailableTransferMode.Generation: 0,
+                      AvailableTransferMode.InstalledPower: 1,
+                      AvailableTransferMode.Load: 2,
+                      AvailableTransferMode.GenerationAndLoad: 3}
+
+        alpha = compute_alpha(ptdf=linear.PTDF,
+                              P0=nc.Sbus.real,
+                              Pinstalled=nc.bus_installed_power,
+                              Pgen=nc.generator_data.get_injections_per_bus().real,
+                              Pload=nc.load_data.get_injections_per_bus().real,
+                              idx1=idx1b,
+                              idx2=idx2b,
+                              mode=mode_2_int[self.options.mode])
 
         # get flow
         if self.options.use_provided_flows:
@@ -637,14 +649,10 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.results.base_exchange = base_exchange
         self.results.make_report(threshold=self.options.threshold)
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
 
     def get_steps(self):
         """
         Get variations list of strings
         """
         return list()
-
-
-

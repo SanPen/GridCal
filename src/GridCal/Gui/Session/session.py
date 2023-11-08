@@ -264,7 +264,7 @@ class SimulationSession:
                 del self.drivers[driver_type]
                 return
 
-    def get_driver_by_name(self, study_name: str):
+    def get_driver_by_name(self, study_name: str) -> Union[DriverTemplate, None]:
         """
         Get the driver by it's name
         :param study_name: driver name
@@ -276,7 +276,7 @@ class SimulationSession:
                 return self.drivers[driver_type]
         return None
 
-    def get_results_model_by_name(self, study_name: str, study_type: ResultTypes):
+    def get_results_model_by_name(self, study_name: str, study_type: ResultTypes) -> Union[ResultsModel, None]:
         """
         Get the results model given the study name and study type
         :param study_name: name of the study

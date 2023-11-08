@@ -271,7 +271,7 @@ class TopologyReduction(DriverTemplate):
         """
         Topology reduction driver
         :param grid: MultiCircuit instance
-        :param options:
+        :param branch_indices: indices of branches to reduce
         """
         DriverTemplate.__init__(self, grid=grid)
 
@@ -284,6 +284,7 @@ class TopologyReduction(DriverTemplate):
         Run the monte carlo simulation
         @return:
         """
+        self.tic()
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Detecting which Branches to remove...')
 
@@ -303,6 +304,8 @@ class TopologyReduction(DriverTemplate):
             self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)
             progress = (i+1) / total * 100
             self.progress_signal.emit(progress)
+
+        self.toc()
 
     def cancel(self):
         """
@@ -341,6 +344,7 @@ class DeleteAndReduce(DriverTemplate):
         Run the monte carlo simulation
         @return:
         """
+        self.tic()
         self._is_running = True
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Detecting which Branches to remove...')
@@ -359,6 +363,7 @@ class DeleteAndReduce(DriverTemplate):
         self.progress_signal.emit(0.0)
         self.done_signal.emit()
         self._is_running = False
+        self.toc()
 
     def cancel(self):
         """
@@ -433,6 +438,7 @@ class NodeGroupsDriver(DriverTemplate):
         Run the monte carlo simulation
         @return:
         """
+        self.tic()
         self.progress_signal.emit(0.0)
 
         n = len(self.grid.buses)
@@ -487,6 +493,7 @@ class NodeGroupsDriver(DriverTemplate):
         self.progress_text.emit('Done')
         self.progress_signal.emit(0.0)
         self.done_signal.emit()
+        self.toc()
 
     def cancel(self):
         """

@@ -159,7 +159,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         res = newton_pa_pf(circuit=self.grid,
                            pf_opt=self.options,
                            time_series=True,
-                           time_indices=time_indices)
+                           time_indices=time_indices,
+                           opf_results=self.opf_time_series_results)
 
         results = PowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
                                              m=self.grid.get_branch_number_wo_hvdc(),

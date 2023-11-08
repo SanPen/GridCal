@@ -45,7 +45,7 @@ class ClusteringDriver(DriverTemplate):
         """
         Run thread
         """
-        start = time.time()
+        self.tic()
         self.progress_text.emit('Clustering')
         self.progress_signal.emit(0)
 
@@ -58,8 +58,7 @@ class ClusteringDriver(DriverTemplate):
             original_sample_idx=sample_idx
         )
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
 
     def get_steps(self):
         """

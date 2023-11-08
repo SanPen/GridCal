@@ -23,6 +23,7 @@ import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.Session.session import ResultsModel
+from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
 
 
 class ResultsMain(SimulationsMain):
@@ -68,38 +69,56 @@ class ResultsMain(SimulationsMain):
         item = tree_mdl.itemFromIndex(index)
         path = gf.get_tree_item_path(item)
 
-        if len(path) > 1:
+        if len(path) > 0:
+            study_name = path[0]
+            driver = self.session.get_driver_by_name(study_name=study_name)
 
-            if len(path) == 2:
-                study_name = path[0]
-                result_name = path[1]
-            elif len(path) == 3:
-                study_name = path[0]
-                result_name = path[2]
-            else:
-                raise Exception('Path len ' + str(len(path)) + ' not supported')
+            if driver is None:
+                # set the logs
+                self.ui.resultsLogsTreeView.setModel(None)
+                return
 
-            if study_name in self.available_results_dict.keys():
-                if result_name in self.available_results_dict[study_name].keys():
+            # set the logs
+            logs_mdl = fill_tree_from_logs(driver.logger)
+            self.ui.resultsLogsTreeView.setModel(logs_mdl)
+            self.ui.resultsLogsTreeView.expandAll()
 
-                    study_type = self.available_results_dict[study_name][result_name]
+            if len(path) > 1:
 
-                    self.results_mdl = None
+                if len(path) == 2:
+                    result_name = path[1]
+                elif len(path) == 3:
+                    result_name = path[2]
+                else:
+                    raise Exception('Path len ' + str(len(path)) + ' not supported')
 
-                    self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
-                                                                              study_type=study_type)
+                if study_name in self.available_results_dict.keys():
 
-                    if self.results_mdl is not None:
+                    if result_name in self.available_results_dict[study_name].keys():
 
-                        if self.ui.results_as_abs_checkBox.isChecked():
-                            self.results_mdl.convert_to_abs()
+                        study_type = self.available_results_dict[study_name][result_name]
 
-                        if self.ui.results_as_cdf_checkBox.isChecked():
-                            self.results_mdl.convert_to_cdf()
+                        self.results_mdl = None
 
-                        # set the table model
-                        self.ui.resultsTableView.setModel(self.results_mdl)
-                        self.ui.units_label.setText(self.results_mdl.units)
+                        self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
+                                                                                  study_type=study_type)
+
+                        if self.results_mdl is not None:
+
+                            if self.ui.results_as_abs_checkBox.isChecked():
+                                self.results_mdl.convert_to_abs()
+
+                            if self.ui.results_as_cdf_checkBox.isChecked():
+                                self.results_mdl.convert_to_cdf()
+
+                            # set the table model
+                            self.ui.resultsTableView.setModel(self.results_mdl)
+                            self.ui.units_label.setText(self.results_mdl.units)
+
+                        else:
+                            self.ui.resultsTableView.setModel(None)
+                            self.ui.units_label.setText("")
+
                     else:
                         self.ui.resultsTableView.setModel(None)
                         self.ui.units_label.setText("")
@@ -107,9 +126,13 @@ class ResultsMain(SimulationsMain):
                 else:
                     self.ui.resultsTableView.setModel(None)
                     self.ui.units_label.setText("")
+
             else:
-                self.ui.resultsTableView.setModel(None)
-                self.ui.units_label.setText("")
+                pass
+
+        else:
+            # set the logs
+            self.ui.resultsLogsTreeView.setModel(None)
 
     def plot_results(self):
         """

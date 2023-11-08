@@ -77,12 +77,27 @@ class DriverTemplate:
 
         self.__start = time.time()
 
-    def tic(self):
-
+    def tic(self, skip_logger=False):
+        """
+        Register start of time
+        """
         self.__start = time.time()
 
-    def toc(self):
+        if not skip_logger:
+            self.logger.add_info(msg="Elapsed total (s)",
+                                 device="Started")
+
+    def toc(self, skip_logger=False):
+        """
+        Register end of time
+        :param skip_logger: skip logging this?
+        """
         self.elapsed = time.time() - self.__start
+
+        if not skip_logger:
+            self.logger.add_info(msg="Elapsed total (s)",
+                                 device="Ended",
+                                 value=self.elapsed)
 
     def get_steps(self):
         """

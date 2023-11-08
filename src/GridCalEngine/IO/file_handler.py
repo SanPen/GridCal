@@ -445,7 +445,7 @@ class FileSave:
         else:
             tidx = None
 
-        newton_grid, _ = to_newton_pa(self.circuit, time_series=time_series, time_indices=tidx)
+        newton_grid, _ = to_newton_pa(self.circuit, use_time_series=time_series, time_indices=tidx)
 
         npa.FileHandler().save(newton_grid, self.file_name)
 

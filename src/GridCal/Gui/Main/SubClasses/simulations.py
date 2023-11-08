@@ -1,4 +1,3 @@
-
 # GridCal
 # Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
@@ -169,7 +168,6 @@ class SimulationsMain(TimeEventsMain):
 
         # dictionaries for available results
         self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = dict()
-
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
@@ -590,6 +588,70 @@ class SimulationsMain(TimeEventsMain):
 
         return ops
 
+    def get_opf_results(self, use_opf: bool) -> sim.OptimalPowerFlowResults:
+        """
+        Get the current OPF results
+        :param use_opf:
+        :return:
+        """
+        if use_opf:
+
+            drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+
+            if drv is not None:
+                if results is not None:
+                    opf_results = results
+                else:
+                    warning_msg('There are no OPF results, '
+                                'therefore this operation will not use OPF information.')
+                    self.ui.actionOpf_to_Power_flow.setChecked(False)
+                    opf_results = None
+            else:
+
+                # try the OPF-NTC...
+                drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+                if drv is not None:
+                    if results is not None:
+                        opf_results = results
+                    else:
+                        warning_msg('There are no OPF-NTC results, '
+                                    'therefore this operation will not use OPF information.')
+                        self.ui.actionOpf_to_Power_flow.setChecked(False)
+                        opf_results = None
+                else:
+                    warning_msg('There are no OPF results, '
+                                'therefore this operation will not use OPF information.')
+                    self.ui.actionOpf_to_Power_flow.setChecked(False)
+                    opf_results = None
+        else:
+            opf_results = None
+
+        return opf_results
+
+    def get_opf_ts_results(self, use_opf: bool) -> sim.OptimalPowerFlowTimeSeriesResults:
+        """
+        Get the current OPF time series results
+        :param use_opf: use the OPF?
+        :return:
+        """
+        if use_opf:
+
+            drv, opf_time_series_results = self.session.get_driver_results(
+                SimulationTypes.OPFTimeSeries_run
+            )
+
+            if opf_time_series_results is None:
+                if use_opf:
+                    info_msg('There are no OPF time series, '
+                             'therefore this operation will not use OPF information.')
+                    self.ui.actionOpf_to_Power_flow.setChecked(False)
+
+        else:
+            opf_time_series_results = None
+
+        return opf_time_series_results
+
     def run_power_flow(self):
         """
         Run a power flow simulation
@@ -619,40 +681,7 @@ class SimulationsMain(TimeEventsMain):
 
                     self.ui.tolerance_spinBox.setValue(tol_idx)
 
-                use_opf = self.ui.actionOpf_to_Power_flow.isChecked()
-
-                if use_opf:
-
-                    drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
-
-                    if drv is not None:
-                        if results is not None:
-                            opf_results = results
-                        else:
-                            warning_msg('There are no OPF results, '
-                                        'therefore this operation will not use OPF information.')
-                            self.ui.actionOpf_to_Power_flow.setChecked(False)
-                            opf_results = None
-                    else:
-
-                        # try the OPF-NTC...
-                        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
-
-                        if drv is not None:
-                            if results is not None:
-                                opf_results = results
-                            else:
-                                warning_msg('There are no OPF-NTC results, '
-                                            'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-                                opf_results = None
-                        else:
-                            warning_msg('There are no OPF results, '
-                                        'therefore this operation will not use OPF information.')
-                            self.ui.actionOpf_to_Power_flow.setChecked(False)
-                            opf_results = None
-                else:
-                    opf_results = None
+                opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -690,21 +719,8 @@ class SimulationsMain(TimeEventsMain):
 
             self.colour_diagrams()
 
-            # print convergence reports on the console
-            for report in drv.convergence_reports:
-                msg_ = 'Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
-                self.console_msg(msg_)
-
         else:
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
-            # QtGui.QGuiApplication.processEvents()
-
-        if drv is not None:
-            if len(drv.logger) > 0:
-                dlg = LogsDialogue('Power flow', drv.logger)
-                dlg.exec_()
-            if len(drv.logger.debug_entries):
-                self.console_msg(drv.logger.debug_entries)
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -816,8 +832,13 @@ class SimulationsMain(TimeEventsMain):
                     distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                     correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
+                opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
+
                 engine = self.get_preferred_engine()
-                drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
+                drv = sim.LinearAnalysisDriver(grid=self.circuit,
+                                               options=options,
+                                               engine=engine,
+                                               opf_results=opf_results)
 
                 self.session.run(drv,
                                  post_func=self.post_linear_analysis,
@@ -850,10 +871,6 @@ class SimulationsMain(TimeEventsMain):
         else:
             error_msg('Something went wrong, There are no PTDF results.')
 
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue('PTDF', drv.logger)
-            dlg.exec_()
-
         if not self.session.is_anything_running():
             self.UNLOCK()
 
@@ -870,10 +887,15 @@ class SimulationsMain(TimeEventsMain):
 
                     options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
 
+                    opf_time_series_results = self.get_opf_ts_results(
+                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    )
+
                     drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
                                                              options=options,
                                                              time_indices=self.get_time_indices(),
-                                                             clustering_results=self.get_clustering_results())
+                                                             clustering_results=self.get_clustering_results(),
+                                                             opf_time_series_results=opf_time_series_results)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis_ts,
@@ -1498,21 +1520,9 @@ class SimulationsMain(TimeEventsMain):
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
 
-                    use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
-
-                    if use_opf_vals:
-
-                        drv, opf_time_series_results = self.session.get_driver_results(
-                            SimulationTypes.OPFTimeSeries_run)
-
-                        if opf_time_series_results is None:
-                            if use_opf_vals:
-                                info_msg('There are no OPF time series, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-
-                    else:
-                        opf_time_series_results = None
+                    opf_time_series_results = self.get_opf_ts_results(
+                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    )
 
                     options = self.get_selected_power_flow_options()
 
@@ -1866,10 +1876,6 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            if len(drv.logger) > 0:
-                dlg = LogsDialogue('logger', drv.logger)
-                dlg.exec_()
-
             # remove from the current simulations
             self.remove_simulation(sim.SimulationTypes.OPFTimeSeries_run)
 
@@ -1877,9 +1883,6 @@ class SimulationsMain(TimeEventsMain):
                 self.update_available_results()
 
                 self.colour_diagrams()
-
-                msg = 'OPF time series elapsed ' + str(drv.elapsed) + ' s'
-                self.console_msg(msg)
 
         else:
             pass
@@ -2077,12 +2080,6 @@ class SimulationsMain(TimeEventsMain):
             self.update_available_results()
             self.colour_diagrams()
 
-        if drv.logger is not None:
-            if len(drv.logger) > 0:
-                dlg = LogsDialogue(drv.name, drv.logger)
-                dlg.setModal(True)
-                dlg.exec_()
-
         if not self.session.is_anything_running():
             self.UNLOCK()
 
@@ -2212,10 +2209,6 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            if len(drv.logger) > 0:
-                dlg = LogsDialogue('logger', drv.logger)
-                dlg.exec_()
-
             # remove from the current simulations
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
 
@@ -2223,9 +2216,6 @@ class SimulationsMain(TimeEventsMain):
                 self.update_available_results()
 
                 self.colour_diagrams()
-
-                msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
-                self.console_msg(msg)
 
         else:
             pass
@@ -2378,7 +2368,6 @@ class SimulationsMain(TimeEventsMain):
 
             self.set_big_bus_marker_colours(buses=self.circuit.buses, colors=bus_colours, tool_tips=tool_tips)
 
-
     def run_inputs_analysis(self):
         """
 
@@ -2415,10 +2404,6 @@ class SimulationsMain(TimeEventsMain):
             self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
             self.update_available_results()
             self.colour_diagrams()
-
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue(drv.name, drv.logger)
-            dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()

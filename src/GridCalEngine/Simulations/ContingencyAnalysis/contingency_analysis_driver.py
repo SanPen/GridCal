@@ -358,7 +358,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         :return:
         """
-        start = time.time()
+        self.tic()
 
         if self.options.engine == bs.ContingencyEngine.PowerFlow:
             self.results = self.n_minus_k()
@@ -372,5 +372,4 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             self.results = self.n_minus_k()
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()

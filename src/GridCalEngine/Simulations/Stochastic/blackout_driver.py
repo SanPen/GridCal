@@ -257,7 +257,7 @@ class Cascading(DriverTemplate):
         Run the monte carlo simulation
         @return:
         """
-
+        self.tic()
         self.__cancel__ = False
 
         # compile
@@ -313,7 +313,13 @@ class Cascading(DriverTemplate):
             if self.__cancel__:
                 break
 
-        print('Grid split into ', len(calculation_inputs), ' islands after', it, ' steps')
+        self.logger.add_info("Info",
+                             device="Number of grids split",
+                             value=len(calculation_inputs))
+        self.logger.add_info("Info",
+                             device="Steps",
+                             value=it)
+        self.toc()
 
     def get_failed_idx(self):
         """

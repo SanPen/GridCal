@@ -62,8 +62,6 @@ class PowerFlowDriver(DriverTemplate):
                                         hvdc_names=np.empty(0, dtype=object),
                                         bus_types=np.empty(0))
 
-        self.logger = Logger()
-
         self.convergence_reports = list()
 
         self.__cancel__ = False
@@ -79,6 +77,7 @@ class PowerFlowDriver(DriverTemplate):
         """
         Pack run_pf for the QThread
         """
+        self.tic()
         if self.engine == EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
             self.engine = EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
@@ -141,3 +140,24 @@ class PowerFlowDriver(DriverTemplate):
 
         # fill F, T, Areas, etc...
         self.results.fill_circuit_info(self.grid)
+
+        self.toc()
+
+        for convergence_report in self.results.convergence_reports:
+            n = len(convergence_report.error_)
+            for i in range(n):
+                self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
+                                     device=f"Converged",
+                                     value=convergence_report.converged_[i],
+                                     expected_value="True")
+                self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
+                                     device="Elapsed (s)",
+                                     value=convergence_report.elapsed_[i])
+                self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
+                                     device="Error (p.u.)",
+                                     value=convergence_report.error_[i],
+                                     expected_value=self.options.tolerance)
+                self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
+                                     device="Iterations",
+                                     value=convergence_report.iterations_[i],
+                                     expected_value=self.options.max_iter)

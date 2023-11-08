@@ -341,8 +341,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         run the voltage collapse simulation
         @return:
         """
-        print('Running voltage collapse...')
-
+        self.tic()
         nc = compile_numerical_circuit_at(circuit=self.grid,
                                           t_idx=None,
                                           apply_temperature=self.pf_options.apply_temperature_correction,
@@ -412,3 +411,5 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                 self.results.apply_from_island(result_series[i],
                                                islands[i].original_bus_idx,
                                                islands[i].original_branch_idx)
+
+        self.toc()

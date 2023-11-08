@@ -247,6 +247,7 @@ class ShortCircuitDriver(DriverTemplate):
         Run a power flow for every circuit
         @return:
         """
+        self.tic()
         self._is_running = True
         if self.options.branch_index:
 
@@ -333,6 +334,7 @@ class ShortCircuitDriver(DriverTemplate):
         self.results = results
         self.grid.short_circuit_results = results
         self._is_running = False
+        self.toc()
 
     def isRunning(self):
         return self._is_running

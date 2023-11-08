@@ -14,7 +14,7 @@ gridcal_file_name = '/home/santi/Escritorio/Redes/Spain_France_portugal.gridcal'
 grid_gc = gce.FileOpen(gridcal_file_name).open()
 
 # use the GridCal converter to get the Newton Grid
-grid_newton, _ = to_newton_pa(grid_gc, time_series=True, time_indices=list(range(grid_gc.get_time_number())))
+grid_newton, _ = to_newton_pa(grid_gc, use_time_series=True, time_indices=list(range(grid_gc.get_time_number())))
 
 
 t = 100

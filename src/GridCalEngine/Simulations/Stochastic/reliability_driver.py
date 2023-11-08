@@ -190,7 +190,7 @@ class ReliabilityStudy(DriverTemplate):
         run the voltage collapse simulation
         @return:
         """
-        print('Running voltage collapse...')
+        self.tic()
 
         # compile the numerical circuit
         numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None)
@@ -198,6 +198,8 @@ class ReliabilityStudy(DriverTemplate):
         evt = get_reliability_scenario(numerical_circuit)
 
         run_events(nc=numerical_circuit, events_list=evt)
+
+        self.toc()
 
     def cancel(self):
         self.__cancel__ = True

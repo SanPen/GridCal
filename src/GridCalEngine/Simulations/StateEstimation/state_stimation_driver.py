@@ -206,6 +206,7 @@ class StateEstimation(DriverTemplate):
         Run state estimation
         :return:
         """
+        self.tic()
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
 
@@ -271,3 +272,5 @@ class StateEstimation(DriverTemplate):
             self.results.apply_from_island(results,
                                            island.original_bus_idx,
                                            island.original_branch_idx)
+
+        self.toc()

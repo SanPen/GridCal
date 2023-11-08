@@ -33,12 +33,12 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
     name = 'Linear Analysis Time Series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
-    def __init__(
-            self,
-            grid: MultiCircuit,
-            options: Union[LinearAnalysisOptions, None] = None,
-            time_indices: Union[IntVec, None] = None,
-            clustering_results: Union[ClusteringResults, None] = None):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 options: Union[LinearAnalysisOptions, None] = None,
+                 time_indices: Union[IntVec, None] = None,
+                 clustering_results: Union[ClusteringResults, None] = None,
+                 opf_time_series_results=None):
         """
         TimeSeries Analysis constructor
         :param grid: MultiCircuit instance
@@ -54,6 +54,8 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         )
 
         self.options: LinearAnalysisOptions = LinearAnalysisOptions() if options is None else options
+
+        self.opf_time_series_results = opf_time_series_results
 
         self.drivers: Dict[int, LinearAnalysis] = dict()
 
@@ -86,17 +88,15 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         tpg = self.get_topologic_groups()
 
         for it, t in enumerate(tpg.keys()):
-
             self.progress_text.emit('Processing topology group ' + str(self.grid.time_profile[t]))
             self.progress_signal.emit((it + 1) / len(tpg.keys()) * 100)
 
             # time indices with same topology
             time_indices_ = tpg[t]
 
-            nc = compile_numerical_circuit_at(
-                circuit=self.grid,
-                t_idx=t,
-            )
+            nc = compile_numerical_circuit_at(circuit=self.grid,
+                                              t_idx=t,
+                                              opf_results=self.opf_time_series_results)
 
             driver_ = LinearAnalysis(
                 numerical_circuit=nc,
@@ -115,4 +115,3 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results.S = Pbus[self.time_indices, :]
 
         self.elapsed = time.time() - tm_
-

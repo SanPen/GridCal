@@ -445,9 +445,11 @@ class SigmaAnalysisDriver(DriverTemplate):
         Pack run_pf for the QThread
         :return:
         """
+        self.tic()
         self.results = multi_island_sigma(multi_circuit=self.grid,
                                           options=self.options,
                                           logger=self.logger)
+        self.toc()
 
     def cancel(self):
         self.__cancel__ = True

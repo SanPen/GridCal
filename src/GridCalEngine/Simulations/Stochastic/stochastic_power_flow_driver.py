@@ -194,13 +194,15 @@ class StochasticPowerFlowDriver(DriverTemplate):
         Run the monte carlo simulation
         @return:
         """
-        # print('LHS run')
+        self.tic()
         self.__cancel__ = False
 
         if self.simulation_type == StochasticPowerFlowType.MonteCarlo:
             self.results = self.run_single_thread_mc(use_lhs=False)
         elif self.simulation_type == StochasticPowerFlowType.LatinHypercube:
             self.results = self.run_single_thread_mc(use_lhs=True)
+
+        self.toc()
 
     def cancel(self):
         """

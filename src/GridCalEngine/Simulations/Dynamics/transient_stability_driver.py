@@ -79,6 +79,7 @@ class TransientStability(DriverTemplate):
         """
         Run transient stability
         """
+        self.tic()
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running transient stability...')
 
@@ -104,3 +105,4 @@ class TransientStability(DriverTemplate):
                                      callback=self.status)
 
         self.results = res
+        self.toc()

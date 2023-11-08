@@ -183,7 +183,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         :return:
         """
-        start = time.time()
+        self.tic()
+
         self.opf()
-        end = time.time()
-        self.elapsed = end - start
+
+        self.toc()

@@ -14,7 +14,9 @@ from GridCalEngine.enumerations import StudyResultsType
 class InputsAnalysisResults(ResultsTemplate):
     tpe = 'Inputs Analysis'
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit,
+                 opf_results: "OptimalPowerFlowResults" = None,
+                 opf_time_series_results: "OptimalPowerFlowTimeSeriesResults" = None):
         """
         Construct the analysis
         :param grid:
@@ -50,6 +52,8 @@ class InputsAnalysisResults(ResultsTemplate):
                                  study_results_type=StudyResultsType.InputsAnalysis)
 
         self.grid = grid
+        self.opf_results = opf_results
+        self.opf_time_series_results = opf_time_series_results
 
         self.area_names = list(set([elm.name for elm in grid.areas]))
         self.zone_names = list(set([elm.name for elm in grid.zones]))
@@ -71,9 +75,15 @@ class InputsAnalysisResults(ResultsTemplate):
         :return:
         """
         dta = list()
-        for elm in self.grid.get_generators():
+        for k, elm in enumerate(self.grid.get_generators()):
+
+            if self.opf_results is None:
+                P = elm.P * elm.active
+            else:
+                P = self.opf_results.generator_power[k] - self.opf_results.generator_shedding[k]
+
             dta.append([elm.name,
-                        elm.P * elm.active,
+                        P,
                         elm.Pf,
                         elm.Snom,
                         elm.Pmin, elm.Pmax,
@@ -403,7 +413,9 @@ class InputsAnalysisDriver(DriverTemplate):
         """
         DriverTemplate.__init__(self, grid=grid)
 
+        self.tic()
         self.results = InputsAnalysisResults(grid=grid)
+        self.toc()
 
     def get_steps(self):
         """
