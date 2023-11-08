@@ -548,18 +548,12 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.progress_text.emit('Analyzing')
         self.progress_signal.emit(0)
 
-        # compile the circuit
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
-
         # get the converted bus indices
         idx1b = self.options.bus_idx_from
         idx2b = self.options.bus_idx_to
 
         # declare the numerical circuit
-        nc = compile_numerical_circuit_at(
-            circuit=self.grid,
-            t_idx=None
-        )
+        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
 
         # declare the linear analysis
         linear = LinearAnalysis(
@@ -604,11 +598,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                 raise Exception(msg)
         else:
             # compose the HVDC power Injections
-            bus_dict = self.grid.get_bus_index_dict()
-
-            # TODO: Use the function from HvdcData instead of the one from MultiCircuit
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = self.grid.get_hvdc_power(bus_dict,
-                                                                                                  theta=np.zeros(nc.nbus))
+            (Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc,
+             loading_hvdc, n_free) = nc.hvdc_data.get_power(Sbase=nc.Sbase, theta=np.zeros(nc.nbus))
 
             flows = linear.get_flows(nc.Sbus + Shvdc)
 
@@ -618,7 +609,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         # consider the HVDC transfer
         if self.options.Pf_hvdc is not None:
             if len(self.options.idx_hvdc_br):
-                base_exchange += (self.options.inter_area_hvdc_branch_sense * self.options.Pf_hvdc[self.options.idx_hvdc_br]).sum()
+                base_exchange += (self.options.inter_area_hvdc_branch_sense
+                                  * self.options.Pf_hvdc[self.options.idx_hvdc_br]).sum()
 
         # compute ATC
         report = compute_atc_list(br_idx=br_idx,

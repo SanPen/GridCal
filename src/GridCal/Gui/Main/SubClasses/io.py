@@ -404,7 +404,7 @@ class IoMain(ConfigurationMain):
                 else:
                     # add the circuit
                     new_circuit = self.open_file_thread_object.circuit
-                    buses = self.circuit.add_circuit(new_circuit, angle=0)
+                    buses = self.circuit.add_circuit(new_circuit)
 
                     dlg = CustomQuestionDialogue(title="Add new grid",
                                                  question="Do you want to add the loaded grid to a new diagram?",

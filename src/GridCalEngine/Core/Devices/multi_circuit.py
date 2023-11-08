@@ -442,12 +442,14 @@ class MultiCircuit:
                 names.append(elm.name)
         return np.array(names)
 
-    def get_branch_lists(self) -> List[Union[
-        List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC],
-        List[dev.HvdcLine]]]:
+    def get_branch_lists(self) -> List[Union[List[dev.Line],
+                                             List[dev.DcLine],
+                                             List[dev.Transformer2W],
+                                             List[dev.Winding], List[dev.VSC], List[dev.UPFC],
+                                             List[dev.HvdcLine]]]:
         """
         Get list of the branch lists
-        :return:
+        :return: list of lists
         """
         lst = self.get_branch_lists_wo_hvdc()
         lst.append(self.hvdc_lines)
@@ -1940,7 +1942,7 @@ class MultiCircuit:
         self.switch_devices.append(obj)
 
     def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-    dev.UPFC, dev.Winding, dev.Switch]) -> None:
+                                    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
@@ -3004,11 +3006,10 @@ class MultiCircuit:
 
         return coord.mean(axis=0).tolist()
 
-    def add_circuit(self, circuit: "MultiCircuit", angle):
+    def add_circuit(self, circuit: "MultiCircuit"):
         """
         Add a circuit to this circuit
         :param circuit: Circuit to insert
-        :param angle: angle in degrees
         :return: Nothing
         """
 
@@ -3158,12 +3159,16 @@ class MultiCircuit:
 
         return tolerance, exponent
 
-    def fill_xy_from_lat_lon(self, destructive=True, factor=0.01, remove_offset=True):
+    def fill_xy_from_lat_lon(self,
+                             destructive: bool = True,
+                             factor: float = 0.01,
+                             remove_offset: bool = True) -> bs.Logger:
         """
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
         :param factor: Explosion factor
         :param remove_offset: remove the sometimes huge offset coming from pyproj
+        :return Logger object
         """
 
         n = len(self.buses)
@@ -3748,60 +3753,3 @@ class MultiCircuit:
             val[i] = branch.rate_prof * branch.contingency_factor
 
         return val
-
-    def get_hvdc_power(self, bus_dict: Dict[dev.Bus, int],
-                       theta: Vec, t: Union[int, None] = None) -> Tuple[Vec, Vec, Vec, Vec, Vec, int]:
-        """
-        Get the HVDC injections at at certain time
-        :param bus_dict: Bus to bus index dictionary
-        :param theta: nodal angles vector [rad]
-        :param t: time index, if None the snapshot is used
-        :return: P_hvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
-        """
-
-        # TODO: Remove this function because it already exists
-
-        P_hvdc = np.zeros(len(self.buses))
-        Losses_hvdc = np.zeros(len(self.hvdc_lines))
-        Pf_hvdc = np.zeros(len(self.hvdc_lines))
-        Pt_hvdc = np.zeros(len(self.hvdc_lines))
-        loading_hvdc = np.zeros(len(self.hvdc_lines))
-        n_free = 0  # number of free hvdc lines that need PF recalculation
-
-        for k, elm in enumerate(self.hvdc_lines):
-
-            _from = bus_dict[elm.bus_from]
-            _to = bus_dict[elm.bus_to]
-
-            if t is None:
-                if elm.active:
-                    if elm.control_mode == dev.HvdcControlType.type_0_free:
-                        n_free += int(elm.active)  # count only if active
-
-                    Pf, Pt, losses = elm.get_from_and_to_power(theta_f=theta[_from], theta_t=theta[_to],
-                                                               Sbase=self.Sbase, in_pu=True)
-                    loading_hvdc[k] = Pf / elm.rate
-                else:
-                    Pf = 0
-                    Pt = 0
-                    losses = 0
-            else:
-                if elm.active_prof[t]:
-                    if elm.control_mode == dev.HvdcControlType.type_0_free:
-                        n_free += int(elm.active_prof[t])  # count only if active
-
-                    Pf, Pt, losses = elm.get_from_and_to_power_at(t=t, theta_f=theta[_from], theta_t=theta[_to],
-                                                                  Sbase=self.Sbase, in_pu=True)
-                    loading_hvdc[k] = Pf / elm.rate_prof[t]
-                else:
-                    Pf = 0
-                    Pt = 0
-                    losses = 0
-
-            P_hvdc[_from] += Pf
-            P_hvdc[_to] += Pt
-            Losses_hvdc[k] = losses
-            Pf_hvdc[k] = Pf
-            Pt_hvdc[k] = Pt
-
-        return P_hvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
