@@ -39,11 +39,11 @@ class AcDcSolSlicer:
         :param k_pf_dp: 
         """
 
-        self.i1 = pvpq
-        self.i2 = pq
-        self.i3 = np.r_[k_zero_beq, k_vf_beq]
-        self.i4 = np.r_[k_qf_m, k_qt_m, k_vt_m]
-        self.i5 = np.r_[k_pf_tau, k_pf_dp]
+        self.va_idx = pvpq
+        self.vm_idx = pq
+        self.beq_idx = np.r_[k_zero_beq, k_vf_beq]
+        self.m_idx = np.r_[k_qf_m, k_qt_m, k_vt_m]
+        self.tau_idx = np.r_[k_pf_tau, k_pf_dp]
 
         n_col_block1 = len(pvpq)
         n_col_block2 = len(pq)
@@ -61,8 +61,8 @@ class AcDcSolSlicer:
     def split(self, dx):
         """
         Split the linear system solution
-        :param dx:
-        :return:
+        :param dx: linear system solution
+        :return: dVa, dVm, dBeq, dm, dtau
         """
         dVa = dx[self.a0:self.a1]
         dVm = dx[self.a1:self.a2]
@@ -80,12 +80,18 @@ class AcDcSolSlicer:
         dtau = dx[self.a4:self.a5]
 
         # assign the new values
-        Va[self.i1] -= dVa * mu
-        Vm[self.i2] -= dVm * mu
-        Beq[self.i3] -= dBeq * mu
-        m[self.i4] -= dm * mu
-        tau[self.i5] -= dtau * mu
-
+        if mu != 1.0:
+            Va[self.va_idx] -= dVa * mu
+            Vm[self.vm_idx] -= dVm * mu
+            Beq[self.beq_idx] -= dBeq * mu
+            m[self.m_idx] -= dm * mu
+            tau[self.tau_idx] -= dtau * mu
+        else:
+            Va[self.va_idx] -= dVa
+            Vm[self.vm_idx] -= dVm
+            Beq[self.beq_idx] -= dBeq
+            m[self.m_idx] -= dm
+            tau[self.tau_idx] -= dtau
 
 @nb.njit(cache=True)
 def make_lookup(n, arr):

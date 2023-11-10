@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1572</width>
+    <width>1378</width>
     <height>805</height>
    </rect>
   </property>
@@ -2469,7 +2469,7 @@ p, li { white-space: pre-wrap; }
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>11</number>
+           <number>0</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideNone</enum>
@@ -8510,7 +8510,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1572</width>
+     <width>1378</width>
      <height>22</height>
     </rect>
    </property>

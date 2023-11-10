@@ -24,8 +24,9 @@ from GridCalEngine.Core.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, \
-    compute_converter_losses, compute_power
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_acdc_fx,
+                                                                                   compute_converter_losses,
+                                                                                   compute_power, compute_zip_power)
 from GridCalEngine.basic_structures import ReactivePowerControlMode, CxVec
 import GridCalEngine.Simulations.sparse_solve as gcsp
 
@@ -66,7 +67,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     Va = np.angle(V)
     Vm = np.abs(V)
 
-    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+    # compute the ZIP power injection
+    Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
     Vmfset = nc.branch_data.vf_set
     m = nc.branch_data.tap_module.copy()
@@ -208,15 +210,16 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                     Beq = prev_Beq.copy()
 
                 # assign the new values
-                Va[sol_slicer.i1] -= dVa * mu
-                Vm[sol_slicer.i2] -= dVm * mu
-                Beq[sol_slicer.i3] -= dBeq * mu
-                m[sol_slicer.i4] -= dm * mu
-                tau[sol_slicer.i5] -= dTau * mu
+                Va[sol_slicer.va_idx] -= dVa * mu
+                Vm[sol_slicer.vm_idx] -= dVm * mu
+                Beq[sol_slicer.beq_idx] -= dBeq * mu
+                m[sol_slicer.m_idx] -= dm * mu
+                tau[sol_slicer.tau_idx] -= dTau * mu
 
                 V = Vm * np.exp(1j * Va)
 
-                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+                # compute the ZIP power injection
+                Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
                 # compute admittances
                 Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
@@ -323,7 +326,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                         n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
                                                                                                pvpq, Qmin, Qmax)
 
-                        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+                        # compute the ZIP power injection
+                        Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
                         if n_changes > 0:
                             # adjust internal variables to the new pq|pv values

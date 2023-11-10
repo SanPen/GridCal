@@ -55,7 +55,8 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
     Va = np.angle(V)
     Vm = np.abs(V)
 
-    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+    # compute the ZIP power injection
+    Sbus = cf.compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
     Vmfset = nc.branch_data.vf_set
     m = nc.branch_data.tap_module.copy()
@@ -218,14 +219,16 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                 dVa, dVm, dBeq, dm, dTau = sol_slicer.split(dx)
 
                 # assign the new values
-                Va[sol_slicer.i1] -= dVa
-                Vm[sol_slicer.i2] -= dVm
-                Beq[sol_slicer.i3] -= dBeq
-                m[sol_slicer.i4] -= dm
-                tau[sol_slicer.i5] -= dTau
+                Va[sol_slicer.va_idx] -= dVa
+                Vm[sol_slicer.vm_idx] -= dVm
+                Beq[sol_slicer.beq_idx] -= dBeq
+                m[sol_slicer.m_idx] -= dm
+                tau[sol_slicer.tau_idx] -= dTau
 
                 V = cf.polar_to_rect(Vm, Va)
-                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+
+                # compute the ZIP power injection
+                Sbus = cf.compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
             else:
                 update_jacobian = False
