@@ -1036,10 +1036,10 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.bus_data.names = np.array(npa_data.bus_data.names)
         data.bus_data.original_idx = npa_data.bus_data.original_indices
 
-        data.Admittances = FakeAdmittances()
-        data.Admittances.Ybus = adm.Ybus
-        data.Admittances.Yf = adm.Yf
-        data.Admittances.Yt = adm.Yt
+        data.admittances_ = FakeAdmittances()
+        data.admittances_.Ybus = adm.Ybus
+        data.admittances_.Yf = adm.Yf
+        data.admittances_.Yt = adm.Yt
 
         data.Bbus_ = lin.Bbus
         data.Bf_ = lin.Bf
@@ -1064,14 +1064,14 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
 
         control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_[:, 0])
 
-        data.iPfsh = control_indices.iPfsh
-        data.iQfma = control_indices.iQfma
-        data.iBeqz = control_indices.iBeqz
-        data.iBeqv = control_indices.iBeqv
-        data.iVtma = control_indices.iVtma
-        data.iQtma = control_indices.iQtma
-        data.iPfdp = control_indices.iPfdp
-        data.iVscL = control_indices.iVscL
+        data.k_pf_tau = control_indices.k_pf_tau
+        data.k_qf_m = control_indices.k_qf_m
+        data.k_zero_beq = control_indices.k_zero_beq
+        data.k_vf_beq = control_indices.k_vf_beq
+        data.k_vt_m = control_indices.k_vt_m
+        data.k_qt_m = control_indices.k_qt_m
+        data.k_pf_dp = control_indices.k_pf_dp
+        data.i_vsc = control_indices.i_vsc
         # data.VfBeqbus = control_indices.iVfBeqBus
         # data.Vtmabus = control_indices.iVtmaBus
 

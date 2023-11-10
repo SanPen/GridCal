@@ -265,20 +265,39 @@ class NumericalCircuit:
         self.Sbase: float = sbase
 
         self.any_control: bool = False
-        self.iPfsh: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Pf flow with theta sh
-        self.iQfma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling Qf with ma
-        self.iBeqz: IntVec = np.zeros(0,
-                                      dtype=int)  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.iBeqv: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vf with Beq
-        self.iVtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches when controlling Vt with ma
-        self.iQtma: IntVec = np.zeros(0, dtype=int)  # indices of the Branches controlling the Qt flow with ma
-        self.iPfdp: IntVec = np.zeros(0,
-                                      dtype=int)  # indices of the drop-Vm converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0,
-                                         dtype=int)  # indices of the drop-Va converters controlling the power flow with theta sh
-        self.iVscL: IntVec = np.zeros(0, dtype=int)  # indices of the converters
-        self.VfBeqbus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vf is controlled by Beq
-        self.Vtmabus: IntVec = np.zeros(0, dtype=int)  # indices of the buses where Vt is controlled by ma
+
+        # (old iPfsh) indices of the Branches controlling Pf flow with theta sh
+        self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
+
+        # (old iQfma) indices of the Branches controlling Qf with ma
+        self.k_qf_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iBeqz) indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.k_zero_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old iBeqv) indices of the Branches when controlling Vf with Beq
+        self.k_vf_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old iVtma) indices of the Branches when controlling Vt with ma
+        self.k_vt_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iQtma) indices of the Branches controlling the Qt flow with ma
+        self.k_qt_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the converters
+        self.i_vsc: IntVec = np.zeros(0, dtype=int)
+
+        # (old VfBeqbus) indices of the buses where Vf is controlled by Beq
+        self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old Vtmabus) indices of the buses where Vt is controlled by ma
+        self.i_vt_m: IntVec = np.zeros(0, dtype=int)  
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
@@ -311,7 +330,7 @@ class NumericalCircuit:
         self.Bmax_bus_: Vec = None
         self.Bmin_bus_: Vec = None
 
-        self.Admittances = None
+        self.admittances_: Union[ycalc.Admittance, None] = None
 
         # Admittance for HELM / AC linear
         self.Yseries_: Union[sp.csc_matrix, None] = None
@@ -361,7 +380,7 @@ class NumericalCircuit:
         self.Bmax_bus_: Vec = None
         self.Bmin_bus_: Vec = None
 
-        self.Admittances = None
+        self.admittances_: Union[ycalc.Admittance, None] = None
 
         # Admittance for HELM / AC linear
         self.Yseries_: Union[sp.csc_matrix, None] = None
@@ -454,10 +473,10 @@ class NumericalCircuit:
                 hvdc_status=self.hvdc_data.active,
                 hvdc_vf=self.hvdc_data.Vset_f,
                 hvdc_vt=self.hvdc_data.Vset_t,
-                iBeqv=np.array(self.iBeqv, dtype=int),
-                iVtma=np.array(self.iVtma, dtype=int),
-                VfBeqbus=np.array(self.VfBeqbus, dtype=int),
-                Vtmabus=np.array(self.Vtmabus, dtype=int),
+                iBeqv=np.array(self.k_vf_beq, dtype=int),
+                iVtma=np.array(self.k_vt_m, dtype=int),
+                VfBeqbus=np.array(self.i_vf_beq, dtype=int),
+                Vtmabus=np.array(self.i_vt_m, dtype=int),
                 branch_status=self.branch_data.active,
                 br_vf=self.branch_data.vf_set,
                 br_vt=self.branch_data.vt_set
@@ -475,13 +494,13 @@ class NumericalCircuit:
         :return:
         """
         if idx is None:
-            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.tap_module, tap_module)
+            Ybus_, Yf_, Yt_ = self.admittances_.modify_taps(self.branch_data.tap_module, tap_module)
         else:
-            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.tap_module[idx], tap_module)
+            Ybus_, Yf_, Yt_ = self.admittances_.modify_taps(self.branch_data.tap_module[idx], tap_module)
 
-        self.Admittances.Ybus = Ybus_
-        self.Admittances.Yf = Yf_
-        self.Admittances.Yt = Yt_
+        self.admittances_.Ybus = Ybus_
+        self.admittances_.Yf = Yf_
+        self.admittances_.Yt = Yt_
 
     def determine_control_indices(self):
         """
@@ -652,21 +671,21 @@ class NumericalCircuit:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        self.VfBeqbus = self.F[iBeqv]
+        self.i_vf_beq = self.F[iBeqv]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
-        self.Vtmabus = self.T[iVtma]
+        self.i_vt_m = self.T[iVtma]
 
-        self.iPfsh = np.array(iPfsh, dtype=int)
-        self.iQfma = np.array(iQfma, dtype=int)
-        self.iBeqz = np.array(iBeqz, dtype=int)
-        self.iBeqv = np.array(iBeqv, dtype=int)
-        self.iVtma = np.array(iVtma, dtype=int)
-        self.iQtma = np.array(iQtma, dtype=int)
-        self.iPfdp = np.array(iPfdp, dtype=int)
+        self.k_pf_tau = np.array(iPfsh, dtype=int)
+        self.k_qf_m = np.array(iQfma, dtype=int)
+        self.k_zero_beq = np.array(iBeqz, dtype=int)
+        self.k_vf_beq = np.array(iBeqv, dtype=int)
+        self.k_vt_m = np.array(iVtma, dtype=int)
+        self.k_qt_m = np.array(iQtma, dtype=int)
+        self.k_pf_dp = np.array(iPfdp, dtype=int)
         self.iPfdp_va = np.array(iPfdp_va, dtype=int)
-        self.iVscL = np.array(iVscL, dtype=int)
+        self.i_vsc = np.array(iVscL, dtype=int)
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -1095,8 +1114,8 @@ class NumericalCircuit:
         """
 
         # compute admittances on demand
-        if self.Admittances is None:
-            self.Admittances = ycalc.compute_admittances(
+        if self.admittances_ is None:
+            self.admittances_ = ycalc.compute_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
                 G=self.branch_data.G,
@@ -1118,7 +1137,7 @@ class NumericalCircuit:
                 conn=self.branch_data.conn,
                 seq=1
             )
-        return self.Admittances.Ybus
+        return self.admittances_.Ybus
 
     @property
     def Yf(self):
@@ -1126,10 +1145,10 @@ class NumericalCircuit:
         Admittance matrix of the "from" nodes with the Branches
         :return: CSC matrix
         """
-        if self.Admittances is None:
+        if self.admittances_ is None:
             _ = self.Ybus  # call the constructor of Yf
 
-        return self.Admittances.Yf
+        return self.admittances_.Yf
 
     @property
     def Yt(self):
@@ -1137,10 +1156,10 @@ class NumericalCircuit:
         Admittance matrix of the "to" nodes with the Branches
         :return: CSC matrix
         """
-        if self.Admittances is None:
+        if self.admittances_ is None:
             _ = self.Ybus  # call the constructor of Yt
 
-        return self.Admittances.Yt
+        return self.admittances_.Yt
 
     @property
     def Yseries(self):
@@ -1598,23 +1617,23 @@ class NumericalCircuit:
 
             cols = ['1) dVa {0}'.format(i) for i in pvpq]
             cols += ['2) dVm {0}'.format(i) for i in self.pq]
-            cols += ['3) dPfsh {0}'.format(i) for i in self.iPfsh]
-            cols += ['4) dQfma {0}'.format(i) for i in self.iQfma]
-            cols += ['5) dBeqz {0}'.format(i) for i in self.iBeqz]
-            cols += ['6) dBeqv {0}'.format(i) for i in self.iBeqv]
-            cols += ['7) dVtma {0}'.format(i) for i in self.iVtma]
-            cols += ['8) dQtma {0}'.format(i) for i in self.iQtma]
-            cols += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
+            cols += ['3) dPfsh {0}'.format(i) for i in self.k_pf_tau]
+            cols += ['4) dQfma {0}'.format(i) for i in self.k_qf_m]
+            cols += ['5) dBeqz {0}'.format(i) for i in self.k_zero_beq]
+            cols += ['6) dBeqv {0}'.format(i) for i in self.k_vf_beq]
+            cols += ['7) dVtma {0}'.format(i) for i in self.k_vt_m]
+            cols += ['8) dQtma {0}'.format(i) for i in self.k_qt_m]
+            cols += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
 
             rows = ['1) dP {0}'.format(i) for i in pvpq]
             rows += ['2) dQ {0}'.format(i) for i in self.pq]
-            rows += ['3) dQ {0}'.format(i) for i in self.iBeqv]
-            rows += ['4) dQ {0}'.format(i) for i in self.iVtma]
-            rows += ['5) dPf {0}'.format(i) for i in self.iPfsh]
-            rows += ['6) dQf {0}'.format(i) for i in self.iQfma]
-            rows += ['7) dQf {0}'.format(i) for i in self.iBeqz]
-            rows += ['8) dQt {0}'.format(i) for i in self.iQtma]
-            rows += ['9) dPfdp {0}'.format(i) for i in self.iPfdp]
+            rows += ['3) dQ {0}'.format(i) for i in self.k_vf_beq]
+            rows += ['4) dQ {0}'.format(i) for i in self.k_vt_m]
+            rows += ['5) dPf {0}'.format(i) for i in self.k_pf_tau]
+            rows += ['6) dQf {0}'.format(i) for i in self.k_qf_m]
+            rows += ['7) dQf {0}'.format(i) for i in self.k_zero_beq]
+            rows += ['8) dQt {0}'.format(i) for i in self.k_qt_m]
+            rows += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
 
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
@@ -1638,21 +1657,21 @@ class NumericalCircuit:
             J = fubm_jacobian(
                 nb=self.nbus,
                 nl=self.nbr,
-                iPfsh=self.iPfsh,
-                iPfdp=self.iPfdp,
-                iQfma=self.iQfma,
-                iQtma=self.iQtma,
-                iVtma=self.iVtma,
-                iBeqz=self.iBeqz,
-                iBeqv=self.iBeqv,
-                VfBeqbus=self.VfBeqbus,
-                Vtmabus=self.Vtmabus,
+                k_pf_tau=self.k_pf_tau,
+                k_pf_dp=self.k_pf_dp,
+                k_qf_m=self.k_qf_m,
+                k_qt_m=self.k_qt_m,
+                k_vt_m=self.k_vt_m,
+                k_zero_beq=self.k_zero_beq,
+                k_vf_beq=self.k_vf_beq,
+                i_vf_beq=self.i_vf_beq,
+                i_vt_m=self.i_vt_m,
                 F=self.F,
                 T=self.T,
                 Ys=Ys,
                 k2=self.branch_data.k,
-                tap=tap,
-                ma=self.branch_data.tap_module,
+                complex_tap=tap,
+                tap_modules=self.branch_data.tap_module,
                 Bc=self.branch_data.B,
                 Beq=self.branch_data.Beq,
                 Kdp=self.branch_data.Kdp,
@@ -1730,72 +1749,72 @@ class NumericalCircuit:
 
         elif structure_type == 'iPfsh':
             df = pd.DataFrame(
-                data=self.iPfsh,
+                data=self.k_pf_tau,
                 columns=['iPfsh'],
-                index=self.branch_data.names[self.iPfsh],
+                index=self.branch_data.names[self.k_pf_tau],
             )
 
         elif structure_type == 'iQfma':
             df = pd.DataFrame(
-                data=self.iQfma,
+                data=self.k_qf_m,
                 columns=['iQfma'],
-                index=self.branch_data.names[self.iQfma],
+                index=self.branch_data.names[self.k_qf_m],
             )
 
         elif structure_type == 'iBeqz':
             df = pd.DataFrame(
-                data=self.iBeqz,
+                data=self.k_zero_beq,
                 columns=['iBeqz'],
-                index=self.branch_data.names[self.iBeqz],
+                index=self.branch_data.names[self.k_zero_beq],
             )
 
         elif structure_type == 'iBeqv':
             df = pd.DataFrame(
-                data=self.iBeqv,
+                data=self.k_vf_beq,
                 columns=['iBeqv'],
-                index=self.branch_data.names[self.iBeqv],
+                index=self.branch_data.names[self.k_vf_beq],
             )
 
         elif structure_type == 'iVtma':
             df = pd.DataFrame(
-                data=self.iVtma,
+                data=self.k_vt_m,
                 columns=['iVtma'],
-                index=self.branch_data.names[self.iVtma],
+                index=self.branch_data.names[self.k_vt_m],
             )
 
         elif structure_type == 'iQtma':
             df = pd.DataFrame(
-                data=self.iQtma,
+                data=self.k_qt_m,
                 columns=['iQtma'],
-                index=self.branch_data.names[self.iQtma],
+                index=self.branch_data.names[self.k_qt_m],
             )
 
         elif structure_type == 'iPfdp':
             df = pd.DataFrame(
-                data=self.iPfdp,
+                data=self.k_pf_dp,
                 columns=['iPfdp'],
-                index=self.branch_data.names[self.iPfdp],
+                index=self.branch_data.names[self.k_pf_dp],
             )
 
         elif structure_type == 'iVscL':
             df = pd.DataFrame(
-                data=self.iVscL,
+                data=self.i_vsc,
                 columns=['iVscL'],
-                index=self.branch_data.names[self.iVscL],
+                index=self.branch_data.names[self.i_vsc],
             )
 
         elif structure_type == 'VfBeqbus':
             df = pd.DataFrame(
-                data=self.VfBeqbus,
+                data=self.i_vf_beq,
                 columns=['VfBeqbus'],
-                index=self.bus_data.names[self.VfBeqbus],
+                index=self.bus_data.names[self.i_vf_beq],
             )
 
         elif structure_type == 'Vtmabus':
             df = pd.DataFrame(
-                data=self.Vtmabus,
+                data=self.i_vt_m,
                 columns=['Vtmabus'],
-                index=self.bus_data.names[self.Vtmabus],
+                index=self.bus_data.names[self.i_vt_m],
             )
 
         else:

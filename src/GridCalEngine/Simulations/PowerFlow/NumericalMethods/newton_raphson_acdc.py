@@ -91,7 +91,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     # the elements of PQ that exist in the control indices Ivf and Ivt must be passed from the PQ to the PV list
     # otherwise those variables would be in two sets of equations
-    i_ctrl_v = np.unique(np.r_[nc.VfBeqbus, nc.Vtmabus])
+    i_ctrl_v = np.unique(np.r_[nc.i_vf_beq, nc.i_vt_m])
     for val in pq:
         if val in i_ctrl_v:
             pq = pq[pq != val]
@@ -106,13 +106,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     # --------------------------------------------------------------------------
     # variables dimensions in Jacobian
     sol_slicer = AcDcSolSlicer(npq, npv,
-                               len(nc.VfBeqbus),
-                               len(nc.Vtmabus),
-                               len(nc.iPfsh),
-                               len(nc.iQfma),
-                               len(nc.iBeqz),
-                               len(nc.iQtma),
-                               len(nc.iPfdp))
+                               len(nc.i_vf_beq),
+                               len(nc.i_vt_m),
+                               len(nc.k_pf_tau),
+                               len(nc.k_qf_m),
+                               len(nc.k_zero_beq),
+                               len(nc.k_qt_m),
+                               len(nc.k_pf_dp))
 
     # -------------------------------------------------------------------------
     # compute initial admittances
@@ -138,7 +138,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                    alpha1=nc.branch_data.alpha1,
                                    alpha2=nc.branch_data.alpha2,
                                    alpha3=nc.branch_data.alpha3,
-                                   iVscL=nc.iVscL)
+                                   iVscL=nc.i_vsc)
 
     # compute total mismatch
     Scalc = compute_power(Ybus, V)
@@ -155,13 +155,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                          F=F,
                          pvpq=pvpq,
                          pq=pq,
-                         k_pf_tau=nc.iPfsh,
-                         k_qf_m=nc.iQfma,
-                         k_zero_beq=nc.iBeqz,
-                         k_qt_m=nc.iQtma,
-                         k_pf_dp=nc.iPfdp,
-                         i_vf_beq=nc.VfBeqbus,
-                         i_vt_m=nc.Vtmabus)
+                         k_pf_tau=nc.k_pf_tau,
+                         k_qf_m=nc.k_qf_m,
+                         k_zero_beq=nc.k_zero_beq,
+                         k_qt_m=nc.k_qt_m,
+                         k_pf_dp=nc.k_pf_dp,
+                         i_vf_beq=nc.i_vf_beq,
+                         i_vt_m=nc.i_vt_m)
 
     norm_f = np.max(np.abs(fx))
 
@@ -171,8 +171,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     while not converged and iterations < max_iter:
 
         # compute the Jacobian
-        J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
-                          nc.VfBeqbus, nc.Vtmabus,
+        J = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq, nc.k_vf_beq,
+                          nc.i_vf_beq, nc.i_vt_m,
                           F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
         # solve the linear system
@@ -208,13 +208,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 # assign the new values
                 Va[pvpq] += dVa * mu
                 Vm[pq] += dVm * mu
-                Beq[nc.iBeqz] += dBeq_zero * mu
-                Beq[nc.iBeqv] += dBeq_vf * mu
-                m[nc.iQfma] += dma_Qf * mu
-                m[nc.iQtma] += dma_Qt * mu
-                m[nc.iVtma] += dma_Vt * mu
-                tau[nc.iPfsh] += dtheta_Pf * mu
-                tau[nc.iPfdp] += dtheta_Pd * mu
+                Beq[nc.k_zero_beq] += dBeq_zero * mu
+                Beq[nc.k_vf_beq] += dBeq_vf * mu
+                m[nc.k_qf_m] += dma_Qf * mu
+                m[nc.k_qt_m] += dma_Qt * mu
+                m[nc.k_vt_m] += dma_Vt * mu
+                tau[nc.k_pf_tau] += dtheta_Pf * mu
+                tau[nc.k_pf_dp] += dtheta_Pd * mu
 
                 V = Vm * np.exp(1j * Va)
 
@@ -243,7 +243,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                alpha1=nc.branch_data.alpha1,
                                                alpha2=nc.branch_data.alpha2,
                                                alpha3=nc.branch_data.alpha3,
-                                               iVscL=nc.iVscL)
+                                               iVscL=nc.i_vsc)
 
                 # compute total mismatch
                 Scalc = compute_power(Ybus, V)
@@ -260,13 +260,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                      F=F,
                                      pvpq=pvpq,
                                      pq=pq,
-                                     k_pf_tau=nc.iPfsh,
-                                     k_qf_m=nc.iQfma,
-                                     k_zero_beq=nc.iBeqz,
-                                     k_qt_m=nc.iQtma,
-                                     k_pf_dp=nc.iPfdp,
-                                     i_vf_beq=nc.VfBeqbus,
-                                     i_vt_m=nc.Vtmabus)
+                                     k_pf_tau=nc.k_pf_tau,
+                                     k_qf_m=nc.k_qf_m,
+                                     k_zero_beq=nc.k_zero_beq,
+                                     k_qt_m=nc.k_qt_m,
+                                     k_pf_dp=nc.k_pf_dp,
+                                     i_vf_beq=nc.i_vf_beq,
+                                     i_vt_m=nc.i_vt_m)
 
                 norm_f_new = np.max(np.abs(fx))
                 cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
@@ -300,7 +300,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 # the iteration was ok, check the controls if the error is small enough
                 if norm_f < 1e-2:
 
-                    for idx in nc.iVscL:
+                    for idx in nc.i_vsc:
                         # correct m (tap modules)
                         if m[idx] < nc.branch_data.tap_module_min[idx]:
                             m[idx] = nc.branch_data.tap_module_min[idx]
@@ -334,13 +334,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
                             # re declare the slicer because the indices of pq and pv changed
                             sol_slicer = AcDcSolSlicer(npq, npv,
-                                                       len(nc.VfBeqbus),
-                                                       len(nc.Vtmabus),
-                                                       len(nc.iPfsh),
-                                                       len(nc.iQfma),
-                                                       len(nc.iBeqz),
-                                                       len(nc.iQtma),
-                                                       len(nc.iPfdp))
+                                                       len(nc.i_vf_beq),
+                                                       len(nc.i_vt_m),
+                                                       len(nc.k_pf_tau),
+                                                       len(nc.k_qf_m),
+                                                       len(nc.k_zero_beq),
+                                                       len(nc.k_qt_m),
+                                                       len(nc.k_pf_dp))
 
                             # recompute the mismatch, based on the new S0
                             Scalc = compute_power(Ybus, V)
@@ -357,13 +357,13 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                  F=F,
                                                  pvpq=pvpq,
                                                  pq=pq,
-                                                 k_pf_tau=nc.iPfsh,
-                                                 k_qf_m=nc.iQfma,
-                                                 k_zero_beq=nc.iBeqz,
-                                                 k_qt_m=nc.iQtma,
-                                                 k_pf_dp=nc.iPfdp,
-                                                 i_vf_beq=nc.VfBeqbus,
-                                                 i_vt_m=nc.Vtmabus)
+                                                 k_pf_tau=nc.k_pf_tau,
+                                                 k_qf_m=nc.k_qf_m,
+                                                 k_zero_beq=nc.k_zero_beq,
+                                                 k_qt_m=nc.k_qt_m,
+                                                 k_pf_dp=nc.k_pf_dp,
+                                                 i_vf_beq=nc.i_vf_beq,
+                                                 i_vt_m=nc.i_vt_m)
                             norm_f_new = np.max(np.abs(fx))
 
                             # if verbose > 0:

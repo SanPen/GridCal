@@ -580,10 +580,10 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
         data.bus_data.names = np.array(btg_data.bus_data.names)
 
-        data.Admittances = FakeAdmittances()
-        data.Admittances.Ybus = btg_data.admittances.Ybus
-        data.Admittances.Yf = btg_data.admittances.Yf
-        data.Admittances.Yt = btg_data.admittances.Yt
+        data.admittances_ = FakeAdmittances()
+        data.admittances_.Ybus = btg_data.admittances.Ybus
+        data.admittances_.Yf = btg_data.admittances.Yf
+        data.admittances_.Yt = btg_data.admittances.Yt
 
         data.Bbus_ = btg_data.linear_admittances.Bbus
         data.Bf_ = btg_data.linear_admittances.Bf
@@ -609,16 +609,16 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.Qmax_bus_ = btg_data.Qmax_bus
         data.Qmin_bus_ = btg_data.Qmin_bus
 
-        data.iPfsh = btg_data.control_indices.iPfsh
-        data.iQfma = btg_data.control_indices.iQfma
-        data.iBeqz = btg_data.control_indices.iBeqz
-        data.iBeqv = btg_data.control_indices.iBeqv
-        data.iVtma = btg_data.control_indices.iVtma
-        data.iQtma = btg_data.control_indices.iQtma
-        data.iPfdp = btg_data.control_indices.iPfdp
-        data.iVscL = btg_data.control_indices.iVscL
-        data.VfBeqbus = btg_data.control_indices.iVfBeqBus
-        data.Vtmabus = btg_data.control_indices.iVtmaBus
+        data.k_pf_tau = btg_data.control_indices.k_pf_tau
+        data.k_qf_m = btg_data.control_indices.k_qf_m
+        data.k_zero_beq = btg_data.control_indices.k_zero_beq
+        data.k_vf_beq = btg_data.control_indices.k_vf_beq
+        data.k_vt_m = btg_data.control_indices.k_vt_m
+        data.k_qt_m = btg_data.control_indices.k_qt_m
+        data.k_pf_dp = btg_data.control_indices.k_pf_dp
+        data.i_vsc = btg_data.control_indices.i_vsc
+        data.i_vf_beq = btg_data.control_indices.iVfBeqBus
+        data.i_vt_m = btg_data.control_indices.iVtmaBus
 
         data_lst.append(data)
 
