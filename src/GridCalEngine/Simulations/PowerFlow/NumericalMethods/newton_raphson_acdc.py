@@ -24,7 +24,8 @@ from GridCalEngine.Core.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses, compute_power
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, \
+    compute_converter_losses, compute_power
 from GridCalEngine.basic_structures import ReactivePowerControlMode, CxVec
 import GridCalEngine.Simulations.sparse_solve as gcsp
 
@@ -105,14 +106,15 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     # --------------------------------------------------------------------------
     # variables dimensions in Jacobian
-    sol_slicer = AcDcSolSlicer(npq, npv,
-                               len(nc.i_vf_beq),
-                               len(nc.i_vt_m),
-                               len(nc.k_pf_tau),
-                               len(nc.k_qf_m),
-                               len(nc.k_zero_beq),
-                               len(nc.k_qt_m),
-                               len(nc.k_pf_dp))
+    sol_slicer = AcDcSolSlicer(pvpq=pvpq,
+                               pq=pq,
+                               k_zero_beq=nc.k_zero_beq,
+                               k_vf_beq=nc.k_vf_beq,
+                               k_qf_m=nc.k_qf_m,
+                               k_qt_m=nc.k_qt_m,
+                               k_vt_m=nc.k_vt_m,
+                               k_pf_tau=nc.k_pf_tau,
+                               k_pf_dp=nc.k_pf_dp)
 
     # -------------------------------------------------------------------------
     # compute initial admittances
@@ -181,7 +183,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
         if not np.isnan(dx).any():  # check if the solution worked
 
             # split the solution
-            dVa, dVm, dBeq_vf, dma_Vt, dtheta_Pf, dma_Qf, dBeq_zero, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
+            dVa, dVm, dBeq, dm, dTau = sol_slicer.split(dx)
 
             # set the restoration values
             prev_Vm = Vm.copy()
@@ -206,15 +208,11 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                     Beq = prev_Beq.copy()
 
                 # assign the new values
-                Va[pvpq] += dVa * mu
-                Vm[pq] += dVm * mu
-                Beq[nc.k_zero_beq] += dBeq_zero * mu
-                Beq[nc.k_vf_beq] += dBeq_vf * mu
-                m[nc.k_qf_m] += dma_Qf * mu
-                m[nc.k_qt_m] += dma_Qt * mu
-                m[nc.k_vt_m] += dma_Vt * mu
-                tau[nc.k_pf_tau] += dtheta_Pf * mu
-                tau[nc.k_pf_dp] += dtheta_Pd * mu
+                Va[sol_slicer.i1] -= dVa * mu
+                Vm[sol_slicer.i2] -= dVm * mu
+                Beq[sol_slicer.i3] -= dBeq * mu
+                m[sol_slicer.i4] -= dm * mu
+                tau[sol_slicer.i5] -= dTau * mu
 
                 V = Vm * np.exp(1j * Va)
 
@@ -333,14 +331,15 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                             npq = len(pq)
 
                             # re declare the slicer because the indices of pq and pv changed
-                            sol_slicer = AcDcSolSlicer(npq, npv,
-                                                       len(nc.i_vf_beq),
-                                                       len(nc.i_vt_m),
-                                                       len(nc.k_pf_tau),
-                                                       len(nc.k_qf_m),
-                                                       len(nc.k_zero_beq),
-                                                       len(nc.k_qt_m),
-                                                       len(nc.k_pf_dp))
+                            sol_slicer = AcDcSolSlicer(pvpq=pvpq,
+                                                       pq=pq,
+                                                       k_zero_beq=nc.k_zero_beq,
+                                                       k_vf_beq=nc.k_vf_beq,
+                                                       k_qf_m=nc.k_qf_m,
+                                                       k_qt_m=nc.k_qt_m,
+                                                       k_vt_m=nc.k_vt_m,
+                                                       k_pf_tau=nc.k_pf_tau,
+                                                       k_pf_dp=nc.k_pf_dp)
 
                             # recompute the mismatch, based on the new S0
                             Scalc = compute_power(Ybus, V)

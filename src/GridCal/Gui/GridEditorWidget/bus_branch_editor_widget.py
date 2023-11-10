@@ -1994,8 +1994,9 @@ class BusBranchEditorWidget(QSplitter):
         """
 
         for key, group in self.diagram.data.items():
-            for idtag, location in group.locations:
-                location.graphic_object.recolour_mode()
+            for idtag, location in group.locations.items():
+                if location.graphic_object is not None:
+                    location.graphic_object.recolour_mode()
 
     def set_dark_mode(self) -> None:
         """

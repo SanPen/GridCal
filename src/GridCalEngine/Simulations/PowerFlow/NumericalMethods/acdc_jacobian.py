@@ -17,37 +17,46 @@
 
 import numpy as np
 import numba as nb
+from typing import Tuple
 from scipy.sparse import lil_matrix, diags, csc_matrix
-
-
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
 class AcDcSolSlicer:
 
-    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
+    def __init__(self, pvpq, pq, k_zero_beq, k_vf_beq, k_qf_m, k_qt_m, k_vt_m, k_pf_tau, k_pf_dp):
         """
         Declare the slicing limits in the same order as the Jacobian rows
-        :param npq:
-        :param npv:
-        :param nVfBeqbus:
-        :param nVtmabus:
-        :param nPfsh:
-        :param nQfma:
-        :param nBeqz:
-        :param nQtma:
-        :param nPfdp:
+        :param pvpq: 
+        :param pq: 
+        :param k_zero_beq: 
+        :param k_vf_beq: 
+        :param k_qf_m: 
+        :param k_qt_m: 
+        :param k_vt_m: 
+        :param k_pf_tau: 
+        :param k_pf_dp: 
         """
+
+        self.i1 = pvpq
+        self.i2 = pq
+        self.i3 = np.r_[k_zero_beq, k_vf_beq]
+        self.i4 = np.r_[k_qf_m, k_qt_m, k_vt_m]
+        self.i5 = np.r_[k_pf_tau, k_pf_dp]
+
+        n_col_block1 = len(pvpq)
+        n_col_block2 = len(pq)
+        n_col_block3 = len(k_zero_beq) + len(k_vf_beq)
+        n_col_block4 = len(k_qf_m) + len(k_qt_m) + len(k_vt_m)
+        n_col_block5 = len(k_pf_tau) + len(k_pf_dp)
+
         self.a0 = 0
-        self.a1 = self.a0 + npq + npv
-        self.a2 = self.a1 + npq
-        self.a3 = self.a2 + nBeqz
-        self.a4 = self.a3 + nVfBeqbus
-        self.a5 = self.a4 + nQfma
-        self.a6 = self.a5 + nQtma
-        self.a7 = self.a6 + nVtmabus
-        self.a8 = self.a7 + nPfsh
-        self.a9 = self.a8 + nPfdp
+        self.a1 = self.a0 + n_col_block1
+        self.a2 = self.a1 + n_col_block2
+        self.a3 = self.a2 + n_col_block3
+        self.a4 = self.a3 + n_col_block4
+        self.a5 = self.a4 + n_col_block5
 
     def split(self, dx):
         """
@@ -57,15 +66,25 @@ class AcDcSolSlicer:
         """
         dVa = dx[self.a0:self.a1]
         dVm = dx[self.a1:self.a2]
-        dBeq_zero = dx[self.a2:self.a3]
-        dBeq_vf = dx[self.a3:self.a4]
-        dma_Qf = dx[self.a4:self.a5]
-        dma_Qt = dx[self.a5:self.a6]
-        dma_Vt = dx[self.a6:self.a7]
-        dtheta_Pf = dx[self.a7:self.a8]
-        dtheta_Pd = dx[self.a8:self.a9]
+        dBeq = dx[self.a2:self.a3]
+        dm = dx[self.a3:self.a4]
+        dtau = dx[self.a4:self.a5]
 
-        return dVa, dVm, dBeq_vf, dma_Vt, dtheta_Pf, dma_Qf, dBeq_zero, dma_Qt, dtheta_Pd
+        return dVa, dVm, dBeq, dm, dtau
+
+    def assign(self, dx, Va, Vm, Beq, m, tau, mu=1.0):
+        dVa = dx[self.a0:self.a1]
+        dVm = dx[self.a1:self.a2]
+        dBeq = dx[self.a2:self.a3]
+        dm = dx[self.a3:self.a4]
+        dtau = dx[self.a4:self.a5]
+
+        # assign the new values
+        Va[self.i1] -= dVa * mu
+        Vm[self.i2] -= dVm * mu
+        Beq[self.i3] -= dBeq * mu
+        m[self.i4] -= dm * mu
+        tau[self.i5] -= dtau * mu
 
 
 @nb.njit(cache=True)
@@ -82,72 +101,74 @@ def make_lookup(n, arr):
 
 
 @nb.njit(cache=True)
-def fill_acdc_jacobian_data(Jx, Ji, Jp,
-                            Yp, Yi, Ys,
-                            dSbus_dVa_x, dSbus_dVm_x,
-                            dSf_dVa_x, dSf_dVa_i, dSf_dVa_p,
-                            dSf_dVm_x, dSf_dVm_i, dSf_dVm_p,
-                            dSt_dVa_x, dSt_dVa_i, dSt_dVa_p,
-                            dSt_dVm_x, dSt_dVm_i, dSt_dVm_p,
-                            dPfdp_dVm_x, dPfdp_dVm_i, dPfdp_dVm_p,
-                            pvpq, pq,
-                            k_pf_tau,
-                            k_qt_m,
-                            k_qf_m,
-                            k_vt_m,
-                            k_pf_dp,
-                            k_zero_beq,
-                            k_vf_beq,
-                            i_vf_beq,
-                            i_vt_m,
-                            F, T, V,
-                            tap_modules_m, tap_complex,
-                            k2, Bc, b_eq):
+def fill_acdc_jacobian_data(Jx: Vec, Ji: IntVec, Jp: IntVec,
+                            Yp, Yi: IntVec,
+                            Ys: CxVec,
+                            dSbus_dVa_x: Vec,
+                            dSbus_dVm_x: Vec,
+                            dSf_dVa_x: Vec, dSf_dVa_i: IntVec, dSf_dVa_p: IntVec,
+                            dSf_dVm_x: Vec, dSf_dVm_i: IntVec, dSf_dVm_p: IntVec,
+                            dSt_dVa_x: Vec, dSt_dVa_i: IntVec, dSt_dVa_p: IntVec,
+                            dSt_dVm_x: Vec, dSt_dVm_i: IntVec, dSt_dVm_p: IntVec,
+                            dPfdp_dVm_x: Vec, dPfdp_dVm_i: IntVec, dPfdp_dVm_p: IntVec,
+                            pvpq: IntVec, pq: IntVec,
+                            k_pf_tau: IntVec,
+                            k_qt_m: IntVec,
+                            k_qf_m: IntVec,
+                            k_vt_m: IntVec,
+                            k_pf_dp: IntVec,
+                            k_zero_beq: IntVec,
+                            k_vf_beq: IntVec,
+                            i_vf_beq: IntVec,
+                            i_vt_m: IntVec,
+                            F: IntVec, T: IntVec, V: CxVec,
+                            tap_modules_m: Vec, tap_complex: CxVec,
+                            k2: Vec, Bc: Vec, b_eq: Vec) -> Tuple[int, Vec, IntVec, IntVec]:
     """
-
-    :param Jx:
-    :param Ji:
-    :param Jp:
-    :param Yp:
-    :param Yi:
-    :param Ys:
-    :param dSbus_dVa_x:
-    :param dSbus_dVm_x:
-    :param dSf_dVa_x:
-    :param dSf_dVa_i:
-    :param dSf_dVa_p:
-    :param dSf_dVm_x:
-    :param dSf_dVm_i:
-    :param dSf_dVm_p:
-    :param dSt_dVa_x:
-    :param dSt_dVa_i:
-    :param dSt_dVa_p:
-    :param dSt_dVm_x:
-    :param dSt_dVm_i:
-    :param dSt_dVm_p:
-    :param dPfdp_dVm_x:
-    :param dPfdp_dVm_i:
-    :param dPfdp_dVm_p:
-    :param pvpq:
-    :param pq:
-    :param k_pf_tau:
-    :param k_qt_m:
-    :param k_qf_m:
-    :param k_vt_m:
-    :param k_pf_dp:
-    :param k_zero_beq:
-    :param k_vf_beq:
-    :param i_vf_beq:
-    :param i_vt_m:
-    :param F:
-    :param T:
-    :param V:
-    :param tap_modules_m:
-    :param k2:
-    :param tap_complex:
-    :param Bc:
-    :param b_eq:
-    :return:
+    Compute the ACDC jacobian using Numba
+    :param Jx: Jacobian CSC data array (to be filled)
+    :param Ji: Jacobian CSC row indices array (to be filled)
+    :param Jp: Jacobian CSC pointer array (to be filled)
+    :param Yp: Ybus CSC pointer array
+    :param Yi: Ybus CSC row indices array
+    :param Ys: Branches' series admittance array
+    :param dSbus_dVa_x: dSbus_dVa CSC data array
+    :param dSbus_dVm_x: dSbus_dVm CSC data array
+    :param dSf_dVa_x: dSf_dVa CSC data array
+    :param dSf_dVa_i: dSf_dVa CSC row indices array
+    :param dSf_dVa_p: dSf_dVa CSC pointer array
+    :param dSf_dVm_x: dSf_dVm CSC data array
+    :param dSf_dVm_i: dSf_dVm CSC row indices array
+    :param dSf_dVm_p: dSf_dVm CSC pointer array
+    :param dSt_dVa_x: dSt_dVa CSC data array
+    :param dSt_dVa_i: dSt_dVa CSC row indices array
+    :param dSt_dVa_p: dSt_dVa CSC pointer array
+    :param dSt_dVm_x: dSt_dVm CSC data array
+    :param dSt_dVm_i: dSt_dVm CSC row indices array
+    :param dSt_dVm_p: dSt_dVm CSC pointer array
+    :param dPfdp_dVm_x: dPfdp_dVm CSC data array
+    :param dPfdp_dVm_i: dPfdp_dVm CSC row indices array
+    :param dPfdp_dVm_p: dPfdp_dVm CSC pointer array
+    :param pvpq: Array of pv and then pq bus indices (not sorted)
+    :param pq: Array of PQ bus indices
+    :param k_pf_tau: Indices of the Pf controlled with the shunt susceptance Branches
+    :param k_qt_m: Indices of the Qt controlled with ma Branches
+    :param k_qf_m: Indices of the Qf controlled with ma Branches
+    :param k_vt_m: Indices of the Vt controlled with ma Branches
+    :param k_pf_dp: indices of the Pf-droop controlled Branches
+    :param k_zero_beq: Indices of the Qf made zero with the equivalent susceptance Branches
+    :param k_vf_beq: Indices of the Vf Controlled with the equivalent susceptance Branches
+    :param i_vf_beq: Indices of the buses where Vf is controlled with Beq
+    :param i_vt_m: Indices of the buses where Vt is controlled with m
+    :param F: Array of "from" bus indices
+    :param T: Array of "to" bus indices
+    :param V: Array of complex bus voltages
+    :param tap_modules_m: Array of tap modules
+    :param k2: Array of branch converter k2 parameters
+    :param tap_complex: Array of complex tap values {remember tap = ma * exp(1j * theta) }
+    :param Bc: Array of branch full susceptances
+    :param b_eq: Array of branch equivalent (variable) susceptances
+    :return: nnz, Jx, Ji, Jp
     """
     n_pf_tau = len(k_pf_tau)
     n_pf_dp = len(k_pf_dp)
@@ -382,13 +403,13 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp,
 
     # Column 3: derivatives w.r.t Beq for iBeqz + iBeqv ----------------------------------------------------------------
     if n_col_block3:
-        indices = np.concatenate((k_zero_beq, k_vf_beq))
+
         (dSbus_dBeq_data,
          dSbus_dBeq_indices,
          dSbus_dBeq_indptr,
          dSf_dBeqx_data,
          dSf_dBeqx_indices,
-         dSf_dBeqx_indptr) = deriv.derivatives_Beq_csc_numba(iBeqx=indices, F=F, V=V, ma=tap_modules_m, k2=k2)
+         dSf_dBeqx_indptr) = deriv.derivatives_Beq_csc_numba(iBeqx=col_block3, F=F, V=V, ma=tap_modules_m, k2=k2)
 
         for j in range(n_col_block3):  # sliced columns
 
@@ -487,7 +508,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp,
 
     # Column 4: derivative w.r.t "m" for iQfma + iQfma + iVtma ---------------------------------------------------------
     if n_col_block4:
-        indices = np.concatenate((k_qf_m, k_qt_m, k_vt_m))
+
         (dSbus_dm_data,
          dSbus_dm_indices,
          dSbus_dm_indptr,
@@ -496,7 +517,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp,
          dSf_dm_indptr,
          dSt_dm_data,
          dSt_dm_indices,
-         dSt_dm_indptr) = deriv.derivatives_ma_csc_numba(iXxma=indices, F=F, T=T, Ys=Ys, k2=k2,
+         dSt_dm_indptr) = deriv.derivatives_ma_csc_numba(iXxma=col_block4, F=F, T=T, Ys=Ys, k2=k2,
                                                          tap=tap_complex, ma=tap_modules_m, Bc=Bc, 
                                                          Beq=b_eq, V=V)
 
@@ -598,7 +619,6 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp,
     # Column 5: derivatives w.r.t theta sh for iPfsh + droop -----------------------------------------------------------
     if n_col_block5:
 
-        indices = np.concatenate((k_pf_tau, k_pf_dp))
         (dSbus_dtau_data,
          dSbus_dtau_indices,
          dSbus_dtau_indptr,
@@ -607,7 +627,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp,
          dSf_dtau_indptr,
          dSt_dtau_data,
          dSt_dtau_indices,
-         dSt_dtau_indptr) = deriv.derivatives_tau_csc_numba(iPxsh=indices,
+         dSt_dtau_indptr) = deriv.derivatives_tau_csc_numba(iPxsh=col_block5,
                                                             F=F, T=T, Ys=Ys,
                                                             k2=k2, tap=tap_complex, V=V)
 
@@ -732,7 +752,7 @@ def fubm_jacobian(nb, nl, k_pf_tau, k_pf_dp, k_qf_m, k_qt_m, k_vt_m, k_zero_beq,
     :param F: Array of "from" bus indices
     :param T: Array of "to" bus indices
     :param Ys: Array of branch series admittances
-    :param k2: Array of branch converter losses
+    :param k2: Array of branch converter k2 parameters
     :param complex_tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
     :param tap_modules: Array of tap modules
     :param Bc: Array of branch full susceptances

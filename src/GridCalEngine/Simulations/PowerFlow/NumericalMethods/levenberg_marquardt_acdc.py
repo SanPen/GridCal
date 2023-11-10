@@ -59,7 +59,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
 
     Vmfset = nc.branch_data.vf_set
     m = nc.branch_data.tap_module.copy()
-    theta = nc.branch_data.tap_angle.copy()
+    tau = nc.branch_data.tap_angle.copy()
     Beq = nc.branch_data.Beq.copy()
     Gsw = nc.branch_data.G0sw
     Pfset = nc.branch_data.Pfset / nc.Sbase
@@ -94,14 +94,15 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
     if (npq + npv) > 0:
         # --------------------------------------------------------------------------
         # variables dimensions in Jacobian
-        sol_slicer = AcDcSolSlicer(npq, npv,
-                                   len(nc.i_vf_beq),
-                                   len(nc.i_vt_m),
-                                   len(nc.k_pf_tau),
-                                   len(nc.k_qf_m),
-                                   len(nc.k_zero_beq),
-                                   len(nc.k_qt_m),
-                                   len(nc.k_pf_dp))
+        sol_slicer = AcDcSolSlicer(pvpq=pvpq,
+                                   pq=pq,
+                                   k_zero_beq=nc.k_zero_beq,
+                                   k_vf_beq=nc.k_vf_beq,
+                                   k_qf_m=nc.k_qf_m,
+                                   k_qt_m=nc.k_qt_m,
+                                   k_vt_m=nc.k_vt_m,
+                                   k_pf_tau=nc.k_pf_tau,
+                                   k_pf_dp=nc.k_pf_dp)
         # -------------------------------------------------------------------------
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
@@ -111,7 +112,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                            ys=Ys,
                                            B=Bc,
                                            Sbase=nc.Sbase,
-                                           tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                           tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
                                            virtual_tap_from=nc.branch_data.virtual_tap_f,
                                            virtual_tap_to=nc.branch_data.virtual_tap_t)
 
@@ -214,18 +215,15 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                 nu = 2.0
 
                 # split the solution
-                dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
+                dVa, dVm, dBeq, dm, dTau = sol_slicer.split(dx)
 
                 # assign the new values
-                Va[pvpq] -= dVa
-                Vm[pq] -= dVm
-                theta[nc.k_pf_tau] -= dtheta_Pf
-                theta[nc.k_pf_dp] -= dtheta_Pd
-                m[nc.k_qf_m] -= dma_Qf
-                m[nc.k_qt_m] -= dma_Qt
-                m[nc.k_vt_m] -= dma_Vt
-                Beq[nc.k_zero_beq] -= dBeq_z
-                Beq[nc.k_vf_beq] -= dBeq_v
+                Va[sol_slicer.i1] -= dVa
+                Vm[sol_slicer.i2] -= dVm
+                Beq[sol_slicer.i3] -= dBeq
+                m[sol_slicer.i4] -= dm
+                tau[sol_slicer.i5] -= dTau
+
                 V = cf.polar_to_rect(Vm, Va)
                 Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
@@ -243,7 +241,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                                ys=Ys,
                                                B=Bc,
                                                Sbase=nc.Sbase,
-                                               tap_module=m, tap_angle=theta, Beq=Beq, Gsw=Gsw,
+                                               tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
                                                virtual_tap_from=nc.branch_data.virtual_tap_f,
                                                virtual_tap_to=nc.branch_data.virtual_tap_t)
 
@@ -291,7 +289,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                 print('dx:', dx)
                 print('Va:', Va)
                 print('Vm:', Vm)
-                print('theta:', theta)
+                print('theta:', tau)
                 print('ma:', m)
                 print('Beq:', Beq)
                 print('norm_f:', norm_f)
@@ -312,6 +310,6 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, ma=m, theta=theta, Beq=Beq,
+                                   Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
                                    Ybus=Ybus, Yf=Yf, Yt=Yt,
                                    iterations=iter_, elapsed=elapsed)
