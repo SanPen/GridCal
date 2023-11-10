@@ -422,6 +422,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.profiles_tableView.setModel(None)
         self.ui.resultsTableView.setModel(None)
         self.ui.dataStructureTableView.setModel(None)
+        self.ui.resultsLogsTreeView.setModel(None)
 
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
@@ -486,6 +487,7 @@ class SimulationsMain(TimeEventsMain):
         mdl = gf.get_list_model(lst)
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
+        self.ui.resultsLogsTreeView.setModel(None)
 
     def get_compatible_areas_from_to(self) -> Tuple[bool,
     List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],

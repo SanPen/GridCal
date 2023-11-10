@@ -146,6 +146,7 @@ class IoMain(ConfigurationMain):
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
+        self.ui.resultsLogsTreeView.setModel(None)
 
         # clear the comments
         self.ui.comments_textEdit.setText("")
