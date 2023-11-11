@@ -568,6 +568,8 @@ class SimulationsMain(TimeEventsMain):
 
         override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
 
+        generate_report = self.ui.addPowerFlowReportCheckBox.isChecked()
+
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=verbose,
@@ -586,7 +588,8 @@ class SimulationsMain(TimeEventsMain):
                                    ignore_single_node_islands=ignore_single_node_islands,
                                    mu=mu,
                                    use_stored_guess=use_stored_guess,
-                                   override_branch_controls=override_branch_controls)
+                                   override_branch_controls=override_branch_controls,
+                                   generate_report=generate_report)
 
         return ops
 
@@ -1674,6 +1677,64 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    def get_opf_options(self) -> Union[None, sim.OptimalPowerFlowOptions]:
+        """
+        Get the GUI OPF options
+        """
+        # get the power flow options from the GUI
+        solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
+        mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+        time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+        zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
+        pf_options = self.get_selected_power_flow_options()
+        consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+        skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
+        lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+        maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+        unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
+        generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
+
+        # available transfer capacity inter areas
+        if maximize_flows:
+            (compatible_areas, lst_from, lst_to,
+             lst_br, lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+            idx_from = np.array([i for i, bus in lst_from])
+            idx_to = np.array([i for i, bus in lst_to])
+
+            if len(idx_from) == 0:
+                error_msg('The area "from" has no buses!')
+                return None
+
+            if len(idx_to) == 0:
+                error_msg('The area "to" has no buses!')
+                return None
+        else:
+            idx_from = None
+            idx_to = None
+            areas_from = None
+            areas_to = None
+
+        options = sim.OptimalPowerFlowOptions(solver=solver,
+                                              time_grouping=time_grouping,
+                                              zonal_grouping=zonal_grouping,
+                                              mip_solver=mip_solver,
+                                              power_flow_options=pf_options,
+                                              consider_contingencies=consider_contingencies,
+                                              skip_generation_limits=skip_generation_limits,
+                                              lodf_tolerance=lodf_tolerance,
+                                              maximize_flows=maximize_flows,
+                                              area_from_bus_idx=idx_from,
+                                              area_to_bus_idx=idx_to,
+                                              areas_from=areas_from,
+                                              areas_to=areas_to,
+                                              unit_commitment=unit_commitment,
+                                              generate_report=generate_report)
+
+        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
+        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
+
+        return options
+
     def run_opf(self):
         """
         Run OPF simulation
@@ -1684,70 +1745,24 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-                # get the power flow options from the GUI
-                solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-                time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
-                zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
-                pf_options = self.get_selected_power_flow_options()
-                consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
-                skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
-                lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
-                maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
-                unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
+                options = self.get_opf_options()
 
-                # available transfer capacity inter areas
-                if maximize_flows:
-                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
-                    idx_from = np.array([i for i, bus in lst_from])
-                    idx_to = np.array([i for i, bus in lst_to])
+                if options is not None:
+                    self.ui.progress_label.setText('Running optimal power flow...')
+                    QtGui.QGuiApplication.processEvents()
+                    pf_options = self.get_selected_power_flow_options()
 
-                    if len(idx_from) == 0:
-                        error_msg('The area "from" has no buses!')
-                        return
+                    self.LOCK()
 
-                    if len(idx_to) == 0:
-                        error_msg('The area "to" has no buses!')
-                        return
-                else:
-                    idx_from = None
-                    idx_to = None
-                    areas_from = None
-                    areas_to = None
+                    # set power flow object instance
+                    drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
+                                                     options=options,
+                                                     engine=self.get_preferred_engine())
 
-                options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                      time_grouping=time_grouping,
-                                                      zonal_grouping=zonal_grouping,
-                                                      mip_solver=mip_solver,
-                                                      power_flow_options=pf_options,
-                                                      consider_contingencies=consider_contingencies,
-                                                      skip_generation_limits=skip_generation_limits,
-                                                      lodf_tolerance=lodf_tolerance,
-                                                      maximize_flows=maximize_flows,
-                                                      area_from_bus_idx=idx_from,
-                                                      area_to_bus_idx=idx_to,
-                                                      areas_from=areas_from,
-                                                      areas_to=areas_to,
-                                                      unit_commitment=unit_commitment)
-
-                options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-                options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
-
-                self.ui.progress_label.setText('Running optimal power flow...')
-                QtGui.QGuiApplication.processEvents()
-                pf_options = self.get_selected_power_flow_options()
-
-                self.LOCK()
-
-                # set power flow object instance
-                drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
-                                                 options=options,
-                                                 engine=self.get_preferred_engine())
-
-                self.session.run(drv,
-                                 post_func=self.post_opf,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    self.session.run(drv,
+                                     post_func=self.post_opf,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -1796,66 +1811,22 @@ class SimulationsMain(TimeEventsMain):
                     QtGui.QGuiApplication.processEvents()
 
                     # get the power flow options from the GUI
-                    solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-                    mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-                    time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
-                    zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
-                    pf_options = self.get_selected_power_flow_options()
-                    consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
-                    skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
+                    options = self.get_opf_options()
 
-                    lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
-                    maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
-                    unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
+                    if options is not None:
+                        # create the OPF time series instance
+                        # if non_sequential:
+                        drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                                   options=options,
+                                                                   time_indices=self.get_time_indices(),
+                                                                   clustering_results=self.get_clustering_results())
 
-                    # available transfer capacity inter areas
-                    if maximize_flows:
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
-                        idx_from = np.array([i for i, bus in lst_from])
-                        idx_to = np.array([i for i, bus in lst_to])
+                        drv.engine = self.get_preferred_engine()
 
-                        if len(idx_from) == 0:
-                            error_msg('The area "from" has no buses!')
-                            return
-
-                        if len(idx_to) == 0:
-                            error_msg('The area "to" has no buses!')
-                            return
-                    else:
-                        idx_from = None
-                        idx_to = None
-                        areas_from = None
-                        areas_to = None
-
-                    options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                          time_grouping=time_grouping,
-                                                          zonal_grouping=zonal_grouping,
-                                                          mip_solver=mip_solver,
-                                                          power_flow_options=pf_options,
-                                                          consider_contingencies=consider_contingencies,
-                                                          skip_generation_limits=skip_generation_limits,
-                                                          lodf_tolerance=lodf_tolerance,
-                                                          maximize_flows=maximize_flows,
-                                                          area_from_bus_idx=idx_from,
-                                                          area_to_bus_idx=idx_to,
-                                                          areas_from=areas_from,
-                                                          areas_to=areas_to,
-                                                          unit_commitment=unit_commitment
-                                                          )
-
-                    # create the OPF time series instance
-                    # if non_sequential:
-                    drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                               options=options,
-                                                               time_indices=self.get_time_indices(),
-                                                               clustering_results=self.get_clustering_results())
-
-                    drv.engine = self.get_preferred_engine()
-
-                    self.session.run(drv,
-                                     post_func=self.post_opf_time_series,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                        self.session.run(drv,
+                                         post_func=self.post_opf_time_series,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.\nLoad time series are needed for this simulation.')

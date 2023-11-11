@@ -17,13 +17,14 @@
 import numpy as np
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
-
+from typing import Union
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.Session.session import ResultsModel
 from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
+from GridCalEngine.basic_structures import Logger
 
 
 class ResultsMain(SimulationsMain):
@@ -44,6 +45,8 @@ class ResultsMain(SimulationsMain):
                                                               columns=np.zeros(0),
                                                               index=np.zeros(0))
 
+        self.current_results_logger: Union[None, Logger] = None
+
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
 
@@ -54,6 +57,7 @@ class ResultsMain(SimulationsMain):
         self.ui.plot_data_pushButton.clicked.connect(self.plot_results)
         self.ui.search_results_Button.clicked.connect(self.search_in_results)
         self.ui.deleteDriverButton.clicked.connect(self.delete_results_driver)
+        self.ui.saveResultsLogsButton.clicked.connect(self.save_results_logs)
 
         # tree-click
         self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
@@ -75,10 +79,12 @@ class ResultsMain(SimulationsMain):
 
             if driver is None:
                 # set the logs
+                self.current_results_logger = None
                 self.ui.resultsLogsTreeView.setModel(None)
                 return
 
             # set the logs
+            self.current_results_logger = driver.logger
             logs_mdl = fill_tree_from_logs(driver.logger)
             self.ui.resultsLogsTreeView.setModel(logs_mdl)
             self.ui.resultsLogsTreeView.expandAll()
@@ -132,6 +138,7 @@ class ResultsMain(SimulationsMain):
 
         else:
             # set the logs
+            self.current_results_logger = None
             self.ui.resultsLogsTreeView.setModel(None)
 
     def plot_results(self):
@@ -284,3 +291,23 @@ class ResultsMain(SimulationsMain):
 
         else:
             warning_msg('The OPF time series has no results :(')
+
+    def save_results_logs(self):
+        """
+        Seve the results' logs
+        """
+        file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export logs", '',
+                                                              filter="CSV (*.csv);;Excel files (*.xlsx)", )
+
+        if file != '':
+            if 'xlsx' in filter_:
+                f = file
+                if not f.endswith('.xlsx'):
+                    f += '.xlsx'
+                self.current_results_logger.to_xlsx(f)
+
+            if 'csv' in filter_:
+                f = file
+                if not f.endswith('.csv'):
+                    f += '.csv'
+                self.current_results_logger.to_csv(f)

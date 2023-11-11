@@ -90,6 +90,45 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         """
         return []
 
+    def add_report(self):
+        """
+        Add a report of the results (in-place)
+        """
+
+        for gen_name, gen_shedding in zip(self.results.generator_names, self.results.generator_shedding):
+            if gen_shedding > 0:
+                self.logger.add_warning("Generation shedding",
+                                        device=gen_name,
+                                        value=gen_shedding,
+                                        expected_value=0.0)
+
+        for load_name, load_shedding in zip(self.results.load_names, self.results.load_shedding):
+            if load_shedding > 0:
+                self.logger.add_warning("Load shedding",
+                                        device=load_name,
+                                        value=load_shedding,
+                                        expected_value=0.0)
+
+        for name, val in zip(self.results.branch_names, self.results.loading):
+            if val > 1:
+                self.logger.add_warning("Overload",
+                                        device=name,
+                                        value=val * 100,
+                                        expected_value=100.0)
+
+        va = np.angle(self.results.voltage)
+        for i, bus in enumerate(self.grid.buses):
+            if va[i] > bus.angle_max:
+                self.logger.add_warning("Overvoltage",
+                                        device=bus.name,
+                                        value=va[i],
+                                        expected_value=bus.angle_max)
+            elif va[i] < bus.angle_min:
+                self.logger.add_warning("Undervoltage",
+                                        device=bus.name,
+                                        value=va[i],
+                                        expected_value=bus.angle_min)
+
     def opf(self, remote=False, batteries_energy_0=None):
         """
         Run a power flow for every circuit
@@ -165,7 +204,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         :return:
         """
 
-        start = time.time()
+        self.tic()
         if self.engine == bs.EngineType.GridCal:
 
             self.opf()
@@ -228,5 +267,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
                 self.results.converged = npa_res.converged
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
+
+        if self.options.generate_report:
+            self.add_report()

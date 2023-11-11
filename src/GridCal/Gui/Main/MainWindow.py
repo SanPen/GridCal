@@ -1092,6 +1092,12 @@ class Ui_mainWindow(object):
         self.verticalLayout_10 = QVBoxLayout(self.frame_61)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.verticalLayout_10.setContentsMargins(-1, 6, 0, -1)
+        self.results_treeView = QTreeView(self.frame_61)
+        self.results_treeView.setObjectName(u"results_treeView")
+        self.results_treeView.setAnimated(True)
+
+        self.verticalLayout_10.addWidget(self.results_treeView)
+
         self.frame_62 = QFrame(self.frame_61)
         self.frame_62.setObjectName(u"frame_62")
         self.frame_62.setFrameShape(QFrame.NoFrame)
@@ -1127,12 +1133,6 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_10.addWidget(self.frame_62)
 
-        self.results_treeView = QTreeView(self.frame_61)
-        self.results_treeView.setObjectName(u"results_treeView")
-        self.results_treeView.setAnimated(True)
-
-        self.verticalLayout_10.addWidget(self.results_treeView)
-
         self.splitter.addWidget(self.frame_61)
         self.frame_14 = QFrame(self.splitter)
         self.frame_14.setObjectName(u"frame_14")
@@ -1141,6 +1141,12 @@ class Ui_mainWindow(object):
         self.verticalLayout_6 = QVBoxLayout(self.frame_14)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalLayout_6.setContentsMargins(-1, -1, 0, -1)
+        self.diskSessionsTreeView = QTreeView(self.frame_14)
+        self.diskSessionsTreeView.setObjectName(u"diskSessionsTreeView")
+        self.diskSessionsTreeView.setAnimated(True)
+
+        self.verticalLayout_6.addWidget(self.diskSessionsTreeView)
+
         self.frame_60 = QFrame(self.frame_14)
         self.frame_60.setObjectName(u"frame_60")
         self.frame_60.setFrameShape(QFrame.NoFrame)
@@ -1171,12 +1177,6 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_6.addWidget(self.frame_60)
 
-        self.diskSessionsTreeView = QTreeView(self.frame_14)
-        self.diskSessionsTreeView.setObjectName(u"diskSessionsTreeView")
-        self.diskSessionsTreeView.setAnimated(True)
-
-        self.verticalLayout_6.addWidget(self.diskSessionsTreeView)
-
         self.splitter.addWidget(self.frame_14)
         self.results_splitter.addWidget(self.splitter)
         self.tabWidget_4 = QTabWidget(self.results_splitter)
@@ -1204,7 +1204,15 @@ class Ui_mainWindow(object):
         self.frame_5.setFrameShadow(QFrame.Raised)
         self.verticalLayout_24 = QVBoxLayout(self.frame_5)
         self.verticalLayout_24.setObjectName(u"verticalLayout_24")
-        self.verticalLayout_24.setContentsMargins(0, 0, 8, -1)
+        self.verticalLayout_24.setContentsMargins(0, 0, 8, 8)
+        self.resultsTableView = QTableView(self.frame_5)
+        self.resultsTableView.setObjectName(u"resultsTableView")
+        self.resultsTableView.setAlternatingRowColors(True)
+        self.resultsTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.resultsTableView.setSelectionBehavior(QAbstractItemView.SelectItems)
+
+        self.verticalLayout_24.addWidget(self.resultsTableView)
+
         self.frame_8 = QFrame(self.frame_5)
         self.frame_8.setObjectName(u"frame_8")
         self.frame_8.setFrameShape(QFrame.NoFrame)
@@ -1212,6 +1220,15 @@ class Ui_mainWindow(object):
         self.horizontalLayout_2 = QHBoxLayout(self.frame_8)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.units_label = QLabel(self.frame_8)
+        self.units_label.setObjectName(u"units_label")
+
+        self.horizontalLayout_2.addWidget(self.units_label)
+
+        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_20)
+
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
         self.copy_results_pushButton.setIcon(icon70)
@@ -1246,15 +1263,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
 
-        self.units_label = QLabel(self.frame_8)
-        self.units_label.setObjectName(u"units_label")
-
-        self.horizontalLayout_2.addWidget(self.units_label)
-
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_2.addItem(self.horizontalSpacer_4)
-
         self.sear_results_lineEdit = QLineEdit(self.frame_8)
         self.sear_results_lineEdit.setObjectName(u"sear_results_lineEdit")
 
@@ -1279,14 +1287,6 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_24.addWidget(self.frame_8)
 
-        self.resultsTableView = QTableView(self.frame_5)
-        self.resultsTableView.setObjectName(u"resultsTableView")
-        self.resultsTableView.setAlternatingRowColors(True)
-        self.resultsTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.resultsTableView.setSelectionBehavior(QAbstractItemView.SelectItems)
-
-        self.verticalLayout_24.addWidget(self.resultsTableView)
-
 
         self.verticalLayout_40.addWidget(self.frame_5)
 
@@ -1295,11 +1295,32 @@ class Ui_mainWindow(object):
         self.tab_14.setObjectName(u"tab_14")
         self.verticalLayout_41 = QVBoxLayout(self.tab_14)
         self.verticalLayout_41.setObjectName(u"verticalLayout_41")
+        self.verticalLayout_41.setContentsMargins(-1, 6, -1, -1)
         self.resultsLogsTreeView = QTreeView(self.tab_14)
         self.resultsLogsTreeView.setObjectName(u"resultsLogsTreeView")
-        self.resultsLogsTreeView.setFrameShape(QFrame.NoFrame)
+        self.resultsLogsTreeView.setFrameShape(QFrame.StyledPanel)
 
         self.verticalLayout_41.addWidget(self.resultsLogsTreeView)
+
+        self.frame_56 = QFrame(self.tab_14)
+        self.frame_56.setObjectName(u"frame_56")
+        self.frame_56.setFrameShape(QFrame.NoFrame)
+        self.frame_56.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_5 = QHBoxLayout(self.frame_56)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer_16 = QSpacerItem(866, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_16)
+
+        self.saveResultsLogsButton = QPushButton(self.frame_56)
+        self.saveResultsLogsButton.setObjectName(u"saveResultsLogsButton")
+        self.saveResultsLogsButton.setIcon(icon3)
+
+        self.horizontalLayout_5.addWidget(self.saveResultsLogsButton)
+
+
+        self.verticalLayout_41.addWidget(self.frame_56)
 
         self.tabWidget_4.addTab(self.tab_14, icon51, "")
         self.tab_15 = QWidget()
@@ -1509,13 +1530,10 @@ class Ui_mainWindow(object):
         self.frame_19.setFrameShadow(QFrame.Raised)
         self.gridLayout_22 = QGridLayout(self.frame_19)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
-        self.max_iterations_spinBox = QSpinBox(self.frame_19)
-        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
-        self.max_iterations_spinBox.setMinimum(1)
-        self.max_iterations_spinBox.setMaximum(1000)
-        self.max_iterations_spinBox.setValue(40)
+        self.auto_precision_checkBox = QCheckBox(self.frame_19)
+        self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
 
-        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 11, 1, 1, 1)
+        self.gridLayout_22.addWidget(self.auto_precision_checkBox, 6, 0, 1, 2)
 
         self.helm_retry_checkBox = QCheckBox(self.frame_19)
         self.helm_retry_checkBox.setObjectName(u"helm_retry_checkBox")
@@ -1523,26 +1541,26 @@ class Ui_mainWindow(object):
 
         self.gridLayout_22.addWidget(self.helm_retry_checkBox, 3, 0, 1, 2)
 
+        self.verbositySpinBox = QSpinBox(self.frame_19)
+        self.verbositySpinBox.setObjectName(u"verbositySpinBox")
+        self.verbositySpinBox.setMaximum(2)
+
+        self.gridLayout_22.addWidget(self.verbositySpinBox, 13, 1, 1, 1)
+
         self.label_5 = QLabel(self.frame_19)
         self.label_5.setObjectName(u"label_5")
 
-        self.gridLayout_22.addWidget(self.label_5, 9, 0, 1, 1)
-
-        self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
-        self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
-        self.ignore_single_node_islands_checkBox.setChecked(True)
-
-        self.gridLayout_22.addWidget(self.ignore_single_node_islands_checkBox, 5, 0, 1, 2)
+        self.gridLayout_22.addWidget(self.label_5, 10, 0, 1, 1)
 
         self.label_86 = QLabel(self.frame_19)
         self.label_86.setObjectName(u"label_86")
 
         self.gridLayout_22.addWidget(self.label_86, 2, 0, 1, 2)
 
-        self.label_11 = QLabel(self.frame_19)
-        self.label_11.setObjectName(u"label_11")
+        self.label_22 = QLabel(self.frame_19)
+        self.label_22.setObjectName(u"label_22")
 
-        self.gridLayout_22.addWidget(self.label_11, 10, 0, 1, 1)
+        self.gridLayout_22.addWidget(self.label_22, 14, 0, 1, 2)
 
         self.tolerance_spinBox = QSpinBox(self.frame_19)
         self.tolerance_spinBox.setObjectName(u"tolerance_spinBox")
@@ -1550,43 +1568,7 @@ class Ui_mainWindow(object):
         self.tolerance_spinBox.setMaximum(15)
         self.tolerance_spinBox.setValue(4)
 
-        self.gridLayout_22.addWidget(self.tolerance_spinBox, 9, 1, 1, 1)
-
-        self.verbositySpinBox = QSpinBox(self.frame_19)
-        self.verbositySpinBox.setObjectName(u"verbositySpinBox")
-        self.verbositySpinBox.setMaximum(2)
-
-        self.gridLayout_22.addWidget(self.verbositySpinBox, 12, 1, 1, 1)
-
-        self.use_voltage_guess_checkBox = QCheckBox(self.frame_19)
-        self.use_voltage_guess_checkBox.setObjectName(u"use_voltage_guess_checkBox")
-
-        self.gridLayout_22.addWidget(self.use_voltage_guess_checkBox, 7, 0, 1, 2)
-
-        self.muSpinBox = QDoubleSpinBox(self.frame_19)
-        self.muSpinBox.setObjectName(u"muSpinBox")
-        self.muSpinBox.setDecimals(4)
-        self.muSpinBox.setMinimum(0.000100000000000)
-        self.muSpinBox.setMaximum(1.000000000000000)
-        self.muSpinBox.setSingleStep(0.100000000000000)
-        self.muSpinBox.setValue(1.000000000000000)
-
-        self.gridLayout_22.addWidget(self.muSpinBox, 10, 1, 1, 1)
-
-        self.label_6 = QLabel(self.frame_19)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout_22.addWidget(self.label_6, 11, 0, 1, 1)
-
-        self.solver_comboBox = QComboBox(self.frame_19)
-        self.solver_comboBox.setObjectName(u"solver_comboBox")
-
-        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
-
-        self.label_22 = QLabel(self.frame_19)
-        self.label_22.setObjectName(u"label_22")
-
-        self.gridLayout_22.addWidget(self.label_22, 13, 0, 1, 2)
+        self.gridLayout_22.addWidget(self.tolerance_spinBox, 10, 1, 1, 1)
 
         self.distributed_slack_checkBox = QCheckBox(self.frame_19)
         self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
@@ -1600,22 +1582,66 @@ class Ui_mainWindow(object):
 
         self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout_22.addItem(self.verticalSpacer_10, 14, 0, 1, 1)
+        self.gridLayout_22.addItem(self.verticalSpacer_10, 15, 0, 1, 1)
 
-        self.auto_precision_checkBox = QCheckBox(self.frame_19)
-        self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
+        self.label_11 = QLabel(self.frame_19)
+        self.label_11.setObjectName(u"label_11")
 
-        self.gridLayout_22.addWidget(self.auto_precision_checkBox, 6, 0, 1, 2)
+        self.gridLayout_22.addWidget(self.label_11, 11, 0, 1, 1)
 
-        self.label_23 = QLabel(self.frame_19)
-        self.label_23.setObjectName(u"label_23")
+        self.max_iterations_spinBox = QSpinBox(self.frame_19)
+        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
+        self.max_iterations_spinBox.setMinimum(1)
+        self.max_iterations_spinBox.setMaximum(1000)
+        self.max_iterations_spinBox.setValue(40)
 
-        self.gridLayout_22.addWidget(self.label_23, 12, 0, 1, 1)
+        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 12, 1, 1, 1)
+
+        self.label_6 = QLabel(self.frame_19)
+        self.label_6.setObjectName(u"label_6")
+
+        self.gridLayout_22.addWidget(self.label_6, 12, 0, 1, 1)
+
+        self.muSpinBox = QDoubleSpinBox(self.frame_19)
+        self.muSpinBox.setObjectName(u"muSpinBox")
+        self.muSpinBox.setDecimals(4)
+        self.muSpinBox.setMinimum(0.000100000000000)
+        self.muSpinBox.setMaximum(1.000000000000000)
+        self.muSpinBox.setSingleStep(0.100000000000000)
+        self.muSpinBox.setValue(1.000000000000000)
+
+        self.gridLayout_22.addWidget(self.muSpinBox, 11, 1, 1, 1)
+
+        self.use_voltage_guess_checkBox = QCheckBox(self.frame_19)
+        self.use_voltage_guess_checkBox.setObjectName(u"use_voltage_guess_checkBox")
+
+        self.gridLayout_22.addWidget(self.use_voltage_guess_checkBox, 7, 0, 1, 2)
 
         self.label_87 = QLabel(self.frame_19)
         self.label_87.setObjectName(u"label_87")
 
-        self.gridLayout_22.addWidget(self.label_87, 8, 0, 1, 2)
+        self.gridLayout_22.addWidget(self.label_87, 9, 0, 1, 2)
+
+        self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
+        self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
+        self.ignore_single_node_islands_checkBox.setChecked(True)
+
+        self.gridLayout_22.addWidget(self.ignore_single_node_islands_checkBox, 5, 0, 1, 2)
+
+        self.solver_comboBox = QComboBox(self.frame_19)
+        self.solver_comboBox.setObjectName(u"solver_comboBox")
+
+        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
+
+        self.label_23 = QLabel(self.frame_19)
+        self.label_23.setObjectName(u"label_23")
+
+        self.gridLayout_22.addWidget(self.label_23, 13, 0, 1, 1)
+
+        self.addPowerFlowReportCheckBox = QCheckBox(self.frame_19)
+        self.addPowerFlowReportCheckBox.setObjectName(u"addPowerFlowReportCheckBox")
+
+        self.gridLayout_22.addWidget(self.addPowerFlowReportCheckBox, 8, 0, 1, 1)
 
 
         self.gridLayout_9.addWidget(self.frame_19, 2, 0, 1, 1)
@@ -1967,25 +1993,10 @@ class Ui_mainWindow(object):
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.gridLayout_3 = QGridLayout(self.frame_2)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.lpf_solver_comboBox = QComboBox(self.frame_2)
-        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
+        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
+        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
 
-        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
-
-        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
-        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
-
-        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 2, 1, 1, 1)
-
-        self.opfUnitCommitmentCheckBox = QCheckBox(self.frame_2)
-        self.opfUnitCommitmentCheckBox.setObjectName(u"opfUnitCommitmentCheckBox")
-
-        self.gridLayout_3.addWidget(self.opfUnitCommitmentCheckBox, 12, 0, 1, 1)
-
-        self.maxVoltageModuleStepLabel = QLabel(self.frame_2)
-        self.maxVoltageModuleStepLabel.setObjectName(u"maxVoltageModuleStepLabel")
-
-        self.gridLayout_3.addWidget(self.maxVoltageModuleStepLabel, 13, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 3, 1, 1, 1)
 
         self.opfContingencyToleranceSpinBox = QDoubleSpinBox(self.frame_2)
         self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
@@ -1994,13 +2005,73 @@ class Ui_mainWindow(object):
 
         self.gridLayout_3.addWidget(self.opfContingencyToleranceSpinBox, 10, 1, 1, 1)
 
+        self.lpf_solver_comboBox = QComboBox(self.frame_2)
+        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
+
+        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
+        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+
+        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 9, 0, 1, 1)
+
+        self.mip_solver_comboBox = QComboBox(self.frame_2)
+        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 1, 1, 1, 1)
+
         self.maxVoltageAngleStepSpinBox = QDoubleSpinBox(self.frame_2)
         self.maxVoltageAngleStepSpinBox.setObjectName(u"maxVoltageAngleStepSpinBox")
         self.maxVoltageAngleStepSpinBox.setDecimals(6)
         self.maxVoltageAngleStepSpinBox.setSingleStep(0.010000000000000)
         self.maxVoltageAngleStepSpinBox.setValue(0.020000000000000)
 
-        self.gridLayout_3.addWidget(self.maxVoltageAngleStepSpinBox, 14, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.maxVoltageAngleStepSpinBox, 15, 1, 1, 1)
+
+        self.label_42 = QLabel(self.frame_2)
+        self.label_42.setObjectName(u"label_42")
+
+        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
+
+        self.opfUnitCommitmentCheckBox = QCheckBox(self.frame_2)
+        self.opfUnitCommitmentCheckBox.setObjectName(u"opfUnitCommitmentCheckBox")
+
+        self.gridLayout_3.addWidget(self.opfUnitCommitmentCheckBox, 12, 0, 1, 1)
+
+        self.label_104 = QLabel(self.frame_2)
+        self.label_104.setObjectName(u"label_104")
+
+        self.gridLayout_3.addWidget(self.label_104, 10, 0, 1, 1)
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 2, 0, 1, 1)
+
+        self.label_10 = QLabel(self.frame_2)
+        self.label_10.setObjectName(u"label_10")
+
+        self.gridLayout_3.addWidget(self.label_10, 1, 0, 1, 1)
+
+        self.opfMaximizeExcahngeCheckBox = QCheckBox(self.frame_2)
+        self.opfMaximizeExcahngeCheckBox.setObjectName(u"opfMaximizeExcahngeCheckBox")
+
+        self.gridLayout_3.addWidget(self.opfMaximizeExcahngeCheckBox, 11, 0, 1, 1)
+
+        self.maxVoltageAngleStepLabel = QLabel(self.frame_2)
+        self.maxVoltageAngleStepLabel.setObjectName(u"maxVoltageAngleStepLabel")
+
+        self.gridLayout_3.addWidget(self.maxVoltageAngleStepLabel, 15, 0, 1, 1)
+
+        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
+        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
+
+        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 2, 1, 1, 1)
+
+        self.maxVoltageModuleStepLabel = QLabel(self.frame_2)
+        self.maxVoltageModuleStepLabel.setObjectName(u"maxVoltageModuleStepLabel")
+
+        self.gridLayout_3.addWidget(self.maxVoltageModuleStepLabel, 14, 0, 1, 1)
 
         self.label_103 = QLabel(self.frame_2)
         self.label_103.setObjectName(u"label_103")
@@ -2013,57 +2084,17 @@ class Ui_mainWindow(object):
         self.maxVoltageModuleStepSpinBox.setSingleStep(0.010000000000000)
         self.maxVoltageModuleStepSpinBox.setValue(0.010000000000000)
 
-        self.gridLayout_3.addWidget(self.maxVoltageModuleStepSpinBox, 13, 1, 1, 1)
-
-        self.label_4 = QLabel(self.frame_2)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_3.addWidget(self.label_4, 2, 0, 1, 1)
-
-        self.label_104 = QLabel(self.frame_2)
-        self.label_104.setObjectName(u"label_104")
-
-        self.gridLayout_3.addWidget(self.label_104, 10, 0, 1, 1)
-
-        self.maxVoltageAngleStepLabel = QLabel(self.frame_2)
-        self.maxVoltageAngleStepLabel.setObjectName(u"maxVoltageAngleStepLabel")
-
-        self.gridLayout_3.addWidget(self.maxVoltageAngleStepLabel, 14, 0, 1, 1)
-
-        self.label_42 = QLabel(self.frame_2)
-        self.label_42.setObjectName(u"label_42")
-
-        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
-
-        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
-        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
-
-        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 3, 1, 1, 1)
-
-        self.label_10 = QLabel(self.frame_2)
-        self.label_10.setObjectName(u"label_10")
-
-        self.gridLayout_3.addWidget(self.label_10, 1, 0, 1, 1)
-
-        self.mip_solver_comboBox = QComboBox(self.frame_2)
-        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 1, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.maxVoltageModuleStepSpinBox, 14, 1, 1, 1)
 
         self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
         self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
 
         self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 8, 0, 1, 1)
 
-        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
-        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+        self.addOptimalPowerFlowReportCheckBox = QCheckBox(self.frame_2)
+        self.addOptimalPowerFlowReportCheckBox.setObjectName(u"addOptimalPowerFlowReportCheckBox")
 
-        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 9, 0, 1, 1)
-
-        self.opfMaximizeExcahngeCheckBox = QCheckBox(self.frame_2)
-        self.opfMaximizeExcahngeCheckBox.setObjectName(u"opfMaximizeExcahngeCheckBox")
-
-        self.gridLayout_3.addWidget(self.opfMaximizeExcahngeCheckBox, 11, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.addOptimalPowerFlowReportCheckBox, 13, 0, 1, 1)
 
 
         self.verticalLayout_20.addWidget(self.frame_2)
@@ -4653,6 +4684,7 @@ class Ui_mainWindow(object):
         self.loadResultFromDiskButton.setToolTip(QCoreApplication.translate("mainWindow", u"Load result from the gridcal file", None))
 #endif // QT_CONFIG(tooltip)
         self.loadResultFromDiskButton.setText("")
+        self.units_label.setText("")
 #if QT_CONFIG(tooltip)
         self.copy_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to data frame to clipboard", None))
 #endif // QT_CONFIG(tooltip)
@@ -4679,13 +4711,16 @@ class Ui_mainWindow(object):
         self.results_as_abs_checkBox.setStatusTip("")
 #endif // QT_CONFIG(statustip)
         self.results_as_abs_checkBox.setText("")
-        self.units_label.setText("")
         self.search_results_Button.setText("")
 #if QT_CONFIG(tooltip)
         self.plot_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot the data in a separated window", None))
 #endif // QT_CONFIG(tooltip)
         self.plot_data_pushButton.setText("")
         self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_7), QCoreApplication.translate("mainWindow", u"Tables", None))
+#if QT_CONFIG(tooltip)
+        self.saveResultsLogsButton.setToolTip(QCoreApplication.translate("mainWindow", u"Save the logs to a file", None))
+#endif // QT_CONFIG(tooltip)
+        self.saveResultsLogsButton.setText("")
         self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_14), QCoreApplication.translate("mainWindow", u"Logs", None))
         self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Text", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.ResultsTab), QCoreApplication.translate("mainWindow", u"Results", None))
@@ -4707,43 +4742,47 @@ class Ui_mainWindow(object):
         self.settings_tabWidget.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
+        self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
 #endif // QT_CONFIG(tooltip)
+        self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
 #if QT_CONFIG(tooltip)
         self.helm_retry_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If the selected method does not converge, try a list of methods that may help</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.helm_retry_checkBox.setText(QCoreApplication.translate("mainWindow", u"Retry with other methods if failed", None))
-        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
 #if QT_CONFIG(tooltip)
-        self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
+        self.verbositySpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Level of console information. 0: None, 1: some information, 2: all the information", None))
 #endif // QT_CONFIG(tooltip)
-        self.ignore_single_node_islands_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ignore single node islands", None))
+        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
         self.label_86.setText("")
-        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Acceleration", None))
+        self.label_22.setText("")
 #if QT_CONFIG(tooltip)
         self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
 #if QT_CONFIG(tooltip)
-        self.verbositySpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Level of console information. 0: None, 1: some information, 2: all the information", None))
-#endif // QT_CONFIG(tooltip)
-        self.use_voltage_guess_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use voltage guess", None))
-#if QT_CONFIG(tooltip)
-        self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Max. iterations", None))
-        self.label_22.setText("")
-#if QT_CONFIG(tooltip)
         self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
+        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Acceleration", None))
 #if QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
+        self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
-        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
+        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Max. iterations", None))
+#if QT_CONFIG(tooltip)
+        self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.", None))
+#endif // QT_CONFIG(tooltip)
+        self.use_voltage_guess_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use voltage guess", None))
         self.label_87.setText("")
+#if QT_CONFIG(tooltip)
+        self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
+#endif // QT_CONFIG(tooltip)
+        self.ignore_single_node_islands_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ignore single node islands", None))
+        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
+#if QT_CONFIG(tooltip)
+        self.addPowerFlowReportCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Add a results report in the logs", None))
+#endif // QT_CONFIG(tooltip)
+        self.addPowerFlowReportCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add report", None))
         self.label_48.setText(QCoreApplication.translate("mainWindow", u"Reactive power control mode", None))
         self.label_641.setText("")
         self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
@@ -4779,30 +4818,34 @@ class Ui_mainWindow(object):
         self.label_72.setText("")
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
 #if QT_CONFIG(tooltip)
-        self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.opfUnitCommitmentCheckBox.setText(QCoreApplication.translate("mainWindow", u"Unit commitment", None))
-        self.maxVoltageModuleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max module step", None))
-#if QT_CONFIG(tooltip)
         self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
 #endif // QT_CONFIG(tooltip)
-        self.maxVoltageAngleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" rad", None))
-        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
-        self.maxVoltageModuleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" p.u.", None))
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
-        self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
-        self.maxVoltageAngleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max angle step", None))
-        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
-        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
+#if QT_CONFIG(tooltip)
+        self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
+#endif // QT_CONFIG(tooltip)
+        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
 #if QT_CONFIG(tooltip)
         self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
 #endif // QT_CONFIG(tooltip)
-        self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
-        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.maxVoltageAngleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" rad", None))
+        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
+        self.opfUnitCommitmentCheckBox.setText(QCoreApplication.translate("mainWindow", u"Unit commitment", None))
+        self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
+        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
         self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize area exchange", None))
+        self.maxVoltageAngleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max angle step", None))
+#if QT_CONFIG(tooltip)
+        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.maxVoltageModuleStepLabel.setText(QCoreApplication.translate("mainWindow", u"Max module step", None))
+        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
+        self.maxVoltageModuleStepSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" p.u.", None))
+        self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+#if QT_CONFIG(tooltip)
+        self.addOptimalPowerFlowReportCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Add a results report in the logs", None))
+#endif // QT_CONFIG(tooltip)
+        self.addOptimalPowerFlowReportCheckBox.setText(QCoreApplication.translate("mainWindow", u"Add report", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))

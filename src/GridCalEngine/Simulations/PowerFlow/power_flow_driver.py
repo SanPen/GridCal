@@ -23,8 +23,10 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
+from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, \
+    translate_bentayga_pf_results
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, \
+    translate_newton_pa_pf_results
 from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 from GridCalEngine.basic_structures import EngineType
 
@@ -36,6 +38,7 @@ class PowerFlowDriver(DriverTemplate):
     """
     Power flow wrapper to use with Qt
     """
+
     def __init__(self, grid: MultiCircuit,
                  options: Union[PowerFlowOptions, None] = None,
                  opf_results: Union["OptimalPowerFlowResults", None] = None,
@@ -72,6 +75,32 @@ class PowerFlowDriver(DriverTemplate):
         :return:
         """
         return list()
+
+    def add_report(self):
+        """
+        Add a report of the results (in-place)
+        """
+        vm = np.abs(self.results.voltage)
+        for i, bus in enumerate(self.grid.buses):
+            if vm[i] > bus.Vmax:
+                self.logger.add_warning("Overvoltage",
+                                        device=bus.name,
+                                        value=vm[i],
+                                        expected_value=bus.Vmax)
+            elif vm[i] < bus.Vmin:
+                self.logger.add_warning("Undervoltage",
+                                        device=bus.name,
+                                        value=vm[i],
+                                        expected_value=bus.Vmin)
+
+        loading = np.abs(self.results.loading)
+        branches = self.grid.get_branches_wo_hvdc()
+        for i, branch in enumerate(branches):
+            if loading[i] > 1.0:
+                self.logger.add_warning("Overload",
+                                        device=branch.name,
+                                        value=loading[i] * 100.0,
+                                        expected_value=100.0)
 
     def run(self) -> None:
         """
@@ -161,3 +190,6 @@ class PowerFlowDriver(DriverTemplate):
                                      device="Iterations",
                                      value=convergence_report.iterations_[i],
                                      expected_value=self.options.max_iter)
+
+        if self.options.generate_report:
+            self.add_report()

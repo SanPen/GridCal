@@ -1456,6 +1456,13 @@ p, li { white-space: pre-wrap; }
                  <number>0</number>
                 </property>
                 <item>
+                 <widget class="QTreeView" name="results_treeView">
+                  <property name="animated">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QFrame" name="frame_62">
                   <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
@@ -1556,13 +1563,6 @@ p, li { white-space: pre-wrap; }
                   </layout>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QTreeView" name="results_treeView">
-                  <property name="animated">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                </layout>
               </widget>
               <widget class="QFrame" name="frame_14">
@@ -1576,6 +1576,13 @@ p, li { white-space: pre-wrap; }
                 <property name="rightMargin">
                  <number>0</number>
                 </property>
+                <item>
+                 <widget class="QTreeView" name="diskSessionsTreeView">
+                  <property name="animated">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
                 <item>
                  <widget class="QFrame" name="frame_60">
                   <property name="frameShape">
@@ -1671,13 +1678,6 @@ p, li { white-space: pre-wrap; }
                   </layout>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QTreeView" name="diskSessionsTreeView">
-                  <property name="animated">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                </layout>
               </widget>
              </widget>
@@ -1754,6 +1754,22 @@ p, li { white-space: pre-wrap; }
                    <property name="rightMargin">
                     <number>8</number>
                    </property>
+                   <property name="bottomMargin">
+                    <number>8</number>
+                   </property>
+                   <item>
+                    <widget class="QTableView" name="resultsTableView">
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
+                     </property>
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::ExtendedSelection</enum>
+                     </property>
+                     <property name="selectionBehavior">
+                      <enum>QAbstractItemView::SelectItems</enum>
+                     </property>
+                    </widget>
+                   </item>
                    <item>
                     <widget class="QFrame" name="frame_8">
                      <property name="frameShape">
@@ -1775,6 +1791,26 @@ p, li { white-space: pre-wrap; }
                       <property name="bottomMargin">
                        <number>0</number>
                       </property>
+                      <item>
+                       <widget class="QLabel" name="units_label">
+                        <property name="text">
+                         <string/>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_20">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
                       <item>
                        <widget class="QPushButton" name="copy_results_pushButton">
                         <property name="toolTip">
@@ -1852,26 +1888,6 @@ p, li { white-space: pre-wrap; }
                        </widget>
                       </item>
                       <item>
-                       <widget class="QLabel" name="units_label">
-                        <property name="text">
-                         <string/>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <spacer name="horizontalSpacer_4">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item>
                        <widget class="QLineEdit" name="sear_results_lineEdit"/>
                       </item>
                       <item>
@@ -1915,19 +1931,6 @@ p, li { white-space: pre-wrap; }
                      </layout>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QTableView" name="resultsTableView">
-                     <property name="alternatingRowColors">
-                      <bool>true</bool>
-                     </property>
-                     <property name="selectionMode">
-                      <enum>QAbstractItemView::ExtendedSelection</enum>
-                     </property>
-                     <property name="selectionBehavior">
-                      <enum>QAbstractItemView::SelectItems</enum>
-                     </property>
-                    </widget>
-                   </item>
                   </layout>
                  </widget>
                 </item>
@@ -1942,11 +1945,65 @@ p, li { white-space: pre-wrap; }
                 <string>Logs</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_41">
+                <property name="topMargin">
+                 <number>6</number>
+                </property>
                 <item>
                  <widget class="QTreeView" name="resultsLogsTreeView">
                   <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="frame_56">
+                  <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <spacer name="horizontalSpacer_16">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>866</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="saveResultsLogsButton">
+                     <property name="toolTip">
+                      <string>Save the logs to a file</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>
@@ -2516,19 +2573,13 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_22">
-                  <item row="11" column="1">
-                   <widget class="QSpinBox" name="max_iterations_spinBox">
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="auto_precision_checkBox">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful</string>
                     </property>
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <number>1000</number>
-                    </property>
-                    <property name="value">
-                     <number>40</number>
+                    <property name="text">
+                     <string>Automatic precision</string>
                     </property>
                    </widget>
                   </item>
@@ -2545,23 +2596,20 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="9" column="0">
-                   <widget class="QLabel" name="label_5">
-                    <property name="text">
-                     <string>Precision</string>
+                  <item row="13" column="1">
+                   <widget class="QSpinBox" name="verbositySpinBox">
+                    <property name="toolTip">
+                     <string>Level of console information. 0: None, 1: some information, 2: all the information</string>
+                    </property>
+                    <property name="maximum">
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0" colspan="2">
-                   <widget class="QCheckBox" name="ignore_single_node_islands_checkBox">
-                    <property name="toolTip">
-                     <string>If active, the islands of a single node are ignored.</string>
-                    </property>
+                  <item row="10" column="0">
+                   <widget class="QLabel" name="label_5">
                     <property name="text">
-                     <string>Ignore single node islands</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                     <string>Precision</string>
                     </property>
                    </widget>
                   </item>
@@ -2572,14 +2620,14 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="10" column="0">
-                   <widget class="QLabel" name="label_11">
+                  <item row="14" column="0" colspan="2">
+                   <widget class="QLabel" name="label_22">
                     <property name="text">
-                     <string>Acceleration</string>
+                     <string/>
                     </property>
                    </widget>
                   </item>
-                  <item row="9" column="1">
+                  <item row="10" column="1">
                    <widget class="QSpinBox" name="tolerance_spinBox">
                     <property name="toolTip">
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -2598,24 +2646,67 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="12" column="1">
-                   <widget class="QSpinBox" name="verbositySpinBox">
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QCheckBox" name="distributed_slack_checkBox">
                     <property name="toolTip">
-                     <string>Level of console information. 0: None, 1: some information, 2: all the information</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, the slack power is distributed among the generators according to their installed power &amp;quot;Snom&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Distributed slack</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_2">
+                    <property name="text">
+                     <string>Solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="0">
+                   <spacer name="verticalSpacer_10">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="11" column="0">
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>Acceleration</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="12" column="1">
+                   <widget class="QSpinBox" name="max_iterations_spinBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
                     </property>
                     <property name="maximum">
-                     <number>2</number>
+                     <number>1000</number>
+                    </property>
+                    <property name="value">
+                     <number>40</number>
                     </property>
                    </widget>
                   </item>
-                  <item row="7" column="0" colspan="2">
-                   <widget class="QCheckBox" name="use_voltage_guess_checkBox">
+                  <item row="12" column="0">
+                   <widget class="QLabel" name="label_6">
                     <property name="text">
-                     <string>Use voltage guess</string>
+                     <string>Max. iterations</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="10" column="1">
+                  <item row="11" column="1">
                    <widget class="QDoubleSpinBox" name="muSpinBox">
                     <property name="toolTip">
                      <string>Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.</string>
@@ -2637,74 +2728,50 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="11" column="0">
-                   <widget class="QLabel" name="label_6">
+                  <item row="7" column="0" colspan="2">
+                   <widget class="QCheckBox" name="use_voltage_guess_checkBox">
                     <property name="text">
-                     <string>Max. iterations</string>
+                     <string>Use voltage guess</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="9" column="0" colspan="2">
+                   <widget class="QLabel" name="label_87">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0" colspan="2">
+                   <widget class="QCheckBox" name="ignore_single_node_islands_checkBox">
+                    <property name="toolTip">
+                     <string>If active, the islands of a single node are ignored.</string>
+                    </property>
+                    <property name="text">
+                     <string>Ignore single node islands</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="0" colspan="2">
                    <widget class="QComboBox" name="solver_comboBox"/>
                   </item>
-                  <item row="13" column="0" colspan="2">
-                   <widget class="QLabel" name="label_22">
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0" colspan="2">
-                   <widget class="QCheckBox" name="distributed_slack_checkBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, the slack power is distributed among the generators according to their installed power &amp;quot;Snom&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Distributed slack</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_2">
-                    <property name="text">
-                     <string>Solver</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="0">
-                   <spacer name="verticalSpacer_10">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="6" column="0" colspan="2">
-                   <widget class="QCheckBox" name="auto_precision_checkBox">
-                    <property name="toolTip">
-                     <string>If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful</string>
-                    </property>
-                    <property name="text">
-                     <string>Automatic precision</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="12" column="0">
+                  <item row="13" column="0">
                    <widget class="QLabel" name="label_23">
                     <property name="text">
                      <string>Verbosity</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="8" column="0" colspan="2">
-                   <widget class="QLabel" name="label_87">
+                  <item row="8" column="0">
+                   <widget class="QCheckBox" name="addPowerFlowReportCheckBox">
+                    <property name="toolTip">
+                     <string>Add a results report in the logs</string>
+                    </property>
                     <property name="text">
-                     <string/>
+                     <string>Add report</string>
                     </property>
                    </widget>
                   </item>
@@ -3494,33 +3561,8 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="lpf_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the optimal power flow method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="12" column="0">
-                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
-                    <property name="text">
-                     <string>Unit commitment</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="13" column="0">
-                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
-                    <property name="text">
-                     <string>Max module step</string>
-                    </property>
-                   </widget>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
                   </item>
                   <item row="10" column="1">
                    <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
@@ -3535,7 +3577,28 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="14" column="1">
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="lpf_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the optimal power flow method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="9" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+                    <property name="text">
+                     <string>Consider contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="1">
                    <widget class="QDoubleSpinBox" name="maxVoltageAngleStepSpinBox">
                     <property name="suffix">
                      <string> rad</string>
@@ -3551,6 +3614,69 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="12" column="0">
+                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
+                    <property name="text">
+                     <string>Unit commitment</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="10" column="0">
+                   <widget class="QLabel" name="label_104">
+                    <property name="text">
+                     <string>Contingency tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Time grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>MIP solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="11" column="0">
+                   <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
+                    <property name="text">
+                     <string>Maximize area exchange</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="0">
+                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
+                    <property name="text">
+                     <string>Max angle step</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="14" column="0">
+                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
+                    <property name="text">
+                     <string>Max module step</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="3" column="0">
                    <widget class="QLabel" name="label_103">
                     <property name="text">
@@ -3558,7 +3684,7 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="13" column="1">
+                  <item row="14" column="1">
                    <widget class="QDoubleSpinBox" name="maxVoltageModuleStepSpinBox">
                     <property name="suffix">
                      <string> p.u.</string>
@@ -3574,51 +3700,6 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Time grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="10" column="0">
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Contingency tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="0">
-                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
-                    <property name="text">
-                     <string>Max angle step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>Method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>MIP solver</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="8" column="0">
                    <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
                     <property name="text">
@@ -3626,17 +3707,13 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="9" column="0">
-                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
-                    <property name="text">
-                     <string>Consider contingencies</string>
+                  <item row="13" column="0">
+                   <widget class="QCheckBox" name="addOptimalPowerFlowReportCheckBox">
+                    <property name="toolTip">
+                     <string>Add a results report in the logs</string>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="11" column="0">
-                   <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
                     <property name="text">
-                     <string>Maximize area exchange</string>
+                     <string>Add report</string>
                     </property>
                    </widget>
                   </item>

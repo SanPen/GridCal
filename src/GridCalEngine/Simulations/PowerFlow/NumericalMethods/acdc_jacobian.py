@@ -493,7 +493,7 @@ def fill_acdc_jacobian_data(Jx: Vec, Ji: IntVec, Jp: IntVec,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J53
+            # J63
             offset += n_row_block5
             if n_row_block6:
                 for k in range(dSf_dBeqx_indptr[j], dSf_dBeqx_indptr[j + 1]):  # rows of A[:, j]

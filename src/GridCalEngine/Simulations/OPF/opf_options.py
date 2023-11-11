@@ -43,7 +43,8 @@ class OptimalPowerFlowOptions:
                  areas_from: List = None,
                  areas_to: List = None,
                  unit_commitment=False,
-                 export_model_fname: Union[None, str] = None):
+                 export_model_fname: Union[None, str] = None,
+                 generate_report=False):
         """
         Optimal power flow options
         :param verbose:
@@ -56,7 +57,6 @@ class OptimalPowerFlowOptions:
         :param bus_types:
         :param consider_contingencies:
         :param skip_generation_limits:
-        :param LODF:
         :param lodf_tolerance:
         :param maximize_flows:
         :param area_from_bus_idx:
@@ -105,3 +105,5 @@ class OptimalPowerFlowOptions:
         self.max_vm = 1.0
 
         self.export_model_fname: Union[None, str] = export_model_fname
+
+        self.generate_report = generate_report
