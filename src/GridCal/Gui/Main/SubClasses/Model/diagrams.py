@@ -40,12 +40,6 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 
-try:
-    import pygraphviz
-
-    PYGRAPHVIZ_AVAILABLE = True
-except ImportError:
-    PYGRAPHVIZ_AVAILABLE = False
 
 class DiagramsMain(CompiledArraysMain):
     """
@@ -96,9 +90,6 @@ class DiagramsMain(CompiledArraysMain):
         self.layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
         self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
 
-        if PYGRAPHVIZ_AVAILABLE:
-            self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
-            self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
         mdl = gf.get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
         self.ui.automatic_layout_comboBox.setCurrentIndex(6)
@@ -130,7 +121,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
-        self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_bus_branch_diagram)
+        self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_complete_bus_branch_diagram)
         self.ui.actionAdd_selection_bus_branch_diagram.triggered.connect(self.add_selection_bus_branch_diagram)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
@@ -194,37 +185,39 @@ class DiagramsMain(CompiledArraysMain):
 
                 if do_it:
 
-                    graph, buses = diagram_widget.diagram.build_graph()
+                    diagram_widget.auto_layout(sel=self.ui.automatic_layout_comboBox.currentText())
 
-                    sel = self.ui.automatic_layout_comboBox.currentText()
-                    pos_alg = self.layout_algorithms_dict[sel]
-
-                    # get the positions of a spring layout of the graph
-                    if sel == 'random_layout':
-                        pos = pos_alg(graph)
-                    elif sel == 'spring_layout':
-                        pos = pos_alg(graph, iterations=100, scale=10)
-                    elif sel == 'graphviz_neato':
-                        pos = pos_alg(graph, prog='neato')
-                    elif sel == 'graphviz_dot':
-                        pos = pos_alg(graph, prog='dot')
-                    else:
-                        pos = pos_alg(graph, scale=10)
-
-                    # assign the positions to the graphical objects of the nodes
-                    for i, bus in enumerate(buses):
-                        x = pos[i][0] * 500
-                        y = pos[i][1] * 500
-                        position = diagram_widget.diagram.query_point(bus)
-
-                        if position:
-                            if position.graphic_object:
-                                position.graphic_object.setPos(QtCore.QPoint(x, y))
-                                position.x = x
-                                position.y = y
-
-                    # adjust the view
-                    diagram_widget.center_nodes()
+                    # graph, buses = diagram_widget.diagram.build_graph()
+                    #
+                    # sel = self.ui.automatic_layout_comboBox.currentText()
+                    # pos_alg = self.layout_algorithms_dict[sel]
+                    #
+                    # # get the positions of a spring layout of the graph
+                    # if sel == 'random_layout':
+                    #     pos = pos_alg(graph)
+                    # elif sel == 'spring_layout':
+                    #     pos = pos_alg(graph, iterations=100, scale=10)
+                    # elif sel == 'graphviz_neato':
+                    #     pos = pos_alg(graph, prog='neato')
+                    # elif sel == 'graphviz_dot':
+                    #     pos = pos_alg(graph, prog='dot')
+                    # else:
+                    #     pos = pos_alg(graph, scale=10)
+                    #
+                    # # assign the positions to the graphical objects of the nodes
+                    # for i, bus in enumerate(buses):
+                    #     x = pos[i][0] * 500
+                    #     y = pos[i][1] * 500
+                    #     position = diagram_widget.diagram.query_point(bus)
+                    #
+                    #     if position:
+                    #         if position.graphic_object:
+                    #             position.graphic_object.setPos(QtCore.QPoint(x, y))
+                    #             position.x = x
+                    #             position.y = y
+                    #
+                    # # adjust the view
+                    # diagram_widget.center_nodes()
 
             else:
                 info_msg("The current diagram cannot be automatically layed out")
@@ -780,9 +773,10 @@ class DiagramsMain(CompiledArraysMain):
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_bus_branch_diagram_now(self, name='All bus branches') -> BusBranchEditorWidget:
+    def add_complete_bus_branch_diagram_now(self, name='All bus branches') -> BusBranchEditorWidget:
         """
         Add ageneral bus-branch diagram
+        :return BusBranchEditorWidget
         """
         diagram = generate_bus_branch_diagram(buses=self.circuit.buses,
                                               lines=self.circuit.lines,
@@ -800,6 +794,7 @@ class DiagramsMain(CompiledArraysMain):
         diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
                                                diagram=diagram,
                                                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
         self.add_diagram(diagram_widget)
@@ -808,11 +803,11 @@ class DiagramsMain(CompiledArraysMain):
 
         return diagram_widget
 
-    def add_bus_branch_diagram(self) -> None:
+    def add_complete_bus_branch_diagram(self) -> None:
         """
         Add ageneral bus-branch diagram
         """
-        self.add_bus_branch_diagram_now(name='All bus branches')
+        self.add_complete_bus_branch_diagram_now(name='All bus branches')
 
     def add_selection_bus_branch_diagram(self):
         """
@@ -1150,15 +1145,17 @@ class DiagramsMain(CompiledArraysMain):
         Get the x, y coordinates of the buses from their latitude and longitude
         """
         if len(self.circuit.buses) > 0:
-            if yes_no_question("All nodes will be positioned to a 2D plane projection of their latitude and longitude. "
-                               "Are you sure of this?"):
-                logger = self.circuit.fill_xy_from_lat_lon(destructive=True, factor=0.01, remove_offset=True)
 
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Set xy from lat lon', logger)
-                    dlg.exec_()
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, BusBranchEditorWidget):
 
-                self.redraw_current_diagram()
+                    if yes_no_question("All nodes in the current diagram will be positioned to a 2D plane projection "
+                                       "of their latitude and longitude. "
+                                       "Are you sure of this?"):
+
+                        diagram.fill_xy_from_lat_lon(destructive=True)
+                        diagram.center_nodes()
 
     def set_big_bus_marker(self, buses: List[dev.Bus], color: QtGui.QColor):
         """

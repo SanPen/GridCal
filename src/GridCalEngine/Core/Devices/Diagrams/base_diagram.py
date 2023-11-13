@@ -21,6 +21,7 @@ from typing import Dict, Union, List, Tuple
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
@@ -224,9 +225,10 @@ class BaseDiagram:
             points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()))
             self.data[category] = points_group
 
-    def build_graph(self):
+    def build_graph(self) -> Tuple[nx.DiGraph, List[Bus]]:
         """
         Returns a networkx DiGraph object of the grid.
+        return DiGraph, List[BusGraphicObject
         """
         graph = nx.DiGraph()
 

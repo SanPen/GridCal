@@ -415,6 +415,21 @@ class MultiCircuit:
         """
         return np.ones(len(self.buses), dtype=int)
 
+    @staticmethod
+    def get_branches_types() -> List[DeviceType]:
+        """
+        Get branches types
+        :return list of device types
+        """
+        return [DeviceType.LineDevice,
+                DeviceType.DCLineDevice,
+                DeviceType.HVDCLineDevice,
+                DeviceType.Transformer2WDevice,
+                DeviceType.WindingDevice,
+                DeviceType.SwitchDevice,
+                DeviceType.VscDevice,
+                DeviceType.UpfcDevice]
+
     def get_branch_lists_wo_hvdc(self) -> List[Union[
         List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]:
         """
@@ -443,10 +458,10 @@ class MultiCircuit:
         return np.array(names)
 
     def get_branch_lists(self) -> List[Union[List[dev.Line],
-                                             List[dev.DcLine],
-                                             List[dev.Transformer2W],
-                                             List[dev.Winding], List[dev.VSC], List[dev.UPFC],
-                                             List[dev.HvdcLine]]]:
+    List[dev.DcLine],
+    List[dev.Transformer2W],
+    List[dev.Winding], List[dev.VSC], List[dev.UPFC],
+    List[dev.HvdcLine]]]:
         """
         Get list of the branch lists
         :return: list of lists
@@ -1942,7 +1957,7 @@ class MultiCircuit:
         self.switch_devices.append(obj)
 
     def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-                                    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
+    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch

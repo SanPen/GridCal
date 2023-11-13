@@ -550,8 +550,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         @return:
         """
         # get the index of this object
-        i = self.diagramScene.circuit.get_branches().index(self.api_object)
-        self.diagramScene.plot_branch(i, self.api_object)
+        i = self.editor.diagramScene.circuit.get_branches().index(self.api_object)
+        self.editor.diagramScene.plot_branch(i, self.api_object)
 
     def setFromPort(self, fromPort):
         """

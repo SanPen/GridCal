@@ -885,7 +885,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
         objects = circuit.lines
 
     elif object_type == DeviceType.Transformer2WDevice.value:
-        properties = ['R', 'X', 'G', 'B', 'tap_module', 'angle', 'rate']
+        properties = ['R', 'X', 'G', 'B', 'tap_module', 'tap_phase', 'rate']
         types = [float, float, float, float, float, float, float]
         log_scale = [False, False, False, False, False, False, False]
         objects = circuit.transformers2w

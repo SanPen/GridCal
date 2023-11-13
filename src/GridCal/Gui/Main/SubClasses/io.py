@@ -165,7 +165,7 @@ class IoMain(ConfigurationMain):
         self.create_console()
 
         if create_default_diagrams:
-            self.add_bus_branch_diagram()
+            self.add_complete_bus_branch_diagram()
             self.add_map_diagram()
             self.set_diagram_widget(self.diagram_widgets_list[0])
 
@@ -317,11 +317,11 @@ class IoMain(ConfigurationMain):
 
                         if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                             # create schematic
-                            self.add_bus_branch_diagram()
+                            self.add_complete_bus_branch_diagram()
 
                     else:
                         # create schematic
-                        self.add_bus_branch_diagram()
+                        self.add_complete_bus_branch_diagram()
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
@@ -414,7 +414,7 @@ class IoMain(ConfigurationMain):
                     dlg.exec_()
 
                     if dlg.accepted_answer == 1:
-                        diagram_widget = self.add_bus_branch_diagram_now(name=new_circuit.name)
+                        diagram_widget = self.add_complete_bus_branch_diagram_now(name=new_circuit.name)
                     elif dlg.accepted_answer == 2:
                         diagram_widget = self.get_selected_diagram_widget()
                     else:
@@ -675,8 +675,7 @@ class IoMain(ConfigurationMain):
         """
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
         self.coordinates_window.exec_()
-
-        self.redraw_current_diagram()
+        self.set_xy_from_lat_lon()
 
     def export_object_profiles(self):
         """

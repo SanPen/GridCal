@@ -21,6 +21,7 @@ import pandas as pd
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 import networkx as nx
+import pyproj
 
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
@@ -746,6 +747,7 @@ class BusBranchEditorWidget(QSplitter):
         :param circuit: MultiCircuit
         :param diagram: BusBranchDiagram
         """
+        self.clear()
         self.circuit = circuit
         self.diagram = diagram
         self.draw()
@@ -1061,6 +1063,24 @@ class BusBranchEditorWidget(QSplitter):
                     lst.append((idx, bus, point.graphic_object))
         return lst
 
+    def get_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
+        """
+        Get all the buses
+        :return: tuple(bus index, bus_api_object, bus_graphic_object)
+        """
+        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
+
+        if points_group:
+
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+
+            for bus_idtag, point in points_group.locations.items():
+                idx, bus = bus_dict[bus_idtag]
+                lst.append((idx, bus, point.graphic_object))
+
+        return lst
+
     def start_connection(self, port: TerminalItem):
         """
         Start the branch creation
@@ -1361,35 +1381,130 @@ class BusBranchEditorWidget(QSplitter):
         self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
         self.editor_graphics_view.scale(1.0, 1.0)
 
-    def auto_layout(self):
+    def get_graph(self):
+        """
+        Get graph of the diagram (Not the circuit)
+        """
+        graph = nx.DiGraph()
+
+        bus_dictionary = dict()
+
+        for i, bus, graphic_object in self.get_buses():
+            graph.add_node(i)
+            bus_dictionary[bus.idtag] = i
+
+        tuples = list()
+
+        for dev_type in self.circuit.get_branches_types():
+
+            points_group = self.diagram.data.get(dev_type.value, None)
+
+            if points_group:
+
+                for idtag, point in points_group.locations.items():
+                    branch = point.api_object
+                    f = bus_dictionary[branch.bus_from.idtag]
+                    t = bus_dictionary[branch.bus_to.idtag]
+                    if hasattr(branch, 'X'):
+                        w = branch.X
+                    else:
+                        w = 1e-3
+                    tuples.append((f, t, w))
+
+        graph.add_weighted_edges_from(tuples)
+
+        return graph
+
+    def auto_layout(self, sel):
         """
         Automatic layout of the nodes
         """
 
-        if self.circuit.graph is None:
-            self.circuit.build_graph()
+        nx_graph, buses_graphic_objects = self.diagram.build_graph()
 
-        pos = nx.spectral_layout(self.circuit.graph, scale=2, weight='weight')
+        layout_algorithms_dict = dict()
+        layout_algorithms_dict['circular_layout'] = nx.circular_layout
+        layout_algorithms_dict['random_layout'] = nx.random_layout
+        layout_algorithms_dict['shell_layout'] = nx.shell_layout
+        layout_algorithms_dict['spring_layout'] = nx.spring_layout
+        layout_algorithms_dict['spectral_layout'] = nx.spectral_layout
+        layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
 
-        pos = nx.fruchterman_reingold_layout(self.circuit.graph, dim=2,
-                                             k=None, pos=pos, fixed=None, iterations=500,
-                                             weight='weight', scale=20.0, center=None)
+        if sel == 'random_layout':
+            pos = nx.random_layout(nx_graph)
+        elif sel == 'spring_layout':
+            pos = nx.spring_layout(nx_graph, iterations=100, scale=10)
+        elif sel == 'shell_layout':
+            pos = nx.shell_layout(nx_graph, scale=10)
+        elif sel == 'circular_layout':
+            pos = nx.circular_layout(nx_graph, scale=10)
+        elif sel == 'kamada_kawai':
+            pos = nx.kamada_kawai_layout(nx_graph, scale=10)
+        elif sel == 'fruchterman_reingold_layout':
+            pos = nx.fruchterman_reingold_layout(nx_graph, scale=10)
+        else:
+            pos = nx.spring_layout(nx_graph, iterations=100, scale=10)
 
         # assign the positions to the graphical objects of the nodes
-        for i, bus in enumerate(self.circuit.buses):
-            location = self.diagram.query_point(bus)
+        for i, bus in enumerate(buses_graphic_objects):
 
-            if location:
-                x, y = pos[i] * 500
+            loc = self.diagram.query_point(bus)
 
-                if location.graphic_object:
-                    location.graphic_object.setPos(QPoint(x, y))
+            x, y = pos[i] * 500
 
-                # apply changes to the API objects
-                location.x = x
-                location.y = y
+            # apply changes to the API objects
+            loc.x = x
+            loc.y = y
+            loc.graphic_object.set_position(x, y)
 
         self.center_nodes()
+
+    def fill_xy_from_lat_lon(self,
+                             destructive: bool = True,
+                             factor: float = 0.01,
+                             remove_offset: bool = True):
+        """
+        fill the x and y value from the latitude and longitude values
+        :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
+        :param factor: Explosion factor
+        :param remove_offset: remove the sometimes huge offset coming from pyproj
+        :return Logger object
+        """
+
+        buses_info_list = self.get_buses()
+
+        n = len(buses_info_list)
+        lon = np.zeros(n)
+        lat = np.zeros(n)
+        i = 0
+        for idx, bus, graphic_object in buses_info_list:
+            lon[i] = bus.longitude
+            lat[i] = bus.latitude
+            i += 1
+
+        transformer = pyproj.Transformer.from_crs(4326, 25830, always_xy=True)
+
+        # the longitude is more reated to x, the latitude is more related to y
+        x, y = transformer.transform(xx=lon, yy=lat)
+        x *= factor
+        y *= factor
+
+        # remove the offset
+        if remove_offset:
+            x_min = np.min(x)
+            y_max = np.max(y)
+            x -= x_min + 100  # 100 is a healthy offset
+            y -= y_max - 100  # 100 is a healthy offset
+
+        # assign the values
+        i = 0
+        for idx, bus, graphic_object in buses_info_list:
+            graphic_object.set_position(x[i], y[i])
+            if destructive:
+                bus.x = x[i]
+                bus.y = y[i]
+            i += 1
 
     def export(self, filename, w=1920, h=1080):
         """
@@ -1518,6 +1633,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_dc_line(self, branch: DcLine):
@@ -1544,6 +1660,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_hvdc(self, branch: HvdcLine):
@@ -1570,7 +1687,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
-            print("Buranch buses were not found in the diagram :(")
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_vsc(self, branch: VSC):
@@ -1597,6 +1714,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_upfc(self, branch: UPFC):
@@ -1623,6 +1741,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_transformer(self, branch: Transformer2W):
@@ -1649,6 +1768,7 @@ class BusBranchEditorWidget(QSplitter):
             self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
+            print("Branch's buses were not found in the diagram :(")
             return None
 
     def add_api_transformer_3w(self, elm: Transformer3W):
@@ -1723,6 +1843,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         Convert a line to Transformer
         :param line: Line instance
+        :param line_graphic: LineGraphicItem
         :return: Nothing
         """
         transformer = self.circuit.convert_line_to_transformer(line)
@@ -1744,6 +1865,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         Convert a line to voltage source converter
         :param line: Line instance
+        :param line_graphic: LineGraphicItem
         :return: Nothing
         """
         vsc = self.circuit.convert_line_to_vsc(line)
@@ -1765,6 +1887,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         Convert a line to voltage source converter
         :param line: Line instance
+        :param line_graphic: LineGraphicItem
         :return: Nothing
         """
         upfc = self.circuit.convert_line_to_upfc(line)
@@ -1786,6 +1909,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         Convert a generator to a battery
         :param gen: Generator instance
+        :param graphic_object: GeneratorGraphicItem
         :return: Nothing
         """
         battery = self.circuit.convert_generator_to_battery(gen)
@@ -2394,26 +2518,27 @@ class BusBranchEditorWidget(QSplitter):
                         location = self.diagram.query_point(bus)
 
                         if location and (bus.idtag not in bus_dict):
-                            # if the bus was not added in the first pass and is in the original diagram, add it now
-                            diagram.set_point(device=bus,
-                                              location=location)
+                            # if the bus was not added in the first
+                            # pass and is in the original diagram, add it now
+                            diagram.set_point(device=bus, location=location)
                             bus_dict[bus.idtag] = location.graphic_object
 
         return diagram
 
-    def try_to_fix_buses_location(self, buses_selection):
+    def try_to_fix_buses_location(self, buses_selection: List[Tuple[int, Bus, BusGraphicItem]]):
         """
         Try to fix the location of the null-location buses
-        :param buses_selection: list of tuples index, bus object
+        :param buses_selection: list of tuples index, bus object, graphic_object
         :return: indices of the corrected buses
         """
         delta = 1e20
+        locations_cache = dict()
 
         while delta > 10:
 
             A = self.circuit.get_adjacent_matrix()
 
-            for k, bus in buses_selection:
+            for k, bus, graphic_object in buses_selection:
 
                 idx = list(self.circuit.get_adjacent_buses(A, k))
 
@@ -2425,26 +2550,36 @@ class BusBranchEditorWidget(QSplitter):
                 x_arr = list()
                 y_arr = list()
                 for i in idx:
-                    loc_i = self.diagram.query_point(self.circuit.buses[i])
+
+                    # try to get the location from the cache
+                    loc_i = locations_cache.get(self.circuit.buses[i], None)
+
+                    if loc_i is None:
+                        # search and store
+                        loc_i = self.diagram.query_point(self.circuit.buses[i])
+                        locations_cache[self.circuit.buses[i]] = loc_i
+
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
 
                 x_m = np.mean(x_arr)
                 y_m = np.mean(y_arr)
 
-                delta_i = np.sqrt((bus.x - x_m) ** 2 + (bus.y - y_m) ** 2)
+                delta_i = np.sqrt((graphic_object.x() - x_m) ** 2 + (graphic_object.y() - y_m) ** 2)
 
                 if delta_i < delta:
                     delta = delta_i
 
-                loc = self.diagram.query_point(bus)
                 self.update_diagram_element(device=bus,
                                             x=x_m,
                                             y=y_m,
-                                            w=loc.w,
-                                            h=loc.h,
-                                            r=loc.r,
-                                            graphic_object=loc.graphic_object)
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
+                graphic_object.set_position(x=x_m, y=y_m)
+
+        return
 
     def get_boundaries(self):
         """
@@ -2457,9 +2592,9 @@ class BusBranchEditorWidget(QSplitter):
         max_y = -sys.maxsize
 
         # shrink selection only
-        for bus in self.buses:
-            x = bus.x
-            y = bus.y
+        for i, bus, graphic_object in self.get_buses():
+            x = graphic_object.x()
+            y = graphic_object.y()
             max_x = max(max_x, x)
             min_x = min(min_x, x)
             max_y = max(max_y, y)

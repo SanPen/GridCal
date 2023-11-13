@@ -16,11 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QGraphicsScene
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.messages import yes_no_question
 
 
 class HvdcGraphicItem(LineGraphicTemplateItem):
@@ -109,4 +108,4 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_hvdc().index(self.api_object)
-        self.editor.plot_hvdc_branch(i, self.api_object)
+        self.editor.diagramScene.plot_hvdc_branch(i, self.api_object)

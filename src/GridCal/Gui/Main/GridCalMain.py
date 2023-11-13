@@ -82,7 +82,7 @@ class MainGUI(ScriptingMain):
 
         self.load_gui_config()
 
-        self.add_bus_branch_diagram()
+        self.add_complete_bus_branch_diagram()
         self.add_map_diagram()
         self.set_diagram_widget(self.diagram_widgets_list[0])
 

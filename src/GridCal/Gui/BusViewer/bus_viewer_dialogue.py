@@ -113,6 +113,15 @@ class BusViewerWidget(QMainWindow):
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
+    def auto_layout(self, sel: str):
+        """
+
+        :param sel: selection graph algorithm
+        :return:
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.auto_layout(sel=sel)
+
     def expand_node_distances(self):
         """
         Move the nodes more separated

@@ -156,6 +156,8 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
         self.project_directory = None
 
+        self.assigned_count: int = 0
+
         # dataFrame
         self.original_data_frame: pd.DataFrame = None
 
@@ -222,8 +224,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
     def set_combo_boxes(self):
         """
-
-        :return:
+        Set the options
         """
         if self.original_data_frame is not None:
             names = [val.lower().strip() for val in self.original_data_frame.columns.values]
@@ -236,28 +237,29 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             self.ui.latitudeComboBox.setModel(mdl)
             self.ui.longitudeComboBox.setModel(mdl)
 
-            for i, name in enumerate(names):
+            for i, name in enumerate(names):  # names are already in lowercase
 
-                if name == 'x':
+                if name in ['x', 'xpos', 'x_pos']:
                     self.ui.xComboBox.setCurrentIndex(i)
                     self.ui.xCheckBox.setChecked(True)
-                elif name == 'y':
+
+                elif name in ['y', 'ypos', 'y_pos']:
                     self.ui.yComboBox.setCurrentIndex(i)
                     self.ui.yCheckBox.setChecked(True)
-                elif name == 'latitude':
+
+                elif name in ['latitude', 'lat']:
                     self.ui.latitudeComboBox.setCurrentIndex(i)
                     self.ui.latitudeCheckBox.setChecked(True)
-                elif name == 'longitude':
+
+                elif name in ['longitude', 'lon']:
                     self.ui.longitudeComboBox.setCurrentIndex(i)
                     self.ui.longitudeCheckBox.setChecked(True)
 
     def assign(self):
         """
-
-        :return:
+        Assign the loaded values to the correspondance table
         """
         if self.original_data_frame is not None:
-            print('Assign')
             name_idx = self.ui.nameComboBox.currentIndex()
             code_idx = self.ui.codeComboBox.currentIndex()
             x_idx = self.ui.xComboBox.currentIndex()
@@ -309,6 +311,8 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
             self.display_associations()
 
+            self.assigned_count += 1
+
     def import_profile(self):
         """
         Select a file to be loaded
@@ -354,11 +358,16 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             self.set_combo_boxes()
             self.assign()
             self.display_associations()
+            self.assigned_count = 0
 
     def do_it(self):
         """
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
+
+        if self.assigned_count == 0:
+            # maybe the user clicked on accept without assigning, so assign as a last resort
+            self.assign()
 
         # assign the values back
         for i, bus in enumerate(self.objects):

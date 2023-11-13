@@ -139,7 +139,7 @@ class HvdcLine(ParentBranch):
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
                  contingency_factor=1.0, control_mode: HvdcControlType = HvdcControlType.type_1_Pset,
                  dispatchable=True, angle_droop=0, angle_droop_prof=np.ones(0), contingency_factor_prof=None,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned, n_lines: int = 1):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -247,6 +247,8 @@ class HvdcLine(ParentBranch):
 
         self.angle_droop_prof = angle_droop_prof
 
+        self.n_lines = n_lines
+
         self.register(key='dispatchable', units='', tpe=bool, definition='Is the line power optimizable?')
 
         self.register(key='control_mode', units='-', tpe=HvdcControlType, definition='Control type.')
@@ -254,6 +256,9 @@ class HvdcLine(ParentBranch):
         self.register(key='r', units='Ohm', tpe=float, definition='line resistance.')
         self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
                       profile_name='angle_droop_prof')
+        self.register(key='n_lines', units='', tpe=int,
+                      definition='Number of parallel lines between the converter stations. '
+                                 'The rating will be equally divided')
         self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
                       profile_name='Vset_f_prof')
         self.register(key='Vset_t', units='p.u.', tpe=float, definition='Set voltage at the to side',
