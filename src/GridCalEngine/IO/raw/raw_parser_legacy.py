@@ -144,7 +144,7 @@ class PSSeGrid:
                 slack_buses.append(psse_bus.I)
 
             # add the bus to the circuit
-            psse_bus.bus.ensure_area_objects(circuit)
+            # psse_bus.bus.ensure_area_objects(circuit)
             circuit.add_bus(psse_bus.bus)
 
         for area in self.areas:

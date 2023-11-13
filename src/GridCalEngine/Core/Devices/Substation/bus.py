@@ -740,34 +740,34 @@ class Bus(EditableDevice):
             self.shunts + \
             self.external_grids
 
-    def get_device_number(self):
+    def get_device_number(self) -> int:
         """
         Return a list of all the connected objects
         :return: list of connected objects
         """
-        return len(self.loads) + \
-            len(self.generators) + \
-            len(self.batteries) + \
-            len(self.static_generators) + \
-            len(self.shunts) + \
-            len(self.external_grids)
+        return (len(self.loads) +
+                len(self.generators) +
+                len(self.batteries) +
+                len(self.static_generators) +
+                len(self.shunts) +
+                len(self.external_grids))
 
-    def ensure_area_objects(self, circuit: "MultiCircuit"):
-        """
-        Ensure that every grouping parameter has an object
-        :param circuit: MultiCircuit instance
-        """
-        if self.area is None:
-            self.area = circuit.areas[0]
-
-        if self.zone is None:
-            self.zone = circuit.zones[0]
-
-        if self.substation is None:
-            self.substation = circuit.substations[0]
-
-        if self.country is None:
-            self.country = circuit.countries[0]
+    # def ensure_area_objects(self, circuit: "MultiCircuit"):
+    #     """
+    #     Ensure that every grouping parameter has an object
+    #     :param circuit: MultiCircuit instance
+    #     """
+    #     if self.area is None:
+    #         self.area = circuit.areas[0]
+    #
+    #     if self.zone is None:
+    #         self.zone = circuit.zones[0]
+    #
+    #     if self.substation is None:
+    #         self.substation = circuit.substations[0]
+    #
+    #     if self.country is None:
+    #         self.country = circuit.countries[0]
 
     @staticmethod
     def get_fused_device_lst(elm_list, property_names: list):

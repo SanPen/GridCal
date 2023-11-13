@@ -712,7 +712,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
                               zone_dict=zones_dict,
                               logger=logger)
 
-        bus.ensure_area_objects(circuit)
+        # bus.ensure_area_objects(circuit)
 
         if bus.type.value == 3:
             slack_buses.append(psse_bus.I)

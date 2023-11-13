@@ -48,7 +48,7 @@ class FluidPump(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code=code,
-                                device_type=DeviceType.FluidTurbine)
+                                device_type=DeviceType.FluidPump)
 
         self.p_min = Pmin  # MW
         self.p_max = Pmax  # MW

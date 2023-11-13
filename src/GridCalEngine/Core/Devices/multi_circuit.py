@@ -174,20 +174,20 @@ class MultiCircuit:
         self.transformer_types: List[dev.TransformerType] = list()
 
         # list of substations
-        self.default_substation: dev.Substation = dev.Substation('Default Substation')
-        self.substations: List[dev.Substation] = [self.default_substation]
+        # self.default_substation: dev.Substation = dev.Substation('Default Substation')
+        self.substations: List[dev.Substation] = list()  # [self.default_substation]
 
         # list of areas
-        self.default_area: dev.Area = dev.Area('Default area')
-        self.areas: List[dev.Area] = [self.default_area]
+        # self.default_area: dev.Area = dev.Area('Default area')
+        self.areas: List[dev.Area] = list()  # [self.default_area]
 
         # list of zones
-        self.default_zone: dev.Zone = dev.Zone('Default zone')
-        self.zones: List[dev.Zone] = [self.default_zone]
+        # self.default_zone: dev.Zone = dev.Zone('Default zone')
+        self.zones: List[dev.Zone] = list()  # [self.default_zone]
 
         # list of countries
-        self.default_country: dev.Country = dev.Country('Default country')
-        self.countries: List[dev.Country] = [self.default_country]
+        # self.default_country: dev.Country = dev.Country('Default country')
+        self.countries: List[dev.Country] = list()  # [self.default_country]
 
         # logger of events
         self.logger: bs.Logger = bs.Logger()
@@ -1822,17 +1822,17 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
 
-        if obj.substation is None:
-            obj.substation = self.default_substation
-
-        if obj.zone is None:
-            obj.zone = self.default_zone
-
-        if obj.area is None:
-            obj.area = self.default_area
-
-        if obj.country is None:
-            obj.country = self.default_country
+        # if obj.substation is None:
+        #     obj.substation = self.default_substation
+        #
+        # if obj.zone is None:
+        #     obj.zone = self.default_zone
+        #
+        # if obj.area is None:
+        #     obj.area = self.default_area
+        #
+        # if obj.country is None:
+        #     obj.country = self.default_country
 
         self.buses.append(obj)
 

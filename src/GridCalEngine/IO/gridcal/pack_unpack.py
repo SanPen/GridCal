@@ -145,7 +145,7 @@ def create_data_frames(circuit: MultiCircuit):
     # names_count = dict()
     if len(circuit.buses) > 0:
         for elm in circuit.buses:
-            elm.ensure_area_objects(circuit)
+            # elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
 
     ########################################################################################################
