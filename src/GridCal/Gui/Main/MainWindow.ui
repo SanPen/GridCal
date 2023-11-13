@@ -2017,6 +2017,12 @@ p, li { white-space: pre-wrap; }
                 <string>Text</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_42">
+                <property name="topMargin">
+                 <number>6</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>6</number>
+                </property>
                 <item>
                  <widget class="QPlainTextEdit" name="outputTextEdit">
                   <property name="palette">
@@ -2225,7 +2231,7 @@ p, li { white-space: pre-wrap; }
                    </font>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
                   <property name="lineWrapMode">
                    <enum>QPlainTextEdit::NoWrap</enum>
@@ -2390,7 +2396,7 @@ p, li { white-space: pre-wrap; }
                <item>
                 <widget class="QPlainTextEdit" name="sourceCodeTextEdit">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::StyledPanel</enum>
                  </property>
                 </widget>
                </item>
@@ -2473,18 +2479,69 @@ p, li { white-space: pre-wrap; }
                      <number>6</number>
                     </property>
                     <property name="topMargin">
-                     <number>6</number>
+                     <number>0</number>
                     </property>
                     <property name="rightMargin">
                      <number>6</number>
                     </property>
                     <property name="bottomMargin">
-                     <number>6</number>
+                     <number>0</number>
                     </property>
+                    <item>
+                     <widget class="QFrame" name="frame_63">
+                      <property name="frameShape">
+                       <enum>QFrame::NoFrame</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_27">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <spacer name="horizontalSpacer_4">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>434</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="deleteSourceCodeFileButton">
+                         <property name="toolTip">
+                          <string>Delete source code file</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="icon">
+                          <iconset resource="icons.qrc">
+                           <normaloff>:/Icons/icons/delete3.svg</normaloff>:/Icons/icons/delete3.svg</iconset>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
                     <item>
                      <widget class="QTreeView" name="sourceCodeTreeView">
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::StyledPanel</enum>
                       </property>
                      </widget>
                     </item>

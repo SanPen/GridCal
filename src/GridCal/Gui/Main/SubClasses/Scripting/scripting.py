@@ -25,7 +25,7 @@ from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.GuiFunctions import CustomFileSystemModel
-from GridCal.Gui.messages import error_msg
+from GridCal.Gui.messages import error_msg, yes_no_question
 
 try:
     from GridCal.Gui.ConsoleWidget import ConsoleWidget
@@ -81,6 +81,7 @@ class ScriptingMain(IoMain):
         # buttonclicks -------------------------------------------------------------------------------------------------
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)
         self.ui.saveSourceCodeButton.clicked.connect(self.save_source_code)
+        self.ui.deleteSourceCodeFileButton.clicked.connect(self.delete_source_code)
 
         # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
@@ -226,8 +227,7 @@ class ScriptingMain(IoMain):
 
     def run_source_code(self):
         """
-        Run the source code
-        :return:
+        Run the source code in the IPython console
         """
         code = self.ui.sourceCodeTextEdit.toPlainText()
 
@@ -238,8 +238,7 @@ class ScriptingMain(IoMain):
 
     def source_code_tree_clicked(self, index):
         """
-
-        :return:
+        On double click on a source code tree item, load the source code
         """
         pth = self.python_fs_model.filePath(index)
 
@@ -251,12 +250,11 @@ class ScriptingMain(IoMain):
             name = os.path.basename(pth)
             self.ui.sourceCodeNameLineEdit.setText(name.replace('.py', ''))
         else:
-            error_msg(pth + ' does not exists', 'Open script')
+            error_msg(pth + ' does not exists :/', 'Open script')
 
     def save_source_code(self):
         """
-
-        :return:
+        Save the source code
         """
         name = self.ui.sourceCodeNameLineEdit.text().strip()
 
@@ -267,3 +265,17 @@ class ScriptingMain(IoMain):
                 f.write(self.ui.sourceCodeTextEdit.toPlainText())
         else:
             error_msg("Please enter a name for the script", title="Save script")
+
+    def delete_source_code(self):
+        """
+        Delete the selected file
+        """
+        index = self.ui.sourceCodeTreeView.currentIndex()
+        pth = self.python_fs_model.filePath(index)
+        if os.path.exists(pth):
+            ok = yes_no_question(text="Do you want to delete {}?".format(pth), title="Delete source code file")
+
+            if ok:
+                os.remove(pth)
+        else:
+            error_msg(pth + ' does not exists :/', "Delete source code file")

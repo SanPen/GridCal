@@ -1327,6 +1327,7 @@ class Ui_mainWindow(object):
         self.tab_15.setObjectName(u"tab_15")
         self.verticalLayout_42 = QVBoxLayout(self.tab_15)
         self.verticalLayout_42.setObjectName(u"verticalLayout_42")
+        self.verticalLayout_42.setContentsMargins(-1, 6, -1, 6)
         self.outputTextEdit = QPlainTextEdit(self.tab_15)
         self.outputTextEdit.setObjectName(u"outputTextEdit")
         palette2 = QPalette()
@@ -1374,7 +1375,7 @@ class Ui_mainWindow(object):
         font1.setFamilies([u"Cousine"])
         font1.setPointSize(9)
         self.outputTextEdit.setFont(font1)
-        self.outputTextEdit.setFrameShape(QFrame.NoFrame)
+        self.outputTextEdit.setFrameShape(QFrame.StyledPanel)
         self.outputTextEdit.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.outputTextEdit.setPlainText(u"")
         self.outputTextEdit.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextEditable|Qt.TextEditorInteraction|Qt.TextSelectableByKeyboard|Qt.TextSelectableByMouse)
@@ -1447,7 +1448,7 @@ class Ui_mainWindow(object):
 
         self.sourceCodeTextEdit = QPlainTextEdit(self.frame_11)
         self.sourceCodeTextEdit.setObjectName(u"sourceCodeTextEdit")
-        self.sourceCodeTextEdit.setFrameShape(QFrame.NoFrame)
+        self.sourceCodeTextEdit.setFrameShape(QFrame.StyledPanel)
 
         self.verticalLayout_35.addWidget(self.sourceCodeTextEdit)
 
@@ -1480,10 +1481,30 @@ class Ui_mainWindow(object):
         self.sourceCodeTab.setObjectName(u"sourceCodeTab")
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
         self.verticalLayout_39.setObjectName(u"verticalLayout_39")
-        self.verticalLayout_39.setContentsMargins(6, 6, 6, 6)
+        self.verticalLayout_39.setContentsMargins(6, 0, 6, 0)
+        self.frame_63 = QFrame(self.sourceCodeTab)
+        self.frame_63.setObjectName(u"frame_63")
+        self.frame_63.setFrameShape(QFrame.NoFrame)
+        self.frame_63.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_27 = QHBoxLayout(self.frame_63)
+        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
+        self.horizontalLayout_27.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer_4 = QSpacerItem(434, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_27.addItem(self.horizontalSpacer_4)
+
+        self.deleteSourceCodeFileButton = QPushButton(self.frame_63)
+        self.deleteSourceCodeFileButton.setObjectName(u"deleteSourceCodeFileButton")
+        self.deleteSourceCodeFileButton.setIcon(icon24)
+
+        self.horizontalLayout_27.addWidget(self.deleteSourceCodeFileButton)
+
+
+        self.verticalLayout_39.addWidget(self.frame_63)
+
         self.sourceCodeTreeView = QTreeView(self.sourceCodeTab)
         self.sourceCodeTreeView.setObjectName(u"sourceCodeTreeView")
-        self.sourceCodeTreeView.setFrameShape(QFrame.NoFrame)
+        self.sourceCodeTreeView.setFrameShape(QFrame.StyledPanel)
 
         self.verticalLayout_39.addWidget(self.sourceCodeTreeView)
 
@@ -4736,6 +4757,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.runSourceCodeButton.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.pythonConsoleTab), QCoreApplication.translate("mainWindow", u"Python console", None))
+#if QT_CONFIG(tooltip)
+        self.deleteSourceCodeFileButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete source code file", None))
+#endif // QT_CONFIG(tooltip)
+        self.deleteSourceCodeFileButton.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.sourceCodeTab), QCoreApplication.translate("mainWindow", u"Source code", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Scripting", None))
 #if QT_CONFIG(tooltip)

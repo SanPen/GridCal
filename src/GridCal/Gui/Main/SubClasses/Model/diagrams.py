@@ -40,6 +40,12 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 
+try:
+    import pygraphviz
+
+    PYGRAPHVIZ_AVAILABLE = True
+except ImportError:
+    PYGRAPHVIZ_AVAILABLE = False
 
 class DiagramsMain(CompiledArraysMain):
     """
@@ -89,8 +95,10 @@ class DiagramsMain(CompiledArraysMain):
         self.layout_algorithms_dict['spectral_layout'] = nx.spectral_layout
         self.layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
         self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
-        self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
-        self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
+
+        if PYGRAPHVIZ_AVAILABLE:
+            self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
+            self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
         mdl = gf.get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
         self.ui.automatic_layout_comboBox.setCurrentIndex(6)
