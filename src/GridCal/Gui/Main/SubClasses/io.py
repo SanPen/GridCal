@@ -557,9 +557,10 @@ class IoMain(ConfigurationMain):
         """
         Actions after the threaded file save
         """
-        if len(self.save_file_thread_object.logger) > 0:
-            dlg = LogsDialogue('Save file logger', self.save_file_thread_object.logger)
-            dlg.exec_()
+        if self.save_file_thread_object.logger is not None:
+            if len(self.save_file_thread_object.logger) > 0:
+                dlg = LogsDialogue('Save file logger', self.save_file_thread_object.logger)
+                dlg.exec_()
 
         self.stuff_running_now.remove('file_save')
 

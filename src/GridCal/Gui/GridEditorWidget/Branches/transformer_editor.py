@@ -98,6 +98,7 @@ class TransformerEditor(QDialog):
         self.Vt = self.transformer_obj.bus_to.Vnom
 
         Pfe, Pcu, Vsc, I0 = reverse_transformer_short_circuit_study(transformer_obj=self.transformer_obj, Sbase=Sbase)
+        Sn = self.transformer_obj.Sn
 
         # ------------------------------------------------------------------------------------------
 

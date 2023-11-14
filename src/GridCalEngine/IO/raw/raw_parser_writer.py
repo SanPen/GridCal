@@ -367,13 +367,14 @@ def read_raw(filename, text_func=None,  progress_func=None, logger = Logger()) -
     return grid
 
 
-def write_raw(file_name: str, psse_model: PsseCircuit, version = 33):
+def write_raw(file_name: str, psse_model: PsseCircuit, version = 33) -> Logger:
     """
     Write PsseCircuit as .raw version 33
     :param file_name: name of the file
     :param psse_model: PsseCircuit instance
+    :param version: RAW version
     """
-
+    logger = Logger()
     with open(file_name, "w", encoding="utf-8") as w:
 
         # IC,SBASE,REV,XFRRAT,NXFRAT,BASFRQ
@@ -470,6 +471,7 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version = 33):
 
         w.write("Q\n")
 
-
         # for p_elm in psse_model.induction_machines:
         #     w.write(" " + p_elm.get_raw_line(version=version) + "\n")
+
+    return logger

@@ -23,6 +23,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType
 from GridCalEngine.Core.Devices.profile import compress_array_numba
 
 
@@ -300,9 +301,9 @@ def parse_json_data_v3(data: dict, logger: Logger):
     profiles = data['profiles']
 
     # parse devices
-    if dev.DeviceType.CircuitDevice.value in devices.keys():
+    if DeviceType.CircuitDevice.value in devices.keys():
 
-        dta = devices[dev.DeviceType.CircuitDevice.value]
+        dta = devices[DeviceType.CircuitDevice.value]
 
         circuit = MultiCircuit(name=str(dta['name']),
                                Sbase=float(dta['sbase']),
@@ -313,8 +314,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
         circuit.Sbase = jcircuit["sbase"]
 
         # parse time series
-        if dev.DeviceType.CircuitDevice.value in profiles.keys():
-            circuit.set_time_profile(profiles[dev.DeviceType.CircuitDevice.value]['time'])
+        if DeviceType.CircuitDevice.value in profiles.keys():
+            circuit.set_time_profile(profiles[DeviceType.CircuitDevice.value]['time'])
 
         # Countries
         country_dict = dict()
@@ -793,16 +794,16 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     ('vdc_set', 'Vdc_set'),
                     ]
 
-            modes = {0: dev.ConverterControlType.type_0_free,
-                     1: dev.ConverterControlType.type_I_1,
-                     2: dev.ConverterControlType.type_I_2,
-                     3: dev.ConverterControlType.type_I_3,
-                     4: dev.ConverterControlType.type_II_4,
-                     5: dev.ConverterControlType.type_II_5,
-                     6: dev.ConverterControlType.type_III_6,
-                     7: dev.ConverterControlType.type_III_7,
-                     8: dev.ConverterControlType.type_IV_I,
-                     9: dev.ConverterControlType.type_IV_II}
+            modes = {0: ConverterControlType.type_0_free,
+                     1: ConverterControlType.type_I_1,
+                     2: ConverterControlType.type_I_2,
+                     3: ConverterControlType.type_I_3,
+                     4: ConverterControlType.type_II_4,
+                     5: ConverterControlType.type_II_5,
+                     6: ConverterControlType.type_III_6,
+                     7: ConverterControlType.type_III_7,
+                     8: ConverterControlType.type_IV_I,
+                     9: ConverterControlType.type_IV_II}
 
             for entry in devices["VSC"]:
 
@@ -833,8 +834,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             hvdc_ctrl_dict = dict()
-            hvdc_ctrl_dict[dev.HvdcControlType.type_1_Pset.value] = dev.HvdcControlType.type_1_Pset
-            hvdc_ctrl_dict[dev.HvdcControlType.type_0_free.value] = dev.HvdcControlType.type_0_free
+            hvdc_ctrl_dict[HvdcControlType.type_1_Pset.value] = HvdcControlType.type_1_Pset
+            hvdc_ctrl_dict[HvdcControlType.type_0_free.value] = HvdcControlType.type_0_free
 
             prop = [('id', 'idtag'),
                     ('name', 'name'),
@@ -899,9 +900,9 @@ def parse_json_data_v2(data: dict, logger: Logger):
     devices = data['devices']
     profiles = data['profiles']
 
-    if dev.DeviceType.CircuitDevice.value in devices.keys():
+    if DeviceType.CircuitDevice.value in devices.keys():
 
-        dta = devices[dev.DeviceType.CircuitDevice.value]
+        dta = devices[DeviceType.CircuitDevice.value]
         circuit = MultiCircuit(name=str(dta['name']),
                                Sbase=float(dta['sbase']),
                                fbase=float(dta['fbase']),
@@ -1196,9 +1197,9 @@ def save_json_file_v3(file_path, circuit: MultiCircuit, simulation_drivers=list(
             d[key] = d2
 
     # add the circuit
-    elements[dev.DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
-    units_dict[dev.DeviceType.CircuitDevice.value] = circuit.get_units_dict()
-    element_profiles[dev.DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
+    elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
+    units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
+    element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the areas
     for cls in [circuit.substations,
