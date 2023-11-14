@@ -2559,19 +2559,28 @@ class SimulationsMain(TimeEventsMain):
 
             if not self.session.is_this_running(sim.SimulationTypes.ClusteringAnalysis_run):
 
-                self.add_simulation(sim.SimulationTypes.ClusteringAnalysis_run)
+                n_points = self.ui.cluster_number_spinBox.value()
+                nt = self.circuit.get_time_number()
+                if n_points < nt:
 
-                self.LOCK()
+                    self.add_simulation(sim.SimulationTypes.ClusteringAnalysis_run)
 
-                # get the power flow options from the GUI
-                options = sim.ClusteringAnalysisOptions(n_points=self.ui.cluster_number_spinBox.value())
+                    self.LOCK()
 
-                drv = sim.ClusteringDriver(grid=self.circuit,
-                                           options=options)
-                self.session.run(drv,
-                                 post_func=self.post_clustering,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    # get the power flow options from the GUI
+                    options = sim.ClusteringAnalysisOptions(n_points=n_points)
+
+                    drv = sim.ClusteringDriver(grid=self.circuit,
+                                               options=options)
+                    self.session.run(drv,
+                                     post_func=self.post_clustering,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    warning_msg('You cannot find {0} clusters for {} time steps.\n'
+                                'Modify the number of clusters in the ML settings.'.format(n_points, nt),
+                                title="Clustering")
 
             else:
                 warning_msg('Another clustering is being executed now...')
