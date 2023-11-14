@@ -544,10 +544,10 @@ class EditorGraphicsView(QGraphicsView):
                 name = 'Bus ' + str(len(self.diagram_scene.circuit.buses))
 
                 obj = Bus(name=name,
-                          area=self.diagram_scene.circuit.areas[0],
-                          zone=self.diagram_scene.circuit.zones[0],
-                          substation=self.diagram_scene.circuit.substations[0],
-                          country=self.diagram_scene.circuit.countries[0],
+                          # area=self.diagram_scene.circuit.areas[0],
+                          # zone=self.diagram_scene.circuit.zones[0],
+                          # substation=self.diagram_scene.circuit.substations[0],
+                          # country=self.diagram_scene.circuit.countries[0],
                           vnom=self.editor.default_bus_voltage)
 
                 graphic_object = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
