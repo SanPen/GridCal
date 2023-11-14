@@ -18,7 +18,7 @@
 from typing import Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsScene
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor

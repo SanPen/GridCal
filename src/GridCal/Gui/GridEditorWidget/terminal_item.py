@@ -135,6 +135,7 @@ class TerminalItem(QGraphicsRectItem):
         n = len(self.hosting_connections)
         for i in range(n - 1, -1, -1):
             self.hosting_connections[i].remove_widget()
+            self.hosting_connections[i].remove(ask=False)
             self.hosting_connections.pop(i)
 
 

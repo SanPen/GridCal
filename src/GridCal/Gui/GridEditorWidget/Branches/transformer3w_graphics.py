@@ -17,8 +17,8 @@
 import numpy as np
 from typing import List
 from PySide6.QtCore import Qt, QPoint, QPointF
-from PySide6.QtGui import QPen, QCursor, QColor
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem
+from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu
 
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
@@ -208,6 +208,28 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                                non_editable_attributes=self.api_object.non_editable_attributes)
 
             self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def contextMenuEvent(self, event):
+        """
+        Show context menu
+        @param event:
+        @return:
+        """
+        if self.api_object is not None:
+            menu = QMenu()
+            menu.addSection("3w-Transformer")
+
+            # menu.addSeparator()
+
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
+
+            menu.exec_(event.screenPos())
+        else:
+            pass
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """

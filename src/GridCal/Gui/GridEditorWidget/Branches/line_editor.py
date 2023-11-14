@@ -18,8 +18,7 @@ import numpy as np
 
 from typing import Union, List
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QGraphicsRectItem, QDialog, QLabel, \
-    QDoubleSpinBox, QComboBox
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
@@ -249,6 +248,6 @@ class LineEditor(QDialog):
 
         if self.templates is not None:
             idx = self.catalogue_combo.currentIndex()
-            template = self.templates[idx]
 
-            self.load_template(template)
+            if idx > -1:
+                self.load_template(template=self.templates[idx])
