@@ -157,14 +157,17 @@ class BaseDiagram:
         :param device:
         :return:
         """
-        # check if the category exists ...
-        d = self.data.get(device.device_type.value, None)
+        if device is not None:
+            # check if the category exists ...
+            d = self.data.get(device.device_type.value, None)
 
-        if d:
-            # the category does exist, delete from it
-            return d.delete_device(device=device)
+            if d:
+                # the category does exist, delete from it
+                return d.delete_device(device=device)
+            else:
+                # not found so we're ok
+                return None
         else:
-            # not found so we're ok
             return None
 
     def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
