@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPen, QCursor
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 
 class InjectionTemplateGraphicItem(QGraphicsItemGroup):
@@ -28,7 +28,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
     InjectionTemplateGraphicItem
     """
 
-    def __init__(self, parent, api_obj: EditableDevice, diagramScene, device_type_name, w, h):
+    def __init__(self, parent, api_obj: InjectionTemplate, diagramScene, device_type_name, w, h):
         """
 
         :param parent:

@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
+from GridCalEngine.basic_structures import IntVec, StrVec, CxMat
 from GridCalEngine.enumerations import StudyResultsType
 
 

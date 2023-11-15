@@ -411,7 +411,7 @@ class RosetaExplorerGUI(QMainWindow):
         if self.circuit is not None:
 
             if isinstance(self.circuit, CgmesCircuit):
-                window = TreeModelViewerGUI(use_native_dialogues=True)
+                window = TreeModelViewerGUI()
                 self.tree_navigation_windows.append(window)
                 h = 740
                 window.resize(int(1.61 * h), h)  # golden ratio :)

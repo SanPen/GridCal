@@ -66,6 +66,9 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
+        self.ui.assignToProfileButton.clicked.connect(self.assign_to_profile)
+
+        # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         # list click
@@ -619,6 +622,41 @@ class ObjectsTableMain(DiagramsMain):
 
             else:
                 pass
+
+    def assign_to_profile(self):
+        """
+        Assign the snapshot values at the object DB to the profiles
+        """
+        indices = self.ui.dataStructureTableView.selectedIndexes()
+
+        if len(indices):
+            model = self.ui.dataStructureTableView.model()
+
+            if model is not None:
+                objects = model.objects
+
+                logger = bs.Logger()
+
+                for index in indices:
+                    i = index.row()
+                    p_idx = index.column()
+                    elm = objects[i]
+                    attr = model.attributes[p_idx]
+                    prof_attr = elm.editable_headers[attr].profile_name
+
+                    if prof_attr != '':
+                        if hasattr(elm, prof_attr):
+                            val = getattr(elm, attr)
+                            profile = getattr(elm, prof_attr)
+                            profile.fill(val)
+                        else:
+                            logger.add_error("No profile found for " + attr, device=elm.name)
+
+                if logger.size():
+                    logs_window = LogsDialogue("Assign to profile", logger=logger)
+                    logs_window.exec()
+        else:
+            info_msg("Select a cell or a column first", "Assign to profile")
 
     def objects_histogram_analysis_plot(self):
         """

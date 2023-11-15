@@ -17,7 +17,7 @@
 
 from numpy import sqrt
 
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class TransformerType(EditableDevice):

@@ -27,3 +27,5 @@ nptyping
 windpowerlib
 pvlib
 hyperopt
+requests
+pytest

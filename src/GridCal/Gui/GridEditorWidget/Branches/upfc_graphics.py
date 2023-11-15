@@ -16,11 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QGraphicsScene
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.messages import yes_no_question
 
 
 class UpfcGraphicItem(LineGraphicTemplateItem):

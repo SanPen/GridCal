@@ -494,7 +494,7 @@ class EditorGraphicsView(QGraphicsView):
         """
         Editor where the diagram is displayed
         @param diagram_scene: DiagramScene object
-        @param parent:
+        @param editor: BusBranchEditorWidget
         """
         QGraphicsView.__init__(self, diagram_scene)
         self._zoom = 0
@@ -1487,7 +1487,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # the longitude is more reated to x, the latitude is more related to y
         x, y = transformer.transform(xx=lon, yy=lat)
-        x *= factor
+        x *= - factor
         y *= factor
 
         # remove the offset

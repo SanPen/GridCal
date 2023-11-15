@@ -15,13 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtCore import Qt, QPoint, QLineF, QPointF, QRectF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsItem, QVBoxLayout, QGraphicsEllipseItem, QDialog
+from PySide6.QtCore import Qt, QPointF, QRectF
+from PySide6.QtGui import QPen, QCursor
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem
 
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
-# from GridCal.Gui.GridEditorWidget.editor import GridEditor
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 
 
 class TerminalItem(QGraphicsRectItem):

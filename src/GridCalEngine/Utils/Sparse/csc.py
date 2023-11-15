@@ -69,9 +69,9 @@ class CscMat(csc_matrix):
         indices = [0, 0, 1, 1, 2, 0, 2, 1, 2, 1]
         indptr =  [0, 1, 3, 5, 7, 9, 10]
 
-        @param m: number of rows
-        @param n: number of columns
-        @param nz_max: maximum number of entries
+        @param shape: (number of rows, number of cols)
+        @param dtype: data type (float, int, etc..)
+        @param copy: copy the data (bool)
         """
         csc_matrix.__init__(self, arg1, shape, dtype, copy)
 

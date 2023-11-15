@@ -25,6 +25,7 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.enumerations import HvdcControlType
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
 def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:
@@ -240,12 +241,12 @@ class HvdcLine(ParentBranch):
 
         self.control_mode = control_mode
 
-        self.Pset_prof = Pset_prof
-        self.active_prof = active_prof
-        self.Vset_f_prof = Vset_f_prof
-        self.Vset_t_prof = Vset_t_prof
+        self.Pset_prof: Vec = Pset_prof
+        self.active_prof: IntVec = active_prof
+        self.Vset_f_prof: Vec = Vset_f_prof
+        self.Vset_t_prof: Vec = Vset_t_prof
 
-        self.angle_droop_prof = angle_droop_prof
+        self.angle_droop_prof: Vec = angle_droop_prof
 
         self.n_lines = n_lines
 

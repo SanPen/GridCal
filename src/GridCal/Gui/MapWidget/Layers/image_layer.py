@@ -1,4 +1,4 @@
-from typing import List, Union, Tuple, Dict
+from typing import List, Tuple, Dict
 from collections.abc import Callable
 from GridCal.Gui.MapWidget.Layers.place import Place
 from GridCal.Gui.MapWidget.Layers.layer_types import LayerType

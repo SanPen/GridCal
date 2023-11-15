@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys
-from typing import List, Union
+from typing import List
 
 from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow

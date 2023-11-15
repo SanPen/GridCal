@@ -23,12 +23,12 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
-from GridCalEngine.Utils.MIP.ortools import (LpExp, LpVar, LpModel, get_lp_var_value,
-                                             get_available_mip_solvers, set_var_bounds)
+from GridCalEngine.Utils.MIP.ortools_interface import (LpExp, LpVar, LpModel, get_lp_var_value,
+                                                       get_available_mip_solvers, set_var_bounds)
 
 
-# from GridCalEngine.Utils.MIP.pulp import (LpExp, LpVar, LpModel, get_lp_var_value,
-#                                           get_available_mip_solvers, set_var_bounds)
+# from GridCalEngine.Utils.MIP.pulp_interface import (LpExp, LpVar, LpModel, get_lp_var_value,
+#                                                     get_available_mip_solvers, set_var_bounds)
 
 
 def join(init: str, vals: List[int], sep="_"):
@@ -87,6 +87,3 @@ def lpDot(mat: csc_matrix, arr: Union[ObjVec, ObjMat]) -> Union[ObjVec, ObjMat]:
 
     else:
         raise Exception("lpDot: Unsupported number of dimensions")
-
-
-

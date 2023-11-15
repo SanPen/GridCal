@@ -3,7 +3,7 @@ import sys
 import chardet
 import subprocess
 from PySide6 import QtWidgets
-from typing import List, Dict
+from typing import List
 from GridCal.Gui.AboutDialogue.gui import Ui_AboutDialog
 from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg
 from GridCal.update import check_version, get_upgrade_command

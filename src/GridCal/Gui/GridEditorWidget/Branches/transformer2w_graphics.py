@@ -201,12 +201,12 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                              title="Add transformer type")
 
         if ok:
-            Pfe, Pcu, Vsc, I0 = reverse_transformer_short_circuit_study(transformer_obj=self.api_object,
-                                                                        Sbase=self.editor.circuit.Sbase)
+            Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(transformer_obj=self.api_object,
+                                                                            Sbase=self.editor.circuit.Sbase)
 
             tpe = TransformerType(hv_nominal_voltage=self.api_object.HV,
                                   lv_nominal_voltage=self.api_object.LV,
-                                  nominal_power=self.api_object.rate,
+                                  nominal_power=Sn,
                                   copper_losses=Pcu,
                                   iron_losses=Pfe,
                                   no_load_current=I0,

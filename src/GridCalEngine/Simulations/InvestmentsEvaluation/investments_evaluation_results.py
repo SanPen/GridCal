@@ -20,8 +20,7 @@ import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec
 from GridCalEngine.enumerations import StudyResultsType
 
 

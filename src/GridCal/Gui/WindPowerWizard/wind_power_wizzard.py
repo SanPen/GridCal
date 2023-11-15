@@ -40,7 +40,7 @@ class WindFarmWizard(QtWidgets.QDialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.is_accepted: bool = False

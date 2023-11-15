@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from typing import Dict, Union, List
+from typing import Union, List
 from scipy.sparse.linalg import spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec

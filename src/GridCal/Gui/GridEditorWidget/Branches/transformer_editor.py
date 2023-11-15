@@ -17,17 +17,18 @@
 import numpy as np
 from typing import List, Tuple
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QGraphicsEllipseItem
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W, TransformerType
 
 
-def reverse_transformer_short_circuit_study(transformer_obj: Transformer2W, Sbase: float) -> Tuple[float, float, float, float]:
+def reverse_transformer_short_circuit_study(transformer_obj: Transformer2W,
+                                            Sbase: float) -> Tuple[float, float, float, float, float]:
     """
     Get the short circuit study values from the impedance values
     :param transformer_obj: Transformer2W
     :param Sbase: base power in MVA (100 MVA)
-    :return: Pfe, Pcu, Vsc, I0
+    :return: Pfe, Pcu, Vsc, I0, Sn
     """
 
     # Change the impedances to the system base
@@ -56,7 +57,7 @@ def reverse_transformer_short_circuit_study(transformer_obj: Transformer2W, Sbas
         Pfe = 0
         I0 = 0
 
-    return Pfe, Pcu, Vsc, I0
+    return Pfe, Pcu, Vsc, I0, Sn
 
 
 class TransformerEditor(QDialog):
@@ -97,8 +98,8 @@ class TransformerEditor(QDialog):
         self.Vf = self.transformer_obj.bus_from.Vnom
         self.Vt = self.transformer_obj.bus_to.Vnom
 
-        Pfe, Pcu, Vsc, I0 = reverse_transformer_short_circuit_study(transformer_obj=self.transformer_obj, Sbase=Sbase)
-        Sn = self.transformer_obj.Sn
+        Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(transformer_obj=self.transformer_obj,
+                                                                        Sbase=Sbase)
 
         # ------------------------------------------------------------------------------------------
 
@@ -110,8 +111,8 @@ class TransformerEditor(QDialog):
                 self.catalogue_combo.setModel(get_list_model(self.templates))
 
                 if self.current_template is not None:
-                    try:
-                        idx = self.templates.index(self.current_template)
+                    idx = self.templates.index(self.current_template)
+                    if idx > -1:
                         self.catalogue_combo.setCurrentIndex(idx)
 
                         # set the template parameters
@@ -120,8 +121,6 @@ class TransformerEditor(QDialog):
                         Pfe = self.current_template.Pfe  # kW
                         I0 = self.current_template.I0  # %
                         Vsc = self.current_template.Vsc  # %
-                    except:
-                        pass
 
         # load template
         self.load_template_btn = QPushButton()
@@ -305,4 +304,3 @@ class TransformerEditor(QDialog):
 
             if isinstance(template, TransformerType):
                 self.load_template(template)
-

@@ -19,7 +19,7 @@
 from warnings import warn
 import pandas as pd
 import numpy as np
-from GridCalEngine.Core.Devices.editable_device import DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Injections.generator import Generator, BuildStatus
 
 

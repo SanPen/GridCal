@@ -35,15 +35,18 @@ class TimeSeriesResultsAnalysis:
 
         self.res = results
 
-        self.branch_overload_frequency = np.zeros(self.res.m)
-        self.bus_under_voltage_frequency = np.zeros(self.res.n)
-        self.bus_over_voltage_frequency = np.zeros(self.res.n)
+        m = results.Sf.shape[1]
+        n = results.S.shape[1]
 
-        self.branch_overload_accumulated = np.zeros(self.res.m, dtype=complex)
-        self.bus_under_voltage_accumulated = np.zeros(self.res.n, dtype=complex)
-        self.bus_over_voltage_accumulated = np.zeros(self.res.n, dtype=complex)
+        self.branch_overload_frequency = np.zeros(m)
+        self.bus_under_voltage_frequency = np.zeros(n)
+        self.bus_over_voltage_frequency = np.zeros(n)
 
-        self.buses_selected_for_storage_frequency = np.zeros(self.res.n)
+        self.branch_overload_accumulated = np.zeros(m, dtype=complex)
+        self.bus_under_voltage_accumulated = np.zeros(n, dtype=complex)
+        self.bus_over_voltage_accumulated = np.zeros(n, dtype=complex)
+
+        self.buses_selected_for_storage_frequency = np.zeros(n)
 
         self.__run__()
 
@@ -63,9 +66,9 @@ class TimeSeriesResultsAnalysis:
             Returns:
         '''
 
-        n = self.grid.get_bus_number()
+        nt, n = self.res.S.shape
 
-        self.buses_selected_for_storage_frequency = np.zeros(self.res.n)
+        self.buses_selected_for_storage_frequency = np.zeros(n)
 
         Vmax = np.zeros(n)
         Vmin = np.zeros(n)
@@ -77,7 +80,7 @@ class TimeSeriesResultsAnalysis:
 
         rates = self.grid.get_branch_rates_prof_wo_hvdc()
 
-        for t in range(self.res.nt):
+        for t in range(nt):
             bus_voltage = np.abs(self.res.voltage[t])
 
             branch_loading = np.abs(self.res.loading[t])

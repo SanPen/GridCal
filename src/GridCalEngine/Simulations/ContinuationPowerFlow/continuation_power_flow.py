@@ -241,7 +241,6 @@ def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     Computes a prediction (approximation) to the next solution of the
     continuation power flow using a normalized tangent predictor.
     :param V: complex bus voltage vector at current solution
-    :param Ibus:
     :param lam: scalar lambda value at current solution
     :param Ybus: complex bus admittance matrix
     :param Sxfr: complex vector of scheduled transfers (difference between bus Injections in base and target cases)

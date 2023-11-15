@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
 class BatteryData(GeneratorData):
@@ -33,15 +33,15 @@ class BatteryData(GeneratorData):
 
         GeneratorData.__init__(self, nelm=nelm, nbus=nbus)
 
-        self.enom: np.ndarray = np.zeros(nelm)
-        self.e_min: np.ndarray = np.zeros(nelm)
-        self.e_max: np.ndarray = np.zeros(nelm)
-        self.min_soc: np.ndarray = np.zeros(nelm)
-        self.max_soc: np.ndarray = np.ones(nelm)
-        self.soc_0: np.ndarray = np.ones(nelm)
-        self.discharge_efficiency: np.ndarray = np.ones(nelm)
-        self.charge_efficiency: np.ndarray = np.ones(nelm)
-        self.efficiency: np.ndarray = np.ones(nelm)
+        self.enom: Vec = np.zeros(nelm)
+        self.e_min: Vec = np.zeros(nelm)
+        self.e_max: Vec = np.zeros(nelm)
+        self.min_soc: Vec = np.zeros(nelm)
+        self.max_soc: Vec = np.ones(nelm)
+        self.soc_0: Vec = np.ones(nelm)
+        self.discharge_efficiency: Vec = np.ones(nelm)
+        self.charge_efficiency: Vec = np.ones(nelm)
+        self.efficiency: Vec = np.ones(nelm)
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BatteryData":
         """

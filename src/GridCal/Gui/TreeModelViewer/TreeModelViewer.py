@@ -1,17 +1,7 @@
-import gc
+
 import sys
-import os.path
-import platform
-from collections import OrderedDict
-from typing import List, Tuple
-from warnings import warn
-
-# Engine imports
-
-
 # GUI imports
 from GridCal.Gui.GuiFunctions import *
-from GridCal.Gui.messages import *
 from GridCal.Gui.TreeModelViewer.MainWindow import *
 
 
@@ -21,7 +11,7 @@ from GridCal.Gui.TreeModelViewer.MainWindow import *
 
 class TreeModelViewerGUI(QMainWindow):
 
-    def __init__(self, parent=None, use_native_dialogues=False):
+    def __init__(self, parent=None):
         """
 
         @param parent:
@@ -264,7 +254,7 @@ def runTreeModelViewerGUI(use_native_dialogues=False):
     # dark = QDarkPalette(None)
     # dark.set_app(app)
 
-    window = TreeModelViewerGUI(use_native_dialogues=use_native_dialogues)
+    window = TreeModelViewerGUI()
     h = 740
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()

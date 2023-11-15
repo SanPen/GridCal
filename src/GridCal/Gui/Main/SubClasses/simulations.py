@@ -37,7 +37,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
-from GridCalEngine.enumerations import DeviceType, AvailableTransferMode
+from GridCalEngine.enumerations import DeviceType, AvailableTransferMode, GenerationNtcFormulation
 
 
 class SimulationsMain(TimeEventsMain):
@@ -1958,13 +1958,13 @@ class SimulationsMain(TimeEventsMain):
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
-                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    generation_formulation = GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
-                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    generation_formulation = GenerationNtcFormulation.Proportional
                     # perform_previous_checks = True
                 else:
-                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    generation_formulation = GenerationNtcFormulation.Optimal
                     # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
@@ -2091,11 +2091,11 @@ class SimulationsMain(TimeEventsMain):
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
-                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    generation_formulation = GenerationNtcFormulation.Optimal
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
-                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    generation_formulation = GenerationNtcFormulation.Proportional
                 else:
-                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    generation_formulation = GenerationNtcFormulation.Optimal
 
                 monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
                 monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()

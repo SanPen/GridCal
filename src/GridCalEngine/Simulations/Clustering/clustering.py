@@ -20,7 +20,7 @@ import time
 from typing import List, Tuple
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, Vec, Mat
 
 
 def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, IntVec]:

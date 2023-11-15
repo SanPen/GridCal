@@ -58,7 +58,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         Remove all symbols
         """
-        for elm in [self.symbol, self.c1, self.c2, self.c0]:
+        for elm in [self.symbol]:
             if elm is not None:
                 try:
                     self.diagramScene.removeItem(elm)

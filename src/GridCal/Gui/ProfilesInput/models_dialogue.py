@@ -16,16 +16,64 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
+import re
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
 
 
+def extract_and_convert_to_datetime(filename):
+    date_patterns = [
+        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b',  # YYYY-MM-DD or YYYY_MM_DD
+        r'\b(\d{8})\b',  # YYYYMMDD
+        r'\b(\d{8}_\d{4})\b',  # YYYYMMDD_HHMM
+        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b'  # YYYY-MM-DD_HHMM
+    ]
+
+    for date_pattern in date_patterns:
+        match = re.search(date_pattern, filename)
+        if match:
+            date_str = match.group(1)
+
+            # Try to parse the date string
+            try:
+                if '_' in date_str:
+                    date_object = pd.to_datetime(date_str, format='%Y%m%d_%H%M', errors='raise')
+                else:
+                    date_object = pd.to_datetime(date_str, format='%Y%m%d', errors='raise')
+
+                return date_object
+            except ValueError:
+                print(f"Unable to parse date from: {date_str}")
+
+    return None  # Return None if no valid date is found
+
+
+def process_file_names(file_names):
+    """
+
+    :param file_names:
+    :return:
+    """
+    extracted_dates = []
+
+    for filename in file_names:
+        date_object = extract_and_convert_to_datetime(filename)
+        if date_object:
+            extracted_dates.append(date_object)
+
+    return extracted_dates
+
+
 class GridsModelItem:
+    """
+    GridsModelItem
+    """
 
     def __init__(self, path, time=""):
         """
@@ -192,6 +240,9 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
 
 
 class ModelsInputGUI(QtWidgets.QDialog):
+    """
+    ModelsInputGUI
+    """
 
     def __init__(self, parent=None, time_array=[]):
         """
@@ -210,6 +261,8 @@ class ModelsInputGUI(QtWidgets.QDialog):
 
         self.grids_model: GridsModel = GridsModel()
 
+        self.logger = Logger()
+
         for t in time_array:
             self.grids_model.append(GridsModelItem("", str(t)))
 
@@ -224,9 +277,16 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.ui.acceptModelsButton.clicked.connect(self.accept)
 
     def accept(self):
+        """
+
+        :return:
+        """
         self.close()
 
     def add_models(self):
+        """
+        Add the selected models
+        """
         # declare the allowed file types
         files_types = "Formats (*.raw *.RAW *.rawx *.xml *.m *.epc *.EPC)"
         # call dialog to select the file
@@ -257,6 +317,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
         data_m = dict()
         data_a = dict()
         index = [''] * n
+        dates = [''] * n
 
         for t, entry in enumerate(self.grids_model.items()):
 
@@ -264,6 +325,9 @@ class ModelsInputGUI(QtWidgets.QDialog):
 
             if os.path.exists(entry.path):
                 print(entry.path)
+
+                dates[t] = extract_and_convert_to_datetime(os.path.basename(entry.path))
+
                 loaded_grid = FileOpen(entry.path).open()
                 assign_grid(t=t,
                             loaded_grid=loaded_grid,

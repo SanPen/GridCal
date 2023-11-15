@@ -90,8 +90,7 @@ def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
 
 def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types):
     """
-
-    :param plan:
+    Generate N-2 contingencies for branches
     :param branches:
     :param vmin:
     :param vmax:

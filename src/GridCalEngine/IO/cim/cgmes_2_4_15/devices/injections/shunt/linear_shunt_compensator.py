@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import datetime
+
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.shunt.shunt_compensator import ShuntCompensator
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol

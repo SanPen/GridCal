@@ -27,7 +27,7 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, IntMat, CxVec, BoolVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, CxVec, BoolVec
 from GridCalEngine.enumerations import StudyResultsType
 
 

@@ -579,6 +579,20 @@ p, li { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
+                    <widget class="QPushButton" name="assignToProfileButton">
+                     <property name="toolTip">
+                      <string>Assign the selected property to the matching profile (select a cell or the entire column)</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/assign_to_profile.svg</normaloff>:/Icons/icons/assign_to_profile.svg</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QLabel" name="label_36">
                      <property name="text">
                       <string/>

@@ -2,14 +2,16 @@ import os
 import sys
 import pandas as pd
 from PySide6 import QtGui, QtCore, QtWidgets
-from typing import List
+from typing import List, Tuple, Union
 from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
+from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.messages import error_msg
 
 
-def get_list_model(iterable):
+def get_list_model(iterable: List[str]) -> QtGui.QStandardItemModel:
     """
     get Qt list model from a simple iterable
     :param iterable: 
@@ -25,8 +27,28 @@ def get_list_model(iterable):
     return list_model
 
 
-class Association:
+def find_duplicates(arr: List[str]) -> Tuple[List[str], List[str]]:
+    """
+    Find duplicates in an array
+    :param arr: original array
+    :return: unique, duplicates
+    """
+    seen = set()
+    duplicates = set()
 
+    for element in arr:
+        if element in seen:
+            duplicates.add(element)
+        else:
+            seen.add(element)
+
+    return list(seen), list(duplicates)
+
+
+class CoordinatesInputAssociation:
+    """
+    Association
+    """
     def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
         """
 
@@ -44,8 +66,12 @@ class Association:
         self.latitude: float = latitude
         self.longitude: float = longitude
 
-    def get_at(self, idx):
-
+    def get_at(self, idx: int) -> Union[float, str]:
+        """
+        Get association at index
+        :param idx:
+        :return:
+        """
         if idx == 0:
             return self.name
         elif idx == 1:
@@ -62,16 +88,16 @@ class Association:
             return ''
 
 
-class Associations(QtCore.QAbstractTableModel):
+class CoordinatesInputAssociations(QtCore.QAbstractTableModel):
 
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)
 
-        self.__values: List[Association] = list()
+        self.__values: List[CoordinatesInputAssociation] = list()
 
         self.__headers = ['Name', 'Code', 'x', 'y', 'latitude', 'longitude']
 
-    def append(self, val: Association):
+    def append(self, val: CoordinatesInputAssociation):
         self.__values.append(val)
 
     def set_x_at(self, idx, value):
@@ -137,6 +163,9 @@ class Associations(QtCore.QAbstractTableModel):
 
 
 class CoordinatesInputGUI(QtWidgets.QDialog):
+    """
+    CoordinatesInputGUI
+    """
 
     def __init__(self, parent=None, list_of_objects: List[Bus] = list()):
         """
@@ -164,9 +193,9 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         # initialize the objectives list
         self.objects: List[Bus] = list_of_objects
 
-        self.associations = Associations()
+        self.associations = CoordinatesInputAssociations()
         for elm in list_of_objects:
-            self.associations.append(Association(elm.name, elm.code, elm.x, elm.y, elm.latitude, elm.longitude))
+            self.associations.append(CoordinatesInputAssociation(elm.name, elm.code, elm.x, elm.y, elm.latitude, elm.longitude))
 
         self.display_associations()
 
@@ -327,11 +356,10 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
         self.open_file_now(filename)
 
-    def open_file_now(self, filename):
+    def open_file_now(self, filename: str):
         """
-
-        :param filename:
-        :return:
+        Opena file
+        :param filename: path of the file
         """
         if len(filename) > 0:
             # get the filename extension
@@ -344,15 +372,29 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             elif file_extension in ['.xlsx', '.xls']:
 
                 # select the sheet from the file
-                window = ExcelDialog(self, filename)
-                window.exec_()
-                sheet_index = window.excel_sheet
+                excel_window = ExcelDialog(self, filename)
+                excel_window.exec()
+                sheet_index = excel_window.excel_sheet
 
                 if sheet_index is not None:
                     self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=None)
-
                 else:
                     return
+
+            # check for duplicates
+            unique_hdr, duplicate_hdr = find_duplicates(arr=list(self.original_data_frame.columns))
+
+            if len(duplicate_hdr):
+                # notify
+                logger = Logger()
+                for hdr in duplicate_hdr:
+                    logger.add_error("Duplicated header", device=hdr)
+
+                logs_dialogue = LogsDialogue(name="Duplictaed headers", logger=logger, expand_all=True)
+                logs_dialogue.exec()
+
+                # filter the headers
+                self.original_data_frame = self.original_data_frame[unique_hdr]
 
             # set the profile names list
             self.set_combo_boxes()
@@ -360,7 +402,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             self.display_associations()
             self.assigned_count = 0
 
-    def do_it(self):
+    def do_it(self) -> None:
         """
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
@@ -386,18 +428,19 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         self.close()
 
 
-class TestObj:
-    def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
-        self.name = name
-        self.code = code
-        self.x = x
-        self.y = y
-        self.latitude = latitude
-        self.longitude = longitude
-
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+
+    class TestObj:
+        def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
+            self.name = name
+            self.code = code
+            self.x = x
+            self.y = y
+            self.latitude = latitude
+            self.longitude = longitude
+
+
     window = CoordinatesInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

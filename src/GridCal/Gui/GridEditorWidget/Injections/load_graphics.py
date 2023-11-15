@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QPolygonF
-from PySide6.QtWidgets import QMenu, QGraphicsLineItem, QGraphicsItemGroup
+from PySide6.QtCore import QPointF
+from PySide6.QtGui import QPen, QIcon, QPixmap, QPolygonF
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
