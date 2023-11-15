@@ -152,8 +152,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          consider_contingencies=self.options.consider_contingencies,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
-                                         buses_areas_1=self.options.area_from_bus_idx,
-                                         buses_areas_2=self.options.area_to_bus_idx,
+                                         areas_from=self.options.areas_from,
+                                         areas_to=self.options.areas_to,
                                          energy_0=None,
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)

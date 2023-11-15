@@ -19,15 +19,13 @@ options = OptimalPowerFlowOptions(solver=solver,
                                   mip_solver=mip_solver,
                                   power_flow_options=pf_options)
 
-start = 0
-end = len(main_circuit.time_profile)
+time_indices = main_circuit.get_all_time_indices()
 
 # create the OPF time series instance
 # if non_sequential:
 optimal_power_flow_time_series = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
                                                                   options=options,
-                                                                  start_=start,
-                                                                  end_=end)
+                                                                  time_indices=time_indices)
 
 optimal_power_flow_time_series.run()
 

@@ -25,6 +25,7 @@ from typing import List, Union, Tuple, Callable
 from GridCalEngine.basic_structures import ZonalGrouping
 from GridCalEngine.basic_structures import MIPSolvers
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
 from GridCalEngine.Core.DataStructures.battery_data import BatteryData
@@ -1042,8 +1043,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       ramp_constraints: bool = False,
                       lodf_threshold: float = 0.001,
                       maximize_inter_area_flow: bool = False,
-                      buses_areas_1=None,
-                      buses_areas_2=None,
+                      areas_from: List[Area] = None,
+                      areas_to: List[Area] = None,
                       energy_0: Union[Vec, None] = None,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
@@ -1061,8 +1062,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param ramp_constraints: Formulate ramp constraints?
     :param lodf_threshold:
     :param maximize_inter_area_flow:
-    :param buses_areas_1:
-    :param buses_areas_2:
+    :param areas_from:
+    :param areas_to:
     :param energy_0:
     :param logger: logger instance
     :param progress_text:
@@ -1089,6 +1090,13 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nb = grid.get_batteries_number()
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
+
+    if maximize_inter_area_flow:
+        inter_area_branches = grid.get_inter_areas_branches(a1=areas_from, a2=areas_to)
+        inter_area_hvdc = grid.get_inter_areas_hvdc_branches(a1=areas_from, a2=areas_to)
+    else:
+        inter_area_branches = list()
+        inter_area_hvdc = list()
 
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
@@ -1149,19 +1157,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                 skip_generation_limits=skip_generation_limits,
                                                 energy_0=energy_0)
 
-        # formulate hvdc -------------------------------------------------------------------------------------------
-        f_obj += add_linear_hvdc_formulation(t=t_idx,
-                                             Sbase=nc.Sbase,
-                                             hvdc_data_t=nc.hvdc_data,
-                                             hvdc_vars=mip_vars.hvdc_vars,
-                                             vars_bus=mip_vars.bus_vars,
-                                             prob=lp_model)
-
+        # if no zonal grouping, all the grid is considered...
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
-            # if no zonal grouping, all the grid is considered...
+            # formulate hvdc -------------------------------------------------------------------------------------------
+            f_obj += add_linear_hvdc_formulation(t=t_idx,
+                                                 Sbase=nc.Sbase,
+                                                 hvdc_data_t=nc.hvdc_data,
+                                                 hvdc_vars=mip_vars.hvdc_vars,
+                                                 vars_bus=mip_vars.bus_vars,
+                                                 prob=lp_model)
 
-            # formulate branches -----------------------------------------------------------------------------------
+            # formulate branches ---------------------------------------------------------------------------------------
             f_obj += add_linear_branches_formulation(t=t_idx,
                                                      Sbase=nc.Sbase,
                                                      branch_data_t=nc.branch_data,
@@ -1170,7 +1177,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      prob=lp_model,
                                                      inf=1e20)
 
-            # formulate nodes ---------------------------------------------------------------------------------------
+            # formulate nodes ------------------------------------------------------------------------------------------
             add_linear_node_balance(t_idx=t_idx,
                                     Bbus=nc.Bbus,
                                     vd=nc.vd,
@@ -1184,7 +1191,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     load_vars=mip_vars.load_vars,
                                     prob=lp_model)
 
-            # add branch contingencies ------------------------------------------------------------------------------
+            # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
                 # The contingencies formulation uses the total nodal injection stored in bus_vars,
                 # hence this step goes before the add_linear_node_balance function
@@ -1206,11 +1213,19 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                                        prob=lp_model,
                                                                        linear_multicontingencies=mctg)
 
+            # add inter area branch flow maximization ------------------------------------------------------------------
+            if maximize_inter_area_flow:
+
+                for branches_list in [inter_area_branches, inter_area_hvdc]:
+                    for k, branch, sense in branches_list:
+                        # we want to maximize, hence the minus sign
+                        f_obj += mip_vars.branch_vars.flows[t_idx, k] * (- sense)
+
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
-        # production equals demand ---------------------------------------------------------------------------------
+        # production equals demand -------------------------------------------------------------------------------------
         lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
                               lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
                               mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum()),
