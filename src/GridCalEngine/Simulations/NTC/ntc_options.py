@@ -23,6 +23,9 @@ from GridCalEngine.enumerations import AvailableTransferMode
 
 
 class OptimalNetTransferCapacityOptions:
+    """
+    OptimalNetTransferCapacityOptions
+    """
 
     def __init__(self,
                  area_from_bus_idx,
@@ -49,8 +52,8 @@ class OptimalNetTransferCapacityOptions:
                  consider_nx_contingencies=False,
                  generation_contingency_threshold=0,
                  match_gen_load=True,
-                 trm=0,
-                 ntc_load_rule=0,
+                 trm=0.0,
+                 ntc_load_rule=0.0,
                  n1_consideration=True,
                  loading_threshold_to_report=0.98,
                  transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,

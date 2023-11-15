@@ -360,7 +360,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.battery_power = battery_power
 
-        self.generator_power = controlled_generation_power
+        self.generator_power = np.zeros(len(generator_names))
 
         self.solved = solved
 
@@ -397,9 +397,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.loading_threshold = loading_threshold
         self.reversed_sort_loading = reversed_sort_loading
 
+        self.converged = list()
+
         self.reports = dict()
 
-    def apply_new_rates(self, nc: "SnapshotData"):
+    def apply_new_rates(self, nc: "NumericalCircuit"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 

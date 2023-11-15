@@ -312,7 +312,7 @@ class BusNtcVars:
         self.load_shedding = np.zeros((nt, n_elm), dtype=object)
 
         # nodal gen
-        self.Pcalc = np.zeros((nt, n_elm), dtype=float)
+        self.Pcalc = np.zeros((nt, n_elm), dtype=object)
         self.inj_delta = np.zeros((nt, n_elm), dtype=object)
 
     def get_values(self, Sbase: float) -> "BusNtcVars":
@@ -344,8 +344,6 @@ class BusNtcVars:
 
         data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.inj_delta = data.inj_delta.astype(float, copy=False)
-
-        data.power_shift = data.power_shift.astype(float, copy=False)
 
         return data
 
@@ -500,7 +498,7 @@ class NtcVars:
         self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
 
         # power shift
-        self.power_shift = np.zeros((nt, 1), dtype=object)
+        self.power_shift = np.zeros(nt, dtype=object)
 
     def get_values(self, Sbase: float) -> "NtcVars":
         """
@@ -802,30 +800,33 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
             if isinstance(contingency_flow, LpExp):
 
                 # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N-1 condition
-                if monitor_only_ntc_load_rule_branches:
-                    """
-                    Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, 
-                    y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural 
-                    significa que la linea no puede limitar el intercambio
-                    Ejemplo:
-                        ntc_load_rule = 0.7
-                        rate = 1700
-                        alpha_n1 = 0.05
-                        structural_rate = 5200
-                        0.7 * 1700 --> 1190 mw para el intercambio
-                        1190 / 0.05 --> 23.800 MW en la frontera en N
-                        23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
-                       """
-                    monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (
-                                alpha_n1[m, c] + 1e-20) <= structural_ntc
-                else:
-                    monitor_by_load_rule_n1 = True
+                # if monitor_only_ntc_load_rule_branches:
+                #     """
+                #     Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER,
+                #     y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural
+                #     significa que la linea no puede limitar el intercambio
+                #     Ejemplo:
+                #         ntc_load_rule = 0.7
+                #         rate = 1700
+                #         alpha_n1 = 0.05
+                #         structural_rate = 5200
+                #         0.7 * 1700 --> 1190 mw para el intercambio
+                #         1190 / 0.05 --> 23.800 MW en la frontera en N
+                #         23.800 >>>> 5200 --> esta linea no puede ser declarada como limitante en la NTC en N.
+                #        """
+                #     monitor_by_load_rule_n1 = ntc_load_rule * branch_data_t.rates[m] / (alpha_n1[m, c] + 1e-20) <= structural_ntc
+                # else:
+                #     monitor_by_load_rule_n1 = True
+                #
+                # # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
+                # if monitor_only_sensitive_branches:
+                #     monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
+                # else:
+                #     monitor_by_sensitivity_n1 = True
 
-                # Monitoring logic: Exclude branches with not enough sensibility to exchange in N-1 condition
-                if monitor_only_sensitive_branches:
-                    monitor_by_sensitivity_n1 = alpha_n1[m, c] > alpha_threshold
-                else:
-                    monitor_by_sensitivity_n1 = True
+                # TODO: Figure out how to compute Alpha N-1 to be able to uncomment the block above
+                monitor_by_load_rule_n1 = True
+                monitor_by_sensitivity_n1 = True
 
                 if monitor_by_load_rule_n1 and monitor_by_sensitivity_n1:
                     # declare slack variables
@@ -979,6 +980,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                           monitor_only_sensitive_branches: bool = True,
                           monitor_only_ntc_load_rule_branches: bool = False,
+                          ntc_load_rule: float = 0.7,  # 70%
                           logger: Logger = Logger(),
                           progress_text: Union[None, Callable[[str], None]] = None,
                           progress_func: Union[None, Callable[[float], None]] = None,
@@ -991,16 +993,25 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param zonal_grouping: Zonal grouping?
     :param skip_generation_limits: Skip the generation limits?
     :param consider_contingencies: Consider the contingencies?
-    :param lodf_threshold:
-    :param buses_areas_1:
-    :param buses_areas_2:
-    :param transfer_method:
+    :param alpha_threshold: threshold to consider the exchange sensitivity
+    :param lodf_threshold: threshold to consider LODF sensitivities
+    :param buses_areas_1: array of bus indices in the area 1
+    :param buses_areas_2: array of bus indices in the area 2
+    :param transfer_method: AvailableTransferMode
+    :param monitor_only_sensitive_branches
+    :param monitor_only_ntc_load_rule_branches
+    :param ntc_load_rule: Amount of exchange branches power that should be dedicated to exchange
     :param logger: logger instance
-    :param progress_text:
-    :param progress_func:
+    :param progress_text: function to report text messages
+    :param progress_func: function to report progress
     :param export_model_fname: Export the model into LP and MPS?
-    :return: OpfVars
+    :return: NtcVars class with the results
     """
+    mode_2_int = {AvailableTransferMode.Generation: 0,
+                  AvailableTransferMode.InstalledPower: 1,
+                  AvailableTransferMode.Load: 2,
+                  AvailableTransferMode.GenerationAndLoad: 3}
+
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
     areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
 
@@ -1090,11 +1101,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                                       lodf=ls.LODF,
                                       P0=nc.Sbus.real,
                                       Pinstalled=nc.bus_installed_power,
-                                      Pgen=nc.generator_data.get_injections_per_bus()[:, 0].real,
-                                      Pload=nc.load_data.get_injections_per_bus()[:, 0].real,
+                                      Pgen=nc.generator_data.get_injections_per_bus().real,
+                                      Pload=nc.load_data.get_injections_per_bus().real,
                                       idx1=buses_areas_1,
                                       idx2=buses_areas_2,
-                                      mode=transfer_method)
+                                      mode=mode_2_int[transfer_method])
             else:
                 alpha = None
 
@@ -1111,7 +1122,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 alpha=alpha,
                 alpha_threshold=alpha_threshold,
                 structural_ntc=structural_ntc,
-                ntc_load_rule=None,
+                ntc_load_rule=ntc_load_rule,
                 inf=1e20
             )
 
@@ -1145,12 +1156,10 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                     linear_multicontingencies=mctg,
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                     monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
-                    alpha_threshold=alpha_threshold,
                     structural_ntc=structural_ntc,
-                    ntc_load_rule=None,
+                    ntc_load_rule=ntc_load_rule,
+                    alpha_threshold=alpha_threshold,
                 )
-
-
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach

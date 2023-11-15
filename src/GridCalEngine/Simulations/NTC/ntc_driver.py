@@ -15,22 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 import numpy as np
-import time
-
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, \
-    ContingencyAnalysisOptions
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
-from GridCalEngine.basic_structures import SolverType
 from GridCalEngine.basic_structures import Logger
 
 
@@ -38,16 +29,20 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: "PowerFlowOptions"):
+    def __init__(self, grid: MultiCircuit,
+                 options: OptimalNetTransferCapacityOptions,
+                 pf_options: "PowerFlowOptions"):
         """
         PowerFlowDriver class constructor
-        @param grid: MultiCircuit Object
-        @param options: OPF options
+        :param grid: MultiCircuit Object
+        :param options: OptimalNetTransferCapacityOptions
+        :param pf_options: PowerFlowOptions
         """
         DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
+
         self.pf_options = pf_options
 
         self.all_solved = True
@@ -59,22 +54,6 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         Get time steps list of strings
         """
         return list()
-
-    def compute_exchange_sensitivity(self, linear, numerical_circuit: NumericalCircuit, with_n1=True):
-
-        # compute the branch exchange sensitivity (alpha)
-        return compute_alpha(
-            ptdf=linear.PTDF,
-            lodf=linear.LODF if with_n1 else None,
-            P0=numerical_circuit.Sbus.real,
-            Pinstalled=numerical_circuit.bus_installed_power,
-            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, 0].real,
-            Pload=numerical_circuit.load_data.get_injections_per_bus()[:, 0].real,
-            idx1=self.options.area_from_bus_idx,
-            idx2=self.options.area_to_bus_idx,
-            dT=self.options.sensitivity_dT,
-            mode=self.options.transfer_method.value,
-        )
 
     def opf(self):
         """
@@ -100,10 +79,17 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             transfer_method=self.options.transfer_method,
             monitor_only_ntc_load_rule_branches=self.options.monitor_only_ntc_load_rule_branches,
             monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+            ntc_load_rule=self.options.ntc_load_rule,
             logger=self.logger,
             progress_text=self.progress_text.emit,
             progress_func=self.progress_signal.emit,
             export_model_fname=None)
+
+        inter_area_branches = self.grid.get_inter_areas_branches(a1=self.options.area_from_bus_idx,
+                                                                 a2=self.options.area_to_bus_idx)
+
+        inter_area_hvdc = self.grid.get_inter_areas_hvdc_branches(a1=self.options.area_from_bus_idx,
+                                                                  a2=self.options.area_to_bus_idx)
 
         # pack the results
         self.results = OptimalNetTransferCapacityResults(
@@ -124,41 +110,40 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             hvdc_flow=opf_vars.hvdc_vars.flows[0, :],
             hvdc_loading=opf_vars.hvdc_vars.loading[0, :],
             phase_shift=opf_vars.branch_vars.tap_angles[0, :],
-            inter_area_branches=self.grid.get_inter_areas_branches(
-                a1=self.options.area_from_bus_idx, a2=self.options.area_to_bus_idx),
-            inter_area_hvdc=self.grid.get_inter_areas_hvdc_branches(
-                a1=self.options.area_from_bus_idx, a2=self.options.area_to_bus_idx),
-            alpha=alpha,
-            alpha_n1=alpha_n1,
+            inter_area_branches=inter_area_branches,
+            inter_area_hvdc=inter_area_hvdc,
+            # alpha=alpha,
+            # alpha_n1=alpha_n1,
             monitor=opf_vars.branch_vars.monitor,
             monitor_type=opf_vars.branch_vars.monitor_type,
-            contingency_branch_flows_list=problem.get_contingency_flows_list(),
-            contingency_branch_indices_list=problem.contingency_indices_list,
-            contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
-            contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
-            contingency_generation_indices_list=problem.contingency_gen_indices_list,
-            contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
-            contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
-            contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
-            contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
-            branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
-            rates=numerical_circuit.branch_data.rates[:, 0],
-            contingency_rates=numerical_circuit.branch_data.contingency_rates[:, 0],
+            # contingency_branch_flows_list=problem.get_contingency_flows_list(),
+            # contingency_branch_indices_list=problem.contingency_indices_list,
+            # contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
+            # contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
+            # contingency_generation_indices_list=problem.contingency_gen_indices_list,
+            # contingency_generation_alpha_list=problem.contingency_generation_alpha_list,
+            # contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+            # contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
+            # contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
+            # branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
+            rates=opf_vars.branch_vars.rates,
+            contingency_rates=opf_vars.branch_vars.rates,  # TODO set contingency rates
             area_from_bus_idx=self.options.area_from_bus_idx,
             area_to_bus_idx=self.options.area_to_bus_idx,
-            structural_ntc=problem.structural_ntc,
-            sbase=numerical_circuit.Sbase,
+            # structural_ntc=problem.structural_ntc,
+            sbase=self.grid.Sbase,
             loading_threshold=self.options.loading_threshold_to_report,
             reversed_sort_loading=self.options.reversed_sort_loading,
+            branch_control_modes=[],
+            hvdc_control_modes=[],
         )
-
 
         self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
-        self.results.load_shedding = opf_vars.load_vars.shedding
-        self.results.battery_power = opf_vars.batt_vars.p[0, :]
-        self.results.battery_energy = opf_vars.batt_vars.e[0, :]
-        self.results.generator_power = opf_vars.gen_vars.p[0, :]
+        # self.results.load_shedding = opf_vars.load_vars.shedding
+        # self.results.battery_power = opf_vars.batt_vars.p[0, :]
+        # self.results.battery_energy = opf_vars.batt_vars.e[0, :]
+        # self.results.generator_power = opf_vars.gen_vars.p[0, :]
         self.results.Sf = opf_vars.branch_vars.flows[0, :]
         self.results.St = -opf_vars.branch_vars.flows[0, :]
         self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[0, :]
@@ -169,10 +154,12 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
         self.progress_text.emit('Creating reports...')
-        self.results.create_all_reports(
-            loading_threshold=self.options.loading_threshold_to_report,
-            reverse=self.options.reversed_sort_loading,
-        )
+
+        # TODO Fix this
+        # self.results.create_all_reports(
+        #     loading_threshold=self.options.loading_threshold_to_report,
+        #     reverse=self.options.reversed_sort_loading,
+        # )
 
         self.progress_text.emit('Done!')
 
