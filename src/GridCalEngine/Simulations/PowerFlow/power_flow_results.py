@@ -161,12 +161,12 @@ class PowerFlowResults(ResultsTemplate):
         self.bus_types: IntVec = bus_types
 
         # vars for the inter-area computation
-        self.F: IntVec = None
-        self.T: IntVec = None
-        self.hvdc_F: IntVec = None
-        self.hvdc_T: IntVec = None
-        self.bus_area_indices: IntVec = None
-        self.area_names: StrVec = area_names
+        # self.F: IntVec = None
+        # self.T: IntVec = None
+        # self.hvdc_F: IntVec = None
+        # self.hvdc_T: IntVec = None
+        # self.bus_area_indices: IntVec = None
+        # self.area_names: StrVec = area_names
 
         self.Sbus: CxVec = np.zeros(n, dtype=complex)
         self.voltage: CxVec = np.zeros(n, dtype=complex)
@@ -233,32 +233,6 @@ class PowerFlowResults(ResultsTemplate):
         """
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
-
-    def fill_circuit_info(self, grid: MultiCircuit):
-        """
-
-        :param grid:
-        :return:
-        """
-        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
-        bus_dict = grid.get_bus_index_dict()
-
-        self.area_names = [a.name for a in grid.get_areas()]
-        self.bus_area_indices = np.array([area_dict.get(b.area, 0) for b in grid.buses])
-
-        branches = grid.get_branches_wo_hvdc()
-        self.F = np.zeros(len(branches), dtype=int)
-        self.T = np.zeros(len(branches), dtype=int)
-        for k, elm in enumerate(branches):
-            self.F[k] = bus_dict[elm.bus_from]
-            self.T[k] = bus_dict[elm.bus_to]
-
-        hvdc = grid.get_hvdc()
-        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
-        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
-        for k, elm in enumerate(hvdc):
-            self.hvdc_F[k] = bus_dict[elm.bus_from]
-            self.hvdc_T[k] = bus_dict[elm.bus_to]
 
     @property
     def converged(self):

@@ -129,6 +129,7 @@ class ConfigurationMain(ResultsMain):
                 "apply_temperature_correction": self.ui.temperature_correction_checkBox,
                 "apply_impedance_tolerances": self.ui.apply_impedance_tolerances_checkBox,
                 "override_branch_controls": self.ui.override_branch_controls_checkBox,
+                "add_pf_report": self.ui.addPowerFlowReportCheckBox,
             },
             "optimal_power_flow": {
                 "method": self.ui.lpf_solver_comboBox,
@@ -142,6 +143,7 @@ class ConfigurationMain(ResultsMain):
                 "consider_contingencies": self.ui.considerContingenciesOpfCheckBox,
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
+                "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,

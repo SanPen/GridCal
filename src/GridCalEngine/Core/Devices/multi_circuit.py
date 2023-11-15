@@ -2970,7 +2970,7 @@ class MultiCircuit:
         for branch in self.get_branches():
             branch.set_profile_values(t)
 
-    def get_bus_branch_connectivity_matrix(self):
+    def get_bus_branch_connectivity_matrix(self) -> Tuple[csc_matrix, csc_matrix, csc_matrix]:
         """
         Get the branch-bus connectivity
         :return: Cf, Ct, C
@@ -2988,19 +2988,21 @@ class MultiCircuit:
                 j = bus_dict[br.bus_to]  # store the row indices
                 Cf[k, i] = 1
                 Ct[k, j] = 1
+
+        C = csc_matrix(Cf + Ct)
         Cf = csc_matrix(Cf)
         Ct = csc_matrix(Ct)
-        C = Cf + Ct
+
         return Cf, Ct, C
 
-    def get_adjacent_matrix(self):
+    def get_adjacent_matrix(self) -> csc_matrix:
         """
         Get the bus adjacent matrix
         :return: Adjacent matrix
         """
         Cf, Ct, C = self.get_bus_branch_connectivity_matrix()
         A = C.T * C
-        return A
+        return A.tocsc()
 
     @staticmethod
     def get_adjacent_buses(A: csc_matrix, bus_idx):

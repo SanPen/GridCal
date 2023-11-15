@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat
 from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 
 
 class ResultsProperty:
@@ -88,6 +89,14 @@ class ResultsTemplate:
             self.time_indices = None
             self.sampled_probabilities = None
             self.original_sample_idx = None
+
+        # vars for the inter-area computation
+        self.F: IntVec = None
+        self.T: IntVec = None
+        self.hvdc_F: IntVec = None
+        self.hvdc_T: IntVec = None
+        self.bus_area_indices: IntVec = None
+        self.area_names: StrVec = None
 
     def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: List[str] = list()):
         """
@@ -280,6 +289,32 @@ class ResultsTemplate:
             x[a1, a2] += val
 
         return x
+
+    def fill_circuit_info(self, grid: MultiCircuit):
+        """
+
+        :param grid:
+        :return:
+        """
+        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
+        bus_dict = grid.get_bus_index_dict()
+
+        self.area_names = [a.name for a in grid.get_areas()]
+        self.bus_area_indices = np.array([area_dict.get(b.area, 0) for b in grid.buses])
+
+        branches = grid.get_branches_wo_hvdc()
+        self.F = np.zeros(len(branches), dtype=int)
+        self.T = np.zeros(len(branches), dtype=int)
+        for k, elm in enumerate(branches):
+            self.F[k] = bus_dict[elm.bus_from]
+            self.T[k] = bus_dict[elm.bus_to]
+
+        hvdc = grid.get_hvdc()
+        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
+        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
+        for k, elm in enumerate(hvdc):
+            self.hvdc_F[k] = bus_dict[elm.bus_from]
+            self.hvdc_T[k] = bus_dict[elm.bus_to]
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """

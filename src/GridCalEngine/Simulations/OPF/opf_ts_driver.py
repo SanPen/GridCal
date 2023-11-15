@@ -228,13 +228,63 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             i += 1
 
+    def add_report(self):
+        """
+        Add a report of the results (in-place)
+        """
+        if self.progress_text:
+            self.progress_text.emit("Creating report")
+
+        nt = len(self.time_indices)
+        for t, t_idx in enumerate(self.time_indices):
+
+            if self.progress_signal:
+                self.progress_signal.emit((t + 1) / nt * 100)
+
+            t_name = str(self.results.time_array[t])
+
+            for gen_name, gen_shedding in zip(self.results.generator_names, self.results.generator_shedding[t, :]):
+                if gen_shedding > 0:
+                    self.logger.add_warning("Generation shedding {}".format(t_name),
+                                            device=gen_name,
+                                            value=gen_shedding,
+                                            expected_value=0.0)
+
+            for load_name, load_shedding in zip(self.results.load_names, self.results.load_shedding[t, :]):
+                if load_shedding > 0:
+                    self.logger.add_warning("Load shedding {}".format(t_name),
+                                            device=load_name,
+                                            value=load_shedding,
+                                            expected_value=0.0)
+
+            for name, val in zip(self.results.branch_names, self.results.loading[t, :]):
+                if val > 1:
+                    self.logger.add_warning("Overload {}".format(t_name),
+                                            device=name,
+                                            value=val * 100,
+                                            expected_value=100.0)
+
+            va = np.angle(self.results.voltage[t, :])
+            for i, bus in enumerate(self.grid.buses):
+                if va[i] > bus.angle_max:
+                    self.logger.add_warning("Overvoltage {}".format(t_name),
+                                            device=bus.name,
+                                            value=va[i],
+                                            expected_value=bus.angle_max)
+                elif va[i] < bus.angle_min:
+                    self.logger.add_warning("Undervoltage {}".format(t_name),
+                                            device=bus.name,
+                                            value=va[i],
+                                            expected_value=bus.angle_min)
+
     def run(self):
         """
 
         :return:
         """
 
-        start = time.time()
+        self.tic()
+
         if self.engine == bs.EngineType.GridCal:
 
             if self.options.grouping == TimeGrouping.NoGrouping:
@@ -312,5 +362,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_Pf
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
 
-        end = time.time()
-        self.elapsed = end - start
+        if self.options.generate_report:
+            self.add_report()
+
+        self.toc()

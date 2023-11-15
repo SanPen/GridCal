@@ -414,7 +414,8 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             results: sim.ContinuationPowerFlowResults = self.session.get_results(
-                sim.SimulationTypes.ContinuationPowerFlow_run)
+                sim.SimulationTypes.ContinuationPowerFlow_run
+            )
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
