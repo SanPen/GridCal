@@ -52,7 +52,7 @@ come with Python pre-installed already.
 
 
 
-### Run th graphical user interface
+### Run the graphical user interface
 
 Once you install GridCal in your local Python distribution, you can run the 
 graphical user interface with the following terminal command:
