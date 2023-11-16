@@ -153,7 +153,8 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_
                                c=np.zeros(nbr),
                                Yshunt_bus=Yshunt_bus0,
                                conn=calculation_inputs.branch_data.conn,
-                               seq=0)
+                               seq=0,
+                               add_windings_phase=True)
 
     Y_gen1 = calculation_inputs.generator_data.get_Yshunt(seq=1)
     Y_batt1 = calculation_inputs.battery_data.get_Yshunt(seq=1)
@@ -178,7 +179,8 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_
                                c=calculation_inputs.branch_data.c,
                                Yshunt_bus=Yshunt_bus1,
                                conn=calculation_inputs.branch_data.conn,
-                               seq=1)
+                               seq=1,
+                               add_windings_phase=True)
 
     Y_gen2 = calculation_inputs.generator_data.get_Yshunt(seq=2)
     Y_batt2 = calculation_inputs.battery_data.get_Yshunt(seq=2)
@@ -203,7 +205,8 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_
                                c=np.zeros(nbr),
                                Yshunt_bus=Yshunt_bus2,
                                conn=calculation_inputs.branch_data.conn,
-                               seq=2)
+                               seq=2,
+                               add_windings_phase=True)
 
     """
     Initialize Vpf introducing phase shifts
@@ -246,7 +249,8 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_
                                      c=calculation_inputs.branch_data.c,
                                      Yshunt_bus=np.zeros(nbus, dtype=complex),
                                      conn=calculation_inputs.branch_data.conn,
-                                     seq=1)
+                                     seq=1,
+                                     add_windings_phase=True)
 
     vd = calculation_inputs.vd
     pqpv = calculation_inputs.pqpv

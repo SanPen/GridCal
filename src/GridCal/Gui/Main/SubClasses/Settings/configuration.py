@@ -16,12 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import os
+import qdarktheme
 from typing import Dict, Union
-
 from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
+from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
 
 
 class ConfigurationMain(ResultsMain):
@@ -37,6 +38,42 @@ class ConfigurationMain(ResultsMain):
 
         # create main window
         ResultsMain.__init__(self, parent)
+
+        # check boxes
+        self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
+
+    def change_theme_mode(self) -> None:
+        """
+        Change the GUI theme
+        :return:
+        """
+        custom_colors = {"primary": "#00aa88ff",
+                         "primary>list.selectionBackground": "#00aa88be"}
+
+        if self.ui.dark_mode_checkBox.isChecked():
+            qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
+
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, BusBranchEditorWidget):
+                    diagram.set_dark_mode()
+
+            self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_dark_theme()
+        else:
+            qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
+
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, BusBranchEditorWidget):
+                    diagram.set_light_mode()
+
+            self.colour_diagrams()
+
+            if self.console is not None:
+                self.console.set_light_theme()
 
     @staticmethod
     def config_file_path() -> str:

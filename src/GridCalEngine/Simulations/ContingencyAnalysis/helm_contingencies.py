@@ -95,7 +95,8 @@ def calc_V_outage(nc: NumericalCircuit,
                               c=nc.branch_data.c[contingency_br_indices],
                               Yshunt_bus=np.zeros(nc.nbus),
                               conn=nc.branch_data.conn[contingency_br_indices],
-                              seq=1)
+                              seq=1,
+                              add_windings_phase=False)
 
     # solve the modified HELM
     _, V, _, norm_f = helm_coefficients_dY(dY=adm.Ybus,

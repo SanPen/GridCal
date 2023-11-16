@@ -40,7 +40,7 @@ class MainGUI(ScriptingMain):
     MainGUI
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Main constructor
         """
@@ -75,8 +75,6 @@ class MainGUI(ScriptingMain):
 
         # this is the contingency planner tab, invisible until done
         self.ui.tabWidget_3.setTabVisible(4, True)
-
-        # self.view_cascade_menu()
 
         self.clear_results()
 

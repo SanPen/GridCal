@@ -19,8 +19,7 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-import qdarktheme
-from PySide6 import QtGui, QtWidgets, QtCore
+from PySide6 import QtGui, QtWidgets
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -30,7 +29,7 @@ from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
@@ -154,9 +153,6 @@ class DiagramsMain(CompiledArraysMain):
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
         self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
-
-        # check boxes
-        self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
 
     def auto_layout(self):
         """
@@ -1049,38 +1045,6 @@ class DiagramsMain(CompiledArraysMain):
         index = self.ui.diagramsListView.model().index(row, 0)
         self.ui.diagramsListView.setCurrentIndex(index)
 
-    def change_theme_mode(self) -> None:
-        """
-        Change the GUI theme
-        :return:
-        """
-        custom_colors = {"primary": "#00aa88ff",
-                         "primary>list.selectionBackground": "#00aa88be"}
-
-        if self.ui.dark_mode_checkBox.isChecked():
-            qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
-                    diagram.set_dark_mode()
-
-            self.colour_diagrams()
-
-            if self.console is not None:
-                self.console.set_dark_theme()
-        else:
-            qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
-                    diagram.set_light_mode()
-
-            self.colour_diagrams()
-
-            if self.console is not None:
-                self.console.set_light_theme()
 
     def plot_style_change(self):
         """
@@ -1317,32 +1281,11 @@ class DiagramsMain(CompiledArraysMain):
                 self.ui.simulation_results_step_slider.setSliderPosition(0)
                 self.ui.schematic_step_label.setText("No steps")
 
-    def get_selected_contingency_devices(self) -> List[dev.EditableDevice]:
-        """
-        Get the selected buses
-        :return:
-        """
-        diagram = self.get_selected_diagram_widget()
-
-        if isinstance(diagram, BusBranchEditorWidget):
-            lst = diagram.get_selection_api_objects()
-        elif isinstance(diagram, BusViewerWidget):
-            lst = diagram.get_selection_api_objects()
-        else:
-            lst = list()
-
-        return lst
-
-    def get_selected_investment_devices(self) -> List[dev.EditableDevice]:
+    def get_selected_devices(self) -> List[dev.EditableDevice]:
         """
         Get the selected investment devices
-        :return:
+        :return: list of selected devices
         """
-        # lst: List[dev.EditableDevice] = list()
-        # for k, elm in enumerate(self.circuit.get_investment_devices()):
-        #     if elm.graphic_obj is not None:
-        #         if elm.graphic_obj.isSelected():
-        #             lst.append(elm)
 
         diagram = self.get_selected_diagram_widget()
 
@@ -1362,7 +1305,7 @@ class DiagramsMain(CompiledArraysMain):
         if len(self.circuit.buses) > 0:
 
             # get the selected buses
-            selected = self.get_selected_contingency_devices()
+            selected = self.get_selected_devices()
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
@@ -1396,7 +1339,7 @@ class DiagramsMain(CompiledArraysMain):
         if len(self.circuit.buses) > 0:
 
             # get the selected investment devices
-            selected = self.get_selected_investment_devices()
+            selected = self.get_selected_devices()
 
             if len(selected) > 0:
 

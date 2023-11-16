@@ -382,7 +382,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.HvdcLoading:
             labels = self.hvdc_names
-            y = self.hvdc_loading
+            y = self.hvdc_loading * 100.0
             y_label = '(%)'
             title = 'HVDC loading'
 

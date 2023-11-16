@@ -142,7 +142,8 @@ def compute_admittances(R: Vec,
                         c: Vec,
                         Yshunt_bus: CxVec,
                         conn: Union[List[WindingsConnection], ObjVec],
-                        seq: int) -> Admittance:
+                        seq: int,
+                        add_windings_phase: bool = False) -> Admittance:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
 
@@ -166,6 +167,7 @@ def compute_admittances(R: Vec,
     :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
     :param seq: Sequence [0, 1, 2]
     :param conn: array of windings connections (numpy array of WindingsConnection)
+    :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
     :return: Admittance instance
     """
     r30_deg = np.exp(1.0j * np.pi / 6.0)
@@ -212,14 +214,20 @@ def compute_admittances(R: Vec,
 
     elif seq == 1:  # positive sequence
 
-        # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
-                               for con in conn])
+        if add_windings_phase:
+            # only need to include the phase shift of +-30 degrees
+            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
+                                   for con in conn])
 
-        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+            Ytt = (ys + bc2) / (vtap_t * vtap_t)
+        else:
+            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+            Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     else:  # original
         # Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)

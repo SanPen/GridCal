@@ -264,7 +264,6 @@ class BranchVars:
         """
         nt, n_elm = self.flows.shape
         data = BranchVars(nt=nt, n_elm=n_elm)
-
         data.rates = self.rates
 
         for t in range(nt):
@@ -994,8 +993,7 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
-                            prob: LpModel,
-                            logger: Logger):
+                            prob: LpModel):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
@@ -1027,13 +1025,10 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        name = join("kirchoff_", [t_idx, k], "_")
-        try:
-            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-                cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
-                name=name)
-        except AttributeError:
-            logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
+        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+            cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
+            name=join("kirchoff_", [t_idx, k], "_")
+        )
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
@@ -1195,8 +1190,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
-                                    prob=lp_model,
-                                    logger=logger)
+                                    prob=lp_model)
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
@@ -1259,16 +1253,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     # gather the results
     if status == LpModel.OPTIMAL:
-        print('Solution:')
-        print('Objective value =', lp_model.fobj_value())
+        logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
     else:
-        print('The problem does not have an optimal solution.')
+        logger.add_error("The problem does not have an optimal solution.")
         mip_vars.acceptable_solution = False
         lp_file_name = grid.name + "_debug.lp"
         lp_model.save_model(file_name=lp_file_name)
-        print("Debug LP model saved as:", lp_file_name)
+        logger.add_info("Debug LP model saved", value=lp_file_name)
 
     vars_v = mip_vars.get_values(grid.Sbase)
+
+    # add the model logger to the main logger
+    logger += lp_model.logger
 
     return vars_v
