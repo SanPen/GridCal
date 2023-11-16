@@ -420,11 +420,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         :return:
         """
-        start = time.time()
+        self.tic()
 
         self.opf()
         self.progress_text.emit('Done!')
 
-        end = time.time()
-        self.results.elapsed = end - start
+        self.toc()
 

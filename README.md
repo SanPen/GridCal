@@ -26,7 +26,7 @@ for the future generations.
 ## Installation
 
 GridCal is a software made in the Python programming language. 
-Therefore, it needs a python interpreter installed in your operative system. 
+Therefore, it needs a Python interpreter installed in your operative system. 
 
 ### Standalone setup
 

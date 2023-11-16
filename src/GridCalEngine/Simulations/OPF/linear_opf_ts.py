@@ -994,7 +994,8 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
-                            prob: LpModel):
+                            prob: LpModel,
+                            logger: Logger):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
@@ -1009,6 +1010,7 @@ def add_linear_node_balance(t_idx: int,
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
     :param prob: LpModel
+    :param logger: Logger
     """
     B = Bbus.tocsc()
 
@@ -1025,9 +1027,13 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
-            name=join("kirchoff_", [t_idx, k], "_"))
+        name = join("kirchoff_", [t_idx, k], "_")
+        try:
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
+                name=name)
+        except AttributeError:
+            logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
@@ -1189,7 +1195,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
-                                    prob=lp_model)
+                                    prob=lp_model,
+                                    logger=logger)
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:

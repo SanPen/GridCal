@@ -19,7 +19,7 @@ import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCalEngine.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType
-
+from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 class GCProp:
     """
@@ -391,6 +391,21 @@ class EditableDevice:
         for magnitude in self.properties_with_profile.keys():
             profile = getattr(self, self.properties_with_profile[magnitude])
             setattr(self, magnitude, profile[t])
+
+    def get_profile(self, magnitude: str) -> Union[Vec, IntVec, BoolVec]:
+        """
+        Get the profile of a property name
+        :param magnitude: name of the property
+        :return: Profile object
+        """
+
+        # try to get the profile name
+        profile_name = self.properties_with_profile.get(magnitude, None)
+
+        if profile_name is None:
+            return None
+        else:
+            return getattr(self, profile_name)
 
     def get_properties_dict(self, version=3):
         """

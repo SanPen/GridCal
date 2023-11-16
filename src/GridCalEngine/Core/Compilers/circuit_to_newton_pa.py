@@ -1187,19 +1187,18 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
                      bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
                      bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
-    opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver])
-    # opt.solver = solver_dict[opf_opt.mip_solver]
-    opt.time_grouping = grouping_dict[opf_opt.time_grouping]
-    opt.unit_commitment = False
-    opt.compute_flows = opf_opt.zonal_grouping == ZonalGrouping.NoGrouping
+    opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver],
+                               grouping=grouping_dict[opf_opt.grouping],
+                               unit_commitment=opf_opt.unit_commitment,
+                               compute_flows=opf_opt.zonal_grouping == ZonalGrouping.NoGrouping,
+                               pf_options=get_newton_pa_pf_options(pf_opt))
+
     opt.check_with_power_flow = False
     opt.add_contingencies = opf_opt.consider_contingencies
     opt.skip_generation_limits = opf_opt.skip_generation_limits
     opt.maximize_area_exchange = opf_opt.maximize_flows
-    opt.unit_commitment = opf_opt.unit_commitment
     opt.use_ramp_constraints = False
     opt.lodf_threshold = opf_opt.lodf_tolerance
-    opt.pf_options = get_newton_pa_pf_options(pf_opt)
 
     if opf_opt.areas_from is not None:
         opt.areas_from = [area_dict[e] for e in opf_opt.areas_from]

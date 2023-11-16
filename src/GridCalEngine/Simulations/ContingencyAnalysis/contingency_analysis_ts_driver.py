@@ -294,7 +294,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         """
         Run contingency analysis time series
         """
-        start = time.time()
+        self.tic()
 
         if self.engine == bs.EngineType.GridCal:
             self.results = self.run_contingency_analysis()
@@ -307,5 +307,4 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             # default to GridCal mode
             self.results = self.run_contingency_analysis()
 
-        end = time.time()
-        self.elapsed = end - start
+        self.toc()
