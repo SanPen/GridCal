@@ -1322,11 +1322,15 @@ class DiagramsMain(CompiledArraysMain):
         Get the selected buses
         :return:
         """
-        lst: List[dev.EditableDevice] = list()
-        for k, elm in enumerate(self.circuit.get_contingency_devices()):
-            if elm.graphic_obj is not None:
-                if elm.graphic_obj.isSelected():
-                    lst.append(elm)
+        diagram = self.get_selected_diagram_widget()
+
+        if isinstance(diagram, BusBranchEditorWidget):
+            lst = diagram.get_selection_api_objects()
+        elif isinstance(diagram, BusViewerWidget):
+            lst = diagram.get_selection_api_objects()
+        else:
+            lst = list()
+
         return lst
 
     def get_selected_investment_devices(self) -> List[dev.EditableDevice]:
