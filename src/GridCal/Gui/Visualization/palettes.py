@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -64,8 +64,8 @@ def rgb2bgr(color):
 
 def tso_substation_palette_bgr(x):
     """
-    Get the classic substation colors
-    :param x: substation voltage in kV
+    Get the classic Substation colors
+    :param x: Substation voltage in kV
     :return: BGR
     """
     if x >= 400:
@@ -80,7 +80,7 @@ def tso_substation_palette_bgr(x):
 
 def tso_line_palette_bgr(v, loading, warning_lvl=0.9, overload_lvl=1.15):
     """
-    Get the classic substation colors
+    Get the classic Substation colors
     :param v: line voltage in kV
     :param loading: loading in p.u.
     :param warning_lvl: Warning level
@@ -302,8 +302,8 @@ def tso_line_palette_rgb(x):
 
 def tso_substation_palette_rgb(x):
     """
-    Get the classic substation colors
-    :param x: substation voltage in kV
+    Get the classic Substation colors
+    :param x: Substation voltage in kV
     :return: RGB
     """
     if 220 > x >= 400:

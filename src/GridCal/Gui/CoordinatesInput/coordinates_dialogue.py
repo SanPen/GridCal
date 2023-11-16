@@ -1,20 +1,17 @@
 import os
-import string
 import sys
-from random import randint
-from enum import Enum
-from difflib import SequenceMatcher
-import numpy as np
 import pandas as pd
-from PySide2.QtWidgets import *
-from typing import List, Dict
-from GridCal.Gui.CoordinatesInput.gui import *
-from GridCal.Gui.ProfilesInput.excel_dialog import *
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Gui.GridEditorWidget.messages import *
+from PySide6 import QtGui, QtCore, QtWidgets
+from typing import List, Tuple, Union
+from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
+from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
+from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.basic_structures import Logger
+from GridCal.Gui.messages import error_msg
 
 
-def get_list_model(iterable):
+def get_list_model(iterable: List[str]) -> QtGui.QStandardItemModel:
     """
     get Qt list model from a simple iterable
     :param iterable: 
@@ -30,8 +27,28 @@ def get_list_model(iterable):
     return list_model
 
 
-class Association:
+def find_duplicates(arr: List[str]) -> Tuple[List[str], List[str]]:
+    """
+    Find duplicates in an array
+    :param arr: original array
+    :return: unique, duplicates
+    """
+    seen = set()
+    duplicates = set()
 
+    for element in arr:
+        if element in seen:
+            duplicates.add(element)
+        else:
+            seen.add(element)
+
+    return list(seen), list(duplicates)
+
+
+class CoordinatesInputAssociation:
+    """
+    Association
+    """
     def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
         """
 
@@ -49,8 +66,12 @@ class Association:
         self.latitude: float = latitude
         self.longitude: float = longitude
 
-    def get_at(self, idx):
-
+    def get_at(self, idx: int) -> Union[float, str]:
+        """
+        Get association at index
+        :param idx:
+        :return:
+        """
         if idx == 0:
             return self.name
         elif idx == 1:
@@ -67,16 +88,16 @@ class Association:
             return ''
 
 
-class Associations(QAbstractTableModel):
+class CoordinatesInputAssociations(QtCore.QAbstractTableModel):
 
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)
 
-        self.__values: List[Association] = list()
+        self.__values: List[CoordinatesInputAssociation] = list()
 
         self.__headers = ['Name', 'Code', 'x', 'y', 'latitude', 'longitude']
 
-    def append(self, val: Association):
+    def append(self, val: CoordinatesInputAssociation):
         self.__values.append(val)
 
     def set_x_at(self, idx, value):
@@ -121,32 +142,38 @@ class Associations(QAbstractTableModel):
     def columnCount(self, parent=None):
         return len(self.__headers)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self.__values[index.row()].get_at(index.column()))
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.__headers[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                return p_int
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.__headers[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
+                return section
         return None
 
 
 class CoordinatesInputGUI(QtWidgets.QDialog):
+    """
+    CoordinatesInputGUI
+    """
 
-    def __init__(self, parent=None, list_of_objects: List[Bus] = list(), use_native_dialogues=True):
+    def __init__(self, parent=None, list_of_objects: List[Bus] = list()):
         """
 
         Args:
             parent:
             list_of_objects: List of objects to which set a profile to
             list_of_objects: list ob object to modify
-            use_native_dialogues: use the native file selection dialogues?
         """
         QtWidgets.QDialog.__init__(self, parent)
         if list_of_objects is None:
@@ -158,7 +185,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
         self.project_directory = None
 
-        self.use_native_dialogues = use_native_dialogues
+        self.assigned_count: int = 0
 
         # dataFrame
         self.original_data_frame: pd.DataFrame = None
@@ -166,9 +193,9 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         # initialize the objectives list
         self.objects: List[Bus] = list_of_objects
 
-        self.associations = Associations()
+        self.associations = CoordinatesInputAssociations()
         for elm in list_of_objects:
-            self.associations.append(Association(elm.name, elm.code, elm.x, elm.y, elm.latitude, elm.longitude))
+            self.associations.append(CoordinatesInputAssociation(elm.name, elm.code, elm.x, elm.y, elm.latitude, elm.longitude))
 
         self.display_associations()
 
@@ -188,13 +215,13 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def dropEvent(self, event):
@@ -226,8 +253,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
     def set_combo_boxes(self):
         """
-
-        :return:
+        Set the options
         """
         if self.original_data_frame is not None:
             names = [val.lower().strip() for val in self.original_data_frame.columns.values]
@@ -240,28 +266,29 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             self.ui.latitudeComboBox.setModel(mdl)
             self.ui.longitudeComboBox.setModel(mdl)
 
-            for i, name in enumerate(names):
+            for i, name in enumerate(names):  # names are already in lowercase
 
-                if name == 'x':
+                if name in ['x', 'xpos', 'x_pos']:
                     self.ui.xComboBox.setCurrentIndex(i)
                     self.ui.xCheckBox.setChecked(True)
-                elif name == 'y':
+
+                elif name in ['y', 'ypos', 'y_pos']:
                     self.ui.yComboBox.setCurrentIndex(i)
                     self.ui.yCheckBox.setChecked(True)
-                elif name == 'latitude':
+
+                elif name in ['latitude', 'lat']:
                     self.ui.latitudeComboBox.setCurrentIndex(i)
                     self.ui.latitudeCheckBox.setChecked(True)
-                elif name == 'longitude':
+
+                elif name in ['longitude', 'lon']:
                     self.ui.longitudeComboBox.setCurrentIndex(i)
                     self.ui.longitudeCheckBox.setChecked(True)
 
     def assign(self):
         """
-
-        :return:
+        Assign the loaded values to the correspondance table
         """
         if self.original_data_frame is not None:
-            print('Assign')
             name_idx = self.ui.nameComboBox.currentIndex()
             code_idx = self.ui.codeComboBox.currentIndex()
             x_idx = self.ui.xComboBox.currentIndex()
@@ -313,6 +340,8 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
             self.display_associations()
 
+            self.assigned_count += 1
+
     def import_profile(self):
         """
         Select a file to be loaded
@@ -324,21 +353,13 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              filter=files_types,
-                                                              options=options)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
         self.open_file_now(filename)
 
-    def open_file_now(self, filename):
+    def open_file_now(self, filename: str):
         """
-
-        :param filename:
-        :return:
+        Opena file
+        :param filename: path of the file
         """
         if len(filename) > 0:
             # get the filename extension
@@ -351,25 +372,44 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             elif file_extension in ['.xlsx', '.xls']:
 
                 # select the sheet from the file
-                window = ExcelDialog(self, filename)
-                window.exec_()
-                sheet_index = window.excel_sheet
+                excel_window = ExcelDialog(self, filename)
+                excel_window.exec()
+                sheet_index = excel_window.excel_sheet
 
                 if sheet_index is not None:
                     self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=None)
-
                 else:
                     return
+
+            # check for duplicates
+            unique_hdr, duplicate_hdr = find_duplicates(arr=list(self.original_data_frame.columns))
+
+            if len(duplicate_hdr):
+                # notify
+                logger = Logger()
+                for hdr in duplicate_hdr:
+                    logger.add_error("Duplicated header", device=hdr)
+
+                logs_dialogue = LogsDialogue(name="Duplictaed headers", logger=logger, expand_all=True)
+                logs_dialogue.exec()
+
+                # filter the headers
+                self.original_data_frame = self.original_data_frame[unique_hdr]
 
             # set the profile names list
             self.set_combo_boxes()
             self.assign()
             self.display_associations()
+            self.assigned_count = 0
 
-    def do_it(self):
+    def do_it(self) -> None:
         """
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
+
+        if self.assigned_count == 0:
+            # maybe the user clicked on accept without assigning, so assign as a last resort
+            self.assign()
 
         # assign the values back
         for i, bus in enumerate(self.objects):
@@ -388,21 +428,20 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         self.close()
 
 
-class TestObj:
-    def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
-        self.name = name
-        self.code = code
-        self.x = x
-        self.y = y
-        self.latitude = latitude
-        self.longitude = longitude
-
-
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
+
+    class TestObj:
+        def __init__(self, name, code, x=0, y=0, latitude=0, longitude=0):
+            self.name = name
+            self.code = code
+            self.x = x
+            self.y = y
+            self.latitude = latitude
+            self.longitude = longitude
+
+
     window = CoordinatesInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

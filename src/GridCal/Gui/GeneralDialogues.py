@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,30 +15,27 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
-from enum import Enum
+import pandas as pd
+from typing import List
 from datetime import datetime
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model
-
-
-class ProfileTypes(Enum):
-    Loads = 1,
-    Generators = 2
+from GridCalEngine.basic_structures import Logger
+from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
 
 
 class NewProfilesStructureDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(NewProfilesStructureDialogue, self).__init__()
         self.setObjectName("self")
         # self.resize(200, 71)
         # self.setMinimumSize(QtCore.QSize(200, 71))
         # self.setMaximumSize(QtCore.QSize(200, 71))
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         # icon = QtGui.QIcon()
         # icon.addPixmap(QtGui.QPixmap("Icons/Plus-32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         # self.setWindowIcon(icon)
@@ -129,7 +126,6 @@ def fill_tree_from_logs(logger: Logger):
             # print('\t', message)
 
             for time, elm, value, expected_value in data_list:
-
                 # print('\t', '\t', time, elm, value, expected_value)
 
                 time_child = QtGui.QStandardItem(time)
@@ -170,10 +166,10 @@ class MTreeExpandHook(QtCore.QObject):
 
     def eventFilter(self, receiver, event):
         if (
-            # NOTE mouse left click
-            event.type() == QtCore.QEvent.Type.MouseButtonPress
-            # NOTE keyboard shift press
-            and event.modifiers() & QtCore.Qt.ShiftModifier
+                # NOTE mouse left click
+                event.type() == QtCore.QEvent.Type.MouseButtonPress
+                # NOTE keyboard shift press
+                and event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
         ):
             # NOTE get mouse local position
             pos = self.tree.mapFromGlobal(QtGui.QCursor.pos())
@@ -189,10 +185,11 @@ class LogsDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self, name, logger: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.logger = logger
@@ -224,7 +221,7 @@ class LogsDialogue(QtWidgets.QDialog):
 
         self.btn_frame = QtWidgets.QFrame()
         self.btn_layout = QtWidgets.QHBoxLayout(self.btn_frame)
-        self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Expanding)
+        self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Expanding)
         self.btn_layout.addWidget(self.save_btn)
         self.btn_layout.addWidget(self.copy_btn)
         self.btn_layout.addSpacerItem(self.btn_spacer)
@@ -253,7 +250,7 @@ class LogsDialogue(QtWidgets.QDialog):
         Save the logs to excel or CSV
         """
         file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
-                                                              filter="CSV (*.csv);;Excel files (*.xlsx)",)
+                                                              filter="CSV (*.csv);;Excel files (*.xlsx)", )
 
         if file != '':
             if 'xlsx' in filter_:
@@ -279,8 +276,8 @@ class LogsDialogue(QtWidgets.QDialog):
 
         # copy to clipboard
         cb = QtWidgets.QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        cb.setText(txt, mode=cb.Clipboard)
+        cb.clear()
+        cb.setText(txt)
 
 
 class ElementsDialogue(QtWidgets.QDialog):
@@ -291,7 +288,7 @@ class ElementsDialogue(QtWidgets.QDialog):
     def __init__(self, name, elements: list()):
         super(ElementsDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # build elements list
@@ -342,10 +339,11 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(TimeReIndexDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
         self.accepted = False
@@ -402,13 +400,14 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
+
     def __init__(self):
         super(CorrectInconsistenciesDialogue, self).__init__()
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.accepted = False
+        self.is_accepted = False
 
         self.label1 = QtWidgets.QLabel()
         self.label1.setText("Minimum generator set point")
@@ -464,7 +463,7 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
         """
         Accept and close
         """
-        self.accepted = True
+        self.is_accepted = True
         self.accept()
 
 
@@ -477,10 +476,271 @@ def clear_qt_layout(layout):
         layout.itemAt(i).widget().deleteLater()
 
 
+class CheckListDialogue(QtWidgets.QDialog):
+    """
+    New profile dialogue window
+    """
+
+    def __init__(self, objects_list: List[str], title='Select objects'):
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+        self.selected_indices: List[int] = list()
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("Selected objects")
+
+        # min voltage
+        self.list_view = QtWidgets.QListView()
+        self.mdl = get_list_model(objects_list, checks=True, check_value=True)
+        self.list_view.setModel(self.mdl)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.list_view)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        h = 260
+        self.resize(h, int(0.8 * h))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.selected_indices = get_checked_indices(self.mdl)
+        self.accept()
+
+
+class InputNumberDialogue(QtWidgets.QDialog):
+    """
+    New InputNumberDialogue window
+    """
+
+    def __init__(self, min_value: float, max_value: float, default_value: float, is_int: bool = False,
+                 title='Select objects', text='', decimals=2, suffix='', h=80, w=240):
+        """
+
+        :param min_value:
+        :param max_value:
+        :param is_int:
+        :param title:
+        :param text:
+        :param decimals:
+        :param suffix:
+        :param h:
+        :param w:
+        """
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+        self.value = 0 if is_int else 0.0
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText(text)
+
+        # min voltage
+        self.input_box = QtWidgets.QSpinBox() if is_int else QtWidgets.QDoubleSpinBox()
+        self.input_box.setMinimum(min_value)
+        self.input_box.setMaximum(max_value)
+        self.input_box.setSuffix(suffix)
+        self.input_box.setValue(default_value)
+
+        if not is_int:
+            self.input_box.setDecimals(decimals)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.input_box)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        self.resize(w, h)
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.value = self.input_box.value()
+        self.accept()
+
+
+class StartEndSelectionDialogue(QtWidgets.QDialog):
+    """
+    New StartEndSelectionDialogue window
+    """
+
+    def __init__(self, min_value: int, max_value: int, time_array,
+                 title='Simulation limits selection', h=80, w=240):
+        """
+
+        :param min_value:
+        :param max_value:
+        :param time_array:
+        :param title:
+        :param h:
+        :param w:
+        """
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+
+        self.time_array = time_array
+        nt = len(time_array) - 1
+
+        self.start_slider = QtWidgets.QSlider()
+        self.start_slider.setMinimum(0)
+        self.start_slider.setMaximum(nt)
+        self.start_slider.setValue(min_value)
+        self.start_slider.valueChanged.connect(self.slider_change)
+        self.start_slider.setOrientation(QtCore.Qt.Orientation.Horizontal)
+
+        self.start_label = QtWidgets.QLabel()
+
+        self.end_slider = QtWidgets.QSlider()
+        self.end_slider.setMinimum(0)
+        self.end_slider.setMaximum(nt)
+        self.end_slider.setValue(max_value)
+        self.end_slider.valueChanged.connect(self.slider_change)
+        self.end_slider.setOrientation(QtCore.Qt.Orientation.Horizontal)
+
+        self.end_label = QtWidgets.QLabel()
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.start_slider)
+        self.main_layout.addWidget(self.start_label)
+        self.main_layout.addWidget(self.end_slider)
+        self.main_layout.addWidget(self.end_label)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        self.start_value = min_value
+        self.end_value = max_value
+
+        self.resize(w, h)
+
+        self.slider_change()
+
+    def slider_change(self):
+        """
+        On any slider change...
+        """
+        self.start_value = self.start_slider.value()
+        self.end_value = self.end_slider.value()
+
+        if self.start_value > self.end_value:
+            self.end_slider.setValue(self.start_value)
+            self.end_value = self.start_value
+
+        t1 = pd.to_datetime(self.time_array[self.start_value]).strftime('%d/%m/%Y %H:%M')
+        t2 = pd.to_datetime(self.time_array[self.end_value]).strftime('%d/%m/%Y %H:%M')
+        self.start_label.setText(str(t1))
+        self.end_label.setText(str(t2) + ' [{0}]'.format(self.end_value - self.start_value))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.accept()
+
+
+class CustomQuestionDialogue(QtWidgets.QDialog):
+    """
+    Custom question dialogue
+    """
+
+    def __init__(self, title: str, question: str, answer1: str, answer2: str):
+        super().__init__()
+
+        self.setWindowTitle(title)
+
+        layout = QtWidgets.QVBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
+
+        label = QtWidgets.QLabel(question)
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        button_layout.addSpacerItem(QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Expanding))
+
+        button_1 = QtWidgets.QPushButton(answer1)
+        button_1.clicked.connect(self.b1_clicked)
+        button_layout.addWidget(button_1)
+
+        button_2 = QtWidgets.QPushButton(answer2)
+        button_2.clicked.connect(self.b2_clicked)
+        button_layout.addWidget(button_2)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+        self.accepted_answer = 0
+
+    def b1_clicked(self):
+        self.accepted_answer = 1
+        self.accept()
+
+    def b2_clicked(self):
+        self.accepted_answer = 2
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
-    from PySide2.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication(sys.argv)
-    window = LogsDialogue(name='', logger=Logger())
+    # window = InputNumberDialogue(min_value=3,
+    #                              max_value=10,
+    #                              default_value=3,
+    #                              is_int=True,
+    #                              title="stuff",
+    #                              text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
+    #                              suffix=' cosas')
+
+    window = CustomQuestionDialogue(title="My question",
+                                    question="What do you want " * 10,
+                                    answer1="Go home",
+                                    answer2="stay here")
+
     window.show()
     sys.exit(app.exec_())

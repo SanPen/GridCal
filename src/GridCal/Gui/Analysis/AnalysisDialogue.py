@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,26 +18,23 @@
 import sys
 from typing import List
 
-from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow
+from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.GeneralDialogues import LogsDialogue, Logger
 
 
-class GridAnalysisGUI(QMainWindow):
+class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
 
     """
-    def __init__(self, parent=None, object_types=None, circuit: MultiCircuit = None, use_native_dialogues=False):
+    def __init__(self, circuit: MultiCircuit = None):
         """
-        Constructor
-        Args:
-            parent:
-            object_types:
-            circuit:
+
+        :param circuit: MultiCircuit
         """
-        QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid analysis')
@@ -45,14 +42,12 @@ class GridAnalysisGUI(QMainWindow):
         # set the circuit
         self.circuit = circuit
 
-        self.use_native_dialogues = use_native_dialogues
+        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
 
         # declare logs
         self.log = GridErrorLog()
 
         self.fixable_errors: List[FixableErrorOutOfRange] = []
-
-        self.object_types = object_types if object_types is not None else []
 
         self.ui.actionSave_diagnostic.triggered.connect(self.save_diagnostic)
         self.ui.actionAnalyze.triggered.connect(self.analyze_all)
@@ -66,13 +61,13 @@ class GridAnalysisGUI(QMainWindow):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def analyze_all(self):
@@ -82,7 +77,6 @@ class GridAnalysisGUI(QMainWindow):
         """
         self.log = GridErrorLog()
 
-        print('Analyzing...')
         # declare logs
         self.fixable_errors = grid_analysis(
             circuit=self.circuit,
@@ -93,6 +87,8 @@ class GridAnalysisGUI(QMainWindow):
             tap_max=self.ui.transformerTapModuleMaxSpinBox.value(),
             transformer_virtual_tap_tolerance=self.ui.virtualTapToleranceSpinBox.value() / 100.0,
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
+            min_vcc=self.ui.transformerVccMinSpinBox.value(),
+            max_vcc=self.ui.transformerVccMaxSpinBox.value(),
             logger=self.log)
 
         # set logs
@@ -124,22 +120,18 @@ class GridAnalysisGUI(QMainWindow):
         """
         files_types = "Excel (*.xlsx)"
 
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
         fname = 'Grid error analysis.xlsx'
 
-        filename, _ = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types, options=options)
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
 
         if filename != '':
             self.log.save(filename)
 
 
 if __name__ == "__main__":
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
-    window = GridAnalysisGUI()
+    window = GridAnalysisGUI(circuit=None)
     window.resize(1.61 * 700.0, 700.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())

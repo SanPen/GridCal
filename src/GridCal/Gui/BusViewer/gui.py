@@ -3,15 +3,22 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
+    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QToolBar, QVBoxLayout, QWidget)
 from .icons_rc import *
 
 class Ui_BusViewerWindow(object):
@@ -19,6 +26,8 @@ class Ui_BusViewerWindow(object):
         if not BusViewerWindow.objectName():
             BusViewerWindow.setObjectName(u"BusViewerWindow")
         BusViewerWindow.resize(898, 571)
+        BusViewerWindow.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        BusViewerWindow.setUnifiedTitleAndToolBarOnMac(False)
         self.actiondraw = QAction(BusViewerWindow)
         self.actiondraw.setObjectName(u"actiondraw")
         icon = QIcon()
@@ -43,6 +52,7 @@ class Ui_BusViewerWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.toolsFrame = QFrame(self.centralwidget)
         self.toolsFrame.setObjectName(u"toolsFrame")
         self.toolsFrame.setMaximumSize(QSize(16777215, 40))
@@ -96,11 +106,9 @@ class Ui_BusViewerWindow(object):
         self.verticalLayout.addWidget(self.editorFrame)
 
         BusViewerWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QStatusBar(BusViewerWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        BusViewerWindow.setStatusBar(self.statusbar)
         self.toolBar = QToolBar(BusViewerWindow)
         self.toolBar.setObjectName(u"toolBar")
+        self.toolBar.setEnabled(True)
         self.toolBar.setMovable(False)
         BusViewerWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 

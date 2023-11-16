@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   id="svg2"
+   version="1.1"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="add_investment.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2491"
+     inkscape:window-height="1016"
+     id="namedview8"
+     showgrid="false"
+     inkscape:zoom="11.991353"
+     inkscape:cx="13.843309"
+     inkscape:cy="21.056841"
+     inkscape:window-x="69"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="text4524-9"
+     inkscape:pagecheckerboard="0" />
+  <g
+     aria-label="λ"
+     style="font-style:normal;font-weight:normal;font-size:39.31232071px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#2a7fff;fill-opacity:1;stroke:none;stroke-width:0.98280805"
+     id="text4524-9">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:55.6905px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#71c837;fill-opacity:1;stroke:none;stroke-width:1.36833"
+       x="16.495193"
+       y="40.088543"
+       id="text11090"
+       transform="scale(0.96659338,1.0345612)"><tspan
+         sodipodi:role="line"
+         id="tspan11088"
+         x="16.495193"
+         y="40.088543"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';stroke-width:1.36833;fill:#71c837">ι</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:22.6018px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#112b00;fill-opacity:1;stroke:none;stroke-width:0.555331"
+       x="9.1063738"
+       y="37.0392"
+       id="text23940"
+       transform="scale(0.97491145,1.0257342)"><tspan
+         sodipodi:role="line"
+         id="tspan23938"
+         x="9.1063738"
+         y="37.0392"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Amiri;-inkscape-font-specification:Amiri;stroke-width:0.555331;fill:#112b00">+</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:31.0217px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.775543"
+     x="-48.97916"
+     y="36.47298"
+     id="text4524-9-2" />
+</svg>

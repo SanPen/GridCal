@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,33 +15,45 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from PySide2.QtCore import QThread, Signal
+from typing import Union, List
+from PySide6.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.IO.zip_interface import get_session_tree, load_session_driver_objects
-from GridCal.Engine.IO.file_handler import FileOpen, FileSave
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
+from GridCalEngine.IO.file_handler import FileOpen, FileSave
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.data_logger import DataLogger
 
 
 class FileOpenThread(QThread):
+    """
+    FileOpenThread
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, file_name):
+    def __init__(self, file_name: Union[str, List[str]]):
         """
         Constructor
-        :param file_name: file name were to save
+        :param file_name: file name (s)
         """
         QThread.__init__(self)
 
-        self.file_name = file_name
+        self.file_name: Union[str, List[str]] = file_name
 
         self.valid = False
 
         self.logger = Logger()
 
-        self.circuit = None
+        self.circuit: Union[MultiCircuit, None] = None
+
+        self.cgmes_circuit: Union[CgmesCircuit, None] = None
+
+        self.cgmes_logger: DataLogger = DataLogger()
+
+        self.json_files = dict()
 
         self.__cancel__ = False
 
@@ -93,6 +105,11 @@ class FileOpenThread(QThread):
         self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                          progress_func=self.progress_signal.emit)
 
+        self.json_files = file_handler.json_files
+
+        self.cgmes_circuit = file_handler.cgmes_circuit
+        self.cgmes_logger = file_handler.cgmes_logger
+
         self.logger += file_handler.logger
         self.valid = True
 
@@ -110,7 +127,7 @@ class FileSaveThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list()):
+    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list(), json_files=dict()):
         """
         Constructor
         :param circuit: MultiCircuit instance
@@ -128,6 +145,8 @@ class FileSaveThread(QThread):
         self.simulation_drivers = simulation_drivers
 
         self.sessions = sessions
+
+        self.json_files = json_files
 
         self.logger = Logger()
 
@@ -180,7 +199,8 @@ class FileSaveThread(QThread):
                                 text_func=self.progress_text.emit,
                                 progress_func=self.progress_signal.emit,
                                 simulation_drivers=self.simulation_drivers,
-                                sessions=self.sessions)
+                                sessions=self.sessions,
+                                json_files=self.json_files)
         try:
             self.logger = file_handler.save()
         except PermissionError:

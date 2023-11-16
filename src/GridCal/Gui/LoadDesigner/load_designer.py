@@ -1,15 +1,12 @@
-import os
-import string
-import sys
-from random import randint
-from enum import Enum
 
+import sys
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from PySide2.QtWidgets import QWidget, QApplication
+from datetime import timedelta
+from PySide6.QtWidgets import QApplication
+from PySide6 import QtCore, QtWidgets
 
-from GridCal.Gui.LoadDesigner.gui import *
+from GridCal.Gui.LoadDesigner.gui import Ui_Dialog
 
 
 class LoadPointsModel(QtCore.QAbstractTableModel):
@@ -37,28 +34,32 @@ class LoadPointsModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self._data[index.row(), index.column()])
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
-            elif orientation == QtCore.Qt.Vertical:
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self._cols[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self._index is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self._index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self._index[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self._index[p_int])
+                        return str(self._index[section])
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -70,14 +71,14 @@ class LoadPointsModel(QtCore.QAbstractTableModel):
         return None
 
 
-class LoadDesigner(QDialog):
+class LoadDesigner(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         """
 
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Load designer')
@@ -93,13 +94,13 @@ class LoadDesigner(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def process_by_peak(self):

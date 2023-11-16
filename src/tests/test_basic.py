@@ -14,15 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.static_generator import StaticGenerator
-from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator
+from GridCalEngine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def complex_impedance(z, XR):
@@ -111,7 +111,7 @@ def test_basic():
                          short_circuit_voltage=z)
     grid.add_transformer_type(PM)
 
-    # Create branches
+    # Create Branches
     X_C3 = Transformer2W(bus_from=POI,
                          bus_to=B_C3,
                          name="X_C3",
@@ -262,7 +262,7 @@ def test_gridcal_basic_pi():
                          short_circuit_voltage=z)
     grid.add_transformer_type(PM)
 
-    # Create branches
+    # Create Branches
     X_C3 = Transformer2W(bus_from=POI,
                          bus_to=B_C3,
                          name="X_C3",

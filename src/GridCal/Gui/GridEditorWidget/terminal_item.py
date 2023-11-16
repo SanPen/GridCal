@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,12 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+from PySide6.QtCore import Qt, QPointF, QRectF
+from PySide6.QtGui import QPen, QCursor
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem
 
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
-# from GridCal.Gui.GridEditorWidget.editor import GridEditor
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 
 
 class TerminalItem(QGraphicsRectItem):
@@ -56,7 +55,7 @@ class TerminalItem(QGraphicsRectItem):
         # Name:
         self.name = name
         self.posCallbacks = list()
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
+        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
 
     @property
     def w(self):
@@ -106,12 +105,9 @@ class TerminalItem(QGraphicsRectItem):
         @param value: This is a QPointF object with the coordinates of the upper left corner of the TerminalItem
         @return:
         """
-        if change == self.ItemScenePositionHasChanged:
-
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
             self.process_callbacks(value)
-
             return value
-
         else:
             return super(TerminalItem, self).itemChange(change, value)
 
@@ -137,6 +133,7 @@ class TerminalItem(QGraphicsRectItem):
         n = len(self.hosting_connections)
         for i in range(n - 1, -1, -1):
             self.hosting_connections[i].remove_widget()
+            self.hosting_connections[i].remove(ask=False)
             self.hosting_connections.pop(i)
 
 
@@ -154,8 +151,8 @@ class HandleItem(QGraphicsEllipseItem):
 
         self.posChangeCallbacks = list()
         self.setBrush(Qt.red)
-        self.setFlag(self.ItemIsMovable, True)
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
+        self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
         self.setCursor(QCursor(Qt.SizeFDiagCursor))
 
     def itemChange(self, change, value):
@@ -165,7 +162,7 @@ class HandleItem(QGraphicsEllipseItem):
         @param value:
         @return:
         """
-        if change == self.ItemPositionChange:
+        if change == self.GraphicsItemChange.ItemPositionChange:
             x, y = value.x(), value.y()
 
             # This cannot be a signal because this is not a QObject

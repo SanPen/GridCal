@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 
 def test_lhs():

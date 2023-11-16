@@ -1,3 +1,20 @@
+# GridCal
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 """
 Script to update correctly the main GUI (.py) file from the Qt design (.ui) file
 """
@@ -17,7 +34,8 @@ def correct_file_imports(filename):
 
     # Replace the target string
     file_data = file_data.replace('import icons_rc', 'from .icons_rc import *')
-    # file_data = file_data.replace('PySide2', 'qtpy')
+    file_data = file_data.replace('from .matplotlibwidget import MatplotlibWidget', 'from GridCal.Gui.Widgets.matplotlibwidget import MatplotlibWidget')
+    file_data = file_data.replace('from qrangeslider3 import QRangeSlider3', 'from GridCal.Gui.Widgets.custom_qrangeslider import QRangeSlider3')
     # file_data = file_data.replace('PySide6', 'qtpy')
     # file_data = file_data.replace('PyQt5', 'qtpy')
     # file_data = file_data.replace('PyQt6', 'qtpy')
@@ -27,7 +45,7 @@ def correct_file_imports(filename):
         file.write(file_data)
 
 
-def convert_resource_file(source, rcc_cmd='pyside2-rcc'):
+def convert_resource_file(source, rcc_cmd='pyside6-rcc'):
 
     folder = os.path.dirname(sys.executable)
     f1 = folder.split(os.sep)[-1]
@@ -59,7 +77,7 @@ def convert_resource_file(source, rcc_cmd='pyside2-rcc'):
             print('Failed with', rcc_cmd)
 
 
-def convert_ui_file(source, uic_cmd='pyside2-uic'):
+def convert_ui_file(source, uic_cmd='pyside6-uic'):
     """
     Convert UI file to .py with qtpy agnostic imports
     :param source:

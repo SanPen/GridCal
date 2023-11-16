@@ -1,27 +1,23 @@
-import os
-import string
 import sys
-from random import randint
-from enum import Enum
 import numpy as np
 from numpy.random import default_rng
 import networkx as nx
-from PySide2.QtWidgets import *
+from PySide6 import QtWidgets
 
-from GridCal.Gui.GridGenerator.gui import *
-from GridCal.Engine.Devices import *
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
+from GridCal.Gui.GridGenerator.gui import Ui_MainWindow
+import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
 
 
-class GridGeneratorGUI(QDialog):
+class GridGeneratorGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None, ):
         """
 
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid Generator')
@@ -39,13 +35,13 @@ class GridGeneratorGUI(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def fill_graph(self):
@@ -119,10 +115,9 @@ class GridGeneratorGUI(QDialog):
         # generate buses
         bus_dict = dict()
         for i in range(n):
-
-            bus = Bus(name='Bus ' + str(i+1),
-                      xpos=self.g.lat[i] * explosion_factor,
-                      ypos=-self.g.lon[i] * explosion_factor)
+            bus = dev.Bus(name='Bus ' + str(i + 1),
+                          xpos=self.g.lat[i] * explosion_factor,
+                          ypos=-self.g.lon[i] * explosion_factor)
 
             bus_dict[i] = bus
 
@@ -136,7 +131,7 @@ class GridGeneratorGUI(QDialog):
             bus = bus_dict[i]
             p = pmax * factor[k]
             q = p * pf
-            load = Load(name='Load@bus' + str(i + 1), P=p, Q=q)
+            load = dev.Load(name='Load@bus' + str(i + 1), P=p, Q=q)
             self.circuit.add_load(bus, load)
 
         # generate generators
@@ -144,8 +139,8 @@ class GridGeneratorGUI(QDialog):
         factor /= factor.sum()
         for k, i in enumerate(gen_buses):
             bus = bus_dict[i]
-            gen = Generator(name='Generator@bus' + str(i+1),
-                            active_power=pmax * factor[k])
+            gen = dev.Generator(name='Generator@bus' + str(i + 1),
+                                P=pmax * factor[k])
             self.circuit.add_generator(bus, gen)
 
         # generate lines
@@ -160,13 +155,13 @@ class GridGeneratorGUI(QDialog):
 
             b1 = bus_dict[f]
             b2 = bus_dict[t]
-            lne = Line(bus_from=b1,
-                       bus_to=b2,
-                       name='Line ' + str(f) + '-' + str(t),
-                       r=r * m,
-                       x=x * m,
-                       b=b * m,
-                       length=m)
+            lne = dev.Line(bus_from=b1,
+                           bus_to=b2,
+                           name='Line ' + str(f) + '-' + str(t),
+                           r=r * m,
+                           x=x * m,
+                           b=b * m,
+                           length=m)
             self.circuit.add_line(lne)
 
         # quit
@@ -175,10 +170,8 @@ class GridGeneratorGUI(QDialog):
 
 
 if __name__ == "__main__":
-
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = GridGeneratorGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
-
+    sys.exit(app.exec())

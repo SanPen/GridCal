@@ -14,15 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.line import Line
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.Devices import Line
+from GridCalEngine.Core.Devices import Bus
+from GridCalEngine.Core.Devices import Generator
+from GridCalEngine.Core.Devices import Load
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, PowerFlowDriver
-from GridCal.Engine.basic_structures import BranchImpedanceMode
+from GridCalEngine.basic_structures import BranchImpedanceMode
 
 Sbase = 100  # MVA
 

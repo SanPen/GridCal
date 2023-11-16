@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,11 +17,9 @@
 import os
 from io import StringIO
 import zipfile
-from PySide2.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal
 
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Devices import DeviceType
+from GridCalEngine.basic_structures import Logger
 
 
 class ExportAllThread(QThread):

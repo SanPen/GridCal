@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="48"
    height="48"
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="otdf_ts.svg">
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="otdf_ts.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata12">
     <rdf:RDF>
@@ -23,7 +23,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -33,11 +32,11 @@
        inkscape:collect="always"
        id="linearGradient1292">
       <stop
-         style="stop-color:#5500d4;stop-opacity:1"
+         style="stop-color:#cc00ff;stop-opacity:1"
          offset="0"
          id="stop1288" />
       <stop
-         style="stop-color:#9955ff;stop-opacity:1"
+         style="stop-color:#cc00ff;stop-opacity:1"
          offset="1"
          id="stop1290" />
     </linearGradient>
@@ -85,7 +84,7 @@
        x2="32.818642"
        y2="43.882358"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.98517146,0,0,0.96663578,0.36017599,1.6014828)" />
+       gradientTransform="matrix(1.0030327,0,0,1.0748536,-0.22600612,-3.1131443)" />
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -96,24 +95,25 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1848"
-     inkscape:window-height="1018"
+     inkscape:window-width="2495"
+     inkscape:window-height="1016"
      id="namedview8"
      showgrid="false"
      inkscape:zoom="6.9114586"
-     inkscape:cx="-65.416271"
-     inkscape:cy="46.79671"
-     inkscape:window-x="72"
-     inkscape:window-y="25"
+     inkscape:cx="-42.538054"
+     inkscape:cy="36.388846"
+     inkscape:window-x="65"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="svg2"
+     inkscape:pagecheckerboard="0" />
   <g
      aria-label="γ"
-     style="font-style:normal;font-weight:normal;font-size:42.96521378px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#5500d4;fill-opacity:1;stroke:none;stroke-width:1.07413042"
+     style="font-style:normal;font-weight:normal;font-size:42.96521378px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#d40055;fill-opacity:1;stroke:none;stroke-width:1.07413042"
      id="text886">
     <path
        d="m 33.05216,15.611077 h -4.296521 l -4.468383,15.16672 C 23.599813,27.082789 23.127196,15.31032 18.143231,15.31032 c -2.620878,0 -3.737974,3.308322 -3.737974,6.788504 h 0.644478 c 0.300757,-2.577913 1.589713,-3.780939 2.491983,-3.780939 4.081695,0 5.241756,11.901365 5.585478,15.08079 -0.472618,1.245992 -1.031166,2.491983 -1.417853,3.780939 -0.515582,1.632678 -0.773373,3.179426 -0.773373,4.210591 0,1.632678 0.687443,2.921635 2.105295,2.921635 2.148261,0 2.620878,-2.019365 2.620878,-4.296522 0,-1.890469 -0.343722,-3.909834 -0.601513,-5.069895 z"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';fill:#5500d4;fill-opacity:1;stroke-width:1.07413042"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';fill:#cc00ff;fill-opacity:1;stroke-width:1.07413042"
        id="path930" />
   </g>
   <g
@@ -667,11 +667,11 @@
      id="rect4596-1"
      style="fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:0.77807814;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" />
   <rect
-     ry="1.4133276"
-     y="41.389381"
-     x="6.8309298"
-     height="5.2607188"
-     width="25.861235"
+     ry="1.5715538"
+     y="41.129128"
+     x="6.3620629"
+     height="5.8496718"
+     width="26.330101"
      id="rect4596-3-2"
-     style="fill:url(#linearGradient1294);fill-opacity:1;stroke:none;stroke-width:0.66200888;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" />
+     style="fill:url(#linearGradient1294);fill-opacity:1;stroke:none;stroke-width:0.704383;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" />
 </svg>

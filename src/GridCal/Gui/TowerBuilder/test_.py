@@ -1,7 +1,6 @@
 
 import sys
-from PySide2.QtWidgets import *
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 
 class Wire:
@@ -55,19 +54,22 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.header[p_int]
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.header[section]
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -91,12 +93,12 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.setWindowTitle('Tower builder')
 
         # GUI objects
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.layout = QVBoxLayout(self)
-        self.wires_tableView = QTableView()
-        self.add_wire_pushButton = QPushButton()
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.wires_tableView = QtWidgets.QTableView()
+        self.add_wire_pushButton = QtWidgets.QPushButton()
         self.add_wire_pushButton.setText('Add')
-        self.delete_wire_pushButton = QPushButton()
+        self.delete_wire_pushButton = QtWidgets.QPushButton()
         self.delete_wire_pushButton.setText('Delete')
 
         self.layout.addWidget(self.wires_tableView)
@@ -121,13 +123,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def add_wire_to_collection(self):

@@ -1,11 +1,11 @@
-import os
 import numpy as np
 import pandas as pd
 import newtonpa as npa
-import GridCal.Engine as gce
+import GridCalEngine.api as gce
 import scipy.sparse as sp
 from typing import List
-from scipy.sparse.linalg import spsolve
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 npa.findAndActivateLicense()
 
 
@@ -51,7 +51,7 @@ def loadArmadilloCooMat(file_name, is_complex=False):
         data = ydf.values[:, 2] + 1j * ydf.values[:, 3]
     else:
         data = ydf.values[:, 2]
-    ii = ydf.values[:, 0].astype(int)
+    ii = ydf.values.astype(int)
     jj = ydf.values[:, 1].astype(int)
     return sp.coo_matrix((data, (ii, jj)), shape=(max(ii) + 1, max(jj) + 1)).tocsc()
 
@@ -63,63 +63,61 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, 0)
-    nc_gc = gce.compile_snapshot_circuit(grid_gc)
+    nc_gc = gce.compile_numerical_circuit_at(grid_gc, t_idx=0)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data
     # ------------------------------------------------------------------------------------------------------------------
 
-    t = 0
-
     CheckArr(nc_newton.branch_data.F, nc_gc.branch_data.F, tol, 'BranchData', 'F')
     CheckArr(nc_newton.branch_data.T, nc_gc.branch_data.T, tol, 'BranchData', 'T')
-    CheckArr(nc_newton.branch_data.active, nc_gc.branch_data.branch_active[:, t], tol, 'BranchData', 'active')
+    CheckArr(nc_newton.branch_data.active, nc_gc.branch_data.active, tol, 'BranchData', 'active')
     CheckArr(nc_newton.branch_data.r, nc_gc.branch_data.R, tol, 'BranchData', 'r')
     CheckArr(nc_newton.branch_data.x, nc_gc.branch_data.X, tol, 'BranchData', 'x')
     CheckArr(nc_newton.branch_data.g, nc_gc.branch_data.G, tol, 'BranchData', 'g')
     CheckArr(nc_newton.branch_data.b, nc_gc.branch_data.B, tol, 'BranchData', 'b')
-    CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.branch_rates[:, t], tol, 'BranchData', 'rates')
-    CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.m[:, t], tol, 'BranchData', 'tap_module')
-    CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.theta[:, t], tol, 'BranchData', 'tap_angle')
+    CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.rates, tol, 'BranchData', 'rates')
+    CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.tap_module, tol, 'BranchData', 'tap_module')
+    CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.tap_angle, tol, 'BranchData', 'tap_angle')
 
     CheckArr(nc_newton.branch_data.g0, nc_gc.branch_data.G0, tol, 'BranchData', 'g0')
-    CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw[:, t], tol, 'BranchData', 'G0sw')
+    CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw, tol, 'BranchData', 'G0sw')
     CheckArr(nc_newton.branch_data.k, nc_gc.branch_data.k, tol, 'BranchData', 'k')
-    CheckArr(nc_newton.branch_data.beq, nc_gc.branch_data.Beq[:, t], tol, 'BranchData', 'beq')
+    CheckArr(nc_newton.branch_data.beq, nc_gc.branch_data.Beq, tol, 'BranchData', 'beq')
     CheckArr(nc_newton.branch_data.alpha1, nc_gc.branch_data.alpha1, tol, 'BranchData', 'alpha1')
     CheckArr(nc_newton.branch_data.alpha2, nc_gc.branch_data.alpha2, tol, 'BranchData', 'alpha2')
     CheckArr(nc_newton.branch_data.alpha3, nc_gc.branch_data.alpha3, tol, 'BranchData', 'alpha3')
 
-    CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.tap_f, tol, 'BranchData', 'vtap_f')
-    CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.tap_t, tol, 'BranchData', 'vtap_t')
+    CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.virtual_tap_f, tol, 'BranchData', 'vtap_f')
+    CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.virtual_tap_t, tol, 'BranchData', 'vtap_t')
 
     # bus data
     tpes = convert_bus_types(nc_newton.bus_data.types)
-    CheckArr(nc_newton.bus_data.active, nc_gc.bus_data.bus_active[:, t], tol, 'BusData', 'active')
-    CheckArr(nc_newton.bus_data.v0.real, nc_gc.bus_data.Vbus[:, t].real, tol, 'BusData', 'V0')
-    CheckArr(nc_newton.bus_data.installed_power, nc_gc.bus_data.bus_installed_power, tol, 'BusData', 'installed power')
+    CheckArr(nc_newton.bus_data.active, nc_gc.bus_data.active, tol, 'BusData', 'active')
+    CheckArr(nc_newton.bus_data.v0.real, nc_gc.bus_data.Vbus.real, tol, 'BusData', 'V0')
+    CheckArr(nc_newton.bus_data.installed_power, nc_gc.bus_data.installed_power, tol, 'BusData', 'installed power')
     CheckArr(tpes, nc_gc.bus_data.bus_types, tol, 'BusData', 'types')
 
     # generator data
-    g_idx = [list(nc_gc.generator_data.generator_names).index(x) for x in nc_newton.generator_data.names]
-    CheckArr(nc_newton.generator_data.active, nc_gc.generator_data.generator_active[:, t][g_idx].astype(int), tol, 'GenData', 'active')
-    CheckArr(nc_newton.generator_data.P, nc_gc.generator_data.generator_p[:, t][g_idx], tol, 'GenData', 'P')
-    # CheckArr(nc_newton.generator_data.pf, nc_gc.generator_data.generator_pf[:, t][g_idx], tol, 'GenData', 'Pf')
-    CheckArr(nc_newton.generator_data.vset, nc_gc.generator_data.generator_v[:, t][g_idx], tol, 'GenData', 'Vset')
-    CheckArr(nc_newton.generator_data.Qmin, nc_gc.generator_data.generator_qmin[g_idx], tol, 'GenData', 'Qmin')
-    CheckArr(nc_newton.generator_data.Qmax, nc_gc.generator_data.generator_qmax[g_idx], tol, 'GenData', 'Qmax')
+    g_idx = [list(nc_gc.generator_data.names).index(x) for x in nc_newton.generator_data.names]
+    CheckArr(nc_newton.generator_data.active, nc_gc.generator_data.active[g_idx].astype(int), tol, 'GenData', 'active')
+    CheckArr(nc_newton.generator_data.P, nc_gc.generator_data.p[g_idx], tol, 'GenData', 'P')
+    # CheckArr(nc_newton.generator_data.pf, nc_gc.generator_data.generator_pf[g_idx], tol, 'GenData', 'Pf')
+    CheckArr(nc_newton.generator_data.vset, nc_gc.generator_data.v[g_idx], tol, 'GenData', 'Vset')
+    CheckArr(nc_newton.generator_data.Qmin, nc_gc.generator_data.qmin[g_idx], tol, 'GenData', 'Qmin')
+    CheckArr(nc_newton.generator_data.Qmax, nc_gc.generator_data.qmax[g_idx], tol, 'GenData', 'Qmax')
 
     # load data
-    l_idx = [list(nc_gc.load_data.load_names).index(x) for x in nc_newton.load_data.names]
-    CheckArr(nc_newton.load_data.active, nc_gc.load_data.load_active[:, t].astype(int)[l_idx], tol, 'LoadData', 'active')
-    CheckArr(nc_newton.load_data.S, nc_gc.load_data.load_s[:, t][l_idx], tol, 'LoadData', 'S')
-    CheckArr(nc_newton.load_data.I, nc_gc.load_data.load_i[:, t][l_idx], tol, 'LoadData', 'I')
-    CheckArr(nc_newton.load_data.Y, nc_gc.load_data.load_y[:, t][l_idx], tol, 'LoadData', 'Y')
+    l_idx = [list(nc_gc.load_data.names).index(x) for x in nc_newton.load_data.names]
+    CheckArr(nc_newton.load_data.active, nc_gc.load_data.active.astype(int)[l_idx], tol, 'LoadData', 'active')
+    CheckArr(nc_newton.load_data.S, nc_gc.load_data.S[l_idx], tol, 'LoadData', 'S')
+    CheckArr(nc_newton.load_data.I, nc_gc.load_data.I[l_idx], tol, 'LoadData', 'I')
+    CheckArr(nc_newton.load_data.Y, nc_gc.load_data.Y[l_idx], tol, 'LoadData', 'Y')
 
     # shunt
-    CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.shunt_active[:, t], tol, 'ShuntData', 'active')
-    CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.shunt_admittance[:, t], tol, 'ShuntData', 'S')
-    CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, t], tol, 'ShuntData', 'injections per bus')
+    CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.active, tol, 'ShuntData', 'active')
+    CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.admittance, tol, 'ShuntData', 'S')
+    CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus(), tol, 'ShuntData', 'Injections per bus')
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare arrays and data
@@ -158,9 +156,9 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
     # ------------------------------------------------------------------------------------------------------------------
 
     J_newton = npa.getJacobian(nc_newton)
-    J_gc = gce.AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
+    J_gc = AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
 
-    J_gc2 = gce.AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
+    J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
     CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
     CheckArr((J_newton - J_gc).data, np.zeros_like((J_newton - J_gc).data), tol, 'Jacobian', '')
@@ -177,7 +175,7 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # ------------------------------------------------------------------------------------------------------------------
 
     nc_newton = npa.compileAt(grid_newton, t)
-    nc_gc = gce.compile_snapshot_circuit_at(grid_gc, t)
+    nc_gc = compile_numerical_circuit_at(grid_gc, t)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare data
@@ -185,53 +183,53 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
 
     err_count += CheckArr(nc_newton.branch_data.F, nc_gc.branch_data.F, tol, 'BranchData', 'F')
     err_count += CheckArr(nc_newton.branch_data.T, nc_gc.branch_data.T, tol, 'BranchData', 'T')
-    err_count += CheckArr(nc_newton.branch_data.active, nc_gc.branch_data.active[:, 0], tol, 'BranchData', 'active')
+    err_count += CheckArr(nc_newton.branch_data.active, nc_gc.branch_data.active, tol, 'BranchData', 'active')
     err_count += CheckArr(nc_newton.branch_data.r, nc_gc.branch_data.R, tol, 'BranchData', 'r')
     err_count += CheckArr(nc_newton.branch_data.x, nc_gc.branch_data.X, tol, 'BranchData', 'x')
     err_count += CheckArr(nc_newton.branch_data.g, nc_gc.branch_data.G, tol, 'BranchData', 'g')
     err_count += CheckArr(nc_newton.branch_data.b, nc_gc.branch_data.B, tol, 'BranchData', 'b')
-    err_count += CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.rates[:, 0], tol, 'BranchData', 'rates')
-    err_count += CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.m[:, 0], tol, 'BranchData', 'tap_module')
-    err_count += CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.theta[:, 0], tol, 'BranchData', 'tap_angle')
+    err_count += CheckArr(nc_newton.branch_data.rates, nc_gc.branch_data.rates, tol, 'BranchData', 'rates')
+    err_count += CheckArr(nc_newton.branch_data.tap_module, nc_gc.branch_data.tap_module, tol, 'BranchData', 'tap_module')
+    err_count += CheckArr(nc_newton.branch_data.tap_angle, nc_gc.branch_data.tap_angle, tol, 'BranchData', 'tap_angle')
 
     err_count += CheckArr(nc_newton.branch_data.g0, nc_gc.branch_data.G0, tol, 'BranchData', 'g0')
-    err_count += CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw[:, 0], tol, 'BranchData', 'G0sw')
+    err_count += CheckArr(nc_newton.branch_data.G0sw, nc_gc.branch_data.G0sw, tol, 'BranchData', 'G0sw')
     err_count += CheckArr(nc_newton.branch_data.k, nc_gc.branch_data.k, tol, 'BranchData', 'k')
-    err_count += CheckArr(nc_newton.branch_data.beq, nc_gc.branch_data.Beq[:, 0], tol, 'BranchData', 'beq')
+    err_count += CheckArr(nc_newton.branch_data.beq, nc_gc.branch_data.Beq, tol, 'BranchData', 'beq')
     err_count += CheckArr(nc_newton.branch_data.alpha1, nc_gc.branch_data.alpha1, tol, 'BranchData', 'alpha1')
     err_count += CheckArr(nc_newton.branch_data.alpha2, nc_gc.branch_data.alpha2, tol, 'BranchData', 'alpha2')
     err_count += CheckArr(nc_newton.branch_data.alpha3, nc_gc.branch_data.alpha3, tol, 'BranchData', 'alpha3')
-    err_count += CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.tap_f, tol, 'BranchData', 'vtap_f')
-    err_count += CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.tap_t, tol, 'BranchData', 'vtap_t')
+    err_count += CheckArr(nc_newton.branch_data.vtap_f, nc_gc.branch_data.virtual_tap_f, tol, 'BranchData', 'vtap_f')
+    err_count += CheckArr(nc_newton.branch_data.vtap_t, nc_gc.branch_data.virtual_tap_t, tol, 'BranchData', 'vtap_t')
 
     # bus data
     tpes = convert_bus_types(nc_newton.bus_data.types)
-    err_count += CheckArr(nc_newton.bus_data.active, nc_gc.bus_data.active[:, 0], tol, 'BusData', 'active')
-    err_count += CheckArr(nc_newton.bus_data.v0.real, nc_gc.bus_data.Vbus[:, 0].real, tol, 'BusData', 'V0')
+    err_count += CheckArr(nc_newton.bus_data.active, nc_gc.bus_data.active, tol, 'BusData', 'active')
+    err_count += CheckArr(nc_newton.bus_data.v0.real, nc_gc.bus_data.Vbus.real, tol, 'BusData', 'V0')
     err_count += CheckArr(nc_newton.bus_data.installed_power, nc_gc.bus_data.installed_power, tol, 'BusData', 'installed power')
     err_count += CheckArr(tpes, nc_gc.bus_data.bus_types, tol, 'BusData', 'types')
 
     # generator data
     g_idx = [list(nc_gc.generator_data.names).index(x) for x in nc_newton.generator_data.names]
-    err_count += CheckArr(nc_newton.generator_data.active, nc_gc.generator_data.active[:, 0][g_idx].astype(int), tol, 'GenData', 'active')
-    err_count += CheckArr(nc_newton.generator_data.P, nc_gc.generator_data.p[:, 0][g_idx], tol, 'GenData', 'P')
-    # CheckArr(nc_newton.generator_data.pf, nc_gc.generator_data.pf[:, 0][g_idx], tol, 'GenData', 'Pf')
-    err_count += CheckArr(nc_newton.generator_data.vset, nc_gc.generator_data.v[:, 0][g_idx], tol, 'GenData', 'Vset')
+    err_count += CheckArr(nc_newton.generator_data.active, nc_gc.generator_data.active[g_idx].astype(int), tol, 'GenData', 'active')
+    err_count += CheckArr(nc_newton.generator_data.P, nc_gc.generator_data.p[g_idx], tol, 'GenData', 'P')
+    # CheckArr(nc_newton.generator_data.pf, nc_gc.generator_data.pf[g_idx], tol, 'GenData', 'Pf')
+    err_count += CheckArr(nc_newton.generator_data.vset, nc_gc.generator_data.v[g_idx], tol, 'GenData', 'Vset')
     err_count += CheckArr(nc_newton.generator_data.Qmin, nc_gc.generator_data.qmin[g_idx], tol, 'GenData', 'Qmin')
     err_count += CheckArr(nc_newton.generator_data.Qmax, nc_gc.generator_data.qmax[g_idx], tol, 'GenData', 'Qmax')
     err_count += CheckArr(nc_newton.generator_data.controllable, nc_gc.generator_data.controllable, tol, 'GenData', 'controllable')
 
     # load data
     l_idx = [list(nc_gc.load_data.names).index(x) for x in nc_newton.load_data.names]
-    err_count += CheckArr(nc_newton.load_data.active, nc_gc.load_data.active[:, 0].astype(int)[l_idx], tol, 'LoadData', 'active')
-    err_count += CheckArr(nc_newton.load_data.S, nc_gc.load_data.S[:, 0][l_idx], tol, 'LoadData', 'S')
-    err_count += CheckArr(nc_newton.load_data.I, nc_gc.load_data.I[:, 0][l_idx], tol, 'LoadData', 'I')
-    err_count += CheckArr(nc_newton.load_data.Y, nc_gc.load_data.Y[:, 0][l_idx], tol, 'LoadData', 'Y')
+    err_count += CheckArr(nc_newton.load_data.active, nc_gc.load_data.active.astype(int)[l_idx], tol, 'LoadData', 'active')
+    err_count += CheckArr(nc_newton.load_data.S, nc_gc.load_data.S[l_idx], tol, 'LoadData', 'S')
+    err_count += CheckArr(nc_newton.load_data.I, nc_gc.load_data.I[l_idx], tol, 'LoadData', 'I')
+    err_count += CheckArr(nc_newton.load_data.Y, nc_gc.load_data.Y[l_idx], tol, 'LoadData', 'Y')
 
     # shunt
-    err_count += CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.active[:, 0], tol, 'ShuntData', 'active')
-    err_count += CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.admittance[:, 0], tol, 'ShuntData', 'S')
-    err_count += CheckArr(nc_newton.shunt_data.getInjectionsPerBus(), nc_gc.shunt_data.get_injections_per_bus()[:, 0], tol, 'ShuntData', 'injections per bus')
+    err_count += CheckArr(nc_newton.shunt_data.active, nc_gc.shunt_data.active, tol, 'ShuntData', 'active')
+    err_count += CheckArr(nc_newton.shunt_data.S, nc_gc.shunt_data.admittance, tol, 'ShuntData', 'S')
+    err_count += CheckArr(nc_newton.shunt_data.Sbus, nc_gc.shunt_data.get_injections_per_bus(), tol, 'ShuntData', 'Injections per bus')
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare arrays and data
@@ -269,9 +267,9 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
     # ------------------------------------------------------------------------------------------------------------------
 
     J_newton = npa.getJacobian(nc_newton)
-    J_gc = gce.AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
+    J_gc = AC_jacobian(nc_gc.Ybus, nc_gc.Vbus, np.r_[nc_gc.pv, nc_gc.pq], nc_gc.pq)
 
-    J_gc2 = gce.AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
+    J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
     err_count += CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
 

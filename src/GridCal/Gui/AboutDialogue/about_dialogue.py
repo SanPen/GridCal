@@ -2,21 +2,21 @@ import os
 import sys
 import chardet
 import subprocess
-from PySide2.QtWidgets import QDialog
-from typing import List, Dict
-from GridCal.Gui.AboutDialogue.gui import *
+from PySide6 import QtWidgets
+from typing import List
+from GridCal.Gui.AboutDialogue.gui import Ui_AboutDialog
 from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg
 from GridCal.update import check_version, get_upgrade_command
 
 
-class AboutDialogueGuiGUI(QDialog):
+class AboutDialogueGuiGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         """
 
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_AboutDialog()
         self.ui.setupUi(self)
         self.setWindowTitle('About GridCal')
@@ -33,7 +33,7 @@ class AboutDialogueGuiGUI(QDialog):
             self.upgrade_cmd = get_upgrade_command(latest_version)
             command = ' '.join(self.upgrade_cmd)
             self.ui.updateLabel.setText('\n\nTerminal command to update:\n\n' + command)
-            self.ui.updateButton.setVisible(False)
+            self.ui.updateButton.setVisible(True)
 
         elif version_code == -1:
             addendum = '\nThis version is newer than the version available in the repositories (' + latest_version + ')'
@@ -71,13 +71,13 @@ class AboutDialogueGuiGUI(QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def update(self):
@@ -85,7 +85,9 @@ class AboutDialogueGuiGUI(QDialog):
         Upgrade GridCal
         :return:
         """
-        list_files = subprocess.run(self.upgrade_cmd, stdout=subprocess.PIPE, text=True,
+        list_files = subprocess.run(self.upgrade_cmd,
+                                    stdout=subprocess.PIPE,
+                                    text=True,
                                     input="Hello from the other side")  # upgrade_cmd is a list already
         if list_files.returncode != 0:
             self.msg("The exit code was: %d" % list_files.returncode)
@@ -110,7 +112,7 @@ class AboutDialogueGuiGUI(QDialog):
 
 if __name__ == "__main__":
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = AboutDialogueGuiGUI()
     # window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()

@@ -16,11 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 
-import numpy as np
-
-from GridCal.Engine import *
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Devices.enumerations import FaultType
+from GridCalEngine.api import *
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.enumerations import FaultType
 
 
 def test_unbalanced_short_circuit():
@@ -37,7 +35,7 @@ def test_unbalanced_short_circuit():
     pf = PowerFlowDriver(grid, pf_options)
     pf.run()
 
-    sc_options = ShortCircuitOptions(bus_index=[2], fault_type=FaultType.LG)
+    sc_options = ShortCircuitOptions(bus_index=2, fault_type=FaultType.LG)
     sc = ShortCircuitDriver(grid, options=sc_options, pf_options=pf_options, pf_results=pf.results)
     sc.run()
 
@@ -45,6 +43,8 @@ def test_unbalanced_short_circuit():
     print('\t|V1|:', np.abs(sc.results.voltage1))
     print('\t|V2|:', np.abs(sc.results.voltage2))
 
+    # TODO: These results assume the power flow not to take into account the transformer
+    #       connection phase changes applied in the admittance matrix building
     V0_book = [0.12844037, 0.05963303, 0.32110092, 0.09633028, 0.0]
     V1_book = [0.88073394, 0.88990826, 0.79816514, 0.92844037, 0.93394495]
     V2_book = [0.11926606, 0.11009174, 0.20183486, 0.07155963, 0.06605505]

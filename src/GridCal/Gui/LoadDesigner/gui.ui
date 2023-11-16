@@ -48,6 +48,14 @@
           <number>0</number>
          </property>
          <widget class="QWidget" name="page_3">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>848</width>
+            <height>352</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>Definition by peak points</string>
           </attribute>
@@ -91,7 +99,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Night valley (MW)</string>
+                    <string>Night valley</string>
                    </property>
                   </widget>
                  </item>
@@ -108,6 +116,15 @@
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="night_valley_doubleSpinBox">
+                   <property name="suffix">
+                    <string> MW</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <double>9999999.000000000000000</double>
+                   </property>
                    <property name="value">
                     <double>4.000000000000000</double>
                    </property>
@@ -134,7 +151,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Morning Peak (MW)</string>
+                    <string>Morning Peak</string>
                    </property>
                   </widget>
                  </item>
@@ -151,6 +168,15 @@
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="morning_peak_doubleSpinBox">
+                   <property name="suffix">
+                    <string> MW</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <double>9999999.000000000000000</double>
+                   </property>
                    <property name="value">
                     <double>12.000000000000000</double>
                    </property>
@@ -177,7 +203,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Afternoon valley (MW)</string>
+                    <string>Afternoon valley</string>
                    </property>
                   </widget>
                  </item>
@@ -194,6 +220,15 @@
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="afternoon_valley_doubleSpinBox">
+                   <property name="suffix">
+                    <string> MW</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <double>9999999.000000000000000</double>
+                   </property>
                    <property name="value">
                     <double>8.000000000000000</double>
                    </property>
@@ -220,7 +255,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Evening Peak (MW)</string>
+                    <string>Evening Peak</string>
                    </property>
                   </widget>
                  </item>
@@ -237,6 +272,15 @@
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="evening_peak_doubleSpinBox">
+                   <property name="suffix">
+                    <string> MW</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <double>9999999.000000000000000</double>
+                   </property>
                    <property name="value">
                     <double>16.000000000000000</double>
                    </property>
@@ -304,7 +348,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>830</width>
+            <width>848</width>
             <height>352</height>
            </rect>
           </property>

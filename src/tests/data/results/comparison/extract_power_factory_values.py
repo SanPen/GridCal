@@ -5,7 +5,11 @@ os.environ["PATH"] = POWERFACTORY_PATH + ";" + os.environ["PATH"]
 sys.path.append(POWERFACTORY_PATH + "\\python")
 
 # import  PowerFactory  module
-import powerfactory
+try:
+    import powerfactory
+except ImportError:
+    print('powerfactory python module not found :(')
+    quit()
 
 # start PowerFactory  in engine  mode
 app = powerfactory.GetApplication()

@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 from scipy.sparse import diags
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 
 def __check__(fname):
@@ -28,7 +29,7 @@ def __check__(fname):
     main_circuit = FileOpen(fname).open()
 
     # compile the data
-    numerical_circuit = compile_snapshot_circuit(main_circuit, apply_temperature=False)
+    numerical_circuit = compile_numerical_circuit_at(main_circuit, apply_temperature=False)
 
     # split into the possible islands
     islands = numerical_circuit.split_into_islands()

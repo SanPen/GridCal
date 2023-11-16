@@ -1,0 +1,6 @@
+
+include setup.py
+include LICENSE.txt
+recursive-include data *.*
+recursive-exclude tests *.*
+recursive-exclude research *.*

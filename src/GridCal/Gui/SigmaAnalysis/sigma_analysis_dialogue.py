@@ -1,22 +1,16 @@
-import os
-import string
 import sys
-from random import randint
-from enum import Enum
 import numpy as np
-import pandas as pd
-from PySide2.QtWidgets import *
-from PySide2 import QtWidgets, QtGui
+from PySide6 import QtWidgets
 
-from GridCal.Gui.SigmaAnalysis.gui import *
+from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
 from GridCal.Gui.Session.results_model import ResultsModel
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
+from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None, use_native_dialogues=True,
+    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
                  good_coefficients=True):
         """
 
@@ -27,8 +21,6 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('HELM-Sigma analysis dialogue')
-
-        self.use_native_dialogues = use_native_dialogues
 
         self.results = results
 
@@ -56,13 +48,13 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def copy_to_clipboard(self):
@@ -78,13 +70,8 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         :return:
         """
         if self.mdl is not None:
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
-            file, filter = QFileDialog.getSaveFileName(self, "Export results", '',
-                                                       filter="CSV (*.csv);;Excel files (*.xlsx)",
-                                                       options=options)
+            file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                                 filter="CSV (*.csv);;Excel files (*.xlsx)")
 
             if file != '':
                 if 'xlsx' in filter:
@@ -101,12 +88,9 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
                     print('Saved!')
 
 
-
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = SigmaAnalysisGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

@@ -8,13 +8,13 @@ if __name__ == '__main__':
     # pyrcc5 icons.qrc -o icons_rc.py
     # pyuic5 -x MainWindow.ui -o MainWindow.py
 
-    rcc_cmd = 'pyside2-rcc'
-    uic_cmd = 'pyside2-uic'
+    rcc_cmd = 'pyside6-rcc'
+    uic_cmd = 'pyside6-uic'
 
     if os.name == 'nt':
         rcc_cmd += '.exe'
         uic_cmd += '.exe'
 
     convert_resource_file(source='icons.qrc', rcc_cmd=rcc_cmd)
-    for f in ['MainWindow.ui', 'ConsoleLog.ui', 'banner.ui']:
+    for f in ['MainWindow.ui', 'ConsoleLog.ui']:
         convert_ui_file(source=f, uic_cmd=uic_cmd)

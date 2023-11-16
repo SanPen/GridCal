@@ -3,22 +3,28 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
+    QTextEdit, QVBoxLayout, QWidget)
 from .icons_rc import *
 
 class Ui_AboutDialog(object):
     def setupUi(self, AboutDialog):
         if not AboutDialog.objectName():
             AboutDialog.setObjectName(u"AboutDialog")
-        AboutDialog.resize(462, 367)
+        AboutDialog.resize(662, 367)
         icon = QIcon()
         icon.addFile(u":/Icons/icons/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
         AboutDialog.setWindowIcon(icon)
@@ -127,7 +133,7 @@ class Ui_AboutDialog(object):
 
     def retranslateUi(self, AboutDialog):
         AboutDialog.setWindowTitle(QCoreApplication.translate("AboutDialog", u"About GridCal", None))
-        self.mainLabel.setText(QCoreApplication.translate("AboutDialog", u"<html><head/><body><p align=\"justify\"><span style=\" font-weight:600;\">GridCal</span> has been carefully crafted since 2015 to serve as a platform for research and consultancy. </p><p align=\"justify\">Visit <a href=\"https://www.advancedgridinsights.com/gridcal\"><span style=\" text-decoration: underline; color:#0000ff;\">https://www.advancedgridinsights.com/gridcal</span></a> for more details.</p><p align=\"justify\">This program comes with absolutelly no warranty. This is free software, and you are welcome to redistribute it under the conditions set by the license. GridCal is licensed under the lesser GNU general public license version 3. See the license file for more details.</p><p align=\"justify\">The source of GridCal can be found at: <a href=\"https://github.com/SanPen/GridCal\"><span style=\" text-decoration: underline; color:#0000ff;\">https://github.com/SanPen/GridCal</span></a></p></body></html>", None))
+        self.mainLabel.setText(QCoreApplication.translate("AboutDialog", u"<html><head/><body><p align=\"justify\"><span style=\" font-weight:600;\">GridCal</span> has been carefully crafted since 2015 to serve as a platform for research and consultancy. </p><p align=\"justify\">Visit <a href=\"https://www.advancedgridinsights.com/gridcal\"><span style=\" text-decoration: underline; color:#26a269;\">https://www.advancedgridinsights.com/gridcal</span></a> for more details.</p><p align=\"justify\">This program comes with absolutelly no warranty. This is free software, and you are welcome to redistribute it under the conditions set by the license. GridCal is licensed under the lesser GNU general public license version 3. See the license file for more details.</p><p align=\"justify\">The source of GridCal can be found at: <a href=\"https://github.com/SanPen/GridCal\"><span style=\" text-decoration: underline; color:#26a269;\">https://github.com/SanPen/GridCal</span></a></p></body></html>", None))
         self.label.setText("")
         self.versionLabel.setText(QCoreApplication.translate("AboutDialog", u"version", None))
         self.copyrightLabel.setText(QCoreApplication.translate("AboutDialog", u"Copyright", None))

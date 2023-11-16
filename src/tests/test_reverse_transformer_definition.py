@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from math import sqrt
 
-from GridCal.Engine.Devices.transformer import TransformerType
+from GridCalEngine.Core.Devices import TransformerType
 
 
 def test_reverse_transformer():

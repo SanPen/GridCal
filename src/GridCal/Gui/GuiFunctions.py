@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,26 +16,30 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import numba as nb
 import pandas as pd
-from typing import Dict
-from PySide2.QtWidgets import *
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtGui import *
+from typing import Dict, List, Union, Any, Tuple
+from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
-from matplotlib import pyplot as plt
-from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country, ContingencyGroup
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.basic_structures import CDF
+
+from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
+import GridCal
 
 
-class TreeDelegate(QItemDelegate):
-    commitData = QtCore.Signal(object)
+class TreeDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
+    """
+    commitData = QtCore.Signal(object)
+    """
+    
     """
     def __init__(self, parent, data=defaultdict()):
         """
@@ -43,29 +47,38 @@ class TreeDelegate(QItemDelegate):
         :param parent: QTableView parent object
         :param data: dictionary of lists
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
         # dictionary of lists
         self.data = data
 
     @QtCore.Slot()
     def double_click(self):
-        print('double clicked!')
+        """
+        double click
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        tree = QTreeView(parent)
+        """
 
-        model = QStandardItemModel()
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        tree = QtWidgets.QTreeView(parent)
+
+        model = QtGui.QStandardItemModel()
         model.setHorizontalHeaderLabels(['Template'])
 
         for key in self.data.keys():
             # add parent node
-            parent1 = QStandardItem(str(key))
+            parent1 = QtGui.QStandardItem(str(key))
 
             # add children to parent
             for elm in self.data[key]:
-                child1 = QStandardItem(str(elm))
+                child1 = QtGui.QStandardItem(str(elm))
                 parent1.appendRow([child1])
 
             model.appendRow(parent1)
@@ -75,12 +88,21 @@ class TreeDelegate(QItemDelegate):
         return tree
 
     def setEditorData(self, editor, index):
+        """
 
+        :param editor:
+        :param index:
+        """
         print(editor)
         print(index)
 
     def setModelData(self, editor, model, index):
+        """
 
+        :param editor:
+        :param model:
+        :param index:
+        """
         print(editor)
         print(model)
         print(index)
@@ -88,20 +110,22 @@ class TreeDelegate(QItemDelegate):
         # model.setData(index, self.object_names[editor.currentIndex()])
 
 
-class ComboDelegate(QItemDelegate):
-    commitData = QtCore.Signal(object)
+class ComboDelegate(QtWidgets.QItemDelegate):
+
     """
     A delegate that places a fully functioning QComboBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, objects, object_names):
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent: QtWidgets.QTableView, objects: List[bool], object_names: List[str]) -> None:
         """
         Constructor
         :param parent: QTableView parent object
         :param objects: List of objects to set. i.e. [True, False]
         :param object_names: List of Object names to display. i.e. ['True', 'False']
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
         # objects to sent to the model associated to the combobox. i.e. [True, False]
         self.objects = objects
@@ -111,78 +135,139 @@ class ComboDelegate(QItemDelegate):
 
     @QtCore.Slot()
     def currentIndexChanged(self):
+        """
+        currentIndexChanged
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        combo = QtWidgets.QComboBox(parent)
         combo.addItems(self.object_names)
         combo.currentIndexChanged.connect(self.currentIndexChanged)
         return combo
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
-        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
-        idx = self.object_names.index(val)
-        editor.setCurrentIndex(idx)
-        editor.blockSignals(False)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
+        try:
+            idx = self.object_names.index(val)
+            editor.setCurrentIndex(idx)
+            editor.blockSignals(False)
+        except ValueError:
+            pass
 
     def setModelData(self, editor, model, index):
-        model.setData(index, self.objects[editor.currentIndex()])
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
+        if len(self.objects) > 0:
+            if editor.currentIndex() < len(self.objects):
+                model.setData(index, self.objects[editor.currentIndex()])
 
 
-class TextDelegate(QItemDelegate):
-    commitData = QtCore.Signal(object)
+class TextDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning QLineEdit in every
     cell of the column to which it's applied
     """
+
+    commitData = QtCore.Signal(object)
+
     def __init__(self, parent):
         """
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
     @QtCore.Slot()
     def returnPressed(self):
+        """
+        returnPressed
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        editor = QLineEdit(parent)
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        editor = QtWidgets.QLineEdit(parent)
         editor.returnPressed.connect(self.returnPressed)
         return editor
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
-        val = index.model().data(index, role=QtCore.Qt.DisplayRole)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
         editor.setText(val)
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
         model.setData(index, editor.text())
 
 
-class FloatDelegate(QItemDelegate):
-    commitData = QtCore.Signal(object)
+class FloatDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning QDoubleSpinBox in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent, min_=-1e200, max_=1e200):
+
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent: QtWidgets.QTableView, min_: float = -1e200, max_: float = 1e200) -> None:
         """
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
         self.min = min_
         self.max = max_
 
     @QtCore.Slot()
     def returnPressed(self):
+        """
+        returnPressed
+        """
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
-        editor = QDoubleSpinBox(parent)
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        editor = QtWidgets.QDoubleSpinBox(parent)
         editor.setMaximum(self.max)
         editor.setMinimum(self.min)
         editor.setDecimals(8)
@@ -190,27 +275,40 @@ class FloatDelegate(QItemDelegate):
         return editor
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :param index:
+        """
         editor.blockSignals(True)
-        val = float(index.model().data(index, role=QtCore.Qt.DisplayRole))
+        val = float(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
         editor.setValue(val)
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
         model.setData(index, editor.value())
 
 
-class ComplexDelegate(QItemDelegate):
-    commitData = QtCore.Signal(object)
+class ComplexDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning Complex Editor in every
     cell of the column to which it's applied
     """
+
+    commitData = QtCore.Signal(object)
+
     def __init__(self, parent):
         """
         Constructor
         :param parent: QTableView parent object
         """
-        QItemDelegate.__init__(self, parent)
+        QtWidgets.QItemDelegate.__init__(self, parent)
 
     @QtCore.Slot()
     def returnPressed(self):
@@ -228,16 +326,16 @@ class ComplexDelegate(QItemDelegate):
         :param index:
         :return:
         """
-        editor = QFrame(parent)
-        main_layout = QHBoxLayout(editor)
+        editor = QtWidgets.QFrame(parent)
+        main_layout = QtWidgets.QHBoxLayout(editor)
         main_layout.layout().setContentsMargins(0, 0, 0, 0)
 
-        real = QDoubleSpinBox()
+        real = QtWidgets.QDoubleSpinBox()
         real.setMaximum(9999)
         real.setMinimum(-9999)
         real.setDecimals(8)
 
-        imag = QDoubleSpinBox()
+        imag = QtWidgets.QDoubleSpinBox()
         imag.setMaximum(9999)
         imag.setMinimum(-9999)
         imag.setDecimals(8)
@@ -250,7 +348,7 @@ class ComplexDelegate(QItemDelegate):
 
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QtWidgets.QFrame, index):
         """
 
         :param editor:
@@ -258,12 +356,12 @@ class ComplexDelegate(QItemDelegate):
         :return:
         """
         editor.blockSignals(True)
-        val = complex(index.model().data(index, role=QtCore.Qt.DisplayRole))
+        val = complex(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
         editor.children()[1].setValue(val.real)
         editor.children()[2].setValue(val.imag)
         editor.blockSignals(False)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QtWidgets.QFrame, model, index):
         """
 
         :param editor:
@@ -273,6 +371,49 @@ class ComplexDelegate(QItemDelegate):
         """
         val = complex(editor.children()[1].value(), editor.children()[2].value())
         model.setData(index, val)
+
+
+class ColorPickerDelegate(QtWidgets.QItemDelegate):
+    """
+    Color picker delegate
+    """
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent):
+        """
+
+        :param parent:
+        """
+        super(ColorPickerDelegate, self).__init__(parent)
+
+    @QtCore.Slot()
+    def returnPressed(self):
+        """
+
+        :return:
+        """
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        colorDialog = QtWidgets.QColorDialog(parent)
+        return colorDialog
+
+    def setEditorData(self, editor: QtWidgets.QColorDialog, index):
+        editor.blockSignals(True)
+        val = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
+        color = QtGui.QColor.fromString(val)
+        editor.setCurrentColor(color)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor: QtWidgets.QColorDialog, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        :return:
+        """
+        model.setData(index, editor.currentColor().name())
 
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -307,9 +448,9 @@ class PandasModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.editable and index.column() > self.editable_min_idx:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -327,14 +468,14 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
         :param role:
         :return:
         """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             val = self.data_c[index.row(), index.column()]
             if isinstance(val, str):
@@ -351,7 +492,7 @@ class PandasModel(QtCore.QAbstractTableModel):
                     return '0'
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -362,25 +503,28 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.data_c[index.row(), index.column()] = value
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.cols_c[p_int]
-            elif orientation == QtCore.Qt.Vertical:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.cols_c[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.index_c is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index_c[p_int])
+                        return str(self.index_c[section])
         return None
 
     def copy_to_column(self, row, col):
@@ -392,10 +536,14 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         self.data_c[:, col] = self.data_c[row, col]
 
-    def is_complex(self):
+    def is_complex(self) -> bool:
+        """
+        id the data type complex?
+        :return: True / False
+        """
         return self.data_c.dtype == complex
 
-    def is_2d(self):
+    def is_2d(self) -> bool:
         """
         actually check if the array is 1D or 2D
         :return: true if it is really a 2D data set
@@ -499,9 +647,9 @@ class PandasModel(QtCore.QAbstractTableModel):
                     txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
 
 
 class ObjectsModel(QtCore.QAbstractTableModel):
@@ -553,10 +701,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.set_delegates()
 
-    def set_delegates(self):
+    def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
-        :return:
         """
 
         if self.transposed:
@@ -572,7 +719,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, delegate)
 
             elif tpe is BranchTemplate or tpe is str:
-                delegate = TextDelegate(self.parent)
+
+                if 'color' in self.attributes[i]:
+                    delegate = ColorPickerDelegate(self.parent)
+                else:
+                    delegate = TextDelegate(self.parent)
+
                 F(i, delegate)
 
             elif tpe is BranchTemplate:
@@ -603,7 +755,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                          DeviceType.CountryDevice,
                          DeviceType.Technology,
                          DeviceType.ContingencyGroupDevice,
-                         DeviceType.InvestmentsGroupDevice]:
+                         DeviceType.InvestmentsGroupDevice,
+                         DeviceType.FuelDevice,
+                         DeviceType.EmissionGasDevice,
+                         DeviceType.GeneratorDevice]:
 
                 objects = self.dictionary_of_lists[tpe.value]
                 values = [x.name for x in objects]
@@ -634,9 +789,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -679,9 +834,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
-        elif tpe is BranchType:
-            # conv = BranchType(None)
-            return BranchType(getattr(self.objects[obj_idx], attr))
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -704,9 +856,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if tpe is Bus:
             return getattr(self.objects[obj_idx], attr).name
-        elif tpe is BranchType:
-            # conv = BranchType(None)
-            return BranchType(getattr(self.objects[obj_idx], attr))
         else:
             return getattr(self.objects[obj_idx], attr)
 
@@ -717,8 +866,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return str(self.data_with_type(index))
+        if index.isValid():
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
+                return str(self.data_with_type(index))
+            elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
+                if 'color' in self.attributes[index.column()]:
+                    return QtGui.QColor(str(self.data_with_type(index)))
 
         return None
 
@@ -748,10 +901,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         if not taken:
             if self.attributes[attr_idx] not in self.non_editable_attributes:
-                if tpe is BranchType:
-                    setattr(self.objects[obj_idx], self.attributes[attr_idx], BranchType(value))
-                    self.objects[obj_idx].graphic_obj.update_symbol()
-                elif tpe is ContingencyGroup:
+
+                if tpe is ContingencyGroup:
                     if value != "":
                         setattr(self.objects[obj_idx], self.attributes[attr_idx], ContingencyGroup(value))
                 else:
@@ -773,43 +924,46 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 return True
         return False
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the headers to display
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             if self.transposed:
                 # for the properties in the schematic view
-                if orientation == QtCore.Qt.Horizontal:
+                if orientation == QtCore.Qt.Orientation.Horizontal:
                     return 'Value'
-                elif orientation == QtCore.Qt.Vertical:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    if self.units[section] != '':
+                        return self.attributes[section] + ' [' + self.units[section] + ']'
                     else:
-                        return self.attributes[p_int]
+                        return self.attributes[section]
             else:
                 # Normal
-                if orientation == QtCore.Qt.Horizontal:
-                    if self.units[p_int] != '':
-                        return self.attributes[p_int] + ' [' + self.units[p_int] + ']'
+                if orientation == QtCore.Qt.Orientation.Horizontal:
+                    if self.units[section] != '':
+                        return self.attributes[section] + ' [' + self.units[section] + ']'
                     else:
-                        return self.attributes[p_int]
-                elif orientation == QtCore.Qt.Vertical:
-                    return str(p_int) + ':' + str(self.objects[p_int])
+                        return self.attributes[section]
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    return str(section) + ':' + str(self.objects[section])
 
         # add a tooltip
-        if role == QtCore.Qt.ToolTipRole:
-            if p_int < self.c:
-                if self.units[p_int] != "":
-                    unit = '\nUnits: ' + self.units[p_int]
+        if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+            if section < self.c:
+                if self.units[section] != "":
+                    unit = '\nUnits: ' + self.units[section]
                 else:
                     unit = ''
-                return self.attributes[p_int] + unit + ' \n' + self.tips[p_int]
+                return self.attributes[section] + unit + ' \n' + self.tips[section]
             else:
                 # somehow the index is out of range
                 return ""
@@ -852,8 +1006,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             for i in range(nrows):
                 data[i, j] = self.data_raw(r=i, c=j)
 
-        columns = [self.headerData(i, orientation=QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole) for i in range(ncols)]
-        index = [self.headerData(i, orientation=QtCore.Qt.Vertical, role=QtCore.Qt.DisplayRole) for i in range(nrows)]
+        columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
+                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(ncols)]
+
+        index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
+                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(nrows)]
 
         return index, columns, data
 
@@ -876,25 +1033,15 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
-
-
-class BranchObjectModel(ObjectsModel):
-
-    def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(), catalogue_dict=defaultdict()):
-
-        # type templates catalogue
-        self.catalogue_dict = catalogue_dict
-
-        super(BranchObjectModel, self).__init__(objects, editable_headers=editable_headers, parent=parent,
-                                                editable=editable, non_editable_attributes=non_editable_attributes,
-                                                transposed=transposed, check_unique=check_unique)
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
 
 
 class ObjectHistory:
+    """
+    ObjectHistory
+    """
 
     def __init__(self, max_undo_states=100):
         """
@@ -955,6 +1102,357 @@ class ObjectHistory:
         :return: True / False
         """
         return len(self.undo_stack) > 0
+
+
+class RosetaObjectsModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a Qt table view with the properties of objects
+    """
+    def __init__(self, objects, editable_headers, parent=None, editable=False,
+                 non_editable_attributes=list(), transposed=False, check_unique=list(),
+                 dictionary_of_lists={}):
+        """
+
+        :param objects: list of objects associated to the editor
+        :param editable_headers: Dictionary with the properties and the units and type {attribute: ('unit', type)}
+        :param parent: Parent object: the QTableView object
+        :param editable: Is the table editable?
+        :param non_editable_attributes: List of attributes that are not enabled for editing
+        :param transposed: Display the table transposed?
+        :param dictionary_of_lists: dictionary of lists for the Delegates
+        """
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.parent = parent
+
+        self.attributes = list(editable_headers.keys())
+
+        self.attribute_types = [editable_headers[attr].class_type for attr in self.attributes]
+
+        self.units = [editable_headers[attr].get_unit() for attr in self.attributes]
+
+        self.tips = [editable_headers[attr].description for attr in self.attributes]
+
+        self.objects = objects
+
+        self.editable = editable
+
+        self.non_editable_attributes = non_editable_attributes
+
+        self.check_unique = check_unique
+
+        self.r = len(self.objects)
+
+        self.c = len(self.attributes)
+
+        self.formatter = lambda x: "%.2f" % x
+
+        self.transposed = transposed
+
+        self.dictionary_of_lists = dictionary_of_lists
+
+        self.set_delegates()
+
+    def set_delegates(self):
+        """
+        Set the cell editor types depending on the attribute_types array
+        :return:
+        """
+
+        if self.transposed:
+            F = self.parent.setItemDelegateForRow
+        else:
+            F = self.parent.setItemDelegateForColumn
+
+        for i in range(self.c):
+            tpe = self.attribute_types[i]
+
+            if tpe is bool:
+                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                F(i, delegate)
+
+            elif tpe is float:
+                delegate = FloatDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is complex:
+                delegate = ComplexDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is None:
+                F(i, None)
+                if len(self.non_editable_attributes) == 0:
+                    self.non_editable_attributes.append(self.attributes[i])
+
+            elif isinstance(tpe, EnumMeta):
+                objects = list(tpe)
+                values = [x.value for x in objects]
+                delegate = ComboDelegate(self.parent, objects, values)
+                F(i, delegate)
+
+            # elif tpe in []:
+            #
+            #     objects = self.dictionary_of_lists[tpe.value]
+            #     values = [x.name for x in objects]
+            #     delegate = ComboDelegate(self.parent, objects, values)
+            #     F(i, delegate)
+
+            else:
+                F(i, None)
+
+    def update(self):
+        """
+        update table
+        """
+        row = self.rowCount()
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # whatever code
+        self.endInsertRows()
+
+    def flags(self, index):
+        """
+        Get the display mode
+        :param index:
+        :return:
+        """
+        if self.transposed:
+            attr_idx = index.row()
+        else:
+            attr_idx = index.column()
+
+        if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+        else:
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
+
+    def rowCount(self, parent=None):
+        """
+        Get number of rows
+        :param parent:
+        :return:
+        """
+        if self.transposed:
+            return self.c
+        else:
+            return self.r
+
+    def columnCount(self, parent=None):
+        """
+        Get number of columns
+        :param parent:
+        :return:
+        """
+        if self.transposed:
+            return self.r
+        else:
+            return self.c
+
+    def data_raw(self, r, c):
+        """
+        Get the data to display
+        :param index:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = c
+            attr_idx = r
+        else:
+            obj_idx = r
+            attr_idx = c
+
+        attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[attr_idx]
+
+        return getattr(self.objects[obj_idx], attr)
+
+    def data_with_type(self, index):
+        """
+        Get the data to display
+        :param index:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[attr_idx]
+
+        return getattr(self.objects[obj_idx], attr)
+
+    def data(self, index, role=None):
+        """
+        Get the data to display
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
+            return str(self.data_with_type(index))
+
+        return None
+
+    def setData(self, index, value, role=None):
+        """
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = index.column()
+            attr_idx = index.row()
+        else:
+            obj_idx = index.row()
+            attr_idx = index.column()
+
+        tpe = self.attribute_types[attr_idx]
+
+        # check taken values
+        if self.attributes[attr_idx] in self.check_unique:
+            taken = self.attr_taken(self.attributes[attr_idx], value)
+        else:
+            taken = False
+
+        if not taken:
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
+
+        return True
+
+    def attr_taken(self, attr, val):
+        """
+        Checks if the attribute value is taken
+        :param attr:
+        :param val:
+        :return:
+        """
+        for obj in self.objects:
+            if val == getattr(obj, attr):
+                return True
+        return False
+
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+        Get the headers to display
+        :param section:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+
+            if self.transposed:
+                # for the properties in the schematic view
+                if orientation == QtCore.Qt.Orientation.Horizontal:
+                    return 'Value'
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    if self.units[section] != '':
+                        return self.attributes[section]  # + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[section]
+            else:
+                # Normal
+                if orientation == QtCore.Qt.Orientation.Horizontal:
+                    if self.units[section] != '':
+                        return self.attributes[section]  # + ' [' + self.units[p_int] + ']'
+                    else:
+                        return self.attributes[section]
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    return str(section)  # + ':' + str(self.objects[p_int])
+
+        # add a tooltip
+        if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+            if section < self.c:
+                if self.units[section] != "":
+                    unit = '\nUnits: ' + self.units[section]
+                else:
+                    unit = ''
+                return self.attributes[section] + unit + ' \n' + self.tips[section]
+            else:
+                # somehow the index is out of range
+                return ""
+
+        return None
+
+    def copy_to_column(self, index):
+        """
+        Copy the value pointed by the index to all the other cells in the column
+        :param index: QModelIndex instance
+        :return:
+        """
+        value = self.data_with_type(index=index)
+        col = index.column()
+
+        for row in range(self.rowCount()):
+
+            if self.transposed:
+                obj_idx = col
+                attr_idx = row
+            else:
+                obj_idx = row
+                attr_idx = col
+
+            if self.attributes[attr_idx] not in self.non_editable_attributes:
+                setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
+            else:
+                pass  # the column cannot be edited
+
+    def get_data(self):
+        """
+
+        :return:
+        """
+        nrows = self.rowCount()
+        ncols = self.columnCount()
+        data = np.empty((nrows, ncols), dtype=object)
+
+        for j in range(ncols):
+            for i in range(nrows):
+                data[i, j] = self.data_raw(r=i, c=j)
+
+        columns = [self.headerData(i, orientation=QtCore.Qt.Orientation.Horizontal,
+                                   role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(ncols)]
+
+        index = [self.headerData(i, orientation=QtCore.Qt.Orientation.Vertical,
+                                 role=QtCore.Qt.ItemDataRole.DisplayRole) for i in range(nrows)]
+
+        return index, columns, data
+
+    def copy_to_clipboard(self):
+        """
+
+        :return:
+        """
+        if self.columnCount() > 0:
+
+            index, columns, data = self.get_data()
+
+            data = data.astype(str)
+
+            # header first
+            txt = '\t' + '\t'.join(columns) + '\n'
+
+            # data
+            for t, index_value in enumerate(index):
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
 
 
 class ProfilesModel(QtCore.QAbstractTableModel):
@@ -1045,9 +1543,9 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
 
         if self.editable and index.column() not in self.non_editable_indices:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -1065,7 +1563,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         return self.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the data to display
         :param index:
@@ -1073,14 +1571,14 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
                 array = getattr(self.elements[index.column()], profile_property)
                 return str(array[index.row()])
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1100,22 +1598,25 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         return True
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the headers to display
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return str(self.elements[p_int].name)
-            elif orientation == QtCore.Qt.Vertical:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return str(self.elements[section].name)
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.circuit.time_profile is None:
-                    return str(p_int)
+                    return str(section)
                 else:
-                    return pd.to_datetime(self.circuit.time_profile[p_int]).strftime('%d-%m-%Y %H:%M')
+                    return pd.to_datetime(self.circuit.time_profile[section]).strftime('%d-%m-%Y %H:%M')
 
         return None
 
@@ -1135,7 +1636,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            text = cb.text(mode=cb.Clipboard)
+            text = cb.text()
 
             rows = text.split('\n')
 
@@ -1196,8 +1697,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(data, mode=cb.Clipboard)
+            cb.clear()
+            cb.setText(data)
 
         else:
             # there are no elements
@@ -1257,45 +1758,85 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             self.update()
 
 
-class EnumModel(QtCore.QAbstractListModel):
-
-    def __init__(self, list_of_enums):
+class DiagramsModel(QtCore.QAbstractListModel):
+    """
+    Model for the diagrams
+    # from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+    # from GridCal.Gui.GridEditorWidget import GridEditorWidget
+    # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+    """
+    def __init__(self, list_of_diagrams: List[Union["GridEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
         """
         Enumeration model
-        :param list_of_enums: list of enumeration values to show
+        :param list_of_diagrams: list of enumeration values to show
         """
         QtCore.QAbstractListModel.__init__(self)
-        self.items = list_of_enums
+        self.items = list_of_diagrams
+
+        self.bus_branch_editor_icon = QtGui.QIcon()
+        self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
+
+        self.bus_branch_vecinity_icon = QtGui.QIcon()
+        self.bus_branch_vecinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
+
+        self.map_editor_icon = QtGui.QIcon()
+        self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
+
+    def flags(self, index):
+        """
+        Get the display mode
+        :param index:
+        :return:
+        """
+        return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
     def rowCount(self, parent=QtCore.QModelIndex()):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.items)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return self.items[index.row()].value[0]
+    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid():
+
+            diagram = self.items[index.row()]
+
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
+                return diagram.name
+            elif role == QtCore.Qt.ItemDataRole.DecorationRole:
+
+                if isinstance(diagram, GridCal.Gui.GridEditorWidget.BusBranchEditorWidget):
+                    return self.bus_branch_editor_icon
+                elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
+                    return self.map_editor_icon
+                elif isinstance(diagram, GridCal.Gui.BusViewer.bus_viewer_dialogue.BusViewerWidget):
+                    return self.bus_branch_vecinity_icon
+
         return None
 
-
-class MeasurementsModel(QtCore.QAbstractListModel):
-
-    def __init__(self, circuit):
+    def setData(self, index, value, role=None):
         """
-        Enumeration model
-        :param circuit: MultiCircuit instance
+        Set data by simple editor (whatever text)
+        :param index:
+        :param value:
+        :param role:
+        :return:
         """
-        QtCore.QAbstractListModel.__init__(self)
-        self.circuit = circuit
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self.items)
+        self.items[index.row()].name = value
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return self.items[index.row()].value[0]
-        return None
+        return True
 
 
-def get_list_model(lst, checks=False, check_value=False):
+def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """
@@ -1314,13 +1855,112 @@ def get_list_model(lst, checks=False, check_value=False):
                 item.setEditable(False)
                 item.setCheckable(True)
                 if check_value:
-                    item.setCheckState(QtCore.Qt.Checked)
+                    item.setCheckState(QtCore.Qt.CheckState.Checked)
                 list_model.appendRow(item)
 
     return list_model
 
 
-def get_checked_indices(mdl: QtGui.QStandardItemModel()):
+class CustomFileSystemModel(QtWidgets.QFileSystemModel):
+    def __init__(self, root_path: str, ext_filter: List[str] = ['*.py']):
+        super(CustomFileSystemModel, self).__init__()
+
+        self.setNameFilters(ext_filter)
+        self.setRootPath(root_path)
+
+
+def get_logger_tree_model(logger: DataLogger):
+    """
+    Fill logger tree
+    :param logger: Logger instance
+    :return: QStandardItemModel instance
+    """
+    d = logger.to_dict()
+    editable = False
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels(['Time', 'Element', 'Class', 'Property', 'Value', 'Expected value', 'comment'])
+    parent = model.invisibleRootItem()
+
+    for severity, messages_dict in d.items():
+        severity_child = QtGui.QStandardItem(severity)
+
+        # print(severity)
+
+        for message, data_list in messages_dict.items():
+            message_child = QtGui.QStandardItem(message)
+
+            # print('\t', message)
+
+            for time, elm, elm_class, elm_property, value, expected_value, comment in data_list:
+
+                # print('\t', '\t', time, elm, value, expected_value)
+
+                time_child = QtGui.QStandardItem(time)
+                time_child.setEditable(editable)
+
+                elm_child = QtGui.QStandardItem(elm)
+                elm_child.setEditable(editable)
+
+                elm_class_child = QtGui.QStandardItem(elm_class)
+                elm_class_child.setEditable(editable)
+
+                elm_property_child = QtGui.QStandardItem(elm_property)
+                elm_property_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(value)
+                value_child.setEditable(editable)
+
+                expected_val_child = QtGui.QStandardItem(expected_value)
+                expected_val_child.setEditable(editable)
+
+                comment_val_child = QtGui.QStandardItem(comment)
+                comment_val_child.setEditable(editable)
+
+                message_child.appendRow([time_child, elm_child, elm_class_child,
+                                         elm_property_child, value_child, expected_val_child, comment_val_child])
+
+            message_child.setEditable(editable)
+
+            severity_child.appendRow(message_child)
+
+        severity_child.setEditable(editable)
+        parent.appendRow(severity_child)
+
+    return model
+
+
+def get_icon_list_model(lst: List[Tuple[str, QtGui.QIcon]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+    """
+
+    :param lst:
+    :param checks:
+    :param check_value:
+    :return:
+    """
+    list_model = QtGui.QStandardItemModel()
+    if lst is not None:
+        if not checks:
+            for val, icon in lst:
+                # for the list model
+                item = QtGui.QStandardItem(str(val))
+                item.setEditable(False)
+                item.setIcon(icon)
+                list_model.appendRow(item)
+        else:
+            for val, icon in lst:
+                # for the list model
+                item = QtGui.QStandardItem(str(val))
+                item.setIcon(icon)
+                item.setEditable(False)
+                item.setCheckable(True)
+                if check_value:
+                    item.setCheckState(QtCore.Qt.CheckState.Checked)
+                list_model.appendRow(item)
+
+    return list_model
+
+
+def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
     """
     Get a list of the selected indices in a QStandardItemModel
     :param mdl:
@@ -1329,15 +1969,16 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()):
     idx = list()
     for row in range(mdl.rowCount()):
         item = mdl.item(row)
-        if item.checkState() == QtCore.Qt.Checked:
+        if item.checkState() == QtCore.Qt.CheckState.Checked:
             idx.append(row)
 
     return np.array(idx)
 
 
-
-
-def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None):
+def fill_model_from_dict(parent: QtGui.QStandardItem,
+                         d: Dict[str, Union[Dict[str, Any], List[str]]],
+                         editable=False,
+                         icons: Dict[str, str] = None):
     """
     Fill TreeViewModel from dictionary
     :param parent: Parent QStandardItem
@@ -1355,8 +1996,8 @@ def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None
             if icons is not None:
                 if name in icons.keys():
                     icon_path = icons[name]
-                    _icon = QIcon()
-                    _icon.addPixmap(QPixmap(icon_path))
+                    _icon = QtGui.QIcon()
+                    _icon.addPixmap(QtGui.QPixmap(icon_path))
                     child.setIcon(_icon)
 
             parent.appendRow(child)
@@ -1370,17 +2011,25 @@ def fill_model_from_dict(parent, d, editable=False, icons: Dict[str, str] = None
         if icons is not None:
             if name in icons.keys():
                 icon_path = icons[name]
-                _icon = QIcon()
-                _icon.addPixmap(QPixmap(icon_path))
+                _icon = QtGui.QIcon()
+                _icon.addPixmap(QtGui.QPixmap(icon_path))
                 item.setIcon(_icon)
         item.setEditable(editable)
         parent.appendRow(item)
 
 
-def get_tree_model(d, top='Results', icons: Dict[str, str] = None):
+def get_tree_model(d, top='', icons: Dict[str, str] = None):
+    """
+
+    :param d:
+    :param top:
+    :param icons:
+    :return:
+    """
     model = QtGui.QStandardItemModel()
     model.setHorizontalHeaderLabels([top])
     fill_model_from_dict(model.invisibleRootItem(), d=d, editable=False, icons=icons)
+
     return model
 
 
@@ -1399,8 +2048,13 @@ def get_tree_item_path(item: QtGui.QStandardItem):
     path.reverse()
     return path
 
-def fast_data_to_numpy_text(data):
 
+def fast_data_to_numpy_text(data: np.ndarray):
+    """
+    Convert numpy to text
+    :param data: numpy array
+    :return:
+    """
     if len(data.shape) == 1:
         txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
 
@@ -1421,3 +2075,121 @@ def fast_data_to_numpy_text(data):
         txt = '[]'
 
     return txt
+
+
+def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, already_visited=list()):
+    """
+
+    :param class_tag:
+    :param device:
+    :param editable:
+    :param already_visited:
+    :return:
+    """
+    if class_tag is None:
+        if hasattr(device, 'name'):
+            if device.name is not None:
+                if device.name != '':
+                    class_tag = device.name
+                else:
+                    class_tag = device.rdfid
+            else:
+                class_tag = device.rdfid
+        else:
+            class_tag = device.rdfid
+
+    # create root node
+    device_child = QtGui.QStandardItem(class_tag)
+
+    # register visit to avoid cyclic recursion
+    already_visited.append(device)
+
+    for property_name, cim_prop in device.declared_properties.items():
+
+        property_value = getattr(device, property_name)
+
+        if hasattr(property_value, 'rdfid'):
+
+            we_are_in_a_recursive_loop = False
+            if len(already_visited) > 7:
+                for e in already_visited:
+                    if property_value.rdfid == e.rdfid:
+                        we_are_in_a_recursive_loop = True
+
+            if not we_are_in_a_recursive_loop:
+
+                # if the property is an object, recursively add it
+                tpe = str(property_value.tpe)
+                class_name_child = add_cim_object_node(tpe,
+                                                       property_value,
+                                                       editable=editable,
+                                                       already_visited=already_visited)
+                class_name_child.setEditable(editable)
+
+                property_name_child = QtGui.QStandardItem(tpe)
+                property_name_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(property_value.rdfid)
+                value_child.setEditable(editable)
+            else:
+                # print('Recursive loop...')
+                # return device_child
+                class_name_child = QtGui.QStandardItem("Recursive object (" + str(len(already_visited)) + ")")
+                class_name_child.setEditable(editable)
+
+                property_name_child = QtGui.QStandardItem(property_name)
+                property_name_child.setEditable(editable)
+
+                value_child = QtGui.QStandardItem(str(property_value))
+                value_child.setEditable(editable)
+        else:
+            # if the property is a value (float, str, bool, etc.) just add it
+
+            tpe = str(type(property_value)).replace('class', '')\
+                .replace("'", "")\
+                .replace("<", "")\
+                .replace(">", "").strip()
+
+            class_name_child = QtGui.QStandardItem(tpe)
+            class_name_child.setEditable(editable)
+
+            property_name_child = QtGui.QStandardItem(property_name)
+            property_name_child.setEditable(editable)
+
+            value_child = QtGui.QStandardItem(str(property_value))
+            value_child.setEditable(editable)
+
+        device_child.appendRow([class_name_child, property_name_child, value_child])
+
+    return device_child
+
+
+def get_cim_tree_model(cim_model: CgmesCircuit):
+    """
+    Fill logger tree
+    :param cim_model: Logger instance
+    :return: QStandardItemModel instance
+    """
+
+    editable = False
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels(['Object class', 'Property', 'Value'])
+    root_node = model.invisibleRootItem()
+
+    for class_name, device_list in cim_model.elements_by_type.items():
+
+        class_child = QtGui.QStandardItem(class_name + " (" + str(len(device_list)) + ")")
+
+        for device in device_list:
+
+            # add device with all it's properties
+            device_child = add_cim_object_node(class_tag=None, device=device, editable=editable, already_visited=list())
+
+            device_child.setEditable(editable)
+
+            class_child.appendRow(device_child)
+
+        class_child.setEditable(editable)
+        root_node.appendRow(class_child)
+
+    return model

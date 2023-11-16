@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,24 +14,50 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import darkdetect
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
+                               QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
 
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+try:
+    is_dark = darkdetect.theme() == "Dark"
+except ImportError:
+    is_dark = False
 
 # Declare colors
-ACTIVE = {'style': Qt.SolidLine, 'color': Qt.black}
+ACTIVE = {'style': Qt.SolidLine,
+          'color': Qt.white if is_dark else Qt.black,
+          'text': Qt.white if is_dark else Qt.black}
+
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
 OTHER = ACTIVE
 FONT_SCALE = 1.9
 
 
-class LineUpdateMixin(object):
+def set_dark_mode():
+    """
+    Set the dark mode
+    """
+    is_dark = True
+    ACTIVE['color'] = Qt.white
+    ACTIVE['text'] = Qt.white
+
+
+def set_light_mode():
+    """
+    Set the light mode
+    """
+    is_dark = False
+    ACTIVE['color'] = Qt.black
+    ACTIVE['text'] = Qt.black
+
+
+class LineUpdateMixin:
 
     def __init__(self, parent):
         super(LineUpdateMixin, self).__init__(parent)
-        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
@@ -56,6 +82,9 @@ class Line(LineUpdateMixin, QGraphicsLineItem):
 
 
 class ParameterDialog(QDialog):
+    """
+    ParameterDialog
+    """
 
     def __init__(self, parent=None):
         super(ParameterDialog, self).__init__(parent)

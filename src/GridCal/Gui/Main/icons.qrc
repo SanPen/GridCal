@@ -1,5 +1,17 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/schematicadd_to.svg</file>
+    <file>icons/bug.svg</file>
+    <file>icons/add_substation.svg</file>
+    <file>icons/map (add).svg</file>
+    <file>icons/wind_power.svg</file>
+    <file>icons/solar_power.svg</file>
+    <file>icons/expansion_planning.svg</file>
+    <file>icons/add_external_grid.svg</file>
+    <file>icons/clustering_use.svg</file>
+    <file>icons/clustering.svg</file>
+    <file>icons/zoom_out.svg</file>
+    <file>icons/zoom_in.svg</file>
     <file>icons/investment.svg</file>
     <file>icons/add_investment.svg</file>
     <file>icons/histogram.svg</file>

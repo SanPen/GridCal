@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-from PySide2 import QtCore
-from GridCal.Engine.Devices.wire import Wire
-from GridCal.Engine.Devices.tower import Tower, WireInTower
+from typing import Union
+from PySide6 import QtCore
+from GridCalEngine.Core.Devices.Branches.wire import Wire
+from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
 
 """
 Equations source:
@@ -81,9 +81,11 @@ class WiresTable(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.editable[index.column()]:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return (QtCore.Qt.ItemFlag.ItemIsEditable |
+                    QtCore.Qt.ItemFlag.ItemIsEnabled |
+                    QtCore.Qt.ItemFlag.ItemIsSelectable)
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.wires)
@@ -94,19 +96,26 @@ class WiresTable(QtCore.QAbstractTableModel):
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self,
+             index: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex],
+             role=QtCore.Qt.ItemDataRole.DisplayRole):
+
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 val = getattr(self.wires[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.header[p_int]
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.header[section]
+
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -126,7 +135,6 @@ class WiresTable(QtCore.QAbstractTableModel):
                 setattr(wire, attr, self.converter[index.column()](value))
 
         return True
-
 
 
 class WiresCollection(QtCore.QAbstractTableModel):
@@ -183,9 +191,11 @@ class WiresCollection(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.editable[index.column()]:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return (QtCore.Qt.ItemFlag.ItemIsEditable |
+                    QtCore.Qt.ItemFlag.ItemIsEnabled |
+                    QtCore.Qt.ItemFlag.ItemIsSelectable)
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.wires_in_tower)
@@ -196,19 +206,22 @@ class WiresCollection(QtCore.QAbstractTableModel):
     def parent(self, index=None):
         return QtCore.QModelIndex()
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 val = getattr(self.wires_in_tower[index.row()], self.index_prop[index.column()])
                 return str(val)
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.header[p_int]
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.header[section]
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -232,7 +245,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
 
 class TowerModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent=None, edit_callback=None, tower: Tower=None):
+    def __init__(self, parent=None, edit_callback=None, tower: Union[OverheadLineType, None] = None):
         """
 
         :param parent:
@@ -243,7 +256,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self)
 
         if tower is None:
-            self.tower = Tower()
+            self.tower = OverheadLineType()
         else:
             self.tower = tower
 
@@ -303,9 +316,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         :return:
         """
         if self.tower.editable_wire[index.column()]:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemFlag.ItemIsEnabled
 
     def rowCount(self, parent=None):
         """
@@ -323,7 +336,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         return len(self.tower.header)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -331,24 +344,27 @@ class TowerModel(QtCore.QAbstractTableModel):
         :return:
         """
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 val = getattr(self.tower.wires_in_tower[index.row()], self.tower.index_prop[index.column()])
                 return str(val)
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
-        :param p_int:
+        :param section:
         :param orientation:
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.tower.header[p_int]
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.tower.header[section]
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -361,7 +377,9 @@ class TowerModel(QtCore.QAbstractTableModel):
 
             try:
                 val = self.tower.converter[index.column()](value)
-            except:
+            except ValueError:
+                val = 0
+            except TypeError:
                 val = 0
 
             # correct the phase to the correct range

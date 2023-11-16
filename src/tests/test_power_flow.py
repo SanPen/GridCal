@@ -18,10 +18,10 @@ import os
 import pandas as pd
 import numpy as np
 
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
 def test_ieee_grids():
@@ -55,7 +55,7 @@ def test_ieee_grids():
         for f1, f2 in files:
             print(f1, end=' ')
 
-            fname = os.path.join('data', 'grids', f1)
+            fname = os.path.join('data', 'grids', 'RAW', f1)
             main_circuit = FileOpen(fname).open()
             power_flow = PowerFlowDriver(main_circuit, options)
             power_flow.run()
@@ -69,10 +69,18 @@ def test_ieee_grids():
             p_gc = power_flow.results.Sf.real
             p_psse = df_p.values[:, 0]
 
+            # br_codes = [e.code for e in main_circuit.get_branches_wo_hvdc()]
+            # p_gc_df = pd.DataFrame(data=p_gc, columns=[0], index=br_codes)
+            # pf_diff_df = p_gc_df - df_p
+
             v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
             flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
+            # flow_ok = (np.abs(pf_diff_df.values) < 1e-3).all()
 
-            df = pd.DataFrame(data=np.c_[v_gc, v_psse], columns=['GridCal', 'PSSe'])
+            if not v_ok:
+                print('power flow voltages test for {} failed'.format(fname))
+            if not flow_ok:
+                print('power flow flows test for {} failed'.format(fname))
 
             assert v_ok
             assert flow_ok

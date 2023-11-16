@@ -18,22 +18,17 @@ import os
 
 import numpy as np
 
-from GridCal.Engine import *
+from GridCalEngine.api import *
 
 
 def test_opf():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
     print('Running OPF...', '')
     opf_options = OptimalPowerFlowOptions(verbose=False,
                                           solver=SolverType.DC_OPF)
-    opf = OptimalPowerFlow(grid=main_circuit, options=opf_options, pf_options=pf_options)
+    opf = OptimalPowerFlowDriver(grid=main_circuit, options=opf_options)
     opf.run()
 
 

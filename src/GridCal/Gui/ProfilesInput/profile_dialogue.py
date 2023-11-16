@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,17 +17,17 @@
 import os
 import string
 import sys
+from typing import Union
 from random import randint
 from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
-from PySide2.QtWidgets import *
+from PySide6 import QtWidgets, QtCore
 from typing import List, Dict
 from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
-from GridCal.Gui.ProfilesInput.profiles_from_data_gui import *
-from GridCal.Gui.ProfilesInput.excel_dialog import *
-
+from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
+from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 
 
 class MultiplierType(Enum):
@@ -67,10 +67,10 @@ class Association:
             return ''
 
 
-class Associations(QAbstractTableModel):
+class Associations(QtCore.QAbstractTableModel):
 
     def __init__(self):
-        QAbstractTableModel.__init__(self)
+        QtCore.QAbstractTableModel.__init__(self)
 
         self.__values: List[Association] = list()
 
@@ -108,19 +108,23 @@ class Associations(QAbstractTableModel):
     def columnCount(self, parent=None):
         return len(self.__headers)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
                 return str(self.__values[index.row()].get_at(index.column()))
         return None
 
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self.__headers[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                return p_int
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.__headers[section]
+            elif orientation == QtCore.Qt.Orientation.Vertical:
+                return section
         return None
 
 
@@ -171,18 +175,18 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
         return None
 
 
-
 class ProfileInputGUI(QtWidgets.QDialog):
+    """
+    ProfileInputGUI
+    """
 
-    def __init__(self, parent=None, list_of_objects=None, magnitudes=[''], use_native_dialogues=True):
+    def __init__(self, parent=None, list_of_objects=None, magnitudes=['']):
         """
 
         Args:
             parent:
             list_of_objects: List of objects to which set a profile to
             magnitudes: Property of the objects to which set the pandas DataFrame
-            list_of_objects: list ob object to modify
-            use_native_dialogues: use the native file selection dialogues?
         """
         QtWidgets.QDialog.__init__(self, parent)
         if list_of_objects is None:
@@ -194,8 +198,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.project_directory = None
 
         self.magnitudes = magnitudes
-
-        self.use_native_dialogues = use_native_dialogues
 
         # results
         self.data = None
@@ -247,17 +249,19 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # set name transformations
         self.transformations = {
-                                StringSubstitutions.PSSeBranchName.value: StringSubstitutions.PSSeBranchName,
-                                StringSubstitutions.PSSeBusGenerator.value: StringSubstitutions.PSSeBusGenerator,
-                                StringSubstitutions.PSSeBusLoad.value: StringSubstitutions.PSSeBusLoad
-                                }
+            StringSubstitutions.PSSeBranchName.value: StringSubstitutions.PSSeBranchName,
+            StringSubstitutions.PSSeBusGenerator.value: StringSubstitutions.PSSeBusGenerator,
+            StringSubstitutions.PSSeBusLoad.value: StringSubstitutions.PSSeBusLoad
+        }
         self.ui.nameTransformationComboBox.setModel(get_list_model(list(self.transformations.keys())))
 
         self.original_data_frame = None
 
-        self.ui.autolink_slider.setValue(100) # Set slider to max value
+        self.ui.autolink_slider.setValue(100)  # Set slider to max value
 
         self.profile_names = list()
+
+        self.excel_dialogue: Union[ExcelDialog, None] = None
 
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
@@ -281,13 +285,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         :param text: Text to display
         :param title: Name of the window
         """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
         msg.setText(text)
         # msg.setInformativeText("This is additional information")
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         retval = msg.exec_()
 
     def get_multiplier(self):
@@ -305,18 +309,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # declare the allowed file types
         files_types = "Formats (*.xlsx *.xls *.csv)"
-        # call dialog to select the file
-        # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
-
-        options = QFileDialog.Options()
-        if self.use_native_dialogues:
-            options |= QFileDialog.DontUseNativeDialog
-
-        filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              filter=files_types,
-                                                              options=options)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
 
         if len(filename) > 0:
             # get the filename extension
@@ -325,19 +320,31 @@ class ProfileInputGUI(QtWidgets.QDialog):
             # Depending on the extension load the file
             if file_extension == '.csv':
                 try:
-                    self.original_data_frame = pd.read_csv(filename, index_col=0)
+                    self.original_data_frame = pd.read_csv(filename,
+                                                           index_col=0,
+                                                           # dtype=float,  # do not use if dates are expected
+                                                           dayfirst=True)
+                except ValueError as e:
+                    self.msg(text=str(e), title="Error loading CSV file")
+                    return
+
                 except UnicodeDecodeError:
                     try:
-                        self.original_data_frame = pd.read_csv(filename, index_col=0, encoding='windows-1252')
+                        self.original_data_frame = pd.read_csv(filename,
+                                                               index_col=0,
+                                                               encoding='windows-1252',
+                                                               # dtype=float,  # do not use if dates are expected
+                                                               dayfirst=True)
                     except Exception as e:
                         self.msg(str(e))
+                        return
 
             elif file_extension in ['.xlsx', '.xls']:
 
                 # select the sheet from the file
-                window = ExcelDialog(self, filename)
-                window.exec_()
-                sheet_index = window.excel_sheet
+                self.excel_dialogue = ExcelDialog(self, filename)
+                self.excel_dialogue.exec()
+                sheet_index = self.excel_dialogue.excel_sheet
 
                 if sheet_index is not None:
 
@@ -346,18 +353,22 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 else:
                     return
 
+            else:
+                self.msg(text="Could not open:\n" + filename, title="File open")
+                return
+
             # try to format the data
             try:
                 self.original_data_frame = self.original_data_frame.astype(float)
-            except:
+            except Exception as e:
 
                 # run the diagnostic
                 for i in range(self.original_data_frame.shape[0]):
                     for j in range(self.original_data_frame.shape[1]):
                         try:
                             a = float(self.original_data_frame.values[i, j])
-                        except:
-                            print('not a float value (', i, j, '):', self.original_data_frame.values[i, j])
+                        except Exception as e2:
+                            print(str(e2) + ': not a float value (', i, j, '):{}'.format(self.original_data_frame.values[i, j]))
 
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
@@ -367,7 +378,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
             self.original_data_frame.columns = cols
 
             # set the profile names list
-            self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)
+            self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values],
+                                          dtype=object)
             self.display_profiles()
 
     def sources_list_double_click(self):
@@ -500,12 +512,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
                 # while there are elements in the destination indices
                 while len(destination_indices) > 0:
-
                     # pick a random source
-                    rnd_idx_s = randint(0, len(source_indices)-1)
+                    rnd_idx_s = randint(0, len(source_indices) - 1)
 
                     # pick and delete a random destination
-                    rnd_idx_o = randint(0, len(destination_indices)-1)
+                    rnd_idx_o = randint(0, len(destination_indices) - 1)
 
                     # get the actual index
                     idx_s = source_indices[rnd_idx_s]
@@ -669,8 +680,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.close()
 
 
-
-
 class TestObj:
     def __init__(self, name, code):
         self.name = name
@@ -678,10 +687,8 @@ class TestObj:
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

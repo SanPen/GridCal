@@ -47,7 +47,7 @@ packages = find_packages(where=base_path, exclude=['docs', 'test'])
 packages = [os.path.join(base_path, p) for p in packages]
 
 
-dependencies = ["PySide2>=5.15",  # for now, 5.14 breaks the UI generation for development
+dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for development
                 "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
@@ -66,10 +66,13 @@ dependencies = ["PySide2>=5.15",  # for now, 5.14 breaks the UI generation for d
                 "pytest>=3.8",
                 "h5py>=2.9.0",
                 "numba>=0.54",
-                "folium",
                 "pyarrow",
                 "fastparquet",
-                "pytest>=3.8"]
+                "pyqtdarktheme",
+                "ortools",
+                "pytest>=3.8",
+                "nptyping",
+                ]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.

@@ -17,7 +17,7 @@
 import os
 import numpy as np
 
-from GridCal.Engine import *
+from GridCalEngine.api import *
 from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
@@ -40,12 +40,13 @@ def test_opf_ts():
     opf_options = OptimalPowerFlowOptions(verbose=False,
                                           solver=SolverType.DC_OPF,
                                           power_flow_options=power_flow_options,
-                                          time_grouping=TimeGrouping.Daily)
+                                          time_grouping=TimeGrouping.Daily,
+                                          mip_solver=MIPSolvers.CBC)
     s = 23
     e = 143
-    opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit,
-                                        options=opf_options,
-                                        start_=0, end_=e+20)
+    opf_ts = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
+                                              options=opf_options,
+                                              time_indices=main_circuit.get_all_time_indices())
     opf_ts.run()
 
     data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),

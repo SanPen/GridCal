@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,18 +18,17 @@
 import os
 import time
 from math import isclose
-from typing import List, Dict
-from PySide2.QtCore import QThread, Signal
-from PySide2 import QtGui
+from typing import List
+from PySide6.QtCore import QThread, Signal
+from PySide6 import QtGui
 
-from GridCal.Engine.basic_structures import Logger, SyncIssueType
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.basic_structures import Logger, SyncIssueType
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.IO.file_handler import FileOpen
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
-from PySide2.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
-from PySide2.QtWidgets import QApplication, QTreeView
+from PySide6.QtCore import Qt
 
 
 class SyncIssue:
@@ -159,7 +158,7 @@ def compare_devices_lists(dev_list1, dev_list2):
             if elm1.device_type == DeviceType.BusDevice:
 
                 issues += compare_devices_lists(elm1.loads, elm2.loads)
-                issues += compare_devices_lists(elm1.controlled_generators, elm2.controlled_generators)
+                issues += compare_devices_lists(elm1.generators, elm2.generators)
                 issues += compare_devices_lists(elm1.batteries, elm2.batteries)
                 issues += compare_devices_lists(elm1.static_generators, elm2.static_generators)
                 issues += compare_devices_lists(elm1.shunts, elm2.shunts)
@@ -201,7 +200,7 @@ def detect_changes_and_conflicts(current_circuit: MultiCircuit, file_circuit: Mu
     issues += compare_devices_lists(dev_list1=current_circuit.buses,
                                     dev_list2=file_circuit.buses)
 
-    # branches
+    # Branches
     issues += compare_devices_lists(dev_list1=current_circuit.lines,
                                     dev_list2=file_circuit.lines)
 

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide2.QtWidgets import *
+from PySide6 import QtWidgets
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -49,7 +49,7 @@ class MplCanvas(FigureCanvas):
             self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
         scale = 1.2
@@ -167,16 +167,16 @@ class MplCanvas(FigureCanvas):
         return onMotion
 
 
-class MatplotlibWidget(QWidget):
+class MatplotlibWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
 
-        self.frame = QWidget()
+        self.frame = QtWidgets.QWidget()
         self.canvas = MplCanvas()
         self.canvas.setParent(self.frame)
         self.mpltoolbar = Navigationtoolbar(self.canvas, self.frame)
-        self.vbl = QVBoxLayout()
+        self.vbl = QtWidgets.QVBoxLayout()
         self.vbl.addWidget(self.canvas)
         self.vbl.addWidget(self.mpltoolbar)
         self.setLayout(self.vbl)
@@ -221,24 +221,32 @@ class MatplotlibWidget(QWidget):
         """
         self.canvas.ax.figure.canvas.draw()
 
-    def plot(self, x, y, title='', xlabel='', ylabel=''):
+    def plot(self, x, y, title='', xlabel='', ylabel='', color=None, marker=None, linestyle=None, linewidth=None, markersize=None):
         """
-        Plot series
-        Args:
-            x: X values
-            y: Y values
-            title: Title
-            xlabel: Label for X
-            ylabel: Label for Y
 
-        Returns:
-
+        :param x:
+        :param y:
+        :param title:
+        :param xlabel:
+        :param ylabel:
+        :param color:
+        :param marker:
+        :param linestyle:
+        :param linewidth:
+        :param markersize:
+        :return:
         """
         self.setTitle(title)
-        self.canvas.ax.plot(x, y)
+        self.canvas.ax.plot(x, y, color=color, marker=marker, linestyle=linestyle, linewidth=linewidth, markersize=markersize)
         self.canvas.ax.set_xlabel(xlabel)
         self.canvas.ax.set_ylabel(ylabel)
         self.redraw()
 
+    def setXlabel(self, val: str):
+        self.canvas.ax.set_xlabel(val)
+        self.redraw()
 
+    def setYlabel(self, val: str):
+        self.canvas.ax.set_ylabel(val)
+        self.redraw()
 

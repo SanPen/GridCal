@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2022 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,16 +17,16 @@
 
 import io
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-from PySide2.QtWidgets import *
-from PySide2 import QtCore
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_table import ResultsTable
+from PySide6 import QtCore, QtWidgets
+from GridCalEngine.Simulations.results_table import ResultsTable
 
 
-def fast_data_to_numpy_text(data):
-
+def fast_data_to_numpy_text(data: np.ndarray) -> str:
+    """
+    Convert numpy array to text (as to copy/paste in a python console)
+    :param data: numpy array
+    :return: numpy declarative string
+    """
     if len(data.shape) == 1:
         txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
 
@@ -66,9 +66,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if self.table.editable and index.column() > self.table.editable_min_idx:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
     def rowCount(self, parent=None):
         """
@@ -86,7 +86,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         return self.table.c
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
@@ -97,7 +97,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             val = self.table.data_c[index.row(), index.column()]
 
-            if role == QtCore.Qt.DisplayRole:
+            if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
                 if isinstance(val, str):
                     return val
@@ -112,13 +112,16 @@ class ResultsModel(QtCore.QAbstractTableModel):
                     else:
                         return '0'
 
-            elif role == QtCore.Qt.BackgroundRole:
+            elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
 
                 return None  # QBrush(Qt.yellow)
 
         return None
 
-    def headerData(self, section, orientation, role=None):
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
         Get the header value
         :param section: header index
@@ -126,12 +129,12 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
                 if len(self.table.cols_c) > section:
                     return self.table.cols_c[section]
 
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.table.index_c is None:
                     return section
                 else:
@@ -250,9 +253,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
             txt = s.getvalue()
 
             # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
 
         else:
             # there are no elements
@@ -271,9 +274,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
             txt = fast_data_to_numpy_text(data)
 
             # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            cb.setText(txt)
 
         else:
             # there are no elements
@@ -285,6 +288,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param ax: Matplotlib axis
         :param selected_col_idx: list of selected column indices
         :param selected_rows: list of rows to plot
+        :param stacked: stack the data?
         """
 
-        self.table.plot(ax=ax, selected_col_idx=selected_col_idx, selected_rows=selected_rows, stacked=stacked)
+        self.table.plot(ax=ax,
+                        selected_col_idx=selected_col_idx,
+                        selected_rows=selected_rows,
+                        stacked=stacked)
