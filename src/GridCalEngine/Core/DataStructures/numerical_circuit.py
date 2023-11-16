@@ -1135,7 +1135,8 @@ class NumericalCircuit:
                 c=self.branch_data.c,
                 Yshunt_bus=self.Yshunt_from_devices,
                 conn=self.branch_data.conn,
-                seq=1
+                seq=1,
+                add_windings_phase=False
             )
         return self.admittances_.Ybus
 

@@ -18,7 +18,6 @@ import datetime
 
 import numpy as np
 import pandas as pd
-import time
 from typing import Union
 from GridCalEngine.basic_structures import TimeGrouping, get_time_groups
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -213,8 +212,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
-            self.results.overloads[time_indices,
-            :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.overloads[time_indices, :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
             # self.results.Sbus[time_indices, :] = problem.get_power_injections()

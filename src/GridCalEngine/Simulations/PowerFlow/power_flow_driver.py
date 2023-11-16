@@ -46,8 +46,9 @@ class PowerFlowDriver(DriverTemplate):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit instance
-        :param options: PowerFlowOptions instance
-        :param opf_results: OptimalPowerFlowResults instance
+        :param options: PowerFlowOptions instance (optional)
+        :param opf_results: OptimalPowerFlowResults instance (optional)
+        :param engine: EngineType (i.e. EngineType.GridCal) (optional)
         """
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)

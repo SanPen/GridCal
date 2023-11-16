@@ -25,7 +25,7 @@ from typing import List, Union
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.pywraplp import LinearExpr as LpExp
 from ortools.linear_solver.pywraplp import Variable as LpVar
-from GridCalEngine.basic_structures import MIPSolvers
+from GridCalEngine.basic_structures import MIPSolvers, Logger
 
 
 def get_lp_var_value(x: Union[float, LpVar, LpExp]) -> float:
@@ -44,7 +44,6 @@ def get_lp_var_value(x: Union[float, LpVar, LpExp]) -> float:
         return x.solution_value()
     else:
         return x
-
 
 
 def get_available_mip_solvers() -> List[str]:
@@ -88,6 +87,8 @@ class LpModel:
 
         self.model.SuppressOutput()
 
+        self.logger = Logger()
+
     def save_model(self, file_name="ntc_opf_problem.lp"):
         """
         Save problem in LP format
@@ -124,15 +125,19 @@ class LpModel:
         """
         return self.model.NumVar(lb=lb, ub=ub, name=name)
 
-    def add_cst(self, cst, name: str = "") -> LpExp:
+    def add_cst(self, cst, name: str = "") -> Union[LpExp, float]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
-        return self.model.Add(constraint=cst, name=name)
 
+        try:
+            return self.model.Add(constraint=cst, name=name)
+        except AttributeError:
+            self.logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
+            return 0
     def sum(self, cst) -> LpExp:
         """
         Add sum of the constraints to the model
