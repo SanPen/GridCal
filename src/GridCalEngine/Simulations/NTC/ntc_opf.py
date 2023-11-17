@@ -33,9 +33,8 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Mat, Vec, IntVec, BoolVec, StrVec, DateVec, CxMat
-from GridCalEngine.Utils.MIP.selected_interface import (LpExp, LpVar, LpModel, get_lp_var_value, lpDot,
-                                                        set_var_bounds, join)
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
+from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, AvailableTransferMode
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
@@ -315,7 +314,7 @@ class BusNtcVars:
         self.Pcalc = np.zeros((nt, n_elm), dtype=object)
         self.inj_delta = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float) -> "BusNtcVars":
+    def get_values(self, Sbase: float, model: LpModel) -> "BusNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: BusVars
@@ -329,13 +328,11 @@ class BusNtcVars:
         for t in range(nt):
 
             for i in range(n_elm):
-                data.theta[t, i] = get_lp_var_value(self.theta[t, i])
-                data.shadow_prices[t, i] = get_lp_var_value(self.kirchhoff[t, i])
-
-                data.load_shedding[t, i] = get_lp_var_value(self.load_shedding[t, i]) * Sbase
-
-                data.Pcalc[t, i] = get_lp_var_value(self.Pcalc[t, i]) * Sbase
-                data.inj_delta[t, i] = get_lp_var_value(self.inj_delta[t, i])
+                data.theta[t, i] = model.get_value(self.theta[t, i])
+                data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
+                data.load_shedding[t, i] = model.get_value(self.load_shedding[t, i]) * Sbase
+                data.Pcalc[t, i] = model.get_value(self.Pcalc[t, i]) * Sbase
+                data.inj_delta[t, i] = model.get_value(self.inj_delta[t, i])
 
         # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
@@ -375,7 +372,7 @@ class BranchNtcVars:
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
 
-    def get_values(self, Sbase: float) -> "BranchNtcVars":
+    def get_values(self, Sbase: float, model: LpModel) -> "BranchNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: BranchVars
@@ -387,19 +384,19 @@ class BranchNtcVars:
 
         for t in range(nt):
             for i in range(n_elm):
-                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
-                data.flow_slacks_pos[t, i] = get_lp_var_value(self.flow_slacks_pos[t, i]) * Sbase
-                data.flow_slacks_neg[t, i] = get_lp_var_value(self.flow_slacks_neg[t, i]) * Sbase
-                data.tap_angles[t, i] = get_lp_var_value(self.tap_angles[t, i])
-                data.flow_constraints_ub[t, i] = get_lp_var_value(self.flow_constraints_ub[t, i])
-                data.flow_constraints_lb[t, i] = get_lp_var_value(self.flow_constraints_lb[t, i])
+                data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
+                data.flow_slacks_pos[t, i] = model.get_value(self.flow_slacks_pos[t, i]) * Sbase
+                data.flow_slacks_neg[t, i] = model.get_value(self.flow_slacks_neg[t, i]) * Sbase
+                data.tap_angles[t, i] = model.get_value(self.tap_angles[t, i])
+                data.flow_constraints_ub[t, i] = model.get_value(self.flow_constraints_ub[t, i])
+                data.flow_constraints_lb[t, i] = model.get_value(self.flow_constraints_lb[t, i])
 
         for i in range(len(self.contingency_flow_data)):
             t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
             self.contingency_flow_data[i] = (t, m, c,
-                                             get_lp_var_value(var),
-                                             get_lp_var_value(neg_slack),
-                                             get_lp_var_value(pos_slack))
+                                             model.get_value(var),
+                                             model.get_value(neg_slack),
+                                             model.get_value(pos_slack))
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
@@ -444,7 +441,7 @@ class HvdcNtcVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-    def get_values(self, Sbase: float) -> "HvdcNtcVars":
+    def get_values(self, Sbase: float, model: LpModel) -> "HvdcNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: HvdcVars
@@ -455,7 +452,7 @@ class HvdcNtcVars:
 
         for t in range(nt):
             for i in range(n_elm):
-                data.flows[t, i] = get_lp_var_value(self.flows[t, i]) * Sbase
+                data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
@@ -500,7 +497,7 @@ class NtcVars:
         # power shift
         self.power_shift = np.zeros(nt, dtype=object)
 
-    def get_values(self, Sbase: float) -> "NtcVars":
+    def get_values(self, Sbase: float, model: LpModel) -> "NtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: OpfVars instance
@@ -517,15 +514,15 @@ class NtcVars:
                        n_hvdc=self.n_hvdc,
                        model=self.model)
 
-        data.bus_vars = self.bus_vars.get_values(Sbase)
-        data.branch_vars = self.branch_vars.get_values(Sbase)
-        data.hvdc_vars = self.hvdc_vars.get_values(Sbase)
+        data.bus_vars = self.bus_vars.get_values(Sbase, model)
+        data.branch_vars = self.branch_vars.get_values(Sbase, model)
+        data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
 
         # todo: check if acceptable_solution must to be an array, one solution per hour
         data.acceptable_solution = self.acceptable_solution
 
         for t in range(nt):
-            data.power_shift[t] = get_lp_var_value(self.power_shift[t])
+            data.power_shift[t] = model.get_value(self.power_shift[t])
 
         # format the arrays appropriately
         data.power_shift = data.power_shift.astype(float, copy=False)

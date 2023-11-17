@@ -30,8 +30,10 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.0.1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -622,6 +624,7 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.dc_linear_opf" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
@@ -2021,6 +2024,11 @@
           <line>108</line>
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py</url>
+          <line>179</line>
+          <option name="timeStamp" value="1265" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -2038,7 +2046,7 @@
     <SUITE FILE_PATH="coverage/GridCal$fast_dSf_dV.coverage" NAME="fast_dSf_dV Coverage Results" MODIFIED="1615847239443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test_test1.coverage" NAME="Nosetests for tests.admittance_matrix_test.test1 Coverage Results" MODIFIED="1694884103963" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf.coverage" NAME="dc_opf Coverage Results" MODIFIED="1602504240684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1700150921160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1700216661618" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1700152335329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$gui.coverage" NAME="gui Coverage Results" MODIFIED="1649779929647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue" />
     <SUITE FILE_PATH="coverage/GridCal$zip_interface.coverage" NAME="zip_interface Coverage Results" MODIFIED="1620029421103" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
@@ -2116,7 +2124,7 @@
     <SUITE FILE_PATH="coverage/GridCal$psse_transformer_impedance_conversion.coverage" NAME="psse_transformer_impedance_conversion Coverage Results" MODIFIED="1632831296503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1633774223527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
     <SUITE FILE_PATH="coverage/GridCal$example_pvlib.coverage" NAME="example_pvlib Coverage Results" MODIFIED="1689672238811" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
-    <SUITE FILE_PATH="coverage/GridCal$dc_linear_opf.coverage" NAME="dc_linear_opf Coverage Results" MODIFIED="1700209546138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
+    <SUITE FILE_PATH="coverage/GridCal$dc_linear_opf.coverage" NAME="dc_linear_opf Coverage Results" MODIFIED="1700222449462" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$bus_viewer_dialogue.coverage" NAME="bus_viewer_dialogue Coverage Results" MODIFIED="1689665175199" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$linear_analysis_sesco.coverage" NAME="linear_analysis_sesco Coverage Results" MODIFIED="1646937847934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors" />

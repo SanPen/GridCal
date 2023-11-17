@@ -24,28 +24,14 @@ other solver interface easily
 from typing import List, Union
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
+from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
 from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
 from GridCalEngine.basic_structures import MIPSolvers, Logger
 
 
-def get_lp_var_value(x: Union[float, LpVar, LpExp]) -> float:
-    """
-    Get the value of a variable stored in a numpy array of objects
-    :param x: soe object (it may be a LP var or a number)
-    :return: result or previous numeric value
-    """
-    if isinstance(x, ort.Variable):
-        return x.solution_value()
-    elif isinstance(x, ort.SumArray):
-        return x.solution_value()
-    elif isinstance(x, ort.Constraint):
-        return x.dual_value()
-    elif isinstance(x, ort.LinearExpr):
-        return x.solution_value()
-    else:
-        return x
+
 
 
 def get_available_mip_solvers() -> List[str]:
@@ -150,7 +136,7 @@ class LpModel:
         :param cst: constraint object (or general expression)
         :return: Constraint object
         """
-        return ort.Sum(cst)
+        return sum(cst)
 
     def minimize(self, obj_function: LpExp) -> None:
         """
@@ -190,6 +176,9 @@ class LpModel:
             """
             model_copy = self.model.clone()
 
+            for cst in model_copy.get_linear_constraints():
+                print()
+
         return status
 
     def fobj_value(self) -> float:
@@ -206,3 +195,33 @@ class LpModel:
         """
 
         return [var.Integer() for var in self.model.get_variables()]
+
+    def get_value(self, x: Union[float, int, LpVar, LpExp, LpCst, LpCstBounded]) -> float:
+        """
+        Get the value of a variable stored in a numpy array of objects
+        :param x: solver object (it may be a LP var or a number)
+        :return: result or previous numeric value
+        """
+        if isinstance(x, LpVar):
+            return self.solver.value(x)
+        elif isinstance(x, LpExp):
+            return self.solver.value(x)
+        elif isinstance(x, LpCst):
+            return self.solver.dual_value(x)
+        elif isinstance(x, LpCstBounded):
+            return self.solver.value(x.expression)
+        elif isinstance(x, float) or isinstance(x, int):
+            return x
+        else:
+            raise Exception("Unrecognized type {}".format(x))
+
+    def get_dual_value(self, x: LpCst) -> float:
+        """
+        Get the value of a variable stored in a numpy array of objects
+        :param x: constraint
+        :return: result or previous numeric value
+        """
+        if isinstance(x, LpCst):
+            return self.solver.dual_value(x)
+        else:
+            raise Exception("Unrecognized type {}".format(x))
