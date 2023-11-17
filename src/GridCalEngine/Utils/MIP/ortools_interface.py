@@ -23,8 +23,10 @@ other solver interface easily
 
 from typing import List, Union
 import ortools.linear_solver.pywraplp as ort
-from ortools.linear_solver.pywraplp import LinearExpr as LpExp
-from ortools.linear_solver.pywraplp import Variable as LpVar
+from ortools.linear_solver.python import model_builder
+from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
+from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
+from ortools.linear_solver.python.model_builder import Variable as LpVar
 from GridCalEngine.basic_structures import MIPSolvers, Logger
 
 
@@ -67,8 +69,8 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
     :param lb: lower bound value
     :param ub: upper bound value
     """
-    var.SetLb(lb)
-    var.SetUb(ub)
+    var.lower_bound = lb
+    var.upper_bound = ub
 
 
 class LpModel:
@@ -80,12 +82,15 @@ class LpModel:
 
     def __init__(self, solver_type: MIPSolvers):
 
-        self.model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
+        # self.model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
 
-        if self.model is None:
-            raise Exception("{} is not present".format(solver_type.value))
+        self.solver = model_builder.Solver("scip")
+        if not self.solver.solver_is_supported():
+            raise Exception("The solver {} is not supported".format(solver_type.value))
 
-        self.model.SuppressOutput()
+        self.model = model_builder.Model()
+
+        # self.model.SuppressOutput()
 
         self.logger = Logger()
 
@@ -96,9 +101,9 @@ class LpModel:
         """
         # save the problem in LP format to debug
         if file_name.lower().endswith('.lp'):
-            lp_content = self.model.ExportModelAsLpFormat(obfuscated=False)
+            lp_content = self.model.export_to_lp_string(obfuscate=False)
         elif file_name.lower().endswith('.mps'):
-            lp_content = self.model.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+            lp_content = self.model.export_to_mps_string(obfuscate=False)
         else:
             raise Exception('Unsupported file format')
 
@@ -113,7 +118,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.IntVar(lb=lb, ub=ub, name=name)
+        return self.model.new_int_var(lb=lb, ub=ub, name=name)
 
     def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
         """
@@ -123,9 +128,9 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.model.NumVar(lb=lb, ub=ub, name=name)
+        return self.model.new_var(lb=lb, ub=ub, is_integer=False, name=name)
 
-    def add_cst(self, cst, name: str = "") -> Union[LpExp, float]:
+    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpExp, float]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
@@ -134,42 +139,70 @@ class LpModel:
         """
 
         try:
-            return self.model.Add(constraint=cst, name=name)
+            return self.model.add(ct=cst, name=name)
         except AttributeError:
             self.logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
             return 0
-    def sum(self, cst) -> LpExp:
+
+    def sum(self, cst: LpExp) -> LpExp:
         """
         Add sum of the constraints to the model
         :param cst: constraint object (or general expression)
         :return: Constraint object
         """
-        return self.model.Sum(cst)
+        return ort.Sum(cst)
 
-    def minimize(self, obj_function):
+    def minimize(self, obj_function: LpExp) -> None:
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
-        self.model.Minimize(expr=obj_function)
+        self.model.minimize(linear_expr=obj_function)
 
     def solve(self) -> int:
         """
         Solve the model
         :return:
         """
-        return self.model.Solve()
+        return self.solver.solve(self.model)
+
+    def robust_solve(self) -> int:
+        """
+
+        :return:
+        """
+        status = self.solver.solve(self.model)
+
+        # if it failed...
+        if status != LpModel.OPTIMAL:
+
+            """
+            We are going to create a deep clone of the model,
+            add a slack variable to each constraint and minimize
+            the sum of the newly added slack vars.
+            This LP model will be always optimal.
+            After the solution, we inspect the slack vars added
+            if any of those is > 0, then the constraint where it
+            was added needs "slacking", therefore we add that slack
+            to the original model, and add the slack to the original 
+            objective function. This way we relax the model while
+            bringing it to optimality.
+            """
+            model_copy = self.model.clone()
+
+        return status
 
     def fobj_value(self) -> float:
         """
         Get the objective function value
         :return:
         """
-        return self.model.Objective().Value()
+        return self.solver.objective_value
 
     def is_mip(self):
         """
         Is this odel a MIP?
         :return:
         """
-        return [var.Integer() for var in self.model.variables()]
+
+        return [var.Integer() for var in self.model.get_variables()]

@@ -635,8 +635,9 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        batt_vars.p[t, k].SetLb(batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase)
-                        batt_vars.p[t, k].SetUb(batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=batt_vars.p[t, k],
+                                       lb=batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase,
+                                       ub=batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment in hours
                 dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
