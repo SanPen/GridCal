@@ -21,13 +21,14 @@ so that in the future it can be exchanged with some
 other solver interface easily
 """
 
-from typing import List, Union
+from typing import List, Union, Tuple
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
 from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
 from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
+from ortools.linear_solver.python.model_builder import _Sum as LpSum
 from GridCalEngine.basic_structures import MIPSolvers, Logger
 
 
@@ -79,6 +80,8 @@ class LpModel:
         # self.model.SuppressOutput()
 
         self.logger = Logger()
+
+        self.relaxed_slacks: List[Tuple[int, LpVar, float]] = list()
 
     def save_model(self, file_name="ntc_opf_problem.lp"):
         """
@@ -138,29 +141,23 @@ class LpModel:
         """
         return sum(cst)
 
-    def minimize(self, obj_function: LpExp) -> None:
+    def minimize(self, obj_function: Union[LpExp, LpSum]) -> None:
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
         self.model.minimize(linear_expr=obj_function)
 
-    def solve(self) -> int:
+    def solve(self, robust=True) -> int:
         """
         Solve the model
-        :return:
-        """
-        return self.solver.solve(self.model)
-
-    def robust_solve(self) -> int:
-        """
-
-        :return:
+        :param robust: Relax the problem if infeasible
+        :return: integer value matching OPTIMAL or not
         """
         status = self.solver.solve(self.model)
 
         # if it failed...
-        if status != LpModel.OPTIMAL:
+        if status != LpModel.OPTIMAL and robust:
 
             """
             We are going to create a deep clone of the model,
@@ -174,10 +171,85 @@ class LpModel:
             objective function. This way we relax the model while
             bringing it to optimality.
             """
-            model_copy = self.model.clone()
 
-            for cst in model_copy.get_linear_constraints():
-                print()
+            # deep copy of the original model
+            debug_model = self.model.clone()
+
+            # modify the original to detect the bad constraints
+            slacks = list()
+            debugging_f_obj = 0
+            for i, cst in enumerate(debug_model.get_linear_constraints()):
+
+                # create a new slack var in the problem
+                sl = debug_model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+
+                # add the variable to the new objective function
+                debugging_f_obj += sl
+
+                # add the variable to the current constraint
+                cst.add_term(sl, 1.0)
+
+                # store for later
+                slacks.append(sl)
+
+            # set the objective function as the summation of the new slacks
+            debug_model.minimize(debugging_f_obj)
+
+            # solve the debug model
+            status_d = self.solver.solve(debug_model)
+
+            # at this point we can delete the debug model
+            del debug_model
+
+            # clear the relaxed slacks list
+            self.relaxed_slacks = list()
+
+            if status_d == LpModel.OPTIMAL:
+
+                # pick the original objectve function
+                main_f = self.model.objective_expression()
+
+                for i, sl in enumerate(slacks):
+
+                    # get the debugging slack value
+                    val = self.solver.value(sl)
+
+                    if val > 1e-10:
+
+                        # add the slack in the main model
+                        sl2 = self.model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+                        self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
+
+                        # add the slack to the original objective function
+                        main_f += sl2
+
+                        # alter the matching constraint
+                        self.model.linear_constraint_from_index(i).add_term(sl2, 1.0)
+
+                        # logg this
+                        # self.logger.add_warning("Relaxed problem",
+                        #                         device=self.model.linear_constraint_from_index(i).name)
+
+                # set the modified (original) objective function
+                self.model.minimize(main_f)
+
+                # solve the modified (original) model
+                status = self.solver.solve(self.model)
+
+                if status == LpModel.OPTIMAL:
+
+                    for i in range(len(self.relaxed_slacks)):
+                        k, var, _ = self.relaxed_slacks[i]
+                        val = self.solver.value(var)
+                        self.relaxed_slacks[i] = (k, var, val)
+
+                        # logg this
+                        self.logger.add_warning("Relaxed problem",
+                                                device=self.model.linear_constraint_from_index(i).name,
+                                                value=val)
+
+            else:
+                self.logger.add_warning("Unable to relax the model, the debug model failed")
 
         return status
 
@@ -203,17 +275,22 @@ class LpModel:
         :return: result or previous numeric value
         """
         if isinstance(x, LpVar):
-            return self.solver.value(x)
+            val = self.solver.value(x)
         elif isinstance(x, LpExp):
-            return self.solver.value(x)
+            val = self.solver.value(x)
         elif isinstance(x, LpCst):
-            return self.solver.dual_value(x)
+            val = self.solver.dual_value(x)
         elif isinstance(x, LpCstBounded):
-            return self.solver.value(x.expression)
+            val = self.solver.value(x.expression)
         elif isinstance(x, float) or isinstance(x, int):
             return x
         else:
             raise Exception("Unrecognized type {}".format(x))
+
+        if isinstance(val, float):
+            return val
+        else:
+            return 0.0
 
     def get_dual_value(self, x: LpCst) -> float:
         """
@@ -222,6 +299,11 @@ class LpModel:
         :return: result or previous numeric value
         """
         if isinstance(x, LpCst):
-            return self.solver.dual_value(x)
+            val = self.solver.dual_value(x)
         else:
             raise Exception("Unrecognized type {}".format(x))
+
+        if isinstance(val, float):
+            return val
+        else:
+            return 0.0
