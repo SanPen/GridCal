@@ -272,14 +272,12 @@ class LpModel:
         """
         Get the value of a variable stored in a numpy array of objects
         :param x: solver object (it may be a LP var or a number)
-        :return: result or previous numeric value
+        :return: result or zero
         """
         if isinstance(x, LpVar):
             val = self.solver.value(x)
         elif isinstance(x, LpExp):
             val = self.solver.value(x)
-        elif isinstance(x, LpCst):
-            val = self.solver.dual_value(x)
         elif isinstance(x, LpCstBounded):
             val = self.solver.value(x.expression)
         elif isinstance(x, float) or isinstance(x, int):
@@ -294,9 +292,9 @@ class LpModel:
 
     def get_dual_value(self, x: LpCst) -> float:
         """
-        Get the value of a variable stored in a numpy array of objects
+        Get the dual value of a variable stored in a numpy array of objects
         :param x: constraint
-        :return: result or previous numeric value
+        :return: result or zero
         """
         if isinstance(x, LpCst):
             val = self.solver.dual_value(x)
