@@ -28,7 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Updated readthedocs requirements" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed dependency">
+      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1202,7 +1204,7 @@
       <workItem from="1700207672195" duration="531000" />
       <workItem from="1700208207765" duration="1470000" />
       <workItem from="1700308883043" duration="1345000" />
-      <workItem from="1700312701584" duration="768000" />
+      <workItem from="1700312701584" duration="1104000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1547,7 +1549,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="404" />
+    <option name="localTasksCounter" value="405" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1581,7 +1583,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issues of indexing in FUBM" />
     <MESSAGE value="Improved the FUMB numerical methods" />
     <MESSAGE value="Added FUBM simple test&#10;Improved logger workflow" />
     <MESSAGE value="Improved PF and OPF logging" />
@@ -1606,7 +1607,8 @@
     <MESSAGE value="5.0.2" />
     <MESSAGE value="updated pic" />
     <MESSAGE value="Updated readthedocs requirements" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated readthedocs requirements" />
+    <MESSAGE value="Fixed dependency" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed dependency" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

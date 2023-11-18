@@ -47,13 +47,12 @@ numfig = True
 extensions = list()
 extensions.append('sphinx.ext.todo')
 extensions.append('sphinx.ext.autodoc')
-#extensions.append('sphinx.ext.autosummary')
 extensions.append('sphinx.ext.intersphinx')
 extensions.append('sphinx.ext.imgmath')
 extensions.append('sphinx.ext.mathjax')
 extensions.append('sphinx.ext.viewcode')
 extensions.append('sphinx.ext.graphviz')
-
+extensions.append('sphinx_rtd_theme')
 
 autosummary_generate = True
 
