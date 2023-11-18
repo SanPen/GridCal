@@ -1,4 +1,5 @@
 sphinx
 pandas
 pytablewriter
+sphinx_rtd_theme
 GridCalEngine >= 5.0.0
