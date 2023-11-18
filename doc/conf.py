@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
 from doc.auto_document_models import write_models_to_rst
-from GridCal.__version__ import __GridCal_VERSION__
+from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
 # -- Project information -----------------------------------------------------
 
@@ -25,10 +25,8 @@ project = 'GridCal'
 copyright = '2023, Santiago Peñate Vera'
 author = 'Santiago Peñate Vera'
 
-# The short X.Y version
-version = __GridCal_VERSION__
 # The full version, including alpha/beta/rc tags
-release = __GridCal_VERSION__
+release = __GridCalEngine_VERSION__
 
 def setup(app):
     app.add_css_file('style.css')

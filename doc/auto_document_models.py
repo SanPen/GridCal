@@ -1,10 +1,10 @@
 import os
 from typing import Dict
 import pandas as pd
-from GridCal.Engine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCal.Engine.IO.raw.devices.psse_circuit import PsseCircuit
-from GridCal.Engine.Core.Devices.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.gridcal.pack_unpack import get_objects_dictionary
+from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.IO.gridcal.pack_unpack import get_objects_dictionary
 
 
 def get_cgmes_data_frames():
