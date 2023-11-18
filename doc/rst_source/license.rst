@@ -1,43 +1,26 @@
-.. _about:
-
-About GridCal
-================
-
-**GridCal** is a research oriented power systems software.
-
-Research oriented? How? Well, it is a fruit of research. It is designed to be modular.
-As a researcher I found that the available software (not even talking about commercial
-options) are hard to expand or adapt to achieve complex simulations. **GridCal** is
-designed to allow you to build and reuse modules, which eventually will boost your
-productivity and the possibilities that are at hand.
-
-I have made other projects (even another open source one: fPotencia in C++). I believe
-that this project encapsulates my half life of programming experience and the curiosity
-I have developed for power systems.
-
-So, I do really hope you enjoy it, and if you have comments, suggestions or just want
-to collaborate, do not hesitate to contact.
-
-Cheers,
-
-Santiago
-
-Contact
-=======
-
-Submit any questions/comments to our form_.
-
-.. _form: https://docs.google.com/forms/d/e/1FAIpQLSfsaGvMAv8dKmFJELlZVARH2Ic0lPFi1sNi87b-941GOSCa1Q/viewform?usp=sf_link
-
-Join our Discord server_.
-
-.. _server: https://discord.gg/NfMhJ4Jv
+.. _license:
 
 
 License
 ==============
 
-GridCal is licensed under the LGPL license.
+GridCal is licensed under the `Lesser General Public License
+v3.0 <https://www.gnu.org/licenses/lgpl-3.0.en.html>`__ (LGPL)
+
+In practical terms this means that:
+
+-  You can use GridCal for commercial work.
+-  You can sell commercial services based on GridCal.
+-  If you distrubute GridCal, you must distribute GridCal’s source code
+   as well. That is always achieved in practice with python code.
+-  GridCal license does not propagate to works that are not a derivative
+   of GridCal. An example of a derivative work is if you write a module
+   of the program, the the license of the modue must be LGPL too. An
+   example of a non-derivative work is if you use GridCal’s API for
+   something else without modifying the API itself, for instance, using
+   it as a library for another program.
+
+Nonetheless, read the license carefully.
 
 License of the dependencies
 --------------------------------

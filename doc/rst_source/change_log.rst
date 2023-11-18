@@ -6,6 +6,17 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 5.0.2
+^^^^^^^^^^^^^^^
+
+- Massive refactor to allow multiple bus-branch diagrams and maps.
+- The great split: Now there are two packages: `GridCal` which delas with the graphical user interface
+and `GridCalEngine` that provides all the engine functionality without Qt dependencies.
+- MIP auto-healing: OPF simuations are always feasible by properly relaxing infeasible ones.
+- Added cutting edge investments evaluation. This will be evolved in future releases.
+- API naming unification
+- Overall refactoring and bug fixing
+
 Version 4.7.0
 ^^^^^^^^^^^^^^^
 
