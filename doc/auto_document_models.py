@@ -1,6 +1,7 @@
 import os
 from typing import Dict
 import pandas as pd
+from pytablewriter import RstSimpleTableWriter
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -75,7 +76,7 @@ def write_dataframes_to_excel(data_frames: Dict[str, pd.DataFrame], filename):
 
 
 def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilte):
-    from pytablewriter import RstSimpleTableWriter
+
 
     m = 10
 
@@ -106,7 +107,6 @@ def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilt
 
 
 def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], tilte):
-    from pytablewriter import RstSimpleTableWriter
 
     m = 10
 

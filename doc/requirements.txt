@@ -1,3 +1,4 @@
 sphinx
 pandas
+pytablewriter
 GridCalEngine >= 5.0.0
