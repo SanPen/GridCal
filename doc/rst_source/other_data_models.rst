@@ -1,4 +1,4 @@
-Other Data Models
+Data Models
 ==========================
 
 CGMES
@@ -2475,8 +2475,8 @@ Area
     =========  ==========  ====  =========  =========  =====================  =======
       name     class_type  unit  mandatory  max_chars      descriptions       comment
     =========  ==========  ====  =========  =========  =====================  =======
-    name       str               False                 Name of the branch.           
     idtag      str               False                 Unique ID                     
+    name       str               False                 Name of the branch.           
     code       str               False                 Secondary ID                  
     longitude  float       deg   False                 longitude of the bus.         
     latitude   float       deg   False                 latitude of the bus.          
@@ -2491,8 +2491,8 @@ Battery
     ========================  =================  ======  =========  =========  ==========================================================================  =======
               name               class_type       unit   mandatory  max_chars                                 descriptions                                 comment
     ========================  =================  ======  =========  =========  ==========================================================================  =======
-    name                      str                        False                 Name of the branch.                                                                
     idtag                     str                        False                 Unique ID                                                                          
+    name                      str                        False                 Name of the branch.                                                                
     code                      str                        False                 Secondary ID                                                                       
     bus                       Bus                        False                 Connection bus                                                                     
     cn                        Connectivity Node          False                 Connection connectivity node                                                       
@@ -2547,8 +2547,8 @@ Branch
     ==================  =================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
            name            class_type      unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                comment
     ==================  =================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
-    name                str                       False                 Name of the branch.                                                                                                                                                                                                                              
     idtag               str                       False                 Unique ID                                                                                                                                                                                                                                        
+    name                str                       False                 Name of the branch.                                                                                                                                                                                                                              
     code                str                       False                 Secondary ID                                                                                                                                                                                                                                     
     bus_from            Bus                       False                 Name of the bus at the "from" side                                                                                                                                                                                                               
     bus_to              Bus                       False                 Name of the bus at the "to" side                                                                                                                                                                                                                 
@@ -2593,8 +2593,8 @@ Bus
     ==========  ==========  ====  =========  =========  ===============================================================================  =======
        name     class_type  unit  mandatory  max_chars                                   descriptions                                    comment
     ==========  ==========  ====  =========  =========  ===============================================================================  =======
-    name        str               False                 Name of the bus                                                                         
     idtag       str               False                 Unique ID                                                                               
+    name        str               False                 Name of the bus                                                                         
     code        str               False                 Some code to further identify the bus                                                   
     active      bool              False                 Is the bus active? used to disable the bus.                                             
     is_slack    bool              False                 Force the bus to be of slack type.                                                      
@@ -2630,8 +2630,8 @@ Connectivity Node
     =====  ==========  ====  =========  =========  ===================  =======
     name   class_type  unit  mandatory  max_chars     descriptions      comment
     =====  ==========  ====  =========  =========  ===================  =======
-    name   str               False                 Name of the branch.         
     idtag  str               False                 Unique ID                   
+    name   str               False                 Name of the branch.         
     code   str               False                 Secondary ID                
     =====  ==========  ====  =========  =========  ===================  =======
 
@@ -2644,8 +2644,8 @@ Contingency
     ============  =================  ====  =========  =========  =====================================  =======
         name         class_type      unit  mandatory  max_chars              descriptions               comment
     ============  =================  ====  =========  =========  =====================================  =======
-    name          str                      False                 Name of the branch.                           
     idtag         str                      False                 Unique ID                                     
+    name          str                      False                 Name of the branch.                           
     code          str                      False                 Secondary ID                                  
     device_idtag  str                      False                 Unique ID                                     
     prop          str                      False                 Name of the object property to change         
@@ -2662,8 +2662,8 @@ Contingency Group
     ========  ==========  ====  =========  =========  ==========================================  =======
       name    class_type  unit  mandatory  max_chars                 descriptions                 comment
     ========  ==========  ====  =========  =========  ==========================================  =======
-    name      str               False                 Name of the branch.                                
     idtag     str               False                 Unique ID                                          
+    name      str               False                 Name of the branch.                                
     code      str               False                 Secondary ID                                       
     category  str               False                 Some tag to category the contingency group         
     ========  ==========  ====  =========  =========  ==========================================  =======
@@ -2677,8 +2677,8 @@ Country
     =========  ==========  ====  =========  =========  =====================  =======
       name     class_type  unit  mandatory  max_chars      descriptions       comment
     =========  ==========  ====  =========  =========  =====================  =======
-    name       str               False                 Name of the branch.           
     idtag      str               False                 Unique ID                     
+    name       str               False                 Name of the branch.           
     code       str               False                 Secondary ID                  
     longitude  float       deg   False                 longitude of the bus.         
     latitude   float       deg   False                 latitude of the bus.          
@@ -2693,8 +2693,8 @@ DC line
     ==================  =================  =====  =========  =========  ===========================================================================================================================  =======
            name            class_type      unit   mandatory  max_chars                                                         descriptions                                                          comment
     ==================  =================  =====  =========  =========  ===========================================================================================================================  =======
-    name                str                       False                 Name of the branch.                                                                                                                 
     idtag               str                       False                 Unique ID                                                                                                                           
+    name                str                       False                 Name of the branch.                                                                                                                 
     code                str                       False                 Secondary ID                                                                                                                        
     bus_from            Bus                       False                 Name of the bus at the "from" side                                                                                                  
     bus_to              Bus                       False                 Name of the bus at the "to" side                                                                                                    
@@ -2726,8 +2726,8 @@ Emission
     =====  ==========  ====  =========  =========  ==================================  =======
     name   class_type  unit  mandatory  max_chars             descriptions             comment
     =====  ==========  ====  =========  =========  ==================================  =======
-    name   str               False                 Name of the branch.                        
     idtag  str               False                 Unique ID                                  
+    name   str               False                 Name of the branch.                        
     code   str               False                 Secondary ID                               
     cost   float       €/t   False                 Cost of emissions (currency / ton)         
     color  str               False                 Color to paint                             
@@ -2742,8 +2742,8 @@ Fluid Pump
     =============  ==========  ======  =========  =========  ============================================  =======
         name       class_type   unit   mandatory  max_chars                  descriptions                  comment
     =============  ==========  ======  =========  =========  ============================================  =======
-    name           str                 False                 Name of the branch.                                  
     idtag          str                 False                 Unique ID                                            
+    name           str                 False                 Name of the branch.                                  
     code           str                 False                 Secondary ID                                         
     p_min          float       MW      False                 Minimum power                                        
     p_max          float       MW      False                 Maximum power                                        
@@ -2761,8 +2761,8 @@ Fluid Turbine
     =============  ==========  ======  =========  =========  ============================================  =======
         name       class_type   unit   mandatory  max_chars                  descriptions                  comment
     =============  ==========  ======  =========  =========  ============================================  =======
-    name           str                 False                 Name of the branch.                                  
     idtag          str                 False                 Unique ID                                            
+    name           str                 False                 Name of the branch.                                  
     code           str                 False                 Secondary ID                                         
     p_min          float       MW      False                 Minimum power                                        
     p_max          float       MW      False                 Maximum power                                        
@@ -2780,8 +2780,8 @@ Fluid node
     =============  ==========  ====  =========  =========  =============================================  =======
         name       class_type  unit  mandatory  max_chars                  descriptions                   comment
     =============  ==========  ====  =========  =========  =============================================  =======
-    name           str               False                 Name of the branch.                                   
     idtag          str               False                 Unique ID                                             
+    name           str               False                 Name of the branch.                                   
     code           str               False                 Secondary ID                                          
     min_level      float       m3    False                 Minimum amount of fluid at the node/reservoir         
     max_level      float       m3    False                 Maximum amount of fluid at the node/reservoir         
@@ -2797,8 +2797,8 @@ Fluid path
     ========  ==========  ====  =========  =========  ===================  =======
       name    class_type  unit  mandatory  max_chars     descriptions      comment
     ========  ==========  ====  =========  =========  ===================  =======
-    name      str               False                 Name of the branch.         
     idtag     str               False                 Unique ID                   
+    name      str               False                 Name of the branch.         
     code      str               False                 Secondary ID                
     source    FluidNode         False                 Source node                 
     target    FluidNode         False                 Target node                 
@@ -2815,8 +2815,8 @@ Fuel
     =====  ==========  ====  =========  =========  =============================  =======
     name   class_type  unit  mandatory  max_chars          descriptions           comment
     =====  ==========  ====  =========  =========  =============================  =======
-    name   str               False                 Name of the branch.                   
     idtag  str               False                 Unique ID                             
+    name   str               False                 Name of the branch.                   
     code   str               False                 Secondary ID                          
     cost   float       €/t   False                 Cost of fuel (currency / ton)         
     color  str               False                 Color to paint                        
@@ -2831,8 +2831,8 @@ Generator
     ========================  =================  ======  =========  =========  ==========================================================================  =======
               name               class_type       unit   mandatory  max_chars                                 descriptions                                 comment
     ========================  =================  ======  =========  =========  ==========================================================================  =======
-    name                      str                        False                 Name of the branch.                                                                
     idtag                     str                        False                 Unique ID                                                                          
+    name                      str                        False                 Name of the branch.                                                                
     code                      str                        False                 Secondary ID                                                                       
     bus                       Bus                        False                 Connection bus                                                                     
     cn                        Connectivity Node          False                 Connection connectivity node                                                       
@@ -2880,8 +2880,8 @@ Generator Emission
     =========  ==========  =====  =========  =========  ==================================================  =======
       name     class_type  unit   mandatory  max_chars                     descriptions                     comment
     =========  ==========  =====  =========  =========  ==================================================  =======
-    name       str                False                 Name of the branch.                                        
     idtag      str                False                 Unique ID                                                  
+    name       str                False                 Name of the branch.                                        
     code       str                False                 Secondary ID                                               
     generator  Generator          False                 Generator                                                  
     emission   Emission           False                 Emission                                                   
@@ -2897,8 +2897,8 @@ Generator Fuel
     =========  ==========  =====  =========  =========  ======================================  =======
       name     class_type  unit   mandatory  max_chars               descriptions               comment
     =========  ==========  =====  =========  =========  ======================================  =======
-    name       str                False                 Name of the branch.                            
     idtag      str                False                 Unique ID                                      
+    name       str                False                 Name of the branch.                            
     code       str                False                 Secondary ID                                   
     generator  Generator          False                 Generator                                      
     fuel       Fuel               False                 Fuel                                           
@@ -2914,8 +2914,8 @@ Generator Technology
     ==========  ==========  ====  =========  =========  ===================================================  =======
        name     class_type  unit  mandatory  max_chars                     descriptions                      comment
     ==========  ==========  ====  =========  =========  ===================================================  =======
-    name        str               False                 Name of the branch.                                         
     idtag       str               False                 Unique ID                                                   
+    name        str               False                 Name of the branch.                                         
     code        str               False                 Secondary ID                                                
     generator   Generator         False                 Generator object                                            
     technology  Technology        False                 Technology object                                           
@@ -2931,8 +2931,8 @@ HVDC Line
     ==================  ====================  ======  =========  =========  ===========================================================================================  =======
            name              class_type        unit   mandatory  max_chars                                         descriptions                                          comment
     ==================  ====================  ======  =========  =========  ===========================================================================================  =======
-    name                str                           False                 Name of the branch.                                                                                 
     idtag               str                           False                 Unique ID                                                                                           
+    name                str                           False                 Name of the branch.                                                                                 
     code                str                           False                 Secondary ID                                                                                        
     bus_from            Bus                           False                 Name of the bus at the "from" side                                                                  
     bus_to              Bus                           False                 Name of the bus at the "to" side                                                                    
@@ -2972,8 +2972,8 @@ Investment
     ============  =================  ====  =========  =========  ======================================================================  =======
         name         class_type      unit  mandatory  max_chars                               descriptions                               comment
     ============  =================  ====  =========  =========  ======================================================================  =======
-    name          str                      False                 Name of the branch.                                                            
     idtag         str                      False                 Unique ID                                                                      
+    name          str                      False                 Name of the branch.                                                            
     code          str                      False                 Secondary ID                                                                   
     device_idtag  str                      False                 Unique ID                                                                      
     CAPEX         float              M€    False                 Capital expenditures. This is the initial investment.                          
@@ -2991,8 +2991,8 @@ Investments Group
     ========  ==========  ====  =========  =========  ==========================================  =======
       name    class_type  unit  mandatory  max_chars                 descriptions                 comment
     ========  ==========  ====  =========  =========  ==========================================  =======
-    name      str               False                 Name of the branch.                                
     idtag     str               False                 Unique ID                                          
+    name      str               False                 Name of the branch.                                
     code      str               False                 Secondary ID                                       
     category  str               False                 Some tag to category the contingency group         
     comment   str               False                 Some comment                                       
@@ -3007,8 +3007,8 @@ Line
     ==================  =================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
            name            class_type      unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                comment
     ==================  =================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
-    name                str                       False                 Name of the branch.                                                                                                                                                                                                                              
     idtag               str                       False                 Unique ID                                                                                                                                                                                                                                        
+    name                str                       False                 Name of the branch.                                                                                                                                                                                                                              
     code                str                       False                 Secondary ID                                                                                                                                                                                                                                     
     bus_from            Bus                       False                 Name of the bus at the "from" side                                                                                                                                                                                                               
     bus_to              Bus                       False                 Name of the bus at the "to" side                                                                                                                                                                                                                 
@@ -3053,8 +3053,8 @@ Load
     ============  =================  =====  =========  =========  =======================================================  =======
         name         class_type      unit   mandatory  max_chars                       descriptions                        comment
     ============  =================  =====  =========  =========  =======================================================  =======
-    name          str                       False                 Name of the branch.                                             
     idtag         str                       False                 Unique ID                                                       
+    name          str                       False                 Name of the branch.                                             
     code          str                       False                 Secondary ID                                                    
     bus           Bus                       False                 Connection bus                                                  
     cn            Connectivity Node         False                 Connection connectivity node                                    
@@ -3082,8 +3082,8 @@ Sequence line
     =====  ==========  ======  =========  =========  ==========================================  =======
     name   class_type   unit   mandatory  max_chars                 descriptions                 comment
     =====  ==========  ======  =========  =========  ==========================================  =======
-    name   str                 False                 Name of the branch.                                
     idtag  str                 False                 Unique ID                                          
+    name   str                 False                 Name of the branch.                                
     code   str                 False                 Secondary ID                                       
     Imax   float       kA      False                 Current rating of the line                         
     Vnom   float       kV      False                 Voltage rating of the line                         
@@ -3104,8 +3104,8 @@ Shunt
     =============  =================  =====  =========  =========  =====================================================================  =======
         name          class_type      unit   mandatory  max_chars                              descriptions                               comment
     =============  =================  =====  =========  =========  =====================================================================  =======
-    name           str                       False                 Name of the branch.                                                           
     idtag          str                       False                 Unique ID                                                                     
+    name           str                       False                 Name of the branch.                                                           
     code           str                       False                 Secondary ID                                                                  
     bus            Bus                       False                 Connection bus                                                                
     cn             Connectivity Node         False                 Connection connectivity node                                                  
@@ -3135,8 +3135,8 @@ Static Generator
     ============  =================  =====  =========  =========  ================================================  =======
         name         class_type      unit   mandatory  max_chars                    descriptions                    comment
     ============  =================  =====  =========  =========  ================================================  =======
-    name          str                       False                 Name of the branch.                                      
     idtag         str                       False                 Unique ID                                                
+    name          str                       False                 Name of the branch.                                      
     code          str                       False                 Secondary ID                                             
     bus           Bus                       False                 Connection bus                                           
     cn            Connectivity Node         False                 Connection connectivity node                             
@@ -3160,8 +3160,8 @@ Substation
     =========  ==========  ====  =========  =========  =====================  =======
       name     class_type  unit  mandatory  max_chars      descriptions       comment
     =========  ==========  ====  =========  =========  =====================  =======
-    name       str               False                 Name of the branch.           
     idtag      str               False                 Unique ID                     
+    name       str               False                 Name of the branch.           
     code       str               False                 Secondary ID                  
     longitude  float       deg   False                 longitude of the bus.         
     latitude   float       deg   False                 latitude of the bus.          
@@ -3176,8 +3176,8 @@ Technology
     =====  ==========  ====  =========  =========  ========================  =======
     name   class_type  unit  mandatory  max_chars        descriptions        comment
     =====  ==========  ====  =========  =========  ========================  =======
-    name   str               False                 Name of the branch.              
     idtag  str               False                 Unique ID                        
+    name   str               False                 Name of the branch.              
     code   str               False                 Secondary ID                     
     name2  str               False                 Name 2 of the technology         
     name3  str               False                 Name 3 of the technology         
@@ -3194,8 +3194,8 @@ Tower
     =================  ==========  ======  =========  =========  ===================================  =======
           name         class_type   unit   mandatory  max_chars             descriptions              comment
     =================  ==========  ======  =========  =========  ===================================  =======
-    name               str                 False                 Name of the branch.                         
     idtag              str                 False                 Unique ID                                   
+    name               str                 False                 Name of the branch.                         
     code               str                 False                 Secondary ID                                
     earth_resistivity  float       Ohm/m3  False                 Earth resistivity                           
     frequency          float       Hz      False                 Frequency                                   
@@ -3218,8 +3218,8 @@ Transformer
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
            name                 class_type           unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                comment
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
-    name                str                                 False                 Name of the branch.                                                                                                                                                                                                                              
     idtag               str                                 False                 Unique ID                                                                                                                                                                                                                                        
+    name                str                                 False                 Name of the branch.                                                                                                                                                                                                                              
     code                str                                 False                 Secondary ID                                                                                                                                                                                                                                     
     bus_from            Bus                                 False                 Name of the bus at the "from" side                                                                                                                                                                                                               
     bus_to              Bus                                 False                 Name of the bus at the "to" side                                                                                                                                                                                                                 
@@ -3280,8 +3280,8 @@ Transformer type
     =====  ==========  ====  =========  =========  ========================================  =======
     name   class_type  unit  mandatory  max_chars                descriptions                comment
     =====  ==========  ====  =========  =========  ========================================  =======
-    name   str               False                 Name of the branch.                              
     idtag  str               False                 Unique ID                                        
+    name   str               False                 Name of the branch.                              
     code   str               False                 Secondary ID                                     
     HV     float       kV    False                 Nominal voltage al the high voltage side         
     LV     float       kV    False                 Nominal voltage al the low voltage side          
@@ -3301,8 +3301,8 @@ Transformer3W
     ========  ==========  ====  =========  =========  =============================  =======
       name    class_type  unit  mandatory  max_chars          descriptions           comment
     ========  ==========  ====  =========  =========  =============================  =======
-    name      str               False                 Name of the branch.                   
     idtag     str               False                 Unique ID                             
+    name      str               False                 Name of the branch.                   
     code      str               False                 Secondary ID                          
     bus0      Bus               False                 Middle point connection bus.          
     bus1      Bus               False                 Bus 1.                                
@@ -3337,8 +3337,8 @@ UPFC
     ==================  =================  =====  =========  =========  ================================================================  =======
            name            class_type      unit   mandatory  max_chars                            descriptions                            comment
     ==================  =================  =====  =========  =========  ================================================================  =======
-    name                str                       False                 Name of the branch.                                                      
     idtag               str                       False                 Unique ID                                                                
+    name                str                       False                 Name of the branch.                                                      
     code                str                       False                 Secondary ID                                                             
     bus_from            Bus                       False                 Name of the bus at the "from" side                                       
     bus_to              Bus                       False                 Name of the bus at the "to" side                                         
@@ -3380,8 +3380,8 @@ Underground line
     =====  ==========  ======  =========  =========  ==========================================  =======
     name   class_type   unit   mandatory  max_chars                 descriptions                 comment
     =====  ==========  ======  =========  =========  ==========================================  =======
-    name   str                 False                 Name of the branch.                                
     idtag  str                 False                 Unique ID                                          
+    name   str                 False                 Name of the branch.                                
     code   str                 False                 Secondary ID                                       
     Imax   float       kA      False                 Current rating of the line                         
     Vnom   float       kV      False                 Voltage rating of the line                         
@@ -3402,8 +3402,8 @@ VSC
     ==================  =========================  =========  =========  =========  ================================================================  =======
            name                class_type            unit     mandatory  max_chars                            descriptions                            comment
     ==================  =========================  =========  =========  =========  ================================================================  =======
-    name                str                                   False                 Name of the branch.                                                      
     idtag               str                                   False                 Unique ID                                                                
+    name                str                                   False                 Name of the branch.                                                      
     code                str                                   False                 Secondary ID                                                             
     bus_from            Bus                                   False                 Name of the bus at the "from" side                                       
     bus_to              Bus                                   False                 Name of the bus at the "to" side                                         
@@ -3456,8 +3456,8 @@ Winding
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
            name                 class_type           unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                comment
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
-    name                str                                 False                 Name of the branch.                                                                                                                                                                                                                              
     idtag               str                                 False                 Unique ID                                                                                                                                                                                                                                        
+    name                str                                 False                 Name of the branch.                                                                                                                                                                                                                              
     code                str                                 False                 Secondary ID                                                                                                                                                                                                                                     
     bus_from            Bus                                 False                 Name of the bus at the "from" side                                                                                                                                                                                                               
     bus_to              Bus                                 False                 Name of the bus at the "to" side                                                                                                                                                                                                                 
@@ -3513,8 +3513,8 @@ Wire
     ===========  ==========  ======  =========  =========  ======================================  =======
        name      class_type   unit   mandatory  max_chars               descriptions               comment
     ===========  ==========  ======  =========  =========  ======================================  =======
-    name         str                 False                 Name of the branch.                            
     idtag        str                 False                 Unique ID                                      
+    name         str                 False                 Name of the branch.                            
     code         str                 False                 Secondary ID                                   
     r            float       Ohm/km  False                 resistance of the conductor                    
     x            float       Ohm/km  False                 reactance of the conductor                     
@@ -3531,8 +3531,8 @@ Zone
     =========  ==========  ====  =========  =========  =====================  =======
       name     class_type  unit  mandatory  max_chars      descriptions       comment
     =========  ==========  ====  =========  =========  =====================  =======
-    name       str               False                 Name of the branch.           
     idtag      str               False                 Unique ID                     
+    name       str               False                 Name of the branch.           
     code       str               False                 Secondary ID                  
     longitude  float       deg   False                 longitude of the bus.         
     latitude   float       deg   False                 latitude of the bus.          

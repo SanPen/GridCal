@@ -134,7 +134,7 @@ def write_dataframes_to_rst2(w, data_frames: Dict[str, pd.DataFrame], tilte):
 def write_models_to_rst(filename):
     with open(filename, 'w') as w:
 
-        w.write("Other Data Models\n")
+        w.write("Data Models\n")
         w.write("==========================\n\n")
 
         cgmes_info = get_cgmes_data_frames()
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # cgmes_info = get_cgmes_data_frames()
     # psse_info = get_psse_data_frames()
     # roseta_info = get_gridcal_data_frames()
-
+    #
     # write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
     # write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
     # write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
