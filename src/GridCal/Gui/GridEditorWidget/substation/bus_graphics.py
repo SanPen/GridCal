@@ -144,9 +144,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
-        for e in self.api_object.get_devices_list():
-            if e.graphic_obj is not None:
-                e.graphic_obj.recolour_mode()
+
+        for e in self.shunt_children:
+            if e is not None:
+                e.recolour_mode()
 
     def set_label(self, val: str):
         """

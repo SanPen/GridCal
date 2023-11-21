@@ -130,8 +130,8 @@ class EditableDevice:
 
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
-        self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
+        self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
 
     @property

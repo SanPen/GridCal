@@ -750,11 +750,15 @@ class SimulationsMain(TimeEventsMain):
                     # get the short circuit selected buses
                     sel_buses = list()
                     self_short_circuit_types = list()
-                    for i, bus in enumerate(self.circuit.buses):
-                        if bus.graphic_obj is not None:
-                            if bus.graphic_obj.any_short_circuit():
-                                sel_buses.append(i)
-                                self_short_circuit_types.append(bus.graphic_obj.sc_type)
+
+                    for diagram_widget in self.diagram_widgets_list:
+
+                        if isinstance(diagram_widget, BusBranchEditorWidget):
+
+                            for i, bus, graphic_object in diagram_widget.get_buses():
+                                if graphic_object.any_short_circuit():
+                                    sel_buses.append(i)
+                                    self_short_circuit_types.append(graphic_object.sc_type)
 
                     if len(sel_buses) > 1:
                         error_msg("GridCal only supports one short circuit bus at the time", "Short circuit")
@@ -2670,10 +2674,15 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.delete_and_reduce_driver is not None:
 
-            for bus in self.delete_and_reduce_driver.buses_merged:
-                if bus.graphic_obj is not None:
-                    bus.graphic_obj.create_children_widgets()
-                    bus.graphic_obj.arrange_children()
+            for diagram_widget in self.diagram_widgets_list:
+                if isinstance(diagram_widget, BusBranchEditorWidget):
+                    for bus in self.delete_and_reduce_driver.buses_merged:
+
+                        graphic_object = diagram_widget.diagram.query_point(bus)
+
+                        if graphic_object is not None:
+                            graphic_object.create_children_widgets()
+                            graphic_object.arrange_children()
 
             self.redraw_current_diagram()
 
