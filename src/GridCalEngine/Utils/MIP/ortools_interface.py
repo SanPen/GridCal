@@ -24,11 +24,12 @@ other solver interface easily
 from typing import List, Union, Tuple
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
-from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
+from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded, LinearConstraint
 from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
 from ortools.linear_solver.python.model_builder import _Sum as LpSum
+
 from GridCalEngine.basic_structures import MIPSolvers, Logger
 
 
@@ -117,7 +118,7 @@ class LpModel:
         """
         return self.model.new_var(lb=lb, ub=ub, is_integer=False, name=name)
 
-    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpExp, float]:
+    def add_cst(self, cst: Union[LpCstBounded, LpExp], name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
