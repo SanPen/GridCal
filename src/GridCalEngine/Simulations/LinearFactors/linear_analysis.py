@@ -21,7 +21,7 @@ import scipy.sparse as sp
 from typing import Union, List
 from scipy.sparse.linalg import spsolve
 
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
@@ -549,7 +549,7 @@ class LinearAnalysis:
 
     def run(self):
         """
-        Run the PTDF and LODF
+        Compute the PTDF and LODF for all the islands
         """
 
         # self.numerical_circuit = compile_snapshot_circuit(self.grid)
@@ -574,7 +574,7 @@ class LinearAnalysis:
                                                 pqpv=island.pqpv,
                                                 distribute_slack=self.distributed_slack)
 
-                        # assign the PTDF to the matrix
+                        # assign the PTDF to the main PTDF matrix
                         self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                         # compute the island LODF
@@ -583,7 +583,7 @@ class LinearAnalysis:
                                                 PTDF=ptdf_island,
                                                 correct_values=self.correct_values)
 
-                        # assign the LODF to the matrix
+                        # assign the LODF to the main LODF matrix
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
@@ -609,7 +609,7 @@ class LinearAnalysis:
 
     def get_transfer_limits(self, flows: np.ndarray):
         """
-        compute the normal transfer limits
+        Compute the maximum transfer limits of each branch in normal operation
         :param flows: base Sf in MW
         :return: Max transfer limits vector (n-branch)
         """
@@ -619,15 +619,15 @@ class LinearAnalysis:
             rates=self.numerical_circuit.Rates
         )
 
-    def get_flows(self, Sbus: CxVec) -> Vec:
+    def get_flows(self, Sbus: Union[CxVec, CxMat]) -> Union[CxVec, CxMat]:
         """
         Compute the time series branch Sf using the PTDF
-        :param Sbus: Power Injections time series array
-        :return: branch active power Sf time series
+        :param Sbus: Power Injections time series array (nbus) for 1D, (time, nbus) for 2D
+        :return: branch active power Sf (nbus) for 1D, (time, nbus) for 2D
         """
-        if len(Sbus.shape) == 1:
-            return np.dot(Sbus.real, self.PTDF.T)
-        elif len(Sbus.shape) == 2:
+        if Sbus.ndim == 1:
+            return np.dot(self.PTDF, Sbus.real)
+        elif Sbus.ndim == 2:
             return np.dot(self.PTDF, Sbus.real.T).T
         else:
-            raise Exception(f'Sbus has wrong dimensions: {Sbus.shape}')
+            raise Exception(f'Sbus has unsupported dimensions: {Sbus.shape}')
