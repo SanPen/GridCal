@@ -1080,9 +1080,9 @@ def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]
     """
     n_row, n_col = mat.shape
 
-    data = np.empty(n_row * n_col)
     indptr = np.empty(n_col + 1)
     indices = np.empty(n_row * n_col)
+    data = np.empty(n_row * n_col)
     k = 0
     for j in range(n_col):
 

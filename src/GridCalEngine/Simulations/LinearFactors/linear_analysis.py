@@ -377,7 +377,7 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Vec):
+    def get_contingency_flows(self, base_flow: Vec, injections: Vec) -> Vec:
         """
         Get contingency flows
         :param base_flow: Base branch flows (nbranch)
@@ -392,7 +392,7 @@ class LinearMultiContingency:
 
         if len(self.bus_indices):
             injection_delta = self.injections_factor * injections[self.bus_indices]
-            flow += self.ptdf_factors @ injection_delta[self.bus_indices]
+            flow += self.ptdf_factors @ injection_delta[self.bus_indices]  # TODO: is the slicing necesary here too?
 
         return flow
 
@@ -464,23 +464,18 @@ class LinearMultiContingencies:
             for cnt in contingencies:
 
                 # search for the contingency in the Branches
-                if cnt.device_idtag in self.__branches_dict:
-                    br_idx = self.__branches_dict.get(cnt.device_idtag, None)
-
-                    if br_idx is not None:
-                        if cnt.prop == 'active':
-                            branch_contingency_indices.append(br_idx)
-                        else:
-                            print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                br_idx = self.__branches_dict.get(cnt.device_idtag, None)
+                if br_idx is not None:
+                    if cnt.prop == 'active':
+                        branch_contingency_indices.append(br_idx)
                     else:
-                        gen = self.__generator_dict.get(cnt.device_idtag, None)
+                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
 
-                        if gen is not None:
-                            if cnt.prop == '%':
-                                bus_contingency_indices.append(self.__bus_index_dict[gen.bus])
-                                injections_factors.append(cnt.value / 100.0)
-                else:
-                    pass
+                gen = self.__generator_dict.get(cnt.device_idtag, None)
+                if gen is not None:
+                    if cnt.prop == '%':
+                        bus_contingency_indices.append(self.__bus_index_dict[gen.bus])
+                        injections_factors.append(cnt.value / 100.0)
 
             branch_contingency_indices = np.array(branch_contingency_indices)
             bus_contingency_indices = np.array(bus_contingency_indices)
