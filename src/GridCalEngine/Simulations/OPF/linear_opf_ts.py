@@ -874,7 +874,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     f_obj = 0.0
     for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
 
-        # compute the contingency flow (Lp exprssion)
+        # compute the contingency flow (Lp expression)
         contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
                                                                  injections=bus_vars.Pcalc[t_idx, :])
 
