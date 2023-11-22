@@ -23,7 +23,8 @@ other solver interface easily
 
 from typing import List, Union
 import pulp
-from pulp import LpConstraint as LpExp
+from pulp import LpAffineExpression as LpExp
+from pulp import LpConstraint as LpCst
 from pulp import LpVariable as LpVar
 from GridCalEngine.basic_structures import MIPSolvers
 
@@ -98,6 +99,7 @@ class LpModel:
     """
     OPTIMAL = pulp.LpStatusOptimal
     INFINITY = 1e20
+    originally_infesible = False
 
     def __init__(self, solver_type: MIPSolvers):
 
@@ -172,9 +174,10 @@ class LpModel:
         """
         self.model.setObjective(obj=obj_function)
 
-    def solve(self) -> int:
+    def solve(self, robust: bool = False) -> int:
         """
         Solve the model
+        :param robust: In this interface, this is useless
         :return:
         """
 
@@ -198,7 +201,12 @@ class LpModel:
         else:
             raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
 
-        return self.model.solve(solver=pulp.getSolver(solver))
+        status = self.model.solve(solver=pulp.getSolver(solver))
+
+        if status != self.OPTIMAL:
+            self.originally_infesible = True
+
+        return status
 
     def fobj_value(self) -> float:
         """
@@ -213,3 +221,41 @@ class LpModel:
         :return:
         """
         return self.model.isMIP()
+
+    @staticmethod
+    def get_value(x: Union[float, int, LpVar, LpExp, LpCst]) -> float:
+        """
+        Get the value of a variable stored in a numpy array of objects
+        :param x: solver object (it may be a LP var or a number)
+        :return: result or zero
+        """
+        if isinstance(x, LpVar):
+            val = x.value()
+        elif isinstance(x, LpExp):
+            val = x.value()
+        elif isinstance(x, float) or isinstance(x, int):
+            return x
+        else:
+            raise Exception("Unrecognized type {}".format(x))
+
+        if isinstance(val, float):
+            return val
+        else:
+            return 0.0
+
+    @staticmethod
+    def get_dual_value(x: LpCst) -> float:
+        """
+        Get the dual value of a variable stored in a numpy array of objects
+        :param x: constraint
+        :return: result or zero
+        """
+        if isinstance(x, LpCst):
+            val = x.pi
+        else:
+            raise Exception("Unrecognized type {}".format(x))
+
+        if isinstance(val, float):
+            return val
+        else:
+            return 0.0

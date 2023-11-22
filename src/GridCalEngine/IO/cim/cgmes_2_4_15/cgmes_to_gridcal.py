@@ -580,7 +580,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     :param logger: Logger object
     :return: MultiCircuit
     """
-    gc_model = MultiCircuit()
+    gc_model = MultiCircuit()  # roseta
     Sbase = gc_model.Sbase
 
     # busbar_dict = parse_bus_bars(cgmes_model, circuit, logger)

@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
+from collections import defaultdict
 from typing import Dict, List, Union, Callable, Tuple
 import xml.etree.ElementTree as ET
 from GridCalEngine.data_logger import DataLogger
@@ -187,44 +188,7 @@ def read_cgmes_files(cim_files: Union[List[str], str]) -> Dict[str, List[str]]:
     return data
 
 
-from collections import defaultdict
-
-
-def topological_sort(graph):
-    def dfs(node):
-        visited.add(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                dfs(neighbor)
-        result.append(node)
-
-    visited = set()
-    result = []
-
-    for node in graph:
-        if node not in visited:
-            dfs(node)
-
-    return result[::-1]
-
-
-def get_dependency_order(file_dependency):
-    graph = defaultdict(list)
-    nodes = set()
-
-    for file, dependency in file_dependency:
-        nodes.add(file)
-        if dependency is not None:
-            graph[dependency].append(file)
-
-    for file in nodes:
-        if file not in graph:
-            graph[file] = []
-
-    return topological_sort(graph)
-
-
-def sort_cgmes_files(links: List[Tuple[str, str, str]]):
+def sort_cgmes_files(links: List[Tuple[str, str, str]]) -> List[str]:
     """
     Sorts the CIM files in the preferred reading order
     :param links: list of filename, model id, dependent on model id
@@ -234,12 +198,6 @@ def sort_cgmes_files(links: List[Tuple[str, str, str]]):
     file_name_model_dict = dict()
     for filename, model_id, dependent_id in links:
         file_name_model_dict[model_id] = filename
-
-    # pairs = list()
-    # for filename, model_id, dependent_id in links:
-    #     pairs.append((file_name_model_dict[model_id], file_name_model_dict.get(dependent_id, None)))
-    #
-    # items = get_dependency_order(pairs)
 
     deps = list()
     items = list()
@@ -270,7 +228,8 @@ def sort_cgmes_files(links: List[Tuple[str, str, str]]):
 def parse_xml_text(text_lines: List[str]) -> Dict:
     """
     Fill the XML into the objects
-    :param text_lines:
+    :param text_lines: list of text lines
+    :return Dictionary representing the XML
     """
 
     xml_string = "".join(text_lines)
@@ -290,13 +249,15 @@ class CgmesDataParser(BaseCircuit):
                  logger=DataLogger()):
         """
         CIM circuit constructor
+        :param text_func: text callback function (optional)
+        :param progress_func: progress callback function (optional)
+        :param logger: DataLogger
         """
         BaseCircuit.__init__(self)
 
-        self.logger: DataLogger = logger
-
         self.text_func = text_func
         self.progress_func = progress_func
+        self.logger: DataLogger = logger
 
         # file: Cim data of the file
         self.parsed_data = dict()
@@ -304,20 +265,21 @@ class CgmesDataParser(BaseCircuit):
         # merged CGMES data (dictionary representation of the xml data)
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
+        # boundary set data
         self.boudary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
     def emit_text(self, val: str) -> None:
         """
-
-        :param val:
+        Emit text via the callback
+        :param val: text value
         """
         if self.text_func is not None:
             self.text_func(val)
 
     def emit_progress(self, val: float) -> None:
         """
-
-        :param val:
+        Emit floating point values via the callback
+        :param val: numeric value
         """
         if self.progress_func is not None:
             self.progress_func(val)
@@ -325,7 +287,7 @@ class CgmesDataParser(BaseCircuit):
     def load_files(self, files: List[str]) -> None:
         """
         Load CIM file
-        :param files: list of CIM files (.xml)
+        :param files: list of CIM files (.xml or .zip)
         """
 
         # import the cim files' content into a dictionary
@@ -347,7 +309,7 @@ class CgmesDataParser(BaseCircuit):
                 # get all the FullModel id's (should only be one of these)
                 model_keys = list(file_cgmes_data['FullModel'])
 
-                if len(model_keys) == 1:
+                if len(model_keys) == 1:  # there must be exacly one FullModel
                     model_id = model_keys[0]
                     model_info = file_cgmes_data['FullModel'][model_keys[0]]
                     depends_on = model_info.get('DependentOn', '')
@@ -368,11 +330,13 @@ class CgmesDataParser(BaseCircuit):
                                           comment="This is not a proper CGMES file")
 
             else:
-                self.logger.add_error("File does not contain FullModel",
+                self.logger.add_error("File does not contain any FullModel",
                                       device=file_name,
                                       device_class="",
                                       device_property='FullModel', value="", expected_value="FullModel",
                                       comment="This is not a proper CGMES file")
+
+            # emit progress
             self.emit_progress((i + 1) / len(data) * 100)
             i += 1
 

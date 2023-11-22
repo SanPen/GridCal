@@ -374,7 +374,10 @@ class BaseMainGui(QMainWindow):
         :param val: file name
         """
         self._file_name = val
-        self.ui.file_information_label.setText(self._file_name)
+        if not isinstance(self._file_name, list):
+            self.ui.file_information_label.setText(self._file_name)
+        else:
+            self.ui.file_information_label.setText("")
 
     @staticmethod
     def collect_memory() -> None:

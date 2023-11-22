@@ -517,7 +517,7 @@ class CgmesCircuit(BaseCircuit):
     def parse_files(self, files: List[str], delete_unused=True, detect_circular_references=False):
         """
         Parse CGMES files into this class
-        :param files: list of CGMES files
+        :param files: list of CGMES files (.zip / .xml)
         :param delete_unused: Detele the unused boundary set?
         :param detect_circular_references: report the circular references
         """

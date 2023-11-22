@@ -24,15 +24,13 @@ other solver interface easily
 from typing import List, Union, Tuple
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
-from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
+from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded, LinearConstraint
 from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
 from ortools.linear_solver.python.model_builder import _Sum as LpSum
+
 from GridCalEngine.basic_structures import MIPSolvers, Logger
-
-
-
 
 
 def get_available_mip_solvers() -> List[str]:
@@ -66,6 +64,7 @@ class LpModel:
     """
     OPTIMAL = ort.Solver.OPTIMAL
     INFINITY = 1e20
+    originally_infesible = False
 
     def __init__(self, solver_type: MIPSolvers):
 
@@ -119,7 +118,7 @@ class LpModel:
         """
         return self.model.new_var(lb=lb, ub=ub, is_integer=False, name=name)
 
-    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpExp, float]:
+    def add_cst(self, cst: Union[LpCstBounded, LpExp, bool], name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
@@ -157,99 +156,105 @@ class LpModel:
         status = self.solver.solve(self.model)
 
         # if it failed...
-        if status != LpModel.OPTIMAL and robust:
+        if status != LpModel.OPTIMAL:
 
-            """
-            We are going to create a deep clone of the model,
-            add a slack variable to each constraint and minimize
-            the sum of the newly added slack vars.
-            This LP model will be always optimal.
-            After the solution, we inspect the slack vars added
-            if any of those is > 0, then the constraint where it
-            was added needs "slacking", therefore we add that slack
-            to the original model, and add the slack to the original 
-            objective function. This way we relax the model while
-            bringing it to optimality.
-            """
+            self.originally_infesible = True
 
-            # deep copy of the original model
-            debug_model = self.model.clone()
+            if robust:
+                """
+                We are going to create a deep clone of the model,
+                add a slack variable to each constraint and minimize
+                the sum of the newly added slack vars.
+                This LP model will be always optimal.
+                After the solution, we inspect the slack vars added
+                if any of those is > 0, then the constraint where it
+                was added needs "slacking", therefore we add that slack
+                to the original model, and add the slack to the original 
+                objective function. This way we relax the model while
+                bringing it to optimality.
+                """
 
-            # modify the original to detect the bad constraints
-            slacks = list()
-            debugging_f_obj = 0
-            for i, cst in enumerate(debug_model.get_linear_constraints()):
+                # deep copy of the original model
+                debug_model = self.model.clone()
 
-                # create a new slack var in the problem
-                sl = debug_model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+                # modify the original to detect the bad constraints
+                slacks = list()
+                debugging_f_obj = 0
+                for i, cst in enumerate(debug_model.get_linear_constraints()):
 
-                # add the variable to the new objective function
-                debugging_f_obj += sl
+                    # create a new slack var in the problem
+                    sl = debug_model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
 
-                # add the variable to the current constraint
-                cst.add_term(sl, 1.0)
+                    # add the variable to the new objective function
+                    debugging_f_obj += sl
 
-                # store for later
-                slacks.append(sl)
+                    # add the variable to the current constraint
+                    cst.add_term(sl, 1.0)
 
-            # set the objective function as the summation of the new slacks
-            debug_model.minimize(debugging_f_obj)
+                    # store for later
+                    slacks.append(sl)
 
-            # solve the debug model
-            status_d = self.solver.solve(debug_model)
+                # set the objective function as the summation of the new slacks
+                debug_model.minimize(debugging_f_obj)
 
-            # at this point we can delete the debug model
-            del debug_model
+                # solve the debug model
+                status_d = self.solver.solve(debug_model)
 
-            # clear the relaxed slacks list
-            self.relaxed_slacks = list()
+                # at this point we can delete the debug model
+                del debug_model
 
-            if status_d == LpModel.OPTIMAL:
+                # clear the relaxed slacks list
+                self.relaxed_slacks = list()
 
-                # pick the original objectve function
-                main_f = self.model.objective_expression()
+                if status_d == LpModel.OPTIMAL:
 
-                for i, sl in enumerate(slacks):
+                    # pick the original objectve function
+                    main_f = self.model.objective_expression()
 
-                    # get the debugging slack value
-                    val = self.solver.value(sl)
+                    for i, sl in enumerate(slacks):
 
-                    if val > 1e-10:
+                        # get the debugging slack value
+                        val = self.solver.value(sl)
 
-                        # add the slack in the main model
-                        sl2 = self.model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
-                        self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
+                        if val > 1e-10:
 
-                        # add the slack to the original objective function
-                        main_f += sl2
+                            # add the slack in the main model
+                            sl2 = self.model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+                            self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
-                        # alter the matching constraint
-                        self.model.linear_constraint_from_index(i).add_term(sl2, 1.0)
+                            # add the slack to the original objective function
+                            main_f += sl2
 
-                        # logg this
-                        # self.logger.add_warning("Relaxed problem",
-                        #                         device=self.model.linear_constraint_from_index(i).name)
+                            # alter the matching constraint
+                            self.model.linear_constraint_from_index(i).add_term(sl2, 1.0)
 
-                # set the modified (original) objective function
-                self.model.minimize(main_f)
+                            # logg this
+                            # self.logger.add_warning("Relaxed problem",
+                            #                         device=self.model.linear_constraint_from_index(i).name)
 
-                # solve the modified (original) model
-                status = self.solver.solve(self.model)
+                    # set the modified (original) objective function
+                    self.model.minimize(main_f)
 
-                if status == LpModel.OPTIMAL:
+                    # solve the modified (original) model
+                    status = self.solver.solve(self.model)
 
-                    for i in range(len(self.relaxed_slacks)):
-                        k, var, _ = self.relaxed_slacks[i]
-                        val = self.solver.value(var)
-                        self.relaxed_slacks[i] = (k, var, val)
+                    if status == LpModel.OPTIMAL:
 
-                        # logg this
-                        self.logger.add_warning("Relaxed problem",
-                                                device=self.model.linear_constraint_from_index(i).name,
-                                                value=val)
+                        for i in range(len(self.relaxed_slacks)):
+                            k, var, _ = self.relaxed_slacks[i]
+                            val = self.solver.value(var)
+                            self.relaxed_slacks[i] = (k, var, val)
+
+                            # logg this
+                            self.logger.add_warning("Relaxed problem",
+                                                    device=self.model.linear_constraint_from_index(i).name,
+                                                    value=val)
+
+                else:
+                    self.logger.add_warning("Unable to relax the model, the debug model failed")
 
             else:
-                self.logger.add_warning("Unable to relax the model, the debug model failed")
+                pass
 
         return status
 
