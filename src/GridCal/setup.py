@@ -84,7 +84,7 @@ dependencies = ['setuptools>=41.0.1',
                 "scipy>=1.0.0",
                 "networkx>=2.1",
                 "pandas>=1.0",
-                "ortools>=9.0.0",
+                "ortools>=9.8.0",
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
@@ -126,12 +126,12 @@ setup(
     author_email='santiago@gridcal.org',  # Optional
     classifiers=[
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional
     packages=packages2,  # Required
     include_package_data=True,
-    python_requires='>=3.10',
+    python_requires='>=3.8',
     install_requires=dependencies,
     extras_require=extras_require,
     package_data=package_data,
