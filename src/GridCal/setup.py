@@ -135,4 +135,10 @@ setup(
     install_requires=dependencies,
     extras_require=extras_require,
     package_data=package_data,
+    entry_points={
+        'console_scripts': [
+            'gridcal = GridCal.ExecuteGridCal:runGridCal',
+            'GridCal = GridCal.ExecuteGridCal:runGridCal',
+        ],
+    },
 )
