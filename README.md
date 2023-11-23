@@ -58,6 +58,12 @@ Once you install GridCal in your local Python distribution, you can run the
 graphical user interface with the following terminal command:
 
 ```
+gridcal
+```
+
+If this doesn't work, try:
+
+```
 python -c "from GridCal.ExecuteGridCal import runGridCal; runGridCal()"
 ```
 
