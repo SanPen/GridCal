@@ -44,9 +44,17 @@ Run the graphical user interface
 Once you install GridCal in your local Python distribution, you can run
 the graphical user interface with the following terminal command:
 
+
+::
+    gridcal
+
+
+If this doesn't work, try:
+
+
 ::
 
-   python -c "from GridCal.ExecuteGridCal import run; run()"
+   python -c "from GridCal.ExecuteGridCal import runGridCal; runGridCal()"
 
 You may save this command in a shortcut for easy future access.
 

@@ -96,13 +96,13 @@ setup(
     author_email='santiago@gridcal.org',  # Optional
     classifiers=[
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional
     packages=packages2,  # Required
     package_dir={'': '.'},
     include_package_data=True,
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=dependencies,
     extras_require=extras_require,
     package_data=package_data,
