@@ -230,8 +230,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         turbines_at_the_plant = plants_turbine_dict[node]
         for turbine in turbines_at_the_plant:
             # add the generator output to the plant output in terms of water
-            #    m3             h         MW                  MWh/m3
-            plant_fluid_flow += dt * turbine.power_output * turbine.efficiency
+            #    m3             h         MW                  MWh/m3  # efficiency should be dividing!?
+            plant_fluid_flow += dt * turbine.power_output / turbine.efficiency
 
             # add the electric power to the total generation
             total_power_generated += turbine.power_output
@@ -240,7 +240,7 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         for pump in pumps_at_the_plant:
             # add the pump output to the plant output in terms of water
             #    m3             h         MW                  MWh/m3
-            plant_fluid_flow += dt * pump.power_output * pump.efficiency
+            plant_fluid_flow += dt * pump.power_output / pump.efficiency
 
             # subtract the electric power of the pump
             total_power_generated -= pump.power_output
@@ -403,7 +403,7 @@ gen3 = Turbine(name="G3", p_min=0.0, p_max=100, efficiency=0.85, max_flow_rate=1
 gen4 = Turbine(name="G4", p_min=0.0, p_max=50, efficiency=0.75, max_flow_rate=1200, plant=plant4)
 gen5 = Turbine(name="G5", p_min=0.0, p_max=70, efficiency=0.85, max_flow_rate=1200, plant=plant4)
 
-dem1 = Pump(name="P1", p_min=0.0, p_max=10, efficiency=0.9, max_flow_rate=100, reservoir=reservoir2)
+dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
 
 river1 = FluidPath(name='River1', source=reservoir1, target=plant1, min_flow=0, max_flow=150)
 river2 = FluidPath(name='River2', source=reservoir2, target=plant2, min_flow=5, max_flow=120)
