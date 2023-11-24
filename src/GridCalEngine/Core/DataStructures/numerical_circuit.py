@@ -238,6 +238,9 @@ class NumericalCircuit:
                  ngen: int,
                  nbatt: int,
                  nshunt: int,
+                 nfuel: int,
+                 nemissions: int,
+                 ntech: int,
                  sbase: float,
                  t_idx: int = 0):
         """
@@ -261,6 +264,10 @@ class NumericalCircuit:
         self.nbatt: int = nbatt
         self.nshunt: int = nshunt
         self.nhvdc: int = nhvdc
+
+        self.nfuel: int = nfuel
+        self.nemissions: int = nemissions
+        self.ntech: int = ntech
 
         self.Sbase: float = sbase
 
@@ -307,8 +314,12 @@ class NumericalCircuit:
         self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
         self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
-        self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus)
-        self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
+
+        self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus, ntech=ntech)
+
+        self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus, nfuel=nfuel,
+                                                                 nemissions=nemissions, ntech=ntech)
+
         self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
 
         # --------------------------------------------------------------------------------------------------------------
@@ -699,6 +710,9 @@ class NumericalCircuit:
                               ngen=self.ngen,
                               nbatt=self.nbatt,
                               nshunt=self.nshunt,
+                              nfuel=self.nfuel,
+                              nemissions=self.nemissions,
+                              ntech=self.ntech,
                               sbase=self.Sbase,
                               t_idx=self.t_idx)
 
@@ -1852,6 +1866,9 @@ class NumericalCircuit:
             ngen=len(gen_idx),
             nbatt=len(batt_idx),
             nshunt=len(shunt_idx),
+            nfuel=self.nfuel,
+            nemissions=self.nemissions,
+            ntech=self.ntech,
             sbase=self.Sbase,
             t_idx=self.t_idx,
         )
@@ -1931,6 +1948,9 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           ngen=0,
                           nbatt=0,
                           nshunt=0,
+                          nfuel=len(circuit.fuels),
+                          nemissions=len(circuit.emission_gases),
+                          ntech=len(circuit.technologies),
                           sbase=circuit.Sbase,
                           t_idx=t_idx)
 

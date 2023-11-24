@@ -25,15 +25,20 @@ class GeneratorData:
     GeneratorData
     """
 
-    def __init__(self, nelm: int, nbus: int):
+    def __init__(self, nelm: int, nbus: int, nfuel: int, nemissions: int, ntech: int):
         """
         Generator data arrays
         :param nelm: number of generator
         :param nbus: number of buses
+        :param nfuel: number of fuels
+        :param nemissions: number of emissions
+        :param ntech: Number of technologies
         """
         self.nelm: int = nelm
         self.nbus: int = nbus
-
+        self.nfuel: int = nfuel
+        self.nemissions: int = nemissions
+        self.ntech: int = ntech
         self.names: StrVec = np.empty(nelm, dtype=object)
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
@@ -72,6 +77,10 @@ class GeneratorData:
         self.min_time_up: Vec = np.zeros(nelm, dtype=float)
         self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
+        self.gen_tech_proportions_matrix: sp.lil_matrix = sp.lil_matrix((ntech, nelm), dtype=int)
+        self.gen_fuel_rates_matrix: sp.lil_matrix = sp.lil_matrix((nfuel, nelm), dtype=float)
+        self.gen_emissions_rates_matrix: sp.lil_matrix = sp.lil_matrix((nemissions, nelm), dtype=float)
+
         self.original_idx = np.zeros(nelm, dtype=int)
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec):
@@ -82,7 +91,11 @@ class GeneratorData:
         :return: new GeneratorData instance
         """
 
-        data = GeneratorData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = GeneratorData(nelm=len(elm_idx),
+                             nbus=len(bus_idx),
+                             nfuel=self.nfuel,
+                             nemissions=self.nemissions,
+                             ntech=self.ntech)
 
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
@@ -99,6 +112,10 @@ class GeneratorData:
         data.qmax = self.qmax[elm_idx]
 
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
+
+        data.gen_tech_proportions_matrix = self.gen_tech_proportions_matrix[:, elm_idx]
+        data.gen_fuel_rates_matrix = self.gen_fuel_rates_matrix[:, elm_idx]
+        data.gen_emissions_rates_matrix = self.gen_emissions_rates_matrix[:, elm_idx]
 
         data.r0 = self.r0[elm_idx]
         data.r1 = self.r1[elm_idx]

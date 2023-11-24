@@ -1013,6 +1013,9 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
+                                nfuel=0,
+                                nemissions=0,
+                                ntech=0,
                                 sbase=0,
                                 t_idx=0)
 

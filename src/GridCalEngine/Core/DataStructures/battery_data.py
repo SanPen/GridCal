@@ -24,14 +24,14 @@ class BatteryData(GeneratorData):
     Structure to host the battery compiled data
     """
 
-    def __init__(self, nelm: int, nbus: int):
+    def __init__(self, nelm: int, nbus: int, ntech: int):
         """
         Battery data arrays
         :param nelm: number of batteries
         :param nbus: number of buses
         """
 
-        GeneratorData.__init__(self, nelm=nelm, nbus=nbus)
+        GeneratorData.__init__(self, nelm=nelm, nbus=nbus, nfuel=0, nemissions=0, ntech=ntech)
 
         self.enom: Vec = np.zeros(nelm)
         self.e_min: Vec = np.zeros(nelm)
