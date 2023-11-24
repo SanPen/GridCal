@@ -93,7 +93,7 @@ dependencies = ['setuptools>=41.0.1',
                 "chardet>=3.0.4",  # for the psse files character detection
                 "scikit-learn>=0.18",
                 "geopy>=1.16",
-                "pytest>=3.8",
+                "pytest>=7.2",
                 "h5py>=2.9.0",
                 "numba>=0.46",  # to compile routines natively
                 'pyproj',
