@@ -570,9 +570,6 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
-                                nfuel=0,
-                                nemissions=0,
-                                ntech=0,
                                 sbase=0.0)
 
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)

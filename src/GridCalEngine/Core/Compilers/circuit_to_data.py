@@ -288,10 +288,7 @@ def get_generator_data(circuit: MultiCircuit,
     devices = circuit.get_generators()
 
     data = ds.GeneratorData(nelm=len(devices),
-                            nbus=len(circuit.buses),
-                            nfuel=len(circuit.fuels),
-                            nemissions=len(circuit.emission_gases),
-                            ntech=len(circuit.technologies))
+                            nbus=len(circuit.buses))
 
     gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
@@ -382,21 +379,6 @@ def get_generator_data(circuit: MultiCircuit,
 
         data.C_bus_elm[i, k] = 1
 
-    # create associations between generators and fuels
-    for i, entry in enumerate(circuit.generators_fuels):
-        gen_idx = gen_index_dict[entry.generator.idtag]
-        data.gen_fuel_rates_matrix[gen_idx, i] = entry.rate
-
-    # create associations between generators and emissions
-    for i, entry in enumerate(circuit.generators_emissions):
-        gen_idx = gen_index_dict[entry.generator.idtag]
-        data.gen_emissions_rates_matrix[gen_idx, i] = entry.rate
-
-    # create associations between generators and technologies
-    for i, entry in enumerate(circuit.generators_technologies):
-        gen_idx = gen_index_dict[entry.generator.idtag]
-        data.gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
-
     return data
 
 
@@ -425,15 +407,11 @@ def get_battery_data(circuit: MultiCircuit,
     devices = circuit.get_batteries()
 
     data = ds.BatteryData(nelm=len(devices),
-                          nbus=circuit.get_bus_number(),
-                          ntech=len(circuit.technologies))
+                          nbus=circuit.get_bus_number())
 
-    gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
 
         i = bus_dict[elm.bus]
-
-        gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
@@ -523,11 +501,6 @@ def get_battery_data(circuit: MultiCircuit,
             data.qmax[k] = elm.Qmax
 
         data.C_bus_elm[i, k] = 1
-
-    # create associations between generators and technologies
-    for i, entry in enumerate(circuit.generators_technologies):
-        gen_idx = gen_index_dict[entry.generator.idtag]
-        data.gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
 
     return data
 
