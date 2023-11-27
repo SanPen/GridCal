@@ -23,7 +23,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 import GridCalEngine.Core.Devices as dev
-from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType
+from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
 from GridCalEngine.Core.Devices.profile import compress_array_numba
 
 
@@ -602,6 +602,20 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 has_profiles = False
 
             for entry in devices["Line"]:
+                build_status = BuildStatus.Commissioned
+                build_status_str = entry.get("build_status", None)
+                if build_status_str is not None:
+                    if build_status_str == "candidate":
+                        build_status = BuildStatus.Candidate
+                    elif build_status_str == "commissioned":
+                        build_status = BuildStatus.Commissioned
+                    elif build_status_str == "decommissioned":
+                        build_status = BuildStatus.Decommissioned
+                    elif build_status_str == "planned":
+                        build_status = BuildStatus.Planned
+                    elif build_status_str == "planned_decommission":
+                        build_status = BuildStatus.PlannedDecommission
+
                 elm = dev.Line(bus_from=bus_dict[entry['bus_from']],
                                bus_to=bus_dict[entry['bus_to']],
                                name=str(entry['name']),
@@ -615,8 +629,26 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                length=float(entry['length']),
                                temp_base=float(entry['base_temperature']),
                                temp_oper=float(entry['operational_temperature']),
-                               alpha=float(entry['alpha'])
+                               alpha=float(entry['alpha']),
+                               build_status=build_status,
+                               opex=entry.get('opex', 0.0),
+                               capex=entry.get('capex', 0.0)
                                )
+
+                if build_status == BuildStatus.Candidate:
+                    inv_group = dev.InvestmentsGroup(idtag='',
+                                                     name=f'inv{elm.name}',
+                                                     category='single')
+                    invst = dev.Investment(idtag='',
+                                           device_idtag=elm.idtag,
+                                           name=f'inv{elm.name}',
+                                           code=elm.code,
+                                           CAPEX=elm.capex,
+                                           OPEX=elm.opex,
+                                           group=inv_group)
+
+                    circuit.add_investments_group(inv_group)
+                    circuit.add_investment(invst)
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
