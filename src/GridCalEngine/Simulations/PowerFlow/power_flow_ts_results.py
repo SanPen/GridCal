@@ -235,82 +235,10 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         return df
 
-    def apply_from_island(self,
-                          results: "PowerFlowResults",
-                          b_idx: np.ndarray,
-                          br_idx: np.ndarray,
-                          t_index: np.ndarray,
-                          grid_idx: np.ndarray):
-        """
-        Apply results from another island circuit to the circuit results represented here
-        :param results: PowerFlowResults
-        :param b_idx: bus original indices
-        :param br_idx: branch original indices
-        :param t_index:
-        :param grid_idx:
-        :return:
-        """
-
-        # bus results
-        if self.voltage.shape == results.voltage.shape:
-            self.voltage = results.voltage
-            self.S = results.S
-        elif self.voltage.shape[0] == results.voltage.shape[0]:
-            self.voltage[:, b_idx] = results.voltage
-            self.S[:, b_idx] = results.S
-        else:
-            self.voltage[np.ix_(t_index, b_idx)] = results.voltage
-            self.S[np.ix_(t_index, b_idx)] = results.S
-
-        # branch results
-        if self.Sf.shape == results.Sf.shape:
-            self.Sf = results.Sf
-            self.St = results.St
-
-            self.Vbranch = results.Vbranch
-
-            self.loading = results.loading
-
-            self.losses = results.losses
-
-            if (results.error_values > self.error_values).any():
-                self.error_values += results.error_values
-
-            self.converged_values = self.converged_values * results.converged_values
-
-        elif self.Sf.shape[0] == results.Sf.shape[0]:
-            self.Sf[:, br_idx] = results.Sf
-            self.St[:, br_idx] = results.St
-
-            self.Vbranch[:, br_idx] = results.Vbranch
-
-            self.loading[:, br_idx] = results.loading
-
-            self.losses[:, br_idx] = results.losses
-
-            if (results.error_values > self.error_values).any():
-                self.error_values += results.error_values
-
-            self.converged_values = self.converged_values * results.converged_values
-        else:
-            self.Sf[np.ix_(t_index, br_idx)] = results.Sf
-            self.St[np.ix_(t_index, br_idx)] = results.St
-
-            self.Vbranch[np.ix_(t_index, br_idx)] = results.Vbranch
-
-            self.loading[np.ix_(t_index, br_idx)] = results.loading
-
-            self.losses[np.ix_(t_index, br_idx)] = results.losses
-
-            if (results.error_values > self.error_values[t_index]).any():
-                self.error_values[t_index] += results.error_values
-
-            self.converged_values[t_index] = self.converged_values[t_index] * results.converged_values
-
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
+        :return:  of 2D numpy arrays (probably of complex numbers)
         """
         data = {'Vm': np.abs(self.voltage).tolist(),
                 'Va': np.angle(self.voltage).tolist(),
@@ -328,7 +256,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         Export as json
         """
 
-        with open(fname, "wb") as output_file:
+        with open(fname, "w") as output_file:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
@@ -532,10 +460,11 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.LossesPercentPerArea:
             labels = self.get_ordered_area_names()
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(
-                np.abs(self.hvdc_Pf))
-            Pl = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(
-                np.abs(self.hvdc_losses))
+            Pf = (self.get_branch_values_per_area(np.abs(self.Sf.real))
+                  + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf)))
+
+            Pl = (self.get_branch_values_per_area(np.abs(self.losses.real))
+                  + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses)))
 
             data = Pl / (Pf + 1e-20) * 100.0
             y_label = '(%)'
@@ -543,16 +472,16 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.LossesPerArea:
             labels = self.get_ordered_area_names()
-            data = self.get_branch_values_per_area(np.abs(self.losses.real)) + self.get_hvdc_values_per_area(
-                np.abs(self.hvdc_losses))
+            data = (self.get_branch_values_per_area(np.abs(self.losses.real))
+                    + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses)))
 
             y_label = '(MW)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
             labels = self.get_ordered_area_names()
-            data = self.get_branch_values_per_area(np.abs(self.Sf.real)) + self.get_hvdc_values_per_area(
-                np.abs(self.hvdc_Pf))
+            data = (self.get_branch_values_per_area(np.abs(self.Sf.real))
+                    + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf)))
 
             y_label = '(MW)'
             title = result_type.value[0]
