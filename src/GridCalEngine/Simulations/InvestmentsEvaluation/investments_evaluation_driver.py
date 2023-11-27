@@ -82,17 +82,19 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # add all the investments of the investment groups reflected in the combination
         inv_list = list()
-        for i in combination:
-            if i == 1:
+        for i, active in enumerate(combination):
+            if active == 1:
                 inv_list += self.investments_by_group[i]
 
         # enable the investment
-        self.nc.set_investments_status(investments_list=inv_list, status=1)
+        # TODO: use MultiCircuit deep copies instead of NumericalCircuit copies (try deepcopy module)
+        nc_mod = self.nc.copy()
+        nc_mod.set_investments_status(investments_list=inv_list, status=1)
 
         # do something
-        res = multi_island_pf_nc(nc=self.nc, options=self.pf_options)
+        res = multi_island_pf_nc(nc=nc_mod, options=self.pf_options)
         total_losses = np.sum(res.losses.real)
-        overload_score = res.get_oveload_score(branch_prices=self.nc.branch_data.overload_cost)
+        overload_score = res.get_oveload_score(branch_prices=nc_mod.branch_data.overload_cost)
         voltage_score = 0.0
 
         f = total_losses + overload_score + voltage_score
@@ -109,7 +111,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             index_name="Evaluation {}".format(self.__eval_index))
 
         # revert to disabled
-        self.nc.set_investments_status(investments_list=inv_list, status=0)
+        # nc_mod.set_investments_status(investments_list=inv_list, status=0)
 
         # increase evaluations
         self.__eval_index += 1

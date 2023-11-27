@@ -307,8 +307,11 @@ class NumericalCircuit:
         self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
 
         self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
+
         self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus)
+
         self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
+
         self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
 
         # --------------------------------------------------------------------------------------------------------------

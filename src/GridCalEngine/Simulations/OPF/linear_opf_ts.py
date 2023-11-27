@@ -21,7 +21,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import List, Union, Tuple, Callable
-
+from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ZonalGrouping
 from GridCalEngine.basic_structures import MIPSolvers
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -424,6 +424,8 @@ def add_linear_generation_formulation(t: Union[int, None],
     :return objective function
     """
     f_obj = 0.0
+
+    # add generation stuff
     for k in range(gen_data_t.nelm):
 
         if gen_data_t.active[k]:
@@ -1092,6 +1094,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
 
+    # gather the fuels and emission rates matrices
+    gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
+    gen_fuel_rates_matrix = grid.get_fuel_rates_sparse_matrix()
+
     if maximize_inter_area_flow:
         inter_area_branches = grid.get_inter_areas_branches(a1=areas_from, a2=areas_to)
         inter_area_hvdc = grid.get_inter_areas_hvdc_branches(a1=areas_from, a2=areas_to)
@@ -1106,7 +1112,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     lp_model: LpModel = LpModel(solver_type)
 
     # objective function
-    f_obj = 0.0
+    f_obj: Union[LpExp, float] = 0.0
 
     for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
 
@@ -1158,6 +1164,23 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                 skip_generation_limits=skip_generation_limits,
                                                 energy_0=energy_0)
 
+        # add emissions ------------------------------------------------------------------------------------------------
+        if gen_emissions_rates_matrix.shape[0] > 0:
+
+            # amount of emissions per gas
+            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+
+            f_obj += lp_model.sum(emissions)
+
+        # add fuels ----------------------------------------------------------------------------------------------------
+        if gen_fuel_rates_matrix.shape[0] > 0:
+
+            # amount of fuels
+            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+
+            f_obj += lp_model.sum(fuels_amount)
+
+        # --------------------------------------------------------------------------------------------------------------
         # if no zonal grouping, all the grid is considered...
         if zonal_grouping == ZonalGrouping.NoGrouping:
 

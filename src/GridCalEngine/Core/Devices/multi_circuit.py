@@ -3769,3 +3769,70 @@ class MultiCircuit:
             val[i] = branch.rate_prof * branch.contingency_factor
 
         return val
+
+    def get_generator_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get the a dictionary that relates the generator uuid's with their index
+        :return: Dict[str, int]
+        """
+        gen_index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.get_generators()):
+            gen_index_dict[elm.idtag] = k  # associate the idtag to the index
+        return gen_index_dict
+
+    def get_fuel_rates_sparse_matrix(self) -> csc_matrix:
+        """
+        Get the fuel rates matrix with relation to the generators
+        should be used to get the fuel amounts by: Rates_mat x Pgen
+        :return: CSC sparse matrix (n_fuel, n_gen)
+        """
+        nfuel = len(self.fuels)
+        gen_index_dict = self.get_generator_indexing_dict()
+        nelm = len(gen_index_dict)
+
+        gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
+
+        # create associations between generators and fuels
+        for i, entry in enumerate(self.generators_fuels):
+            gen_idx = gen_index_dict[entry.generator.idtag]
+            gen_fuel_rates_matrix[gen_idx, i] = entry.rate
+
+        return gen_fuel_rates_matrix.tocsc()
+
+    def get_emission_rates_sparse_matrix(self) -> csc_matrix:
+        """
+        Get the emission rates matrix with relation to the generators
+        should be used to get the fuel amounts by: Rates_mat x Pgen
+        :return: CSC sparse matrix (n_emissions, n_gen)
+        """
+        nemissions = len(self.emission_gases)
+        gen_index_dict = self.get_generator_indexing_dict()
+        nelm = len(gen_index_dict)
+
+        gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
+
+        # create associations between generators and emissions
+        for i, entry in enumerate(self.generators_emissions):
+            gen_idx = gen_index_dict[entry.generator.idtag]
+            gen_emissions_rates_matrix[gen_idx, i] = entry.rate
+
+        return gen_emissions_rates_matrix.tocsc()
+
+    def get_technology_connectivity_matrix(self) -> csc_matrix:
+        """
+        Get the technology connectivity matrix with relation to the generators
+        should be used to get the generatio per technology by: Tech_mat x Pgen
+        :return: CSC sparse matrix (n_tech, n_gen)
+        """
+        ntech = len(self.technologies)
+        gen_index_dict = self.get_generator_indexing_dict()
+        nelm = len(gen_index_dict)
+
+        gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
+
+        # create associations between generators and technologies
+        for i, entry in enumerate(self.generators_technologies):
+            gen_idx = gen_index_dict[entry.generator.idtag]
+            gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
+
+        return gen_tech_proportions_matrix.tocsc()

@@ -147,13 +147,13 @@ def write_models_to_rst(filename):
 
 
 if __name__ == '__main__':
-    # cgmes_info = get_cgmes_data_frames()
-    # psse_info = get_psse_data_frames()
-    # roseta_info = get_gridcal_data_frames()
-    #
-    # write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
-    # write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
-    # write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
+    cgmes_info = get_cgmes_data_frames()
+    psse_info = get_psse_data_frames()
+    roseta_info = get_gridcal_data_frames()
+
+    write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
+    write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
+    write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
