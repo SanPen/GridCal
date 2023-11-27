@@ -2582,7 +2582,7 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
                 else:
-                    warning_msg('You cannot find {0} clusters for {} time steps.\n'
+                    warning_msg('You cannot find {0} clusters for {1} time steps.\n'
                                 'Modify the number of clusters in the ML settings.'.format(n_points, nt),
                                 title="Clustering")
 
