@@ -1,8 +1,9 @@
 from GridCalEngine.api import *
 
-fname =   '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (opf).gridcal'
+# fname =   '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (opf).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+fname = 'C:\Git\Github\GridCal\Grids_and_profiles\grids\IEEE39_1W.gridcal'
 
 main_circuit = FileOpen(fname).open()
 

@@ -72,6 +72,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            fuel_names=self.grid.get_fuel_names(),
+            emission_names=self.grid.get_emission_names(),
             n=self.grid.get_bus_number(),
             m=self.grid.get_branch_number_wo_hvdc(),
             nt=nt,
@@ -135,6 +137,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.battery_power = opf_vars.batt_vars.p
             self.results.battery_energy = opf_vars.batt_vars.e
             self.results.generator_power = opf_vars.gen_vars.p
+            self.results.generator_cost = opf_vars.gen_vars.cost
             self.results.Sf = opf_vars.branch_vars.flows
             self.results.St = -opf_vars.branch_vars.flows
             self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
@@ -143,6 +146,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             # self.results.Sbus = problem.get_power_injections()
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
+            self.results.system_fuel = opf_vars.sys_vars.system_fuel
+            self.results.system_emissions = opf_vars.sys_vars.system_emissions
+            self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
 
         elif self.options.solver == SolverType.Simple_OPF:
 

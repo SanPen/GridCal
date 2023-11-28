@@ -31,17 +31,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
     Optimal power flow time series results
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time_array=None, bus_types=(), clustering_results=None):
+    def __init__(self, bus_names, branch_names, load_names, generator_names,
+                 battery_names, hvdc_names, fuel_names, emission_names,
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time_array=None,
+                 bus_types=(), clustering_results=None):
         """
         OPF Time Series results constructor
+        :param bus_names:
+        :param branch_names:
+        :param load_names:
+        :param generator_names:
+        :param battery_names:
+        :param hvdc_names:
+        :param fuel_names:
+        :param emission_names:
         :param n: number of buses
         :param m: number of Branches
         :param nt: number of time steps
         :param ngen:
         :param nbat:
         :param nload:
+        :param nhvdc:
         :param time_array: Time array (optional)
+        :param bus_types:
+        :param clustering_results:
         """
         ResultsTemplate.__init__(self,
                                  name='OPF time series',
@@ -50,7 +63,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                              ResultTypes.BusShadowPrices],
 
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
-                                                                                   ResultTypes.GeneratorShedding],
+                                                                                   ResultTypes.GeneratorShedding,
+                                                                                   ResultTypes.GeneratorCost],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
                                                                                  ResultTypes.BatteryEnergy],
@@ -67,6 +81,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
 
+                                                    ResultTypes.SystemResults: [ResultTypes.SystemFuel,
+                                                                                ResultTypes.SystemEmissions,
+                                                                                ResultTypes.SystemEnergyCost]
+
                                                     },
                                  time_array=time_array,
                                  clustering_results=clustering_results,
@@ -78,30 +96,42 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_names = generator_names
         self.battery_names = battery_names
         self.hvdc_names = hvdc_names
+        self.fuel_names = fuel_names
+        self.emission_names = emission_names
         self.bus_types = bus_types
 
         self.voltage = np.zeros((nt, n), dtype=complex)
-        self.load_shedding = np.zeros((nt, nload), dtype=float)
-        self.loading = np.zeros((nt, m), dtype=float)
-        self.losses = np.zeros((nt, m), dtype=float)
-        self.overloads = np.zeros((nt, m), dtype=float)
         self.Sbus = np.zeros((nt, n), dtype=complex)
         self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
+
         self.Sf = np.zeros((nt, m), dtype=complex)
         self.St = np.zeros((nt, m), dtype=complex)
-        self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
-        self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+        self.loading = np.zeros((nt, m), dtype=float)
+        self.losses = np.zeros((nt, m), dtype=float)
         self.phase_shift = np.zeros((nt, m), dtype=float)
-        self.generator_power = np.zeros((nt, ngen), dtype=float)
-        self.generator_shedding = np.zeros((nt, ngen), dtype=float)
-        self.battery_power = np.zeros((nt, nbat), dtype=float)
-        self.battery_energy = np.zeros((nt, nbat), dtype=float)
+        self.overloads = np.zeros((nt, m), dtype=float)
         self.rates = np.zeros(m)
         self.contingency_rates = np.zeros(m)
-        self.converged = np.empty(nt, dtype=bool)
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
+
+        self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+
+        self.load_shedding = np.zeros((nt, nload), dtype=float)
+
+        self.generator_power = np.zeros((nt, ngen), dtype=float)
+        self.generator_shedding = np.zeros((nt, ngen), dtype=float)
+        self.generator_cost = np.zeros((nt, ngen), dtype=float)
+
+        self.battery_power = np.zeros((nt, nbat), dtype=float)
+        self.battery_energy = np.zeros((nt, nbat), dtype=float)
+
+        self.converged = np.empty(nt, dtype=bool)
+        self.system_fuel = np.empty(nt, dtype=float)
+        self.system_emissions = np.empty(nt, dtype=float)
+        self.system_energy_cost = np.empty(nt, dtype=float)
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -112,27 +142,37 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='bus_types', tpe=IntVec)
 
         self.register(name='voltage', tpe=CxMat)
-        self.register(name='load_shedding', tpe=Mat)
-        self.register(name='loading', tpe=Mat)
-        self.register(name='losses', tpe=Mat)
-        self.register(name='overloads', tpe=Mat)
         self.register(name='Sbus', tpe=CxMat)
         self.register(name='bus_shadow_prices', tpe=Mat)
+
+        self.register(name='load_shedding', tpe=Mat)
+
         self.register(name='Sf', tpe=CxMat)
         self.register(name='St', tpe=CxMat)
-        self.register(name='hvdc_Pf', tpe=Mat)
-        self.register(name='hvdc_loading', tpe=Mat)
+        self.register(name='loading', tpe=Mat)
+        self.register(name='losses', tpe=Mat)
         self.register(name='phase_shift', tpe=Mat)
-        self.register(name='generator_power', tpe=Mat)
-        self.register(name='generator_shedding', tpe=Mat)
-        self.register(name='battery_power', tpe=Mat)
-        self.register(name='battery_energy', tpe=Mat)
+        self.register(name='overloads', tpe=Mat)
         self.register(name='rates', tpe=Vec)
         self.register(name='contingency_rates', tpe=Vec)
-        self.register(name='converged', tpe=BoolVec)
         self.register(name='contingency_flows_list', tpe=list)
         self.register(name='contingency_indices_list', tpe=list)
         self.register(name='contingency_flows_slacks_list', tpe=list)
+
+        self.register(name='hvdc_Pf', tpe=Mat)
+        self.register(name='hvdc_loading', tpe=Mat)
+
+        self.register(name='generator_power', tpe=Mat)
+        self.register(name='generator_shedding', tpe=Mat)
+
+        self.register(name='battery_power', tpe=Mat)
+        self.register(name='battery_energy', tpe=Mat)
+
+        self.register(name='system_fuel', tpe=Mat)
+        self.register(name='system_emissions', tpe=Mat)
+        self.register(name='system_energy_cost', tpe=Mat)
+
+        self.register(name='converged', tpe=BoolVec)
 
     def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
         """
@@ -272,13 +312,19 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'
-            title = 'Controlled generator power'
+            title = 'Generator power'
 
         elif result_type == ResultTypes.GeneratorShedding:
             labels = self.generator_names
             y = self.generator_shedding
             y_label = '(MW)'
-            title = 'Controlled generator power'
+            title = 'Generator power'
+
+        elif result_type == ResultTypes.GeneratorCost:
+            labels = self.generator_names
+            y = self.generator_cost
+            y_label = '(€/MWh)'
+            title = 'Generator cost'
 
         elif result_type == ResultTypes.BatteryPower:
             labels = self.battery_names
@@ -291,6 +337,24 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y = self.battery_energy
             y_label = '(MWh)'
             title = 'Battery energy'
+
+        elif result_type == ResultTypes.SystemFuel:
+            labels = self.fuel_names
+            y = self.system_fuel
+            y_label = '(t)'
+            title = ResultTypes.SystemFuel.value[0]
+
+        elif result_type == ResultTypes.SystemEmissions:
+            labels = self.emission_names
+            y = self.system_emissions
+            y_label = '(t)'
+            title = ResultTypes.SystemEmissions.value[0]
+
+        elif result_type == ResultTypes.SystemEnergyCost:
+            labels = self.system_energy_cost
+            y = self.system_fuel
+            y_label = '(€/MWh)'
+            title = ResultTypes.SystemEnergyCost.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
             y = list()
