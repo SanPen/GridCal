@@ -96,13 +96,24 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             J = AC_jacobian(Ybus, V, pvpq, pq)
 
             # compute update step
-            dx = linear_solver(J, f)
+            try:
+                dx = linear_solver(J, f)
 
-            if np.isnan(dx).any():
+                if np.isnan(dx).any():
+                    end = time.time()
+                    elapsed = end - start
+                    logger.add_error('NR Singular matrix @iter:'.format(iteration))
+
+                    return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
+                                                   Scalc=S0, ma=None, theta=None, Beq=None,
+                                                   Ybus=None, Yf=None, Yt=None,
+                                                   iterations=iteration, elapsed=elapsed)
+            except RuntimeError:
                 end = time.time()
                 elapsed = end - start
-                # return NumericPowerFlowResults(V0, converged, norm_f, S0,
-                #                                None, None, None, None, None, None, iteration, elapsed)
+
+                logger.add_error('NR Singular matrix @iter:'.format(iteration))
+
                 return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
                                                Scalc=S0, ma=None, theta=None, Beq=None,
                                                Ybus=None, Yf=None, Yt=None,
