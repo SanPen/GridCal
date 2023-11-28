@@ -892,6 +892,48 @@ class MultiCircuit:
         """
         return np.array([elm.name for elm in self.hvdc_lines])
 
+    def get_fuels(self) -> List[dev.Fuel]:
+        """
+
+        :return:
+        """
+        return self.fuels
+
+    def get_fuel_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fuels)
+
+    def get_fuel_names(self) -> StrVec:
+        """
+
+        :return:
+        """
+        return np.array([elm.name for elm in self.fuels])
+
+    def get_emissions(self) -> List[dev.EmissionGas]:
+        """
+
+        :return:
+        """
+        return self.emission_gases
+
+    def get_emission_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.emission_gases)
+
+    def get_emission_names(self) -> StrVec:
+        """
+
+        :return:
+        """
+        return np.array([elm.name for elm in self.emission_gases])
+
     def get_loads(self) -> List[dev.Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
@@ -3772,13 +3814,43 @@ class MultiCircuit:
 
     def get_generator_indexing_dict(self) -> Dict[str, int]:
         """
-        Get the a dictionary that relates the generator uuid's with their index
+        Get a dictionary that relates the generator uuid's with their index
         :return: Dict[str, int]
         """
         gen_index_dict: Dict[str, int] = dict()
         for k, elm in enumerate(self.get_generators()):
             gen_index_dict[elm.idtag] = k  # associate the idtag to the index
         return gen_index_dict
+
+    def get_fuel_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.get_fuels()):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
+
+    def get_emissions_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.get_emissions()):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
+
+    def get_technology_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.technologies):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
 
     def get_fuel_rates_sparse_matrix(self) -> csc_matrix:
         """
@@ -3788,14 +3860,16 @@ class MultiCircuit:
         """
         nfuel = len(self.fuels)
         gen_index_dict = self.get_generator_indexing_dict()
+        fuel_index_dict = self.get_fuel_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
 
         # create associations between generators and fuels
-        for i, entry in enumerate(self.generators_fuels):
+        for entry in self.generators_fuels:
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_fuel_rates_matrix[gen_idx, i] = entry.rate
+            fuel_idx = fuel_index_dict[entry.fuel.idtag]
+            gen_fuel_rates_matrix[fuel_idx, gen_idx] = entry.rate
 
         return gen_fuel_rates_matrix.tocsc()
 
@@ -3807,14 +3881,16 @@ class MultiCircuit:
         """
         nemissions = len(self.emission_gases)
         gen_index_dict = self.get_generator_indexing_dict()
+        em_index_dict = self.get_emissions_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
 
         # create associations between generators and emissions
-        for i, entry in enumerate(self.generators_emissions):
+        for entry in self.generators_emissions:
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_emissions_rates_matrix[gen_idx, i] = entry.rate
+            em_idx = em_index_dict[entry.emission.idtag]
+            gen_emissions_rates_matrix[em_idx, gen_idx] = entry.rate
 
         return gen_emissions_rates_matrix.tocsc()
 
@@ -3826,6 +3902,7 @@ class MultiCircuit:
         """
         ntech = len(self.technologies)
         gen_index_dict = self.get_generator_indexing_dict()
+        tech_index_dict = self.get_technology_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
@@ -3833,6 +3910,7 @@ class MultiCircuit:
         # create associations between generators and technologies
         for i, entry in enumerate(self.generators_technologies):
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
+            tech_idx = tech_index_dict[entry.technology.idtag]
+            gen_tech_proportions_matrix[tech_idx, gen_idx] = entry.proportion
 
         return gen_tech_proportions_matrix.tocsc()

@@ -195,7 +195,12 @@ class DiagramScene(QGraphicsScene):
                     df = pd.DataFrame(data=power_data, index=x)
                     ax_1.set_title('Power', fontsize=14)
                     ax_1.set_ylabel('Injections [MW]', fontsize=11)
-                    df.plot.area(ax=ax_1)
+                    try:
+                        # yt area plots
+                        df.plot.area(ax=ax_1)
+                    except ValueError:
+                        # use regular plots
+                        df.plot(ax=ax_1)
 
                 # voltage
                 if len(voltage.keys()):

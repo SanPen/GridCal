@@ -642,9 +642,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if use_opf:
 
-            drv, opf_time_series_results = self.session.get_driver_results(
-                SimulationTypes.OPFTimeSeries_run
-            )
+            drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
 
             if opf_time_series_results is None:
                 if use_opf:
