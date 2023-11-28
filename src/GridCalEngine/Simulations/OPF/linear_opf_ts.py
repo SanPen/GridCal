@@ -164,10 +164,20 @@ class GenerationVars:
         self.starting_up = np.zeros((nt, n_elm), dtype=object)
         self.shutting_down = np.zeros((nt, n_elm), dtype=object)
         self.cost = np.zeros((nt, n_elm), dtype=object)
+        # self.fuel = np.zeros((nt, n_elm), dtype=object)
+        # self.emissions = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "GenerationVars":
+    def get_values(self,
+                   Sbase: float,
+                   model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix,
+                   gen_fuel_rates_matrix: csc_matrix) -> "GenerationVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
+        :param Sbase: Base power (100 MVA)
+        :param model: LpModel
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
         :return: GenerationVars
         """
         nt, n_elm = self.p.shape
@@ -180,15 +190,19 @@ class GenerationVars:
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
-                data.cost[t, i] = model.get_value(self.shutting_down[t, i])
+                data.cost[t, i] = model.get_value(self.cost[t, i])
+                # data.fuel[t, i] = model.get_value(self.fuel[t, i])
+                # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
         # format the arrays aproprietly
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
-        data.producing = data.producing.astype(int, copy=False)
-        data.starting_up = data.starting_up.astype(int, copy=False)
-        data.shutting_down = data.shutting_down.astype(int, copy=False)
+        data.producing = data.producing.astype(bool, copy=False)
+        data.starting_up = data.starting_up.astype(bool, copy=False)
+        data.shutting_down = data.shutting_down.astype(bool, copy=False)
         data.cost = data.cost.astype(float, copy=False)
+        # data.fuel = (gen_fuel_rates_matrix.T * data.p.T).T
+        # data.emissions = (gen_emissions_rates_matrix.T * data.p.T).T
 
         return data
 
@@ -362,11 +376,23 @@ class SystemVars:
         self.system_emissions = np.zeros(nt, dtype=float)
         self.system_energy_cost = np.zeros(nt, dtype=float)
 
-    def compute(self, gen_emissions_rates_matrix, gen_fuel_rates_matrix, gen_p: Mat, gen_cost: Mat):
-
+    def compute(self,
+                gen_emissions_rates_matrix: csc_matrix,
+                gen_fuel_rates_matrix: csc_matrix,
+                gen_p: Mat,
+                gen_cost: Mat):
+        """
+        Compute the system values
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
+        :param gen_p: Generation power values (nt, ngen)
+        :param gen_cost: Generation cost values (nt, ngen)
+        """
         self.system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
         self.system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
-        self.system_emissions = np.nan_to_num(gen_cost / gen_p)
+
+        with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
+            self.system_energy_cost = np.nan_to_num(gen_cost / gen_p).sum(axis=1)
 
 
 class OpfVars:
@@ -417,7 +443,10 @@ class OpfVars:
                        n_hvdc=self.n_hvdc)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
-        data.gen_vars = self.gen_vars.get_values(Sbase, model)
+        data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
+                                                 model=model,
+                                                 gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)

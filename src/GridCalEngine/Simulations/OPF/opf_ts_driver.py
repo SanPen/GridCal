@@ -133,19 +133,30 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
+
             self.results.load_shedding = opf_vars.load_vars.shedding
+
             self.results.battery_power = opf_vars.batt_vars.p
             self.results.battery_energy = opf_vars.batt_vars.e
+
             self.results.generator_power = opf_vars.gen_vars.p
+            self.results.generator_shedding = opf_vars.gen_vars.shedding
             self.results.generator_cost = opf_vars.gen_vars.cost
+            # self.results.generator_fuel = opf_vars.gen_vars.fuel
+            # self.results.generator_emissions = opf_vars.gen_vars.emissions
+            self.results.generator_producing = opf_vars.gen_vars.producing
+            self.results.generator_starting_up = opf_vars.gen_vars.starting_up
+            self.results.generator_shutting_down = opf_vars.gen_vars.shedding
+
             self.results.Sf = opf_vars.branch_vars.flows
             self.results.St = -opf_vars.branch_vars.flows
             self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
             self.results.loading = opf_vars.branch_vars.loading
             self.results.phase_shift = opf_vars.branch_vars.tap_angles
-            # self.results.Sbus = problem.get_power_injections()
+
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
+
             self.results.system_fuel = opf_vars.sys_vars.system_fuel
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
@@ -212,18 +223,33 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
+
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
+
             self.results.battery_power[time_indices, :] = opf_vars.batt_vars.p
             self.results.battery_energy[time_indices, :] = opf_vars.batt_vars.e
+
             self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
+            self.results.generator_shedding[time_indices, :] = opf_vars.gen_vars.shedding
+            self.results.generator_cost[time_indices, :] = opf_vars.gen_vars.cost
+            # self.results.generator_fuel[time_indices, :] = opf_vars.gen_vars.fuel
+            # self.results.generator_emissions[time_indices, :] = opf_vars.gen_vars.emissions
+            self.results.generator_producing[time_indices, :] = opf_vars.gen_vars.producing
+            self.results.generator_starting_up[time_indices, :] = opf_vars.gen_vars.starting_up
+            self.results.generator_shutting_down[time_indices, :] = opf_vars.gen_vars.shedding
+
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
             self.results.overloads[time_indices, :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
-            # self.results.Sbus[time_indices, :] = problem.get_power_injections()
+
             self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
+
+            self.results.system_fuel[time_indices, :] = opf_vars.sys_vars.system_fuel
+            self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
+            self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_energy_cost
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 

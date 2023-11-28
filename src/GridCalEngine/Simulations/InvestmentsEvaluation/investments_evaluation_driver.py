@@ -35,7 +35,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
     name = 'Investments evaluation'
     tpe = SimulationTypes.InvestmestsEvaluation_run
 
-    def __init__(self, grid: MultiCircuit, method: InvestmentEvaluationMethod, max_eval: int,
+    def __init__(self, grid: MultiCircuit,
+                 method: InvestmentEvaluationMethod,
+                 max_eval: int,
                  pf_options: PowerFlowOptions):
         """
         InputsAnalysisDriver class constructor
