@@ -21,7 +21,7 @@ so that in the future it can be exchanged with some
 other solver interface easily
 """
 
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Iterable
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
 from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded, LinearConstraint
@@ -132,7 +132,7 @@ class LpModel:
             self.logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
             return 0
 
-    def sum(self, cst: LpExp) -> LpExp:
+    def sum(self, cst: Union[LpExp, Iterable]) -> LpExp:
         """
         Add sum of the constraints to the model
         :param cst: constraint object (or general expression)

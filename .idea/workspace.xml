@@ -28,9 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.0.8&#10;improved NR ability to detect sparse solution errors">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added newtonpa recommended version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/fluids_try.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/fluids_try.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +146,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.fluids_try">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -389,7 +390,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="fluids_try" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -397,12 +398,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/fluids_try.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -571,7 +572,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Python.fluids_try" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
@@ -579,11 +580,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.fluids_try" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
         <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
-        <item itemvalue="Python.upload_to_pypi" />
       </list>
     </recent_temporary>
   </component>
@@ -1216,6 +1217,7 @@
       <workItem from="1701168598414" duration="3582000" />
       <workItem from="1701177452262" duration="932000" />
       <workItem from="1701182230848" duration="2306000" />
+      <workItem from="1701262178348" duration="3698000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1560,7 +1562,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="425" />
+    <option name="localTasksCounter" value="426" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1594,7 +1596,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Autocorrecting infeasible problems" />
     <MESSAGE value="Slight refactor" />
     <MESSAGE value="5.0.2" />
     <MESSAGE value="updated pic" />
@@ -1619,7 +1620,8 @@
     <MESSAGE value="added connectivities for fuels emissions and technologies" />
     <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
+    <MESSAGE value="added newtonpa recommended version" />
+    <option name="LAST_COMMIT_MESSAGE" value="added newtonpa recommended version" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2077,6 +2079,7 @@
     <SUITE FILE_PATH="coverage/GridCal$test_power_flow.coverage" NAME="test_power_flow Coverage Results" MODIFIED="1627304268760" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$make_wheels.coverage" NAME="make_wheels Coverage Results" MODIFIED="1694621489184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1608896800406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
+    <SUITE FILE_PATH="coverage/GridCal$fluids_try.coverage" NAME="fluids_try Coverage Results" MODIFIED="1701265051003" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow.coverage" NAME="jacobian_based_acdc_power_flow Coverage Results" MODIFIED="1617822039867" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_nonlinear_contingency_py.coverage" NAME="Nosetests in test_nonlinear_contingency.py Coverage Results" MODIFIED="1696002399880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

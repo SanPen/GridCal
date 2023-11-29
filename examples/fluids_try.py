@@ -1,5 +1,4 @@
-from typing import Union, List
-# from ortools.linear_solver import pywraplp
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib
@@ -56,19 +55,19 @@ class FluidNode:
         """
         return self.max_level > self.min_level
 
-    def get_inflow_value(self) -> float:
+    def get_inflow_value(self, solver: LpModel) -> float:
 
         if isinstance(self.inflow, float):
             return self.inflow
         else:
-            return self.inflow.solution_value()
+            return solver.get_value(self.inflow)
 
-    def get_outflow_value(self) -> float:
+    def get_outflow_value(self, solver: LpModel) -> float:
 
         if isinstance(self.outflow, float):
             return self.outflow
         else:
-            return self.outflow.solution_value()
+            return solver.get_value(self.outflow)
 
 
 class Turbine:
@@ -270,15 +269,15 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                    name='Satisfy_demand')
 
     # Objective
-    total_flows = solver.sum(river.flow for river in flow_transporters)
-    total_spillage = (solver.sum(plant.spillage for plant in fluid_nodes))
+    total_flows = solver.sum([river.flow for river in flow_transporters])
+    total_spillage = (solver.sum([plant.spillage for plant in fluid_nodes]))
     solver.minimize(total_power_generated +
                     1000 * total_spillage +  # penalize spillage
                     total_flows)
 
     # Solve
-    print(solver.model.ExportModelAsLpFormat(obfuscated=False))
-    solver.model.EnableOutput()
+    # print(solver.model.ExportModelAsLpFormat(obfuscated=False))
+    # solver.model.EnableOutput()
     status = solver.solve()
 
     # Print LP representation
@@ -290,30 +289,32 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         for node in fluid_nodes:
             turbines_at_the_plant = plants_turbine_dict[node]
             for turbine in turbines_at_the_plant:
-                print(f'Plant, {node.name}:{turbine.name} : Power = {turbine.power_output.solution_value()} MW')
+                print(f'Plant, {node.name}:{turbine.name} : Power = {solver.get_value(turbine.power_output)} MW')
 
-            print(f'Reservoir {node.name}: Level = {node.level.solution_value()} m3')
-            print(f'Spillage {node.name}: {node.spillage.solution_value()} m3/h')
+            print(f'Reservoir {node.name}: Level = {solver.get_value(node.level)} m3')
+            print(f'Spillage {node.name}: {solver.get_value(node.spillage)} m3/h')
 
         print()
         for river in flow_transporters:
-            print(f'River {river.name}: Flow = {river.flow.solution_value()} m3/h')
+            print(f'River {river.name}: Flow = {solver.get_value(river.flow)} m3/h')
 
         print()
-        print(f'Total Power Generated: {total_power_generated.solution_value()}')
+        print(f'Total Power Generated: {solver.get_value(total_power_generated)}')
 
         # Plot the result
-        plot_hydro_dispatch(fluid_nodes, turbines, flow_transporters)
+        plot_hydro_dispatch(solver, fluid_nodes, turbines, flow_transporters)
     else:
         # fix(solver=solver)
         print('The problem does not have an optimal solution.')
 
 
-def plot_hydro_dispatch(nodes: List[FluidNode],
+def plot_hydro_dispatch(solver: LpModel,
+                        nodes: List[FluidNode],
                         turbines: List[Turbine],
                         rivers: List[FluidPath], ):
     """
 
+    :param solver
     :param nodes:
     :param turbines
     :param rivers:
@@ -327,12 +328,12 @@ def plot_hydro_dispatch(nodes: List[FluidNode],
         plant_power_output = 0.0
         turbines_at_the_plant = plants_turbine_dict[node]
         for turbine in turbines_at_the_plant:
-            plant_power_output += turbine.power_output.solution_value()
+            plant_power_output += solver.get_value(turbine.power_output)
 
         power = '{:.1f}'.format(plant_power_output)
-        flow = '{:.1f}'.format(node.get_outflow_value())
-        spill = '{:.1f}'.format(node.spillage.solution_value())
-        level = '{:.1f}'.format(node.level.solution_value())
+        flow = '{:.1f}'.format(node.get_outflow_value(solver))
+        spill = '{:.1f}'.format(solver.get_value(node.spillage))
+        level = '{:.1f}'.format(solver.get_value(node.level))
 
         label = (f"{node.name}\n"
                  f"p:{power} MW \n"
@@ -343,11 +344,11 @@ def plot_hydro_dispatch(nodes: List[FluidNode],
         G.add_node(node.name, label=label)
 
     for river in rivers:
-        flow = '{:.1f}'.format(river.flow.solution_value())
+        flow = '{:.1f}'.format(solver.get_value(river.flow))
         G.add_edge(river.source.name, river.target.name,
                    label=f"{river.name}\n{flow} m3/h")
 
-    pos = nx.kamada_kawai_layout(G)
+    pos = nx.spectral_layout(G)
     labels = nx.get_edge_attributes(G, 'label')
     node_labels = nx.get_node_attributes(G, 'label')
 
