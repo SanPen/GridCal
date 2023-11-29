@@ -18,7 +18,7 @@
 import os
 import cmath
 import warnings
-
+import copy
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Union, Any, Callable
@@ -1520,37 +1520,7 @@ class MultiCircuit:
         """
         Returns a deep (true) copy of this circuit.
         """
-        # TODO: eliminate usages of this function
-        cpy = MultiCircuit()
-
-        cpy.name = self.name
-
-        bus_dict = dict()
-        for bus in self.buses:
-            cpy.buses.append(bus.copy())
-
-        for branch in self.lines:
-            cpy.lines.append(branch.copy())
-
-        for branch in self.transformers2w:
-            cpy.transformers2w.append(branch.copy())
-
-        for branch in self.hvdc_lines:
-            cpy.hvdc_lines.append(branch.copy())
-
-        for branch in self.vsc_devices:
-            cpy.vsc_devices.append(branch.copy())
-
-        cpy.Sbase = self.Sbase
-
-        cpy.branch_original_idx = self.branch_original_idx.copy()
-
-        cpy.bus_original_idx = self.bus_original_idx.copy()
-
-        if self.time_profile is not None:
-            cpy.time_profile = self.time_profile.copy()
-
-        return cpy
+        return copy.deepcopy(self)
 
     def get_catalogue_dict(self, branches_only=False):
         """
