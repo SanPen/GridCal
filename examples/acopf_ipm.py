@@ -658,6 +658,5 @@ def state_vector():
 
     return Y0
 
-
 if __name__ == '__main__':
     ipm()
