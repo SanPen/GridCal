@@ -334,11 +334,23 @@ class ResultsTemplate:
             for prop, value in self.__dict__.items():
 
                 if isinstance(value, np.ndarray):
-                    if value.ndim == 2:
 
-                        nt = len(self.original_sample_idx)
-                        ncol = value.shape[1]
-                        # arr = np.zeros((nt, ncol), dtype=value.dtype)  # declare an array of matching size
-                        # arr[self.time_indices, :] = value  # copy the values where they match
-                        arr = value[self.original_sample_idx, :]  # expand
-                        setattr(self, prop, arr)  # ovewrite the array
+                    if value.dtype in [float, complex, bool]:  # only expand float, complex and bool
+
+                        if value.ndim == 1:
+
+                            if len(value) > 0:
+                                arr = value[self.original_sample_idx]  # expand
+                                setattr(self, prop, arr)  # overwrite the array
+
+                        elif value.ndim == 2:
+
+                            if value.shape[0] > 0:
+                                arr = value[self.original_sample_idx, :]  # expand
+                                setattr(self, prop, arr)  # overwrite the array
+                        else:
+                            pass
+                            # print(prop, value.ndim, value.dtype)
+                    else:
+                        pass
+                        # print(prop, value.ndim, value.dtype)
