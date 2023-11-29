@@ -11,7 +11,7 @@ __pycache__
 .idea/
 .idea/*
 .idea/inspectionProfiles
-
+.idea/workspace.xml
 
 /build
 /dist
