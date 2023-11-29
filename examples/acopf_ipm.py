@@ -157,7 +157,7 @@ def KKT(xk, mu):
 
     # Line limits.
     DELTA_MAX = [math.pi / 4, math.pi / 4, math.pi / 4]
-    S_MAX = [0.05, 0.4, 0.4]  # Max LINE power
+    S_MAX = [0.4, 0.4, 0.4]  # Max LINE power
 
     # Reference index for each variable are retained here, and are used to work in subspaces and then expanding to the complete space.
     id_v, id_th, id_P, id_Q, id_phi, id_Pij, id_Qij, id_Pji, id_Qji, id_lij = 0, N, 2 * N - 1, 3 * N - 1, 4 * N - 2, 4 * N - 2 + L, 4 * N - 2 + 2 * L, 4 * N - 2 + 3 * L, 4 * N - 2 + 4 * L, 4 * N - 2 + 5 * L
@@ -392,10 +392,10 @@ def KKT(xk, mu):
         # rowXij = [l + id_lij]*3 + [l + id_Qij]*3 + [l + id_Qji]*3
         # colXij = [l + id_lij, l + id_Qij, l + id_Qji]*3
 
-        ce.extend([Pij([YK[l + id_Pij], YK[i], YK[j], YK[l + id_phi]], G[i][j], B[i][j])])
-        ce.extend([Qij([YK[l + id_Qij], YK[i], YK[j], YK[l + id_phi]], G[i][j], B[i][j])])
-        ce.extend([Pij([YK[l + id_Pji], YK[j], YK[i], -YK[l + id_phi]], G[j][i], B[j][i])])
-        ce.extend([Qij([YK[l + id_Qji], YK[j], YK[i], -YK[l + id_phi]], G[j][i], B[j][i])])
+        ce.extend([Pij([YK[l + id_Pij], YK[i], YK[j], YK[l + id_phi]], -G[i][j], -B[i][j])])
+        ce.extend([Qij([YK[l + id_Qij], YK[i], YK[j], YK[l + id_phi]], -G[i][j], -B[i][j])])
+        ce.extend([Pij([YK[l + id_Pji], YK[j], YK[i], -YK[l + id_phi]], -G[j][i], -B[j][i])])
+        ce.extend([Qij([YK[l + id_Qji], YK[j], YK[i], -YK[l + id_phi]], -G[j][i], -B[j][i])])
         # ce.extend([PLoss([YK[l + id_lij], YK[l + id_Pij], YK[l + id_Pji]], R[i][j])])
         # ce.extend([QLoss([YK[l + id_lij], YK[l + id_Qij], YK[l + id_Qji]], X[i][j])])
 
@@ -557,7 +557,7 @@ def ipm():
 
     # Line limits.
     DELTA_MAX = [math.pi / 4, math.pi / 4, math.pi / 4]
-    S_MAX = [0.05, 0.4, 0.4]  # Max LINE power
+    S_MAX = [0.4, 0.4, 0.4]  # Max LINE power
 
     # Number of variables, equalities and inequalities. Used to structure the problem
     NV = 4 * N + 5 * L - 2  # Neither the theta nor the Qi of the slack bus will be included in the optimization problem.
