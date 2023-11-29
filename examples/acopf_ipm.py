@@ -12,12 +12,12 @@ import random
 
 def Pij(x, Gij, Bij):
     # x = [Pij, vi, vj, phiij]
-    return Gij * (x[1] ** 2 - x[1] * x[2] * jnp.cos(x[3])) - Bij * x[1] * x[2] * jnp.sin(x[3]) - x[0]
+    return -Gij * (x[1] ** 2 - x[1] * x[2] * jnp.cos(x[3])) + Bij * x[1] * x[2] * jnp.sin(x[3]) - x[0]
 
 
 def Qij(x, Gij, Bij):
-    # x = [Qij, vi, vj, phiij]
-    return Bij * (x[1] * x[2] * jnp.cos(x[3]) - x[1] ** 2) - Gij * x[1] * x[2] * jnp.sin(x[3]) - x[0]
+    # x = [Pij, vi, vj, phiij]
+    return -Bij * (x[1] * x[2] * jnp.cos(x[3]) - x[1] ** 2) + Gij * x[1] * x[2] * jnp.sin(x[3]) - x[0]
 
 
 def Pi(x, Pdi):
@@ -59,9 +59,9 @@ def EqIndex(N, L, V_U, V_L, P_U, P_L, Q_U, Q_L):
     In this function, we check which of the bounds for the nodal constraints will be treated as equalities.
 
     '''
-    NE = 2 * N + 5 * L
-    NI = 6 * N + 3 * L
-
+    NE = 2 * N + 5 * L - 1  # Qi for the slack is not included in the optimization problem.
+    NI = 6 * N + 2 * L - 2  # No bounds for the slack Q
+    islack = 0
     for n in range(N):
 
         if V_U[n] == V_L[n]:
@@ -70,9 +70,12 @@ def EqIndex(N, L, V_U, V_L, P_U, P_L, Q_U, Q_L):
         if P_U[n] == P_L[n]:
             NI -= 2
             NE += 1
-        if Q_U[n] == Q_L[n]:
-            NI -= 2
-            NE += 1
+        if n > islack:
+            bounce_n = 1
+        if n != islack:
+            if Q_U[n - bounce_n] == Q_L[n - bounce_n]:
+                NI -= 2
+                NE += 1
 
     return NE, NI
 
@@ -148,22 +151,22 @@ def KKT(xk, mu):
     V_L = [1.00, 0.95, 0.95]
     V_U = [1.00, 1.05, 1.05]
     P_L = [0, 0, 0]
-    Q_L = [-100, 0, 0]
+    Q_L = [0, 0]
     P_U = [100, 100, 0]
-    Q_U = [100, 0, 0]
+    Q_U = [0, 0]
 
     # Line limits.
     DELTA_MAX = [math.pi / 4, math.pi / 4, math.pi / 4]
     S_MAX = [0.05, 0.4, 0.4]  # Max LINE power
 
     # Reference index for each variable are retained here, and are used to work in subspaces and then expanding to the complete space.
-    id_v, id_th, id_P, id_Q, id_phi, id_Pij, id_Qij, id_Pji, id_Qji, id_lij = 0, N, 2 * N - 1, 3 * N - 1, 4 * N - 1, 4 * N - 1 + L, 4 * N - 1 + 2 * L, 4 * N - 1 + 3 * L, 4 * N - 1 + 4 * L, 4 * N - 1 + 5 * L
+    id_v, id_th, id_P, id_Q, id_phi, id_Pij, id_Qij, id_Pji, id_Qji, id_lij = 0, N, 2 * N - 1, 3 * N - 1, 4 * N - 2, 4 * N - 2 + L, 4 * N - 2 + 2 * L, 4 * N - 2 + 3 * L, 4 * N - 2 + 4 * L, 4 * N - 2 + 5 * L
 
     ###########################
 
     #### ITERATION VECTORS ####
 
-    NV = 4 * N + 6 * L - 1
+    NV = 4 * N + 5 * L - 2
     NE, NI = EqIndex(N, L, V_U, V_L, P_U, P_L, Q_U, Q_L)
 
     # Slicing the results vector into its subvectors (problem variables, multipliers and slack variables)
@@ -212,49 +215,80 @@ def KKT(xk, mu):
     # Right now, the gradient and hessian functions are computed at each iteration. It will perform better if there is a single computation and
     # Then we can just evaluate it at each iteration. TO-DO
     for n in range(N):
-        Pij_index = [n + id_P]
-        Qij_index = [n + id_Q]
+        bounce_n = 0
 
-        # We have to differentiate from and to lines connected to the bus. We only have the from lines, and invert the indices if its on the second position for the n node.
-        for k, l in enumerate(LINE):
-            if l[0] == n:
-                Pij_index.append(k + id_Pij)
-                Qij_index.append(k + id_Qij)
+        if n > islack:
+            bounce_n = 1
+        if n != islack:
+            Pij_index = [n + id_P]
+            Qij_index = [n - bounce_n + id_Q]
 
-            if l[1] == n:
-                Pij_index.append(k + id_Pji)
-                Qij_index.append(k + id_Qji)
+            # We have to differentiate from and to lines connected to the bus. We only have the from lines, and invert the indices if its on the second position for the n node.
+            for k, l in enumerate(LINE):
+                if l[0] == n:
+                    Pij_index.append(k + id_Pij)
+                    Qij_index.append(k + id_Qij)
 
-        gradPi = grad(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
-        gradQi = grad(Qi)(np.array([YK[m] for m in Qij_index]), Qd[n])
+                if l[1] == n:
+                    Pij_index.append(k + id_Pji)
+                    Qij_index.append(k + id_Qji)
 
-        hessPi = hessian(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
-        hessQi = hessian(Qi)(np.array([YK[m] for m in Qij_index]), Qd[n])
+            gradPi = grad(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
+            gradQi = grad(Qi)(np.array([YK[m] for m in Qij_index]), Qd[n])
 
-        # Same as before, rows and columns for sparse indexing.
-        rowP = []
-        colP = []
-        rowQ = []
-        colQ = []
+            hessPi = hessian(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
+            hessQi = hessian(Qi)(np.array([YK[m] for m in Qij_index]), Qd[n])
 
-        for index in Pij_index:
-            rowP += ([index] * len(Pij_index))
-            colP += Pij_index
+            # Same as before, rows and columns for sparse indexing.
+            rowP = []
+            colP = []
+            rowQ = []
+            colQ = []
 
-        for index in Qij_index:
-            rowQ += ([index] * len(Qij_index))
-            colQ += Qij_index
+            for index in Pij_index:
+                rowP += ([index] * len(Pij_index))
+                colP += Pij_index
 
-        ce.extend([Pi([YK[m] for m in Pij_index], Pd[n])])
-        ce.extend([Qi([YK[m] for m in Qij_index], Qd[n])])
+            for index in Qij_index:
+                rowQ += ([index] * len(Qij_index))
+                colQ += Qij_index
 
-        grad_ce.extend([sparse.csc_matrix((gradPi, (Pij_index, [0] * len(Pij_index))), shape=(NV, 1))])
-        grad_ce.extend([sparse.csc_matrix((gradQi, (Qij_index, [0] * len(Qij_index))), shape=(NV, 1))])
+            ce.extend([Pi([YK[m] for m in Pij_index], Pd[n])])
+            ce.extend([Qi([YK[m] for m in Qij_index], Qd[n])])
 
-        hess_ce.extend([sparse.csc_matrix((np.concatenate(hessPi), (rowP, colP)), shape=(NV, NV))])
-        hess_ce.extend([sparse.csc_matrix((np.concatenate(hessQi), (rowQ, colQ)), shape=(NV, NV))])
+            grad_ce.extend([sparse.csc_matrix((gradPi, (Pij_index, [0] * len(Pij_index))), shape=(NV, 1))])
+            grad_ce.extend([sparse.csc_matrix((gradQi, (Qij_index, [0] * len(Qij_index))), shape=(NV, 1))])
 
-        # Here we check in which nodes we impose the value of power or voltage module. If the upper and lower bounds are equal, we treat it as an equality.
+            hess_ce.extend([sparse.csc_matrix((np.concatenate(hessPi), (rowP, colP)), shape=(NV, NV))])
+            hess_ce.extend([sparse.csc_matrix((np.concatenate(hessQi), (rowQ, colQ)), shape=(NV, NV))])
+
+        if n == islack:
+            Pij_index = [n + id_P]
+
+            for k, l in enumerate(LINE):
+                if l[0] == n:
+                    Pij_index.append(k + id_Pij)
+
+                if l[1] == n:
+                    Pij_index.append(k + id_Pji)
+
+            gradPi = grad(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
+
+            hessPi = hessian(Pi)(np.array([YK[m] for m in Pij_index]), Pd[n])
+
+            # Same as before, rows and columns for sparse indexing.
+            rowP = []
+            colP = []
+
+            for index in Pij_index:
+                rowP += ([index] * len(Pij_index))
+                colP += Pij_index
+
+            ce.extend([Pi([YK[m] for m in Pij_index], Pd[n])])
+            grad_ce.extend([sparse.csc_matrix((gradPi, (Pij_index, [0] * len(Pij_index))), shape=(NV, 1))])
+            hess_ce.extend([sparse.csc_matrix((np.concatenate(hessPi), (rowP, colP)), shape=(NV, NV))])
+
+            # Here we check in which nodes we impose the value of power or voltage module. If the upper and lower bounds are equal, we treat it as an equality.
 
         if V_U[n] == V_L[n]:
             ce.extend([YK[n] - V_U[n]])
@@ -281,21 +315,25 @@ def KKT(xk, mu):
             grad_ci.extend([sparse.csc_matrix(([1], ([n + id_P], [0])), shape=(NV, 1))])
             hess_ci.extend([0])
             hess_ci.extend([0])
+        if n != islack:
 
-        if Q_U[n] == Q_L[n]:
-            ce.extend([YK[n + id_Q] - P_U[n]])
-            grad_ce.extend([sparse.csc_matrix(([1], ([n + id_Q], [0])), shape=(NV, 1))])
-            hess_ce.extend([0])
+            if n > islack:
+                bounce_n = 1
 
-        if Q_U[n] != Q_L[n]:
-            ci.extend([- YK[n + id_Q] + Q_U[n]])
-            ci.extend([YK[n + id_Q] - Q_L[n]])
-            grad_ci.extend([sparse.csc_matrix(([-1], ([n + id_Q], [0])), shape=(NV, 1))])
-            grad_ci.extend([sparse.csc_matrix(([1], ([n + id_Q], [0])), shape=(NV, 1))])
-            hess_ci.extend([0])
-            hess_ci.extend([0])
+            if Q_U[n - bounce_n] == Q_L[n - bounce_n]:
+                ce.extend([YK[n - bounce_n + id_Q] - Q_U[n - bounce_n]])
+                grad_ce.extend([sparse.csc_matrix(([1], ([n - bounce_n + id_Q], [0])), shape=(NV, 1))])
+                hess_ce.extend([0])
 
-    # Now, we iterate for each line to build the line associated constraints
+            if Q_U[n - bounce_n] != Q_L[n - bounce_n]:
+                ci.extend([- YK[n - bounce_n + id_Q] + Q_U[n - bounce_n]])
+                ci.extend([YK[n - bounce_n + id_Q] - Q_L[n - bounce_n]])
+                grad_ci.extend([sparse.csc_matrix(([-1], ([n - bounce_n + id_Q], [0])), shape=(NV, 1))])
+                grad_ci.extend([sparse.csc_matrix(([1], ([n - bounce_n + id_Q], [0])), shape=(NV, 1))])
+                hess_ci.extend([0])
+                hess_ci.extend([0])
+
+        # Now, we iterate for each line to build the line associated constraints
     for l in range(L):
         # We first get the nodes connected
         i, j = LINE[l]
@@ -356,15 +394,15 @@ def KKT(xk, mu):
 
         ce.extend([Pij([YK[l + id_Pij], YK[i], YK[j], YK[l + id_phi]], G[i][j], B[i][j])])
         ce.extend([Qij([YK[l + id_Qij], YK[i], YK[j], YK[l + id_phi]], G[i][j], B[i][j])])
-        ce.extend([Pij([YK[l + id_Pji], YK[j], YK[i], YK[l + id_phi]], G[j][i], B[j][i])])
-        ce.extend([Qij([YK[l + id_Qji], YK[j], YK[i], YK[l + id_phi]], G[j][i], B[j][i])])
+        ce.extend([Pij([YK[l + id_Pji], YK[j], YK[i], -YK[l + id_phi]], G[j][i], B[j][i])])
+        ce.extend([Qij([YK[l + id_Qji], YK[j], YK[i], -YK[l + id_phi]], G[j][i], B[j][i])])
         # ce.extend([PLoss([YK[l + id_lij], YK[l + id_Pij], YK[l + id_Pji]], R[i][j])])
         # ce.extend([QLoss([YK[l + id_lij], YK[l + id_Qij], YK[l + id_Qji]], X[i][j])])
 
         ci.extend([YK[l + id_phi] + DELTA_MAX[l]])
         ci.extend([- YK[l + id_phi] + DELTA_MAX[l]])
 
-        ci.extend([Smax([YK[l + id_Pij], YK[l + id_Qij]], S_MAX[l])])
+        # ci.extend([Smax([YK[l + id_Pij], YK[l + id_Qij]], S_MAX[l])])
 
         grad_ce.extend([sparse.csc_matrix((gradPij, ([l + id_Pij, i, j, l + id_phi], [0, 0, 0, 0])), shape=(NV, 1))])
         grad_ce.extend([sparse.csc_matrix((gradQij, ([l + id_Qij, i, j, l + id_phi], [0, 0, 0, 0])), shape=(NV, 1))])
@@ -385,16 +423,16 @@ def KKT(xk, mu):
         # hess_ce.extend([sparse.csc_matrix((np.concatenate(hessRij), (rowRij, colRij)), shape = (NV, NV))])
         # hess_ce.extend([sparse.csc_matrix((np.concatenate(hessXij), (rowXij, colXij)), shape = (NV, NV))])
 
-        hess_ci.extend([0, 0])
+        # hess_ci.extend([0, 0])
 
-        hessSij = hessian(Smax)(np.array([YK[l + id_Pij], YK[l + id_Qij]]), S_MAX[l])
+        # hessSij = hessian(Smax)(np.array([YK[l + id_Pij], YK[l + id_Qij]]), S_MAX[l])
 
-        rowSij = [l + id_Pij, l + id_Pij, l + id_Qij, l + id_Qij]
-        colSij = [l + id_Pij, l + id_Qij, l + id_Pij, l + id_Qij]
+        # rowSij = [l + id_Pij, l + id_Pij, l + id_Qij, l + id_Qij]
+        # colSij = [l + id_Pij, l + id_Qij, l + id_Pij, l + id_Qij]
 
-        grad_ci.extend([sparse.csc_matrix((gradSij, ([l + id_Pij, l + id_Qij], [0, 0])), shape=(NV, 1))])
+        # grad_ci.extend([sparse.csc_matrix((gradSij, ([l + id_Pij, l + id_Qij], [0, 0])), shape = (NV, 1))])
 
-        hess_ci.extend([sparse.csc_matrix((np.concatenate(hessSij), (rowSij, colSij)), shape=(NV, NV))])
+        # hess_ci.extend([sparse.csc_matrix((np.concatenate(hessSij), (rowSij, colSij)), shape = (NV, NV))])
 
     # We stack the gradients to be able to operate in matricial form with the multipliers.
     gC = sparse.hstack(grad_ce)
@@ -513,29 +551,29 @@ def ipm():
     V_L = [1.00, 0.95, 0.95]
     V_U = [1.00, 1.05, 1.05]
     P_L = [0, 0, 0]
-    Q_L = [-100, 0, 0]
+    Q_L = [0, 0]
     P_U = [100, 100, 0]
-    Q_U = [100, 0, 0]
+    Q_U = [0, 0]
 
     # Line limits.
     DELTA_MAX = [math.pi / 4, math.pi / 4, math.pi / 4]
     S_MAX = [0.05, 0.4, 0.4]  # Max LINE power
 
     # Number of variables, equalities and inequalities. Used to structure the problem
-    NV = 4 * N + 6 * L - 1
+    NV = 4 * N + 5 * L - 2  # Neither the theta nor the Qi of the slack bus will be included in the optimization problem.
     NE, NI = EqIndex(N, L, V_U, V_L, P_U, P_L, Q_U, Q_L)
 
     # Lagrange multipliers init. Initial state init. Auxiliar E vector (column of ones)
-    PI = [2.0] * NE
-    LAMBDA = [1.0] * NI
-    T = [10.0] * NI
+    PI = [0.5] * NE
+    LAMBDA = [0.5] * NI
+    T = [0.5] * NI
     E = sparse.csc_matrix(([1] * NI, list(range(NI)), [0, NI]))
     YK = state_vector()
 
     # Iteration parameters.
-    TAU = 0.995  # Factor of approach to 0 for the multipliers.
+    TAU = 0.99995  # Factor of approach to 0 for the multipliers.
     mu = 10  # Homotopy parameter for LAMBDA * T = 0
-    sigma = 0.95  # Descent factor for mu
+    sigma = 0.35  # Descent factor for mu
     error = 10000  # Dummy value to start the while loop.
     k = 0  # Number of Iteration
 
@@ -567,20 +605,20 @@ def ipm():
             # Maximum displacement calculation. If below mu, convergence for that particular mu is accomplished, and will update the mu value.
             error = max(abs(dx))
             k += 1
-            # print(k, error)
+            print(k, error)
 
             # Step sizing is determined by the alpha that ensures all the multipliers stay avobe 0.
             alpha_lambda = min(TAU * xk[NE + NV: NV + NE + NI] / abs(dx[NE + NV: NV + NE + NI]))
             alpha_t = min(TAU * xk[NE + NV + NI: NV + NE + 2 * NI] / abs(dx[NE + NV + NI: NV + NE + 2 * NI]))
 
             # After a number of iterations, jump to the following mu to search for better convergence.
-            if k == 1:
+            if k == 15:
                 break
 
-        print(k, error)
+        print(xk[0:NV], k, error)
         k = 0  # Reset k value
-        # mu *= sigma #Update sigma
-        mu = 0
+        mu *= sigma  # Update sigma
+        # mu = 0
         error = 10000  # Reset dummy value for the first iteration
     print('---------------------------------------------------------------')
 
@@ -631,32 +669,34 @@ def state_vector():
 
     N = 3
     L = 3
-    NV = 4 * N + 6 * L - 1
+    NV = 4 * N + 5 * L - 2
 
     Y0 = [0] * NV
-    ID_V, ID_TH, ID_PG, ID_QG, ID_PHI, ID_PFROM, ID_QFROM, ID_PTO, ID_QTO, ID_L = 0, N, 2 * N - 1, 3 * N - 1, 4 * N - 1, 4 * N - 1 + L, 4 * N - 1 + 2 * L, 4 * N - 1 + 3 * L, 4 * N - 1 + 4 * L, 4 * N - 1 + 5 * L
+    ID_V, ID_TH, ID_PG, ID_QG, ID_PHI, ID_PFROM, ID_QFROM, ID_PTO, ID_QTO, ID_L = 0, N, 2 * N - 1, 3 * N - 1, 4 * N - 2, 4 * N - 2 + L, 4 * N - 2 + 2 * L, 4 * N - 2 + 3 * L, 4 * N - 2 + 4 * L, 4 * N - 2 + 5 * L
     islack = 0
 
     for n in range(N):
 
         Y0[n] = 1  # Inital voltage at 1 p.u.
         if n > islack:
-            Y0[n + ID_TH - 1] = 0.05  # Initial angle at 0 rads
+            Y0[n + ID_TH - 1] = 0.5  # Initial angle at 0 rads
+            Y0[n + ID_QG - 1] = 0.0
         if n < islack:
-            Y0[n + ID_TH] = 0.00
+            Y0[n + ID_TH] = -0.02
+            Y0[n + ID_QG] = 0.0
 
         Y0[n + ID_PG] = 0.0
-        Y0[n + ID_QG] = 0.0
 
     for l in range(L):
-        Y0[l + ID_PHI] = 0.05
-        Y0[l + ID_L] = 0
+        Y0[l + ID_PHI] = 0.00
+        # Y0[l + ID_L] = 0
         Y0[l + ID_PFROM] = 0.0
         Y0[l + ID_QFROM] = 0.0
         Y0[l + ID_PTO] = 0.0
         Y0[l + ID_QTO] = 0.0
 
     return Y0
+
 
 if __name__ == '__main__':
     ipm()
