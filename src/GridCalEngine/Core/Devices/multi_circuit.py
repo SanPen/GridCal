@@ -1400,10 +1400,10 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def gat_all_elements_dict(self) -> dict[str, EditableDevice]:
+    def get_all_elements_dict(self) -> dict[str, EditableDevice]:
         """
-        Get a dictionary of all elements by type
-        :return:
+        Get a dictionary of all elements
+        :return: Dict[idtag] -> object
         """
         data = dict()
         for key, tpe in self.device_type_name_dict.items():
