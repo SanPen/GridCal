@@ -1400,37 +1400,53 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def gat_all_elemnts_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+    def gat_all_elements_dict(self) -> dict[str, EditableDevice]:
         """
         Get a dictionary of all elements by type
         :return:
         """
         data = dict()
-        for tpe in [DeviceType.BusDevice,
-                    DeviceType.LoadDevice,
-                    DeviceType.StaticGeneratorDevice,
-                    DeviceType.GeneratorDevice,
-                    DeviceType.BatteryDevice,
-                    DeviceType.ShuntDevice,
-                    DeviceType.ExternalGridDevice,
-                    DeviceType.SubstationDevice,
-                    DeviceType.AreaDevice,
-                    DeviceType.ZoneDevice,
-                    DeviceType.CountryDevice,
-                    DeviceType.LineDevice,
-                    DeviceType.DCLineDevice,
-                    DeviceType.Transformer2WDevice,
-                    DeviceType.Transformer3WDevice,
-                    DeviceType.UpfcDevice,
-                    DeviceType.VscDevice,
-                    DeviceType.HVDCLineDevice,
-                    DeviceType.SwitchDevice,
-                    DeviceType.WindingDevice,
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(element_type=tpe)
 
-                    DeviceType.FluidNode,
-                    DeviceType.FluidPath,
-                    DeviceType.FluidTurbine,
-                    DeviceType.FluidPump]:
+            for elm in elements:
+                data[elm.idtag] = elm
+
+        return data
+
+    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+        """
+        Get a dictionary of all elements by type
+        :return:
+        """
+
+        # [DeviceType.BusDevice,
+        #     DeviceType.LoadDevice,
+        #     DeviceType.StaticGeneratorDevice,
+        #     DeviceType.GeneratorDevice,
+        #     DeviceType.BatteryDevice,
+        #     DeviceType.ShuntDevice,
+        #     DeviceType.ExternalGridDevice,
+        #     DeviceType.SubstationDevice,
+        #     DeviceType.AreaDevice,
+        #     DeviceType.ZoneDevice,
+        #     DeviceType.CountryDevice,
+        #     DeviceType.LineDevice,
+        #     DeviceType.DCLineDevice,
+        #     DeviceType.Transformer2WDevice,
+        #     DeviceType.Transformer3WDevice,
+        #     DeviceType.UpfcDevice,
+        #     DeviceType.VscDevice,
+        #     DeviceType.HVDCLineDevice,
+        #     DeviceType.SwitchDevice,
+        #     DeviceType.WindingDevice,
+        #
+        #     DeviceType.FluidNode,
+        #     DeviceType.FluidPath,
+        #     DeviceType.FluidTurbine,
+        #     DeviceType.FluidPump]
+        data = dict()
+        for key, tpe in self.device_type_name_dict.items():
             data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
 
         return data
