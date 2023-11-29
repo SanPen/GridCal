@@ -1,8 +1,10 @@
 from typing import Union, List
-from ortools.linear_solver import pywraplp
+# from ortools.linear_solver import pywraplp
 import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib
+from GridCalEngine.Utils.MIP.selected_interface import *
+from GridCalEngine.basic_structures import MIPSolvers
 
 matplotlib.use('TkAgg')
 
@@ -18,7 +20,7 @@ This script models a hydro network with:
 
 class FluidNode:
     """
-    Device that can balance water (reservoirs, generators, etc)
+    Device that can balance water (reservoirs, plants, etc)
     A "Water node"
     """
 
@@ -54,6 +56,7 @@ class FluidNode:
         """
         return self.max_level > self.min_level
 
+    # redo inflows/outflows to be divided by cubicle
     def get_inflow_value(self) -> float:
 
         if isinstance(self.inflow, float):
@@ -93,7 +96,7 @@ class Turbine:
         self.max_flow_rate = max_flow_rate  # m3/h
         self.plant: FluidNode = plant
 
-        self.power_output = None  # LP var -> MW
+        self.power_output = None  # LP var -> MW (why None! Should be a float I think)
 
     def __str__(self):
         return self.name
@@ -187,30 +190,33 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
     :param demand: demand in MW
     :param dt: time step in hours
     """
-    solver = pywraplp.Solver.CreateSolver('SCIP')
+    solver = LpModel(solver_type=MIPSolvers.SCIP)
+    # solver = pywraplp.Solver.CreateSolver('SCIP')
 
     # Variables ----------------------------------------------------------------
     for turbine in turbines:
-        turbine.power_output = solver.NumVar(turbine.p_min,
-                                             turbine.p_max,
-                                             f'TPower_{turbine.name}')
+        turbine.power_output = solver.add_var(lb=turbine.p_min,
+                                              ub=turbine.p_max,
+                                              name=f'TPower_{turbine.name}')
 
     for pump in pumps:
-        pump.power_output = solver.NumVar(pump.p_min,
-                                          pump.p_max,
-                                          f'PPower_{pump.name}')
+        pump.power_output = solver.add_var(lb=pump.p_min,
+                                           ub=pump.p_max,
+                                           name=f'PPower_{pump.name}')
 
     for node in fluid_nodes:
-        node.spillage = solver.NumVar(0.0, 1e20, f'NodeSpillage_{node.name}')
+        node.spillage = solver.add_var(lb=0.0,
+                                       ub=1e20,
+                                       name=f'NodeSpillage_{node.name}')
 
-        node.level = solver.NumVar(node.min_level,
-                                   node.max_level,
-                                   f'Level_{node.name}')
+        node.level = solver.add_var(lb=node.min_level,
+                                    ub=node.max_level,
+                                    name=f'Level_{node.name}')
 
     for river in flow_transporters:
-        river.flow = solver.NumVar(river.min_flow,
-                                   river.max_flow,
-                                   f'Flow_{river.name}')
+        river.flow = solver.add_var(lb=river.min_flow,
+                                    ub=river.max_flow,
+                                    name=f'Flow_{river.name}')
 
     # Constraints --------------------------------------------------------------
 
@@ -218,7 +224,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
     for river in flow_transporters:
         river.target.inflow += river.flow  # add flow that comes in
         river.source.outflow += river.flow  # add flow that goes out
-        solver.Add(river.flow == river.source.outflow)  # River flow is equal to the outflow from the source
+        solver.add_cst(cst=river.flow == river.source.outflow,
+                       name=f'FlowEquality_{river.name}')  # River flow is equal to the outflow from the source, CHECK!
 
     # plants
     plants_turbine_dict = make_node_device_relationship(devices=turbines, nodes=fluid_nodes)
@@ -247,35 +254,39 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
 
         if (len(pumps_at_the_plant) + len(turbines_at_the_plant)) > 0:
             # the "produced" fluid by the turbines or pumps equals the fluid going out of the node
-            solver.Add(plant_fluid_flow == node.outflow, f'{node.name} output')
+            solver.add_cst(cst=plant_fluid_flow == node.outflow,
+                           name=f'{node.name} output')
 
         # Node flow balance
         # level = initial_level + dt * (inflow - outflow - spillage_flow)
         # m3 - m3 == (m3/h - m3/h) * h
-        solver.Add(node.level ==  # m3
-                   node.initial_level  # m3
-                   + dt * node.inflow  # m3 · h
-                   - dt * node.outflow  # m3 · h
-                   - node.spillage,  # m3
-                   f'{node.name} balance')
+        solver.add_cst(cst=node.level ==  # m3
+                       node.initial_level  # m3
+                       + dt * node.inflow  # m3 · h
+                       - dt * node.outflow  # m3 · h
+                       - node.spillage,  # m3
+                       name=f'{node.name} balance')
 
     # Demand constraint
-    solver.Add(total_power_generated >= demand, 'Satisfy_demand')
+    solver.add_cst(cst=total_power_generated >= demand,
+                   name='Satisfy_demand')
 
     # Objective
-    total_flows = solver.Sum(river.flow for river in flow_transporters)
-    total_spillage = (solver.Sum(plant.spillage for plant in fluid_nodes))
-    solver.Minimize(total_power_generated +
+    total_flows = solver.sum(river.flow for river in flow_transporters)
+    total_spillage = (solver.sum(plant.spillage for plant in fluid_nodes))
+    solver.minimize(total_power_generated +
                     1000 * total_spillage +  # penalize spillage
                     total_flows)
 
     # Solve
-    status = solver.Solve()
+    solver.model.EnableOutput()
+    status = solver.solve()
 
     # Print LP representation
-    print(solver.ExportModelAsLpFormat(obfuscated=False))
+    # print(solver.ExportModelAsLpFormat(obfuscated=False))
 
-    if status == pywraplp.Solver.OPTIMAL:
+    # if status == pywraplp.Solver.OPTIMAL:
+    if status == solver.OPTIMAL:
 
         print('Optimal solution found:')
         for node in fluid_nodes:
@@ -298,33 +309,6 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         # fix(solver=solver)
         print('The problem does not have an optimal solution.')
 
-
-def fix(solver: pywraplp.Solver):
-    new_solver = pywraplp.Solver.CreateSolver('SCIP')
-
-    for var in solver.variables():
-        new_solver.NumVar(lb=var.Lb(), ub=var.Ub(), name=var.name())
-
-    slacks = list()
-
-    for i, cst in enumerate(solver.constraints()):
-        sl = new_solver.NumVar(0, 1e20, 'Slack{}'.format(i))
-        new_solver.Add(cst + sl)
-        slacks.append(sl)
-
-    new_solver.Minimize(new_solver.Sum(slacks))
-
-    # Solve
-    status = new_solver.Solve()
-
-    if status == pywraplp.Solver.OPTIMAL:
-
-        for i, sl in enumerate(slacks):
-            if sl.solution_value() > 0.0:
-                print(f'{solver.constraints()[i].name()} is wrong!')
-
-    else:
-        print('Impossible')
 
 
 def plot_hydro_dispatch(nodes: List[FluidNode],
@@ -403,7 +387,7 @@ gen3 = Turbine(name="G3", p_min=0.0, p_max=100, efficiency=0.85, max_flow_rate=1
 gen4 = Turbine(name="G4", p_min=0.0, p_max=50, efficiency=0.75, max_flow_rate=1200, plant=plant4)
 gen5 = Turbine(name="G5", p_min=0.0, p_max=70, efficiency=0.85, max_flow_rate=1200, plant=plant4)
 
-dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
+dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=reservoir1)
 
 river1 = FluidPath(name='River1', source=reservoir1, target=plant1, min_flow=0, max_flow=150)
 river2 = FluidPath(name='River2', source=reservoir2, target=plant2, min_flow=5, max_flow=120)
@@ -412,12 +396,13 @@ river4 = FluidPath(name='River4', source=plant2, target=plant3, min_flow=0, max_
 river5 = FluidPath(name='River5', source=plant3, target=plant4, min_flow=0, max_flow=90)
 river6 = FluidPath(name='River6', source=reservoir3, target=plant3, min_flow=4, max_flow=200)
 river7 = FluidPath(name='River7', source=plant4, target=reservoir4, min_flow=0, max_flow=200)
+river8 = FluidPath(name='River8', source=reservoir2, target=reservoir1, min_flow=0, max_flow=500)
 
 nodes_ = [reservoir1, reservoir2, reservoir3, reservoir4, plant1, plant2, plant3, plant4]
-rivers_ = [river1, river2, river3, river4, river5, river6, river7]
+rivers_ = [river1, river2, river3, river4, river5, river6, river7, river8]
 turbines_ = [gen1, gen2, gen3, gen4, gen5]
 pumps_ = [dem1]
-demand_ = 380  # in MW
+demand_ = 180  # in MW
 
 # plot_problem(reservoirs, hydro_plants, rivers)
 hydro_dispatch_transport(fluid_nodes=nodes_,
