@@ -282,21 +282,23 @@ def get_generator_data(circuit: MultiCircuit,
     :param opf_results:
     :param t_idx:
     :param time_series:
-    :param opf:
     :param use_stored_guess:
     :return:
     """
     devices = circuit.get_generators()
 
-    data = ds.GeneratorData(nelm=len(devices), nbus=len(circuit.buses))
+    data = ds.GeneratorData(nelm=len(devices),
+                            nbus=len(circuit.buses))
 
+    gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
+
+        gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
         i = bus_dict[elm.bus]
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
-
 
         data.controllable[k] = elm.is_controlled
         data.installed_p[k] = elm.Snom
@@ -399,13 +401,13 @@ def get_battery_data(circuit: MultiCircuit,
     :param opf_results:
     :param t_idx:
     :param time_series:
-    :param opf:
     :param use_stored_guess:
     :return:
     """
     devices = circuit.get_batteries()
 
-    data = ds.BatteryData(nelm=len(devices), nbus=circuit.get_bus_number())
+    data = ds.BatteryData(nelm=len(devices),
+                          nbus=circuit.get_bus_number())
 
     for k, elm in enumerate(devices):
 

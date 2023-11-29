@@ -33,7 +33,6 @@ class GeneratorData:
         """
         self.nelm: int = nelm
         self.nbus: int = nbus
-
         self.names: StrVec = np.empty(nelm, dtype=object)
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
@@ -82,7 +81,8 @@ class GeneratorData:
         :return: new GeneratorData instance
         """
 
-        data = GeneratorData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = GeneratorData(nelm=len(elm_idx),
+                             nbus=len(bus_idx))
 
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
@@ -222,13 +222,6 @@ class GeneratorData:
         :return:
         """
         return self.C_bus_elm * (self.get_injections() * self.active)
-
-    def get_bus_indices(self) -> IntVec:
-        """
-        Get generator bus indices
-        :return:
-        """
-        return self.C_bus_elm.tocsc().indices
 
     def get_voltages_per_bus(self) -> CxVec:
         """
