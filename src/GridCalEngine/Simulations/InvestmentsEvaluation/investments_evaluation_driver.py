@@ -18,6 +18,7 @@ import numpy as np
 import hyperopt
 import functools
 import copy
+import time
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
@@ -136,6 +137,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         :param combination: vector of investments (yes/no)
         :return: objective function value
         """
+        start_time = time.time()
 
         # add all the investments of the investment groups reflected in the combination
         inv_list = list()
@@ -145,8 +147,11 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # enable the investment
         # TODO: use MultiCircuit deep copies instead of NumericalCircuit copies (try deepcopy module)
-        grid_copy = copy.deepcopy(self.grid)
+        mc_time1 = time.time()
+        grid_copy = self.grid.copy()
+        mc_time2 =time.time()
         grid_copy.set_investments_status(investments_list=inv_list, status=True)
+        mc_time3 = time.time()
 
         branches = grid_copy.get_branches_wo_hvdc()
         buses = grid_copy.get_buses()
@@ -159,11 +164,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         overload_score = self.get_overload_score(res, branches)
         losses_score = self.get_normalized_sum(res.losses.real)
         voltage_module_score = self.get_voltage_module_score(res, buses)
-        # voltage_angle_score =
+        voltage_angle_score = 0.0
 
         capex_score = self.get_normalized_sum(np.array([inv.CAPEX for inv in inv_list]))
 
-        f = 0.3*losses_score + overload_score + voltage_module_score + 0.3*capex_score
+        # normalized_scores = self.get_normalized_sum(np.array(overload_score,losses_score,voltage_module_score, capex_score))
+        # f = np.sum(normalized_scores)
+
+        f = losses_score + overload_score + voltage_module_score + capex_score
 
         # store the results
         self.results.set_at(eval_idx=self.__eval_index,
@@ -181,8 +189,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # increase evaluations
         self.__eval_index += 1
+        print(self.__eval_index-1)
 
         self.progress_signal.emit(self.__eval_index / self.max_eval * 100.0)
+        end_time = time.time()
+        print('total', end_time-start_time, 'mc', mc_time3-mc_time1, 'copy', mc_time2-mc_time1, 'inv search',
+              mc_time3-mc_time2)
 
         return f
 
@@ -353,6 +365,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         max_value = np.max(array)
         min_value = np.min(array)
+        # min_value = 0
 
         if min_value == max_value:
             if max_value != 0:
