@@ -3908,11 +3908,10 @@ class MultiCircuit:
         :param status: status to set in the internal strctures
         """
 
-        start_time = time.get_
         for inv in investments_list:
 
-            dict1 = self.get_all_elemnts_dict_by_type()
-            dict2 = {k: v for inner_dict in dict1.values() for k, v in inner_dict.items()}
+            dict_idtag = self.get_all_elements_dict()
             device_idtag = inv.device_idtag
-            device = dict2[device_idtag]
+            device = dict_idtag[device_idtag]
+
             device.active = status
