@@ -134,7 +134,7 @@ class Power2X:
     """
 
     def __init__(self, name: str, p_min: float, p_max: float, efficiency: float, max_flow_rate: float,
-                 same_flow: bool, node: FluidNode):
+                 node: FluidNode):
         """
         Generator sign convention
         :param name: Name of the machine
@@ -142,7 +142,6 @@ class Power2X:
         :param p_max: Maximum power when active (MW)
         :param efficiency: Power plant energy production per fluid unit (MWh/m3)
         :param max_flow_rate: Maximum water flow (m3/h)
-        :param same_flow: True if the grid is of the same flow type, False if not
         :param node: Pointer to the node where the unit is hosted
         """
         self.name = name
@@ -150,7 +149,6 @@ class Power2X:
         self.p_max = p_max
         self.efficiency = efficiency
         self.max_flow_rate = max_flow_rate
-        self.same_flow = same_flow
         self.plant: FluidNode = node
 
         self.power_output = None  # LP var -> MW
@@ -267,12 +265,14 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
     total_power_generated = 0.0  # MW
     for i, node in enumerate(fluid_nodes):
 
-        plant_fluid_flow = 0.0
+        plant_out_flow = 0.0
+        plant_in_flow = 0.0
         turbines_at_the_plant = plants_turbines_dict[node]
         for turbine in turbines_at_the_plant:
             # add the generator output to the plant output in terms of water
             #    m3             h         MW                  MWh/m3  # efficiency should be dividing!?
-            plant_fluid_flow += dt * turbine.power_output / turbine.efficiency
+            plant_out_flow += dt * turbine.power_output / turbine.efficiency
+            plant_in_flow += dt * turbine.power_output / turbine.efficiency
 
             # add the electric power to the total generation
             total_power_generated += turbine.power_output
@@ -281,7 +281,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         for pump in pumps_at_the_plant:
             # add the pump output to the plant output in terms of water
             #    m3             h         MW                  MWh/m3
-            plant_fluid_flow += dt * pump.power_output / pump.efficiency
+            plant_out_flow -= dt * pump.power_output / pump.efficiency
+            plant_in_flow -= dt * pump.power_output / pump.efficiency
 
             # subtract the electric power of the pump
             total_power_generated -= pump.power_output
@@ -290,16 +291,17 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         for power2x in power2xs_at_the_plant:
             # add the power2x output to the plant output in terms of flow (if same flow)
             #    m3             h         MW                  MWh/m3
-            if power2x.same_flow:
-                plant_fluid_flow += dt * power2x.power_output / power2x.efficiency
+            plant_out_flow += dt * power2x.power_output / power2x.efficiency
 
             # add the electric power of the power2x (for all of them, generator convention)
-            total_power_generated += power2x.power_output
+            total_power_generated -= power2x.power_output
 
-        if (len(pumps_at_the_plant) + len(turbines_at_the_plant) + len(power2xs_at_the_plant)) > 0:
+        # if (len(pumps_at_the_plant) + len(turbines_at_the_plant) + len(power2xs_at_the_plant)) > 0:
             # the "produced" fluid by the turbines, pumps or power2xs equals the fluid going out of the node
-            solver.add_cst(cst=plant_fluid_flow == node.outflow,
-                           name=f'{node.name} output')
+        solver.add_cst(cst=plant_out_flow == node.outflow,
+                       name=f'{node.name} output')
+        solver.add_cst(cst=plant_in_flow == node.inflow,
+                       name=f'{node.name} output')
 
         # Node flow balance
         # level = initial_level + dt * (inflow - outflow - spillage_flow)
@@ -424,7 +426,7 @@ def plot_hydro_dispatch(solver: LpModel,
         G.add_edge(river.source.name, river.target.name,
                    label=f"{river.name}\n{flow} m3/h")
 
-    pos = nx.kamada_kawai_layout(G)
+    pos = nx.spectral_layout(G)
     labels = nx.get_edge_attributes(G, 'label')
     node_labels = nx.get_node_attributes(G, 'label')
 
@@ -467,7 +469,7 @@ def example_1():
 
     dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
 
-    p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, same_flow=True, node=plant1)
+    p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, node=plant1)
 
     river1 = FluidPath(name='River1', source=reservoir1, target=plant1, min_flow=0, max_flow=550)
     river2 = FluidPath(name='River2', source=reservoir2, target=plant2, min_flow=5, max_flow=520)
