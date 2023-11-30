@@ -1358,7 +1358,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def gat_all_elemnts_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+    def get_all_elemnts_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -3836,3 +3836,19 @@ class MultiCircuit:
             gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
 
         return gen_tech_proportions_matrix.tocsc()
+
+    def set_investments_status(self, investments_list: List[dev.Investment], status: bool) -> None:
+        """
+        Set the status of a list of investmensts
+        :param investments_list: list of investments
+        :param status: status to set in the internal strctures
+        """
+
+        start_time = time.get_
+        for inv in investments_list:
+
+            dict1 = self.get_all_elemnts_dict_by_type()
+            dict2 = {k: v for inner_dict in dict1.values() for k, v in inner_dict.items()}
+            device_idtag = inv.device_idtag
+            device = dict2[device_idtag]
+            device.active = status
