@@ -142,20 +142,11 @@ class MultiCircuit:
 
         self.windings: List[dev.Winding] = list()
 
-        # array of branch indices in the master circuit
-        self.branch_original_idx: List[int] = list()
-
         # Should accept buses
         self.buses: List[dev.Bus] = list()
 
         # array of connectivity nodes
         self.connectivity_nodes: List[dev.ConnectivityNode] = list()
-
-        # array of bus indices in the master circuit
-        self.bus_original_idx: List[int] = list()
-
-        # Dictionary relating the bus object to its index. Updated upon compilation
-        self.buses_dict: Dict[dev.Bus, int] = dict()
 
         # List of overhead line objects
         self.overhead_line_types: List[dev.OverheadLineType] = list()
@@ -185,17 +176,10 @@ class MultiCircuit:
         self.zones: List[dev.Zone] = list()  # [self.default_zone]
 
         # list of countries
-        # self.default_country: dev.Country = dev.Country('Default country')
         self.countries: List[dev.Country] = list()  # [self.default_country]
 
         # logger of events
         self.logger: bs.Logger = bs.Logger()
-
-        # Bus-Branch graph
-        self.graph = None
-
-        # dictionary of bus objects -> bus indices
-        self.bus_dictionary: Dict[str, dev.Bus] = dict()
 
         # master time profile
         self.time_profile: DateVec = None
@@ -637,17 +621,8 @@ class MultiCircuit:
         self.fuels = list()
         self.emission_gases = list()
 
-        # array of branch indices in the master circuit
-        self.branch_original_idx = list()
-
         # Should accept buses
         self.buses = list()
-
-        # array of bus indices in the master circuit
-        self.bus_original_idx = list()
-
-        # Dictionary relating the bus object to its index. Updated upon compilation
-        self.buses_dict = dict()
 
         # List of overhead line objects
         self.overhead_line_types = list()
@@ -663,11 +638,6 @@ class MultiCircuit:
 
         # List of transformer types
         self.transformer_types = list()
-
-        # Bus-Branch graph
-        self.graph = None
-
-        self.bus_dictionary = dict()
 
         self.time_profile = None
 
@@ -1536,7 +1506,49 @@ class MultiCircuit:
         """
         Returns a deep (true) copy of this circuit.
         """
-        return copy.deepcopy(self)
+        cpy = MultiCircuit(name=self.name, Sbase=self.Sbase, fbase=self.fBase, idtag=self.idtag)
+
+        ppts = ['lines',
+                'dc_lines',
+                'transformers2w',
+                'hvdc_lines',
+                'vsc_devices',
+                'upfc_devices',
+                'switch_devices',
+                'transformers3w',
+                'windings',
+                'buses',
+                'connectivity_nodes',
+                'overhead_line_types',
+                'wire_types',
+                'underground_cable_types',
+                'sequence_line_types',
+                'transformer_types',
+                'substations',
+                'areas',
+                'zones',
+                'countries',
+                'time_profile',
+                'contingencies',
+                'contingency_groups',
+                'investments',
+                'investments_groups',
+                'technologies',
+                'fuels',
+                'emission_gases',
+                'generators_technologies',
+                'generators_fuels',
+                'generators_emissions',
+                'fluid_nodes',
+                'fluid_paths',
+                'fluid_turbines',
+                'fluid_pumps'
+                ]
+
+        for pr in ppts:
+            setattr(cpy, pr, copy.deepcopy(getattr(self, pr)))
+
+        return cpy
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -1681,19 +1693,19 @@ class MultiCircuit:
         """
         Returns a networkx DiGraph object of the grid.
         """
-        self.graph = nx.DiGraph()
+        graph = nx.DiGraph()
 
-        self.bus_dictionary = dict()
+        bus_dictionary = dict()
 
         for i, bus in enumerate(self.buses):
-            self.graph.add_node(i)
-            self.bus_dictionary[bus.idtag] = i
+            graph.add_node(i)
+            bus_dictionary[bus.idtag] = i
 
         tuples = list()
         for branch_list in self.get_branch_lists():
             for branch in branch_list:
-                f = self.bus_dictionary[branch.bus_from.idtag]
-                t = self.bus_dictionary[branch.bus_to.idtag]
+                f = bus_dictionary[branch.bus_from.idtag]
+                t = bus_dictionary[branch.bus_to.idtag]
                 if branch.device_type in [DeviceType.LineDevice,
                                           DeviceType.DCLineDevice,
                                           DeviceType.HVDCLineDevice]:
@@ -1710,9 +1722,9 @@ class MultiCircuit:
                 # self.graph.add_edge(f, t)
                 tuples.append((f, t, w))
 
-        self.graph.add_weighted_edges_from(tuples)
+        graph.add_weighted_edges_from(tuples)
 
-        return self.graph
+        return graph
 
     def build_graph_real_power_flow(self, current_flow):
         """
@@ -2880,10 +2892,8 @@ class MultiCircuit:
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-        if self.graph is None:
-            self.build_graph()
-
-        nx.draw_spring(self.graph, ax=ax)
+        graph = self.build_graph()
+        nx.draw_spring(graph, ax=ax)
 
     def export_pf(self, file_name, power_flow_results):
         """
@@ -3901,17 +3911,24 @@ class MultiCircuit:
 
         return gen_tech_proportions_matrix.tocsc()
 
-    def set_investments_status(self, investments_list: List[dev.Investment], status: bool) -> None:
+    def set_investments_status(self, investments_list: List[dev.Investment], status: bool,
+                               all_elemnts_dict: Union[None, dict[str, EditableDevice]] = None) -> None:
         """
-        Set the status of a list of investmensts
+        Set the active (and active profile) status of a list of investmensts' objects
         :param investments_list: list of investments
         :param status: status to set in the internal strctures
+        :param all_elemnts_dict: Dictionary of all elemets (idtag -> object), if None if is computed
         """
 
+        if all_elemnts_dict is None:
+            all_elemnts_dict = self.get_all_elements_dict()
+
         for inv in investments_list:
-
-            dict_idtag = self.get_all_elements_dict()
             device_idtag = inv.device_idtag
-            device = dict_idtag[device_idtag]
+            device = all_elemnts_dict[device_idtag]
 
-            device.active = status
+            if hasattr(device, 'active'):
+                device.active = status
+                profile = device.get_profile('active')
+                if profile is not None:
+                    profile.fill(status)

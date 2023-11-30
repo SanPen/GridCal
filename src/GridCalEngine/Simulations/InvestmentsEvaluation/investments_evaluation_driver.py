@@ -71,6 +71,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # numerical circuit
         self.nc: Union[NumericalCircuit, None] = None
 
+        # gather a dictionary of all the elements, this serves for the investments generation
+        self.get_all_elements_dict = self.grid.get_all_elements_dict()
+
     def get_steps(self):
         """
 
@@ -146,11 +149,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                 inv_list += self.investments_by_group[i]
 
         # enable the investment
-        # TODO: use MultiCircuit deep copies instead of NumericalCircuit copies (try deepcopy module)
         mc_time1 = time.time()
-        grid_copy = self.grid.copy()
-        mc_time2 =time.time()
-        grid_copy.set_investments_status(investments_list=inv_list, status=True)
+        grid_copy = self.grid  # self.grid.copy()
+        mc_time2 = time.time()
+        grid_copy.set_investments_status(investments_list=inv_list,
+                                         status=True,
+                                         all_elemnts_dict=self.get_all_elements_dict)
         mc_time3 = time.time()
 
         branches = grid_copy.get_branches_wo_hvdc()
@@ -185,16 +189,20 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             index_name="Evaluation {}".format(self.__eval_index))
 
         # revert to disabled
-        # nc_mod.set_investments_status(investments_list=inv_list, status=0)
+        grid_copy.set_investments_status(investments_list=inv_list,
+                                         status=False,
+                                         all_elemnts_dict=self.get_all_elements_dict)
 
         # increase evaluations
         self.__eval_index += 1
-        print(self.__eval_index-1)
+        # print(self.__eval_index-1)
 
         self.progress_signal.emit(self.__eval_index / self.max_eval * 100.0)
         end_time = time.time()
-        print('total', end_time-start_time, 'mc', mc_time3-mc_time1, 'copy', mc_time2-mc_time1, 'inv search',
-              mc_time3-mc_time2)
+        # print('total', end_time-start_time,
+        #       'mc', mc_time3-mc_time1,
+        #       'copy', mc_time2-mc_time1,
+        #       'inv search', mc_time3-mc_time2)
 
         return f
 
