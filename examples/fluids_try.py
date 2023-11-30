@@ -441,54 +441,57 @@ def plot_hydro_dispatch(solver: LpModel,
     plt.show()
 
 
-########################################################################################################################
-# Example
-########################################################################################################################
+def example_1():
 
-# Example usage with 4 plants, 5 generators, 4 reservoirs, and 6 rivers
-reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=500)
-reservoir2 = FluidNode(name='Reservoir2', min_level=0, max_level=800, current_level=300)
-reservoir3 = FluidNode(name='Reservoir3', min_level=0, max_level=1200, current_level=800)
-reservoir4 = FluidNode(name='Reservoir4', min_level=0, max_level=600, current_level=400)
+    # Example usage with 4 plants, 5 generators, 4 reservoirs, and 6 rivers
+    reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=500)
+    reservoir2 = FluidNode(name='Reservoir2', min_level=0, max_level=800, current_level=300)
+    reservoir3 = FluidNode(name='Reservoir3', min_level=0, max_level=1200, current_level=800)
+    reservoir4 = FluidNode(name='Reservoir4', min_level=0, max_level=600, current_level=400)
 
-reservoir10 = FluidNode(name='Reservoir10', min_level=0, max_level=600, current_level=400)
-reservoir11 = FluidNode(name='Reservoir11', min_level=0, max_level=600, current_level=400)
+    reservoir10 = FluidNode(name='Reservoir10', min_level=0, max_level=600, current_level=400)
+    reservoir11 = FluidNode(name='Reservoir11', min_level=0, max_level=600, current_level=400)
 
-plant1 = FluidNode(name='Plant1')
-plant2 = FluidNode(name='Plant2')
-plant3 = FluidNode(name='Plant3')
-plant4 = FluidNode(name='Plant4')
-plant10 = FluidNode(name='Plant10')
+    plant1 = FluidNode(name='Plant1')
+    plant2 = FluidNode(name='Plant2')
+    plant3 = FluidNode(name='Plant3')
+    plant4 = FluidNode(name='Plant4')
+    plant10 = FluidNode(name='Plant10')
 
-gen1 = Turbine(name="G1", p_min=0.0, p_max=200, efficiency=0.9, max_flow_rate=2000, plant=plant1)
-gen2 = Turbine(name="G2", p_min=0.0, p_max=200, efficiency=0.8, max_flow_rate=1500, plant=plant2)
-gen3 = Turbine(name="G3", p_min=0.0, p_max=200, efficiency=0.85, max_flow_rate=1800, plant=plant3)
-gen4 = Turbine(name="G4", p_min=0.0, p_max=150, efficiency=0.75, max_flow_rate=1200, plant=plant4)
-gen5 = Turbine(name="G5", p_min=0.0, p_max=170, efficiency=0.85, max_flow_rate=1200, plant=plant4)
-gen10 = Turbine(name="G10", p_min=0.0, p_max=170, efficiency=0.95, max_flow_rate=1200, plant=plant4)
+    gen1 = Turbine(name="G1", p_min=0.0, p_max=200, efficiency=0.9, max_flow_rate=2000, plant=plant1)
+    gen2 = Turbine(name="G2", p_min=0.0, p_max=200, efficiency=0.8, max_flow_rate=1500, plant=plant2)
+    gen3 = Turbine(name="G3", p_min=0.0, p_max=200, efficiency=0.85, max_flow_rate=1800, plant=plant3)
+    gen4 = Turbine(name="G4", p_min=0.0, p_max=150, efficiency=0.75, max_flow_rate=1200, plant=plant4)
+    gen5 = Turbine(name="G5", p_min=0.0, p_max=170, efficiency=0.85, max_flow_rate=1200, plant=plant4)
+    gen10 = Turbine(name="G10", p_min=0.0, p_max=170, efficiency=0.95, max_flow_rate=1200, plant=plant4)
 
-dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
+    dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
 
-p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, same_flow=True, node=plant1)
+    p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, same_flow=True, node=plant1)
 
-river1 = FluidPath(name='River1', source=reservoir1, target=plant1, min_flow=0, max_flow=550)
-river2 = FluidPath(name='River2', source=reservoir2, target=plant2, min_flow=5, max_flow=520)
-river3 = FluidPath(name='River3', source=plant1, target=plant2, min_flow=0, max_flow=500)
-river4 = FluidPath(name='River4', source=plant2, target=plant3, min_flow=0, max_flow=530)
-river5 = FluidPath(name='River5', source=plant3, target=plant4, min_flow=0, max_flow=50)
-river6 = FluidPath(name='River6', source=reservoir3, target=plant3, min_flow=4, max_flow=500)
-river7 = FluidPath(name='River7', source=plant4, target=reservoir4, min_flow=0, max_flow=500)
-river8 = FluidPath(name='River8', source=reservoir2, target=reservoir3, min_flow=-100, max_flow=100)
-river10 = FluidPath(name='River10', source=reservoir10, target=plant10, min_flow=-100, max_flow=100)
-river11 = FluidPath(name='River11', source=plant10, target=reservoir11, min_flow=-100, max_flow=100)
+    river1 = FluidPath(name='River1', source=reservoir1, target=plant1, min_flow=0, max_flow=550)
+    river2 = FluidPath(name='River2', source=reservoir2, target=plant2, min_flow=5, max_flow=520)
+    river3 = FluidPath(name='River3', source=plant1, target=plant2, min_flow=0, max_flow=500)
+    river4 = FluidPath(name='River4', source=plant2, target=plant3, min_flow=0, max_flow=530)
+    river5 = FluidPath(name='River5', source=plant3, target=plant4, min_flow=0, max_flow=50)
+    river6 = FluidPath(name='River6', source=reservoir3, target=plant3, min_flow=4, max_flow=500)
+    river7 = FluidPath(name='River7', source=plant4, target=reservoir4, min_flow=0, max_flow=500)
+    river8 = FluidPath(name='River8', source=reservoir2, target=reservoir3, min_flow=-100, max_flow=100)
+    river10 = FluidPath(name='River10', source=reservoir10, target=plant10, min_flow=-100, max_flow=100)
+    river11 = FluidPath(name='River11', source=plant10, target=reservoir11, min_flow=-100, max_flow=100)
 
-nodes_ = [reservoir1, reservoir2, reservoir3, reservoir4, reservoir10, reservoir11, plant1, plant2, plant3, plant4,
-          plant10]
-rivers_ = [river1, river2, river3, river4, river5, river6, river7, river8, river10, river11]
-turbines_ = [gen1, gen2, gen3, gen4, gen5, gen10]
-pumps_ = [dem1]
-power2xs_ = [p2x1]
-demand_ = 380  # in MW
+    nodes = [reservoir1, reservoir2, reservoir3, reservoir4, reservoir10, reservoir11,
+             plant1, plant2, plant3, plant4, plant10]
+    rivers = [river1, river2, river3, river4, river5, river6, river7, river8, river10, river11]
+    turbines = [gen1, gen2, gen3, gen4, gen5, gen10]
+    pumps = [dem1]
+    power2xs = [p2x1]
+    demand = 380  # in MW
+
+    return nodes, rivers, turbines, pumps, power2xs, demand
+
+
+nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_1()
 
 # plot_problem(reservoirs, hydro_plants, rivers)
 hydro_dispatch_transport(fluid_nodes=nodes_,
