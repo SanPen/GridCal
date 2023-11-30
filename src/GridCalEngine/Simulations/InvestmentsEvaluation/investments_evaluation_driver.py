@@ -17,15 +17,17 @@
 import numpy as np
 import hyperopt
 import functools
+import copy
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.investment import Investment
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec, InvestmentEvaluationMethod
@@ -73,7 +75,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         return self.results.get_index()
 
-    def objective_function(self, combination: IntVec):
+    def objective_function_old(self, combination: IntVec):
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no)
@@ -95,9 +97,15 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         res = multi_island_pf_nc(nc=nc_mod, options=self.pf_options)
         total_losses = np.sum(res.losses.real)
         overload_score = res.get_oveload_score(branch_prices=nc_mod.branch_data.overload_cost)
+        # voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=self.nc.bus_data.undervoltage_cost,
+        #                                                        overvoltage_prices=self.nc.bus_data.overvoltage_cost,
+        #                                                        vmin=self.nc.bus_data.Vmin,
+        #                                                        vmax=self.nc.bus_data.Vmax)
         voltage_score = 0.0
 
-        f = total_losses + overload_score + voltage_score
+        capex_score = sum([inv.CAPEX for inv in inv_list])*0.00001
+
+        f = total_losses + overload_score + voltage_score + capex_score
 
         # store the results
         self.results.set_at(eval_idx=self.__eval_index,
@@ -106,7 +114,63 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             losses=total_losses,
                             overload_score=overload_score,
                             voltage_score=voltage_score,
-                            objective_function=f,
+                            objective_function=f - capex_score,
+                            combination=combination,
+                            index_name="Evaluation {}".format(self.__eval_index))
+
+        # revert to disabled
+        # nc_mod.set_investments_status(investments_list=inv_list, status=0)
+
+        # increase evaluations
+        self.__eval_index += 1
+
+        self.progress_signal.emit(self.__eval_index / self.max_eval * 100.0)
+
+        return f
+
+    def objective_function(self, combination: IntVec):
+        """
+        Function to evaluate a combination of investments
+        :param combination: vector of investments (yes/no)
+        :return: objective function value
+        """
+
+        # add all the investments of the investment groups reflected in the combination
+        inv_list = list()
+        for i, active in enumerate(combination):
+            if active == 1:
+                inv_list += self.investments_by_group[i]
+
+        # enable the investment
+        # TODO: use MultiCircuit deep copies instead of NumericalCircuit copies (try deepcopy module)
+        grid_copy = copy.deepcopy(self.grid)
+        grid_copy.set_investments_status(investments_list=inv_list, status=True)
+
+        branches = grid_copy.get_branches_wo_hvdc()
+        buses = grid_copy.get_buses()
+
+        # do something
+        driver = PowerFlowDriver(grid=grid_copy, options=self.pf_options)
+        driver.run()
+        res = driver.results
+
+        overload_score = self.get_overload_score(res, branches)
+        losses_score = self.get_normalized_sum(res.losses.real)
+        voltage_module_score = self.get_voltage_module_score(res, buses)
+        # voltage_angle_score =
+
+        capex_score = self.get_normalized_sum(np.array([inv.CAPEX for inv in inv_list]))
+
+        f = 0.3*losses_score + overload_score + voltage_module_score + 0.3*capex_score
+
+        # store the results
+        self.results.set_at(eval_idx=self.__eval_index,
+                            capex=sum([inv.CAPEX for inv in inv_list]),
+                            opex=sum([inv.OPEX for inv in inv_list]),
+                            losses=losses_score,
+                            overload_score=overload_score,
+                            voltage_score=voltage_module_score,
+                            objective_function=f-capex_score,
                             combination=combination,
                             index_name="Evaluation {}".format(self.__eval_index))
 
@@ -256,3 +320,44 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
+
+
+    def get_overload_score(self, results, branches):
+        branches_cost = np.array([e.Cost for e in branches], dtype=float)
+        branches_loading = np.abs(results.loading)
+
+        # get lines where loading is above 1 -- why 1 ?
+        branches_idx = np.where(branches_loading>1)[0]
+
+        cost = branches_cost[branches_idx] * branches_loading[branches_idx]
+
+        return self.get_normalized_sum(cost)
+
+    def get_voltage_module_score(self, results, buses):
+        bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
+        vmax = np.array([e.Vmax for e in buses], dtype=float)
+        vmin = np.array([e.Vmin for e in buses], dtype=float)
+        vm = np.abs(results.voltage)
+        vmax_diffs = np.array(vm - vmax).clip(min=0)
+        vmin_diffs = np.array(vmin - vm).clip(min=0)
+        cost = (vmax_diffs + vmin_diffs) * bus_cost
+
+        return self.get_normalized_sum(cost)
+
+
+    def get_normalized_sum(self, array):
+        if len(array) < 1:
+            return 0.0
+
+        max_value = np.max(array)
+        min_value = np.min(array)
+
+        if min_value == max_value:
+            if max_value != 0:
+                return len(array) / max_value
+            else:
+                return 0.0
+
+        normalized_values = (array - min_value) / (max_value - min_value)
+
+        return np.sum(normalized_values)
