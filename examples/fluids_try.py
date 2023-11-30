@@ -424,7 +424,7 @@ def plot_hydro_dispatch(solver: LpModel,
         G.add_edge(river.source.name, river.target.name,
                    label=f"{river.name}\n{flow} m3/h")
 
-    pos = nx.spectral_layout(G)
+    pos = nx.kamada_kawai_layout(G)
     labels = nx.get_edge_attributes(G, 'label')
     node_labels = nx.get_node_attributes(G, 'label')
 
