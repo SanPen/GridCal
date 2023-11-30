@@ -804,7 +804,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
     if 'diagrams' in data.keys():
 
         if len(data['diagrams']):
-            obj_dict = circuit.gat_all_elemnts_dict_by_type()
+            obj_dict = circuit.get_all_elemnts_dict_by_type()
 
             for diagram_dict in data['diagrams']:
 
