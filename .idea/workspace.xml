@@ -29,12 +29,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added connectivities for fuels emissions and technologies">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE118_rate_load15.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/investments_evaluation.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/ding0_test_network_2_mvlv.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/ding0_test_network_2_mvlv.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/bus_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/bus_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Substation/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Substation/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +65,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -111,24 +114,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;204__investments__evaluation&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jana/GridCal&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/Jana/GridCal",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -136,11 +138,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Jana\GridCal\Grids_and_profiles\grids" />
-      <recent name="C:\Users\Jana\GridCal\src\GridCalEngine" />
       <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
       <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
@@ -150,7 +152,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.try_inv_op">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -407,6 +409,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="try_inv_op" type="PythonConfigurationType" factoryName="Python">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.10 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\Jana\GridCal" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/try_investment_optimization.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -570,19 +595,20 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.try_inv_op" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
         <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
+        <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       </list>
     </recent_temporary>
   </component>
@@ -1553,7 +1579,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="423" />
+    <option name="localTasksCounter" value="428" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1587,11 +1613,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.1" />
-    <MESSAGE value="Updated ortools to use the model builder" />
-    <MESSAGE value="Autocorrecting infeasible problems" />
-    <MESSAGE value="Slight refactor" />
-    <MESSAGE value="5.0.2" />
     <MESSAGE value="updated pic" />
     <MESSAGE value="Updated readthedocs requirements" />
     <MESSAGE value="Fixed dependency" />
@@ -1612,7 +1633,12 @@
     <MESSAGE value="improved docs" />
     <MESSAGE value="added investment grid test" />
     <MESSAGE value="added connectivities for fuels emissions and technologies" />
-    <option name="LAST_COMMIT_MESSAGE" value="added connectivities for fuels emissions and technologies" />
+    <MESSAGE value="Recognise line build status and add as investments if necessary" />
+    <MESSAGE value="Change combination recognision and add nc deep copy" />
+    <MESSAGE value="Add CAPEX to investments" />
+    <MESSAGE value="Add grid" />
+    <MESSAGE value="..." />
+    <option name="LAST_COMMIT_MESSAGE" value="..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1981,11 +2007,6 @@
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
-          <line>142</line>
-          <option name="timeStamp" value="1181" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/substation/bus_graphics.py</url>
           <line>147</line>
           <option name="timeStamp" value="1182" />
@@ -2054,6 +2075,36 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py</url>
           <line>299</line>
           <option name="timeStamp" value="1205" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/try_investment_optimization.py</url>
+          <line>181</line>
+          <option name="timeStamp" value="1207" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>153</line>
+          <option name="timeStamp" value="1209" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
+          <line>107</line>
+          <option name="timeStamp" value="1211" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
+          <line>166</line>
+          <option name="timeStamp" value="1217" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py</url>
+          <line>3847</line>
+          <option name="timeStamp" value="1218" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py</url>
+          <line>3853</line>
+          <option name="timeStamp" value="1219" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
