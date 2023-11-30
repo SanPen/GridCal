@@ -18,7 +18,7 @@
 import os
 import cmath
 import warnings
-
+import copy
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Union, Any, Callable
@@ -892,6 +892,48 @@ class MultiCircuit:
         """
         return np.array([elm.name for elm in self.hvdc_lines])
 
+    def get_fuels(self) -> List[dev.Fuel]:
+        """
+
+        :return:
+        """
+        return self.fuels
+
+    def get_fuel_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fuels)
+
+    def get_fuel_names(self) -> StrVec:
+        """
+
+        :return:
+        """
+        return np.array([elm.name for elm in self.fuels])
+
+    def get_emissions(self) -> List[dev.EmissionGas]:
+        """
+
+        :return:
+        """
+        return self.emission_gases
+
+    def get_emission_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.emission_gases)
+
+    def get_emission_names(self) -> StrVec:
+        """
+
+        :return:
+        """
+        return np.array([elm.name for elm in self.emission_gases])
+
     def get_loads(self) -> List[dev.Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
@@ -1358,37 +1400,53 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_all_elemnts_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+    def get_all_elements_dict(self) -> dict[str, EditableDevice]:
+        """
+        Get a dictionary of all elements
+        :return: Dict[idtag] -> object
+        """
+        data = dict()
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(element_type=tpe)
+
+            for elm in elements:
+                data[elm.idtag] = elm
+
+        return data
+
+    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
         """
-        data = dict()
-        for tpe in [DeviceType.BusDevice,
-                    DeviceType.LoadDevice,
-                    DeviceType.StaticGeneratorDevice,
-                    DeviceType.GeneratorDevice,
-                    DeviceType.BatteryDevice,
-                    DeviceType.ShuntDevice,
-                    DeviceType.ExternalGridDevice,
-                    DeviceType.SubstationDevice,
-                    DeviceType.AreaDevice,
-                    DeviceType.ZoneDevice,
-                    DeviceType.CountryDevice,
-                    DeviceType.LineDevice,
-                    DeviceType.DCLineDevice,
-                    DeviceType.Transformer2WDevice,
-                    DeviceType.Transformer3WDevice,
-                    DeviceType.UpfcDevice,
-                    DeviceType.VscDevice,
-                    DeviceType.HVDCLineDevice,
-                    DeviceType.SwitchDevice,
-                    DeviceType.WindingDevice,
 
-                    DeviceType.FluidNode,
-                    DeviceType.FluidPath,
-                    DeviceType.FluidTurbine,
-                    DeviceType.FluidPump]:
+        # [DeviceType.BusDevice,
+        #     DeviceType.LoadDevice,
+        #     DeviceType.StaticGeneratorDevice,
+        #     DeviceType.GeneratorDevice,
+        #     DeviceType.BatteryDevice,
+        #     DeviceType.ShuntDevice,
+        #     DeviceType.ExternalGridDevice,
+        #     DeviceType.SubstationDevice,
+        #     DeviceType.AreaDevice,
+        #     DeviceType.ZoneDevice,
+        #     DeviceType.CountryDevice,
+        #     DeviceType.LineDevice,
+        #     DeviceType.DCLineDevice,
+        #     DeviceType.Transformer2WDevice,
+        #     DeviceType.Transformer3WDevice,
+        #     DeviceType.UpfcDevice,
+        #     DeviceType.VscDevice,
+        #     DeviceType.HVDCLineDevice,
+        #     DeviceType.SwitchDevice,
+        #     DeviceType.WindingDevice,
+        #
+        #     DeviceType.FluidNode,
+        #     DeviceType.FluidPath,
+        #     DeviceType.FluidTurbine,
+        #     DeviceType.FluidPump]
+        data = dict()
+        for key, tpe in self.device_type_name_dict.items():
             data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
 
         return data
@@ -1478,37 +1536,7 @@ class MultiCircuit:
         """
         Returns a deep (true) copy of this circuit.
         """
-        # TODO: eliminate usages of this function
-        cpy = MultiCircuit()
-
-        cpy.name = self.name
-
-        bus_dict = dict()
-        for bus in self.buses:
-            cpy.buses.append(bus.copy())
-
-        for branch in self.lines:
-            cpy.lines.append(branch.copy())
-
-        for branch in self.transformers2w:
-            cpy.transformers2w.append(branch.copy())
-
-        for branch in self.hvdc_lines:
-            cpy.hvdc_lines.append(branch.copy())
-
-        for branch in self.vsc_devices:
-            cpy.vsc_devices.append(branch.copy())
-
-        cpy.Sbase = self.Sbase
-
-        cpy.branch_original_idx = self.branch_original_idx.copy()
-
-        cpy.bus_original_idx = self.bus_original_idx.copy()
-
-        if self.time_profile is not None:
-            cpy.time_profile = self.time_profile.copy()
-
-        return cpy
+        return copy.deepcopy(self)
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -3772,13 +3800,43 @@ class MultiCircuit:
 
     def get_generator_indexing_dict(self) -> Dict[str, int]:
         """
-        Get the a dictionary that relates the generator uuid's with their index
+        Get a dictionary that relates the generator uuid's with their index
         :return: Dict[str, int]
         """
         gen_index_dict: Dict[str, int] = dict()
         for k, elm in enumerate(self.get_generators()):
             gen_index_dict[elm.idtag] = k  # associate the idtag to the index
         return gen_index_dict
+
+    def get_fuel_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.get_fuels()):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
+
+    def get_emissions_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.get_emissions()):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
+
+    def get_technology_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the fuel uuid's with their index
+        :return: Dict[str, int]
+        """
+        index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.technologies):
+            index_dict[elm.idtag] = k  # associate the idtag to the index
+        return index_dict
 
     def get_fuel_rates_sparse_matrix(self) -> csc_matrix:
         """
@@ -3788,14 +3846,16 @@ class MultiCircuit:
         """
         nfuel = len(self.fuels)
         gen_index_dict = self.get_generator_indexing_dict()
+        fuel_index_dict = self.get_fuel_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
 
         # create associations between generators and fuels
-        for i, entry in enumerate(self.generators_fuels):
+        for entry in self.generators_fuels:
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_fuel_rates_matrix[gen_idx, i] = entry.rate
+            fuel_idx = fuel_index_dict[entry.fuel.idtag]
+            gen_fuel_rates_matrix[fuel_idx, gen_idx] = entry.rate
 
         return gen_fuel_rates_matrix.tocsc()
 
@@ -3807,14 +3867,16 @@ class MultiCircuit:
         """
         nemissions = len(self.emission_gases)
         gen_index_dict = self.get_generator_indexing_dict()
+        em_index_dict = self.get_emissions_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
 
         # create associations between generators and emissions
-        for i, entry in enumerate(self.generators_emissions):
+        for entry in self.generators_emissions:
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_emissions_rates_matrix[gen_idx, i] = entry.rate
+            em_idx = em_index_dict[entry.emission.idtag]
+            gen_emissions_rates_matrix[em_idx, gen_idx] = entry.rate
 
         return gen_emissions_rates_matrix.tocsc()
 
@@ -3826,6 +3888,7 @@ class MultiCircuit:
         """
         ntech = len(self.technologies)
         gen_index_dict = self.get_generator_indexing_dict()
+        tech_index_dict = self.get_technology_indexing_dict()
         nelm = len(gen_index_dict)
 
         gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
@@ -3833,7 +3896,8 @@ class MultiCircuit:
         # create associations between generators and technologies
         for i, entry in enumerate(self.generators_technologies):
             gen_idx = gen_index_dict[entry.generator.idtag]
-            gen_tech_proportions_matrix[gen_idx, i] = entry.proportion
+            tech_idx = tech_index_dict[entry.technology.idtag]
+            gen_tech_proportions_matrix[tech_idx, gen_idx] = entry.proportion
 
         return gen_tech_proportions_matrix.tocsc()
 

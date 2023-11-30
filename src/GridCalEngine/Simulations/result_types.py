@@ -81,6 +81,12 @@ class ResultTypes(Enum):
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
     GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
     GeneratorPower = 'Generator power', DeviceType.GeneratorDevice
+    GeneratorCost = 'Generator cost', DeviceType.GeneratorDevice
+    GeneratorFuels = 'Generator fuels', DeviceType.GeneratorDevice
+    GeneratorEmissions = 'Generator emissions', DeviceType.GeneratorDevice
+    GeneratorProducing = 'Generator producing', DeviceType.GeneratorDevice
+    GeneratorStartingUp = 'Generator starting up', DeviceType.GeneratorDevice
+    GeneratorShuttingDown = 'Generator shutting down', DeviceType.GeneratorDevice
     BusVoltagePolarPlot = 'Voltage plot', DeviceType.BusDevice
 
     # OPF-NTC
@@ -93,6 +99,11 @@ class ResultTypes(Enum):
     LossesPerArea = 'Losses per area', DeviceType.NoDevice
     ActivePowerFlowPerArea = 'Active power flow per area', DeviceType.NoDevice
     LossesPerGenPerArea = 'Losses per generation unit in area', DeviceType.NoDevice
+
+    SystemFuel = 'System fuel consumption', DeviceType.NoDevice
+    SystemEmissions = 'System emissions', DeviceType.NoDevice
+    SystemEnergyCost = 'System energy cost', DeviceType.NoDevice
+
 
     # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice
@@ -220,6 +231,7 @@ class ResultTypes(Enum):
     ShortCircuitInfo = 'Short-circuit information', DeviceType.NoDevice
 
     # classifiers
+    SystemResults = 'System', DeviceType.NoDevice
     BusResults = 'Bus', DeviceType.NoDevice
     BranchResults = 'Branch', DeviceType.NoDevice
     HvdcResults = 'Hvdc', DeviceType.NoDevice
@@ -234,7 +246,6 @@ class ResultTypes(Enum):
     SnapshotResults = 'Snapshot', DeviceType.NoDevice
     NTCResults = 'NTC', DeviceType.NoDevice
     SpecialPlots = 'Special plots', DeviceType.NoDevice
-
     GeneratorResults = 'Generators', DeviceType.GeneratorDevice
     LoadResults = 'Loads', DeviceType.LoadDevice
     BatteryResults = 'Batteries', DeviceType.BatteryDevice

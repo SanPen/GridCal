@@ -642,9 +642,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if use_opf:
 
-            drv, opf_time_series_results = self.session.get_driver_results(
-                SimulationTypes.OPFTimeSeries_run
-            )
+            drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
 
             if opf_time_series_results is None:
                 if use_opf:
@@ -2582,7 +2580,7 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
                 else:
-                    warning_msg('You cannot find {0} clusters for {} time steps.\n'
+                    warning_msg('You cannot find {0} clusters for {1} time steps.\n'
                                 'Modify the number of clusters in the ML settings.'.format(n_points, nt),
                                 title="Clustering")
 

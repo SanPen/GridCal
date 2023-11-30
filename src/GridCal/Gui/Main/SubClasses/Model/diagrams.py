@@ -180,7 +180,6 @@ class DiagramsMain(CompiledArraysMain):
                         do_it = False
 
                 if do_it:
-
                     diagram_widget.auto_layout(sel=self.ui.automatic_layout_comboBox.currentText())
 
                     # graph, buses = diagram_widget.diagram.build_graph()
@@ -284,7 +283,6 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, BusBranchEditorWidget):
 
                 for bus in self.circuit.buses:
-
                     diagram.diagram.query_point(bus).graphic_object.adapt()
 
     def zoom_in(self):
@@ -525,7 +523,8 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
             results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
-                sim.SimulationTypes.OPFTimeSeries_run)
+                sim.SimulationTypes.OPFTimeSeries_run
+            )
             bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
             br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
@@ -1045,7 +1044,6 @@ class DiagramsMain(CompiledArraysMain):
         index = self.ui.diagramsListView.model().index(row, 0)
         self.ui.diagramsListView.setCurrentIndex(index)
 
-
     def plot_style_change(self):
         """
         Change the style
@@ -1118,7 +1116,6 @@ class DiagramsMain(CompiledArraysMain):
                     if yes_no_question("All nodes in the current diagram will be positioned to a 2D plane projection "
                                        "of their latitude and longitude. "
                                        "Are you sure of this?"):
-
                         diagram.fill_xy_from_lat_lon(destructive=True)
                         diagram.center_nodes()
 
@@ -1172,6 +1169,7 @@ class DiagramsMain(CompiledArraysMain):
                         if graphic_obj is not None:
                             graphic_obj.add_big_marker(color=color)
                             graphic_obj.setSelected(True)
+
     def clear_big_bus_markers(self):
         """
         Set a big marker at the selected buses
@@ -1448,4 +1446,3 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
                 # diagram_widget.delete_diagram_elements(elements)
-

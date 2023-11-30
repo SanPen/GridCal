@@ -33,7 +33,7 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency, \
@@ -163,10 +163,21 @@ class GenerationVars:
         self.producing = np.zeros((nt, n_elm), dtype=object)
         self.starting_up = np.zeros((nt, n_elm), dtype=object)
         self.shutting_down = np.zeros((nt, n_elm), dtype=object)
+        self.cost = np.zeros((nt, n_elm), dtype=object)
+        # self.fuel = np.zeros((nt, n_elm), dtype=object)
+        # self.emissions = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "GenerationVars":
+    def get_values(self,
+                   Sbase: float,
+                   model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix,
+                   gen_fuel_rates_matrix: csc_matrix) -> "GenerationVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
+        :param Sbase: Base power (100 MVA)
+        :param model: LpModel
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
         :return: GenerationVars
         """
         nt, n_elm = self.p.shape
@@ -179,13 +190,19 @@ class GenerationVars:
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
+                data.cost[t, i] = model.get_value(self.cost[t, i])
+                # data.fuel[t, i] = model.get_value(self.fuel[t, i])
+                # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
         # format the arrays aproprietly
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
-        data.producing = data.producing.astype(int, copy=False)
-        data.starting_up = data.starting_up.astype(int, copy=False)
-        data.shutting_down = data.shutting_down.astype(int, copy=False)
+        data.producing = data.producing.astype(bool, copy=False)
+        data.starting_up = data.starting_up.astype(bool, copy=False)
+        data.shutting_down = data.shutting_down.astype(bool, copy=False)
+        data.cost = data.cost.astype(float, copy=False)
+        # data.fuel = (gen_fuel_rates_matrix.T * data.p.T).T
+        # data.emissions = (gen_emissions_rates_matrix.T * data.p.T).T
 
         return data
 
@@ -345,6 +362,39 @@ class HvdcVars:
         return data
 
 
+class SystemVars:
+    """
+    Struct to store the system vars
+    """
+
+    def __init__(self, nt: int):
+        """
+        SystemVars structure
+        :param nt: Number of time steps
+        """
+        self.system_fuel = np.zeros(nt, dtype=float)
+        self.system_emissions = np.zeros(nt, dtype=float)
+        self.system_energy_cost = np.zeros(nt, dtype=float)
+
+    def compute(self,
+                gen_emissions_rates_matrix: csc_matrix,
+                gen_fuel_rates_matrix: csc_matrix,
+                gen_p: Mat,
+                gen_cost: Mat):
+        """
+        Compute the system values
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
+        :param gen_p: Generation power values (nt, ngen)
+        :param gen_cost: Generation cost values (nt, ngen)
+        """
+        self.system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
+        self.system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
+
+        with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
+            self.system_energy_cost = np.nan_to_num(gen_cost / gen_p).sum(axis=1)
+
+
 class OpfVars:
     """
     Structure to host the opf variables
@@ -377,8 +427,9 @@ class OpfVars:
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
+        self.sys_vars = SystemVars(nt=nt)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "OpfVars":
+    def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: OpfVars instance
@@ -392,12 +443,22 @@ class OpfVars:
                        n_hvdc=self.n_hvdc)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
-        data.gen_vars = self.gen_vars.get_values(Sbase, model)
+        data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
+                                                 model=model,
+                                                 gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
+
+        # compute the system parameters
+        data.sys_vars.compute(gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                              gen_fuel_rates_matrix=gen_fuel_rates_matrix,
+                              gen_p=data.gen_vars.p,
+                              gen_cost=data.gen_vars.cost)
         return data
 
 
@@ -428,6 +489,8 @@ def add_linear_generation_formulation(t: Union[int, None],
     # add generation stuff
     for k in range(gen_data_t.nelm):
 
+        gen_vars.cost[t, k] = 0.0
+
         if gen_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
@@ -446,10 +509,10 @@ def add_linear_generation_formulation(t: Union[int, None],
                                                                 join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
 
                     # start-up cost
-                    f_obj += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
@@ -475,8 +538,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                             )
                         else:
                             prob.add_cst(
-                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
-                                    gen_vars.producing[t, k] - gen_vars.producing[t - 1, k],
+                                cst=(gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
+                                     gen_vars.producing[t, k] - gen_vars.producing[t - 1, k]),
                                 name=join("binary_alg3_", [t, k], "_")
                             )
                             prob.add_cst(
@@ -487,7 +550,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    f_obj += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
+                    gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                     if not skip_generation_limits:
                         set_var_bounds(var=gen_vars.p[t, k],
@@ -503,16 +566,18 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                             # - ramp_down · dt <= P(t) - P(t-1) <= ramp_up · dt
                             prob.add_cst(
-                                cst=-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k])
+                                cst=-gen_data_t.ramp_down[k] / Sbase * dt <= gen_vars.p[t, k] - gen_vars.p[t - 1, k]
+                            )
                             prob.add_cst(
-                                cst=gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt)
+                                cst=gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt
+                            )
             else:
 
                 # it is NOT dispatchable
                 p = gen_data_t.p[k] / Sbase
 
                 # Operational cost (linear...)
-                f_obj += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
+                gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
 
                 # the generator is not dispatchable at time step
                 if p > 0:
@@ -523,7 +588,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                         cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
                         name=join("gen==PG-PGslack", [t, k], "_"))
 
-                    f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 elif p < 0:
                     # the negative sign is because P is already negative here, to make it positive
@@ -533,7 +598,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                         cst=gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
                         name=join("gen==PG+PGslack", [t, k], "_"))
 
-                    f_obj += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 else:
                     # the generation value is exactly zero, pass
@@ -546,6 +611,9 @@ def add_linear_generation_formulation(t: Union[int, None],
         else:
             # the generator is not available at time step
             gen_vars.p[t, k] = 0.0
+
+        # add to the objective function the total cost of the generator
+        f_obj += gen_vars.cost[t, k]
 
     return f_obj
 
@@ -1285,7 +1353,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=lp_file_name)
         logger.add_info("Debug LP model saved", value=lp_file_name)
 
-    vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
+    # convert the lp vars to their values
+    vars_v = mip_vars.get_values(Sbase=grid.Sbase,
+                                 model=lp_model,
+                                 gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
 
     # add the model logger to the main logger
     logger += lp_model.logger
