@@ -137,7 +137,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
     def objective_function(self, combination: IntVec):
         """
         Function to evaluate a combination of investments
-        :param combination: vector of investments (yes/no)
+        :param combination: vector of investments (yes/no). Length = number of investment groups
         :return: objective function value
         """
         start_time = time.time()
@@ -150,29 +150,33 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # enable the investment
         mc_time1 = time.time()
-        grid_copy = self.grid  # self.grid.copy()
         mc_time2 = time.time()
-        grid_copy.set_investments_status(investments_list=inv_list,
+        self.grid.set_investments_status(investments_list=inv_list,
                                          status=True,
                                          all_elemnts_dict=self.get_all_elements_dict)
         mc_time3 = time.time()
 
-        branches = grid_copy.get_branches_wo_hvdc()
-        buses = grid_copy.get_buses()
+        branches = self.grid.get_branches_wo_hvdc()
+        buses = self.grid.get_buses()
 
         # do something
-        driver = PowerFlowDriver(grid=grid_copy, options=self.pf_options)
+        driver = PowerFlowDriver(grid=self.grid, options=self.pf_options)
         driver.run()
         res = driver.results
 
-        overload_score = self.get_overload_score(res, branches)
-        losses_score = self.get_normalized_sum(res.losses.real)
-        voltage_module_score = self.get_voltage_module_score(res, buses)
-        voltage_angle_score = 0.0
+        # overload_score = get_overload_score(res, branches)
+        # losses_score = get_normalized_sum(res.losses.real)
+        # voltage_module_score = get_voltage_module_score(res, buses)
+        # voltage_angle_score = 0.0
+        # capex_score = get_normalized_sum(np.array([inv.CAPEX for inv in inv_list]))
 
-        capex_score = self.get_normalized_sum(np.array([inv.CAPEX for inv in inv_list]))
+        overload_score = get_overload_score(res, branches)
+        losses_score = np.sum(res.losses.real)
+        voltage_module_score = 0.0
+        capex_score = sum([inv.CAPEX for inv in inv_list])*0.00001*0
+        opex_score = get_opex_score()
 
-        # normalized_scores = self.get_normalized_sum(np.array(overload_score,losses_score,voltage_module_score, capex_score))
+        # normalized_scores = self.get_normalized_sum(np.array([overload_score, losses_score, voltage_module_score, capex_score]))
         # f = np.sum(normalized_scores)
 
         f = losses_score + overload_score + voltage_module_score + capex_score
@@ -189,7 +193,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             index_name="Evaluation {}".format(self.__eval_index))
 
         # revert to disabled
-        grid_copy.set_investments_status(investments_list=inv_list,
+        self.grid.set_investments_status(investments_list=inv_list,
                                          status=False,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
@@ -344,43 +348,46 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__cancel__ = True
 
 
-    def get_overload_score(self, results, branches):
-        branches_cost = np.array([e.Cost for e in branches], dtype=float)
-        branches_loading = np.abs(results.loading)
+def get_overload_score(results, branches):
+    branches_cost = np.array([e.Cost for e in branches], dtype=float)
+    branches_loading = np.abs(results.loading)
 
-        # get lines where loading is above 1 -- why 1 ?
-        branches_idx = np.where(branches_loading>1)[0]
+    # get lines where loading is above 1 -- why 1 ?
+    branches_idx = np.where(branches_loading>1)[0]
 
-        cost = branches_cost[branches_idx] * branches_loading[branches_idx]
+    cost = branches_cost[branches_idx] * branches_loading[branches_idx]
 
-        return self.get_normalized_sum(cost)
+    return get_normalized_sum(cost)
+def get_voltage_module_score(results, buses):
+    bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
+    vmax = np.array([e.Vmax for e in buses], dtype=float)
+    vmin = np.array([e.Vmin for e in buses], dtype=float)
+    vm = np.abs(results.voltage)
+    vmax_diffs = np.array(vm - vmax).clip(min=0)
+    vmin_diffs = np.array(vmin - vm).clip(min=0)
+    cost = (vmax_diffs + vmin_diffs) * bus_cost
 
-    def get_voltage_module_score(self, results, buses):
-        bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
-        vmax = np.array([e.Vmax for e in buses], dtype=float)
-        vmin = np.array([e.Vmin for e in buses], dtype=float)
-        vm = np.abs(results.voltage)
-        vmax_diffs = np.array(vm - vmax).clip(min=0)
-        vmin_diffs = np.array(vmin - vm).clip(min=0)
-        cost = (vmax_diffs + vmin_diffs) * bus_cost
+    return get_normalized_sum(cost)
 
-        return self.get_normalized_sum(cost)
+def get_opex_score(inv_list):
+    for inv in inv_list:
+        opex = inv.OPEX
 
 
-    def get_normalized_sum(self, array):
-        if len(array) < 1:
+def get_normalized_sum(array):
+    if len(array) < 1:
+        return 0.0
+
+    max_value = np.max(array)
+    min_value = np.min(array)
+    # min_value = 0
+
+    if min_value == max_value:
+        if max_value != 0:
+            return len(array) / max_value
+        else:
             return 0.0
 
-        max_value = np.max(array)
-        min_value = np.min(array)
-        # min_value = 0
+    normalized_values = (array - min_value) / (max_value - min_value)
 
-        if min_value == max_value:
-            if max_value != 0:
-                return len(array) / max_value
-            else:
-                return 0.0
-
-        normalized_values = (array - min_value) / (max_value - min_value)
-
-        return np.sum(normalized_values)
+    return np.sum(normalized_values)
