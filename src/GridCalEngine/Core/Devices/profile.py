@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict
+from typing import Union, Dict, Tuple
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
@@ -55,12 +55,62 @@ def compress_array_numba_map(value, base) -> Dict[int, Numeric]:
     return data
 
 
+def check_if_sparse(arr: Union[NumericVec], sparsity: float = 0.8) -> Tuple[bool, Union[float, int]]:
+    """
+    Check if the array is sparse
+    :param arr: vector
+    :param sparsity: proportion of non-repeated elements
+    :return: is sparse, most frequent value
+    """
+    # truncate the sparsity value
+    if sparsity > 0.99:
+        sparsity = 0.9
+
+    # compute the minimum number of values to evaluate
+    min_elements = int(float(len(arr)) * (1.0 - sparsity))
+    if min_elements < 1:
+        min_elements = 1
+
+    # if less than min_elements elements, it cannot be sparse
+    if len(arr) < min_elements:
+        return False, 0
+
+    # declare the map to keep the frequency counter
+    cnt: Dict[Numeric, int] = dict()
+
+    for i, val in enumerate(arr):
+
+        # add entry / increase entry (in the C++ map this works)
+        dval = cnt.get(val, 0)
+        cnt[val] = dval + 1
+
+        # do not check all the vector if the histogram size is telling us that it is not sparse
+        if len(cnt) > min_elements:
+            return False, 0.0
+
+    if len(cnt) > min_elements:
+        # is not sparse
+        return False, 0.0
+    else:
+        # variables to compare and keep the most frequent
+        max_val = 0  # value with the most frequency
+        max_freq: int = 0  # frequency of max_val
+
+        # determine the most frequent
+        for value, count in cnt.items():
+            if count > max_freq:
+                max_val = value
+                max_freq = count
+
+        # it is sparse
+        return True, max_val
+
 class Profile:
     """
     Profile
     """
 
-    def __init__(self):
+    def __init__(self, arr: Union[None, NumericVec], sparsity: int = 0.8):
 
         self._is_sparse: bool = False
 
@@ -68,7 +118,18 @@ class Profile:
 
         self._dense_array: Union[NumericVec, None] = None
 
-        self._sparsity: float = 0.8
+        self._sparsity: float = sparsity
+
+        if arr is not None:
+            self.set(arr=arr)
+
+    @property
+    def is_sparse(self) -> bool:
+        """
+        is the profile sparse?
+        :return: bool
+        """
+        return self._is_sparse
 
     def create_sparse(self, size: int, default_value: Numeric):
         """

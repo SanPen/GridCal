@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
+import warnings
+
 import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec, Vec
@@ -35,6 +37,9 @@ try:
     import newtonpa as npa
 
     activation = npa.findAndActivateLicense()
+
+    RECOMMENDED_NEWTON_VERSION = "2.1.13"
+
     # activate
     if not npa.isLicenseActivated():
         npa_license = os.path.join(get_create_gridcal_folder(), 'newton.lic')
@@ -42,6 +47,10 @@ try:
             npa.activateLicense(npa_license)
             if npa.isLicenseActivated():
                 NEWTON_PA_AVAILABLE = True
+
+                if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
+                    warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
+                                  f"instead of {npa.get_version()}")
             else:
                 # print('Newton Power Analytics v' + npa.get_version(),
                 #       "installed, tried to activate with {} but the license did not work :/".format(npa_license))
@@ -52,6 +61,10 @@ try:
     else:
         # print('Newton Power Analytics v' + npa.get_version())
         NEWTON_PA_AVAILABLE = True
+
+        if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
+            warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
+                          f"instead of {npa.get_version()}")
 
 except ImportError as e:
     NEWTON_PA_AVAILABLE = False
@@ -1072,8 +1085,8 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.k_qt_m = control_indices.k_qt_m
         data.k_pf_dp = control_indices.k_pf_dp
         data.i_vsc = control_indices.i_vsc
-        # data.VfBeqbus = control_indices.iVfBeqBus
-        # data.Vtmabus = control_indices.iVtmaBus
+        data.i_vf_beq = control_indices.i_vf_beq
+        data.i_vt_m = control_indices.i_vt_m
 
         data_lst.append(data)
 
