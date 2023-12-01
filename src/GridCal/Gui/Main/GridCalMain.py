@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import os.path
 import sys
 
 import qdarktheme
@@ -136,7 +136,8 @@ def runGridCal() -> None:
     # process the argument if provided
     if len(sys.argv) > 1:
         f_name = sys.argv[1]
-        window_.open_file_now(filenames=[f_name])
+        if os.path.exists(f_name):
+            window_.open_file_now(filenames=[f_name])
 
     # launch
     h_ = 780
