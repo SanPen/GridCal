@@ -2,21 +2,20 @@
 \   Name             : NoName
 \   Format           : Free
 \   Constraints      : 5
-\   Variables        : 11
+\   Variables        : 10
 \     Binary         : 0
 \     Integer        : 0
-\     Continuous     : 11
+\     Continuous     : 10
 Minimize
  Obj: +1 TPower_G1 +1000 NodeSpillage_Reservoir1 +1000 NodeSpillage_Reservoir2 +1000 NodeSpillage_Plant1 +1 Flow_River1 +1 Flow_River2 
 Subject to
- Reservoir1_balance_1: -1.0101 P2XPower_P2X1 +1 NodeSpillage_Reservoir1 +1 Level_Reservoir1 +1 Flow_River1  = 1
- Reservoir2_balance_1: +1 NodeSpillage_Reservoir2 +1 Level_Reservoir2 -1 Flow_River2  = 300
- Plant1_balance_1: +1.11111 TPower_G1 +1.11111 PPower_P1 +1 NodeSpillage_Plant1 +1 Level_Plant1 -1 Flow_River1  = 0
- Plant1_balance_2: -1.11111 TPower_G1 -1.11111 PPower_P1 +1 Flow_River2  = 0
- Satisfy_demand: +1 TPower_G1 -1 PPower_P1  >= 50
+ Reservoir1_Node_Balance: -1.0101 P2XPower_P2X1 +1 NodeSpillage_Reservoir1 +1 Level_Reservoir1 +1 Flow_River1  = 200
+ Reservoir2_Node_Balance: +1 NodeSpillage_Reservoir2 +1 Level_Reservoir2 -1 Flow_River2  = 300
+ Plant1_Turbine_balance: -1.11111 TPower_G1 +1 Flow_River2  = 0
+ Plant1_Node_Balance: +1 NodeSpillage_Plant1 +1 Level_Plant1 -1 Flow_River1 +1 Flow_River2  = 0
+ Satisfy_demand: +1 TPower_G1 -1 P2XPower_P2X1  >= 50
 Bounds
  0 <= TPower_G1 <= 200
- 0 <= PPower_P1 <= 100
  0 <= P2XPower_P2X1 <= 100
  0 <= NodeSpillage_Reservoir1 <= 1e+20
  0 <= Level_Reservoir1 <= 1000
