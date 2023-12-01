@@ -10,8 +10,8 @@ Añadir pruebas diferentes weight CAPEX
 Añadir figures
 
 
-.. figure:: figures/investments/Figure_1_w_capex-e-6.png
-    :alt: GridCal user interface.
+.. figure:: ../figures/investments/Figure_1_w_capex-e-6.png
+    :alt: Results1
     :scale: 50 %
 
 

@@ -29,14 +29,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="...">
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/Figure_1_w_capex-e-6.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/Figure_1_w_capex_e-4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/Figure_1_w_capex_e-5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/Figure_1_w_capex_e-5_v2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/Figure_1_wo_capex.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_options.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/investments_evaluation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/investments_evaluation.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/investments_evaluation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/simulations.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/try_investment_optimization.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/try_investment_optimization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,11 +146,11 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Jana\GridCal\doc\rst_source\theory" />
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
       <recent name="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
       <recent name="$PROJECT_DIR$/src/GridCalGui" />
       <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
   <component name="RunManager" selected="Python.try_inv_op">
@@ -1578,7 +1580,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="435" />
+    <option name="localTasksCounter" value="437" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1612,7 +1614,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Small improvements for the MIP interfaces" />
     <MESSAGE value="Minimal interface refactor" />
     <MESSAGE value="Linear analysis refactor" />
     <MESSAGE value="more graphic_obj refactoring" />
@@ -1636,6 +1637,7 @@
     <MESSAGE value="Add set_investment_status function" />
     <MESSAGE value="Deactivate plt.ion() for personal usage" />
     <MESSAGE value="Add scores functions and change nc to mc" />
+    <MESSAGE value="Add figures" />
     <MESSAGE value="..." />
     <option name="LAST_COMMIT_MESSAGE" value="..." />
   </component>
@@ -2082,12 +2084,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
-          <line>113</line>
+          <line>109</line>
           <option name="timeStamp" value="1211" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
-          <line>200</line>
+          <line>190</line>
           <option name="timeStamp" value="1221" />
         </line-breakpoint>
       </breakpoints>
