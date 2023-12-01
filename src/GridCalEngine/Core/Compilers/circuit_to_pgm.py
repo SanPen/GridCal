@@ -29,16 +29,16 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 try:
     import power_grid_model as pgm
     from power_grid_model import CalculationMethod, CalculationType
-    from power_grid_model.validation import validate_input_data, assert_valid_input_data, assert_valid_batch_data, \
-        ValidationError, ValidationException
+    from power_grid_model.validation import (validate_input_data,
+                                             assert_valid_input_data,
+                                             assert_valid_batch_data,
+                                             ValidationError,
+                                             ValidationException)
     from power_grid_model.utils import export_json_data
     from power_grid_model.errors import PowerGridError
     PGM_AVAILABLE = True
-    # print("Power Grid Model available")
-
 except ImportError:
     PGM_AVAILABLE = False
-    # print("power grid model is not available, try pip install power-grid-model")
 
 
 '''
