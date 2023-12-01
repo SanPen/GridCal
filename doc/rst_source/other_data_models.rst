@@ -2590,36 +2590,38 @@ Bus
 
 .. table::
 
-    ==========  ==========  ====  =========  =========  ===============================================================================  =======
-       name     class_type  unit  mandatory  max_chars                                   descriptions                                    comment
-    ==========  ==========  ====  =========  =========  ===============================================================================  =======
-    idtag       str               False                 Unique ID                                                                               
-    name        str               False                 Name of the bus                                                                         
-    code        str               False                 Some code to further identify the bus                                                   
-    active      bool              False                 Is the bus active? used to disable the bus.                                             
-    is_slack    bool              False                 Force the bus to be of slack type.                                                      
-    is_dc       bool              False                 Is this bus of DC type?.                                                                
-    is_tr_bus   bool              False                 Is this bus part of a composite transformer, such as  a 3-winding transformer?.         
-    Vnom        float       kV    False                 Nominal line voltage of the bus.                                                        
-    Vm0         float       p.u.  False                 Voltage module guess.                                                                   
-    Va0         float       rad.  False                 Voltage angle guess.                                                                    
-    Vmin        float       p.u.  False                 Lower range of allowed voltage module.                                                  
-    Vmax        float       p.u.  False                 Higher range of allowed voltage module.                                                 
-    angle_min   float       rad.  False                 Lower range of allowed voltage angle.                                                   
-    angle_max   float       rad.  False                 Higher range of allowed voltage angle.                                                  
-    r_fault     float       p.u.  False                 Resistance of the fault.This is used for short circuit studies.                         
-    x_fault     float       p.u.  False                 Reactance of the fault.This is used for short circuit studies.                          
-    x           float       px    False                 x position in pixels.                                                                   
-    y           float       px    False                 y position in pixels.                                                                   
-    h           float       px    False                 height of the bus in pixels.                                                            
-    w           float       px    False                 Width of the bus in pixels.                                                             
-    country     Country           False                 Country of the bus                                                                      
-    area        Area              False                 Area of the bus                                                                         
-    zone        Zone              False                 Zone of the bus                                                                         
-    substation  Substation        False                 Substation of the bus.                                                                  
-    longitude   float       deg   False                 longitude of the bus.                                                                   
-    latitude    float       deg   False                 latitude of the bus.                                                                    
-    ==========  ==========  ====  =========  =========  ===============================================================================  =======
+    ===================  ==========  ======  =========  =========  ===============================================================================  =======
+           name          class_type   unit   mandatory  max_chars                                   descriptions                                    comment
+    ===================  ==========  ======  =========  =========  ===============================================================================  =======
+    idtag                str                 False                 Unique ID                                                                               
+    name                 str                 False                 Name of the bus                                                                         
+    code                 str                 False                 Some code to further identify the bus                                                   
+    active               bool                False                 Is the bus active? used to disable the bus.                                             
+    is_slack             bool                False                 Force the bus to be of slack type.                                                      
+    is_dc                bool                False                 Is this bus of DC type?.                                                                
+    is_tr_bus            bool                False                 Is this bus part of a composite transformer, such as  a 3-winding transformer?.         
+    Vnom                 float       kV      False                 Nominal line voltage of the bus.                                                        
+    Vm0                  float       p.u.    False                 Voltage module guess.                                                                   
+    Va0                  float       rad.    False                 Voltage angle guess.                                                                    
+    Vmin                 float       p.u.    False                 Lower range of allowed voltage module.                                                  
+    Vmax                 float       p.u.    False                 Higher range of allowed voltage module.                                                 
+    voltage_module_cost  float       €/unit  False                 Cost of over and under voltages                                                         
+    angle_min            float       rad.    False                 Lower range of allowed voltage angle.                                                   
+    angle_max            float       rad.    False                 Higher range of allowed voltage angle.                                                  
+    voltage_angle_cost   float       €/unit  False                 Cost of over and under angles                                                           
+    r_fault              float       p.u.    False                 Resistance of the fault.This is used for short circuit studies.                         
+    x_fault              float       p.u.    False                 Reactance of the fault.This is used for short circuit studies.                          
+    x                    float       px      False                 x position in pixels.                                                                   
+    y                    float       px      False                 y position in pixels.                                                                   
+    h                    float       px      False                 height of the bus in pixels.                                                            
+    w                    float       px      False                 Width of the bus in pixels.                                                             
+    country              Country             False                 Country of the bus                                                                      
+    area                 Area                False                 Area of the bus                                                                         
+    zone                 Zone                False                 Zone of the bus                                                                         
+    substation           Substation          False                 Substation of the bus.                                                                  
+    longitude            float       deg     False                 longitude of the bus.                                                                   
+    latitude             float       deg     False                 latitude of the bus.                                                                    
+    ===================  ==========  ======  =========  =========  ===============================================================================  =======
 
 
 Connectivity Node

@@ -2482,10 +2482,11 @@ class SimulationsMain(TimeEventsMain):
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
                         self.circuit.investments_groups)
 
+                    options = sim.InvestmentsEvaluationOptions(solver=method,
+                                                            max_eval=max_eval,
+                                                            pf_options=self.get_selected_power_flow_options())
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
-                                                          method=method,
-                                                          max_eval=max_eval,
-                                                          pf_options=self.get_selected_power_flow_options())
+                                                          options=options)
 
                     self.session.run(drv,
                                      post_func=self.post_run_investments_evaluation,

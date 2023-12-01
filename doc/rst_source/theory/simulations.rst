@@ -51,3 +51,10 @@ PTDF (Power Transmission Distribution Factors)
     ptdf
 
 
+Investments Evaluation
+==============================================
+
+.. toctree::
+    :maxdepth: 3
+
+    investments_evaluation

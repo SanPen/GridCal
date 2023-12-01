@@ -171,7 +171,8 @@ if __name__ == "__main__":
     mvrsm = InvestmentEvaluationMethod.MVRSM
 
     print(4*len(grid.investments))
-    inv = sim.InvestmentsEvaluationDriver(grid, method=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     inv.run()
 
     inv_results = inv.results
