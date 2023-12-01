@@ -133,6 +133,12 @@ def runGridCal() -> None:
 
     window_ = MainGUI()
 
+    # process the argument if provided
+    if len(sys.argv) > 1:
+        f_name = sys.argv[1]
+        window_.open_file_now(filenames=[f_name])
+
+    # launch
     h_ = 780
     window_.resize(int(1.7 * h_), h_)  # almost the golden ratio :)
     window_.show()

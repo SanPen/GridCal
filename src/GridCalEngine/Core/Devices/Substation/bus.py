@@ -124,6 +124,7 @@ class Bus(EditableDevice):
 
         # minimum voltage limit
         self.Vmin = vmin
+        self.voltage_module_cost = 0
 
         # maximum voltage limit
         self.Vmax = vmax
@@ -135,6 +136,8 @@ class Bus(EditableDevice):
         self.angle_min = angle_min
 
         self.angle_max = angle_max
+
+        self.voltage_angle_cost = 0
 
         # summation of lower reactive power limits connected
         self.Qmin_sum = 0
@@ -221,10 +224,12 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
                       profile_name='')
+        self.register(key='voltage_module_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages')
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
                       profile_name='')
         self.register(key='angle_max', units='rad.', tpe=float, definition='Higher range of allowed voltage angle.',
                       profile_name='')
+        self.register(key='voltage_angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x_fault', units='p.u.', tpe=float,

@@ -140,7 +140,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             y_label = ''
             title = ''
 
-            plt.ion()
+            #plt.ion()
             color_norm = plt_colors.LogNorm()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
@@ -151,6 +151,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             fig.suptitle(result_type.value[0])
             plt.tight_layout()
             plt.show()
+            print('Plot!')
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
