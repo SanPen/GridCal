@@ -25,7 +25,6 @@ from matplotlib.colors import LinearSegmentedColormap
 # Engine imports
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCalEngine.basic_structures as bs
 import GridCalEngine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
@@ -37,7 +36,10 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
-from GridCalEngine.enumerations import DeviceType, AvailableTransferMode, GenerationNtcFormulation
+from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
+                                        ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
+                                        ZonalGrouping, ContingencyEngine, InvestmentEvaluationMethod, EngineType,
+                                        BranchImpedanceMode)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -56,30 +58,30 @@ class SimulationsMain(TimeEventsMain):
 
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
-        self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-        self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
-        self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
-        self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
-        self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
-        self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
-        self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
-        self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
-        self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+        self.solvers_dict[SolverType.NR.value] = SolverType.NR
+        self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
+        self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+        self.solvers_dict[SolverType.LM.value] = SolverType.LM
+        self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+        self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+        self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+        self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+        self.solvers_dict[SolverType.DC.value] = SolverType.DC
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
 
         # reactive power controls
         self.q_control_modes_dict = OrderedDict()
-        self.q_control_modes_dict['No control'] = bs.ReactivePowerControlMode.NoControl
-        self.q_control_modes_dict['Direct'] = bs.ReactivePowerControlMode.Direct
+        self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
+        self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
         lst = list(self.q_control_modes_dict.keys())
         self.ui.reactive_power_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # taps controls (transformer voltage regulator)
         self.taps_control_modes_dict = OrderedDict()
-        self.taps_control_modes_dict['No control'] = bs.TapsControlMode.NoControl
-        self.taps_control_modes_dict['Direct'] = bs.TapsControlMode.Direct
+        self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
+        self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
         lst = list(self.taps_control_modes_dict.keys())
         self.ui.taps_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
@@ -95,21 +97,21 @@ class SimulationsMain(TimeEventsMain):
 
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
-        self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
+        self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
         if NEWTON_PA_AVAILABLE:
-            self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
-        self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
+        self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
-        self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
-        self.mip_solvers_dict[bs.MIPSolvers.HIGHS.value] = bs.MIPSolvers.HIGHS
-        self.mip_solvers_dict[bs.MIPSolvers.GLOP.value] = bs.MIPSolvers.GLOP
-        self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
-        self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
-        self.mip_solvers_dict[bs.MIPSolvers.GUROBI.value] = bs.MIPSolvers.GUROBI
-        self.mip_solvers_dict[bs.MIPSolvers.XPRESS.value] = bs.MIPSolvers.XPRESS
+        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
+        self.mip_solvers_dict[MIPSolvers.HIGHS.value] = MIPSolvers.HIGHS
+        self.mip_solvers_dict[MIPSolvers.GLOP.value] = MIPSolvers.GLOP
+        self.mip_solvers_dict[MIPSolvers.SCIP.value] = MIPSolvers.SCIP
+        self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
+        self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
+        self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
 
         # branch types for reduction
         mdl = gf.get_list_model([DeviceType.LineDevice.value,
@@ -118,17 +120,17 @@ class SimulationsMain(TimeEventsMain):
 
         # OPF grouping modes
         self.opf_time_groups = OrderedDict()
-        self.opf_time_groups[bs.TimeGrouping.NoGrouping.value] = bs.TimeGrouping.NoGrouping
-        self.opf_time_groups[bs.TimeGrouping.Monthly.value] = bs.TimeGrouping.Monthly
-        self.opf_time_groups[bs.TimeGrouping.Weekly.value] = bs.TimeGrouping.Weekly
-        self.opf_time_groups[bs.TimeGrouping.Daily.value] = bs.TimeGrouping.Daily
-        self.opf_time_groups[bs.TimeGrouping.Hourly.value] = bs.TimeGrouping.Hourly
+        self.opf_time_groups[TimeGrouping.NoGrouping.value] = TimeGrouping.NoGrouping
+        self.opf_time_groups[TimeGrouping.Monthly.value] = TimeGrouping.Monthly
+        self.opf_time_groups[TimeGrouping.Weekly.value] = TimeGrouping.Weekly
+        self.opf_time_groups[TimeGrouping.Daily.value] = TimeGrouping.Daily
+        self.opf_time_groups[TimeGrouping.Hourly.value] = TimeGrouping.Hourly
         self.ui.opf_time_grouping_comboBox.setModel(gf.get_list_model(list(self.opf_time_groups.keys())))
 
         self.opf_zonal_groups = OrderedDict()
-        self.opf_zonal_groups[bs.ZonalGrouping.NoGrouping.value] = bs.ZonalGrouping.NoGrouping
-        # self.opf_zonal_groups[bs.ZonalGrouping.Area.value] = bs.ZonalGrouping.Area
-        self.opf_zonal_groups[bs.ZonalGrouping.All.value] = bs.ZonalGrouping.All
+        self.opf_zonal_groups[ZonalGrouping.NoGrouping.value] = ZonalGrouping.NoGrouping
+        # self.opf_zonal_groups[ZonalGrouping.Area.value] = ZonalGrouping.Area
+        self.opf_zonal_groups[ZonalGrouping.All.value] = ZonalGrouping.All
         self.ui.opfZonalGroupByComboBox.setModel(gf.get_list_model(list(self.opf_zonal_groups.keys())))
 
         # voltage collapse mode (full, nose)
@@ -138,9 +140,9 @@ class SimulationsMain(TimeEventsMain):
 
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
-        self.contingency_engines_dict[bs.ContingencyEngine.PowerFlow.value] = bs.ContingencyEngine.PowerFlow
-        self.contingency_engines_dict[bs.ContingencyEngine.PTDF.value] = bs.ContingencyEngine.PTDF
-        self.contingency_engines_dict[bs.ContingencyEngine.HELM.value] = bs.ContingencyEngine.HELM
+        self.contingency_engines_dict[ContingencyEngine.PowerFlow.value] = ContingencyEngine.PowerFlow
+        self.contingency_engines_dict[ContingencyEngine.PTDF.value] = ContingencyEngine.PTDF
+        self.contingency_engines_dict[ContingencyEngine.HELM.value] = ContingencyEngine.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods
@@ -154,12 +156,9 @@ class SimulationsMain(TimeEventsMain):
 
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[
-            bs.InvestmentEvaluationMethod.Independent.value] = bs.InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[
-            bs.InvestmentEvaluationMethod.Hyperopt.value] = bs.InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[
-            bs.InvestmentEvaluationMethod.MVRSM.value] = bs.InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -256,7 +255,7 @@ class SimulationsMain(TimeEventsMain):
         """
         eng = self.get_preferred_engine()
 
-        if eng == bs.EngineType.NewtonPA:
+        if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
             self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
@@ -265,21 +264,21 @@ class SimulationsMain(TimeEventsMain):
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-            self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
-            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
+            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
+            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
-            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
-            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
-            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
-            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
-            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
-            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
-            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
-            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
+            self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+            self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+            self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+            self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+            self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+            self.solvers_dict[SolverType.DC.value] = SolverType.DC
 
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
@@ -287,7 +286,7 @@ class SimulationsMain(TimeEventsMain):
             mip_solvers = get_newton_mip_solvers_list()
             self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
-        elif eng == bs.EngineType.GridCal:
+        elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
             self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
@@ -296,21 +295,21 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
+            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
-            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
-            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
-            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
-            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
-            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
-            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
-            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
-            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
+            self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+            self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+            self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+            self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+            self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+            self.solvers_dict[SolverType.DC.value] = SolverType.DC
 
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
@@ -319,7 +318,7 @@ class SimulationsMain(TimeEventsMain):
             mip_solvers = get_available_mip_solvers()
             self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
-        elif eng == bs.EngineType.Bentayga:
+        elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
             self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
@@ -328,26 +327,26 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
+            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
-            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-            self.solvers_dict[bs.SolverType.NRI.value] = bs.SolverType.NRI
-            self.solvers_dict[bs.SolverType.IWAMOTO.value] = bs.SolverType.IWAMOTO
-            self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
-            self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
-            self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
-            self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
-            self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
-            self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
+            self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+            self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+            self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+            self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+            self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+            self.solvers_dict[SolverType.DC.value] = SolverType.DC
 
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
-        elif eng == bs.EngineType.PGM:
+        elif eng == EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
             self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
             self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
@@ -356,16 +355,16 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-            self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
+            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
-            self.solvers_dict[bs.SolverType.NR.value] = bs.SolverType.NR
-            self.solvers_dict[bs.SolverType.BFS.value] = bs.SolverType.BFS
-            self.solvers_dict[bs.SolverType.BFS_linear.value] = bs.SolverType.BFS_linear
-            self.solvers_dict[bs.SolverType.Constant_Impedance_linear.value] = bs.SolverType.Constant_Impedance_linear
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.BFS.value] = SolverType.BFS
+            self.solvers_dict[SolverType.BFS_linear.value] = SolverType.BFS_linear
+            self.solvers_dict[SolverType.Constant_Impedance_linear.value] = SolverType.Constant_Impedance_linear
 
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
@@ -554,9 +553,9 @@ class SimulationsMain(TimeEventsMain):
             retry_with_other_methods = False
 
         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
-            branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Upper
+            branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
         else:
-            branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Specified
+            branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
         temp_correction = self.ui.temperature_correction_checkBox.isChecked()
 
@@ -771,9 +770,9 @@ class SimulationsMain(TimeEventsMain):
                         self.LOCK()
 
                         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
-                            branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Lower
+                            branch_impedance_tolerance_mode = BranchImpedanceMode.Lower
                         else:
-                            branch_impedance_tolerance_mode = bs.BranchImpedanceMode.Specified
+                            branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
                         # get the power flow options from the GUI
                         sc_options = sim.ShortCircuitOptions(bus_index=sel_buses[0],

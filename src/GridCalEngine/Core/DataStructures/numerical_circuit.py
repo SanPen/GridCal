@@ -23,7 +23,8 @@ from typing import List, Tuple, Dict, Union
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import BranchImpedanceMode, Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.topology as tp
 
 from GridCalEngine.Core.topology import compile_types

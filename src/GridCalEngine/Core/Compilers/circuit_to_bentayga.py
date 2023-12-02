@@ -17,13 +17,13 @@
 import os.path
 import numpy as np
 
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.basic_structures import SolverType, ReactivePowerControlMode
+from GridCalEngine.enumerations import SolverType, ReactivePowerControlMode, HvdcControlType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import ConvergenceReport
+
 
 try:
     import bentayga as btg
@@ -478,8 +478,8 @@ def get_hvdc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, t
     :param ntime: number of time steps
     """
 
-    cmode_dict = {dev.HvdcControlType.type_0_free: btg.HvdcControlType.free,
-                  dev.HvdcControlType.type_1_Pset: btg.HvdcControlType.Pdc}
+    cmode_dict = {HvdcControlType.type_0_free: btg.HvdcControlType.free,
+                  HvdcControlType.type_1_Pset: btg.HvdcControlType.Pdc}
 
     for i, elm in enumerate(circuit.hvdc_lines):
         hvdc = btg.HvdcLine(uuid=elm.idtag,
@@ -721,7 +721,7 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results.area_names = [a.name for a in grid.areas]
 
     for rep in res.stats[0]:
-        report = bs.ConvergenceReport()
+        report = ConvergenceReport()
         for i in range(len(rep.converged)):
             report.add(method=rep.solver[i].name,
                        converged=rep.converged[i],

@@ -1,6 +1,6 @@
 import numpy as np
 import numba as nb
-from GridCalEngine.basic_structures import BusMode
+from GridCalEngine.enumerations import BusMode
 
 
 def get_q_increment(V1, V2, k):

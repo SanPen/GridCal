@@ -21,14 +21,10 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import List, Union, Tuple, Callable
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, GenerationNtcFormulation
-
-from GridCalEngine.basic_structures import ZonalGrouping
-from GridCalEngine.basic_structures import MIPSolvers
+from GridCalEngine.enumerations import MIPSolvers, ZonalGrouping
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
-from GridCalEngine.Core.DataStructures.battery_data import BatteryData
 from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData

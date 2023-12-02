@@ -20,8 +20,8 @@ from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.topology as tp
 
 
@@ -53,7 +53,7 @@ class DriverTemplate:
 
     def __init__(self,
                  grid: MultiCircuit,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         Constructor
         :param grid: MultiCircuit instance
@@ -132,7 +132,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             grid: MultiCircuit,
             time_indices: IntVec,
             clustering_results: Union["ClusteringResults", None] = None,
-            engine: bs.EngineType = bs.EngineType.GridCal,
+            engine: EngineType = EngineType.GridCal,
             check_time_series: bool = True):
         """
         Time Series driver constructor

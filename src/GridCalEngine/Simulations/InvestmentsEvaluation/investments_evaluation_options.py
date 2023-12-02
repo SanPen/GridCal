@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.enumerations import InvestmentsEvaluationObjectives
+from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.basic_structures import InvestmentEvaluationMethod
 
 
 class InvestmentsEvaluationOptions:
+    """
+    InvestmentsEvaluationOptions
+    """
 
     def __init__(self, max_eval: int,
                  pf_options: PowerFlowOptions,
@@ -31,7 +33,19 @@ class InvestmentsEvaluationOptions:
                  w_capex: float = 1.0,
                  w_opex: float = 1.0,
                  objf_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow):
+        """
 
+        :param max_eval:
+        :param pf_options:
+        :param solver:
+        :param w_overload:
+        :param w_voltage_module:
+        :param w_voltage_angle:
+        :param w_losses:
+        :param w_capex:
+        :param w_opex:
+        :param objf_tpe:
+        """
         self.max_eval = max_eval
 
         self.pf_options = pf_options

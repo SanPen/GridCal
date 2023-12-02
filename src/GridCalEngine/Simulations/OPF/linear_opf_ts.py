@@ -22,8 +22,6 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
-from GridCalEngine.basic_structures import ZonalGrouping
-from GridCalEngine.basic_structures import MIPSolvers
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
@@ -35,9 +33,9 @@ from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency, \
-    LinearMultiContingencies
+from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
+                                                                     LinearMultiContingencies)
 
 
 def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
@@ -509,7 +507,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                                                                 join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * \
+                                           gen_vars.producing[t, k]
 
                     # start-up cost
                     gen_vars.cost[t, k] += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
@@ -1234,7 +1233,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
-
             # amount of emissions per gas
             emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
 
@@ -1242,7 +1240,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # add fuels ----------------------------------------------------------------------------------------------------
         if gen_fuel_rates_matrix.shape[0] > 0:
-
             # amount of fuels
             fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
 

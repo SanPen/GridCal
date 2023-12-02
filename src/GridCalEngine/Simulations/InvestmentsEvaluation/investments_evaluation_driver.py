@@ -17,8 +17,7 @@
 import numpy as np
 import hyperopt
 import functools
-import copy
-import time
+
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
@@ -31,7 +30,8 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
-from GridCalEngine.basic_structures import IntVec, InvestmentEvaluationMethod
+from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 
 

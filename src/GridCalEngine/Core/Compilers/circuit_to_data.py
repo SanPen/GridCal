@@ -19,8 +19,9 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import BusMode, BranchImpedanceMode, CxVec, ExternalGridMode
-from GridCalEngine.enumerations import ConverterControlType, TransformerControlType, HvdcControlType
+from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, ConverterControlType,
+                                        TransformerControlType, HvdcControlType)
+from GridCalEngine.basic_structures import CxVec
 import GridCalEngine.Core.DataStructures as ds
 
 

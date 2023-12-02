@@ -32,7 +32,8 @@ from GridCalEngine.Core import EditableDevice, Switch, UPFC, VSC, Winding, Trans
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
-import GridCalEngine.basic_structures as bs
+# import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import DeviceType
 
@@ -179,7 +180,7 @@ class MultiCircuit:
         self.countries: List[dev.Country] = list()  # [self.default_country]
 
         # logger of events
-        self.logger: bs.Logger = bs.Logger()
+        self.logger: Logger = Logger()
 
         # master time profile
         self.time_profile: DateVec = None
@@ -1894,7 +1895,7 @@ class MultiCircuit:
         if obj in self.buses:
             self.buses.remove(obj)
 
-    def add_line(self, obj: dev.Line, logger: Union[bs.Logger, DataLogger] = bs.Logger()):
+    def add_line(self, obj: dev.Line, logger: Union[Logger, DataLogger] = Logger()):
         """
         Add a line object
         :param obj: Line instance
@@ -2394,11 +2395,11 @@ class MultiCircuit:
         self.delete_transformer_template_dependency(obj=obj)
         self.transformer_types.remove(obj)
 
-    def apply_all_branch_types(self) -> bs.Logger:
+    def apply_all_branch_types(self) -> Logger:
         """
         Apply all the branch types
         """
-        logger = bs.Logger()
+        logger = Logger()
         for branch in self.lines:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
@@ -3216,7 +3217,7 @@ class MultiCircuit:
     def fill_xy_from_lat_lon(self,
                              destructive: bool = True,
                              factor: float = 0.01,
-                             remove_offset: bool = True) -> bs.Logger:
+                             remove_offset: bool = True) -> Logger:
         """
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
@@ -3233,7 +3234,7 @@ class MultiCircuit:
             lat[i] = bus.latitude
 
         # perform the coordinate transformation
-        logger = bs.Logger()
+        logger = Logger()
         try:
             import pyproj
         except ImportError:
@@ -3278,7 +3279,7 @@ class MultiCircuit:
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
-        logger = bs.Logger()
+        logger = Logger()
         try:
             import pyproj
         except ImportError:
@@ -3300,7 +3301,7 @@ class MultiCircuit:
 
         return logger
 
-    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> bs.Logger:
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> Logger:
         """
         Import the buses' latitude and longitude
         :param df: Pandas DataFrame with the information
@@ -3309,7 +3310,7 @@ class MultiCircuit:
         :param lon_col: longitude column name
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         lats = df[lat_col].values
         lons = df[lon_col].values
         names = df[bus_col].values
@@ -3339,7 +3340,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3369,7 +3370,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3394,7 +3395,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3659,7 +3660,7 @@ class MultiCircuit:
         devices_key_dict = {d.idtag: d for d in devices}
         devices_dict = {**devices_code_dict, **devices_key_dict}
 
-        logger = bs.Logger()
+        logger = Logger()
 
         for contingency in contingencies:
             if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():

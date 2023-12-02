@@ -19,17 +19,17 @@ import numpy as np
 from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import BranchImpedanceMode, CxVec
+from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_ph3, \
-    short_circuit_unbalanced
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
+                                                                                short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices import Branch, Bus
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType, BranchImpedanceMode
 
 
 class ShortCircuitOptions:

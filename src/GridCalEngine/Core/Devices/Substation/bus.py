@@ -19,7 +19,8 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import BusMode, ExternalGridMode, Vec, CxVec
+from GridCalEngine.enumerations import BusMode, ExternalGridMode
+from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Core.Devices.Substation.substation import Substation

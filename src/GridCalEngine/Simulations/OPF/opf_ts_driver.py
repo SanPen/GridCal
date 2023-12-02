@@ -19,9 +19,8 @@ import datetime
 import numpy as np
 import pandas as pd
 from typing import Union
-from GridCalEngine.basic_structures import TimeGrouping, get_time_groups
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import SolverType
+from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
@@ -31,7 +30,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-import GridCalEngine.basic_structures as bs
+# import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import IntVec, Vec, get_time_groups
 
 
 class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -41,9 +41,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(self,
                  grid: MultiCircuit,
                  options: Union[OptimalPowerFlowOptions, None] = None,
-                 time_indices: Union[bs.IntVec, None] = None,
+                 time_indices: Union[IntVec, None] = None,
                  clustering_results: Union[ClusteringResults, None] = None,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         OptimalPowerFlowTimeSeriesDriver class constructor
         :param grid: MultiCircuit Object
@@ -194,7 +194,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         n = len(groups)
         i = 1
-        energy_0: Union[bs.Vec, None] = None  # at the beginning
+        energy_0: Union[Vec, None] = None  # at the beginning
 
         while i < n and not self.__cancel__:
             start_ = groups[i - 1]
@@ -315,7 +315,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.tic()
 
-        if self.engine == bs.EngineType.GridCal:
+        if self.engine == EngineType.GridCal:
 
             if self.options.grouping == TimeGrouping.NoGrouping:
                 self.opf()
@@ -328,7 +328,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                     else:
                         self.opf_by_groups()
 
-        elif self.engine == bs.EngineType.NewtonPA:
+        elif self.engine == EngineType.NewtonPA:
 
             if self.time_indices is None:
                 ti = 0
