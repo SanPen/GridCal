@@ -25,6 +25,9 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.basic_structures import ConvergenceReport
 
 
+BENTAYGA_RECOMMENDED_VERSION = "0.0.1"
+BENTAYGA_VERSION = ''
+BENTAYGA_AVAILABLE = False
 try:
     import bentayga as btg
 
@@ -37,23 +40,18 @@ try:
                 btg.activate_license(btg_license)
                 if btg.is_license_activated():
                     BENTAYGA_AVAILABLE = True
+                    BENTAYGA_VERSION = btg.get_version()
                 else:
-                    # print('Bentayga v' + btg.get_version(),
-                    #       "installed, tried to activate with {} but the license did not work :/".format(btg_license))
                     BENTAYGA_AVAILABLE = False
             except RuntimeError:
-                # print("Bentayga: Error reading the license file :(")
                 BENTAYGA_AVAILABLE = False
         else:
-            # print('Bentayga v' + btg.get_version(), "installed but not licensed")
             BENTAYGA_AVAILABLE = False
     else:
-        # print('Bentayga v' + btg.get_version())
         BENTAYGA_AVAILABLE = True
 
 except ImportError:
     BENTAYGA_AVAILABLE = False
-    # print('Bentayga is not available')
 
 # numpy integer type for bentayga's uword
 BINT = np.ulonglong

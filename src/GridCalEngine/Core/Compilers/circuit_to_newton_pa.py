@@ -34,12 +34,13 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.basic_structures import ConvergenceReport
 
 
+NEWTON_PA_RECOMMENDED_VERSION = "2.1.13"
+NEWTON_PA_VERSION = ''
+NEWTON_PA_AVAILABLE = False
 try:
     import newtonpa as npa
 
     activation = npa.findAndActivateLicense()
-
-    RECOMMENDED_NEWTON_VERSION = "2.1.13"
 
     # activate
     if not npa.isLicenseActivated():
@@ -49,8 +50,8 @@ try:
             if npa.isLicenseActivated():
                 NEWTON_PA_AVAILABLE = True
 
-                if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
-                    warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
+                if npa.get_version() < NEWTON_PA_RECOMMENDED_VERSION:
+                    warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
                                   f"instead of {npa.get_version()}")
             else:
                 # print('Newton Power Analytics v' + npa.get_version(),
@@ -62,13 +63,15 @@ try:
     else:
         # print('Newton Power Analytics v' + npa.get_version())
         NEWTON_PA_AVAILABLE = True
+        NEWTON_PA_VERSION = npa.get_version()
 
-        if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
-            warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
-                          f"instead of {npa.get_version()}")
+        if NEWTON_PA_VERSION < NEWTON_PA_RECOMMENDED_VERSION:
+            warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
+                          f"instead of {NEWTON_PA_VERSION}")
 
 except ImportError as e:
     NEWTON_PA_AVAILABLE = False
+    NEWTON_PA_VERSION = ''
     # print('Newton Power Analytics is not available:', e)
 
 # numpy integer type for Newton's uword
