@@ -304,6 +304,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
     else:
         names = ['branch ' + str(i) for i in range(n)]
     for i in range(len(table)):
+        f_idx = int(table[i, matpower_branches.F_BUS])
+        t_idx = int(table[i, matpower_branches.T_BUS])
         f = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.F_BUS])]]
         t = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.T_BUS])]]
 
@@ -365,6 +367,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
 
                 branch = dev.VSC(bus_from=f,
                                  bus_to=t,
+                                 code="{0}_{1}_1".format(f_idx, t_idx),
                                  name='VSC' + str(len(circuit.vsc_devices) + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
                                  r=table[i, matpower_branches.BR_R],
@@ -403,6 +406,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
 
                     branch = dev.Transformer2W(bus_from=f,
                                                bus_to=t,
+                                               code="{0}_{1}_1".format(f_idx, t_idx),
                                                name=names[i],
                                                r=table[i, matpower_branches.BR_R],
                                                x=table[i, matpower_branches.BR_X],
@@ -418,6 +422,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                 else:
                     branch = dev.Line(bus_from=f,
                                       bus_to=t,
+                                      code="{0}_{1}_1".format(f_idx, t_idx),
                                       name=names[i],
                                       r=table[i, matpower_branches.BR_R],
                                       x=table[i, matpower_branches.BR_X],
@@ -435,6 +440,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
 
                 branch = dev.Transformer2W(bus_from=f,
                                            bus_to=t,
+                                           code="{0}_{1}_1".format(f_idx, t_idx),
                                            name=names[i],
                                            r=table[i, matpower_branches.BR_R],
                                            x=table[i, matpower_branches.BR_X],
@@ -450,6 +456,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
             else:
                 branch = dev.Line(bus_from=f,
                                   bus_to=t,
+                                  code="{0}_{1}_1".format(f_idx, t_idx),
                                   name=names[i],
                                   r=table[i, matpower_branches.BR_R],
                                   x=table[i, matpower_branches.BR_X],
@@ -465,6 +472,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
         if line.bus_to.is_dc and line.bus_from.is_dc:
             dc_line = dev.DcLine(bus_from=line.bus_from,
                                  bus_to=line.bus_to,
+                                 code="{0}_{1}_1".format(f_idx, t_idx),
                                  name=line.name,
                                  active=line.active,
                                  rate=line.rate,
