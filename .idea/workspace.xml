@@ -576,8 +576,8 @@
     <list>
       <item itemvalue="Python.fluids_try" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
       <item itemvalue="Python tests.Nosetests in deep_copy_test.py" />
+      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
