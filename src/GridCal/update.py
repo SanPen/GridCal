@@ -33,9 +33,10 @@ def find_latest_version(name='GridCal'):
     return latest_version
 
 
-def check_version():
+def check_version(name='GridCal'):
     """
     Check package version
+    :param name: package name, GridCal by default
     :return: version status code, pipy version string
 
     version status code:
@@ -45,7 +46,7 @@ def check_version():
     +1: we are behind pipy, we can update
     """
 
-    latest_version = find_latest_version()
+    latest_version = find_latest_version(name=name)
 
     pipy_version = pkg_resources.parse_version(latest_version)
     gc_version = pkg_resources.parse_version(__GridCal_VERSION__)

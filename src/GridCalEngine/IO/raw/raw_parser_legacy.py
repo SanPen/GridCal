@@ -22,7 +22,7 @@ from typing import List, AnyStr, Dict, Union
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import Logger
 
 
 class PSSeObject:
@@ -85,7 +85,7 @@ class PSSeGrid:
         self.areas: List[PSSeArea] = list()
         self.zones: List[PSSeZone] = list()
 
-    def get_circuit(self, logger: bs.Logger, branch_connection_voltage_tolerance: float = 0.1) -> MultiCircuit:
+    def get_circuit(self, logger: Logger, branch_connection_voltage_tolerance: float = 0.1) -> MultiCircuit:
         """
         Returns GridCal circuit
         :param logger: Logger
@@ -272,7 +272,7 @@ class PSSeBus(PSSeObject):
         self.EVHI = 0
         self.EVLO = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -373,7 +373,7 @@ class PSSeLoad(PSSeObject):
         self.DGENM = 0
         self.LOADTYPE = ''
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
 
         """
 
@@ -412,7 +412,7 @@ class PSSeLoad(PSSeObject):
         else:
             logger.add_warning('Load not implemented for version', str(version))
 
-    def get_object(self, bus: dev.Bus, logger: bs.Logger):
+    def get_object(self, bus: dev.Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
@@ -477,7 +477,7 @@ class PSSeSwitchedShunt(PSSeObject):
         self.RMIDNT = 0
         self.BINIT = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -501,7 +501,7 @@ class PSSeSwitchedShunt(PSSeObject):
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: dev.Bus, logger: bs.Logger):
+    def get_object(self, bus: dev.Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
@@ -542,7 +542,7 @@ class PSSeShunt(PSSeObject):
         self.GL = 0
         self.BL = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -554,7 +554,7 @@ class PSSeShunt(PSSeObject):
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: dev.Bus, logger: bs.Logger):
+    def get_object(self, bus: dev.Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
@@ -616,7 +616,7 @@ class PSSeGenerator(PSSeObject):
         self.WMOD = 0
         self.WPF = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -651,7 +651,7 @@ class PSSeGenerator(PSSeObject):
         else:
             logger.add_warning('Generator not implemented for version', str(version))
 
-    def get_object(self, logger: bs.Logger):
+    def get_object(self, logger: Logger):
         """
         Return Newton Load object
         Returns:
@@ -713,7 +713,7 @@ class PSSeInductionMachine(PSSeObject):
         self.IA2 = 0
         self.XAMULT = 1.0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -748,7 +748,7 @@ class PSSeInductionMachine(PSSeObject):
                             P=self.PSET,
                             vset=self.RATEKV,
                             Snom=self.MBASE,
-                            active=bool(self.STATUS))
+                            active=bool(self.STAT))
 
         return elm
 
@@ -801,7 +801,7 @@ class PSSeBranch(PSSeObject):
         self.MET = 0
         self.LEN = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -848,7 +848,7 @@ class PSSeBranch(PSSeObject):
 
             logger.add_warning('Branch not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         Return Newton branch object
         Args:
@@ -946,7 +946,7 @@ class PSSeTwoTerminalDCLine(PSSeObject):
         self.IDI = 0
         self.XCAPI = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -990,7 +990,7 @@ class PSSeTwoTerminalDCLine(PSSeObject):
         else:
             logger.add_warning('Version not implemented for DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1089,7 +1089,7 @@ class PSSeVscDCLine(PSSeObject):
         self.REMOT2 = 0
         self.RMPCT2 = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1133,7 +1133,7 @@ class PSSeVscDCLine(PSSeObject):
         else:
             logger.add_warning('Version not implemented for VSC-DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1390,7 +1390,7 @@ class PSSeTransformer(PSSeObject):
         self.RATE3_11 = 0
         self.RATE3_12 = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1687,7 +1687,7 @@ class PSSeTransformer(PSSeObject):
         else:
             logger.add_warning('Transformer not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, sbase, logger: bs.Logger):
+    def get_object(self, psse_bus_dict, sbase, logger: Logger):
         """
         Return Newton branch object
         Args:
@@ -1936,7 +1936,7 @@ class PSSeFACTS(PSSeObject):
         self.REMOT = 0
         self.MNAME = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1978,7 +1978,7 @@ class PSSeFACTS(PSSeObject):
     def is_connected(self):
         return self.I > 0 and self.J > 0
 
-    def get_object(self, psse_bus_dict, Sbase, logger: bs.Logger, circuit: MultiCircuit):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -2087,7 +2087,7 @@ class PSSeInterArea(PSSeObject):
         self.PDES = 0
         self.PTOL = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2115,7 +2115,7 @@ class PSSeArea(PSSeObject):
         self.PDES = 0
         self.PTOL = 0
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2144,7 +2144,7 @@ class PSSeZone(PSSeObject):
         self.I = -1
         self.ZONAME = ''
 
-    def parse(self, data, version, logger: bs.Logger):
+    def parse(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2238,7 +2238,7 @@ class PSSeParser:
         self.parsers = dict()
         self.versions = [35, 34, 33, 32, 30, 29]
 
-        self.logger = bs.Logger()
+        self.logger = Logger()
 
         self.file_name = file_name
 
@@ -2394,7 +2394,7 @@ class PSSeParser:
         Returns: MultiCircuit, List[str]
         """
 
-        logger = bs.Logger()
+        logger = Logger()
 
         if text_func is not None:
             text_func("Reading file...")

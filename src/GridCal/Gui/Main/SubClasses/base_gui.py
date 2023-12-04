@@ -34,7 +34,7 @@ from PySide6 import QtGui, QtWidgets, QtCore
 # Engine imports
 import GridCalEngine.Core as core
 import GridCalEngine.Simulations as sim
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.synchronization_driver as syncdrv
@@ -176,13 +176,13 @@ class BaseMainGui(QMainWindow):
         self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
 
         # available engines
-        engine_lst = [bs.EngineType.GridCal]
+        engine_lst = [EngineType.GridCal]
         if NEWTON_PA_AVAILABLE:
-            engine_lst.append(bs.EngineType.NewtonPA)
+            engine_lst.append(EngineType.NewtonPA)
         if BENTAYGA_AVAILABLE:
-            engine_lst.append(bs.EngineType.Bentayga)
+            engine_lst.append(EngineType.Bentayga)
         if PGM_AVAILABLE:
-            engine_lst.append(bs.EngineType.PGM)
+            engine_lst.append(EngineType.PGM)
 
         self.ui.engineComboBox.setModel(gf.get_list_model([x.value for x in engine_lst]))
         self.ui.engineComboBox.setCurrentIndex(0)
@@ -582,7 +582,7 @@ class BaseMainGui(QMainWindow):
         if ok:
             self.circuit.set_loads_active_profile_from_their_active_power()
 
-    def get_preferred_engine(self) -> bs.EngineType:
+    def get_preferred_engine(self) -> EngineType:
         """
         Get the currently selected engine
         :return: EngineType
