@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib
 from GridCalEngine.Utils.MIP.selected_interface import *
-from GridCalEngine.basic_structures import MIPSolvers
+from GridCalEngine.enumerations import MIPSolvers
+
 
 matplotlib.use('TkAgg')
 

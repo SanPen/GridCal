@@ -2696,7 +2696,7 @@ class MultiCircuit:
                 self.delete_fluid_turbine(elm)
 
         for elm in reversed(self.fluid_pumps):
-            if elm.reservoir == obj:
+            if elm.plant == obj:
                 self.delete_fluid_pump(elm)
 
         for fluid_path in reversed(self.fluid_paths):
