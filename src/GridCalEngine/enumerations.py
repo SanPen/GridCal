@@ -779,6 +779,7 @@ class DeviceType(Enum):
 
     FluidTurbine = 'Fluid Turbine'
     FluidPump = 'Fluid Pump'
+    FluidP2X = 'Fluid P2X'
     FluidPath = 'Fluid path'
     FluidNode = 'Fluid node'
 

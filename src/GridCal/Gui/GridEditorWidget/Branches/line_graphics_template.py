@@ -21,8 +21,8 @@ from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem, QGraphicsScene
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Branches.line import Line

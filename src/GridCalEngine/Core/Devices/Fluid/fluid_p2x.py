@@ -23,7 +23,7 @@ from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjec
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 
 
-class FluidPump(FluidInjectionTemplate):
+class FluidP2x(FluidInjectionTemplate):
 
     def __init__(self,
                  name: str = '',
@@ -33,10 +33,10 @@ class FluidPump(FluidInjectionTemplate):
                  Pmax: float = 0.0,
                  efficiency: float = 1.0,
                  max_flow_rate: float = 0.0,
-                 reservoir: FluidNode = None,
+                 plant: FluidNode = None,
                  generator: Generator = None):
         """
-        Fluid pump
+        Fluid turbine
         :param name: name
         :param idtag: UUID code
         :param code: secondary code
@@ -44,7 +44,7 @@ class FluidPump(FluidInjectionTemplate):
         :param Pmax: Maximum power (MW)
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
-        :param reservoir: Connection reservoir/node
+        :param plant: Connection reservoir/node
         """
         FluidInjectionTemplate.__init__(self,
                                         name=name,

@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
@@ -21,6 +22,7 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, O
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 
 
 class InjectionTemplateGraphicItem(QGraphicsItemGroup):
@@ -28,11 +30,21 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
     InjectionTemplateGraphicItem
     """
 
-    def __init__(self, parent, api_obj: InjectionTemplate, diagramScene, device_type_name, w, h):
+    def __init__(self,
+                 parent,
+                 api_obj: Union[InjectionTemplate, FluidInjectionTemplate],
+                 diagramScene,
+                 device_type_name: str,
+                 w: int,
+                 h: int):
         """
 
         :param parent:
         :param api_obj:
+        :param diagramScene:
+        :param device_type_name:
+        :param w:
+        :param h:
         """
         super(InjectionTemplateGraphicItem, self).__init__(parent)
 

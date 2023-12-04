@@ -51,7 +51,7 @@ from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem

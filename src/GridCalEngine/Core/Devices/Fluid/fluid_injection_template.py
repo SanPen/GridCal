@@ -19,11 +19,10 @@ from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 
 
-class FluidPump(FluidInjectionTemplate):
+class FluidInjectionTemplate(EditableDevice):
 
     def __init__(self,
                  name: str = '',
@@ -33,10 +32,12 @@ class FluidPump(FluidInjectionTemplate):
                  Pmax: float = 0.0,
                  efficiency: float = 1.0,
                  max_flow_rate: float = 0.0,
-                 reservoir: FluidNode = None,
-                 generator: Generator = None):
+                 plant: FluidNode = None,
+                 generator: Generator = None,
+                 device_type: DeviceType = DeviceType.FluidTurbine,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
-        Fluid pump
+        Fluid turbine
         :param name: name
         :param idtag: UUID code
         :param code: secondary code
@@ -44,16 +45,28 @@ class FluidPump(FluidInjectionTemplate):
         :param Pmax: Maximum power (MW)
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
-        :param reservoir: Connection reservoir/node
+        :param plant: Connection reservoir/node
         """
-        FluidInjectionTemplate.__init__(self,
-                                        name=name,
-                                        idtag=idtag,
-                                        code=code,
-                                        Pmin=Pmin,
-                                        Pmax=Pmax,
-                                        efficiency=efficiency,
-                                        max_flow_rate=max_flow_rate,
-                                        plant=plant,
-                                        generator=generator,
-                                        device_type=DeviceType.FluidTurbine)
+        EditableDevice.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                device_type=device_type)
+
+        self.p_min = Pmin  # MW
+        self.p_max = Pmax  # MW
+        self.efficiency = efficiency  # MWh/m3
+        self.max_flow_rate = max_flow_rate  # m3/h
+        self.plant: FluidNode = plant
+        self.generator: Generator = generator
+        self.build_status = build_status
+
+        self.register(key='p_min', units="MW", tpe=float, definition="Minimum power")
+        self.register(key='p_max', units="MW", tpe=float, definition="Maximum power")
+        self.register(key='efficiency', units="MWh/m3", tpe=float,
+                      definition="Power plant energy production per fluid unit")
+        self.register(key='max_flow_rate', units="m3/h", tpe=float, definition="maximum fluid flow")
+        self.register(key='plant', units="", tpe=FluidNode, definition="Connection reservoir/node")
+        self.register(key='generator', units="", tpe=Generator, definition="Electrical machine")
+        self.register(key='build_status', units='', tpe=BuildStatus,
+                      definition='Branch build status. Used in expansion planning.')

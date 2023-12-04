@@ -18,7 +18,6 @@
 from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.basic_structures import Vec
 
 
 class FluidNode(EditableDevice):
@@ -49,6 +48,15 @@ class FluidNode(EditableDevice):
         self.max_level = max_level  # m3
         self.initial_level = current_level  # m3
 
+        # list of turbines
+        self.turbines = list()
+
+        # list of pumps
+        self.pumps = list()
+
+        # list of power to gas devices
+        self.p2xs = list()
+
         self.register(key='min_level', units='m3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
 
@@ -57,3 +65,24 @@ class FluidNode(EditableDevice):
 
         self.register(key='initial_level', units='m3', tpe=float,
                       definition="Initial level of the node/reservoir")
+
+    def add_turbine(self, elm):
+        """
+        Add turbine
+        :param elm: FluidTurbine
+        """
+        self.turbines.append(elm)
+
+    def add_pumps(self, elm):
+        """
+        Add pump device
+        :param elm: FluidPump device
+        """
+        self.pumps.append(elm)
+
+    def add_p2x(self, elm):
+        """
+        Add power to gas
+        :param elm: FluidP2x device
+        """
+        self.p2xs.append(elm)
