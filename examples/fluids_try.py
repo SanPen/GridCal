@@ -270,8 +270,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         turbine_flow = 0.0  # m3
         for turbine in turbines_at_the_plant:
             # add the generator output to the plant output in terms of water
-            #    m3             h         MW                  MWh/m3  # efficiency should be dividing!?
-            turbine_flow += dt * turbine.power_output / turbine.efficiency
+            #    m3/h                      MW                  MWh/m3  # efficiency should be dividing!?
+            turbine_flow += turbine.power_output / turbine.efficiency
 
             # add the electric power to the total generation
             total_power_balance += turbine.power_output
@@ -281,8 +281,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         pump_flow = 0.0  # m3
         for pump in pumps_at_the_plant:
             # add the pump output to the plant output in terms of water
-            #    m3             h         MW                  MWh/m3
-            pump_flow -= dt * pump.power_input / pump.efficiency
+            #    m3/h               MW                  MWh/m3
+            pump_flow += pump.power_input / pump.efficiency
 
             # subtract the electric power of the pump
             total_power_balance -= pump.power_input
@@ -291,36 +291,52 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         power2x_flow = 0.0
         for power2x in power2xs_at_the_plant:
             # add the power2x output to the plant output in terms of flow (if same flow)
-            #    m3             h         MW                  MWh/m3
-            power2x_flow += dt * power2x.power_input / power2x.efficiency
+            #    m3/h                    MW                  MWh/m3
+            power2x_flow += power2x.power_input / power2x.efficiency
 
             # add the electric power of the power2x (for all of them, generator convention)
-            # total_power_balance -= power2x.power_input
+            total_power_balance -= power2x.power_input
 
-        if (len(turbines_at_the_plant) + len(pumps_at_the_plant)) > 0:
+        if len(turbines_at_the_plant) > 0:
+            solver.add_cst(cst=node.outflow == turbine_flow,
+                           name=f'{node.name} Turbine balance')
 
-            solver.add_cst(cst=node.level ==
-                           node.initial_level
-                           + dt * node.inflow
-                           + dt * power2x_flow
-                           - dt * turbine_flow
-                           + dt * pump_flow
-                           - dt * node.spillage,
-                           name=f'{node.name} balance 1')
+        if len(pumps_at_the_plant) > 0:
+            solver.add_cst(cst=node.inflow == pump_flow,
+                           name=f'{node.name} Pump balance')
 
-            solver.add_cst(cst=dt * node.outflow ==
-                           + dt * turbine_flow
-                           - dt * pump_flow,
-                           name=f'{node.name} balance 2')
+        solver.add_cst(cst=(node.level ==
+                            node.initial_level
+                            + dt * node.inflow
+                            + dt * power2x_flow
+                            - dt * node.spillage
+                            - dt * node.outflow),
+                       name=f'{node.name} Node Balance')
 
-        else:
-            solver.add_cst(cst=node.level ==
-                           node.initial_level
-                           + dt * node.inflow
-                           + dt * power2x_flow
-                           - dt * node.spillage
-                           - dt * node.outflow,
-                           name=f'{node.name} balance 1')
+        # if (len(turbines_at_the_plant) + len(pumps_at_the_plant)) > 0:
+        #
+        #     solver.add_cst(cst=node.level ==
+        #                    node.initial_level
+        #                    + dt * node.inflow
+        #                    + dt * power2x_flow
+        #                    - dt * turbine_flow
+        #                    + dt * pump_flow
+        #                    - dt * node.spillage,
+        #                    name=f'{node.name} balance 1')
+        #
+        #     solver.add_cst(cst=dt * node.outflow ==
+        #                    + dt * turbine_flow
+        #                    - dt * pump_flow,
+        #                    name=f'{node.name} balance 2')
+        #
+        # else:
+        #     solver.add_cst(cst=node.level ==
+        #                    node.initial_level
+        #                    + dt * node.inflow
+        #                    + dt * power2x_flow
+        #                    - dt * node.spillage
+        #                    - dt * node.outflow,
+        #                    name=f'{node.name} balance 1')
 
         # Node flow balance
         # level = initial_level + dt * (inflow - outflow - spillage_flow)
@@ -468,7 +484,6 @@ def plot_hydro_dispatch(solver: LpModel,
 
 
 def example_1():
-
     # Example usage with 4 plants, 5 generators, 4 reservoirs, and 6 rivers
     reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=500)
     reservoir2 = FluidNode(name='Reservoir2', min_level=0, max_level=800, current_level=300)
@@ -517,9 +532,7 @@ def example_1():
     return nodes, rivers, turbines, pumps, power2xs, demand
 
 
-
 def example_2():
-
     # Example usage with 4 plants, 5 generators, 4 reservoirs, and 6 rivers
     reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=500)
     reservoir2 = FluidNode(name='Reservoir2', min_level=0, max_level=800, current_level=300)
@@ -546,16 +559,15 @@ def example_2():
 
 
 def example_3():
-
     # Example usage with 4 plants, 5 generators, 4 reservoirs, and 6 rivers
-    reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=1)
+    reservoir1 = FluidNode(name='Reservoir1', min_level=0, max_level=1000, current_level=200)
     reservoir2 = FluidNode(name='Reservoir2', min_level=0, max_level=800, current_level=300)
 
     plant1 = FluidNode(name='Plant1')
 
     gen1 = Turbine(name="G1", p_min=0.0, p_max=200, efficiency=0.9, max_flow_rate=2000, plant=plant1)
 
-    dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=plant1)
+    dem1 = Pump(name="P1", p_min=0.0, p_max=100, efficiency=0.9, max_flow_rate=100, reservoir=reservoir2)
 
     p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, node=reservoir1)
 
@@ -564,6 +576,33 @@ def example_3():
 
     nodes = [reservoir1, reservoir2, plant1]
     rivers = [river1, river2]
+    turbines = [gen1]
+    pumps = []
+    power2xs = [p2x1]
+    demand = 50  # in MW
+
+    return nodes, rivers, turbines, pumps, power2xs, demand
+
+
+def example_lamuela():
+    embalse = FluidNode(name='Embalse', min_level=0, max_level=116e6, current_level=200)
+    rio = FluidNode(name='Río', min_level=0, max_level=1e20, current_level=300)
+    nodo2 = FluidNode(name='Nodo2')
+    turbina = FluidNode(name='NodoTurbina')
+    bomba = FluidNode(name='NodoBomba')
+
+    gen1 = Turbine(name="G1", p_min=0.0, p_max=630, efficiency=0.9, max_flow_rate=2000, plant=turbina)
+    dem1 = Pump(name="P1", p_min=0.0, p_max=540, efficiency=0.9, max_flow_rate=100, reservoir=bomba)
+    p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, node=embalse)
+
+    river1 = FluidPath(name='Embalse-Nodo2', source=embalse, target=nodo2, min_flow=0, max_flow=550)
+    river2 = FluidPath(name='Nodo2-Turbina', source=nodo2, target=turbina, min_flow=0, max_flow=520)
+    river3 = FluidPath(name='Bomba-Nodo2', source=bomba, target=nodo2, min_flow=0, max_flow=520)
+    river4 = FluidPath(name='Turbina-Río', source=turbina, target=rio, min_flow=0, max_flow=520)
+    river5 = FluidPath(name='Río-Bomba', source=rio, target=bomba, min_flow=-520, max_flow=0)
+
+    nodes = [embalse, rio, nodo2, turbina, bomba]
+    rivers = [river1, river2, river3, river4, river5]
     turbines = [gen1]
     pumps = [dem1]
     power2xs = [p2x1]
@@ -574,7 +613,8 @@ def example_3():
 
 # nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_1()
 # nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_2()
-nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_3()
+# nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_3()
+nodes_, rivers_, turbines_, pumps_, power2xs_, demand_ = example_lamuela()
 
 # plot_problem(reservoirs, hydro_plants, rivers)
 hydro_dispatch_transport(fluid_nodes=nodes_,
