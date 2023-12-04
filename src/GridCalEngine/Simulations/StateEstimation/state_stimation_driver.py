@@ -17,13 +17,14 @@
 
 import numpy as np
 from typing import Union, Tuple
-from GridCalEngine.basic_structures import Vec, ConvergenceReport, SolverType
+from GridCalEngine.basic_structures import Vec, ConvergenceReport
 from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Core.Devices.measurement import MeasurementType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.enumerations import SolverType
 
 
 class StateEstimationInput:

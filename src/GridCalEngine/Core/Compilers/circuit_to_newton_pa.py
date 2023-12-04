@@ -21,9 +21,9 @@ import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
+from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
+                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyEngine)
 import GridCalEngine.Core.Devices as dev
-from GridCalEngine.basic_structures import SolverType, ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
@@ -31,14 +31,16 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 # from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
 # from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import ConvergenceReport
 
+
+NEWTON_PA_RECOMMENDED_VERSION = "2.1.13"
+NEWTON_PA_VERSION = ''
+NEWTON_PA_AVAILABLE = False
 try:
     import newtonpa as npa
 
     activation = npa.findAndActivateLicense()
-
-    RECOMMENDED_NEWTON_VERSION = "2.1.13"
 
     # activate
     if not npa.isLicenseActivated():
@@ -48,8 +50,8 @@ try:
             if npa.isLicenseActivated():
                 NEWTON_PA_AVAILABLE = True
 
-                if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
-                    warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
+                if npa.get_version() < NEWTON_PA_RECOMMENDED_VERSION:
+                    warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
                                   f"instead of {npa.get_version()}")
             else:
                 # print('Newton Power Analytics v' + npa.get_version(),
@@ -61,13 +63,15 @@ try:
     else:
         # print('Newton Power Analytics v' + npa.get_version())
         NEWTON_PA_AVAILABLE = True
+        NEWTON_PA_VERSION = npa.get_version()
 
-        if npa.get_version() < RECOMMENDED_NEWTON_VERSION:
-            warnings.warn(f"Recommended version for Newton is {RECOMMENDED_NEWTON_VERSION} "
-                          f"instead of {npa.get_version()}")
+        if NEWTON_PA_VERSION < NEWTON_PA_RECOMMENDED_VERSION:
+            warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
+                          f"instead of {NEWTON_PA_VERSION}")
 
 except ImportError as e:
     NEWTON_PA_AVAILABLE = False
+    NEWTON_PA_VERSION = ''
     # print('Newton Power Analytics is not available:', e)
 
 # numpy integer type for Newton's uword
@@ -1154,13 +1158,13 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
     q_control_dict = {ReactivePowerControlMode.NoControl: npa.ReactivePowerControlMode.NoControl,
                       ReactivePowerControlMode.Direct: npa.ReactivePowerControlMode.Direct}
 
-    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.HIGHS: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
-                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
-                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.SCIP: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   MIPSolvers.HIGHS: npa.LpSolvers.Highs,
+                   MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   MIPSolvers.SCIP: npa.LpSolvers.Highs,
+                   MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 
     return npa.NonlinearOpfOptions(tolerance=pf_opt.tolerance,
                                    max_iter=pf_opt.max_iter,
@@ -1185,20 +1189,19 @@ def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
     :param area_dict:
     :return:
     """
-    from GridCalEngine.Simulations.OPF.opf_options import ZonalGrouping
-    solver_dict = {bs.MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.HIGHS: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
-                   bs.MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
-                   bs.MIPSolvers.GLOP: npa.LpSolvers.Highs,
-                   bs.MIPSolvers.SCIP: npa.LpSolvers.Scip,
-                   bs.MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
+    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
+                   MIPSolvers.HIGHS: npa.LpSolvers.Highs,
+                   MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
+                   MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
+                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
+                   MIPSolvers.SCIP: npa.LpSolvers.Scip,
+                   MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 
-    grouping_dict = {bs.TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
-                     bs.TimeGrouping.Daily: npa.TimeGrouping.Daily,
-                     bs.TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
-                     bs.TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
-                     bs.TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
+    grouping_dict = {TimeGrouping.NoGrouping: npa.TimeGrouping.NoGrouping,
+                     TimeGrouping.Daily: npa.TimeGrouping.Daily,
+                     TimeGrouping.Weekly: npa.TimeGrouping.Weekly,
+                     TimeGrouping.Monthly: npa.TimeGrouping.Monthly,
+                     TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
     opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver],
                                grouping=grouping_dict[opf_opt.grouping],
@@ -1296,9 +1299,9 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         time_indices = [0]
         n_threads = 1
 
-    if con_opt.engine == bs.ContingencyEngine.PTDF:
+    if con_opt.engine == ContingencyEngine.PTDF:
         mode = npa.ContingencyAnalysisMode.Linear
-    elif con_opt.engine == bs.ContingencyEngine.PowerFlow:
+    elif con_opt.engine == ContingencyEngine.PowerFlow:
         mode = npa.ContingencyAnalysisMode.Full
     else:
         mode = npa.ContingencyAnalysisMode.Full
@@ -1475,7 +1478,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
     for rep in res.stats[0]:
-        report = bs.ConvergenceReport()
+        report = ConvergenceReport()
         for i in range(len(rep.converged)):
             report.add(method=rep.solver[i].name,
                        converged=rep.converged[i],

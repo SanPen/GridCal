@@ -19,7 +19,8 @@ import numpy as np
 from typing import Union, Dict, Tuple
 
 import GridCalEngine.Simulations.PowerFlow as pflw
-from GridCalEngine.basic_structures import Logger, ConvergenceReport, SolverType
+from GridCalEngine.enumerations import SolverType
+from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults

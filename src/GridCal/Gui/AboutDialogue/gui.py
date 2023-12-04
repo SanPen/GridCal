@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QLabel,
-    QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
-    QTextEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QHeaderView,
+    QLabel, QPushButton, QSizePolicy, QSpacerItem,
+    QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit,
+    QVBoxLayout, QWidget)
 from .icons_rc import *
 
 class Ui_AboutDialog(object):
@@ -90,23 +91,21 @@ class Ui_AboutDialog(object):
         self.tab_3.setObjectName(u"tab_3")
         self.gridLayout_2 = QGridLayout(self.tab_3)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.updateLabel = QLabel(self.tab_3)
-        self.updateLabel.setObjectName(u"updateLabel")
-        self.updateLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-        self.updateLabel.setWordWrap(True)
-        self.updateLabel.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
-
-        self.gridLayout_2.addWidget(self.updateLabel, 0, 1, 1, 1)
-
         self.updateButton = QPushButton(self.tab_3)
         self.updateButton.setObjectName(u"updateButton")
         self.updateButton.setMaximumSize(QSize(80, 16777215))
 
-        self.gridLayout_2.addWidget(self.updateButton, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.updateButton, 2, 1, 1, 1)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.librariesTableWidget = QTableWidget(self.tab_3)
+        self.librariesTableWidget.setObjectName(u"librariesTableWidget")
 
-        self.gridLayout_2.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.librariesTableWidget, 0, 0, 1, 2)
+
+        self.updateLabel = QLabel(self.tab_3)
+        self.updateLabel.setObjectName(u"updateLabel")
+
+        self.gridLayout_2.addWidget(self.updateLabel, 2, 0, 1, 1)
 
         self.tabWidget.addTab(self.tab_3, "")
         self.tab_4 = QWidget()
@@ -140,9 +139,9 @@ class Ui_AboutDialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("AboutDialog", u"About", None))
         self.contributorsLabel.setText(QCoreApplication.translate("AboutDialog", u"TextLabel", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("AboutDialog", u"Contributors", None))
-        self.updateLabel.setText(QCoreApplication.translate("AboutDialog", u"TextLabel", None))
         self.updateButton.setText(QCoreApplication.translate("AboutDialog", u"Update", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("AboutDialog", u"Update", None))
+        self.updateLabel.setText("")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("AboutDialog", u"Libraries", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("AboutDialog", u"License", None))
     # retranslateUi
 

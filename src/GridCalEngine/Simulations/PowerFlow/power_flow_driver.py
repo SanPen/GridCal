@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from typing import Union, List
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -28,7 +27,7 @@ from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE,
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, \
     translate_newton_pa_pf_results
 from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
-from GridCalEngine.basic_structures import EngineType
+from GridCalEngine.enumerations import EngineType
 
 
 class PowerFlowDriver(DriverTemplate):
