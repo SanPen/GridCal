@@ -306,8 +306,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
     for i in range(len(table)):
         f_idx = int(table[i, matpower_branches.F_BUS])
         t_idx = int(table[i, matpower_branches.T_BUS])
-        f = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.F_BUS])]]
-        t = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.T_BUS])]]
+        f = circuit.buses[bus_idx_dict[f_idx]]
+        t = circuit.buses[bus_idx_dict[t_idx]]
 
         if table.shape[1] == 37:  # FUBM model
 
@@ -472,7 +472,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
         if line.bus_to.is_dc and line.bus_from.is_dc:
             dc_line = dev.DcLine(bus_from=line.bus_from,
                                  bus_to=line.bus_to,
-                                 code="{0}_{1}_1".format(f_idx, t_idx),
+                                 code=line.code,
                                  name=line.name,
                                  active=line.active,
                                  rate=line.rate,

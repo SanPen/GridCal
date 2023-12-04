@@ -23,6 +23,10 @@ from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_contingency():
+    """
+    Check that the contingencies match conceptually
+    :return:
+    """
     fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
@@ -42,8 +46,12 @@ def test_contingency():
         line.active = False
         pf_driver = PowerFlowDriver(grid=main_circuit, options=pf_options)
         pf_driver.run()
-        # TODO Revisar contingencias
-        assert (np.isclose(cont_analysis_driver.results.Sf[:, i], pf_driver.results.Sf).all())
+
+        # assert that the power flow matches whatevet it was done with the contingencies
+        assert (np.isclose(cont_analysis_driver.results.Sf[i, :], pf_driver.results.Sf).all())
+
+        assert cont_analysis_driver.results.Sf[i, i] == complex(0, 0)
+
         line.active = True
 
 

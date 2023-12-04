@@ -36,6 +36,7 @@ import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.Aggregation.investment import Investment
+from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
 
 sparse_type = get_sparse_type()
 
@@ -762,6 +763,29 @@ class NumericalCircuit:
                 structure.active[idx] = status
             else:
                 raise Exception('Could not find the idtag, is this a programming bug?')
+
+    def set_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
 
     @property
     def original_bus_idx(self):
