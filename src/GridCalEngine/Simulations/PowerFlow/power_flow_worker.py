@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, TYPE_CHECKING
 
 import GridCalEngine.Simulations.PowerFlow as pflw
 from GridCalEngine.enumerations import SolverType
@@ -30,6 +30,9 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 def solve(circuit: NumericalCircuit,
@@ -711,11 +714,11 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
 def multi_island_pf(multi_circuit: MultiCircuit,
                     options: PowerFlowOptions,
-                    opf_results: Union["OptimalPowerFlowResults", None] = None,
+                    opf_results: Union[OptimalPowerFlowResults, None] = None,
                     t: Union[int, None] = None,
                     logger: Logger = Logger(),
                     bus_dict: Union[Dict[Bus, int], None] = None,
-                    areas_dict: Union[Dict[Area, int], None] = None) -> "PowerFlowResults":
+                    areas_dict: Union[Dict[Area, int], None] = None) -> PowerFlowResults:
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
