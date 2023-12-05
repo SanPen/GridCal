@@ -28,12 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Using TYPE_CHECKING to fix circular imports due to type checking">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/IEEE14_lodf_psse.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_plan.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_plan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_ptdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ptdf.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added test for IEEE14 LODF" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1241,7 +1236,7 @@
       <workItem from="1701515185476" duration="6030000" />
       <workItem from="1701619255897" duration="5741000" />
       <workItem from="1701678938702" duration="2528000" />
-      <workItem from="1701762816722" duration="5795000" />
+      <workItem from="1701762816722" duration="6181000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1586,7 +1581,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="441" />
+    <option name="localTasksCounter" value="442" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1620,7 +1615,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
     <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
@@ -1645,7 +1639,8 @@
     <MESSAGE value="improved docs structure" />
     <MESSAGE value="Fixed test_contingency and improved the matpower code property setting" />
     <MESSAGE value="Using TYPE_CHECKING to fix circular imports due to type checking" />
-    <option name="LAST_COMMIT_MESSAGE" value="Using TYPE_CHECKING to fix circular imports due to type checking" />
+    <MESSAGE value="Added test for IEEE14 LODF" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added test for IEEE14 LODF" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
