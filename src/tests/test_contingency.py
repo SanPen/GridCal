@@ -103,35 +103,35 @@ def test_linear_contingency():
 #     cont_analysis_driver.run()
 
 
-def test_ptdf():
-    fname = os.path.join('data', 'grids', 'case14.m')
-    main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
-
-    branches = main_circuit.get_branches()
-
-    branches_id = [x.code for x in branches]
-    print(branches_id)
-    nodes = main_circuit.get_buses()
-    nodes_id = [x.code for x in nodes]
-    print(nodes_id)
-
-    ptdf_result = np.loadtxt(os.path.join('data', 'results', 'comparison', 'IEEE 14 ptdf.csv'), delimiter=',')
-
-    linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-
-    linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
-    linear_analysis.run()
-
-    #TODO Revisar orden
-    #res = linear_analysis.results.PTDF - ptdf_result
-    #print(res)
-    assert(np.isclose(linear_analysis.results.PTDF, ptdf_result).all())
+# def test_ptdf():  # ver tests archivo de tests de PTDF
+#     fname = os.path.join('data', 'grids', 'case14.m')
+#     main_circuit = FileOpen(fname).open()
+#     pf_options = PowerFlowOptions(SolverType.NR,
+#                                   verbose=False,
+#                                   initialize_with_existing_solution=False,
+#                                   dispatch_storage=True,
+#                                   control_q=ReactivePowerControlMode.NoControl,
+#                                   control_p=False)
+#
+#     branches = main_circuit.get_branches()
+#
+#     branches_id = [x.code for x in branches]
+#     print(branches_id)
+#     nodes = main_circuit.get_buses()
+#     nodes_id = [x.code for x in nodes]
+#     print(nodes_id)
+#
+#     ptdf_result = np.loadtxt(os.path.join('data', 'results', 'comparison', 'IEEE 14 ptdf.csv'), delimiter=',')
+#
+#     linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+#
+#     linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+#     linear_analysis.run()
+#
+#     #TODO Revisar orden
+#     #res = linear_analysis.results.PTDF - ptdf_result
+#     #print(res)
+#     assert(np.isclose(linear_analysis.results.PTDF, ptdf_result).all())
 
 
 
