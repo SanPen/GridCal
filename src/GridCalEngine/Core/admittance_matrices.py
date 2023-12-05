@@ -411,7 +411,6 @@ def compute_fast_decoupled_admittances(X: Vec,
 def compute_linear_admittances(nbr: int,
                                X: Vec,
                                R: Vec,
-                               tap_modules: Vec,
                                active: IntVec,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
@@ -422,30 +421,27 @@ def compute_linear_admittances(nbr: int,
     :param nbr: Number of Branches
     :param X: array of branch reactance (p.u.)
     :param R: array of branch resistance (p.u.)
-    :param tap_modules: array of tap modules (for all Branches, regardless of their type)
     :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param ac: array of ac Branches indices
     :param dc: array of dc Branches indices
-    :return: Bbus, Bf, Btheta
+    :return: Bbus, Bf, Btau
     """
-
-    m_abs = np.abs(tap_modules)
     if len(dc):
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac Branches
-        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc Branches
+        b[ac] = 1.0 / (X[ac] * active[ac] + 1e-20)  # for ac Branches
+        b[dc] = 1.0 / (R[dc] * active[dc] + 1e-20)  # for dc Branches
     else:
-        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac Branches
+        b = 1.0 / (X * active + 1e-20)  # for ac Branches
 
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btheta = (b_tt * (Cf + Ct)).T
+    Btau = (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -455,11 +451,11 @@ def compute_linear_admittances(nbr: int,
     
     Identifying the already computed matrices, it becomes:
     
-    Pbus = Bbus x bus_angles + Btheta x branch_angles
+    Pbus = Bbus x bus_angles + Btau x branch_angles
     
     If we solve for bus angles:
     
-    bus_angles = Bbus^-1 x (Pbus - Btheta x branch_angles)
+    bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return Bbus, Bf, Btheta
+    return Bbus, Bf, Btau

@@ -28,19 +28,21 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Bpqpv, Bref, Btheta, S0: CxVec, I0: CxVec, V0: CxVec, theta: Vec,
-         ref: IntVec, pvpq: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
+def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Btau: sp.csc_matrix,
+         S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
+         vd: IntVec, pvpq: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
     :param Ybus: Normal circuit admittance matrix
     :param Bpqpv: Susceptance matrix reduced
     :param Bref: Susceptane matrix sliced for the slack node
-    :param Btheta: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
+    :param Btau: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
     :param S0: Complex power Injections at all the nodes
     :param I0: Complex current Injections at all the nodes
+    :param Y0: Complex admittance Injections at all the nodes
     :param V0: Array of complex seed voltage (it contains the ref voltages)
-    :param theta: Array of branch angles
-    :param ref: array of the indices of the slack nodes
+    :param tau: Array of branch angles
+    :param vd: array of the indices of the slack nodes
     :param pvpq: array of the indices of the non-slack nodes
     :param pq: array of the indices of the pq nodes
     :param pv: array of the indices of the pv nodes
@@ -52,27 +54,30 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0: CxVec, I0: CxVec, V0: CxVec, theta: Vec,
     npv = len(pv)
     if (npq + npv) > 0:
         # Decompose the voltage in angle and magnitude
-        Va_ref = np.angle(V0[ref])  # we only need the angles at the slack nodes
+        Va_ref = np.angle(V0[vd])  # we only need the angles at the slack nodes
         Vm = np.abs(V0)
 
         # initialize result vector
         Va = np.empty(len(V0))
 
+        # compute the power injection
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+
         # compose the reduced power Injections
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
         # We also need to account for the effect of the phase shifters
-        Pps = Btheta * theta
-        Pinj = S0[pvpq].real + (- Bref * Va_ref + I0[pvpq].real) * Vm[pvpq] - Pps[pvpq]
+        Pps = Btau @ tau
+        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] - Pps[pvpq]
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)
-        Va[ref] = Va_ref
+        Va[vd] = Va_ref
 
         # re assemble the voltage
         V = cf.polar_to_rect(Vm, Va)
 
         # compute the calculated power injection and the error of the voltage solution
-        Scalc = V * np.conj(Ybus * V - I0)
+        Scalc = cf.compute_power(Ybus, V)
 
         # compute the power mismatch between the specified power Sbus and the calculated power Scalc
         mismatch = cf.compute_fx(Scalc, S0, pvpq, pq)
@@ -82,7 +87,7 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0: CxVec, I0: CxVec, V0: CxVec, theta: Vec,
     else:
         norm_f = 0.0
         V = V0
-        Scalc = V * np.conj(Ybus * V - I0)
+        Scalc = cf.compute_power(Ybus, V)
 
     end = time.time()
     elapsed = end - start

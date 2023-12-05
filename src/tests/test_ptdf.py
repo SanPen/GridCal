@@ -1,6 +1,7 @@
 import os
 from GridCalEngine.api import *
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import add_n1_contingencies
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_ptdf():
@@ -46,6 +47,86 @@ def test_ptdf():
     return True
 
 
+def test_ptdf_ieee14_definition():
+    """
+    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    # fname = os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw')
+    main_circuit = FileOpen(fname).open()
+
+    # add all branch contingencies
+    add_n1_contingencies(branches=main_circuit.get_branches(),
+                         vmax=1e20, vmin=0,
+                         filter_branches_by_voltage=False,
+                         branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+
+    # run the linear analysis
+    options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    simulation.run()
+
+    # compute the PTDF by the definition: PTDF(i, j) = (flow base(i) - modified flow(i)) / bus power increase(j)
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+    options = PowerFlowOptions(solver_type=SolverType.DC)
+    base_res = multi_island_pf_nc(nc=nc, options=options)
+    S = nc.Sbus.copy()
+    ptdf = np.zeros((nc.nbr, nc.nbus))
+
+    for i in range(nc.nbus):
+        dS = np.zeros(nc.nbus)
+        dS[i] += 0.01  # 1 MW in p.u.
+        res = multi_island_pf_nc(nc=nc, options=options, Sbus_input=S + dS)
+        ptdf[:, i] = (res.Sf.real - base_res.Sf.real) / (dS[i] * nc.Sbase)
+
+    # diff = simulation.results.PTDF - ptdf
+    # print(diff)
+
+    assert (np.isclose(simulation.results.PTDF, ptdf).all())
+
+
+def test_lodf_ieee14_definition():
+    """
+    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    # fname = os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw')
+    main_circuit = FileOpen(fname).open()
+
+    # add all branch contingencies
+    add_n1_contingencies(branches=main_circuit.get_branches(),
+                         vmax=1e20, vmin=0,
+                         filter_branches_by_voltage=False,
+                         branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+
+    # run the linear analysis
+    options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    simulation.run()
+
+    # compute the LODF by the definition: PTDF(i, j) = (flow base(i) - modified flow(i)) / flow base(i)
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+    options = PowerFlowOptions(solver_type=SolverType.DC)
+    base_res = multi_island_pf_nc(nc=nc, options=options)
+
+    lodf = np.zeros((nc.nbr, nc.nbr))
+
+    for i in range(nc.nbr):
+        nc.branch_data.active[i] = 0  # fail branch
+        res = multi_island_pf_nc(nc=nc, options=options)
+        lodf[:, i] = (res.Sf.real - base_res.Sf.real) / base_res.Sf.real[i]
+        nc.branch_data.active[i] = 1  # revert back
+
+    # force zeros o the branch 10 because it is a feeder
+    lodf[:, 10] = 0
+    simulation.results.LODF[:, 10] = 0
+
+    # diff = simulation.results.LODF - lodf
+    # print(diff)
+
+    assert (np.isclose(simulation.results.LODF, lodf).all())
+
+
 def test_lodf_ieee14_psse():
     """
     Compare the PSSE LODF and the GridCal LODF for the IEEE14
@@ -78,8 +159,15 @@ def test_lodf_ieee14_psse():
             j_psse = psse_names_dict[name_j]
             lodf[i, j] = lodf_df.values[i_psse, j_psse]
 
+    # force zeros o the branch 10 because it is a feeder
+    lodf[:, 10] = 0
+    simulation.results.LODF[:, 10] = 0
+
     # print differences greater than 0.01
-    print(np.abs(lodf - simulation.results.LODF) > 0.01)
+    # diff = lodf - simulation.results.LODF
+    # print(diff)
+
+    assert(np.isclose(lodf, simulation.results.LODF, atol=1e-5).all())
 
 
 if __name__ == '__main__':
