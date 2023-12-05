@@ -1,5 +1,6 @@
 import os
 from GridCalEngine.api import *
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import add_n1_contingencies
 
 
 def test_ptdf():
@@ -43,6 +44,42 @@ def test_ptdf():
     assert(np.max(np.abs(simulation.results.LODF - test_LODF)) < 1e-3)
 
     return True
+
+
+def test_lodf_ieee14_psse():
+    """
+    Compare the PSSE LODF and the GridCal LODF for the IEEE14
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    main_circuit = FileOpen(fname).open()
+
+    # add all branch contingencies
+    add_n1_contingencies(branches=main_circuit.get_branches(),
+                         vmax=1e20, vmin=0,
+                         filter_branches_by_voltage=False,
+                         branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+
+    # run the linear analysis
+    options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    simulation.run()
+
+    # load the PSSE "OTDF" which is the same as the LODF concept
+    lodf_df = pd.read_excel(os.path.join('data', 'results', 'IEEE14_lodf_psse.xlsx'),
+                            sheet_name='lodf_psse', index_col=0)
+
+    # re-order the PSSe LODF to be ordered as the GridCal LODF
+    psse_names_dict = {name: i for i, name in enumerate(lodf_df.index.values)}
+    gridcal_names = [br.code for br in main_circuit.get_branches()]
+    lodf = np.zeros(lodf_df.shape)
+    for i, name_i in enumerate(gridcal_names):
+        i_psse = psse_names_dict[name_i]
+        for j, name_j in enumerate(gridcal_names):
+            j_psse = psse_names_dict[name_j]
+            lodf[i, j] = lodf_df.values[i_psse, j_psse]
+
+    # print differences greater than 0.01
+    print(np.abs(lodf - simulation.results.LODF) > 0.01)
 
 
 if __name__ == '__main__':
