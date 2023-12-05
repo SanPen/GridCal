@@ -153,15 +153,15 @@ class RawBranch(RawObject):
                                unit=Unit.get_km())
 
         for i in range(4):
-            self.register_property(property_name="O{}".format(i+1),
-                                   rawx_key="o{}".format(i+1),
+            self.register_property(property_name="O{}".format(i + 1),
+                                   rawx_key="o{}".format(i + 1),
                                    class_type=int,
                                    description="Owner number",
                                    min_value=1,
                                    max_value=9999)
         for i in range(4):
-            self.register_property(property_name="F{}".format(i+1),
-                                   rawx_key="f{}".format(i+1),
+            self.register_property(property_name="F{}".format(i + 1),
+                                   rawx_key="f{}".format(i + 1),
                                    class_type=float,
                                    description="Ownership fraction",
                                    min_value=0.0,
@@ -183,7 +183,25 @@ class RawBranch(RawObject):
         """
 
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
-        if version >= 34:
+
+        if version >= 35:
+
+            """
+            I,     J,'CKT',     R,          X,         B, 'N A M E'                 ,   
+            RATE1,   RATE2,   RATE3,   RATE4,   RATE5,   RATE6,   RATE7,   RATE8,   RATE9,  RATE10,  RATE11,  RATE12,    
+            GI,       BI,       GJ,       BJ,STAT,MET,  LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
+            """
+            if len(data[0]) >= 26:
+                (self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME,
+                 self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6,
+                 self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var) = data[0]
+            else:
+                (self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME,
+                 self.RATE1, self.RATE2, self.RATE3,
+                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var) = data[0]
+
+        elif version == 34:
 
             """
             I,     J,'CKT',     R,          X,         B, 'N A M E'                 ,   
@@ -193,7 +211,7 @@ class RawBranch(RawObject):
 
             self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME, \
                 self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6, \
-                self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,  \
+                self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12, \
                 self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN, *var = data[0]
 
         elif version in [32, 33]:
@@ -267,4 +285,3 @@ class RawBranch(RawObject):
 
     def get_seed(self):
         return "_BR_{}".format(self.get_id())
-
