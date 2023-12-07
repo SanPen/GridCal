@@ -1506,7 +1506,20 @@ class MultiCircuit:
         elif element_type == DeviceType.WindingDevice:
             return self.get_windings()
 
-        # TODO: Add fluid stuff
+        elif element_type == DeviceType.FluidNode:
+            return self.get_fluid_nodes()
+
+        elif element_type == DeviceType.FluidTurbine:
+            return self.get_fluid_turbines()
+
+        elif element_type == DeviceType.FluidP2X:
+            return self.get_fluid_p2xs()
+
+        elif element_type == DeviceType.FluidPump:
+            return self.get_fluid_pumps()
+
+        elif element_type == DeviceType.FluidPath:
+            return self.get_fluid_paths()
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1550,11 +1563,7 @@ class MultiCircuit:
                 'generators_emissions',
                 'fluid_nodes',
                 'fluid_paths',
-                'fluid_turbines',
-                'fluid_pumps'
                 ]
-
-        # TODO: Add fluid stuff
 
         for pr in ppts:
             setattr(cpy, pr, copy.deepcopy(getattr(self, pr)))
@@ -2701,19 +2710,18 @@ class MultiCircuit:
         :param obj: FluidNode
         """
         # delete dependencies
-        for elm in reversed(self.fluid_turbines):
-            if elm.plant == obj:
-                self.delete_fluid_turbine(elm)
-
-        for elm in reversed(self.fluid_pumps):
-            if elm.plant == obj:
-                self.delete_fluid_pump(elm)
-
         for fluid_path in reversed(self.fluid_paths):
             if fluid_path.source == obj or fluid_path.target == obj:
                 self.delete_fluid_path(fluid_path)
 
         self.fluid_nodes.remove(obj)
+
+    def get_fluid_nodes(self):
+        """
+
+        :return:
+        """
+        return self.fluid_nodes
 
     def add_fluid_path(self, obj: dev.FluidPath):
         """
@@ -2729,20 +2737,37 @@ class MultiCircuit:
         """
         self.fluid_paths.remove(obj)
 
-    def add_fluid_turbine(self, node:dev.FluidNode, obj: dev.FluidTurbine):
+    def get_fluid_paths(self):
+        """
+
+        :return:
+        """
+        return self.fluid_paths
+
+    def add_fluid_turbine(self, node: dev.FluidNode, api_obj: Union[dev.FluidTurbine, None]) -> dev.FluidTurbine:
         """
         Add fluid turbine
-        :param obj:FluidTurbine
+        :param node: Fluid node to add to
+        :param api_obj: FluidTurbine
         """
-        node.turbines.append(obj)
+
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.turbines.append(api_obj)
+
+        return api_obj
 
     def delete_fluid_turbine(self, obj: dev.FluidTurbine):
         """
         Delete fuid turbine
         :param obj: FluidTurbine
         """
-        # TODO: Figure out
-        self.fluid_turbines.remove(obj)
+        obj.plant.turbines.remove(obj)
 
     def get_fluid_turbines(self) -> List[dev.FluidTurbine]:
         """
@@ -2755,20 +2780,29 @@ class MultiCircuit:
             lst = lst + node.turbines
         return lst
 
-    def add_fluid_pump(self, node:dev.FluidNode, obj: dev.FluidPump):
+    def add_fluid_pump(self, node:dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
         """
         Add fluid pump
-        :param obj:FluidPump
+        :param node: Fluid node to add to
+        :param api_obj:FluidPump
         """
-        node.pumps.append(obj)
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.pumps.append(api_obj)
+
+        return api_obj
 
     def delete_fluid_pump(self, obj: dev.FluidPump):
         """
         Delete fuid pump
         :param obj: FluidPump
         """
-        # TODO: Figure out
-        self.fluid_pumps.remove(obj)
+        obj.plant.pumps.remove(obj)
 
     def get_fluid_pumps(self) -> List[dev.FluidPump]:
         """
@@ -2781,20 +2815,29 @@ class MultiCircuit:
             lst = lst + node.pumps
         return lst
 
-    def add_fluid_p2x(self, node:dev.FluidNode, obj: dev.FluidP2x):
+    def add_fluid_p2x(self, node: dev.FluidNode, api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
         """
-        Add fluid pump
-        :param obj:FluidPump
+        Add power to x
+        :param node: Fluid node to add to
+        :param api_obj:FluidP2x
         """
-        node.p2xs.append(obj)
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
 
-    def delete_fluid_p2x(self, obj: dev.FluidPump):
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.p2xs.append(api_obj)
+
+        return api_obj
+
+    def delete_fluid_p2x(self, obj: dev.FluidP2x):
         """
         Delete fuid pump
-        :param obj: FluidPump
+        :param obj: FluidP2x
         """
-        # TODO: Figure out
-        self.fluid_pumps.remove(obj)
+        obj.plant.p2xs.remove(obj)
 
     def get_fluid_p2xs(self) -> List[dev.FluidP2x]:
         """
