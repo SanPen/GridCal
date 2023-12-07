@@ -305,8 +305,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                            name=f'{node.name} Turbine balance')
 
             if isinstance(node.outflow, float) or isinstance(node.inflow, float):
-                # print(f'Check direction of connections around {node.name}!')
-                sys.exit(f'Check direction of connections around {node.name}!')
+                solver.logger.add_error(msg=f'Check direction of connections around',
+                                        device=node)
 
         if len(pumps_at_the_plant) > 0:
             solver.add_cst(cst=node.inflow == pump_flow,
