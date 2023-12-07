@@ -215,8 +215,8 @@ class MultiCircuit:
         # fluids
         self.fluid_nodes: List[dev.FluidNode] = list()
         self.fluid_paths: List[dev.FluidPath] = list()
-        self.fluid_turbines: List[dev.FluidTurbine] = list()
-        self.fluid_pumps: List[dev.FluidPump] = list()
+        # self.fluid_turbines: List[dev.FluidTurbine] = list()
+        # self.fluid_pumps: List[dev.FluidPump] = list()
 
         # objects with profiles
         self.objects_with_profiles = {
@@ -1237,10 +1237,13 @@ class MultiCircuit:
             return self.fluid_paths
 
         elif element_type == DeviceType.FluidTurbine:
-            return self.fluid_turbines
+            return self.get_fluid_turbines()
 
         elif element_type == DeviceType.FluidPump:
-            return self.fluid_pumps
+            return self.get_fluid_pumps()
+
+        elif element_type == DeviceType.FluidP2X:
+            return self.get_fluid_p2xs()
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1361,6 +1364,9 @@ class MultiCircuit:
 
         elif element_type == DeviceType.FluidTurbine:
             return self.delete_fluid_turbine(obj)
+
+        elif element_type == DeviceType.FluidP2X:
+            return self.delete_fluid_p2x(obj)
 
         elif element_type == DeviceType.FluidPump:
             return self.delete_fluid_pump(obj)
@@ -1500,6 +1506,8 @@ class MultiCircuit:
         elif element_type == DeviceType.WindingDevice:
             return self.get_windings()
 
+        # TODO: Add fluid stuff
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -1545,6 +1553,8 @@ class MultiCircuit:
                 'fluid_turbines',
                 'fluid_pumps'
                 ]
+
+        # TODO: Add fluid stuff
 
         for pr in ppts:
             setattr(cpy, pr, copy.deepcopy(getattr(self, pr)))
@@ -2719,33 +2729,83 @@ class MultiCircuit:
         """
         self.fluid_paths.remove(obj)
 
-    def add_fluid_turbine(self, obj: dev.FluidTurbine):
+    def add_fluid_turbine(self, node:dev.FluidNode, obj: dev.FluidTurbine):
         """
         Add fluid turbine
         :param obj:FluidTurbine
         """
-        self.fluid_turbines.append(obj)
+        node.turbines.append(obj)
 
     def delete_fluid_turbine(self, obj: dev.FluidTurbine):
         """
         Delete fuid turbine
         :param obj: FluidTurbine
         """
+        # TODO: Figure out
         self.fluid_turbines.remove(obj)
 
-    def add_fluid_pump(self, obj: dev.FluidPump):
+    def get_fluid_turbines(self) -> List[dev.FluidTurbine]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                elm.plant = node
+            lst = lst + node.turbines
+        return lst
+
+    def add_fluid_pump(self, node:dev.FluidNode, obj: dev.FluidPump):
         """
         Add fluid pump
         :param obj:FluidPump
         """
-        self.fluid_pumps.append(obj)
+        node.pumps.append(obj)
 
     def delete_fluid_pump(self, obj: dev.FluidPump):
         """
         Delete fuid pump
         :param obj: FluidPump
         """
+        # TODO: Figure out
         self.fluid_pumps.remove(obj)
+
+    def get_fluid_pumps(self) -> List[dev.FluidPump]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                elm.plant = node
+            lst = lst + node.pumps
+        return lst
+
+    def add_fluid_p2x(self, node:dev.FluidNode, obj: dev.FluidP2x):
+        """
+        Add fluid pump
+        :param obj:FluidPump
+        """
+        node.p2xs.append(obj)
+
+    def delete_fluid_p2x(self, obj: dev.FluidPump):
+        """
+        Delete fuid pump
+        :param obj: FluidPump
+        """
+        # TODO: Figure out
+        self.fluid_pumps.remove(obj)
+
+    def get_fluid_p2xs(self) -> List[dev.FluidP2x]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                elm.plant = node
+            lst = lst + node.p2xs
+        return lst
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """

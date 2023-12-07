@@ -28,8 +28,6 @@ class FluidTurbine(FluidInjectionTemplate):
                  name: str = '',
                  idtag: Union[str, None] = None,
                  code: str = '',
-                 Pmin: float = 0.0,
-                 Pmax: float = 0.0,
                  efficiency: float = 1.0,
                  max_flow_rate: float = 0.0,
                  plant: FluidNode = None,
@@ -39,8 +37,6 @@ class FluidTurbine(FluidInjectionTemplate):
         :param name: name
         :param idtag: UUID code
         :param code: secondary code
-        :param Pmin: Minimum power (MW)
-        :param Pmax: Maximum power (MW)
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
         :param plant: Connection reservoir/node
@@ -49,8 +45,6 @@ class FluidTurbine(FluidInjectionTemplate):
                                         name=name,
                                         idtag=idtag,
                                         code=code,
-                                        Pmin=Pmin,
-                                        Pmax=Pmax,
                                         efficiency=efficiency,
                                         max_flow_rate=max_flow_rate,
                                         plant=plant,

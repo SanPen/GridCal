@@ -28,8 +28,6 @@ class FluidInjectionTemplate(EditableDevice):
                  name: str = '',
                  idtag: Union[str, None] = None,
                  code: str = '',
-                 Pmin: float = 0.0,
-                 Pmax: float = 0.0,
                  efficiency: float = 1.0,
                  max_flow_rate: float = 0.0,
                  plant: FluidNode = None,
@@ -41,8 +39,6 @@ class FluidInjectionTemplate(EditableDevice):
         :param name: name
         :param idtag: UUID code
         :param code: secondary code
-        :param Pmin: Minimum power (MW)
-        :param Pmax: Maximum power (MW)
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
         :param plant: Connection reservoir/node
@@ -53,16 +49,12 @@ class FluidInjectionTemplate(EditableDevice):
                                 code=code,
                                 device_type=device_type)
 
-        self.p_min = Pmin  # MW
-        self.p_max = Pmax  # MW
         self.efficiency = efficiency  # MWh/m3
         self.max_flow_rate = max_flow_rate  # m3/h
         self.plant: FluidNode = plant
         self.generator: Generator = generator
         self.build_status = build_status
 
-        self.register(key='p_min', units="MW", tpe=float, definition="Minimum power")
-        self.register(key='p_max', units="MW", tpe=float, definition="Maximum power")
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
         self.register(key='max_flow_rate', units="m3/h", tpe=float, definition="maximum fluid flow")

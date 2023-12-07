@@ -1077,7 +1077,6 @@ def add_linear_node_balance(t_idx: int,
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
     :param prob: LpModel
-    :param logger: Logger
     """
     B = Bbus.tocsc()
 
@@ -1181,31 +1180,37 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # objective function
     f_obj: Union[LpExp, float] = 0.0
 
-    for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+    for local_t_idx, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+
+        # time indices:
+        # imagine that the complete GridCal DB time goes from 0 to 1000
+        # but, for whatever reason, time_indices is [100..200]
+        # local_t_idx would go fro 0..100
+        # global_t_idx would go from 100..200
 
         # compile the circuit at the master time index ------------------------------------------------------------
         # note: There are very little chances of simplifying this step and experience shows
         #       it is not worth the effort, so compile every time step
         nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
-                                                            t_idx=t,  # yes, this is not a bug
+                                                            t_idx=global_t_idx,  # yes, this is not a bug
                                                             bus_dict=bus_dict,
                                                             areas_dict=areas_dict)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
-                                                                 ub=nc.bus_data.angle_max[k],
-                                                                 name=join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
+                                                                       ub=nc.bus_data.angle_max[k],
+                                                                       name=join("th_", [local_t_idx, k], "_"))
 
         # formulate loads ------------------------------------------------------------------------------------------
-        f_obj += add_linear_load_formulation(t=t_idx,
+        f_obj += add_linear_load_formulation(t=local_t_idx,
                                              Sbase=nc.Sbase,
                                              load_data_t=nc.load_data,
                                              load_vars=mip_vars.load_vars,
                                              prob=lp_model)
 
         # formulate generation -------------------------------------------------------------------------------------
-        f_obj += add_linear_generation_formulation(t=t_idx,
+        f_obj += add_linear_generation_formulation(t=local_t_idx,
                                                    Sbase=nc.Sbase,
                                                    time_array=grid.time_profile,
                                                    gen_data_t=nc.generator_data,
@@ -1216,11 +1221,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    skip_generation_limits=skip_generation_limits)
 
         # formulate batteries --------------------------------------------------------------------------------------
-        if t_idx == 0 and energy_0 is None:
+        if local_t_idx == 0 and energy_0 is None:
             # declare the initial energy of the batteries
             energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
 
-        f_obj += add_linear_battery_formulation(t=t_idx,
+        f_obj += add_linear_battery_formulation(t=local_t_idx,
                                                 Sbase=nc.Sbase,
                                                 time_array=grid.time_profile,
                                                 batt_data_t=nc.battery_data,
@@ -1234,14 +1239,14 @@ def run_linear_opf_ts(grid: MultiCircuit,
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
             # amount of emissions per gas
-            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(emissions)
 
         # add fuels ----------------------------------------------------------------------------------------------------
         if gen_fuel_rates_matrix.shape[0] > 0:
             # amount of fuels
-            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(fuels_amount)
 
@@ -1250,7 +1255,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
             # formulate hvdc -------------------------------------------------------------------------------------------
-            f_obj += add_linear_hvdc_formulation(t=t_idx,
+            f_obj += add_linear_hvdc_formulation(t=local_t_idx,
                                                  Sbase=nc.Sbase,
                                                  hvdc_data_t=nc.hvdc_data,
                                                  hvdc_vars=mip_vars.hvdc_vars,
@@ -1258,7 +1263,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                  prob=lp_model)
 
             # formulate branches ---------------------------------------------------------------------------------------
-            f_obj += add_linear_branches_formulation(t=t_idx,
+            f_obj += add_linear_branches_formulation(t=local_t_idx,
                                                      Sbase=nc.Sbase,
                                                      branch_data_t=nc.branch_data,
                                                      branch_vars=mip_vars.branch_vars,
@@ -1267,7 +1272,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      inf=1e20)
 
             # formulate nodes ------------------------------------------------------------------------------------------
-            add_linear_node_balance(t_idx=t_idx,
+            add_linear_node_balance(t_idx=local_t_idx,
                                     Bbus=nc.Bbus,
                                     vd=nc.vd,
                                     bus_data=nc.bus_data,
@@ -1294,7 +1299,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
 
                 # formulate the contingencies
-                f_obj += add_linear_branches_contingencies_formulation(t_idx=t_idx,
+                f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
                                                                        Sbase=nc.Sbase,
                                                                        branch_data_t=nc.branch_data,
                                                                        branch_vars=mip_vars.branch_vars,
@@ -1308,20 +1313,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 for branches_list in [inter_area_branches, inter_area_hvdc]:
                     for k, branch, sense in branches_list:
                         # we want to maximize, hence the minus sign
-                        f_obj += mip_vars.branch_vars.flows[t_idx, k] * (- sense)
+                        f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand -------------------------------------------------------------------------------------
-        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                              mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum()),
-                         name="satisfy_demand_at_{0}".format(t_idx))
+        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
+                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) >=
+                              mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
+                                  local_t_idx].sum()),
+                         name="satisfy_demand_at_{0}".format(local_t_idx))
 
         if progress_func is not None:
-            progress_func((t_idx + 1) / nt * 100.0)
+            progress_func((local_t_idx + 1) / nt * 100.0)
 
     # set the objective function
     lp_model.minimize(f_obj)
