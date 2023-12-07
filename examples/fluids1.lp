@@ -7,15 +7,15 @@
 \     Integer        : 0
 \     Continuous     : 18
 Minimize
- Obj: +1 TPower_G1 +1000 NodeSpillage_Embalse +1000 NodeSpillage_Río +1000 NodeSpillage_Nodo2 +1000 NodeSpillage_NodoTurbina +1000 NodeSpillage_NodoBomba +1 Flow_Embalse_Nodo2 +1 Flow_Nodo2_Turbina +1 Flow_Bomba_Nodo2 +1 Flow_Turbina_Río +1 Flow_Río_Bomba 
+ Obj: +1 TPower_G1 +1000 NodeSpillage_Embalse +1000 NodeSpillage_Rio +1000 NodeSpillage_Nodo2 +1000 NodeSpillage_NodoTurbina +1000 NodeSpillage_NodoBomba 
 Subject to
  Embalse_Node_Balance: -1.0101 P2XPower_P2X1 +1 NodeSpillage_Embalse +1 Level_Embalse +1 Flow_Embalse_Nodo2  = 200
- Río_Node_Balance: +1 NodeSpillage_Río +1 Level_Río -1 Flow_Turbina_Río +1 Flow_Río_Bomba  = 300
+ Rio_Node_Balance: +1 NodeSpillage_Rio +1 Level_Rio -1 Flow_Turbina_Rio +1 Flow_Rio_Bomba  = 300
  Nodo2_Node_Balance: +1 NodeSpillage_Nodo2 +1 Level_Nodo2 -1 Flow_Embalse_Nodo2 +1 Flow_Nodo2_Turbina -1 Flow_Bomba_Nodo2  = 0
- NodoTurbina_Turbine_balance: -1.11111 TPower_G1 +1 Flow_Turbina_Río  = 0
- NodoTurbina_Node_Balance: +1 NodeSpillage_NodoTurbina +1 Level_NodoTurbina -1 Flow_Nodo2_Turbina +1 Flow_Turbina_Río  = 0
- NodoBomba_Pump_balance: -1.11111 PPower_P1 +1 Flow_Río_Bomba  = 0
- NodoBomba_Node_Balance: +1 NodeSpillage_NodoBomba +1 Level_NodoBomba +1 Flow_Bomba_Nodo2 -1 Flow_Río_Bomba  = 0
+ NodoTurbina_Turbine_balance: -1.11111 TPower_G1 +1 Flow_Turbina_Rio  = 0
+ NodoTurbina_Node_Balance: +1 NodeSpillage_NodoTurbina +1 Level_NodoTurbina -1 Flow_Nodo2_Turbina +1 Flow_Turbina_Rio  = 0
+ NodoBomba_Pump_balance: -1.11111 PPower_P1 +1 Flow_Rio_Bomba  = 0
+ NodoBomba_Node_Balance: +1 NodeSpillage_NodoBomba +1 Level_NodoBomba +1 Flow_Bomba_Nodo2 -1 Flow_Rio_Bomba  = 0
  Satisfy_demand: +1 TPower_G1 -1 PPower_P1 -1 P2XPower_P2X1  >= 50
 Bounds
  0 <= TPower_G1 <= 630
@@ -23,17 +23,17 @@ Bounds
  0 <= P2XPower_P2X1 <= 100
  0 <= NodeSpillage_Embalse <= 1e+20
  0 <= Level_Embalse <= 1.16e+08
- 0 <= NodeSpillage_Río <= 1e+20
- 0 <= Level_Río <= 1e+20
+ 0 <= NodeSpillage_Rio <= 1e+20
+ 0 <= Level_Rio <= 1e+20
  0 <= NodeSpillage_Nodo2 <= 1e+20
  0 <= Level_Nodo2 <= 0
  0 <= NodeSpillage_NodoTurbina <= 1e+20
  0 <= Level_NodoTurbina <= 0
  0 <= NodeSpillage_NodoBomba <= 1e+20
  0 <= Level_NodoBomba <= 0
- 0 <= Flow_Embalse_Nodo2 <= 550
- 0 <= Flow_Nodo2_Turbina <= 520
- 0 <= Flow_Bomba_Nodo2 <= 520
- 0 <= Flow_Turbina_Río <= 520
- -520 <= Flow_Río_Bomba <= 0
+ -550 <= Flow_Embalse_Nodo2 <= 550
+ -520 <= Flow_Nodo2_Turbina <= 520
+ -520 <= Flow_Bomba_Nodo2 <= 520
+ -520 <= Flow_Turbina_Rio <= 520
+ -520 <= Flow_Rio_Bomba <= 520
 End

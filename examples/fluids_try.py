@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib
+import sys
 from GridCalEngine.Utils.MIP.selected_interface import *
 from GridCalEngine.enumerations import MIPSolvers
 
@@ -299,8 +300,13 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
             total_power_balance -= power2x.power_input
 
         if len(turbines_at_the_plant) > 0:
+
             solver.add_cst(cst=node.outflow == turbine_flow,
                            name=f'{node.name} Turbine balance')
+
+            if isinstance(node.outflow, float) or isinstance(node.inflow, float):
+                # print(f'Check direction of connections around {node.name}!')
+                sys.exit(f'Check direction of connections around {node.name}!')
 
         if len(pumps_at_the_plant) > 0:
             solver.add_cst(cst=node.inflow == pump_flow,
@@ -358,7 +364,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                    name='Satisfy_demand')
 
     # Objective
-    total_flows = solver.sum([river.flow for river in flow_transporters])
+    # total_flows = solver.sum([river.flow for river in flow_transporters])
+    total_flows = 0.0
     total_spillage = (solver.sum([plant.spillage for plant in fluid_nodes]))
     solver.minimize(total_power_generated +
                     1000 * total_spillage +  # penalize spillage
@@ -587,7 +594,7 @@ def example_3():
 
 def example_lamuela():
     embalse = FluidNode(name='Embalse', min_level=0, max_level=116e6, current_level=200)
-    rio = FluidNode(name='Río', min_level=0, max_level=1e20, current_level=300)
+    rio = FluidNode(name='Rio', min_level=0, max_level=1e20, current_level=300)
     nodo2 = FluidNode(name='Nodo2')
     turbina = FluidNode(name='NodoTurbina')
     bomba = FluidNode(name='NodoBomba')
@@ -596,11 +603,12 @@ def example_lamuela():
     dem1 = Pump(name="P1", p_min=0.0, p_max=540, efficiency=0.9, max_flow_rate=100, reservoir=bomba)
     p2x1 = Power2X(name="P2X1", p_min=0.0, p_max=100, efficiency=0.99, max_flow_rate=100, node=embalse)
 
-    river1 = FluidPath(name='Embalse-Nodo2', source=embalse, target=nodo2, min_flow=0, max_flow=550)
-    river2 = FluidPath(name='Nodo2-Turbina', source=nodo2, target=turbina, min_flow=0, max_flow=520)
-    river3 = FluidPath(name='Bomba-Nodo2', source=bomba, target=nodo2, min_flow=0, max_flow=520)
-    river4 = FluidPath(name='Turbina-Río', source=turbina, target=rio, min_flow=0, max_flow=520)
-    river5 = FluidPath(name='Río-Bomba', source=rio, target=bomba, min_flow=-520, max_flow=0)
+    river1 = FluidPath(name='Embalse-Nodo2', source=embalse, target=nodo2, min_flow=-550, max_flow=550)
+    river2 = FluidPath(name='Nodo2-Turbina', source=nodo2, target=turbina, min_flow=-520, max_flow=520)
+    river3 = FluidPath(name='Bomba-Nodo2', source=bomba, target=nodo2, min_flow=-520, max_flow=520)
+    river4 = FluidPath(name='Turbina-Rio', source=rio, target=turbina, min_flow=-520, max_flow=520)  # error
+    # river4 = FluidPath(name='Turbina-Rio', source=turbina, target=rio, min_flow=-520, max_flow=520)  # works well
+    river5 = FluidPath(name='Rio-Bomba', source=rio, target=bomba, min_flow=-520, max_flow=520)
 
     nodes = [embalse, rio, nodo2, turbina, bomba]
     rivers = [river1, river2, river3, river4, river5]
