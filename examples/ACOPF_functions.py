@@ -27,14 +27,14 @@ def hessf(x, c2):
 
 def Pij(x, Gij, Bij):
     # x = [Pij, vi, vj, phiij]
-    return -Gij * (x[1] ** 2 - x[1] * x[2] * math.cos(x[3])) + Bij * x[1] * x[2] * math.sin(x[3]) - x[0]
+    return Gij * (x[1] ** 2 - x[1] * x[2] * math.cos(x[3])) - Bij * x[1] * x[2] * math.sin(x[3]) - x[0]
 
 
 def gradPij(x, Gij, Bij):
     grad0 = -1
-    grad1 = -Gij * (2 * x[1] - x[2] * math.cos(x[3])) + Bij * x[2] * math.sin(x[3])
-    grad2 = -Gij * (- x[1] * math.cos(x[3])) + Bij * x[1] * math.sin(x[3])
-    grad3 = -Gij * (x[1] * x[2] * math.sin(x[3])) + Bij * x[1] * x[2] * math.cos(x[3])
+    grad1 = Gij * (2 * x[1] - x[2] * math.cos(x[3])) - Bij * x[2] * math.sin(x[3])
+    grad2 = Gij * (- x[1] * math.cos(x[3])) - Bij * x[1] * math.sin(x[3])
+    grad3 = Gij * (x[1] * x[2] * math.sin(x[3])) - Bij * x[1] * x[2] * math.cos(x[3])
 
     return np.array([grad0, grad1, grad2, grad3])
 
@@ -43,11 +43,11 @@ def hessPij(x, Gij, Bij):
 
     hess = np.zeros((4,4))
 
-    hess[1][1] = -2 * Gij
-    hess[1][2] = Gij * math.cos(x[3]) + Bij * math.sin(x[3])
-    hess[1][3] = -Gij * x[2] * math.sin(x[3]) + Bij * x[2] * math.cos(x[3])
-    hess[2][3] = -Gij * x[1] * math.sin(x[3]) + Bij * x[1] * math.cos(x[3])
-    hess[3][3] = -Gij * x[1] * x[2] * math.cos(x[3]) - Bij * x[1] * x[2] * math.sin(x[3])
+    hess[1][1] = 2 * Gij
+    hess[1][2] = -Gij * math.cos(x[3]) - Bij * math.sin(x[3])
+    hess[1][3] = Gij * x[2] * math.sin(x[3]) - Bij * x[2] * math.cos(x[3])
+    hess[2][3] = Gij * x[1] * math.sin(x[3]) - Bij * x[1] * math.cos(x[3])
+    hess[3][3] = Gij * x[1] * x[2] * math.cos(x[3]) + Bij * x[1] * x[2] * math.sin(x[3])
 
     hess[2][1] = hess[1][2]
     hess[3][1] = hess[1][3]
@@ -58,15 +58,15 @@ def hessPij(x, Gij, Bij):
 
 def Qij(x, Gij, Bij):
     # x = [Pij, vi, vj, phiij]
-    return -Bij * (x[1] * x[2] * math.cos(x[3]) - x[1] ** 2) + Gij * x[1] * x[2] * math.sin(x[3]) - x[0]
+    return Bij * (x[1] * x[2] * math.cos(x[3]) - x[1] ** 2) - Gij * x[1] * x[2] * math.sin(x[3]) - x[0]
 
 
 def gradQij(x, Gij, Bij):
 
     grad0 = -1
-    grad1 = -Bij * (x[2] * math.cos(x[3]) - 2 * x[1]) + Gij * x[2] * math.sin(x[3])
-    grad2 = -Bij * (x[1] * math.cos(x[3])) + Gij * x[1] * math.sin(x[3])
-    grad3 = Bij * (x[1] * x[2] * math.sin(x[3])) + Gij * x[1] * x[2] * math.cos(x[3])
+    grad1 = Bij * (x[2] * math.cos(x[3]) - 2 * x[1]) - Gij * x[2] * math.sin(x[3])
+    grad2 = Bij * (x[1] * math.cos(x[3])) - Gij * x[1] * math.sin(x[3])
+    grad3 = -Bij * (x[1] * x[2] * math.sin(x[3])) - Gij * x[1] * x[2] * math.cos(x[3])
 
     return np.array([grad0, grad1, grad2, grad3])
 
@@ -75,11 +75,11 @@ def hessQij(x, Gij, Bij):
 
     hess = np.zeros((4,4))
 
-    hess[1][1] = 2 * Bij
-    hess[1][2] = -Bij * math.cos(x[3]) + Gij * math.sin(x[3])
-    hess[1][3] = Bij * x[2] * math.sin(x[3]) + Gij * x[2] * math.cos(x[3])
-    hess[2][3] = Bij * x[1] * math.sin(x[3]) + Gij * x[1] * math.cos(x[3])
-    hess[3][3] = Bij * x[1] * x[2] * math.cos(x[3]) - Gij * x[1] * x[2] * math.sin(x[3])
+    hess[1][1] = -2 * Bij
+    hess[1][2] = Bij * math.cos(x[3]) - Gij * math.sin(x[3])
+    hess[1][3] = -Bij * x[2] * math.sin(x[3]) - Gij * x[2] * math.cos(x[3])
+    hess[2][3] = -Bij * x[1] * math.sin(x[3]) - Gij * x[1] * math.cos(x[3])
+    hess[3][3] = -Bij * x[1] * x[2] * math.cos(x[3]) + Gij * x[1] * x[2] * math.sin(x[3])
 
     hess[2][1] = hess[1][2]
     hess[3][1] = hess[1][3]
@@ -116,9 +116,7 @@ def PLoss(x, Rij):
 
 
 def gradPloss():
-
     return np.array([-1, 1, 1])
-
 
 
 def QLoss(x, Xij):
@@ -142,6 +140,6 @@ def gradSmax(x):
 
 
 def hessSmax():
-    return np.array([[1, 0], [0, 1]])
+    return np.array([[-2, 0], [0, -2]])
 
 ################################

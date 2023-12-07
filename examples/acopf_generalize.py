@@ -20,6 +20,7 @@ grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1', r=0.01, x=0.05))
 
 grid.add_load(b3, gce.Load(name='load 3', P=50, Q=20))
 grid.add_generator(b1, gce.Generator('Slack', vset=1.0))
+grid.add_generator(b3, gce.Generator('Th', vset=0.99))
 
 options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
 power_flow = gce.PowerFlowDriver(grid, options)
@@ -30,7 +31,6 @@ print('\tConv:', power_flow.results.get_bus_df())
 print('\tConv:', power_flow.results.get_branch_df())
 
 nc = gce.compile_numerical_circuit_at(grid)
-
 
 
 
