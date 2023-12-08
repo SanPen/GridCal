@@ -52,7 +52,7 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QGraphicsTextItem('G', parent=self.glyph)
+        self.label = QGraphicsTextItem('T', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
         self.label.setPos(self.h / 4, self.w / 5)
 
@@ -70,10 +70,9 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
                            parent=self.diagramScene.parent().object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies,
-                                                DeviceType.FuelDevice.value: self.diagramScene.circuit.fuels,
-                                                DeviceType.EmissionGasDevice.value: self.diagramScene.circuit.emission_gases,
-                                                })
+                           dictionary_of_lists={
+                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
+                           })
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):

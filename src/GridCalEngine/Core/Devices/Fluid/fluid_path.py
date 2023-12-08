@@ -53,7 +53,7 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
-        self.register(key='source', units="", tpe=FluidNode, definition="Source node")
-        self.register(key='target', units="", tpe=FluidNode, definition="Target node")
+        self.register(key='source', units="", tpe=FluidNode, definition="Source node", editable=False)
+        self.register(key='target', units="", tpe=FluidNode, definition="Target node", editable=False)
         self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum power")
         self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum power")

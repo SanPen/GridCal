@@ -781,7 +781,7 @@ class DeviceType(Enum):
     FluidPump = 'Fluid Pump'
     FluidP2X = 'Fluid P2X'
     FluidPath = 'Fluid path'
-    FluidNode = 'Fluid node'
+    FluidNodeDevice = 'Fluid node'
 
     def __str__(self):
         return self.value

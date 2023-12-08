@@ -54,6 +54,12 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                                          width=width,
                                          api_object=api_object)
 
+    def recolour_mode(self):
+        """
+        Change the colour according to the system theme
+        """
+        self.set_colour(self.color, self.width, self.style)
+
     def remove_symbol(self) -> None:
         """
         Remove all symbols
@@ -116,22 +122,22 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             menu = QMenu()
             menu.addSection("FluidPath")
 
-            pe = menu.addAction('Active')
-            pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
-            pe.triggered.connect(self.enable_disable_toggle)
+            # pe = menu.addAction('Active')
+            # pe.setCheckable(True)
+            # pe.setChecked(self.api_object.active)
+            # pe.triggered.connect(self.enable_disable_toggle)
 
-            ra3 = menu.addAction('Editor')
-            edit_icon = QIcon()
-            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            ra3.setIcon(edit_icon)
-            ra3.triggered.connect(self.edit)
+            # ra3 = menu.addAction('Editor')
+            # edit_icon = QIcon()
+            # edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
+            # ra3.setIcon(edit_icon)
+            # ra3.triggered.connect(self.edit)
 
-            rabf = menu.addAction('Change bus')
-            move_bus_icon = QIcon()
-            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-            rabf.setIcon(move_bus_icon)
-            rabf.triggered.connect(self.change_bus)
+            # rabf = menu.addAction('Change bus')
+            # move_bus_icon = QIcon()
+            # move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            # rabf.setIcon(move_bus_icon)
+            # rabf.triggered.connect(self.change_bus)
 
             menu.addSeparator()
 
@@ -141,68 +147,31 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-            ra4 = menu.addAction('Assign rate to profile')
-            ra4_icon = QIcon()
-            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra4.setIcon(ra4_icon)
-            ra4.triggered.connect(self.assign_rate_to_profile)
+            # ra4 = menu.addAction('Assign rate to profile')
+            # ra4_icon = QIcon()
+            # ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            # ra4.setIcon(ra4_icon)
+            # ra4.triggered.connect(self.assign_rate_to_profile)
+            #
+            # ra5 = menu.addAction('Assign active state to profile')
+            # ra5_icon = QIcon()
+            # ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            # ra5.setIcon(ra5_icon)
+            # ra5.triggered.connect(self.assign_status_to_profile)
 
-            ra5 = menu.addAction('Assign active state to profile')
-            ra5_icon = QIcon()
-            ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra5.setIcon(ra5_icon)
-            ra5.triggered.connect(self.assign_status_to_profile)
-
-            ra3 = menu.addAction('Add to catalogue')
-            ra3_icon = QIcon()
-            ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
-            ra3.setIcon(ra3_icon)
-            ra3.triggered.connect(self.add_to_catalogue)
-
-            spl = menu.addAction('Split line')
-            spl_icon = QIcon()
-            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
-            spl.setIcon(spl_icon)
-            spl.triggered.connect(self.split_line)
+            # spl = menu.addAction('Split line')
+            # spl_icon = QIcon()
+            # spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            # spl.setIcon(spl_icon)
+            # spl.triggered.connect(self.split_line)
 
             # menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
-
-            menu.addSection('Convert to')
-            toxfo = menu.addAction('Transformer')
-            toxfo_icon = QIcon()
-            toxfo_icon.addPixmap(QPixmap(":/Icons/icons/to_transformer.svg"))
-            toxfo.setIcon(toxfo_icon)
-            toxfo.triggered.connect(self.to_transformer)
-
-            tohvdc = menu.addAction('HVDC')
-            tohvdc_icon = QIcon()
-            tohvdc_icon.addPixmap(QPixmap(":/Icons/icons/to_hvdc.svg"))
-            tohvdc.setIcon(tohvdc_icon)
-            tohvdc.triggered.connect(self.to_hvdc)
-
-            tovsc = menu.addAction('VSC')
-            tovsc_icon = QIcon()
-            tovsc_icon.addPixmap(QPixmap(":/Icons/icons/to_vsc.svg"))
-            tovsc.setIcon(tovsc_icon)
-            tovsc.triggered.connect(self.to_vsc)
-
-            toupfc = menu.addAction('UPFC')
-            toupfc_icon = QIcon()
-            toupfc_icon.addPixmap(QPixmap(":/Icons/icons/to_upfc.svg"))
-            toupfc.setIcon(toupfc_icon)
-            toupfc.triggered.connect(self.to_upfc)
 
             menu.exec_(event.screenPos())
         else:
@@ -225,7 +194,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
 
     def plot_profiles(self):
         """
@@ -268,30 +237,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         if dlg.exec_():
             pass
 
-    def add_to_catalogue(self):
-        """
-        Add this to the catalogue
-        """
-        ok = yes_no_question(text="A template will be generated using this line values per unit of length",
-                             title="Add sequence line type")
-
-        if ok:
-            # rate = I
-            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = kA * kV * sqrt(3)
-
-            tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
-                                   idtag=None,
-                                   Imax=rated_current,
-                                   Vnom=self.api_object.Vf,
-                                   R=self.api_object.R / self.api_object.length,
-                                   X=self.api_object.X / self.api_object.length,
-                                   B=self.api_object.B / self.api_object.length,
-                                   R0=self.api_object.R0 / self.api_object.length,
-                                   X0=self.api_object.X0 / self.api_object.length,
-                                   B0=self.api_object.B0 / self.api_object.length)
-
-            self.editor.circuit.add_sequence_line(tpe)
-
     def split_line(self):
         """
         Split line
@@ -327,46 +272,3 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
                 # remove this line
                 self.remove(ask=False)
-
-    def to_transformer(self):
-        """
-        Convert this object to transformer
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a transformer?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_transformer(line=self.api_object, line_graphic=self)
-
-    def to_hvdc(self):
-        """
-        Convert this object to HVDC
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a HVDC line?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_hvdc(line=self.api_object, line_graphic=self)
-
-    def to_vsc(self):
-        """
-        Convert this object to VSC
-        :return:
-        """
-        if self.api_object.convertible_to_vsc():
-            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
-            if ok:
-                editor = self.diagramScene.parent()
-                editor.convert_line_to_vsc(line=self.api_object, line_graphic=self)
-        else:
-            warning_msg('Unable to convert to VSC. One of the buses must be DC and the other AC.')
-
-    def to_upfc(self):
-        """
-        Convert this object to UPFC
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)

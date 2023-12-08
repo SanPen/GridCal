@@ -61,51 +61,40 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
                     'shunt': dev.Shunt(),
 
                     'wires': dev.Wire(),
-
                     'overhead_line_types': dev.OverheadLineType(),
-
                     'underground_cable_types': dev.UndergroundLineType(),
-
                     'sequence_line_types': dev.SequenceLineType(),
-
                     'transformer_types': dev.TransformerType(),
 
                     'branch': dev.Branch(),
-
                     'transformer2w': dev.Transformer2W(),
 
                     'windings': dev.Winding(),
-
                     'transformer3w': dev.Transformer3W(),
 
                     'line': dev.Line(),
-
                     'dc_line': dev.DcLine(None, None),
 
                     'hvdc': dev.HvdcLine(),
 
                     'vsc': dev.VSC(None, None),
-
                     'upfc': dev.UPFC(None, None),
 
                     'contingency_group': dev.ContingencyGroup(),
-
                     'contingency': dev.Contingency(),
 
                     'investments_group': dev.InvestmentsGroup(),
-
                     'investment': dev.Investment(),
 
                     'generator_technology': dev.GeneratorTechnology(),
-
                     'generator_fuel': dev.GeneratorFuel(),
-
                     'generator_emission': dev.GeneratorEmission(),
 
                     'fluid_node': dev.FluidNode(),
                     'fluid_path': dev.FluidPath(),
                     'fluid_turbine': dev.FluidTurbine(),
                     'fluid_pump': dev.FluidPump(),
+                    'fluid_p2x': dev.FluidP2x(),
 
                     }
 
@@ -538,7 +527,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.EmissionGasDevice,
                                                  DeviceType.GeneratorDevice,
                                                  DeviceType.ConnectivityNodeDevice,
-                                                 DeviceType.FluidNode]:
+                                                 DeviceType.FluidNodeDevice,
+                                                 DeviceType.BusDevice]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -597,6 +587,23 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
                                 else:
                                     logger.add_error('Bus not found', str(property_value))
+
+                            elif gc_prop.tpe == DeviceType.FluidNodeDevice:
+
+                                # check if the bus is in the dictionary...
+                                if property_value in elements_dict[DeviceType.BusDevice].keys():
+
+                                    parent_bus: dev.FluidNode = elements_dict[DeviceType.BusDevice][property_value]
+                                    setattr(devices[i], gc_prop.name, parent_bus)
+
+                                    # add the device to the bus
+                                    if template_elm.device_type in [DeviceType.FluidTurbine,
+                                                                    DeviceType.FluidPump,
+                                                                    DeviceType.FluidP2X]:
+                                        parent_bus.add_device(devices[i])
+
+                                else:
+                                    logger.add_error('Fluid node not found', str(property_value))
 
                             elif gc_prop.tpe in [DeviceType.TransformerTypeDevice,  # template types mostly
                                                  DeviceType.SequenceLineDevice,
@@ -677,18 +684,6 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             if template_elm.device_type == DeviceType.BusDevice:
                 circuit.buses = devices
 
-            # elif template_elm.device_type == DeviceType.SubstationDevice:
-            #     circuit.substations = devices
-            #
-            # elif template_elm.device_type == DeviceType.AreaDevice:
-            #     circuit.areas = devices
-            #
-            # elif template_elm.device_type == DeviceType.ZoneDevice:
-            #     circuit.zones = devices
-            #
-            # elif template_elm.device_type == DeviceType.CountryDevice:
-            #     circuit.countries = devices
-
             elif template_elm.device_type == DeviceType.BranchDevice:
                 for d in devices:
                     circuit.add_branch(d)  # each branch needs to be converted accordingly
@@ -696,7 +691,6 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.LineDevice:
                 for d in devices:
                     circuit.add_line(d, logger=logger)  # this is done to detect those lines that should be transformers
-                # circuit.lines = devices
 
             elif template_elm.device_type == DeviceType.DCLineDevice:
                 circuit.dc_lines = devices
@@ -766,17 +760,12 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.GeneratorEmissionAssociation:
                 circuit.generators_emissions = devices
 
-            elif template_elm.device_type == DeviceType.FluidNode:
+            elif template_elm.device_type == DeviceType.FluidNodeDevice:
                 circuit.fluid_nodes = devices
 
             elif template_elm.device_type == DeviceType.FluidPath:
                 circuit.fluid_paths = devices
 
-            elif template_elm.device_type == DeviceType.FluidTurbine:
-                circuit.fluid_turbines = devices
-
-            elif template_elm.device_type == DeviceType.FluidPump:
-                circuit.fluid_pumps = devices
         else:
             # the file does not contain information for the data type (not a problem...)
             pass
@@ -791,8 +780,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
             if (tower_name in elements_dict[DeviceType.OverheadLineTypeDevice].keys()) and \
                     (wire_name in elements_dict[DeviceType.WireDevice].keys()):
-                tower = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
-                wire = elements_dict[DeviceType.WireDevice][wire_name]
+                tower: dev.OverheadLineType = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
+                wire: dev.Wire = elements_dict[DeviceType.WireDevice][wire_name]
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
@@ -840,14 +829,5 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
     if DeviceType.CountryDevice in elements_dict.keys():
         circuit.countries = list(elements_dict[DeviceType.CountryDevice].values())
-
-    # if DeviceType.Technology in elements_dict.keys():
-    #     circuit.technologies = list(elements_dict[DeviceType.Technology].values())
-    #
-    # if DeviceType.ContingencyGroupDevice in elements_dict.keys():
-    #     circuit.contingency_groups = list(elements_dict[DeviceType.ContingencyGroupDevice].values())
-    #
-    # if DeviceType.ContingencyDevice in elements_dict.keys():
-    #     circuit.contingencies = list(elements_dict[DeviceType.ContingencyDevice].values())
 
     return circuit

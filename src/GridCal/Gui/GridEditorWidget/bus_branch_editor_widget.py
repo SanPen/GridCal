@@ -487,7 +487,7 @@ class DiagramScene(QGraphicsScene):
         @param event:
         @return:
         """
-        self.parent_.scene_mouse_release_event(event)
+        self.parent_.create_branch_on_mouse_release_event(event)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(DiagramScene, self).mouseReleaseEvent(event)
@@ -1153,7 +1153,166 @@ class BusBranchEditorWidget(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
-    def scene_mouse_release_event(self, event: QGraphicsSceneMouseEvent) -> None:
+    def create_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Line ' + str(len(self.circuit.lines) + 1)
+        obj = Line(bus_from=bus_from,
+                   bus_to=bus_to,
+                   name=name)
+
+        graphic_object = LineGraphicItem(fromPort=fromPort,
+                                         toPort=toPort,
+                                         editor=self,
+                                         api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_dc_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
+        obj = DcLine(bus_from=bus_from,
+                     bus_to=bus_to,
+                     name=name)
+
+        graphic_object = DcLineGraphicItem(fromPort=fromPort,
+                                           toPort=toPort,
+                                           editor=self,
+                                           api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_transformer(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+        obj = Transformer2W(bus_from=bus_from,
+                            bus_to=bus_to,
+                            name=name)
+
+        graphic_object = TransformerGraphicItem(fromPort=fromPort,
+                                                toPort=toPort,
+                                                editor=self,
+                                                api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_vsc(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
+        obj = VSC(bus_from=bus_from,
+                  bus_to=bus_to,
+                  name=name)
+
+        graphic_object = VscGraphicItem(fromPort=fromPort,
+                                        toPort=toPort,
+                                        editor=self,
+                                        api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_fluid_path(self, source: FluidNode, target: FluidNode, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param source:
+        :param target:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'FluidPath ' + str(len(self.circuit.fluid_paths) + 1)
+        obj = FluidPath(source=source,
+                        target=target,
+                        name=name)
+
+        graphic_object = FluidPathGraphicItem(fromPort=fromPort,
+                                              toPort=toPort,
+                                              editor=self,
+                                              api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+        self.circuit.add_fluid_path(obj=obj)
+
+    def create_branch_on_mouse_release_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         Finalize the branch creation if its drawing ends in a terminal
         @param event:
@@ -1177,77 +1336,46 @@ class BusBranchEditorWidget(QSplitter):
                             if self.started_branch.should_be_a_converter():
                                 # different DC status -> VSC
 
-                                name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
-                                obj = VSC(bus_from=self.started_branch.get_bus_from(),
-                                          bus_to=self.started_branch.get_bus_to(),
-                                          name=name)
-
-                                graphic_object = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                toPort=self.started_branch.toPort,
-                                                                editor=self,
-                                                                api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_vsc(bus_from=self.started_branch.get_bus_from(),
+                                                bus_to=self.started_branch.get_bus_to(),
+                                                fromPort=self.started_branch.fromPort,
+                                                toPort=self.started_branch.toPort)
 
                             elif self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
-                                name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
-                                obj = DcLine(bus_from=self.started_branch.get_bus_from(),
-                                             bus_to=self.started_branch.get_bus_to(),
-                                             name=name)
-
-                                graphic_object = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                   toPort=self.started_branch.toPort,
-                                                                   editor=self,
-                                                                   api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_dc_line(bus_from=self.started_branch.get_bus_from(),
+                                                    bus_to=self.started_branch.get_bus_to(),
+                                                    fromPort=self.started_branch.fromPort,
+                                                    toPort=self.started_branch.toPort)
 
                             elif self.started_branch.should_be_a_transformer():
-                                name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
-                                obj = Transformer2W(bus_from=self.started_branch.get_bus_from(),
-                                                    bus_to=self.started_branch.get_bus_to(),
-                                                    name=name)
 
-                                graphic_object = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                        toPort=self.started_branch.toPort,
-                                                                        editor=self,
-                                                                        api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_transformer(bus_from=self.started_branch.get_bus_from(),
+                                                        bus_to=self.started_branch.get_bus_to(),
+                                                        fromPort=self.started_branch.fromPort,
+                                                        toPort=self.started_branch.toPort)
 
                             else:
-                                name = 'Line ' + str(len(self.circuit.lines) + 1)
-                                obj = Line(bus_from=self.started_branch.get_bus_from(),
-                                           bus_to=self.started_branch.get_bus_to(),
-                                           name=name)
 
-                                graphic_object = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                 toPort=self.started_branch.toPort,
-                                                                 editor=self,
-                                                                 api_object=obj)
+                                self.create_line(bus_from=self.started_branch.get_bus_from(),
+                                                 bus_to=self.started_branch.get_bus_to(),
+                                                 fromPort=self.started_branch.fromPort,
+                                                 toPort=self.started_branch.toPort)
 
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
-
-                            # add the new object to the circuit
-                            self.circuit.add_branch(obj)
-
-                            # update the connection placement
-                            graphic_object.fromPort.update()
-                            graphic_object.toPort.update()
-
-                            # set the connection placement
-                            graphic_object.setZValue(-1)
+                            # # add the new object to the circuit
+                            # self.circuit.add_branch(obj)
+                            #
+                            # # update the connection placement
+                            # graphic_object.fromPort.update()
+                            # graphic_object.toPort.update()
+                            #
+                            # # set the connection placement
+                            # graphic_object.setZValue(-1)
 
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
                             tr3_graphic_object = self.started_branch.get_from_graphic_object()
-                            # obj = graphic_object.api_object
 
                             if self.started_branch.is_to_port_a_bus():
                                 # if the bus "from" is the TR3W, the "to" is the bus
@@ -1294,6 +1422,54 @@ class BusBranchEditorWidget(QSplitter):
                                 tr3_graphic_object.update_conn()
                                 self.update_diagram_element(device=winding_graphics.api_object,
                                                             graphic_object=winding_graphics)
+
+                        elif self.started_branch.connected_between_fluid_nodes():
+
+                            self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
+                                                   target=self.started_branch.get_fluid_node_to(),
+                                                   fromPort=self.started_branch.fromPort,
+                                                   toPort=self.started_branch.toPort)
+
+                        elif self.started_branch.connected_between_fluid_node_and_bus():
+
+                            # electrical bus
+                            bus = self.started_branch.get_bus_to()
+
+                            # check if the fluid node has a bus
+                            fn = self.started_branch.get_fluid_node_from()
+
+                            if fn.bus is None:
+                                # the fluid node does not have a bus, make one
+                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                self.circuit.add_bus(fn_bus)
+                                fn.bus = fn_bus
+                            else:
+                                fn_bus = fn.bus
+
+                            self.create_line(bus_from=fn_bus,
+                                             bus_to=bus,
+                                             fromPort=self.started_branch.fromPort,
+                                             toPort=self.started_branch.toPort)
+
+                        elif self.started_branch.connected_between_bus_and_fluid_node():
+                            # electrical bus
+                            bus = self.started_branch.get_bus_from()
+
+                            # check if the fluid node has a bus
+                            fn = self.started_branch.get_fluid_node_to()
+
+                            if fn.bus is None:
+                                # the fluid node does not have a bus, make one
+                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                self.circuit.add_bus(fn_bus)
+                                fn.bus = fn_bus
+                            else:
+                                fn_bus = fn.bus
+
+                            self.create_line(bus_from=bus,
+                                             bus_to=fn_bus,
+                                             fromPort=self.started_branch.fromPort,
+                                             toPort=self.started_branch.toPort)
 
                         else:
                             print('unknown connection')
