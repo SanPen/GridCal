@@ -531,7 +531,8 @@ class OpfVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_nod: int,
+                 n_path: int, n_inj: int):
         """
         Constructor
         :param nt: number of time steps
@@ -541,6 +542,9 @@ class OpfVars:
         :param nl: number of loads
         :param nbr: number of branches
         :param n_hvdc: number of HVDC
+        :param n_nod: number of fluid nodes
+        :param n_path: number of fluid paths
+        :param n_inj: number of fluid injections
         """
         self.nt = nt
         self.nbus = nbus
@@ -549,6 +553,9 @@ class OpfVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.n_nod = n_nod
+        self.n_path = n_path
+        self.n_inj = n_inj
 
         self.acceptable_solution = False
 
@@ -558,6 +565,11 @@ class OpfVars:
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
+
+        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_nod)
+        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_path)
+        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_inj)
+
         self.sys_vars = SystemVars(nt=nt)
 
     def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
@@ -571,7 +583,10 @@ class OpfVars:
                        nb=self.nb,
                        nl=self.nl,
                        nbr=self.nbr,
-                       n_hvdc=self.n_hvdc)
+                       n_hvdc=self.n_hvdc,
+                       n_nod=self.n_nod,
+                       n_path=self.n_path,
+                       n_inj=self.n_inj)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
         data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
@@ -581,6 +596,9 @@ class OpfVars:
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.fluid_node_vars = self.fluid_node_vars.get_values(model)
+        self.fluid_path_vars = self.fluid_path_vars.get_values(model)
+        self.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
@@ -1233,6 +1251,31 @@ def add_linear_node_balance(t_idx: int,
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+
+
+def add_hydro_formulation(t: int,
+                          node_vars: FluidNodeVars,
+                          path_vars: FluidPathVars,
+                          inj_vars: FluidInjectionVars,
+                          prob: LpModel):
+    """
+    Formulate the branches
+    :param t: time index
+    :param node_vars: FluidNodeVars
+    :param path_vars: FluidPathVars
+    :param inj_vars: FluidInjectionVars
+    :param prob: OR problem
+    :return objective function
+    """
+    f_obj = 0.0
+
+    # for each node
+
+    # for each path
+
+    # for each injection
+
+    return f_obj
 
 
 def run_linear_opf_ts(grid: MultiCircuit,

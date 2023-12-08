@@ -28,8 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add node vars to follow this same structure">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add path vars and injection vars">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/fluids_try.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/fluids_try.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_injection_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_injection_template.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
     </list>
@@ -148,7 +150,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.upload_to_pypi">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1843,7 +1845,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="449" />
+    <option name="localTasksCounter" value="450" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1877,7 +1879,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
     <MESSAGE value="added newtonpa recommended version" />
     <MESSAGE value="Type changes in the LpModel&#10;Replaced OrTools specific operations in fluids_try.py" />
@@ -1902,7 +1903,8 @@
     <MESSAGE value="Fluid devices improvement" />
     <MESSAGE value="Update fluid devices" />
     <MESSAGE value="Add node vars to follow this same structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add node vars to follow this same structure" />
+    <MESSAGE value="Add path vars and injection vars" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add path vars and injection vars" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

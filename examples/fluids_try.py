@@ -320,45 +320,6 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                             - dt * node.outflow),
                        name=f'{node.name} Node Balance')
 
-        # if (len(turbines_at_the_plant) + len(pumps_at_the_plant)) > 0:
-        #
-        #     solver.add_cst(cst=node.level ==
-        #                    node.initial_level
-        #                    + dt * node.inflow
-        #                    + dt * power2x_flow
-        #                    - dt * turbine_flow
-        #                    + dt * pump_flow
-        #                    - dt * node.spillage,
-        #                    name=f'{node.name} balance 1')
-        #
-        #     solver.add_cst(cst=dt * node.outflow ==
-        #                    + dt * turbine_flow
-        #                    - dt * pump_flow,
-        #                    name=f'{node.name} balance 2')
-        #
-        # else:
-        #     solver.add_cst(cst=node.level ==
-        #                    node.initial_level
-        #                    + dt * node.inflow
-        #                    + dt * power2x_flow
-        #                    - dt * node.spillage
-        #                    - dt * node.outflow,
-        #                    name=f'{node.name} balance 1')
-
-        # Node flow balance
-        # level = initial_level + dt * (inflow - outflow - spillage_flow)
-        # m3 - m3 == (m3/h - m3/h) * h
-
-        # solver.add_cst(cst=node.level ==  # m3
-        #                node.initial_level  # m3
-        #                + turbine_flow     # m3
-        #                + pump_flow     # m3
-        #                + power2x_flow     # m3
-        #                + dt * node.inflow  # h · m3 / h
-        #                - dt * node.outflow  # h · m3 / h
-        #                - dt * node.spillage,  # h · m3 / h
-        #                name=f'{node.name} balance')
-
     # Demand constraint
     solver.add_cst(cst=total_power_balance >= demand,
                    name='Satisfy_demand')
@@ -606,8 +567,8 @@ def example_lamuela():
     river1 = FluidPath(name='Embalse-Nodo2', source=embalse, target=nodo2, min_flow=-550, max_flow=550)
     river2 = FluidPath(name='Nodo2-Turbina', source=nodo2, target=turbina, min_flow=-520, max_flow=520)
     river3 = FluidPath(name='Bomba-Nodo2', source=bomba, target=nodo2, min_flow=-520, max_flow=520)
-    river4 = FluidPath(name='Turbina-Rio', source=rio, target=turbina, min_flow=-520, max_flow=520)  # error
-    # river4 = FluidPath(name='Turbina-Rio', source=turbina, target=rio, min_flow=-520, max_flow=520)  # works well
+    # river4 = FluidPath(name='Turbina-Rio', source=rio, target=turbina, min_flow=-520, max_flow=520)  # error
+    river4 = FluidPath(name='Turbina-Rio', source=turbina, target=rio, min_flow=-520, max_flow=520)  # works well
     river5 = FluidPath(name='Rio-Bomba', source=rio, target=bomba, min_flow=-520, max_flow=520)
 
     nodes = [embalse, rio, nodo2, turbina, bomba]
