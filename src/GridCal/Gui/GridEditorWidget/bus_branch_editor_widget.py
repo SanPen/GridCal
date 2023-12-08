@@ -43,6 +43,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.Fluid import FluidTurbine, FluidPump, FluidP2x, FluidNode, FluidPath
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -52,6 +53,8 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
@@ -540,6 +543,7 @@ class EditorGraphicsView(QGraphicsView):
             obj_type = event.mimeData().data('component/name')
             bus_data = toQBytesArray('Bus')
             tr3w_data = toQBytesArray('3W-Transformer')
+            fluid_node_data = toQBytesArray("Fluid-node")
 
             point0 = self.mapToScene(event.position().x(), event.position().y())
             x0 = point0.x()
@@ -576,6 +580,25 @@ class EditorGraphicsView(QGraphicsView):
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_transformer3w(obj)
+
+                # add to the diagram list
+                self.editor.update_diagram_element(device=obj,
+                                                   x=x0,
+                                                   y=y0,
+                                                   w=graphic_object.w,
+                                                   h=graphic_object.h,
+                                                   r=0,
+                                                   graphic_object=graphic_object)
+
+            elif fluid_node_data == obj_type:
+                name = 'FluidNode ' + str(len(self.diagram_scene.circuit.fluid_nodes))
+
+                obj = FluidNode(name=name)
+
+                graphic_object = self.add_fluid_node(node=obj, x=x0, y=y0, h=20, w=80)
+
+                # weird but it's the only way to have graphical-API communication
+                self.diagram_scene.circuit.add_fluid_node(obj)
 
                 # add to the diagram list
                 self.editor.update_diagram_element(device=obj,
@@ -648,6 +671,22 @@ class EditorGraphicsView(QGraphicsView):
         self.diagram_scene.addItem(graphic_object)
         return graphic_object
 
+    def add_fluid_node(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
+        """
+        Add bus
+        :param node: GridCal FluidNode object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: FluidNodeGraphicItem
+        """
+
+        graphic_object = FluidNodeGraphicItem(scene=self.scene(), editor=self.editor,
+                                              fluid_node=node, x=x, y=y, h=h, w=w)
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
+
 
 class BusBranchEditorWidget(QSplitter):
     """
@@ -700,6 +739,13 @@ class BusBranchEditorWidget(QSplitter):
         t3w_icon = QIcon()
         t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
         item = QStandardItem(t3w_icon, "3W-Transformer")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.libItems.append(item)
+
+        # add fluid-node to the drag&drop
+        dam_icon = QIcon()
+        dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
+        item = QStandardItem(dam_icon, "Fluid-node")
         item.setToolTip("Drag & drop this into the schematic")
         self.libItems.append(item)
 
@@ -1425,6 +1471,8 @@ class BusBranchEditorWidget(QSplitter):
         Automatic layout of the nodes
         """
 
+        # TODO: Add fluid nodes
+
         nx_graph, buses_graphic_objects = self.diagram.build_graph()
 
         layout_algorithms_dict = dict()
@@ -1453,7 +1501,6 @@ class BusBranchEditorWidget(QSplitter):
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(buses_graphic_objects):
-
             loc = self.diagram.query_point(bus)
 
             x, y = pos[i] * 500
@@ -1540,48 +1587,6 @@ class BusBranchEditorWidget(QSplitter):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
-
-    # def add_line(self, branch: Line):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = LineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-
-    # def add_dc_line(self, branch: DcLine):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = DcLineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-
-    # def add_transformer(self, branch: Transformer2W):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = TransformerGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
 
     def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
         """
@@ -1822,6 +1827,64 @@ class BusBranchEditorWidget(QSplitter):
 
         return tr3_graphic_object
 
+    def add_api_fluid_node(self, node: FluidNode, explode_factor: float = 1.0):
+        """
+        Add API bus to the diagram
+        :param node: FluidNode instance
+        :param explode_factor: explode factor
+        """
+        x = 0
+        y = 0
+
+        # add the graphic object to the diagram view
+        graphic_object = self.editor_graphics_view.add_fluid_node(node=node, x=x, y=y, w=80, h=40)
+
+        # add circuit pointer to the bus graphic element
+        graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
+
+        # create the bus children
+        graphic_object.create_children_widgets()
+
+        # arrange the children
+        graphic_object.arrange_children()
+
+        self.update_diagram_element(device=node,
+                                    x=x,
+                                    y=y,
+                                    w=graphic_object.w,
+                                    h=graphic_object.h,
+                                    r=0,
+                                    graphic_object=graphic_object)
+
+        return graphic_object
+
+    def add_api_fluid_path(self, branch: FluidPath):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        bus_f_graphic_data = self.diagram.query_point(branch.source)
+        bus_t_graphic_data = self.diagram.query_point(branch.target)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
+
+            graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
+                                                  toPort=terminal_to,
+                                                  editor=self,
+                                                  api_object=branch)
+
+            graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_object)
+            terminal_to.hosting_connections.append(graphic_object)
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
+        else:
+            print("Branch's fluid nodes were not found in the diagram :(")
+            return None
+
     def convert_line_to_hvdc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
@@ -1939,6 +2002,8 @@ class BusBranchEditorWidget(QSplitter):
                                   hvdc_lines: List[HvdcLine],
                                   vsc_devices: List[VSC],
                                   upfc_devices: List[UPFC],
+                                  fluid_nodes: List[FluidNode],
+                                  fluid_paths: List[FluidPath],
                                   explode_factor=1.0,
                                   prog_func: Union[Callable, None] = None,
                                   text_func: Union[Callable, None] = None):
@@ -1952,6 +2017,8 @@ class BusBranchEditorWidget(QSplitter):
         :param hvdc_lines: list of HvdcLine objects
         :param vsc_devices: list Vsc objects
         :param upfc_devices: List of UPFC devices
+        :param fluid_nodes: List of FluidNode devices
+        :param fluid_paths: List of FluidPath devices
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -2054,6 +2121,30 @@ class BusBranchEditorWidget(QSplitter):
                 prog_func((i + 1) / nn * 100.0)
 
             self.add_api_upfc(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic Fluid nodes devices')
+
+        nn = len(fluid_nodes)
+        for i, elm in enumerate(fluid_nodes):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            self.add_api_fluid_node(elm)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic Fluid paths devices')
+
+        nn = len(fluid_paths)
+        for i, elm in enumerate(fluid_paths):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            self.add_api_fluid_path(elm)
 
     def align_schematic(self, buses: List[Bus] = ()):
         """
@@ -2597,7 +2688,7 @@ class BusBranchEditorWidget(QSplitter):
         max_y = -sys.maxsize
 
         # shrink selection only
-        for i, bus, graphic_object in self.get_buses():
+        for i, bus, graphic_object in self.get_buses():  # TODO add fluid nodes
             x = graphic_object.x()
             y = graphic_object.y()
             max_x = max(max_x, x)

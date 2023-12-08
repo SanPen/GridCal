@@ -250,6 +250,7 @@ class MultiCircuit:
                 dev.FluidPath(),
                 dev.FluidTurbine(),
                 dev.FluidPump(),
+                dev.FluidP2x(),
             ],
             "Groups": [
                 dev.ContingencyGroup(),

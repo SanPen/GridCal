@@ -50,4 +50,4 @@ class FluidP2x(FluidInjectionTemplate):
                                         max_flow_rate=max_flow_rate,
                                         plant=plant,
                                         generator=generator,
-                                        device_type=DeviceType.FluidTurbine)
+                                        device_type=DeviceType.FluidP2X)

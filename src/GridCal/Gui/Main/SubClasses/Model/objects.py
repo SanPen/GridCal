@@ -219,6 +219,10 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.FluidPump()
             dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
 
+        elif elm_type == DeviceType.FluidP2X:
+            elm = dev.FluidP2x()
+            dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
+
         else:
             raise Exception('elm_type not understood: ' + elm_type.value)
 

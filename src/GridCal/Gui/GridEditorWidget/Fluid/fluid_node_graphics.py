@@ -76,16 +76,16 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # color
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        # if self.api_object is not None:
+        #     if self.api_object.active:
+        #         self.color = ACTIVE['color']
+        #         self.style = ACTIVE['style']
+        #     else:
+        #         self.color = DEACTIVATED['color']
+        #         self.style = DEACTIVATED['style']
+        # else:
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
 
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(fluid_node.name, self)
@@ -105,7 +105,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-        self.adapt()
+        # self.adapt()
 
         self.big_marker = None
 

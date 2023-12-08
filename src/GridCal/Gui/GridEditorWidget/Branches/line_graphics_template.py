@@ -23,6 +23,7 @@ from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPol
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Branches.line import Line
@@ -508,13 +509,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -635,13 +636,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.diagramScene.set_rate_to_profile(self.api_object)
+        self.editor.set_rate_to_profile(self.api_object)
 
     def assign_status_to_profile(self):
         """
         Assign the snapshot rate to the profile
         """
-        self.diagramScene.set_active_status_to_profile(self.api_object)
+        self.editor.set_active_status_to_profile(self.api_object)
 
     def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
         """
@@ -700,8 +701,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             br_idx = self.editor.circuit.get_branches().index(self.api_object)
 
             # call the reduction routine
-            removed_branch, removed_bus, \
-                updated_bus, updated_branches = reduce_grid_brute(self.editor.circuit, br_idx)
+            (removed_branch, removed_bus,
+             updated_bus, updated_branches) = reduce_grid_brute(self.editor.circuit, br_idx)
 
             # remove the reduced branch
             removed_branch.graphic_obj.remove_symbol()
@@ -728,7 +729,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 # remove the branch from the schematic
                 self.diagramScene.removeItem(br.graphic_obj)
                 # add the branch to the schematic with the rerouting and all
-                self.diagramScene.parent_.add_line(br)
+                self.editor.add_api_line(br)
                 # update both buses
                 br.bus_from.graphic_obj.update()
                 br.bus_to.graphic_obj.update()
@@ -834,6 +835,20 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self.toPort:
             return isinstance(self.toPort.parent,
                               GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+        else:
+            return False
+
+    def is_from_port_a_fluid_node(self) -> bool:
+
+        if self.fromPort:
+            return isinstance(self.fromPort.parent, FluidNodeGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_fluid_node(self) -> bool:
+
+        if self.toPort:
+            return isinstance(self.toPort.parent, FluidNodeGraphicItem)
         else:
             return False
 
