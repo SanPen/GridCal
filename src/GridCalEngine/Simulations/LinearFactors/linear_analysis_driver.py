@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
@@ -28,6 +28,9 @@ from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+
 
 class LinearAnalysisDriver(DriverTemplate):
     name = 'Linear analysis'
@@ -36,7 +39,7 @@ class LinearAnalysisDriver(DriverTemplate):
     def __init__(self, grid: MultiCircuit,
                  options: Union[LinearAnalysisOptions, None] = None,
                  engine: EngineType = EngineType.GridCal,
-                 opf_results: Union["OptimalPowerFlowResults", None] = None):
+                 opf_results: Union[OptimalPowerFlowResults, None] = None):
         """
         Linear analysis driver constructor
         :param grid: MultiCircuit instance

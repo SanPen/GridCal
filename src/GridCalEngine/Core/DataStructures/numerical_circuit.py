@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -36,6 +36,10 @@ import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.Aggregation.investment import Investment
+from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 sparse_type = get_sparse_type()
 
@@ -347,7 +351,7 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -397,7 +401,7 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -762,6 +766,29 @@ class NumericalCircuit:
                 structure.active[idx] = status
             else:
                 raise Exception('Could not find the idtag, is this a programming bug?')
+
+    def set_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
 
     @property
     def original_bus_idx(self):
@@ -1249,11 +1276,10 @@ class NumericalCircuit:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(
+            self.Bbus_, self.Bf_, self.Btau_ = ycalc.compute_linear_admittances(
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
-                tap_modules=self.branch_data.tap_module,
                 active=self.branch_data.active,
                 Cf=self.Cf,
                 Ct=self.Ct,
@@ -1278,7 +1304,7 @@ class NumericalCircuit:
         return self.Bf_
 
     @property
-    def Btheta(self):
+    def Btau(self):
         """
 
         :return:
@@ -1286,7 +1312,7 @@ class NumericalCircuit:
         if self.Bf_ is None:
             _ = self.Bbus  # call the constructor of Bf
 
-        return self.Btheta_
+        return self.Btau_
 
     @property
     def Bpqpv(self):
@@ -1905,7 +1931,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
                                  apply_temperature=False,
                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 opf_results: Union["OptimalPowerFlowResults", None] = None,
+                                 opf_results: Union[OptimalPowerFlowResults, None] = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
