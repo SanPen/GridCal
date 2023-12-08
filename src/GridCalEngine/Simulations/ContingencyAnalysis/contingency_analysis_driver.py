@@ -123,19 +123,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # get the group's contingencies
             contingencies = cg_dict[contingency_group.idtag]
 
-            # apply the contingencies
-            for cnt in contingencies:
-
-                # search for the contingency in the Branches
-                if cnt.device_idtag in branches_dict:
-                    br_idx = branches_dict[cnt.device_idtag]
-
-                    if cnt.prop == 'active':
-                        numerical_circuit.branch_data.active[br_idx] = int(cnt.value)
-                    else:
-                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-                else:
-                    pass
+            # set the status
+            numerical_circuit.set_contingency_status(contingencies)
 
             # report progress
             if t is None:
@@ -162,10 +151,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_idx=ic,
                                    contingency_group=contingency_group)
 
+            # set the status
+            numerical_circuit.set_contingency_status(contingencies, revert=True)
+
             # revert the states for the next run
-            numerical_circuit.branch_data.active = original_br_active.copy()
-            numerical_circuit.generator_data.active = original_gen_active.copy()
-            numerical_circuit.generator_data.p = original_gen_p.copy()
+            # numerical_circuit.branch_data.active = original_br_active.copy()
+            # numerical_circuit.generator_data.active = original_gen_active.copy()
+            # numerical_circuit.generator_data.p = original_gen_p.copy()
 
             if self.__cancel__:
                 return results

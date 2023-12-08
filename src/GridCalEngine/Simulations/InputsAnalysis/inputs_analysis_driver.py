@@ -1,4 +1,21 @@
-
+# GridCal
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING, Union
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -9,13 +26,17 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import StudyResultsType
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+
 
 class InputsAnalysisResults(ResultsTemplate):
     tpe = 'Inputs Analysis'
 
     def __init__(self, grid: MultiCircuit,
-                 opf_results: "OptimalPowerFlowResults" = None,
-                 opf_time_series_results: "OptimalPowerFlowTimeSeriesResults" = None):
+                 opf_results: Union[None, OptimalPowerFlowResults] = None,
+                 opf_time_series_results: Union[None, OptimalPowerFlowTimeSeriesResults] = None):
         """
         Construct the analysis
         :param grid:

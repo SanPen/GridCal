@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict, Union
+from __future__ import annotations
+from typing import Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
@@ -23,6 +24,9 @@ from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGr
                                         TransformerControlType, HvdcControlType)
 from GridCalEngine.basic_structures import CxVec
 import GridCalEngine.Core.DataStructures as ds
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 def get_bus_data(circuit: MultiCircuit,
@@ -81,7 +85,7 @@ def get_load_data(circuit: MultiCircuit,
                   bus_data: ds.BusData,
                   logger: Logger,
                   t_idx=-1,
-                  opf_results: Union["OptimalPowerFlowResults", None] = None,
+                  opf_results: Union[OptimalPowerFlowResults, None] = None,
                   time_series=False,
                   use_stored_guess=False) -> ds.LoadData:
     """
@@ -94,7 +98,6 @@ def get_load_data(circuit: MultiCircuit,
     :param t_idx:
     :param opf_results:
     :param time_series:
-    :param opf:
     :param use_stored_guess:
     :return:
     """
@@ -269,7 +272,7 @@ def get_generator_data(circuit: MultiCircuit,
                        Vbus: CxVec,
                        logger: Logger,
                        bus_data: ds.BusData,
-                       opf_results: Union["OptimalPowerFlowResults", None] = None,
+                       opf_results: Union[OptimalPowerFlowResults, None] = None,
                        t_idx=-1,
                        time_series=False,
                        use_stored_guess=False) -> ds.GeneratorData:
@@ -388,7 +391,7 @@ def get_battery_data(circuit: MultiCircuit,
                      Vbus: CxVec,
                      logger: Logger,
                      bus_data: ds.BusData,
-                     opf_results: Union["OptimalPowerFlowResults", None] = None,
+                     opf_results: Union[OptimalPowerFlowResults, None] = None,
                      t_idx=-1,
                      time_series=False,
                      use_stored_guess=False) -> ds.BatteryData:
@@ -513,7 +516,7 @@ def get_branch_data(circuit: MultiCircuit,
                     branch_tolerance_mode: BranchImpedanceMode,
                     t_idx=-1,
                     time_series=False,
-                    opf_results: Union["OptimalPowerFlowResults", None] = None,
+                    opf_results: Union[OptimalPowerFlowResults, None] = None,
                     use_stored_guess=False,
                     logger: Logger = Logger()):
     """
@@ -952,7 +955,7 @@ def get_hvdc_data(circuit: MultiCircuit,
                   bus_types,
                   t_idx=-1,
                   time_series=False,
-                  opf_results: Union["OptimalPowerFlowResults", None] = None):
+                  opf_results: Union[OptimalPowerFlowResults, None] = None):
     """
 
     :param circuit:
