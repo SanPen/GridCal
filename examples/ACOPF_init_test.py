@@ -15,7 +15,7 @@ def import_grid(nc):
     return
 
 
-def grid_limits(nc:gce.NumericalCircuit):
+def grid_parameters(nc:gce.NumericalCircuit):
 
     #Number of buses
     #Number of lines
@@ -65,7 +65,7 @@ def grid_limits(nc:gce.NumericalCircuit):
         PD[b] = np.real(nc.load_data.S)
         QD[b] = np.real(nc.load_data.S)
 
-    return LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX
+    return N, L, LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX
 
 
 def line_imp_adm(nc, LINES):
