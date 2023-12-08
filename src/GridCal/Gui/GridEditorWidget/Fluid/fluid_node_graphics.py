@@ -129,17 +129,18 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.label.setPlainText(val)
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
+        :param event:
         :return:
         """
         if self.api_object is not None:
-            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+            mdl = ObjectsModel(objects=[self.api_object],
+                               editable_headers=self.api_object.editable_headers,
                                parent=self.editor.diagramScene.parent().object_editor_table,
-                               editable=True, transposed=True,
-                               non_editable_attributes=self.api_object.non_editable_attributes)
+                               editable=True,
+                               transposed=True)
 
             self.editor.diagramScene.parent().object_editor_table.setModel(mdl)
 

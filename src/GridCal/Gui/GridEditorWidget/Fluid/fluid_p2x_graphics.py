@@ -54,26 +54,10 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
 
         self.label = QGraphicsTextItem('P2X', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(0, self.w / 5)
+        self.label.setPos(2, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        mdl = ObjectsModel([self.api_object],
-                           self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists={
-                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
-                           })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
         """

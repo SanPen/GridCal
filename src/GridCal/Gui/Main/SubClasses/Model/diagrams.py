@@ -753,6 +753,8 @@ class DiagramsMain(CompiledArraysMain):
                                                       hvdc_lines=self.circuit.hvdc_lines,
                                                       vsc_devices=self.circuit.vsc_devices,
                                                       upfc_devices=self.circuit.upfc_devices,
+                                                      fluid_nodes=self.circuit.fluid_nodes,
+                                                      fluid_paths=self.circuit.fluid_paths,
                                                       explode_factor=1.0,
                                                       prog_func=None,
                                                       text_func=None)
@@ -782,6 +784,8 @@ class DiagramsMain(CompiledArraysMain):
                                               hvdc_lines=self.circuit.hvdc_lines,
                                               vsc_devices=self.circuit.vsc_devices,
                                               upfc_devices=self.circuit.upfc_devices,
+                                              fluid_nodes=self.circuit.fluid_nodes,
+                                              fluid_paths=self.circuit.fluid_paths,
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=None,

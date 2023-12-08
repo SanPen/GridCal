@@ -238,7 +238,6 @@ class ObjectsTableMain(DiagramsMain):
                               editable_headers=elm.editable_headers,
                               parent=self.ui.dataStructureTableView,
                               editable=True,
-                              non_editable_attributes=elm.non_editable_attributes,
                               dictionary_of_lists=dictionary_of_lists)
 
         return mdl

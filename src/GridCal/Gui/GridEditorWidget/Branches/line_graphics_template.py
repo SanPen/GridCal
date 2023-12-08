@@ -21,7 +21,8 @@ import numpy as np
 from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
+                               QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
@@ -468,17 +469,18 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self.symbol is not None:
             self.symbol.setToolTipText(toolTip=toolTip)
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
+        :param event:
         :return:
         """
         if self.api_object is not None:
-            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+            mdl = ObjectsModel(objects=[self.api_object],
+                               editable_headers=self.api_object.editable_headers,
                                parent=self.diagramScene.parent().object_editor_table,
-                               editable=True, transposed=True,
-                               non_editable_attributes=self.api_object.non_editable_attributes)
+                               editable=True,
+                               transposed=True)
 
             self.diagramScene.parent().object_editor_table.setModel(mdl)
 

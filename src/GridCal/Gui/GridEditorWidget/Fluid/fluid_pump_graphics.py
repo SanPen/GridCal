@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
+from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
@@ -58,22 +58,6 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        mdl = ObjectsModel([self.api_object],
-                           self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists={
-                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
-                           })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
         """

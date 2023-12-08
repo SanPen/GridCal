@@ -2898,6 +2898,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
                                 hvdc_lines: List[HvdcLine],
                                 vsc_devices: List[VSC],
                                 upfc_devices: List[UPFC],
+                                fluid_nodes: List[FluidNode],
+                                fluid_paths: List[FluidPath],
                                 explode_factor=1.0,
                                 prog_func: Union[Callable, None] = None,
                                 text_func: Union[Callable, None] = None,
@@ -2912,6 +2914,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param hvdc_lines: list of HvdcLine objects
     :param vsc_devices: list Vsc objects
     :param upfc_devices: List of UPFC devices
+    :param fluid_nodes:
+    :param fluid_paths:
     :param explode_factor: factor of "explosion": Separation of the nodes factor
     :param prog_func: progress report function
     :param text_func: Text report function
@@ -3034,6 +3038,32 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
         # branch.graphic_obj = self.add_api_upfc(branch)
         diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid nodes devices')
+
+    nn = len(fluid_nodes)
+    for i, elm in enumerate(fluid_nodes):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid paths devices')
+
+    nn = len(fluid_paths)
+    for i, elm in enumerate(fluid_paths):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
 
     return diagram
 

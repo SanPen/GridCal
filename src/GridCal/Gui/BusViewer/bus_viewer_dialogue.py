@@ -201,6 +201,7 @@ class BusViewerWidget(QMainWindow):
         bus_pool = [(self.root_bus, 0)]  # store the bus objects and their level from the root
 
         buses = set()
+        fluid_nodes = set()
         selected_branches = set()
 
         while len(bus_pool) > 0:
@@ -236,6 +237,7 @@ class BusViewerWidget(QMainWindow):
         hvdc_lines = list()
         vsc_converters = list()
         upfc_devices = list()
+        fluid_paths = list()
 
         for obj in selected_branches:
 
@@ -278,6 +280,8 @@ class BusViewerWidget(QMainWindow):
                                               hvdc_lines=hvdc_lines,
                                               vsc_devices=vsc_converters,
                                               upfc_devices=upfc_devices,
+                                              fluid_nodes=fluid_nodes,
+                                              fluid_paths=fluid_paths,
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=print,
