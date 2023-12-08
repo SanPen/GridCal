@@ -18,7 +18,8 @@ import random
 import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
-from GridCalEngine.enumerations import DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType, ConverterControlType
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
+                                        ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 class GCProp:

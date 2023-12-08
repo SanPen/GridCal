@@ -374,7 +374,7 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
     # Solve
     # solver.model.EnableOutput()
     # print(solver.model.ExportModelAsLpFormat(obfuscated=False))
-    solver.save_model('fluids1.lp')
+    # solver.save_model('fluids1.lp')
     status = solver.solve(robust=True)
 
     # Print LP representation

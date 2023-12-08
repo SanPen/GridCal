@@ -37,8 +37,8 @@ class FluidPath(EditableDevice):
         :param name:Name of the fluid transporter
         :param idtag: UUID
         :param code: secondary ID
-        :param source: Source of fluid
-        :param target: target for the fluid
+        :param source: source of fluid (direction matters)
+        :param target: target for the fluid (direction matters)
         :param min_flow: minimum flow (m3/h)
         :param max_flow: maximum flow (m3/h)
         """
@@ -53,7 +53,7 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
-        self.register(key='source', units="", tpe=FluidNode, definition="Source node", editable=False)
-        self.register(key='target', units="", tpe=FluidNode, definition="Target node", editable=False)
-        self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum power")
-        self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum power")
+        self.register(key='source', units="", tpe=DeviceType.FluidNode, definition="Source node")
+        self.register(key='target', units="", tpe=DeviceType.FluidNode, definition="Target node")
+        self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum flow")
+        self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum flow")

@@ -30,6 +30,7 @@ class FluidNode(EditableDevice):
                  min_level: float = 0.0,
                  max_level: float = 0.0,
                  current_level: float = 0.0,
+                 spillage: float = 0.0,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -40,6 +41,8 @@ class FluidNode(EditableDevice):
         :param min_level: Minimum amount of fluid at the node/reservoir [m3]
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
+        :param spillage: Spillage value [m3/h]
+        :param bus: electrical bus they are linked with
         :param build_status
         """
         EditableDevice.__init__(self,
@@ -53,6 +56,11 @@ class FluidNode(EditableDevice):
         self.initial_level = current_level  # m3
         self.bus: Bus = bus
         self.build_status = build_status
+
+        self.current_level = current_level  # m3 -> LpVar
+        self.spillage = spillage  # m3/h -> LpVar
+        self.inflow = 0.0  # m3/h -> LpExpression
+        self.outflow = 0.0  # m3/h -> LpExpression
 
         # list of turbines
         self.turbines = list()
@@ -71,6 +79,12 @@ class FluidNode(EditableDevice):
 
         self.register(key='initial_level', units='m3', tpe=float,
                       definition="Initial level of the node/reservoir")
+
+        self.register(key='current_level', units='m3', tpe=float,
+                      definition="Current level of the node/reservoir")
+
+        self.register(key='spillage', units='m3/h', tpe=float,
+                      definition="Spillage suffered by the node/reservoir")
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice,
                       definition='Electrical bus.', editable=False)

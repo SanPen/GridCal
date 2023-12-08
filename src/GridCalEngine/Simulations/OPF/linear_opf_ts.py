@@ -296,7 +296,7 @@ class BranchVars:
                                              model.get_value(neg_slack),
                                              model.get_value(pos_slack))
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
@@ -352,10 +352,60 @@ class HvdcVars:
             for i in range(n_elm):
                 data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
 
         data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+
+class FluidNodeVars:
+    """
+    Struct to store the vars of nodes of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidNodeVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of nodes
+        """
+
+        self.min_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.current_level = np.zeros((nt, n_elm), dtye=float)  # m3
+        self.spillage = np.zeros((nt, n_elm), dtye=float)  # m3/h
+        self.inflow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+        self.outflow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+
+    def get_values(self, model: LpModel) -> "FluidNodeVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidNodeVars
+        """
+        nt, n_elm = self.min_level.shape
+        data = FluidNodeVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.current_level[t, i] = model.get_value(self.current_level[t, i])
+                data.spillage[t, i] = model.get_value(self.spillage[t, i])
+                data.inflow[t, i] = model.get_value(self.inflow[t, i])
+                data.outflow[t, i] = model.get_value(self.outflow[t, i])
+
+        # format the arrays appropriately
+        data.current_level = data.current_level.astype(float, copy=False)
+        data.spillage = data.spillage.astype(float, copy=False)
+        data.inflow = data.inflow.astype(float, copy=False)
+        data.outflow = data.outflow.astype(float, copy=False)
+
+        data.min_level = self.min_level
+        data.max_level = self.max_level
+        data.initial_level = self.initial_level
 
         return data
 
