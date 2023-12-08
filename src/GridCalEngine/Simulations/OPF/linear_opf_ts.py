@@ -102,7 +102,7 @@ class BusVars:
                 data.branch_injections[t, i] = model.get_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
         data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.branch_injections = data.branch_injections.astype(float, copy=False)
@@ -139,7 +139,7 @@ class LoadVars:
             for i in range(n_elm):
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
 
         return data
@@ -192,7 +192,7 @@ class GenerationVars:
                 # data.fuel[t, i] = model.get_value(self.fuel[t, i])
                 # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
         data.producing = data.producing.astype(bool, copy=False)
@@ -236,7 +236,7 @@ class BatteryVars(GenerationVars):
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
 
-            # format the arrays aproprietly
+            # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
@@ -406,6 +406,89 @@ class FluidNodeVars:
         data.min_level = self.min_level
         data.max_level = self.max_level
         data.initial_level = self.initial_level
+
+        return data
+
+
+class FluidPathVars:
+    """
+    Struct to store the vars of paths of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidPathVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of paths (rivers)
+        """
+
+        self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+
+        self.flow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+
+    def get_values(self, model: LpModel) -> "FluidPathVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidPathVars
+        """
+        nt, n_elm = self.min_flow.shape
+        data = FluidPathVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flow[t, i] = model.get_value(self.flow[t, i])
+
+        # format the arrays appropriately
+        data.flow = data.flow.astype(float, copy=False)
+
+        data.min_flow = self.min_flow
+        data.max_flow = self.max_flow
+
+        return data
+
+
+class FluidInjectionVars:
+    """
+    Struct to store the vars of injections of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidInjectionVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of elements moving fluid
+        """
+
+        self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
+        self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
+
+        self.power = np.zeros((nt, n_elm), dtype=float)  # MW
+
+    def get_values(self, model: LpModel) -> "FluidInjectionVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidInjectionVars
+        """
+        nt, n_elm = self.efficiency.shape
+        data = FluidInjectionVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.power[t, i] = model.get_value(self.power[t, i])
+
+        # format the arrays appropriately
+        data.power = data.power.astype(float, copy=False)
+
+        data.efficiency = self.efficiency
+        data.max_flow_rate = self.max_flow_rate
+        data.p_max = self.generator.Pmax  # TODO: think how to make this link
+        data.p_min = self.generator.Pmin
 
         return data
 
