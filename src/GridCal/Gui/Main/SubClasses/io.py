@@ -431,6 +431,8 @@ class IoMain(ConfigurationMain):
                                                                      hvdc_lines=new_circuit.hvdc_lines,
                                                                      vsc_devices=new_circuit.vsc_devices,
                                                                      upfc_devices=new_circuit.upfc_devices,
+                                                                     fluid_nodes=new_circuit.fluid_nodes,
+                                                                     fluid_paths=new_circuit.fluid_paths,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)

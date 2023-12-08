@@ -65,16 +65,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
         self.width = 4
 
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
+        self.style = OTHER['style']
+        self.color = OTHER['color']
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()

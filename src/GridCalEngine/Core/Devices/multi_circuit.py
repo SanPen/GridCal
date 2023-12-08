@@ -250,6 +250,7 @@ class MultiCircuit:
                 dev.FluidPath(),
                 dev.FluidTurbine(),
                 dev.FluidPump(),
+                dev.FluidP2x(),
             ],
             "Groups": [
                 dev.ContingencyGroup(),
@@ -1230,7 +1231,7 @@ class MultiCircuit:
         elif element_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
-        elif element_type == DeviceType.FluidNode:
+        elif element_type == DeviceType.FluidNodeDevice:
             return self.fluid_nodes
 
         elif element_type == DeviceType.FluidPath:
@@ -1359,7 +1360,7 @@ class MultiCircuit:
         elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.delete_generator_emission(obj)
 
-        elif element_type == DeviceType.FluidNode:
+        elif element_type == DeviceType.FluidNodeDevice:
             return self.delete_fluid_node(obj)
 
         elif element_type == DeviceType.FluidTurbine:
@@ -1506,7 +1507,7 @@ class MultiCircuit:
         elif element_type == DeviceType.WindingDevice:
             return self.get_windings()
 
-        elif element_type == DeviceType.FluidNode:
+        elif element_type == DeviceType.FluidNodeDevice:
             return self.get_fluid_nodes()
 
         elif element_type == DeviceType.FluidTurbine:
@@ -1870,7 +1871,7 @@ class MultiCircuit:
         """
         return {b: i for i, b in enumerate(self.buses)}
 
-    def add_bus(self, obj: dev.Bus):
+    def add_bus(self, obj: Union[None, dev.Bus] = None) -> dev.Bus:
         """
         Add a :ref:`Bus<bus>` object to the grid.
 
@@ -1878,22 +1879,15 @@ class MultiCircuit:
 
             **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
+        if obj is None:
+            obj = dev.Bus()
+
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
 
-        # if obj.substation is None:
-        #     obj.substation = self.default_substation
-        #
-        # if obj.zone is None:
-        #     obj.zone = self.default_zone
-        #
-        # if obj.area is None:
-        #     obj.area = self.default_area
-        #
-        # if obj.country is None:
-        #     obj.country = self.default_country
-
         self.buses.append(obj)
+
+        return obj
 
     def delete_bus(self, obj: dev.Bus, ask=True):
         """

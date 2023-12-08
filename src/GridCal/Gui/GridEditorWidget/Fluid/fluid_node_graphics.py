@@ -14,26 +14,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import numpy as np
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu
-from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
+from PySide6.QtWidgets import QMenu, QGraphicsScene, QGraphicsSceneMouseEvent
+
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
+from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.GridEditorWidget.Injections.load_graphics import LoadGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.battery_graphics import BatteryGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
 
 
 class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -47,8 +48,8 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, scene, parent=None, index=0, editor=None, fluid_node: FluidNode = None,
-                 h: int = 20, w: int = 80, x: int = 0, y: int = 0):
+    def __init__(self, scene: QGraphicsScene, editor: BusBranchEditorWidget, fluid_node: FluidNode,
+                 parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0):
 
         super(FluidNodeGraphicItem, self).__init__(parent)
 
@@ -60,9 +61,8 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.api_object = fluid_node
 
-        self.scene = scene  # this is the parent that hosts the pointer to the circuit
-
-        self.editor = editor
+        self.scene: QGraphicsScene = scene  # this is the parent that hosts the pointer to the circuit
+        self.editor: BusBranchEditorWidget = editor
 
         # loads, shunts, generators, etc...
         self.shunt_children = list()
@@ -76,16 +76,16 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # color
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        # if self.api_object is not None:
+        #     if self.api_object.active:
+        #         self.color = ACTIVE['color']
+        #         self.style = ACTIVE['style']
+        #     else:
+        #         self.color = DEACTIVATED['color']
+        #         self.style = DEACTIVATED['style']
+        # else:
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
 
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(fluid_node.name, self)
@@ -105,7 +105,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-        self.adapt()
+        # self.adapt()
 
         self.big_marker = None
 
@@ -129,7 +129,21 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.label.setPlainText(val)
 
-    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        if self.api_object is not None:
+            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+                               parent=self.editor.diagramScene.parent().object_editor_table,
+                               editable=True, transposed=True,
+                               non_editable_attributes=self.api_object.non_editable_attributes)
+
+            self.editor.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """
         On mouse move of this object...
         Args:
@@ -137,13 +151,13 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.scene.parent_.update_diagram_element(device=self.api_object,
-                                                  x=self.pos().x(),
-                                                  y=self.pos().y(),
-                                                  w=self.w,
-                                                  h=self.h,
-                                                  r=self.rotation(),
-                                                  graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=self.w,
+                                           h=self.h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
     def set_position(self, x, y):
         """
@@ -157,6 +171,19 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
+    def recolour_mode(self):
+        """
+        Change the colour according to the system theme
+        """
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        self.set_tile_color(self.color)
+
+        for e in self.shunt_children:
+            if e is not None:
+                e.recolour_mode()
+
     def set_tile_color(self, brush):
         """
         Set the color of the title
@@ -166,7 +193,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.tile.setBrush(brush)
         self.terminal.setBrush(brush)
 
-    def update(self):
+    def redraw(self):
         """
         Update the object
         :return:
@@ -174,7 +201,10 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.change_size(self.w, self.h)
 
     def set_height(self, h):
-
+        """
+        Set the object height
+        :param h: height in pixels
+        """
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
@@ -216,13 +246,13 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # rearrange children
         self.arrange_children()
 
-        self.scene.parent_.update_diagram_element(device=self.api_object,
-                                                  x=self.pos().x(),
-                                                  y=self.pos().y(),
-                                                  w=w,
-                                                  h=h,
-                                                  r=self.rotation(),
-                                                  graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=w,
+                                           h=h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
         return w, h
 
@@ -295,19 +325,19 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         menu.addSection("Add")
 
-        al = menu.addAction('Load')
+        al = menu.addAction('Turbine')
         al_icon = QIcon()
         al_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
         al.setIcon(al_icon)
         al.triggered.connect(self.add_turbine)
 
-        ash = menu.addAction('Shunt')
+        ash = menu.addAction('Pump')
         ash_icon = QIcon()
         ash_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
         ash.setIcon(ash_icon)
         ash.triggered.connect(self.add_pump)
 
-        acg = menu.addAction('Generator')
+        acg = menu.addAction('P2X')
         acg_icon = QIcon()
         acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
         acg.setIcon(acg_icon)
@@ -333,14 +363,66 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
-    def add_turbine(self, api_obj=None):
-        pass
+    def add_turbine(self, api_obj: Union[None, FluidTurbine] = None):
+        """
 
-    def add_pump(self, api_obj=None):
-        pass
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
 
-    def add_p2x(self, api_obj=None):
-        pass
+            api_obj = self.editor.circuit.add_fluid_turbine(node=self.api_object, api_obj=None)
+
+            if self.api_object.bus is None:
+                self.api_object.bus = self.editor.circuit.add_bus()
+
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator.name = self.api_object.name
+
+        _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+        return _grph
+
+    def add_pump(self, api_obj: Union[None, FluidPump] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_fluid_pump(node=self.api_object, api_obj=None)
+
+            if self.api_object.bus is None:
+                self.api_object.bus = self.editor.circuit.add_bus()
+
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator.name = self.api_object.name
+
+        _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+        return _grph
+
+    def add_p2x(self, api_obj: Union[None, FluidP2x] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_fluid_p2x(node=self.api_object, api_obj=None)
+
+            if self.api_object.bus is None:
+                self.api_object.bus = self.editor.circuit.add_bus()
+
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator.name = self.api_object.name
+
+        _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+        return _grph
 
     def delete_all_connections(self):
         """
@@ -354,8 +436,8 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+                                 'Remove fluid node')
         else:
             ok = True
 
@@ -366,7 +448,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
                 self.scene.removeItem(g.nexus)
 
             self.scene.removeItem(self)
-            self.scene.circuit.delete_bus(self.api_object, ask)
+            self.editor.circuit.delete_fluid_node(self.api_object)
 
     def update_color(self):
 
@@ -378,5 +460,5 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.buses.index(self.api_object)
-        self.editor.diagramScene.plot_bus(i, self.api_object)
+        i = self.editor.circuit.fluid_nodes.index(self.api_object)
+        # self.editor.diagramScene.plot_bus(i, self.api_object)

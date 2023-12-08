@@ -18,19 +18,19 @@ from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Fluid.fluid_p2x import FluidP2x
+from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 
 
-class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
+class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
     """
-    FluidP2xGraphicItem
+    FluidPumpGraphicItem
     """
 
-    def __init__(self, parent, api_obj: FluidP2x, diagramScene):
+    def __init__(self, parent, api_obj: FluidPump, diagramScene):
         """
 
         :param parent:
@@ -41,7 +41,7 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
                                               parent=parent,
                                               api_obj=api_obj,
                                               diagramScene=diagramScene,
-                                              device_type_name='fluid_turbine',
+                                              device_type_name='fluid_pump',
                                               w=40,
                                               h=40)
 
@@ -52,7 +52,7 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QGraphicsTextItem('G', parent=self.glyph)
+        self.label = QGraphicsTextItem('P', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
         self.label.setPos(self.h / 4, self.w / 5)
 
@@ -70,10 +70,9 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
                            parent=self.diagramScene.parent().object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies,
-                                                DeviceType.FuelDevice.value: self.diagramScene.circuit.fuels,
-                                                DeviceType.EmissionGasDevice.value: self.diagramScene.circuit.emission_gases,
-                                                })
+                           dictionary_of_lists={
+                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
+                           })
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
@@ -87,16 +86,8 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
 
         pen = QPen(self.color, self.width, self.style)
         self.glyph.setPen(pen)

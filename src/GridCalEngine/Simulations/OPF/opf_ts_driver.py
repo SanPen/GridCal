@@ -30,7 +30,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-# import GridCalEngine.basic_structures as bs
 from GridCalEngine.basic_structures import IntVec, Vec, get_time_groups
 
 
