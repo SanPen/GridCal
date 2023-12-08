@@ -41,6 +41,7 @@ class FluidP2x(FluidInjectionTemplate):
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
         :param plant: Connection reservoir/node
+        :param generator: electrical machine connected
         """
         FluidInjectionTemplate.__init__(self,
                                         name=name,
@@ -50,4 +51,4 @@ class FluidP2x(FluidInjectionTemplate):
                                         max_flow_rate=max_flow_rate,
                                         plant=plant,
                                         generator=generator,
-                                        device_type=DeviceType.FluidTurbine)
+                                        device_type=DeviceType.FluidP2X)

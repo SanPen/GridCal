@@ -32,7 +32,8 @@ class FluidInjectionTemplate(EditableDevice):
                  max_flow_rate: float = 0.0,
                  plant: FluidNode = None,
                  generator: Generator = None,
-                 device_type: DeviceType = DeviceType.FluidTurbine,
+                 device_type: Union[DeviceType.FluidTurbine, DeviceType.FluidPump, DeviceType.FluidP2X] =
+                 DeviceType.FluidTurbine,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Fluid turbine
@@ -42,6 +43,9 @@ class FluidInjectionTemplate(EditableDevice):
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
         :param plant: Connection reservoir/node
+        :param generator: electrical machine connected
+        :param device_type: type of machine (turbine, pump, p2x)
+        :param build_status: status if the plant is built, planned, etc.
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -58,7 +62,7 @@ class FluidInjectionTemplate(EditableDevice):
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
         self.register(key='max_flow_rate', units="m3/h", tpe=float, definition="maximum fluid flow")
-        self.register(key='plant', units="", tpe=FluidNode, definition="Connection reservoir/node")
-        self.register(key='generator', units="", tpe=Generator, definition="Electrical machine")
+        self.register(key='plant', units="", tpe=DeviceType.FluidNode, definition="Connection reservoir/node")
+        self.register(key='generator', units="", tpe=DeviceType.GeneratorDevice, definition="Electrical machine")
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')

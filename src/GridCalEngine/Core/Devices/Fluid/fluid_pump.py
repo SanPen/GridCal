@@ -41,6 +41,7 @@ class FluidPump(FluidInjectionTemplate):
         :param efficiency: energy consumption per fluid unit (MWh/m3)
         :param max_flow_rate: maximum fluid flow (m3/h)
         :param reservoir: Connection reservoir/node
+        :param generator: electrical machine connected
         """
         FluidInjectionTemplate.__init__(self,
                                         name=name,
@@ -50,4 +51,4 @@ class FluidPump(FluidInjectionTemplate):
                                         max_flow_rate=max_flow_rate,
                                         plant=reservoir,
                                         generator=generator,
-                                        device_type=DeviceType.FluidTurbine)
+                                        device_type=DeviceType.FluidPump)

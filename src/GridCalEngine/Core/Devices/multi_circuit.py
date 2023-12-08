@@ -2780,7 +2780,7 @@ class MultiCircuit:
             lst = lst + node.turbines
         return lst
 
-    def add_fluid_pump(self, node:dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
+    def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
         """
         Add fluid pump
         :param node: Fluid node to add to

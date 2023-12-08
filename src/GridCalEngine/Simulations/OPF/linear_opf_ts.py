@@ -296,7 +296,7 @@ class BranchVars:
                                              model.get_value(neg_slack),
                                              model.get_value(pos_slack))
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
