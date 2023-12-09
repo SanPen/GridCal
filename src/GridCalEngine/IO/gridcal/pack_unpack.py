@@ -374,8 +374,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.InvestmentsGroupDevice,
                                                  DeviceType.FuelDevice,
                                                  DeviceType.EmissionGasDevice,
-                                                 DeviceType.GeneratorDevice,
-                                                 DeviceType.ConnectivityNodeDevice]:
+                                                 DeviceType.GeneratorDevice]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -448,6 +447,18 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                                     DeviceType.FluidPump,
                                                                     DeviceType.FluidP2X]:
                                         parent_bus.add_device(devices[i])
+
+                                else:
+                                    logger.add_error('Fluid node not found', str(property_value))
+
+                            elif gc_prop.tpe == DeviceType.ConnectivityNodeDevice:
+
+                                # check if the bus is in the dictionary...
+                                if property_value in elements_dict[DeviceType.ConnectivityNodeDevice].keys():
+
+                                    if property_value != 'nan' and property_value != '':
+                                        parent_bus: dev.FluidNode = elements_dict[DeviceType.ConnectivityNodeDevice][property_value]
+                                        setattr(devices[i], gc_prop.name, parent_bus)
 
                                 else:
                                     logger.add_error('Fluid node not found', str(property_value))
