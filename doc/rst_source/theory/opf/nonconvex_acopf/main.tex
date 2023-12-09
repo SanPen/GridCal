@@ -61,7 +61,7 @@ where $\bm{S}_\text{bus}$ is the complex power nodal injection, $\bm{V}$ a vecto
 \end{align}
 where $j=\sqrt{-1}$, and $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ are the real and imaginary part of the bus admittance matrix. With this, the development of the nodal power equations are:
 \begin{equation}
-    \bm{S}_{b,\text{bus}} = (\bm{G}[\bm{e}]\bm{e} + \bm{G}[\bm{f}]\bm{f} - \bm{B}[\bm{e}]\bm{f} + \bm{B}[\bm{f}]\bm{e}) + j(-\bm{B}[\bm{e}]\bm{e} - \bm{B}[\bm{f}]\bm{f} - \bm{G}[\bm{e}]\bm{f} + \bm{G}[\bm{f}]\bm{e})
+    \bm{S}_{b,\text{bus}} = ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e}) + j(-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
 \end{equation}
 
 This bus power has to be equal to the one injected by the sum of generators and loads. The nodal power provided by generators is:
@@ -154,8 +154,88 @@ where $\bm{\Delta x}$ represents the variation of $\bm{x}$ (and similarly to $\b
 Both sets of equalities and inequalities have to be further developed. The next subsections unpack them.
 
 \subsection{Equalities}
+As the equalities refer to the power balances, there are two sets of equalities: one for active powers, and the other for reactive powers. They will have to be sliced according to the type of bus. For example, the active power equation balance applies to PQ and PV buses, whereas the reactive power equation balance applies to only PQ buses. In any case:
+
+\begin{itemize}
+    \item \underline{Equality 1 - Active power balance}
+\end{itemize}
+\begin{equation}
+    \begin{split}
+    \bm{g_1}(\bm{x}) &= \bm{C}_{g,\text{bus}}^T \bm{P_g} \\ 
+                     &- (\bm{P}_{l,\text{bus}} + [\bm{e}]\bm{I}_{rl,\text{bus}} + [\bm{f}]\bm{I}_{il,\text{bus}} + [\bm{G}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
+                     &- ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e})
+    \end{split}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Equality 2 - Reactive power balance}
+\end{itemize}
+\begin{equation}
+    \begin{split}
+    \bm{g_2}(\bm{x}) &= \bm{C}_{g,\text{bus}}^T \bm{Q_g} \\
+                     &- (\bm{Q}_{l,\text{bus}} -[\bm{e}]\bm{I}_{il,\text{bus}} + [\bm{f}]\bm{I}_{rl,\text{bus}} + [\bm{B}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
+                     &- (-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
+    \end{split}
+\end{equation}
 
 \subsection{Inequalities}
+The listed inequalities are the ones indicated above, accounting for overvoltages, undervoltages, from and to apparent power limits, and maximum and minimum active and reactive powers:
+\begin{itemize}
+    \item \underline{Inequality 1 - Overvoltages}
+\end{itemize}
+\begin{equation}
+    \bm{h_1}(\bm{x}) = - [\bm{e}]\bm{e} - [\bm{f}]\bm{f} + \bm{v_u}^2 \\
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 2 - Undervoltages}
+\end{itemize}
+\begin{equation}
+   \bm{h_2}(\bm{x}) = [\bm{e}]\bm{e} + [\bm{f}]\bm{f} - \bm{v_l}^2
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 3 - From apparent power}
+\end{itemize}
+\begin{equation}
+    \bm{h_3}(\bm{x}) = - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 4 - To apparent power}
+\end{itemize}
+\begin{equation}
+    \bm{h_4}(\bm{x}) = - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 5 - Maximum generation active power}
+\end{itemize}
+\begin{equation}
+    \bm{h_5}(\bm{x}) = - \bm{P_g} + \bm{p}_{g,\text{max}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 6 - Minimum generation active power}
+\end{itemize}
+\begin{equation}
+    \bm{h_6}(\bm{x}) = \bm{P_g} - \bm{p}_{g,\text{min}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 7 - Maximum generation reactive power}
+\end{itemize}
+\begin{equation}
+    \bm{h_7}(\bm{x}) = - \bm{Q_g} + \bm{q}_{g,\text{max}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 8 - Minimum generation reactive power}
+\end{itemize}
+\begin{equation}
+    \bm{h_8}(\bm{x}) = \bm{Q_g} - \bm{q}_{g,\text{min}}
+\end{equation}
+
 
 
 \section{Conclusion}
