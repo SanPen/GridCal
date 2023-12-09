@@ -438,9 +438,9 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                             elif gc_prop.tpe == DeviceType.FluidNodeDevice:
 
                                 # check if the bus is in the dictionary...
-                                if property_value in elements_dict[DeviceType.BusDevice].keys():
+                                if property_value in elements_dict[DeviceType.FluidNodeDevice].keys():
 
-                                    parent_bus: dev.FluidNode = elements_dict[DeviceType.BusDevice][property_value]
+                                    parent_bus: dev.FluidNode = elements_dict[DeviceType.FluidNodeDevice][property_value]
                                     setattr(devices[i], gc_prop.name, parent_bus)
 
                                     # add the device to the bus
