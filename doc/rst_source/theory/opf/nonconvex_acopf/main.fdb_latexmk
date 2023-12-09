@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1702124851 "main.aux" "main.bbl" "main" 1702125274 0
+["bibtex main"] 1702126006 "main.aux" "main.bbl" "main" 1702126663 0
   "./references.bib" 1702119075 1066 3aa3a874af1abee6ba5aa1ee3cfaa567 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/bibtex/bst/natbib/abbrvnat.bst" 1284451856 26532 66bed5cc59495faaa3f9ae9af9fa5e42 ""
-  "main.aux" 1702125273 1452 7db0dd795bd0aa27bcb74305121cc299 "pdflatex"
+  "main.aux" 1702126663 1452 8b5df9383554c43f0959597c7e34d075 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1702125272 "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" "main.pdf" "main" 1702125274 0
+["pdflatex"] 1702126662 "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" "main.pdf" "main" 1702126663 0
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1702113230 157773 9822ecd8e05a3cb006776caa6aa9bbf3 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1702124154 11548 e049888a8e84730848a3eca0bbb03fd6 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1680368863 23176373 5b3bde6f669750772f4652ecec661e21 ""
@@ -90,10 +90,10 @@
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/natbib/natbib.sty" 1292249081 46712 1c8843383c0bd05870c45fa0ebea6cc2 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/tools/bm.sty" 1667242266 13231 b52297489a0e9d929aae403417d92a02 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/tools/indentfirst.sty" 1667242266 1618 6f0598aa81f9ba5cf5d393b4abd3e091 ""
-  "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" 1702125272 8636 48e2992932579cc8f5d0c297b8f87fd3 ""
-  "main.aux" 1702125273 1452 7db0dd795bd0aa27bcb74305121cc299 "pdflatex"
-  "main.bbl" 1702124851 1132 27837407d731a764a9e1144ca46fe0f8 "bibtex main"
-  "main.tex" 1702125272 8636 48e2992932579cc8f5d0c297b8f87fd3 ""
+  "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" 1702126661 9333 99cb5ee7b226727dcf2570cd06b24343 ""
+  "main.aux" 1702126663 1452 8b5df9383554c43f0959597c7e34d075 "pdflatex"
+  "main.bbl" 1702126006 1132 27837407d731a764a9e1144ca46fe0f8 "bibtex main"
+  "main.tex" 1702126661 9333 99cb5ee7b226727dcf2570cd06b24343 ""
   (generated)
   "main.aux"
   "main.log"

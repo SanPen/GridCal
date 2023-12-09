@@ -68,7 +68,7 @@ This bus power has to be equal to the one injected by the sum of generators and 
     \bm{S}_{g,\text{bus}} = (\bm{C}_{g,\text{bus}}^T \bm{P_g}) + j(\bm{C}_{g,\text{bus}}^T \bm{Q_g})
 \end{equation}
 
-If loads are to be modelled by following the ZIP model, then the total power consumed at the buses is:
+If loads are to be modelled by following the ZIP model, the total power consumed at the buses is:
 \begin{equation}
     \begin{split}
     \bm{S}_{l,\text{bus}} & = (\bm{C}_{l,\text{bus}}^T\bm{P_l}) + j (\bm{C}_{l,\text{bus}}^T\bm{Q_l}) \\
@@ -96,11 +96,22 @@ On the other hand, the following inequality constraints are considered:
     \item Undervoltages: the bus voltages have to be above a lower bound $\bm{v_l}$.
     \item Branch loading (from): the from branch apparent power cannot surpass a limit $\bm{s_{fu}}$. 
     \item Branch loading (to): the to branch apparent power cannot surpass a limit $\bm{s_{tu}}$. 
-    \item Maximum active power: the generators' active power has to be below $\bm{p_{g,\text{max}}}$.
-    \item Minimum active power: the generators' active power has to be above $\bm{p_{g,\text{min}}}$.
-    \item Maximum reactive power: the generators' reactive power has to be below $\bm{q_{g,\text{max}}}$.
-    \item Minimum reactive power: the generators' reactive power has to be above $\bm{q_{g,\text{min}}}$.
+    \item Maximum active power: the generators' active power has to be below $\bm{p}_{g,\text{max}}$.
+    \item Minimum active power: the generators' active power has to be above $\bm{p}_{g,\text{min}}$.
+    \item Maximum reactive power: the generators' reactive power has to be below $\bm{q}_{g,\text{max}}$.
+    \item Minimum reactive power: the generators' reactive power has to be above $\bm{q}_{g,\text{min}}$.
 \end{itemize}
+Mathematically, they become:
+\begin{align}
+    - [\bm{e}]\bm{e} - [\bm{f}]\bm{f} + \bm{v_u}^2 & \geq 0 \\
+    [\bm{e}]\bm{e} + [\bm{f}]\bm{f} - \bm{v_l}^2 & \geq 0 \\
+    - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}} & \geq 0 \\
+    - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}} & \geq 0 \\
+    - \bm{P_g} + \bm{p}_{g,\text{max}} & \geq 0 \\
+    \bm{P_g} - \bm{p}_{g,\text{min}} & \geq 0 \\
+    - \bm{Q_g} + \bm{q}_{g,\text{max}} & \geq 0 \\
+    \bm{Q_g} - \bm{q}_{g,\text{min}} & \geq 0 \\
+\end{align}
 
 \section{IPM}
 

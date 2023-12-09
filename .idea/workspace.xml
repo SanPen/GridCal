@@ -28,7 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Start writing about the problem">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Write more about the equality constraints">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.blg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.aux" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.aux" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.bbl" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.bbl" afterDir="false" />
@@ -1572,7 +1573,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="428" />
+    <option name="localTasksCounter" value="429" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1618,7 +1619,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated pic" />
     <MESSAGE value="Updated readthedocs requirements" />
     <MESSAGE value="Fixed dependency" />
     <MESSAGE value="fixed dependency" />
@@ -1643,7 +1643,8 @@
     <MESSAGE value="added newtonpa recommended version" />
     <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
     <MESSAGE value="Start writing about the problem" />
-    <option name="LAST_COMMIT_MESSAGE" value="Start writing about the problem" />
+    <MESSAGE value="Write more about the equality constraints" />
+    <option name="LAST_COMMIT_MESSAGE" value="Write more about the equality constraints" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,11 +2076,6 @@
           <url>file://$PROJECT_DIR$/examples/acopf_ipm.py</url>
           <line>474</line>
           <option name="timeStamp" value="1214" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/examples/acopf_generalize.py</url>
-          <line>37</line>
-          <option name="timeStamp" value="1216" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
