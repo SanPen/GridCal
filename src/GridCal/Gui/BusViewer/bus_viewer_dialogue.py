@@ -142,7 +142,7 @@ class BusViewerWidget(QMainWindow):
         """
         if self.grid_editor is not None:
             self.grid_editor.center_nodes(margin_factor=margin_factor,
-                                          buses=buses)
+                                          elements=buses)
 
     def colour_results(self, **kwargs):
         """

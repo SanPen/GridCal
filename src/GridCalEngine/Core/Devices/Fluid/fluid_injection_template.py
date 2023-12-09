@@ -55,8 +55,8 @@ class FluidInjectionTemplate(EditableDevice):
 
         self.efficiency = efficiency  # MWh/m3
         self.max_flow_rate = max_flow_rate  # m3/h
-        self.plant: FluidNode = plant
-        self.generator: Generator = generator
+        self._plant: FluidNode = plant
+        self._generator: Generator = generator
         self.build_status = build_status
 
         self.power = 0.0  # MW -> LpVar
@@ -68,3 +68,38 @@ class FluidInjectionTemplate(EditableDevice):
         self.register(key='generator', units="", tpe=DeviceType.GeneratorDevice, definition="Electrical machine")
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
+
+    @property
+    def plant(self) -> FluidNode:
+        """
+        Plant getter
+        :return: FluidNode
+        """
+        return self._plant
+
+    @plant.setter
+    def plant(self, val: FluidNode):
+        """
+
+        :param val: FluidNode
+        :return:
+        """
+        if isinstance(val, FluidNode):
+            self._plant = val
+
+    @property
+    def generator(self) -> Generator:
+        """
+        Generator getter
+        :return: Generator
+        """
+        return self._generator
+
+    @generator.setter
+    def generator(self, val: Generator):
+        """
+        generator setter
+        :param val: Generator
+        """
+        if isinstance(val, Generator):
+            self._generator = val

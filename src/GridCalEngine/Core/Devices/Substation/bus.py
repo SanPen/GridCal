@@ -101,7 +101,7 @@ class Bus(EditableDevice):
                  active=True,
                  is_slack=False,
                  is_dc=False,
-                 is_tr_bus=False,
+                 is_internal=False,
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
@@ -192,7 +192,7 @@ class Bus(EditableDevice):
         self.is_dc = is_dc
 
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self.is_tr_bus = is_tr_bus
+        self.is_internal = is_internal
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed
@@ -215,9 +215,10 @@ class Bus(EditableDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='is_tr_bus', units='', tpe=bool,
-                      definition='Is this bus part of a composite transformer, such as  a 3-winding transformer?.',
-                      profile_name='')
+        self.register(key='is_internal', units='', tpe=bool,
+                      definition='Is this bus part of a composite transformer, '
+                                 'such as  a 3-winding transformer or a fluid node?.',
+                      profile_name='', old_names=['is_tr_bus'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')

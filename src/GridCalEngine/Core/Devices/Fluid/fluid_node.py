@@ -54,7 +54,7 @@ class FluidNode(EditableDevice):
         self.min_level = min_level  # m3
         self.max_level = max_level  # m3
         self.initial_level = current_level  # m3
-        self.bus: Bus = bus
+        self._bus: Bus = bus
         self.build_status = build_status
 
         self.current_level = current_level  # m3 -> LpVar
@@ -91,6 +91,24 @@ class FluidNode(EditableDevice):
 
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
+
+    @property
+    def bus(self) -> Bus:
+        """
+        Bus getter function
+        :return: Bus
+        """
+        return self._bus
+
+    @bus.setter
+    def bus(self, val: Bus):
+        """
+        bus setter function
+        :param val: Bus
+        """
+        if isinstance(val, Bus):
+            self._bus = val
+            self._bus.is_internal = True
 
     def add_turbine(self, elm):
         """
