@@ -375,9 +375,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.FuelDevice,
                                                  DeviceType.EmissionGasDevice,
                                                  DeviceType.GeneratorDevice,
-                                                 DeviceType.ConnectivityNodeDevice,
-                                                 DeviceType.FluidNodeDevice,
-                                                 DeviceType.BusDevice]:
+                                                 DeviceType.ConnectivityNodeDevice]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
