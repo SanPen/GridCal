@@ -5,6 +5,7 @@
 \usepackage{amssymb}  % For additional mathematical symbols
 \usepackage{geometry}  % For setting page margins
 
+\usepackage{bm}
 \usepackage{indentfirst}
 \usepackage[english]{babel}
 \usepackage[square,numbers]{natbib}  % For bibliography management
@@ -30,12 +31,76 @@ As an originally non-convex hard problem, the OPF can take many forms. For insta
 This chapter provides the necessary details of the ACOPF formulation. In broad terms, the optimization problem reads: 
 \begin{equation}
 \begin{split}
-    \text{min} \quad & f(x) \\
-    \text{s.t.} \quad & g(x) = 0 \\
-     & h(x) \geq 0
+    \text{min} \quad & f(\bm{x}) \\
+    \text{s.t.} \quad & \bm{g}(\bm{x}) = \bm{0} \\
+     & \bm{h}(\bm{x}) \geq \bm{0}
 \end{split}
 \end{equation}
-where $x \in \mathbb{R}^n$, being $n$ the number of decision variables, $f(x)$ is the function to be minimized which typically accounts for the generation cost, $g(x)$ is a set of equality constraints coming from the application of Kirchhoff's law, and $h(x)$ contains the technical restrictions to respect voltage and line flow limits.
+where $\bm{x} \in \mathbb{R}^n$, being $n$ the number of decision variables, $f(x)$ is the function to be minimized which typically accounts for the generation cost, $\bm{g}(\bm{x})$ is a set of equality constraints coming from the application of Kirchhoff's law, and $\bm{h}(\bm{x})$ contains the technical restrictions to respect voltage and line flow limits. The bold notation is used to indicate multidimensional objects. In more detail, following the matrix notation:
+\begin{equation}
+    f(\bm{x}) = \bm{1}^T_{n_g} (\bm{a} + [\bm{b}]\bm{P_g} + \bm{P_g}^T [\bm{c}] \bm{P_g})
+\end{equation}
+where $\bm{1}$ is a column vector of ones, $n_g$ is the number of generators, $T$ stands for the transpose operator, $\bm{a}$ is a column vector of constant generation costs, $\bm{b}$ a column vector that weights the generation powers, $\bm{c}$ a column vector that quadratically weights the generation powers, $\bm{P_g}$ is the column vector of generation powers, and the brackets of the form $[\bm{v}]$ indicate the diagonalization of the vector $\bm{v}$. 
+
+It has been decided to formulate the ACOPF following the rectangular form of the power flow problem. The set of decision variables $\bm{x}$ can be further divided into:
+\begin{equation}
+    \bm{x} = [\bm{e}^T, \bm{f}^T, \bm{P_g}^T, \bm{Q_g}^T]^T
+\end{equation}
+that is, $\bm{x}$ groups the real part of the voltages $\bm{e}$, the imaginary part of the voltages $\bm{f}$, and the generation active and reactive powers $\bm{P_g}$ and $\bm{Q_g}$. 
+
+Then, the equality constraints are merely the power balances. In complex form, by adopting a similar notation as the one in~\cite{zimmerman2016matpower}, it yields: 
+\begin{equation}
+    \bm{S}_\text{bus} = [\bm{V}]\bm{Y}^*_\text{bus}\bm{V}^*
+    \label{eq:sbus}
+\end{equation}
+where $\bm{S}_\text{bus}$ is the complex power nodal injection, $\bm{V}$ a vector of complex voltages, $\bm{Y}_\text{bus}$ the admittance bus matrix, and the operation $v^*$ symbolizes the complex conjugate of $v$. To derive the powers in rectangular form, first we set:
+\begin{align}
+    \bm{V} &= \bm{e} + j\bm{f} \\
+    \bm{Y}_\text{bus} &= \bm{G}_\text{bus} + j\bm{B}_\text{bus}
+\end{align}
+where $j=\sqrt{-1}$, and $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ are the real and imaginary part of the bus admittance matrix. With this, the development of the nodal power equations are:
+\begin{equation}
+    \bm{S}_{b,\text{bus}} = (\bm{G}[\bm{e}]\bm{e} + \bm{G}[\bm{f}]\bm{f} - \bm{B}[\bm{e}]\bm{f} + \bm{B}[\bm{f}]\bm{e}) + j(-\bm{B}[\bm{e}]\bm{e} - \bm{B}[\bm{f}]\bm{f} - \bm{G}[\bm{e}]\bm{f} + \bm{G}[\bm{f}]\bm{e})
+\end{equation}
+
+This bus power has to be equal to the one injected by the sum of generators and loads. The nodal power provided by generators is:
+\begin{equation}
+    \bm{S}_{g,\text{bus}} = (\bm{C}_{g,\text{bus}}^T \bm{P_g}) + j(\bm{C}_{g,\text{bus}}^T \bm{Q_g})
+\end{equation}
+
+If loads are to be modelled by following the ZIP model, then the total power consumed at the buses is:
+\begin{equation}
+    \begin{split}
+    \bm{S}_{l,\text{bus}} & = (\bm{C}_{l,\text{bus}}^T\bm{P_l}) + j (\bm{C}_{l,\text{bus}}^T\bm{Q_l}) \\
+                          & + ([\bm{e}]\bm{C}_{l,\text{bus}}^T \bm{I_{rl}} + [\bm{f}]\bm{C}_{l,\text{bus}}^T \bm{I_{il}}) + j(-[\bm{e}]\bm{C}_{l,\text{bus}}^T \bm{I_{il}} + [\bm{f}]\bm{C}_{l,\text{bus}}^T \bm{I_{rl}}) \\
+                          & + ([\bm{C}_{l,\text{bus}}^T \bm{G_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{C}_{l,\text{bus}}^T \bm{B_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
+    \end{split}
+\end{equation}
+where $\bm{P_l}$ and $\bm{Q_l}$ are the active and reactive power demands, $\bm{I_{rl}}$ and $\bm{I_{il}}$ are the real and imaginary current demands, and $\bm{G_l}$ and $\bm{B_l}$ stand for the load real and imaginary parts of the admittances. As the load data are considered to be constant and independent from the decision variables, they can be compacted as:
+\begin{equation}
+    \begin{split}
+    \bm{S}_{l,\text{bus}} & = (\bm{P}_{l,\text{bus}}) + j (\bm{Q}_{l,\text{bus}}) \\
+                          & + ([\bm{e}]\bm{I}_{rl,\text{bus}} + [\bm{f}]\bm{I}_{il,\text{bus}}) + j(-[\bm{e}]\bm{I}_{il,\text{bus}} + [\bm{f}]\bm{I}_{rl,\text{bus}}) \\
+                          & + ([\bm{G}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{B}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
+    \end{split}
+\end{equation}
+
+The equality constraints can be formulated as:
+\begin{equation}
+    \bm{g(x)} = \bm{S}_{g,\text{bus}} - \bm{S}_{l,\text{bus}} - \bm{S}_{b,\text{bus}} = 0
+\end{equation}
+
+On the other hand, the following inequality constraints are considered:
+\begin{itemize}
+    \item Overvoltages: the bus voltages have to be below an upper bound $\bm{v_u}$.
+    \item Undervoltages: the bus voltages have to be above a lower bound $\bm{v_l}$.
+    \item Branch loading (from): the from branch apparent power cannot surpass a limit $\bm{s_{fu}}$. 
+    \item Branch loading (to): the to branch apparent power cannot surpass a limit $\bm{s_{tu}}$. 
+    \item Maximum active power: the generators' active power has to be below $\bm{p_{g,\text{max}}}$.
+    \item Minimum active power: the generators' active power has to be above $\bm{p_{g,\text{min}}}$.
+    \item Maximum reactive power: the generators' reactive power has to be below $\bm{q_{g,\text{max}}}$.
+    \item Minimum reactive power: the generators' reactive power has to be above $\bm{q_{g,\text{min}}}$.
+\end{itemize}
 
 \section{IPM}
 
