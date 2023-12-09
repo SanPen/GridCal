@@ -28,9 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add 3bus acopf and maybe generalize from there">
-      <change afterPath="$PROJECT_DIR$/examples/acopf_generalize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Advance with the Vars definition">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -583,11 +581,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.acopf_generalize" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
         <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.acopf_generalize" />
       </list>
     </recent_temporary>
   </component>
@@ -1592,7 +1590,19 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="205_ACOPF" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>

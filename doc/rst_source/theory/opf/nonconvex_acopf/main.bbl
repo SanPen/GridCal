@@ -1,0 +1,21 @@
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Chatzivasileiadis(2018)]{chatzivasileiadis2018optimization}
+S.~Chatzivasileiadis.
+\newblock Optimization in modern power systems.
+\newblock \emph{Lecture Notes. Tech. Univ. of Denmark. Available online:
+  https://arxiv. org/pdf/1811.00943. pdf}, 2018.
+
+\bibitem[Ergun et~al.(2019)Ergun, Dave, Van~Hertem, and Geth]{ergun2019optimal}
+H.~Ergun, J.~Dave, D.~Van~Hertem, and F.~Geth.
+\newblock Optimal power flow for ac--dc grids: Formulation, convex relaxation,
+  linear approximation, and implementation.
+\newblock \emph{IEEE transactions on power systems}, 34\penalty0 (4):\penalty0
+  2980--2990, 2019.
+
+\end{thebibliography}

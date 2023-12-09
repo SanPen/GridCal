@@ -1,0 +1,83 @@
+\documentclass{article}
+
+\usepackage{amsmath}  % For mathematical symbols and environments
+\usepackage{amsfonts}  % For mathematical fonts
+\usepackage{amssymb}  % For additional mathematical symbols
+\usepackage{geometry}  % For setting page margins
+
+\usepackage{indentfirst}
+\usepackage[english]{babel}
+\usepackage[square,numbers]{natbib}  % For bibliography management
+\bibliographystyle{abbrvnat}
+
+\geometry{a4paper, margin=1in}  % Adjust margins as needed
+
+\title{ACOPF solved through an IPM}
+\author{Santiago Peñate Vera \\ Carlos Alegre Aldeano \\ Josep Fanals i Batllori}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The Optimal Power Flow (OPF) is regarded as a complicated mathematical problem of upmost importance for grid operators. While a grid could operate in very varied conditions, the goal is to pick an optimal operating point that minimizes a given objective function and at the same time respects a set of technical constraints.
+
+As an originally non-convex hard problem, the OPF can take many forms. For instance, an economical dispatch would be the simplest variation in which the power flows are dismissed; the DCOPF considers line flows but only solves for the voltage angles; whereas the ACOPF follows the purest formulation, which comes at a cost~\cite{chatzivasileiadis2018optimization}. Relaxations are commonly employed to convexify the problem~\cite{ergun2019optimal}, which makes it easier to obtain a satisfactory feasible solution. Nonetheless, in this document we abstain ourselves from any oversimplification that deviates from the original problem, and we build an Interior Point Method (IPM) to achieve maximum performance as well as avoiding third-party dependencies such as IPOPT.
+
+\section{ACOPF}
+This chapter provides the necessary details of the ACOPF formulation. In broad terms, the optimization problem reads: 
+\begin{equation}
+\begin{split}
+    \text{min} \quad & f(x) \\
+    \text{s.t.} \quad & g(x) = 0 \\
+     & h(x) \geq 0
+\end{split}
+\end{equation}
+where $x \in \mathbb{R}^n$, being $n$ the number of decision variables, $f(x)$ is the function to be minimized which typically accounts for the generation cost, $g(x)$ is a set of equality constraints coming from the application of Kirchhoff's law, and $h(x)$ contains the technical restrictions to respect voltage and line flow limits.
+
+\section{IPM}
+
+\section{Mathematics}
+
+\subsection{Equations}
+
+You can write mathematical equations inline like this: $a^2 + b^2 = c^2$, or display them on a separate line:
+
+\begin{equation}
+  \int_{a}^{b} f(x) \,dx = F(b) - F(a)
+\end{equation}
+
+\subsection{Mathematical Symbols}
+
+Some mathematical symbols include $\alpha$, $\beta$, $\gamma$, $\delta$, $\pi$, $\Sigma$, $\int$, etc.
+
+\subsection{Mathematical Environments}
+
+\begin{align}
+  f(x) &= x^2 + 3x + 2 \\
+  g(x) &= \frac{1}{x} \\
+  h(x) &= \sqrt{x}
+\end{align}
+
+\subsection{Matrices}
+
+Matrices can be represented as follows:
+
+\[
+A = \begin{bmatrix}
+  1 & 2 & 3 \\
+  4 & 5 & 6 \\
+  7 & 8 & 9
+\end{bmatrix}
+\]
+
+\section{Conclusion}
+
+This is just a basic template, and there is much more you can do with LaTeX for mathematical typesetting. Refer to the LaTeX documentation for more details.
+
+% Bibliography
+\bibliography{references}  % Specify the name of your BibTeX file without the .bib extension
+
+\end{document}
